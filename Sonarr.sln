@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sonarr.Api", "Sonarr.Api.csproj", "{8A0AB5F8-B56E-45B0-8128-6F6895DD3CED}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8A0AB5F8-B56E-45B0-8128-6F6895DD3CED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A0AB5F8-B56E-45B0-8128-6F6895DD3CED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A0AB5F8-B56E-45B0-8128-6F6895DD3CED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A0AB5F8-B56E-45B0-8128-6F6895DD3CED}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {54E6F964-498B-4321-BD11-ECA6E150B306}
+	EndGlobalSection
+EndGlobal
