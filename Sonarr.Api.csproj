@@ -48,11 +48,12 @@
     <Compile Include="Endpoints\ISonarrEndpoint.cs" />
     <Compile Include="ApiCaller.cs" />
     <None Include="Generic\Parameter.cs" />
+    <Compile Include="Endpoints\Series.cs" />
     <Compile Include="Enums\Methods.cs" />
     <None Include="Generic\ValidatedString.cs" />
     <None Include="SonarrCall.cs" />
     <None Include="Components\JsonBody.cs" />
-    <Compile Include="Generic\SonarrResult.cs" />
+    <None Include="Generic\SonarrResult.cs" />
     <Compile Include="Components\ApiKey.cs" />
     <Compile Include="Endpoints\Calendar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

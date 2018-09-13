@@ -15,7 +15,7 @@ namespace Sonarr.Api
     {
         #region Properties/Fields/Constants
         private protected const string _ct = "application/json";
-        private string _base;
+        private readonly string _base;
         public string BaseUrl => _base;
 
         #endregion
@@ -43,15 +43,13 @@ namespace Sonarr.Api
             }
             reqProps.Add("Method", method.ToString());
             reqProps.Add("Headers", key.AsSonarrHeader());
+            reqProps.Add("ContentType", _ct);
             var full = _base + endpoint.Value;
             return ReturnWebRequest(full, reqProps, jsonBody);
         }
 
 
-        public override void SaveData(string valueName, object valueData)
-        {
-            throw new NotImplementedException();
-        }
+        public override void SaveData(string valueName, object valueData) => throw new NotImplementedException();
 
         #endregion
     }
