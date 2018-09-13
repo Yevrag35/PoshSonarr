@@ -1,4 +1,5 @@
-﻿using Sonarr.Api.Enums;
+﻿using MG.Api;
+using Sonarr.Api.Enums;
 using Sonarr.Api.Endpoints;
 using System;
 using System.IO;
@@ -8,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace Sonarr.Api
 {
-    public class SonarrCall : IWebRequestCreate
+    public class SonarrCall : GenericApi, IWebRequestCreate
     {
         #region Properties/Fields
 
@@ -41,10 +42,10 @@ namespace Sonarr.Api
 
         // These 2 constructors assumes that the specified 'Url' is the whole thing
         // (e.g. - includes the endpoint, query, etc.).
-        public SonarrCall(Uri url) => _wr = WebRequest.CreateHttp(url);        
-        public SonarrCall(Uri url, SonarrMethod method, ApiKey apiKey, RequestParameters parameters = null)
+        public SonarrCall(ApiUrl url) => _wr = WebRequest.CreateHttp((Uri)url);        
+        public SonarrCall(ApiUrl url, SonarrMethod method, ApiKey apiKey, RequestParameters parameters = null)
         {
-            _wr = WebRequest.CreateHttp(url);
+            _wr = WebRequest.CreateHttp((Uri)url);
             _wr.Method = method.ToString();
             _wr.Headers = apiKey.AsSonarrHeader();
             _wr.ContentType = _ct;
@@ -121,26 +122,26 @@ namespace Sonarr.Api
         #endregion
 
         #region Backend Methods
-        private byte[] GetBodyData(string body)
-        {
-            var encoder = new UTF8Encoding();
-            byte[] data = encoder.GetBytes(body);
-            return data;
-        }
+        //private byte[] GetBodyData(string body)
+        //{
+        //    var encoder = new UTF8Encoding();
+        //    byte[] data = encoder.GetBytes(body);
+        //    return data;
+        //}
 
-        private dynamic ReadResponse(WebResponse resp)
-        {
-            var stream = resp.GetResponseStream();
-            var reader = new StreamReader(stream);
-            string answer = reader.ReadToEnd();
-            var setts = new JsonSerializerSettings()
-            {
-                Formatting = Formatting.Indented,
-                ObjectCreationHandling = ObjectCreationHandling.Auto
-            };
-            dynamic result = JsonConvert.DeserializeObject(answer);
-            return result;
-        }
+        //private dynamic ReadResponse(WebResponse resp)
+        //{
+        //    var stream = resp.GetResponseStream();
+        //    var reader = new StreamReader(stream);
+        //    string answer = reader.ReadToEnd();
+        //    var setts = new JsonSerializerSettings()
+        //    {
+        //        Formatting = Formatting.Indented,
+        //        ObjectCreationHandling = ObjectCreationHandling.Auto
+        //    };
+        //    dynamic result = JsonConvert.DeserializeObject(answer);
+        //    return result;
+        //}
 
         #endregion
 

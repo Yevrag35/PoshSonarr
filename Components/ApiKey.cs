@@ -1,4 +1,5 @@
-﻿using Sonarr.Api.Generic;
+﻿using MG.Api;
+//using Sonarr.Api.Generic;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,14 +10,13 @@ using System.Text.RegularExpressions;
 
 namespace Sonarr.Api
 {
-    public class ApiKey : ValidatedString
+    public class ApiKey : ApiString
     {
         #region Constants and Properties
         private readonly string _key;
         private protected const int _keyLength = 32;
         private protected const string _regExp = @"^(?:[0-9]|[a-z]){32}$";
-        internal override string Value => _key;
-        public string Key => _key;
+        public override string Value => _key;
 
         #endregion
 
