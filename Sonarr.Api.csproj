@@ -42,18 +42,32 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceAssemblies\System.Management.Automation.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cmdlets\ConnectSonarr.cs" />
+    <Compile Include="Cmdlets\GetSonarrCalendar.cs" />
+    <Compile Include="Cmdlets\GetSonarrSeries.cs" />
+    <Compile Include="Components\Exceptions.cs" />
+    <Compile Include="Components\SonarrServiceContext.cs" />
     <Compile Include="Endpoints\ISonarrEndpoint.cs" />
     <Compile Include="ApiCaller.cs" />
+    <Compile Include="Results\CalendarEntry.cs" />
+    <Compile Include="Results\SeasonStatistics.cs" />
+    <Compile Include="Results\SonarrSeriesImage.cs" />
+    <Compile Include="Results\SeriesResult.cs" />
     <None Include="Generic\Parameter.cs" />
+    <Compile Include="Endpoints\Parse.cs" />
     <Compile Include="Endpoints\Series.cs" />
     <Compile Include="Enums\Methods.cs" />
-    <None Include="Generic\ValidatedString.cs" />
+    <Compile Include="Results\SonarrSeason.cs" />
     <None Include="SonarrCall.cs" />
-    <None Include="Components\JsonBody.cs" />
-    <None Include="Generic\SonarrResult.cs" />
+    <Compile Include="Results\SonarrResult.cs" />
     <Compile Include="Components\ApiKey.cs" />
     <Compile Include="Endpoints\Calendar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -26,7 +26,8 @@ namespace Sonarr.Api
         #endregion
 
         #region Methods
-        public ApiResult Send(ISonarrEndpoint endpoint, ApiKey key, IDictionary reqProps = null, SonarrMethod method = SonarrMethod.GET, RequestParameters reqParams = null)
+        public ApiResult Send(ISonarrEndpoint endpoint, ApiKey key, 
+            IDictionary reqProps = null, SonarrMethod method = SonarrMethod.GET, RequestParameters reqParams = null)
         {
             if (!endpoint.MethodsAllowed.Contains(method))
             {
