@@ -6,23 +6,24 @@ using System.Collections.Generic;
 
 namespace Sonarr.Api.Results
 {
-    public class SonarrSeason
+    public class SonarrSeason : SonarrResult
     {
         private readonly bool _m;
         private readonly long _s;
-        private readonly SeasonStatistics _stats;
+        private readonly JObject _stats;
 
         public bool IsMonitored => _m;
         public long SeasonNumber => _s;
-        public SeasonStatistics Statistics => _stats;
+        public SeasonStatistics Statistics => (SeasonStatistics)_stats;
 
 		internal protected SonarrSeason(JObject job)
         {
             _m = (bool)job["monitored"];
             _s = (long)job["seasonNumber"];
-            _stats = new SeasonStatistics((JObject)job["statistics"]);
+            _stats = (JObject)job["statistics"];
         }
 
-        public static explicit operator SonarrSeason(JObject job) => new SonarrSeason(job);
+        public static explicit operator SonarrSeason(JObject job) =>
+            job != null ? new SonarrSeason(job) : null;
     }
 }

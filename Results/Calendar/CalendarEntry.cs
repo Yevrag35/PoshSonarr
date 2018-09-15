@@ -9,6 +9,7 @@ namespace Sonarr.Api.Results
 {
     public class CalendarEntry : SonarrResult
     {
+#pragma warning disable IDE0044 // Add readonly modifier
         private long _seriesId;
         private long _episodeFileId;
         private long _seasonNumber;
@@ -22,6 +23,7 @@ namespace Sonarr.Api.Results
         private bool _unverifiedSceneNumbering;
         private JObject _series;
         private long _id;
+#pragma warning restore IDE0044 // Add readonly modifier
 
         public long SeriesId => _seriesId;
         public long EpisodeFileId => _episodeFileId;
@@ -29,7 +31,7 @@ namespace Sonarr.Api.Results
         public long EpisodeNumber => _episodeNumber;
         public string Title => _title;
         public DateTime AirDateUtc => _airDateUtc;
-        public JObject EpisodeFile => _episodeFile;
+        public EpisodeFile EpisodeFile => (EpisodeFile)_episodeFile;
         public bool HasFile => _hasFile;
         public bool IsMonitored => _isMonitored;
         public long AbsoluteEpisodeNumber => _absoluteEpisodeNumber;
@@ -41,10 +43,19 @@ namespace Sonarr.Api.Results
 
         public static explicit operator CalendarEntry(JObject job)
         {
-            var dict = JsonConvert.DeserializeObject<Dictionary<object, object>>(JsonConvert.SerializeObject(job));
-            return new CalendarEntry(dict);
+            if (job != null)
+            {
+                var dict = JsonConvert.DeserializeObject<Dictionary<object, object>>(JsonConvert.SerializeObject(job));
+                return new CalendarEntry(dict);
+            }
+            else
+            {
+                return null;
+            }
         }
         public static explicit operator CalendarEntry(Dictionary<object, object> dict) =>
+            new CalendarEntry(dict);
+        public static explicit operator CalendarEntry(Dictionary<string, object> dict) =>
             new CalendarEntry(dict);
     }
 }

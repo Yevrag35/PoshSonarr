@@ -6,13 +6,15 @@ using System.Collections.Generic;
 
 namespace Sonarr.Api.Results
 {
-    public class SeasonStatistics
+    public class SeasonStatistics : SonarrResult
     {
+#pragma warning disable IDE0044 // Add readonly modifier
         private long _episodeCount;
         private long _episodeFileCount;
         private long _percentOfEpisodes;
         private long _sizeOnDisk;
         private long _totalEpisodeCount;
+#pragma warning restore IDE0044 // Add readonly modifier
 
         public long EpisodeCount => _episodeCount;
         public long EpisodeFileCount => _episodeFileCount;
@@ -40,6 +42,7 @@ namespace Sonarr.Api.Results
             }
         }
 
-        public static explicit operator SeasonStatistics(JObject job) => new SeasonStatistics(job);
+        public static explicit operator SeasonStatistics(JObject job) => 
+            job != null ? new SeasonStatistics(job) : null;
     }
 }

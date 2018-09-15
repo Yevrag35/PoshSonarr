@@ -1,5 +1,6 @@
 ﻿using MG.Api;
 using Sonarr.Api.Endpoints;
+using Sonarr.Api.Enums;
 using Sonarr.Api.Results;
 using System;
 using System.Collections;
@@ -8,15 +9,12 @@ using System.Management.Automation;
 
 namespace Sonarr.Api.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Get, "SonarrCalendar", ConfirmImpact = ConfirmImpact.None)]
-    [OutputType(typeof(CalendarEntry))]
-    public class GetSonarrCalendar : BaseCmdlet
+    [Cmdlet(VerbsData.Backup, "Sonarr")]
+    [OutputType(typeof(CommandResult))]
+    public class BackupSonarr : BaseCommandCmdlet
     {
-        [Parameter(Mandatory = false, Position = 0)]
-        public DateTime? Start = null;
-
-        [Parameter(Mandatory = false, Position = 1)]
-        public DateTime? End = null;
+        public override SonarrCommand Command => SonarrCommand.Backup;
+        public override SonarrMethod Method => SonarrMethod.POST;
 
         protected override void BeginProcessing()
         {
@@ -31,10 +29,8 @@ namespace Sonarr.Api.Cmdlets
         protected override void ProcessRecord()
         {
             base.ProcessRecord();
-            var cal = new Calendar(Start, End);
-
-            var result = Api.Send(cal);
-            PipeBack<CalendarEntry>(result);
+            result = ApplyCommandToAll();
+            PipeBackResult(result);
         }
     }
 }

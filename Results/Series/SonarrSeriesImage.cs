@@ -7,7 +7,7 @@ using System.Net;
 
 namespace Sonarr.Api.Results
 {
-    public class SonarrSeriesImage
+    public class SonarrSeriesImage : SonarrResult
     {
         private readonly string _ct;
         private readonly Uri _url;
@@ -17,8 +17,14 @@ namespace Sonarr.Api.Results
 
         internal protected SonarrSeriesImage(JObject job)
         {
-            _ct = (string)job["coverType"];
-            _url = new Uri((string)job["url"], UriKind.RelativeOrAbsolute);
+            if (job != null)
+            {
+                _ct = (string)job["coverType"];
+                _url = new Uri((string)job["url"], UriKind.RelativeOrAbsolute);
+            }
         }
+
+        public static explicit operator SonarrSeriesImage(JObject job) =>
+            job != null ? new SonarrSeriesImage(job) : null;
     }
 }

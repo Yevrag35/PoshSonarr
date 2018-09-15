@@ -12,10 +12,8 @@ namespace Sonarr.Api.Cmdlets
         DefaultParameterSetName = "BySeriesTitle")]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(SeriesResult))]
-    public class GetSonarrSeries : PSCmdlet
+    public class GetSonarrSeries : BaseCmdlet
     {
-        private ApiCaller api;
-
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesTitle")]
         [Alias("st", "Title")]
         public string SeriesTitle { get; set; }
@@ -38,7 +36,7 @@ namespace Sonarr.Api.Cmdlets
             if (!SonarrServiceContext.IsSet)
                 throw new SonarrContextNotSetException("  Run the 'Connect-Sonarr' cmdlet first.");
 
-            api = new ApiCaller(SonarrServiceContext.Value);
+            Api = new ApiCaller(SonarrServiceContext.Value);
         }
 
         protected override void ProcessRecord()
@@ -72,18 +70,13 @@ namespace Sonarr.Api.Cmdlets
             }
             else
             {
-                for (int i = 0; i < SonarrServiceContext.SonarrSeries.Count; i++)
-                {
-                    IDictionary d = SonarrServiceContext.SonarrSeries[i];
-                    var sr = new SeriesResult(d);
-                    WriteObject(sr);
-                }
+                PipeBack<SeriesResult>(SonarrServiceContext.SonarrSeries);
             }
         }
 
         private ApiResult GetAllSeries(Series ep)
         {
-            return api.Send(ep, SonarrServiceContext.ApiKey);
+            return Api.Send(ep);
         }
     }
 }

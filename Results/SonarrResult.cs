@@ -13,23 +13,26 @@ namespace Sonarr.Api.Results
     {
         internal protected void MatchResultsToProperties(IDictionary result)
         {
-            string[] keys = result.Keys.Cast<string>().ToArray();
-            Type t = GetType();
-            FieldInfo[] pi = t.GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
-
-            for (int i1 = 0; i1 < keys.Length; i1++)
+            if (result != null)
             {
-                var key = keys[i1];
-                for (int i2 = 0; i2 < pi.Length; i2++)
-                {
-                    var p = pi[i2];
+                string[] keys = result.Keys.Cast<string>().ToArray();
+                Type t = GetType();
+                FieldInfo[] pi = t.GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
 
-                    if (p.Name.Equals("_" + key, StringComparison.OrdinalIgnoreCase))
+                for (int i1 = 0; i1 < keys.Length; i1++)
+                {
+                    var key = keys[i1];
+                    for (int i2 = 0; i2 < pi.Length; i2++)
                     {
-                        MethodInfo castMethod = t.GetMethod(
-                            "Cast", BindingFlags.Instance | BindingFlags.NonPublic).MakeGenericMethod(p.FieldType);
-                        object obj = castMethod.Invoke(this, new object[] { result[key] });
-                        p.SetValue(this, obj);
+                        var p = pi[i2];
+
+                        if (p.Name.Equals("_" + key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            MethodInfo castMethod = t.GetMethod(
+                                "Cast", BindingFlags.Instance | BindingFlags.NonPublic).MakeGenericMethod(p.FieldType);
+                            object obj = castMethod.Invoke(this, new object[] { result[key] });
+                            p.SetValue(this, obj);
+                        }
                     }
                 }
             }

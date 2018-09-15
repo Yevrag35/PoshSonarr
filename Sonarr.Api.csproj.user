@@ -3,7 +3,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <StartAction>Program</StartAction>
     <StartProgram>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe</StartProgram>
-    <StartArguments>-ExecutionPolicy Bypass -NoExit -Command "Import-Module .\Sonarr.Api.dll"</StartArguments>
+    <StartArguments>-ExecutionPolicy Bypass -NoExit -Command "Import-Module .\Sonarr.Api.dll%3b Connect-Sonarr -Url %27http://garvmedia:8989%27 -ApiKey %2729b223248cbf4317bc1605927bca638d%27%3b"</StartArguments>
     <StartWorkingDirectory>.</StartWorkingDirectory>
   </PropertyGroup>
 </Project>

@@ -26,9 +26,10 @@ namespace Sonarr.Api
         #endregion
 
         #region Methods
-        public ApiResult Send(ISonarrEndpoint endpoint, ApiKey key, 
+        public ApiResult Send(ISonarrEndpoint endpoint, 
             IDictionary reqProps = null, SonarrMethod method = SonarrMethod.GET, RequestParameters reqParams = null)
         {
+            var key = SonarrServiceContext.ApiKey;
             if (!endpoint.MethodsAllowed.Contains(method))
             {
                 throw new ArgumentException(method.ToString() + " is not a valid request method for this endpoint!");
