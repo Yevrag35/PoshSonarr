@@ -1,18 +1,18 @@
-﻿using Sonarr.Api.Enums;
-using Sonarr.Api.Generic;
+﻿using MG.Api;
+using Sonarr.Api.Enums;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Sonarr.Api.Endpoints
 {
-    public class Calendar : ValidatedString, ISonarrEndpoint
+    public class Calendar : ISonarrEndpoint
     {
         private protected const string _ep = "/api/calendar";
         private readonly string _full;
-        internal override string Value => _full;
+        public string Value => _full;
         public Uri RelativeEndpoint => new Uri(_ep, UriKind.Relative);
         public SonarrMethod[] MethodsAllowed => new SonarrMethod[1] { SonarrMethod.GET };
-        public string FullString => Value ?? null;
 
         public Calendar(DateTime? start = null, DateTime? end = null)
         {
@@ -36,6 +36,10 @@ namespace Sonarr.Api.Endpoints
             }
         }
 
-        public static implicit operator string(Calendar cal) => cal.ToString();
+        public static implicit operator string(Calendar cal) => cal.Value;
+
+        IEnumerator<string> IEnumerable<string>.GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
     }
 }
