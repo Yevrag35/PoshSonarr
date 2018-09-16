@@ -7,13 +7,13 @@ namespace Sonarr.Api.Results
     public class CommandResult : SonarrResult
     {
         private string _name;
-        private DateTime _startedOn;
+        private DateTime? _startedOn;
         private bool _sendUpdatesToClient;
         private string _state;
         private long _id;
 
         public string Name => _name;
-        public DateTime StartedOn => _startedOn.ToLocalTime();
+        public DateTime? StartedOn => ToLocalTime(_startedOn);
         public bool SendUpdatesToClient => _sendUpdatesToClient;
         public string State => _state;
         public long Id => _id;

@@ -14,9 +14,9 @@ namespace Sonarr.Api.Results
         private JObject _body;
         private string _priority;
         private string _status;
-        private DateTime _queued;
-        private DateTime _started;
-        private DateTime _ended;
+        private DateTime? _queued;
+        private DateTime? _started;
+        private DateTime? _ended;
         private string _duration;
         private string _trigger;
         private bool _manual;
@@ -26,10 +26,11 @@ namespace Sonarr.Api.Results
         public string Message => _message;
         public string Priority => _priority;
         public string Status => _status;
-        public DateTime Queued => _queued.ToLocalTime();
-        public DateTime Started => _started.ToLocalTime();
-        public DateTime Ended => _ended.ToLocalTime();
-        public TimeSpan Duration => TimeSpan.Parse(_duration);
+        public DateTime? Queued => ToLocalTime(_queued);
+        public DateTime? Started => ToLocalTime(_started);
+        public DateTime? Ended => ToLocalTime(_ended);
+        public TimeSpan? Duration =>
+            _duration != null ? (TimeSpan?)TimeSpan.Parse(_duration) : null;
         public string Trigger => _trigger;
         public bool Manual => _manual;
         public bool SendUpdatesToClient => (bool)_body["sendUpdatesToClient"];

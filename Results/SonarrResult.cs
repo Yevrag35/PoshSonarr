@@ -38,6 +38,12 @@ namespace Sonarr.Api.Results
             }
         }
 
+        internal protected DateTime? ToLocalTime(DateTime? dateTime) =>
+            dateTime.HasValue ? (DateTime?)dateTime.Value.ToLocalTime() : null;
+
+        internal protected string ToLocalTime(string stringDate) =>
+            stringDate != null ? DateTime.Parse(stringDate).ToLocalTime().ToString("h:mm tt") : null;
+
         internal protected IList JArrayConvert(JArray jar)
         {
             var list = new List<Dictionary<object, object>>();

@@ -21,7 +21,7 @@ namespace Sonarr.Api.Results
         private long _episodeFileCount;
         private string _status;
         private string _overview;
-        private DateTime _nextAiring;
+        private DateTime? _nextAiring;
         private string _network;
         private string _airTime;
         private JArray _images;
@@ -35,8 +35,8 @@ namespace Sonarr.Api.Results
         private long _runtime;
         private long _tVDBId;
         private long _tVRageId;
-        private DateTime _firstAired;
-        private DateTime _lastInfoSync;
+        private DateTime? _firstAired;
+        private DateTime? _lastInfoSync;
         private string _seriesType;
         private string _cleanTitle;
         private string _iMDBId;
@@ -50,10 +50,10 @@ namespace Sonarr.Api.Results
         public long EpisodeFileCount => _episodeFileCount;
         public string Status => _status;
         public string Overview => _overview;
-        public DateTime NextAiring => _nextAiring.ToLocalTime();
-        public DateTime NextAiringUtc => _nextAiring;
+        public DateTime? NextAiring => ToLocalTime(_nextAiring);
+        public DateTime? NextAiringUtc => _nextAiring;
         public string Network => _network;
-        public string AirTime => _airTime;
+        public string AirTime => ToLocalTime(_airTime);
         public long Year => _year;
         public string Path => _path;
         public long QualityProfileId => _qualityProfileId;
@@ -63,10 +63,10 @@ namespace Sonarr.Api.Results
         public long Runtime => _runtime;
         public long TVDBId => _tVDBId;
         public long TVRageId => _tVRageId;
-        public DateTime FirstAired => _firstAired.ToLocalTime();
-        public DateTime FirstAiredUtc => _firstAired;
-        public DateTime LastInfoSync => _lastInfoSync.ToLocalTime();
-        public DateTime LastInfoSyncUtc => _lastInfoSync;
+        public DateTime? FirstAired => ToLocalTime(_firstAired);
+        public DateTime? FirstAiredUtc => _firstAired ?? null;
+        public DateTime? LastInfoSync => ToLocalTime(_lastInfoSync);
+        public DateTime? LastInfoSyncUtc => _lastInfoSync;
         public string SeriesType => _seriesType;
         public string CleanTitle => _cleanTitle;
         public string IMDBId => _iMDBId;

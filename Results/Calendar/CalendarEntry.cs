@@ -15,7 +15,7 @@ namespace Sonarr.Api.Results
         private long _seasonNumber;
         private long _episodeNumber;
         private string _title;
-        private DateTime _airDateUtc;
+        private DateTime? _airDateUtc;
         private JObject _episodeFile;
         private bool _hasFile;
         private bool _isMonitored;
@@ -30,8 +30,8 @@ namespace Sonarr.Api.Results
         public long SeasonNumber => _seasonNumber;
         public long EpisodeNumber => _episodeNumber;
         public string Title => _title;
-        public DateTime AirDate => _airDateUtc.ToLocalTime();
-        public DateTime AirDateUtc => _airDateUtc;
+        public DateTime? AirDate => ToLocalTime(_airDateUtc);
+        public DateTime? AirDateUtc => _airDateUtc;
         public EpisodeFile EpisodeFile => (EpisodeFile)_episodeFile;
         public bool HasFile => _hasFile;
         public bool IsMonitored => _isMonitored;

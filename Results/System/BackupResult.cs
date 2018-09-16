@@ -9,13 +9,13 @@ namespace Sonarr.Api.Results
         private string _name;
         private string _path;
         private string _type;
-        private DateTime _time;
+        private DateTime? _time;
         private long _id;
 
         public string Name => _name;
         public string Path => _path;
         public string Type => _type;
-        public DateTime Time => _time.ToLocalTime();
+        public DateTime? Time => ToLocalTime(_time);
         public long Id => _id;
 
         private protected BackupResult(IDictionary dict) => MatchResultsToProperties(dict);

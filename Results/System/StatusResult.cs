@@ -22,7 +22,7 @@ namespace Sonarr.Api.Results
         private bool _isMono;
         private bool _isMonoRuntime;
         private bool _isAdmin;
-        private DateTime _buildTime;
+        private DateTime? _buildTime;
         private string _urlBase;
         private bool _isLinux;
         private bool _isWindows;
@@ -43,8 +43,8 @@ namespace Sonarr.Api.Results
         public bool IsMono => _isMono;
         public bool IsMonoRuntime => _isMonoRuntime;
         public bool IsAdmin => _isAdmin;
-        public DateTime BuildTime => _buildTime.ToLocalTime();
-        public DateTime BuildTimeUtc => _buildTime;
+        public DateTime? BuildTime => ToLocalTime(_buildTime);
+        public DateTime? BuildTimeUtc => _buildTime;
         public bool IsLinux => _isLinux;
         public bool IsWindows => _isWindows;
         public Uri UrlBase => string.IsNullOrEmpty(_urlBase) ?
