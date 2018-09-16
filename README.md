@@ -2,10 +2,10 @@
 
 This will eventually be a complete PowerShell module for quickly issuing [Sonarr PVR API](https://github.com/Sonarr/Sonarr/wiki/API) calls.
 
-The module can be found in the 'PoshSonarr' folder and contains 9 commands:
+The module can be found in the [PoshSonarr](https://github.com/Yevrag35/PoshSonarr/tree/master/PoshSonarr) folder and contains 9 commands:
 
 1. Backup-Sonarr -- _\*complete\*_
-1. Connect-Sonarr -- _\*complete\* __(reuqires ApiKey)___
+1. Connect-Sonarr -- _\*complete\* __(requires ApiKey)___
 1. Get-SonarrBackup -- _\*complete\*_
 1. Get-SonarrSeries -- _\*complete\*_
 1. Get-SonarrCalendar -- _\*complete\*_
@@ -16,9 +16,9 @@ The module can be found in the 'PoshSonarr' folder and contains 9 commands:
 
 ## What I'm working on...
 
-Currently, I'm making the framework for each api endpoint.  I believe I have the API calling class squared away.  Once the framework of the code is complete, then can begin the writing of a PowerShell module.
+Currently, I'm making the framework for each api endpoint.  I believe I have the API calling class squared away.  ~~Once the framework of the code is complete, then can begin the writing of a PowerShell module.~~  The framework is built, and the making of cmdlets has begun.
 
-The following 'object' results have been __created__.  While their commands and endpoints are still in progress, the result object is finished:
+The following 'object' results have been __created__.  While their commands and endpoints are still in progress, the corresponding object has been finished:
 
 * Season -- _available from 'Series'_
   * SeasonStatistics
