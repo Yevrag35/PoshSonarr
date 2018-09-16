@@ -12,7 +12,6 @@ namespace Sonarr.Api.Cmdlets
     {
         public abstract SonarrCommand Command { get; }
         public abstract SonarrMethod Method { get; }
-        public ApiResult result;
 
         internal bool _wait;
         [Parameter(Mandatory = false)]

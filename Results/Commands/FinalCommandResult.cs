@@ -26,9 +26,9 @@ namespace Sonarr.Api.Results
         public string Message => _message;
         public string Priority => _priority;
         public string Status => _status;
-        public DateTime Queued => _queued;
-        public DateTime Started => _started;
-        public DateTime Ended => _ended;
+        public DateTime Queued => _queued.ToLocalTime();
+        public DateTime Started => _started.ToLocalTime();
+        public DateTime Ended => _ended.ToLocalTime();
         public TimeSpan Duration => TimeSpan.Parse(_duration);
         public string Trigger => _trigger;
         public bool Manual => _manual;

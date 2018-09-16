@@ -1,24 +1,21 @@
-﻿using Sonarr.Api.Endpoints;
+﻿using MG.Api;
+using Sonarr.Api.Endpoints;
+using Sonarr.Api.Enums;
 using Sonarr.Api.Results;
 using System;
 using System.Management.Automation;
 
 namespace Sonarr.Api.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Get, "SonarrCalendar", ConfirmImpact = ConfirmImpact.None)]
-    [OutputType(typeof(CalendarEntry))]
-    public class GetSonarrCalendar : BaseCmdlet
+    [Cmdlet(VerbsLifecycle.Start, "SonarrRssSync")]
+    public class StartSonarrRssSync : BaseCommandCmdlet
     {
-        [Parameter(Mandatory = false, Position = 0)]
-        public DateTime? Start = null;
-
-        [Parameter(Mandatory = false, Position = 1)]
-        public DateTime? End = null;
+        public override SonarrCommand Command => SonarrCommand.RssSync;
+        public override SonarrMethod Method => SonarrMethod.POST;
 
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-
             if (!SonarrServiceContext.IsSet)
                 throw new SonarrContextNotSetException("  Run the 'Connect-Sonarr' cmdlet first.");
 
@@ -28,10 +25,9 @@ namespace Sonarr.Api.Cmdlets
         protected override void ProcessRecord()
         {
             base.ProcessRecord();
-            var cal = new Calendar(Start, End);
+            result = ApplyCommandToAll();
 
-            var result = Api.Send(cal);
-            PipeBack<CalendarEntry>(result);
+            PipeBackResult(result);
         }
     }
 }

@@ -10,7 +10,6 @@ namespace Sonarr.Api.Cmdlets
     [Cmdlet(VerbsLifecycle.Start, "SonarrRescan", SupportsShouldProcess = true,
         DefaultParameterSetName = "ByPipeline")]
     [CmdletBinding(PositionalBinding = false)]
-    [OutputType(typeof(CommandResult))]
     public class StartSonarrRescan : BaseCommandCmdlet
     {
         public override SonarrCommand Command => SonarrCommand.RescanSeries;
@@ -67,7 +66,7 @@ namespace Sonarr.Api.Cmdlets
                     result = ApplyCommandToOne(new object[2] { "seriesId", SeriesId });
                     break;
             }
-            PipeBack<CommandResult>(result);
+            PipeBackResult(result);
         }
     }
 }

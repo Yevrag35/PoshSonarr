@@ -7,6 +7,7 @@ namespace Sonarr.Api.Cmdlets
     public abstract class BaseCmdlet : PSCmdlet
     {
         public ApiCaller Api { get; set; }
+        public ApiResult result;
 
         public void PipeBack<T>(ApiResult result, params string[] filters)
         {

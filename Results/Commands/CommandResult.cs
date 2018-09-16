@@ -13,7 +13,7 @@ namespace Sonarr.Api.Results
         private long _id;
 
         public string Name => _name;
-        public DateTime StartedOn => _startedOn;
+        public DateTime StartedOn => _startedOn.ToLocalTime();
         public bool SendUpdatesToClient => _sendUpdatesToClient;
         public string State => _state;
         public long Id => _id;

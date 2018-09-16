@@ -34,11 +34,11 @@
   <ItemGroup>
     <Reference Include="MG.Api, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>ReferenceAssemblies\MG.Api.dll</HintPath>
+      <HintPath>PoshSonarr\MG.Api.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>ReferenceAssemblies\Newtonsoft.Json.dll</HintPath>
+      <HintPath>PoshSonarr\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -54,16 +54,22 @@
     <Compile Include="Cmdlets\Base\BaseCmdlet.cs" />
     <Compile Include="Cmdlets\Base\BaseCommandCmdlet.cs" />
     <Compile Include="Cmdlets\ConnectSonarr.cs" />
+    <Compile Include="Cmdlets\GetSonarrBackup.cs" />
     <Compile Include="Cmdlets\GetSonarrCalendar.cs" />
     <Compile Include="Cmdlets\GetSonarrSeries.cs" />
-    <Compile Include="Cmdlets\InvokeSonarrBackup.cs" />
+    <Compile Include="Cmdlets\GetSonarrStatus.cs" />
+    <Compile Include="Cmdlets\BackupSonarr.cs" />
     <Compile Include="Cmdlets\StartSonarrRefresh.cs" />
     <Compile Include="Cmdlets\StartSonarrRescan.cs" />
+    <Compile Include="Cmdlets\StartSonarrRssSync.cs" />
     <Compile Include="Components\Exceptions.cs" />
     <Compile Include="Components\SonarrServiceContext.cs" />
     <Compile Include="Endpoints\Command.cs" />
     <Compile Include="Endpoints\ISonarrEndpoint.cs" />
     <Compile Include="Components\ApiCaller.cs" />
+    <Compile Include="Endpoints\System-Backup.cs" />
+    <Compile Include="Endpoints\System-Status.cs" />
+    <Compile Include="Enums\BackupType.cs" />
     <Compile Include="Enums\Commands.cs" />
     <Compile Include="Results\Calendar\CalendarEntry.cs" />
     <Compile Include="Results\Commands\CommandResult.cs" />
@@ -74,6 +80,8 @@
     <Compile Include="Results\Season\SeasonStatistics.cs" />
     <Compile Include="Results\Series\SonarrSeriesImage.cs" />
     <Compile Include="Results\Series\SeriesResult.cs" />
+    <Compile Include="Results\System\BackupResult.cs" />
+    <Compile Include="Results\System\StatusResult.cs" />
     <None Include="Generic\Parameter.cs" />
     <Compile Include="Endpoints\Parse.cs" />
     <Compile Include="Endpoints\Series.cs" />
@@ -83,12 +91,18 @@
     <Compile Include="Components\ApiKey.cs" />
     <Compile Include="Endpoints\Calendar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="PoshSonarr\PoshSonarr.psd1" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ReferenceAssemblies\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Generic\ParameterCollection.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="PoshSonarr\MG.Api.dll" />
+    <Content Include="PoshSonarr\Newtonsoft.Json.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

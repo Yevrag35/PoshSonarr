@@ -1,15 +1,18 @@
 # PoshSonarr
 
-This will eventually be a PowerShell module for quickly issuing [Sonarr PVR API](https://github.com/Sonarr/Sonarr/wiki/API) calls.
+This will eventually be a complete PowerShell module for quickly issuing [Sonarr PVR API](https://github.com/Sonarr/Sonarr/wiki/API) calls.
 
-The project can now be built into a '.dll' module, and 6 commands are available:
+The module can be found in the 'PoshSonarr' folder and contains 9 commands:
 
-1. Backup-Sonarr -- _*complete*_
-1. Connect-Sonarr _*complete* __(reuqires ApiKey)___
-1. Get-SonarrSeries -- _*complete*_
-1. Get-SonarrCalendar -- _*complete*_
-1. Start-SonarrRefresh -- _*complete*_
-1. Start-SonarrRescan -- _*complete*_
+1. Backup-Sonarr -- _\*complete\*_
+1. Connect-Sonarr -- _\*complete\* __(reuqires ApiKey)___
+1. Get-SonarrBackup -- _\*complete\*_
+1. Get-SonarrSeries -- _\*complete\*_
+1. Get-SonarrCalendar -- _\*complete\*_
+1. Get-SonarrStatus -- _\*complete\*_
+1. Start-SonarrRefresh -- _\*complete\*_
+1. Start-SonarrRescan -- _\*complete\*_
+1. Start-SonarrRssSync -- _\*complete\*_
 
 ## What I'm working on...
 
@@ -34,7 +37,7 @@ _* Striken text signifies completion. *_
   * SeasonSearch
   * SeriesSearch
   * DownloadedEpisodesScan
-  * RssSync
+  * ~~RssSync~~
   * RenameFiles
   * RenameSeries
   * ~~Backup~~
@@ -52,5 +55,5 @@ _* Striken text signifies completion. *_
 * Rootfolder
 * ~~Series~~
 * Series Lookup
-* System-Status
-* System-Backup
+* ~~System-Status~~
+* ~~System-Backup~~

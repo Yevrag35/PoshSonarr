@@ -8,9 +8,16 @@ namespace Sonarr
     {
         internal static ApiUrl Value { get; set; }
         internal static ApiKey ApiKey { get; set; }
-
         internal static bool IsSet => Value != null && ApiKey != null;
 
         internal static ApiResult SonarrSeries { get; set; }
+        internal static bool HasSeries => SonarrSeries != null;
+
+        internal static void Clear()
+        {
+            Value = null;
+            ApiKey = null;
+            SonarrSeries = null;
+        }
     }
 }

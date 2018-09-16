@@ -30,6 +30,7 @@ namespace Sonarr.Api.Results
         public long SeasonNumber => _seasonNumber;
         public long EpisodeNumber => _episodeNumber;
         public string Title => _title;
+        public DateTime AirDate => _airDateUtc.ToLocalTime();
         public DateTime AirDateUtc => _airDateUtc;
         public EpisodeFile EpisodeFile => (EpisodeFile)_episodeFile;
         public bool HasFile => _hasFile;

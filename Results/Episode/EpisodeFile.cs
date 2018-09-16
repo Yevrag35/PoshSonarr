@@ -25,7 +25,8 @@ namespace Sonarr.Api.Results
         public string RelativePath => _relativePath;
         public string Path => _path;
         public long Size => _size;
-        public DateTime DateAdded => _dateAdded;
+        public DateTime DateAdded => _dateAdded.ToLocalTime();
+        public DateTime DateAddedUtc => _dateAdded;
         public string SceneName => _sceneName;
         public EpisodeQuality Quality => (EpisodeQuality)_quality;
         public MediaInfo MediaInfo => (MediaInfo)_mediaInfo;

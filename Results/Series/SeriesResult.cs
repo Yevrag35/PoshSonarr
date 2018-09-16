@@ -50,7 +50,8 @@ namespace Sonarr.Api.Results
         public long EpisodeFileCount => _episodeFileCount;
         public string Status => _status;
         public string Overview => _overview;
-        public DateTime NextAiring => _nextAiring;
+        public DateTime NextAiring => _nextAiring.ToLocalTime();
+        public DateTime NextAiringUtc => _nextAiring;
         public string Network => _network;
         public string AirTime => _airTime;
         public long Year => _year;
@@ -62,8 +63,10 @@ namespace Sonarr.Api.Results
         public long Runtime => _runtime;
         public long TVDBId => _tVDBId;
         public long TVRageId => _tVRageId;
-        public DateTime FirstAired => _firstAired;
-        public DateTime LastInfoSync => _lastInfoSync;
+        public DateTime FirstAired => _firstAired.ToLocalTime();
+        public DateTime FirstAiredUtc => _firstAired;
+        public DateTime LastInfoSync => _lastInfoSync.ToLocalTime();
+        public DateTime LastInfoSyncUtc => _lastInfoSync;
         public string SeriesType => _seriesType;
         public string CleanTitle => _cleanTitle;
         public string IMDBId => _iMDBId;
