@@ -9,6 +9,14 @@ namespace Sonarr.Api.Cmdlets
         public ApiCaller Api { get; set; }
         public ApiResult result;
 
+        protected override void BeginProcessing()
+        {
+            base.BeginProcessing();
+            if (!SonarrServiceContext.IsSet)
+                throw new SonarrContextNotSetException("  Run the 'Connect-Sonarr' cmdlet first.");
+            Api = new ApiCaller(SonarrServiceContext.Value);
+        }
+
         public void PipeBack<T>(ApiResult result, params string[] filters)
         {
             for (int i = 0; i < result.Count; i++)

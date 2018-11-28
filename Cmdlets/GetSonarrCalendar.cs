@@ -15,15 +15,7 @@ namespace Sonarr.Api.Cmdlets
         [Parameter(Mandatory = false, Position = 1)]
         public DateTime? End = null;
 
-        protected override void BeginProcessing()
-        {
-            base.BeginProcessing();
-
-            if (!SonarrServiceContext.IsSet)
-                throw new SonarrContextNotSetException("  Run the 'Connect-Sonarr' cmdlet first.");
-
-            Api = new ApiCaller(SonarrServiceContext.Value);
-        }
+        protected override void BeginProcessing() => base.BeginProcessing();
 
         protected override void ProcessRecord()
         {

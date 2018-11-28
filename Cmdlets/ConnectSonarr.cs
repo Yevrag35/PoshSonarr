@@ -35,7 +35,6 @@ namespace Sonarr.Api.Cmdlets
 
         protected override void BeginProcessing()
         {
-            base.BeginProcessing();
             switch (ParameterSetName)
             {
                 case "ByUrl":

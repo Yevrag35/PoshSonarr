@@ -20,7 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -29,16 +29,15 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MG.Api, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>PoshSonarr\MG.Api.dll</HintPath>
+      <HintPath>ReferenceAssemblies\MG.Api.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>PoshSonarr\Newtonsoft.Json.dll</HintPath>
+      <HintPath>packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -56,6 +55,7 @@
     <Compile Include="Cmdlets\ConnectSonarr.cs" />
     <Compile Include="Cmdlets\GetSonarrBackup.cs" />
     <Compile Include="Cmdlets\GetSonarrCalendar.cs" />
+    <Compile Include="Cmdlets\GetSonarrEpisode.cs" />
     <Compile Include="Cmdlets\GetSonarrSeries.cs" />
     <Compile Include="Cmdlets\GetSonarrStatus.cs" />
     <Compile Include="Cmdlets\BackupSonarr.cs" />
@@ -74,6 +74,7 @@
     <Compile Include="Results\Calendar\CalendarEntry.cs" />
     <Compile Include="Results\Commands\CommandResult.cs" />
     <Compile Include="Results\Commands\FinalCommandResult.cs" />
+    <Compile Include="Results\Episode\Episode.cs" />
     <Compile Include="Results\Episode\EpisodeFile.cs" />
     <Compile Include="Results\Episode\EpisodeQuality.cs" />
     <Compile Include="Results\Episode\MediaInfo.cs" />
@@ -82,6 +83,10 @@
     <Compile Include="Results\Series\SeriesResult.cs" />
     <Compile Include="Results\System\BackupResult.cs" />
     <Compile Include="Results\System\StatusResult.cs" />
+    <Content Include="DebugScript.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="GenerateManifest.ps1" />
     <None Include="Generic\Parameter.cs" />
     <Compile Include="Endpoints\Parse.cs" />
     <Compile Include="Endpoints\Series.cs" />
@@ -91,8 +96,11 @@
     <Compile Include="Components\ApiKey.cs" />
     <Compile Include="Endpoints\Calendar.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="packages.config" />
     <None Include="PoshSonarr\PoshSonarr.psd1" />
     <None Include="README.md" />
+    <None Include="TypeFormats\CalendarEntry.ps1xml" />
+    <None Include="TypeFormats\StatusResult.ps1xml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ReferenceAssemblies\" />
@@ -105,4 +113,7 @@
     <Content Include="PoshSonarr\Newtonsoft.Json.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -NonInteractive -WindowStyle Hidden -File "$(ProjectDir)GenerateManifest.ps1" -DebugDirectory "$(ProjectDir)bin\$(ConfigurationName)" -AssemblyInfo "$(ProjectDir)Properties\AssemblyInfo.cs" -TargetFileName "$(TargetFileName)"</PreBuildEvent>
+  </PropertyGroup>
 </Project>

@@ -21,6 +21,8 @@ namespace Sonarr.Api.Cmdlets
             set => _wait = value;
         }
 
+        protected override void BeginProcessing() => base.BeginProcessing();
+
         public ApiResult ApplyCommandToAll()
         {
             var rp = new RequestParameters();

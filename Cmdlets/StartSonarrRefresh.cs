@@ -33,15 +33,7 @@ namespace Sonarr.Api.Cmdlets
             set => _force = value;
         }
 
-        protected override void BeginProcessing()
-        {
-            base.BeginProcessing();
-
-            if (!SonarrServiceContext.IsSet)
-                throw new SonarrContextNotSetException("  Run the 'Connect-Sonarr' cmdlet first.");
-
-            Api = new ApiCaller(SonarrServiceContext.Value);
-        }
+        protected override void BeginProcessing() => base.BeginProcessing();
 
         protected override void ProcessRecord()
         {
