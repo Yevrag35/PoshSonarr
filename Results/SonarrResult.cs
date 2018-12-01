@@ -56,6 +56,8 @@ namespace Sonarr.Api.Results
             return list;
         }
 
-        internal protected T Cast<T>(object o) => (T)o;
+        internal protected T Cast<T>(dynamic o) => (T)o;
+
+        public string ToJson() => JsonConvert.SerializeObject(this, Formatting.Indented);
     }
 }

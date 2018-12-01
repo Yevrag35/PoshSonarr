@@ -10,10 +10,10 @@ namespace Sonarr.Api.Results
     {
         #region Private Properties
         private long? _absoluteEpisodeNumber;
-        private DateTime? _airDate;
+        //private string _airDate;
         private DateTime? _airDateUtc;
         private EpisodeFile _episodeFile;
-        private long _episodeFileId;
+        //private long? _episodeFileId;
         private long? _episodeNumber;
         private bool _hasFile;
         private long _id;
@@ -22,7 +22,7 @@ namespace Sonarr.Api.Results
         private long? _sceneEpisodeNumber;
         private long? _sceneSeasonNumber;
         private long? _seasonNumber;
-        private SeriesResult _series;
+        //private SeriesResult _series;
         private long _seriesId;
         private string _title;
         private bool _unverifiedSceneNumbering;
@@ -32,10 +32,10 @@ namespace Sonarr.Api.Results
         #region Public Properties
 
         public long? AbsoluteEpisodeNumber => _absoluteEpisodeNumber;
-        public DateTime? AirDate => _airDate;
+        public DateTime? AirDate => _airDateUtc.HasValue ? _airDateUtc.Value.ToLocalTime() : (DateTime?)null;
         public DateTime? AirDateUtc => _airDateUtc;
         public EpisodeFile EpisodeFile => _episodeFile;
-        public long EpisodeFileId => _episodeFileId;
+        public long? EpisodeFileId => _episodeFile != null ? _episodeFile.Id : (long?)null;
         public long? EpisodeNumber => _episodeNumber;
         public bool HasFile => _hasFile;
         public long Id => _id;
@@ -44,7 +44,7 @@ namespace Sonarr.Api.Results
         public long? SceneEpisodeNumber => _sceneEpisodeNumber;
         public long? SceneSeasonNumber => _sceneSeasonNumber;
         public long? SeasonNumber => _seasonNumber;
-        public SeriesResult Series => _series;
+        //public SeriesResult Series => _series;
         public long SeriesId => _seriesId;
         public string Title => _title;
         public bool UnverifiedSceneNumbering => _unverifiedSceneNumbering;

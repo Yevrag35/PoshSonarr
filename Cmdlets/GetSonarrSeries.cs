@@ -15,16 +15,17 @@ namespace Sonarr.Api.Cmdlets
     public class GetSonarrSeries : BaseCmdlet
     {
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesTitle")]
-        [Alias("st", "Title")]
-        public string SeriesTitle { get; set; }
+        [SupportsWildcards()]
+        [Alias("st", "Title", "Name")]
+        public string SeriesName { get; set; }
 
-        private bool _ex;
-        [Parameter(Mandatory = false, ParameterSetName = "BySeriesTitle")]
-        public SwitchParameter Exact
-        {
-            get => _ex;
-            set => _ex = value;
-        }
+        //private bool _ex;
+        //[Parameter(Mandatory = false, ParameterSetName = "BySeriesTitle")]
+        //public SwitchParameter Exact
+        //{
+        //    get => _ex;
+        //    set => _ex = value;
+        //}
 
         [Parameter(Mandatory = false, ParameterSetName = "BySeriesId")]
         public int? SeriesId { get; set; }
@@ -46,19 +47,9 @@ namespace Sonarr.Api.Cmdlets
                 SonarrServiceContext.SonarrSeries = GetAllSeries(series);
             }
 
-            if (!string.IsNullOrEmpty(SeriesTitle))
+            if (!string.IsNullOrEmpty(SeriesName))
             {
-                for (int i = 0; i < SonarrServiceContext.SonarrSeries.Count; i++)
-                {
-                    IDictionary d = SonarrServiceContext.SonarrSeries[i];
-                    string tit = (string)d["title"];
-                    if (!_ex && tit.IndexOf(SeriesTitle, StringComparison.OrdinalIgnoreCase) >= 0 ||
-                        _ex && tit.Equals(SeriesTitle, StringComparison.OrdinalIgnoreCase))
-                    {
-                        var sr = new SeriesResult(d);
-                        WriteObject(sr);
-                    }
-                }
+                WriteObject(SearchFor(SeriesName), true);
             }
             else
             {
@@ -66,7 +57,24 @@ namespace Sonarr.Api.Cmdlets
             }
         }
 
-        private ApiResult GetAllSeries(Series ep)
+        private protected SeriesResult[] SearchFor(string seriesName)
+        {
+            var pattern = new WildcardPattern(seriesName, WildcardOptions.IgnoreCase);
+            var list = new List<SeriesResult>();
+
+            for (int i = 0; i < SonarrServiceContext.SonarrSeries.Count; i++)
+            {
+                IDictionary d = SonarrServiceContext.SonarrSeries[i];
+                string tit = (string)d["title"];
+                if (pattern.IsMatch(tit))
+                {
+                    list.Add(new SeriesResult(d));
+                }
+            }
+            return list.ToArray();
+        }
+
+        private protected ApiResult GetAllSeries(Series ep)
         {
             return Api.Send(ep);
         }

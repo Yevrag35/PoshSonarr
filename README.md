@@ -7,12 +7,15 @@ The module can be found in the [PoshSonarr](https://github.com/Yevrag35/PoshSona
 1. Backup-Sonarr -- _\*complete\*_
 1. Connect-Sonarr -- _\*complete\* __(requires ApiKey)___
 1. Get-SonarrBackup -- _\*complete\*_
+1. Get-SonarrEpisode -- _\*complete\*_
 1. Get-SonarrSeries -- _\*complete\*_
 1. Get-SonarrCalendar -- _\*complete\*_
 1. Get-SonarrStatus -- _\*complete\*_
+1. Get-SonarrWantedMissing -- _\*complete\*_
 1. Start-SonarrRefresh -- _\*complete\*_
 1. Start-SonarrRescan -- _\*complete\*_
 1. Start-SonarrRssSync -- _\*complete\*_
+1. Update-SonarrEpisode --  _\*not compiled\*_
 
 ## What I'm working on...
 
@@ -22,7 +25,7 @@ The following 'object' results have been __created__.  While their commands and 
 
 * Season -- _available from 'Series'_
   * SeasonStatistics
-* EpisodeFile -- _available from 'CalendarEntry'_
+* EpisodeFile -- _available from 'Episode' and 'CalendarEntry'_
   * EpisodeQuality
   * MediaInfo
 
@@ -42,11 +45,11 @@ _* Striken text signifies completion. *_
   * RenameSeries
   * ~~Backup~~
 * Diskspace
-* Episode
+* ~~Episode~~
 * EpisodeFile  -- _(object is done)_
 * History
 * Images       -- _(object is done)_
-* Wanted-Missing
+* ~~Wanted-Missing~~
 * Queue
 * Parse
 * Profile
