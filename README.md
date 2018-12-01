@@ -2,7 +2,7 @@
 
 This will eventually be a complete PowerShell module for quickly issuing [Sonarr PVR API](https://github.com/Sonarr/Sonarr/wiki/API) calls.
 
-The module can be found in the [PoshSonarr](https://github.com/Yevrag35/PoshSonarr/tree/master/PoshSonarr) folder and contains 9 commands:
+The module can be found in the [PoshSonarr](https://github.com/Yevrag35/PoshSonarr/tree/master/PoshSonarr) folder and contains 11 commands:
 
 1. Backup-Sonarr -- _\*complete\*_
 1. Connect-Sonarr -- _\*complete\* __(requires ApiKey)___
