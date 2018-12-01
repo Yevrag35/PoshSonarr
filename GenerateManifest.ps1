@@ -54,7 +54,7 @@ $manifest = @{
     VariablesToExport  = ''
 	ProjectUri         = 'https://github.com/Yevrag35/PoshSonarr'
 	Tags               = @('Sonarr', 'PVR', 'Api', 'Manage', 'Website', 'Newtonsoft', 'Json', 'dll',
-							'Backup', 'Series', 'Episode', ' Rss', 'Sync', 'Calendar', 'Refresh', 'Rescan',
+							'Backup', 'Series', 'Episode', 'Rss', 'Sync', 'Calendar', 'Refresh', 'Rescan',
 							'Status', 'Connect')
 };
 
