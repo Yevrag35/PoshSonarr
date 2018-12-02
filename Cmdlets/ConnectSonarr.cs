@@ -33,6 +33,14 @@ namespace Sonarr.Api.Cmdlets
             set => _ssl = value;
         }
 
+        private bool _nopre;
+        [Parameter(Mandatory = false)]
+        public SwitchParameter NoApiPrefix
+        {
+            get => _nopre;
+            set => _nopre = value;
+        }
+
         protected override void BeginProcessing()
         {
             switch (ParameterSetName)
@@ -60,6 +68,7 @@ namespace Sonarr.Api.Cmdlets
 
             SonarrServiceContext.Value = Url;
             SonarrServiceContext.ApiKey = ApiKey;
+            SonarrServiceContext.NoApiPrefix = _nopre;
 
             Api = new ApiCaller(SonarrServiceContext.Value);
 

@@ -17,6 +17,7 @@ namespace Sonarr.Api
         private const string _ct = "application/json";
         private readonly string _base;
         public string BaseUrl => _base;
+        public bool NoApiPrefix => SonarrServiceContext.NoApiPrefix;
 
         #endregion
 
@@ -52,6 +53,9 @@ namespace Sonarr.Api
             reqProps.Add("Headers", key.AsSonarrHeader());
             reqProps.Add("ContentType", _ct);
             var full = _base + endpoint.Value;
+            if (NoApiPrefix)
+                full = full.Replace("/api", string.Empty);
+
             return ReturnWebRequest(full, reqProps, jsonBody);
         }
 
@@ -71,6 +75,9 @@ namespace Sonarr.Api
             reqProps.Add("Headers", key.AsSonarrHeader());
             reqProps.Add("ContentType", _ct);
             var full = _base + endpoint.Value;
+            if (NoApiPrefix)
+                full = full.Replace("/api", string.Empty);
+
             return ReturnWebRequest(full, reqProps, jsonBody);
         }
 
