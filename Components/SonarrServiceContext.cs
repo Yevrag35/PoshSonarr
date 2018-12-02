@@ -12,6 +12,7 @@ namespace Sonarr
 
         internal static ApiResult SonarrSeries { get; set; }
         internal static bool HasSeries => SonarrSeries != null;
+        internal static bool NoApiPrefix { get; set; }
 
         internal static void Clear()
         {
