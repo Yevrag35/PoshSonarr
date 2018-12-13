@@ -10,10 +10,10 @@ namespace Sonarr.Api.Endpoints
     {
         private protected const string _ep = "/api/command";
         private readonly string _full;
-        private readonly RequestParameters _rp;
+        //private readonly RequestParameters _rp;
         public string Value => _full;
 
-        public RequestParameters RequestBody => _rp;
+        //public RequestParameters RequestBody => _rp;
 
         public Uri RelativeEndpoint => new Uri(_ep, UriKind.Relative);
         public SonarrMethod[] MethodsAllowed =>

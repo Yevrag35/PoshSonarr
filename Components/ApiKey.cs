@@ -10,13 +10,13 @@ using System.Text.RegularExpressions;
 
 namespace Sonarr.Api
 {
-    public class ApiKey : ApiString
+    public class ApiKey
     {
         #region Constants and Properties
         private readonly string _key;
         private protected const int _keyLength = 32;
         private protected const string _regExp = @"^(?:[0-9]|[a-z]){32}$";
-        public override string Value => _key;
+        public string Value => _key;
 
         #endregion
 

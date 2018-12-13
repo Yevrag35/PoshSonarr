@@ -6,24 +6,24 @@ namespace Sonarr.Api.Results
 {
     public class BackupResult : SonarrResult
     {
-        private string _name;
-        private string _path;
-        private string _type;
-        private DateTime? _time;
-        private long _id;
+        //private string _name;
+        //private string _path;
+        //private string _type;
+        //private DateTime? _time;
+        //private long _id;
 
-        public string Name => _name;
-        public string Path => _path;
-        public string Type => _type;
-        public DateTime? Time => ToLocalTime(_time);
-        public long Id => _id;
+        public string Name { get; internal set; }
+        public string Path { get; internal set; }
+        public string Type { get; internal set; }
+        public DateTime? Time { get; internal set; }
+        public long Id { get; internal set; }
 
-        private protected BackupResult(IDictionary dict) => MatchResultsToProperties(dict);
+        //private protected BackupResult(IDictionary dict) => MatchResultsToProperties(dict);
 
-        public static explicit operator BackupResult(Dictionary<object, object> dict) =>
-            new BackupResult(dict);
+        //public static explicit operator BackupResult(Dictionary<object, object> dict) =>
+        //    new BackupResult(dict);
 
-        public static explicit operator BackupResult(Dictionary<string, object> dict) =>
-            new BackupResult(dict);
+        //public static explicit operator BackupResult(Dictionary<string, object> dict) =>
+        //    new BackupResult(dict);
     }
 }
