@@ -22,9 +22,7 @@ namespace Sonarr.Api.Endpoints
 
         #endregion
 
-
-
-        public IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
-        IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
+        //public IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
+        //IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
     }
 }

@@ -8,22 +8,15 @@ namespace Sonarr.Api.Results
 {
     public class SonarrSeason : SonarrResult
     {
-        //private readonly bool _m;
-        //private readonly long _s;
-        //private readonly JObject _stats;
+        internal override string[] SkipThese => new string[1] { "Statistics" };
 
         public bool IsMonitored { get; internal set; }
         public long SeasonNumber { get; internal set; }
         public SeasonStatistics Statistics { get; internal set; }
 
-        //internal protected SonarrSeason(JObject job)
-        //      {
-        //          _m = (bool)job["monitored"];
-        //          _s = (long)job["seasonNumber"];
-        //          _stats = (JObject)job["statistics"];
-        //      }
+        public SonarrSeason() : base() { }
 
-        //      public static explicit operator SonarrSeason(JObject job) =>
-        //          job != null ? new SonarrSeason(job) : null;
+        public static explicit operator SonarrSeason(JObject job) =>
+            FromJObject<SonarrSeason>(job);
     }
 }

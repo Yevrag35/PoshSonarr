@@ -8,13 +8,10 @@ namespace Sonarr.Api.Results
 {
     public class SeasonStatistics : SonarrResult
     {
-        //#pragma warning disable IDE0044 // Add readonly modifier
-        //        private long _episodeCount;
-        //        private long _episodeFileCount;
-        //        private long _percentOfEpisodes;
-        //        private long _sizeOnDisk;
-        //        private long _totalEpisodeCount;
-        //#pragma warning restore IDE0044 // Add readonly modifier
+        internal override string[] SkipThese => new string[1]
+        {
+            "SizeOnDisk"
+        };
 
         public long EpisodeCount { get; internal set; }
         public long EpisodeFileCount { get; internal set; }
@@ -30,19 +27,9 @@ namespace Sonarr.Api.Results
         //    }
         //}
 
-        //internal protected SeasonStatistics(JObject job)
-        //{
-        //    if (job != null)
-        //    { 
-        //        _episodeCount = (long)job["episodeCount"];
-        //        _episodeFileCount = (long)job["episodeFileCount"];
-        //        _percentOfEpisodes = (long)job["percentOfEpisodes"];
-        //        _sizeOnDisk = (long)job["sizeOnDisk"];
-        //        _totalEpisodeCount = (long)job["totalEpisodeCount"];
-        //    }
-        //}
+        public SeasonStatistics() : base() { }
 
-        //public static explicit operator SeasonStatistics(JObject job) => 
-        //    job != null ? new SeasonStatistics(job) : null;
+        public static explicit operator SeasonStatistics(JObject job) =>
+            FromJObject<SeasonStatistics>(job);
     }
 }

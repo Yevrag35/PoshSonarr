@@ -11,38 +11,15 @@ namespace Sonarr.Api.Results
     public class SeriesResult : SonarrResult    // represents 1 series only...
     {
         #region Properties/Fields/Constants
+
         private SonarrSeriesImage[] _imgList;
         private SonarrSeason[] _seasonList;
 
-        //#pragma warning disable IDE0044 // Add readonly modifier
-        //        private string _title;
-        //        private long _seasonCount;
-        //        private long _episodeCount;
-        //        private long _episodeFileCount;
-        //        private string _status;
-        //        private string _overview;
-        //        private DateTime? _nextAiring;
-        //        private string _network;
-        //        private string _airTime;
-        //        private JArray _images;
-        //        private JArray _seasons;
-        //        private long _year;
-        //        private string _path;
-        //        private long _qualityProfileId;
-        //        private bool _seasonFolder;
-        //        private bool _monitored;
-        //        private bool _useSceneNumbering;
-        //        private long _runtime;
-        //        private long _tVDBId;
-        //        private long _tVRageId;
-        //        private DateTime? _firstAired;
-        //        private DateTime? _lastInfoSync;
-        //        private string _seriesType;
-        //        private string _cleanTitle;
-        //        private string _iMDBId;
-        //        private string _titleSlug;
-        //        private long _id;
-        //#pragma warning restore IDE0044 // Add readonly modifier
+        internal override string[] SkipThese => new string[2]
+        {
+            "Images",
+            "Seasons"
+        };
 
         public string Title { get; internal set; }
         public long SeasonCount { get; internal set; }
@@ -99,30 +76,21 @@ namespace Sonarr.Api.Results
 
         #endregion
 
-        //#region Constructors
-        //public SeriesResult(IDictionary series) => MatchResultsToProperties(series);
+        #region Constructors
 
-        //public static explicit operator SeriesResult(JObject job)
-        //{
-        //    if (job != null)
-        //    {
-        //        var dict = JsonConvert.DeserializeObject<Dictionary<object, object>>(JsonConvert.SerializeObject(job));
-        //        return new SeriesResult(dict);
-        //    }
-        //    else
-        //    {
-        //        return null;
-        //    }
-        //}
+        public SeriesResult() : base() { }
 
-        //public static explicit operator SeriesResult(Dictionary<object, object> dict) =>
-        //    new SeriesResult(dict);
-        //public static explicit operator SeriesResult(Dictionary<string, object> dict) =>
-        //    new SeriesResult(dict);
-        //#endregion
+        #endregion
 
-        //#region Private Methods
-        //private protected SonarrSeriesImage[] ParseImages(JArray jar)
+        #region Operators
+
+        public static explicit operator SeriesResult(JObject job) =>
+            FromJObject<SeriesResult>(job);
+
+        #endregion
+
+        #region Private Methods
+        //private SonarrSeriesImage[] ParseImages(JArray jar)
         //{
         //    if (jar != null)
         //    {
@@ -160,6 +128,6 @@ namespace Sonarr.Api.Results
         //    }
         //}
 
-        //#endregion
+        #endregion
     }
 }

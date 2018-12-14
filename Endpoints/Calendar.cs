@@ -1,7 +1,5 @@
-﻿using MG.Api;
-using Sonarr.Api.Enums;
+﻿using Sonarr.Api.Enums;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Sonarr.Api.Endpoints
@@ -38,7 +36,7 @@ namespace Sonarr.Api.Endpoints
 
         public static implicit operator string(Calendar cal) => cal.Value;
 
-        IEnumerator<string> IEnumerable<string>.GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
+        //IEnumerator<string> IEnumerable<string>.GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
+        //IEnumerator IEnumerable.GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
     }
 }

@@ -1,79 +1,63 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Sonarr.Api.Components;
+using Sonarr.Api.Endpoints;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sonarr.Api.Results
 {
     public class Episode : SonarrResult
     {
-        #region Private Properties
-        //private long? _absoluteEpisodeNumber;
-        ////private string _airDate;
-        //private DateTime? _airDateUtc;
-        //private EpisodeFile _episodeFile;
-        ////private long? _episodeFileId;
-        //private long? _episodeNumber;
-        //private bool _hasFile;
-        //private long _id;
-        //private bool _monitored;
-        //private long? _sceneAbsoluteEpisodeNumber;
-        //private long? _sceneEpisodeNumber;
-        //private long? _sceneSeasonNumber;
-        //private long? _seasonNumber;
-        ////private SeriesResult _series;
-        //private long _seriesId;
-        //private string _title;
-        //private bool _unverifiedSceneNumbering;
-
-        #endregion
+        internal override string[] SkipThese => new string[1] { "Series" };
 
         #region Public Properties
 
-        public long? AbsoluteEpisodeNumber { get; internal set; }
+        public int? AbsoluteEpisodeNumber { get; internal set; }
         public DateTime? AirDate { get; internal set; }
         public DateTime? AirDateUtc { get; internal set; }
         public EpisodeFile EpisodeFile { get; internal set; }
-        public long? EpisodeFileId { get; internal set; }
-        public long? EpisodeNumber { get; internal set; }
+        public int? EpisodeFileId { get; internal set; }
+        public int? EpisodeNumber { get; internal set; }
         public bool HasFile { get; internal set; }
         public long Id { get; internal set; }
         public bool Monitored { get; internal set; }
-        public long? SceneAbsoluteEpisodeNumber { get; internal set; }
-        public long? SceneEpisodeNumber { get; internal set; }
-        public long? SceneSeasonNumber { get; internal set; }
-        public long? SeasonNumber { get; internal set; }
-        //public SeriesResult Series { get; internal set; }
-        public long SeriesId { get; internal set; }
+        public int? SceneAbsoluteEpisodeNumber { get; internal set; }
+        public int? SceneEpisodeNumber { get; internal set; }
+        public int? SceneSeasonNumber { get; internal set; }
+        public int? SeasonNumber { get; internal set; }
+        public SeriesResult Series => GetSeriesFromId();
+        public int SeriesId { get; internal set; }
         public string Title { get; internal set; }
         public bool UnverifiedSceneNumbering { get; internal set; }
 
         #endregion
 
-        //#region Constructor
+        #region Constructors
 
-        //private Episode(IDictionary dict) => MatchResultsToProperties(dict);
+        public Episode() : base() { }
 
-        //#endregion
+        #endregion
 
-        //#region Methods/Operators
+        #region Methods/Operators
 
-        //public static explicit operator Episode(JObject job)
-        //{
-        //    if (job != null)
-        //    {
-        //        var dict = JsonConvert.DeserializeObject<Dictionary<object, object>>(JsonConvert.SerializeObject(job));
-        //        return new Episode(dict);
-        //    }
-        //    else
-        //    {
-        //        return null;
-        //    }
-        //}
-        //public static explicit operator Episode(Dictionary<object, object> dict) =>
-        //    dict != null ? new Episode(dict) : null;
+        public static explicit operator Episode(JObject job) =>
+            FromJObject<Episode>(job);
 
-        //#endregion
+
+        private SeriesResult GetSeriesFromId()
+        {
+            if (!SonarrServiceContext.SeriesDictionary.ContainsKey(this.SeriesId))
+            {
+                var ep = new Series(this.SeriesId);
+                var series = SonarrServiceContext.TheCaller.SonarrGetAs<SeriesResult>(ep).ToArray()[0];
+                SonarrServiceContext.SeriesDictionary.Add(this.SeriesId, series);
+            }
+            return SonarrServiceContext.SeriesDictionary[this.SeriesId];
+        }
+
+        #endregion
     }
 }

@@ -9,14 +9,7 @@ namespace Sonarr.Api.Results
 {
     public class EpisodeQuality : SonarrResult
     {
-        //#pragma warning disable IDE0044 // Add readonly modifier
-        //        private long _id;
-        //        private string _name;
-        //        private string _source;
-        //        private long _resolution;
-        //        private long _version;
-        //        private long _real;
-        //#pragma warning restore IDE0044 // Add readonly modifier
+        internal override string[] SkipThese => null;
 
         public long Id { get; internal set; }
         public string Name { get; internal set; }
@@ -25,28 +18,33 @@ namespace Sonarr.Api.Results
         public long Version { get; internal set; }
         public long Real { get; internal set; }
 
-        //private EpisodeQuality(IDictionary dict) => MatchResultsToProperties(dict);
+        public EpisodeQuality() : base() { }
 
-        //public static explicit operator EpisodeQuality(JObject job)
-        //{
-        //    if (job != null)
-        //    {
-        //        var quat = (JObject)job["quality"];
-        //        var rev = (JObject)job["revision"];
-        //        var dictQ = JsonConvert.DeserializeObject<Dictionary<object, object>>(JsonConvert.SerializeObject(quat));
-        //        var dictRev = JsonConvert.DeserializeObject<Dictionary<object, object>>(JsonConvert.SerializeObject(rev));
-        //        object[] keys = dictRev.Keys.Cast<object>().ToArray();
-        //        for (int i = 0; i < keys.Length; i++)
-        //        {
-        //            var key = keys[i];
-        //            dictQ.Add(key, dictRev[key]);
-        //        }
-        //        return new EpisodeQuality(dictQ);
-        //    }
-        //    else
-        //    {
-        //        return null;
-        //    }
-        //}
+        internal EpisodeQuality(IDictionary dict)
+            : base(dict)
+        {
+        }
+
+        public static explicit operator EpisodeQuality(JObject job)
+        {
+            if (job != null)
+            {
+                var quat = (JObject)job["quality"];
+                var rev = (JObject)job["revision"];
+                var dictQ = JsonConvert.DeserializeObject<Dictionary<object, object>>(JsonConvert.SerializeObject(quat));
+                var dictRev = JsonConvert.DeserializeObject<Dictionary<object, object>>(JsonConvert.SerializeObject(rev));
+                object[] keys = dictRev.Keys.Cast<object>().ToArray();
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    var key = keys[i];
+                    dictQ.Add(key, dictRev[key]);
+                }
+                return new EpisodeQuality(dictQ);
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }

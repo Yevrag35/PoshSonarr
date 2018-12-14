@@ -3,20 +3,23 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Sonarr.Api.Endpoints;
 using Sonarr.Api.Enums;
+using Sonarr.Api.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
+using System.Text;
 
 namespace Sonarr.Api
 {
     public class ApiCaller : Caller
     {
         #region Properties/Fields/Constants
-        private const string _ct = "application/json";
+        private const string CONTENT_TYPE = "application/json";
+        private static readonly Encoding ENCODING = Encoding.UTF8;
         private const string HEADER_KEY = "X-Api-Key";
         private readonly string _base;
         public string BaseUrl => _base;
@@ -30,20 +33,45 @@ namespace Sonarr.Api
             this.Headers.Add(HEADER_KEY, SonarrServiceContext.ApiKey.Value);
             if (baseUrl.EndsWith("/"))
                 baseUrl = baseUrl.Substring(0, baseUrl.LastIndexOf("/"));
-            _base = baseUrl;
+            
+            SonarrServiceContext.BaseUrl = baseUrl;
+            SonarrServiceContext.TheCaller = this;
         }
 
         #endregion
 
         #region Methods
-        public IEnumerable<T> SonarrGetAs<T>(string endpoint) where T : DynamicResult
+        private ApiUrl GetUrl(ISonarrEndpoint ep)
         {
-            // var full = _base + endpoint.Value;
-            var full = _base + endpoint;
+            var full = SonarrServiceContext.BaseUrl + ep.Value;
+            //var full = _base + endpoint;
             if (NoApiPrefix)
                 full = full.Replace("/api", string.Empty);
 
-            return base.GetAs<T>(full);
+            return full;
+        }
+
+        public IEnumerable<T> SonarrGetAs<T>(ISonarrEndpoint endpoint) where T : SonarrResult
+        {
+            var useUrl = GetUrl(endpoint);
+            return base.GetAs<T>(useUrl);
+        }
+
+        public void SonarrPost(ISonarrPostable endpoint)
+        {
+            var useUrl = GetUrl(endpoint);
+            var contentBody = endpoint.GetPostBody();
+            base.NoResponsePost(useUrl, CONTENT_TYPE, ENCODING, contentBody);
+        }
+
+        public IEnumerable<T> SonarrPostAs<T>(ISonarrPostable endpoint) where T : SonarrResult
+        {
+            var useUrl = GetUrl(endpoint);
+            var contentBody = endpoint.GetPostBody();
+            var thisObj = Activator.CreateInstance<T>();
+
+            var result = base.PostAs<T>(useUrl, CONTENT_TYPE, ENCODING, contentBody, thisObj.SkipThese);
+            return result;
         }
 
         //public ApiResult Send(ISonarrEndpoint endpoint, 

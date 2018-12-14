@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using Sonarr.Api.Enums;
+using System;
 using System.Linq;
-using Sonarr.Api.Enums;
 
 namespace Sonarr.Api.Endpoints
 {
@@ -18,21 +16,14 @@ namespace Sonarr.Api.Endpoints
             typeof(SonarrMethod).GetEnumValues().Cast<SonarrMethod>().ToArray();    // Allow all methods
 
         #region Constructors
-        public Series(int? seriesId)
-        {
-            if (seriesId.HasValue)
-                _full = _ep + "/" + Convert.ToString(seriesId.Value);
-
-            else
-                _full = _ep;
-        }
+        public Series(int? seriesId) => _full = seriesId.HasValue ? _ep + "/" + Convert.ToString(seriesId.Value) : _ep;
 
         #endregion
 
         #region Methods
 
-        public IEnumerator<string> GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
+        //public IEnumerator<string> GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
+        //IEnumerator IEnumerable.GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
 
         #endregion
     }

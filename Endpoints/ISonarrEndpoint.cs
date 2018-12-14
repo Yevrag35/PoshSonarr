@@ -1,5 +1,4 @@
-﻿using MG.Api;
-using Sonarr.Api.Enums;
+﻿using Sonarr.Api.Enums;
 using System;
 
 namespace Sonarr.Api.Endpoints

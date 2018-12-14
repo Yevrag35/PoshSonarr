@@ -9,21 +9,7 @@ namespace Sonarr.Api.Results
 {
     public class CalendarEntry : SonarrResult
     {
-        //#pragma warning disable IDE0044 // Add readonly modifier
-        //        private long _seriesId;
-        //        private long _episodeFileId;
-        //        private long _seasonNumber;
-        //        private long _episodeNumber;
-        //        private string _title;
-        //        private DateTime? _airDateUtc;
-        //        private JObject _episodeFile;
-        //        private bool _hasFile;
-        //        private bool _isMonitored;
-        //        private long _absoluteEpisodeNumber;
-        //        private bool _unverifiedSceneNumbering;
-        //        private JObject _series;
-        //        private long _id;
-        //#pragma warning restore IDE0044 // Add readonly modifier
+        internal override string[] SkipThese => null;
 
         public long SeriesId { get; internal set; }
         public long EpisodeFileId { get; internal set; }
@@ -39,25 +25,10 @@ namespace Sonarr.Api.Results
         public bool UnverifiedSceneNumbering { get; internal set; }
         public SeriesResult Series { get; internal set; }
         public long Id { get; internal set; }
-
-        //private CalendarEntry(IDictionary dict) => MatchResultsToProperties(dict);
-
-        //public static explicit operator CalendarEntry(JObject job)
-        //{
-        //    if (job != null)
-        //    {
-        //        var dict = JsonConvert.DeserializeObject<Dictionary<object, object>>(JsonConvert.SerializeObject(job));
-        //        return new CalendarEntry(dict);
-        //    }
-        //    else
-        //    {
-        //        return null;
-        //    }
-        //}
-        //public static explicit operator CalendarEntry(Dictionary<object, object> dict) =>
-        //    new CalendarEntry(dict);
-        //public static explicit operator CalendarEntry(Dictionary<string, object> dict) =>
-        //    new CalendarEntry(dict);
         
+        public CalendarEntry() : base() { }
+
+        public static explicit operator CalendarEntry(JObject job) =>
+            FromJObject<CalendarEntry>(job);
     }
 }

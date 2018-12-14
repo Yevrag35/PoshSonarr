@@ -6,26 +6,7 @@ namespace Sonarr.Api.Results
 {
     public class StatusResult : SonarrResult
     {
-        //private string _version;
-        //private string _branch;
-        //private string _startupPath;
-        //private string _authentication;
-        //private string _sqliteVersion;
-        //private string _appData;
-        //private bool _isProduction;
-        //private bool _isDebug;
-        //private bool _isUserInteractive;
-        //private string _runtimeVersion;
-        //private string _runtimeName;
-        //private string _osName;
-        //private string _osVersion;
-        //private bool _isMono;
-        //private bool _isMonoRuntime;
-        //private bool _isAdmin;
-        //private DateTime? _buildTime;
-        //private string _urlBase;
-        //private bool _isLinux;
-        //private bool _isWindows;
+        internal override string[] SkipThese => new string[1] { "UrlBase" };
 
         public string Version { get; internal set; }
         public string Branch { get; internal set; }
@@ -52,11 +33,6 @@ namespace Sonarr.Api.Results
         //    new Uri(_urlBase, UriKind.RelativeOrAbsolute);
 
 
-        //private protected StatusResult(IDictionary dict) => MatchResultsToProperties(dict);
-
-        //public static explicit operator StatusResult(Dictionary<object, object> dict) =>
-        //    new StatusResult(dict);
-        //public static explicit operator StatusResult(Dictionary<string, object> dict) =>
-        //    new StatusResult(dict);
+        public StatusResult() : base() { }
     }
 }

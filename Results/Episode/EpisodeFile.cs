@@ -8,17 +8,7 @@ namespace Sonarr.Api.Results
 {
     public class EpisodeFile : SonarrResult
     {
-        //private long _seriesId;
-        //private long _seasonNumber;
-        //private string _relativePath;
-        //private string _path;
-        //private long _size;
-        //private DateTime? _dateAdded;
-        //private string _sceneName;
-        //private JObject _quality;
-        //private JObject _mediaInfo;
-        //private bool _qualityCutoffNotMet;
-        //private long _id;
+        internal override string[] SkipThese => null;
 
         public long SeriesId { get; internal set; }
         public long SeasonNumber { get; internal set; }
@@ -33,21 +23,9 @@ namespace Sonarr.Api.Results
         public bool QualityCutoffNotMet { get; internal set; }
         public long Id { get; internal set; }
 
-        //private EpisodeFile(IDictionary dict) => MatchResultsToProperties(dict);
+        public EpisodeFile() : base() { }
 
-        //public static explicit operator EpisodeFile(JObject job)
-        //{
-        //    if (job != null)
-        //    {
-        //        var dict = JsonConvert.DeserializeObject<Dictionary<object, object>>(JsonConvert.SerializeObject(job));
-        //        return new EpisodeFile(dict);
-        //    }
-        //    else
-        //    {
-        //        return null;
-        //    }
-        //}
-        //public static explicit operator EpisodeFile(Dictionary<object, object> dict) =>
-        //    dict != null ? new EpisodeFile(dict) : null;
+        public static explicit operator EpisodeFile(JObject job) =>
+            FromJObject<EpisodeFile>(job);
     }
 }
