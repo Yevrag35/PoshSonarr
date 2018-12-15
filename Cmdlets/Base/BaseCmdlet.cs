@@ -7,15 +7,17 @@ namespace Sonarr.Api.Cmdlets
 {
     public abstract class BaseCmdlet : PSCmdlet
     {
-        public ApiCaller Api { get; set; }
-        public SonarrResult result;
+        internal ApiCaller Api
+        {
+            get => SonarrServiceContext.TheCaller;
+            set => SonarrServiceContext.TheCaller = value;
+        }
 
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
             if (!SonarrServiceContext.IsSet)
                 throw new SonarrContextNotSetException("  Run the 'Connect-Sonarr' cmdlet first.");
-            Api = new ApiCaller(SonarrServiceContext.Value);
         }
 
         //public void PipeBack<T>(T result, params string[] filters) where T : SonarrResult

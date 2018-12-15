@@ -22,8 +22,8 @@ namespace Sonarr.Api.Cmdlets
             base.ProcessRecord();
             var cal = new Calendar(Start, End);
 
-            var result = Api.Send(cal);
-            PipeBack<CalendarEntry>(result);
+            var calEntries = Api.SonarrGetAs<CalendarEntry>(cal);
+            WriteObject(calEntries, true);
         }
     }
 }

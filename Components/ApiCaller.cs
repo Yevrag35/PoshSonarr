@@ -31,11 +31,12 @@ namespace Sonarr.Api
         public ApiCaller(string baseUrl)
         {
             this.Headers.Add(HEADER_KEY, SonarrServiceContext.ApiKey.Value);
+
             if (baseUrl.EndsWith("/"))
                 baseUrl = baseUrl.Substring(0, baseUrl.LastIndexOf("/"));
-            
+
+            this.hpc.BaseAddress = new Uri(baseUrl, UriKind.Absolute);
             SonarrServiceContext.BaseUrl = baseUrl;
-            SonarrServiceContext.TheCaller = this;
         }
 
         #endregion
@@ -44,8 +45,7 @@ namespace Sonarr.Api
         private ApiUrl GetUrl(ISonarrEndpoint ep)
         {
             var full = SonarrServiceContext.BaseUrl + ep.Value;
-            //var full = _base + endpoint;
-            if (NoApiPrefix)
+            if (SonarrServiceContext.NoApiPrefix)
                 full = full.Replace("/api", string.Empty);
 
             return full;
@@ -54,7 +54,8 @@ namespace Sonarr.Api
         public IEnumerable<T> SonarrGetAs<T>(ISonarrEndpoint endpoint) where T : SonarrResult
         {
             var useUrl = GetUrl(endpoint);
-            return base.GetAs<T>(useUrl);
+            var thisObj = Activator.CreateInstance<T>();
+            return base.GetAs<T>(useUrl, thisObj.SkipThese);
         }
 
         public void SonarrPost(ISonarrPostable endpoint)

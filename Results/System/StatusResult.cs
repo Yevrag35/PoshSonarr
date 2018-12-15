@@ -28,10 +28,7 @@ namespace Sonarr.Api.Results
         public DateTime? BuildTimeUtc { get; internal set; }
         public bool IsLinux { get; internal set; }
         public bool IsWindows { get; internal set; }
-        //public Uri UrlBase => string.IsNullOrEmpty(_urlBase) ?
-        //    (Uri)SonarrServiceContext.Value :
-        //    new Uri(_urlBase, UriKind.RelativeOrAbsolute);
-
+        public Uri UrlBase => new Uri(SonarrServiceContext.BaseUrl, UriKind.Absolute);
 
         public StatusResult() : base() { }
     }

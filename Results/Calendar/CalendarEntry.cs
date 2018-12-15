@@ -9,14 +9,15 @@ namespace Sonarr.Api.Results
 {
     public class CalendarEntry : SonarrResult
     {
-        internal override string[] SkipThese => null;
+        internal override string[] SkipThese => new string[1] { "AirDate" };
 
         public long SeriesId { get; internal set; }
         public long EpisodeFileId { get; internal set; }
         public long SeasonNumber { get; internal set; }
         public long EpisodeNumber { get; internal set; }
         public string Title { get; internal set; }
-        public DateTime? AirDate { get; internal set; }
+        public DateTime? AirDate =>
+            AirDateUtc.HasValue ? AirDateUtc.Value.ToLocalTime() : (DateTime?)null;
         public DateTime? AirDateUtc { get; internal set; }
         public EpisodeFile EpisodeFile { get; internal set; }
         public bool HasFile { get; internal set; }

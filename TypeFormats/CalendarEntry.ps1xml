@@ -22,7 +22,7 @@
                         <Alignment>Left</Alignment>
                     </TableColumnHeader>
                     <TableColumnHeader>
-                        <Label>SeriesName</Label>
+                        <Label>Series</Label>
                         <Alignment>Left</Alignment>
                     </TableColumnHeader>
                 </TableHeaders>
@@ -33,7 +33,7 @@
                               <PropertyName>Id</PropertyName>
                             </TableColumnItem>
                             <TableColumnItem>
-                              <PropertyName>AirDate</PropertyName>
+                                <PropertyName>AirDate</PropertyName>
                             </TableColumnItem>
                             <TableColumnItem>
                                 <PropertyName>EpisodeNumber</PropertyName>

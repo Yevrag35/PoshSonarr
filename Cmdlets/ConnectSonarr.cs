@@ -65,7 +65,7 @@ namespace Sonarr.Api.Cmdlets
         protected override void ProcessRecord()
         {
             base.ProcessRecord();
-
+            
             SonarrServiceContext.Value = Url;
             SonarrServiceContext.ApiKey = ApiKey;
             SonarrServiceContext.NoApiPrefix = _nopre;
@@ -73,16 +73,8 @@ namespace Sonarr.Api.Cmdlets
             Api = new ApiCaller(SonarrServiceContext.Value);
 
             var stat = new SystemStatus();
-            try
-            {
-                result = Api.Send(stat);
-                PipeBack<StatusResult>(result);
-            }
-            catch (WebException e)
-            {
-                SonarrServiceContext.Clear();
-                throw new WebException(e.Message, e, e.Status, e.Response);
-            }
+            var sonarrStatus = Api.SonarrGetAs<StatusResult>(stat);
+            WriteObject(sonarrStatus);
         }
     }
 }
