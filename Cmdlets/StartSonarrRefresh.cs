@@ -1,4 +1,5 @@
 ﻿using MG.Api;
+using Sonarr.Api.Cmdlets.Base;
 using Sonarr.Api.Endpoints;
 using Sonarr.Api.Enums;
 using Sonarr.Api.Results;
@@ -11,58 +12,59 @@ namespace Sonarr.Api.Cmdlets
     [Cmdlet(VerbsLifecycle.Start, "SonarrRefresh", SupportsShouldProcess = true,
         DefaultParameterSetName = "ByPipeline")]
     [CmdletBinding(PositionalBinding = false)]
-    [OutputType(typeof(CommandResult))]
-    public class StartSonarrRefresh : BaseCommandCmdlet
+    public class StartSonarrRefresh : PipeableWithSeriesCommand
     {
-        public override SonarrCommand Command => SonarrCommand.RefreshSeries;
-        public override SonarrMethod Method => SonarrMethod.POST;
-
-        [Parameter(Mandatory = false, ParameterSetName = "ByPipeline", 
-            DontShow = true, ValueFromPipeline = true)]
-        public SeriesResult Series { get; set; }
-
-        [Parameter(Mandatory = true, ParameterSetName = "BySeriesId")]
-        [Alias("id", "i")]
-        public int SeriesId { get; set; }
-
-        private bool _force;
-        [Parameter(Mandatory = false, DontShow = true)]
-        public SwitchParameter Force
-        {
-            get => _force;
-            set => _force = value;
-        }
+        internal override SonarrCommand Command => SonarrCommand.RefreshSeries;
 
         protected override void BeginProcessing() => base.BeginProcessing();
 
-        protected override void ProcessRecord()
+        protected override void ProcessRecord() => base.ProcessRecord();
+
+        protected override void EndProcessing()
         {
-            base.ProcessRecord();
-            switch (ParameterSetName)
+            for (int i = 0; i < _list.Count; i++)
             {
-                case "ByPipeline":
-                    if (Series == null)
-                    {
-                        if (ShouldContinue("All Sonarr Series", "Refresh all series?  This may produce a lot of network activity.") ||
-                            _force)
-                        {
-                            result = ApplyCommandToAll();
-                        }
-                        else
-                        {
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        result = ApplyCommandToOne(new object[2] { "seriesId", Series.Id });
-                    }
-                    break;
-                case "BySeriesId":
-                    result = ApplyCommandToOne(new object[2] { "seriesId", SeriesId });
-                    break;
+                var ser = _list[i];
+                var parameters = new Dictionary<string, object>()
+                {
+                    { SERIES_ID, ser.Id }
+                };
+                if (Force || ShouldContinue("Perform Refresh on series with ID " + Convert.ToString(ser.Id), "Are you sure?"))
+                {
+                    var result = ProcessCommand(parameters);
+                    WriteObject(result);
+                }
             }
-            PipeBackResult(result);
         }
+
+        //protected override void ProcessRecord()
+        //{
+        //    base.ProcessRecord();
+        //    switch (ParameterSetName)
+        //    {
+        //        case "ByPipeline":
+        //            if (Series == null)
+        //            {
+        //                if (ShouldContinue("All Sonarr Series", "Refresh all series?  This may produce a lot of network activity.") ||
+        //                    _force)
+        //                {
+        //                    result = ApplyCommandToAll();
+        //                }
+        //                else
+        //                {
+        //                    return;
+        //                }
+        //            }
+        //            else
+        //            {
+        //                result = ApplyCommandToOne(new object[2] { "seriesId", Series.Id });
+        //            }
+        //            break;
+        //        case "BySeriesId":
+        //            result = ApplyCommandToOne(new object[2] { "seriesId", SeriesId });
+        //            break;
+        //    }
+        //    PipeBackResult(result);
+        //}
     }
 }

@@ -13,7 +13,7 @@ namespace Sonarr.Api.Endpoints
         private protected const string _ep = "/api/command";
         private readonly string _full;
         public string Value => _full;
-        public Dictionary<string, string> Parameters { get; }
+        public Dictionary<string, object> Parameters { get; }
 
         public Uri RelativeEndpoint => new Uri(_ep, UriKind.Relative);
         public SonarrMethod[] MethodsAllowed =>
@@ -21,7 +21,7 @@ namespace Sonarr.Api.Endpoints
 
         public Command(SonarrCommand cmd)
         {
-            Parameters = new Dictionary<string, string>(1)
+            Parameters = new Dictionary<string, object>(1)
             {
                 { "name", cmd.ToString() }
             };

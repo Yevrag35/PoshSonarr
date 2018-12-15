@@ -8,7 +8,7 @@ namespace Sonarr.Api.Endpoints
 {
     public interface ISonarrPostable : ISonarrEndpoint
     {
-        Dictionary<string, string> Parameters { get; }
+        Dictionary<string, object> Parameters { get; }
         string GetPostBody();
     }
 }

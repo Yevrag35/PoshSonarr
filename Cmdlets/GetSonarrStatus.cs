@@ -1,11 +1,14 @@
-﻿using Sonarr.Api.Endpoints;
+﻿using Sonarr.Api.Cmdlets.Base;
+using Sonarr.Api.Endpoints;
 using Sonarr.Api.Results;
 using System;
+using System.Linq;
 using System.Management.Automation;
 
 namespace Sonarr.Api.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "SonarrStatus", ConfirmImpact = ConfirmImpact.None)]
+    [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(StatusResult))]
     public class GetSonarrStatus : BaseCmdlet
     {
@@ -15,8 +18,21 @@ namespace Sonarr.Api.Cmdlets
         {
             base.ProcessRecord();
             var stat = new SystemStatus();
-            result = Api.Send(stat);
-            PipeBack<StatusResult>(result);
+            var result = Api.SonarrGetAs<StatusResult>(stat).ToArray()[0];
+            StatusResult final = GetRealTime(result);
+
+            WriteObject(final);
+        }
+
+        internal static StatusResult GetRealTime(StatusResult sr)
+        {
+            if (sr.BuildTime.HasValue)
+            {
+                var realTime = sr.BuildTime.Value.ToLocalTime();
+                sr.BuildTimeUtc = sr.BuildTime;
+                sr.BuildTime = realTime;
+            }
+            return sr;
         }
     }
 }

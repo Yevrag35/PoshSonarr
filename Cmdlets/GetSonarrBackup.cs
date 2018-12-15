@@ -1,4 +1,5 @@
-﻿using Sonarr.Api.Endpoints;
+﻿using Sonarr.Api.Cmdlets.Base;
+using Sonarr.Api.Endpoints;
 using Sonarr.Api.Enums;
 using Sonarr.Api.Results;
 using System;

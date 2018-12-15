@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using MG.Api;
+using Sonarr.Api.Cmdlets.Base;
 using Sonarr.Api.Components;
 using Sonarr.Api.Results;
 using Sonarr.Api.Enums;
@@ -35,15 +36,8 @@ namespace Sonarr.Api.Cmdlets
         protected override void ProcessRecord()
         {
             var wm = new Endpoints.WantedMissing(SortKey, SortDirection, StartAtPage, ResultSize);
-            var result = Api.Send(wm);
-            if ((long)result[0]["totalRecords"] > 0)
-            {
-                var records = JArray.FromObject(result[0]["records"]);
-                foreach (JObject job in records)
-                {
-                    WriteObject((Episode)job);
-                }
-            }
+            var result = Api.SonarrGetAs<WantedMissingResult>(wm).ToArray()[0];
+            WriteObject(result);
         }
     }
 }

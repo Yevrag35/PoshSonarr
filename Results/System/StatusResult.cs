@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -6,7 +7,7 @@ namespace Sonarr.Api.Results
 {
     public class StatusResult : SonarrResult
     {
-        internal override string[] SkipThese => new string[1] { "UrlBase" };
+        internal override string[] SkipThese => new string[2] { "BuildTimeUtc", "UrlBase" };
 
         public string Version { get; internal set; }
         public string Branch { get; internal set; }
@@ -31,5 +32,17 @@ namespace Sonarr.Api.Results
         public Uri UrlBase => new Uri(SonarrServiceContext.BaseUrl, UriKind.Absolute);
 
         public StatusResult() : base() { }
+
+        //internal d
+        //{
+        //    var sr = FromJObject<StatusResult>(job);
+        //    if (sr.BuildTime.HasValue)
+        //    {
+        //        var realTime = sr.BuildTime.Value.ToLocalTime();
+        //        sr.BuildTimeUtc = sr.BuildTime;
+        //        sr.BuildTime = realTime;
+        //    }
+        //    return sr;
+        //}
     }
 }

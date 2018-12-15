@@ -12,14 +12,7 @@ namespace Sonarr.Api.Results
     {
         #region Properties/Fields/Constants
 
-        private SonarrSeriesImage[] _imgList;
-        private SonarrSeason[] _seasonList;
-
-        internal override string[] SkipThese => new string[2]
-        {
-            "Images",
-            "Seasons"
-        };
+        internal override string[] SkipThese => null;
 
         public string Title { get; internal set; }
         public long SeasonCount { get; internal set; }
@@ -49,30 +42,8 @@ namespace Sonarr.Api.Results
         public string IMDBId { get; internal set; }
         public string TitleSlug { get; internal set; }
         public long Id { get; internal set; }
-
-
-        //public SonarrSeriesImage[] Images
-        //{
-        //    get
-        //    {
-        //        if (_imgList == null)
-        //        {
-        //            _imgList = ParseImages(_images);
-        //        }
-        //        return _imgList;
-        //    }
-        //}
-        //public SonarrSeason[] Seasons
-        //{
-        //    get
-        //    {
-        //        if (_seasonList == null)
-        //        {
-        //            _seasonList = ParseSeasons(_seasons);
-        //        }
-        //        return _seasonList;
-        //    }
-        //}
+        public SonarrArray<SonarrSeriesImage> Images { get; internal set; }
+        public SonarrArray<SonarrSeason> Seasons { get; internal set; }
 
         #endregion
 
@@ -86,47 +57,6 @@ namespace Sonarr.Api.Results
 
         public static explicit operator SeriesResult(JObject job) =>
             FromJObject<SeriesResult>(job);
-
-        #endregion
-
-        #region Private Methods
-        //private SonarrSeriesImage[] ParseImages(JArray jar)
-        //{
-        //    if (jar != null)
-        //    {
-        //        var list = new List<SonarrSeriesImage>();
-        //        for (int i = 0; i < jar.Count; i++)
-        //        {
-        //            var job = (JObject)jar[i];
-        //            var ssi = new SonarrSeriesImage(job);
-        //            list.Add(ssi);
-        //        }
-        //        return list.ToArray();
-        //    }
-        //    else
-        //    {
-        //        return null;
-        //    }
-        //}
-
-        //private protected SonarrSeason[] ParseSeasons(JArray jar)
-        //{
-        //    if (jar != null)
-        //    {
-        //        var list = new List<SonarrSeason>();
-        //        for (int i = 0; i < jar.Count; i++)
-        //        {
-        //            var job = (JObject)jar[i];
-        //            var season = new SonarrSeason(job);
-        //            list.Add(season);
-        //        }
-        //        return list.ToArray();
-        //    }
-        //    else
-        //    {
-        //        return null;
-        //    }
-        //}
 
         #endregion
     }

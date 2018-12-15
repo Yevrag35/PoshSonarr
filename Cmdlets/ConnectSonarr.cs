@@ -1,9 +1,10 @@
 ﻿using MG.Api;
+using Sonarr.Api.Cmdlets.Base;
 using Sonarr.Api.Endpoints;
 using Sonarr.Api.Results;
 using System;
+using System.Linq;
 using System.Management.Automation;
-using System.Net;
 
 namespace Sonarr.Api.Cmdlets
 {
@@ -73,8 +74,9 @@ namespace Sonarr.Api.Cmdlets
             Api = new ApiCaller(SonarrServiceContext.Value);
 
             var stat = new SystemStatus();
-            var sonarrStatus = Api.SonarrGetAs<StatusResult>(stat);
-            WriteObject(sonarrStatus);
+            var sonarrStatus = Api.SonarrGetAs<StatusResult>(stat).ToArray()[0];
+            StatusResult final = GetSonarrStatus.GetRealTime(sonarrStatus);
+            WriteObject(final);
         }
     }
 }

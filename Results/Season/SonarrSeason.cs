@@ -8,7 +8,7 @@ namespace Sonarr.Api.Results
 {
     public class SonarrSeason : SonarrResult
     {
-        internal override string[] SkipThese => new string[1] { "Statistics" };
+        internal override string[] SkipThese => null;
 
         public bool IsMonitored { get; internal set; }
         public long SeasonNumber { get; internal set; }

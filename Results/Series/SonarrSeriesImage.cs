@@ -12,7 +12,7 @@ namespace Sonarr.Api.Results
         internal override string[] SkipThese => null;
 
         public string CoverType { get; internal set; }
-        public Uri Url { get; internal set; }
+        public string Url { get; internal set; }
 
         public SonarrSeriesImage() : base() { }
 

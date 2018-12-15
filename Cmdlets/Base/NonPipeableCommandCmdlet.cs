@@ -1,23 +1,22 @@
-﻿using MG.Api;
-using Sonarr.Api.Endpoints;
+﻿using Sonarr.Api.Endpoints;
 using Sonarr.Api.Enums;
 using Sonarr.Api.Results;
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Management.Automation;
 using System.Threading;
 
-namespace Sonarr.Api.Cmdlets
+namespace Sonarr.Api.Cmdlets.Base
 {
     [CmdletBinding(PositionalBinding = false)]
-    public abstract class CommandsWithSeries : GetSonarrSeries
+    public abstract class NonPipeableCommandCmdlet : BaseCmdlet
     {
         internal abstract SonarrCommand Command { get; }
-        internal abstract KeyValuePair<string, object> CommandKVP { get; set; }
 
         protected private bool _wait;
         [Parameter(Mandatory = false)]
+        [Alias("wait", "w")]
         public SwitchParameter WaitForCompletion
         {
             get => _wait;
@@ -28,7 +27,8 @@ namespace Sonarr.Api.Cmdlets
         public int TimeOut = 60;
 
         private bool _force;
-        [Parameter(Mandatory = false, DontShow = true)]
+        [Parameter(Mandatory = false)]
+        [Alias("f")]
         public SwitchParameter Force
         {
             get => _force;
@@ -37,9 +37,29 @@ namespace Sonarr.Api.Cmdlets
 
         protected override void BeginProcessing() => base.BeginProcessing();
 
-        protected override void EndProcessing()
-        {
+        protected override void EndProcessing() { }
 
+        internal SonarrResult ProcessCommand(IDictionary parameters)
+        {
+            var cmd = new Command(Command);
+            if (parameters != null)
+            {
+                var keys = parameters.Keys.Cast<string>().ToArray();
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    var key = keys[i];
+                    var value = parameters[key];
+                    cmd.Parameters.Add(key, value);
+                }
+            }
+            var initialCmd = Api.SonarrPostAs<CommandResult>(cmd).ToArray()[0];
+            if (_wait)
+            {
+                var wait = WaitTilComplete(initialCmd.Id, TimeOut);
+                return wait;
+            }
+            else
+                return initialCmd;
         }
 
         internal FinalCommandResult WaitTilComplete(long id, int timeout)

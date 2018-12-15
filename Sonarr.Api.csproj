@@ -55,23 +55,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cmdlets\Base\BaseCmdlet.cs" />
-    <Compile Include="Cmdlets\Base\BaseCommandCmdlet.cs" />
-    <Compile Include="Cmdlets\Base\CommandsWithSeries.cs" />
+    <Compile Include="Cmdlets\Base\NonPipeableCommandCmdlet.cs" />
+    <Compile Include="Cmdlets\Base\PipeableWithSeriesCommand.cs" />
     <Compile Include="Cmdlets\ConnectSonarr.cs" />
     <Compile Include="Cmdlets\GetSonarrBackup.cs" />
     <Compile Include="Cmdlets\GetSonarrCalendar.cs" />
     <None Include="Cmdlets\GetSonarrEpisode.cs" />
     <None Include="Cmdlets\GetSonarrRootFolder.cs" />
     <Compile Include="Cmdlets\GetSonarrSeries.cs" />
-    <None Include="Cmdlets\GetSonarrStatus.cs" />
-    <None Include="Cmdlets\BackupSonarr.cs" />
-    <None Include="Cmdlets\GetSonarrWantedMissing.cs" />
-    <None Include="Cmdlets\StartSonarrRefresh.cs" />
+    <Compile Include="Cmdlets\GetSonarrStatus.cs" />
+    <Compile Include="Cmdlets\BackupSonarr.cs" />
+    <Compile Include="Cmdlets\GetSonarrWantedMissing.cs" />
+    <Compile Include="Cmdlets\RenameSeriesFiles.cs" />
+    <Compile Include="Cmdlets\StartMissingEpisodeSearch.cs" />
+    <Compile Include="Cmdlets\StartSonarrRefresh.cs" />
     <Compile Include="Cmdlets\StartSonarrRescan.cs" />
-    <None Include="Cmdlets\StartSonarrRssSync.cs" />
+    <Compile Include="Cmdlets\StartSonarrRssSync.cs" />
     <Compile Include="Components\AttributeResolver.cs" />
     <Compile Include="Components\Exceptions.cs" />
-    <None Include="Components\SonarrArray.cs" />
+    <Compile Include="Results\SonarrArray.cs" />
     <Compile Include="Components\SonarrServiceContext.cs" />
     <Compile Include="Endpoints\Command.cs" />
     <Compile Include="Endpoints\Episode.cs" />
@@ -93,6 +95,7 @@
     <Compile Include="Results\Episode\EpisodeFile.cs" />
     <Compile Include="Results\Episode\EpisodeQuality.cs" />
     <Compile Include="Results\Episode\MediaInfo.cs" />
+    <Compile Include="Results\Episode\WantedMissing.cs" />
     <Compile Include="Results\Rootfolder\RootfolderResult.cs" />
     <Compile Include="Results\Season\SeasonStatistics.cs" />
     <Compile Include="Results\Series\SonarrSeriesImage.cs" />

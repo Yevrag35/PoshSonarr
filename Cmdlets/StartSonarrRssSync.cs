@@ -1,26 +1,25 @@
-﻿using MG.Api;
+﻿using Sonarr.Api.Cmdlets.Base;
 using Sonarr.Api.Endpoints;
 using Sonarr.Api.Enums;
 using Sonarr.Api.Results;
 using System;
+using System.Linq;
 using System.Management.Automation;
 
 namespace Sonarr.Api.Cmdlets
 {
-    [Cmdlet(VerbsLifecycle.Start, "SonarrRssSync")]
-    public class StartSonarrRssSync : BaseCommandCmdlet
+    [Cmdlet(VerbsLifecycle.Start, "SonarrRssSync", ConfirmImpact = ConfirmImpact.None)]
+    [CmdletBinding(PositionalBinding = false)]
+    public class StartSonarrRssSync : NonPipeableCommandCmdlet
     {
-        public override SonarrCommand Command => SonarrCommand.RssSync;
-        public override SonarrMethod Method => SonarrMethod.POST;
+        internal override SonarrCommand Command => SonarrCommand.RssSync;
 
         protected override void BeginProcessing() => base.BeginProcessing();
 
         protected override void ProcessRecord()
         {
-            base.ProcessRecord();
-            result = ApplyCommandToAll();
-
-            PipeBackResult(result);
+            var result = ProcessCommand(null);
+            WriteObject(result);
         }
     }
 }
