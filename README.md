@@ -2,24 +2,29 @@
 
 This will eventually be a complete PowerShell module for quickly issuing [Sonarr PVR API](https://github.com/Sonarr/Sonarr/wiki/API) calls.
 
-The module can be found in the [PoshSonarr](https://github.com/Yevrag35/PoshSonarr/tree/master/PoshSonarr) folder and contains 11 commands:
+The module can be found in the [PoshSonarr](https://github.com/Yevrag35/PoshSonarr/tree/master/PoshSonarr) folder and contains the following commands:
 
-1. Backup-Sonarr -- _\*complete\*_
-1. Connect-Sonarr -- _\*complete\* __(requires ApiKey)___
-1. Get-SonarrBackup -- _\*complete\*_
-1. Get-SonarrEpisode -- _\*complete\*_
-1. Get-SonarrSeries -- _\*complete\*_
-1. Get-SonarrCalendar -- _\*complete\*_
-1. Get-SonarrStatus -- _\*complete\*_
-1. Get-SonarrWantedMissing -- _\*complete\*_
-1. Start-SonarrRefresh -- _\*complete\*_
-1. Start-SonarrRescan -- _\*complete\*_
-1. Start-SonarrRssSync -- _\*complete\*_
-1. Update-SonarrEpisode --  _\*not compiled\*_
+1. Backup-Sonarr
+1. Connect-Sonarr
+1. Get-SonarrBackup
+1. Get-SonarrCalendar
+1. Get-SonarrCommandResult -- __\*NEW\*__
+1. Get-SonarrEpisode
+1. Get-SonarrSeries
+1. Get-SonarrStatus
+1. Get-SonarrWantedMissing -- __\*NEW\*__
+1. Rename-SonarrSeriesFiles -- __\*NEW\*__
+1. Start-SonarrRefresh
+1. Start-SonarrRescan
+1. Start-SonarrRssSync
+1. Start-SonarrSearch -- __\*NEW\*__
+
+---
 
 ## What I'm working on...
 
-Currently, I'm making the framework for each api endpoint.  I believe I have the API calling class squared away.  ~~Once the framework of the code is complete, then can begin the writing of a PowerShell module.~~  The framework is built, and the making of cmdlets has begun.
+I have re-architected my MG.Api assembly to allow for easier JSON object translation, with the result being that I should be able
+to crank out cmdlets at a higher clip than before.
 
 The following 'object' results have been __created__.  While their commands and endpoints are still in progress, the corresponding object has been finished:
 
@@ -36,13 +41,13 @@ _* Striken text signifies completion. *_
 * Command
   * ~~RefreshSeries~~
   * ~~RescanSeries~~
-  * EpisodeSearch
-  * SeasonSearch
-  * SeriesSearch
+  * ~~EpisodeSearch~~
+  * ~~SeasonSearch~~
+  * ~~SeriesSearch~~
   * DownloadedEpisodesScan
   * ~~RssSync~~
-  * RenameFiles
-  * RenameSeries
+  * RenameFiles  _-- (having api issues)_
+  * ~~RenameSeries~~
   * ~~Backup~~
 * Diskspace
 * ~~Episode~~

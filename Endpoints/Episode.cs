@@ -22,8 +22,5 @@ namespace Sonarr.Api.Endpoints
         }
 
         public static implicit operator string(Episode ep) => ep.Value;
-
-        //IEnumerator<string> IEnumerable<string>.GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
-        //IEnumerator IEnumerable.GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
     }
 }

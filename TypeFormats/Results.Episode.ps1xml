@@ -2,9 +2,9 @@
 <Configuration>
     <ViewDefinitions>
         <View>
-            <Name>Results.Episode</Name>
+            <Name>EpisodeResult</Name>
             <ViewSelectedBy>
-                <TypeName>Sonarr.Api.Results.Episode</TypeName>
+                <TypeName>Sonarr.Api.Results.EpisodeResult</TypeName>
             </ViewSelectedBy>
             <TableControl>
                 <TableHeaders>

@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Sonarr.Api.Results
 {
-    public class Episode : SonarrResult
+    public class EpisodeResult : SonarrResult
     {
         internal override string[] SkipThese => new string[1] { "Series" };
 
@@ -37,14 +37,14 @@ namespace Sonarr.Api.Results
 
         #region Constructors
 
-        public Episode() : base() { }
+        public EpisodeResult() : base() { }
 
         #endregion
 
         #region Methods/Operators
 
-        public static explicit operator Episode(JObject job) =>
-            FromJObject<Episode>(job);
+        public static explicit operator EpisodeResult(JObject job) =>
+            FromJObject<EpisodeResult>(job);
 
 
         private SeriesResult GetSeriesFromId()

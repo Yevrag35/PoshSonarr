@@ -15,7 +15,7 @@ namespace Sonarr.Api.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "SonarrWantedMissing", ConfirmImpact = ConfirmImpact.None)]
     [CmdletBinding(PositionalBinding = false)]
-    [OutputType(typeof(Episode))]
+    [OutputType(typeof(EpisodeResult))]
     public class GetSonarrWantedMissing : BaseCmdlet
     {
         [Parameter(Mandatory = false)]

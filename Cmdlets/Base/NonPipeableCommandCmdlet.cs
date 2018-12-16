@@ -39,9 +39,12 @@ namespace Sonarr.Api.Cmdlets.Base
 
         protected override void EndProcessing() { }
 
-        internal SonarrResult ProcessCommand(IDictionary parameters)
+        internal SonarrResult ProcessCommand(IDictionary parameters) =>
+            this.ProcessCommand(parameters, this.Command);
+
+        internal SonarrResult ProcessCommand(IDictionary parameters, SonarrCommand command)
         {
-            var cmd = new Command(Command);
+            var cmd = new Command(command);
             if (parameters != null)
             {
                 var keys = parameters.Keys.Cast<string>().ToArray();
@@ -55,8 +58,8 @@ namespace Sonarr.Api.Cmdlets.Base
             var initialCmd = Api.SonarrPostAs<CommandResult>(cmd).ToArray()[0];
             if (_wait)
             {
-                var wait = WaitTilComplete(initialCmd.Id, TimeOut);
-                return wait;
+                var waiting = WaitTilComplete(initialCmd.Id, TimeOut);
+                return waiting;
             }
             else
                 return initialCmd;

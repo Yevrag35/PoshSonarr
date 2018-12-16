@@ -9,16 +9,12 @@ using System.Threading;
 
 namespace Sonarr.Api.Cmdlets.Base
 {
-    [CmdletBinding(PositionalBinding = false)]
-    public abstract class PipeableWithSeriesCommand : PipeableWithSeries
+    public abstract class PipeableWithEpisodeCommand : PipeableWithEpisode
     {
-        internal const string SERIES_ID = "seriesId";
-
         internal abstract SonarrCommand Command { get; }
 
-        protected private bool _wait;
+        private bool _wait;
         [Parameter(Mandatory = false)]
-        [Alias("wait", "w")]
         public SwitchParameter WaitForCompletion
         {
             get => _wait;
@@ -30,7 +26,6 @@ namespace Sonarr.Api.Cmdlets.Base
 
         private bool _force;
         [Parameter(Mandatory = false)]
-        [Alias("f")]
         public SwitchParameter Force
         {
             get => _force;
@@ -41,11 +36,14 @@ namespace Sonarr.Api.Cmdlets.Base
 
         protected override void ProcessRecord() => base.ProcessRecord();
 
-        protected override void EndProcessing() { }
+        protected override void EndProcessing() => base.EndProcessing();
 
-        internal SonarrResult ProcessCommand(IDictionary parameters)
+        internal SonarrResult ProcessCommand(IDictionary parameters) =>
+            this.ProcessCommand(parameters, this.Command);
+
+        internal SonarrResult ProcessCommand(IDictionary parameters, SonarrCommand command)
         {
-            var cmd = new Command(Command);
+            var cmd = new Command(command);
             if (parameters != null)
             {
                 var keys = parameters.Keys.Cast<string>().ToArray();
@@ -59,8 +57,8 @@ namespace Sonarr.Api.Cmdlets.Base
             var initialCmd = Api.SonarrPostAs<CommandResult>(cmd).ToArray()[0];
             if (_wait)
             {
-                var wait = WaitTilComplete(initialCmd.Id, TimeOut);
-                return wait;
+                var waiting = WaitTilComplete(initialCmd.Id, TimeOut);
+                return waiting;
             }
             else
                 return initialCmd;

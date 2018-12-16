@@ -11,59 +11,50 @@ namespace Sonarr.Api.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "SonarrEpisode", ConfirmImpact = ConfirmImpact.None,
         DefaultParameterSetName = "BySeriesTitle")]
-    [OutputType(typeof(Sonarr.Api.Results.Episode))]
-    public class GetSonarrEpisode : GetSonarrSeries
+    [OutputType(typeof(Sonarr.Api.Results.EpisodeResult))]
+    public class GetSonarrEpisode : PipeableWithSeries
     {
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ViaPipelineInput")]
-        public SeriesResult Series { get; set; }
+        protected private List<long> ids;
+        protected private bool IsEpisodeId = false;
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByEpisodeId")]
-        public int EpisodeId { get; set; }
+        public long[] EpisodeId { get; set; }
 
-        protected override void BeginProcessing() => base.BeginProcessing();
+        protected override void BeginProcessing()
+        {
+            base.BeginProcessing();
+            ids = new List<long>();
+        }
 
         protected override void ProcessRecord()
         {
-            var results = GetEpisode();
-            foreach (var result in results)
+            if (!MyInvocation.BoundParameters.ContainsKey("Series") && !MyInvocation.BoundParameters.ContainsKey("EpisodeId"))
+                base.ProcessRecord();
+
+            else if (MyInvocation.BoundParameters.ContainsKey("Series"))
+                _list.Add(Series);
+
+            else
             {
-                PipeBack<Results.Episode>(result);
+                ids.AddRange(EpisodeId);
+                IsEpisodeId = true;
+            }
+
+            for (int i = 0; i < _list.Count; i++)
+            {
+                ids.Add(_list[i].Id);
             }
         }
 
-        private protected ApiResult[] GetEpisode()
+        protected override void EndProcessing()
         {
-            var list = new List<ApiResult>();
-            Endpoints.Episode endpoint = null;
-            if (MyInvocation.BoundParameters.ContainsKey("Series"))
+            for (int i = 0; i < ids.Count; i++)
             {
-                endpoint = new Endpoints.Episode(this.Series.Id, false);
-                list.Add(GetEpisodeResult(endpoint));
+                var id = ids[i];
+                var cmd = new Episode(id, IsEpisodeId);
+                var ep = Api.SonarrGetAs<EpisodeResult>(cmd);
+                WriteObject(ep, true);
             }
-            else if (MyInvocation.BoundParameters.ContainsKey("SeriesId"))
-            {
-                endpoint = new Endpoints.Episode(SeriesId.Value, false);
-                list.Add(GetEpisodeResult(endpoint));
-            }
-            else if (MyInvocation.BoundParameters.ContainsKey("EpisodeId"))
-            {
-                endpoint = new Endpoints.Episode(EpisodeId, true);
-                list.Add(GetEpisodeResult(endpoint));
-            }
-            else if (MyInvocation.BoundParameters.ContainsKey("SeriesName"))
-            {
-                if (SonarrServiceContext.SonarrSeries == null)
-                    SonarrServiceContext.SonarrSeries = base.GetAllSeries(new Series(null));
-
-                var results = SearchFor(SeriesName);
-                foreach (var result in results)
-                {
-                    list.Add(GetEpisodeResult(new Endpoints.Episode(result.Id, false)));
-                }
-            }
-            return list.ToArray();
         }
-
-        private protected ApiResult GetEpisodeResult(Endpoints.Episode endpoint) => Api.Send(endpoint);
     }
 }

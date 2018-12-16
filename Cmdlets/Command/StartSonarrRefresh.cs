@@ -1,5 +1,4 @@
-﻿using MG.Api;
-using Sonarr.Api.Cmdlets.Base;
+﻿using Sonarr.Api.Cmdlets.Base;
 using Sonarr.Api.Endpoints;
 using Sonarr.Api.Enums;
 using Sonarr.Api.Results;
@@ -10,7 +9,7 @@ using System.Management.Automation;
 namespace Sonarr.Api.Cmdlets
 {
     [Cmdlet(VerbsLifecycle.Start, "SonarrRefresh", SupportsShouldProcess = true,
-        DefaultParameterSetName = "ByPipeline")]
+        DefaultParameterSetName = "BySeriesPipeline")]
     [CmdletBinding(PositionalBinding = false)]
     public class StartSonarrRefresh : PipeableWithSeriesCommand
     {
@@ -36,35 +35,5 @@ namespace Sonarr.Api.Cmdlets
                 }
             }
         }
-
-        //protected override void ProcessRecord()
-        //{
-        //    base.ProcessRecord();
-        //    switch (ParameterSetName)
-        //    {
-        //        case "ByPipeline":
-        //            if (Series == null)
-        //            {
-        //                if (ShouldContinue("All Sonarr Series", "Refresh all series?  This may produce a lot of network activity.") ||
-        //                    _force)
-        //                {
-        //                    result = ApplyCommandToAll();
-        //                }
-        //                else
-        //                {
-        //                    return;
-        //                }
-        //            }
-        //            else
-        //            {
-        //                result = ApplyCommandToOne(new object[2] { "seriesId", Series.Id });
-        //            }
-        //            break;
-        //        case "BySeriesId":
-        //            result = ApplyCommandToOne(new object[2] { "seriesId", SeriesId });
-        //            break;
-        //    }
-        //    PipeBackResult(result);
-        //}
     }
 }

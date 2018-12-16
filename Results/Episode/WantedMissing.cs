@@ -18,7 +18,7 @@ namespace Sonarr.Api.Results
         public string SortKey { get; internal set; }
         public string SortDirection { get; internal set; }
         public int TotalRecords { get; internal set; }
-        public SonarrArray<Episode> Records { get; internal set; }
+        public SonarrArray<EpisodeResult> Records { get; internal set; }
 
         public WantedMissingResult() { }
     }
