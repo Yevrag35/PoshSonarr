@@ -99,8 +99,8 @@
     <Compile Include="Results\Calendar\CalendarEntry.cs" />
     <Compile Include="Results\Commands\CommandResult.cs" />
     <Compile Include="Results\Commands\FinalCommandResult.cs" />
-    <Compile Include="Results\Episode\Episode.cs" />
-    <Compile Include="Results\Episode\EpisodeFile.cs" />
+    <Compile Include="Results\Episode\EpisodeResult.cs" />
+    <Compile Include="Results\Episode\EpisodeFileResult.cs" />
     <Compile Include="Results\Episode\EpisodeQuality.cs" />
     <Compile Include="Results\Episode\MediaInfo.cs" />
     <Compile Include="Results\Episode\WantedMissing.cs" />
@@ -127,7 +127,7 @@
     <None Include="packages.config" />
     <None Include="README.md" />
     <None Include="TypeFormats\CalendarEntry.ps1xml" />
-    <None Include="TypeFormats\Results.Episode.ps1xml" />
+    <None Include="TypeFormats\EpisodeFileResult.ps1xml.old" />
     <None Include="TypeFormats\SeriesResult.ps1xml" />
     <None Include="TypeFormats\StatusResult.ps1xml" />
   </ItemGroup>

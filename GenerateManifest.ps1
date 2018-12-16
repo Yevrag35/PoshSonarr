@@ -15,6 +15,7 @@ $manifestFile = "PoshSonarr.psd1";
 if ((Test-Path "$DebugDirectory\$manifestFile"))
 {
 	Remove-Item "$DebugDirectory\$manifestFile" -Force;
+	Get-ChildItem "$DebugDirectory" *.ps1xml -File | Remove-Item -Force;
 }
 
 ## Get Module Version
