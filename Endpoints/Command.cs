@@ -10,17 +10,20 @@ namespace Sonarr.Api.Endpoints
 {
     public class Command : ISonarrPostable
     {
-        private protected const string _ep = "/api/command";
+        private const string _ep = "/api/command";
         private readonly string _full;
         public string Value => _full;
-        public Dictionary<string, object> Parameters { get; }
+        public IDictionary Parameters { get; }
 
         public Uri RelativeEndpoint => new Uri(_ep, UriKind.Relative);
         public SonarrMethod[] MethodsAllowed =>
             new SonarrMethod[2] { SonarrMethod.GET, SonarrMethod.POST };
 
+        public SonarrMethod UsingMethod { get; }
+
         public Command(SonarrCommand cmd)
         {
+            UsingMethod = SonarrMethod.POST;
             Parameters = new Dictionary<string, object>(1)
             {
                 { "name", cmd.ToString() }
@@ -28,7 +31,11 @@ namespace Sonarr.Api.Endpoints
             _full = _ep;
         }
 
-        public Command(long id) => _full = _ep + "/" + id;
+        public Command(long id)
+        {
+            UsingMethod = SonarrMethod.GET;
+            _full = _ep + "/" + id;
+        }
 
         public string GetPostBody() => JsonConvert.SerializeObject(Parameters);
 

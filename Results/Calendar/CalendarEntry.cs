@@ -19,7 +19,7 @@ namespace Sonarr.Api.Results
         public DateTime? AirDate =>
             AirDateUtc.HasValue ? AirDateUtc.Value.ToLocalTime() : (DateTime?)null;
         public DateTime? AirDateUtc { get; internal set; }
-        public EpisodeFile EpisodeFile { get; internal set; }
+        public EpisodeFileResult EpisodeFile { get; internal set; }
         public bool HasFile { get; internal set; }
         public bool IsMonitored { get; internal set; }
         public long AbsoluteEpisodeNumber { get; internal set; }

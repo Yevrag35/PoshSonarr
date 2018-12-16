@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Sonarr.Api.Enums;
+using System;
+using System.Collections;
 
 namespace Sonarr.Api.Endpoints
 {
     public interface ISonarrPostable : ISonarrEndpoint
     {
-        Dictionary<string, object> Parameters { get; }
+        IDictionary Parameters { get; }
+
+        SonarrMethod UsingMethod { get; }
+
         string GetPostBody();
     }
 }

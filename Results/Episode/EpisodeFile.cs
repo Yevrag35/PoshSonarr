@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Sonarr.Api.Results
 {
-    public class EpisodeFile : SonarrResult
+    public class EpisodeFileResult : SonarrResult
     {
         internal override string[] SkipThese => null;
 
@@ -23,9 +23,9 @@ namespace Sonarr.Api.Results
         public bool QualityCutoffNotMet { get; internal set; }
         public long Id { get; internal set; }
 
-        public EpisodeFile() : base() { }
+        public EpisodeFileResult() : base() { }
 
-        public static explicit operator EpisodeFile(JObject job) =>
-            FromJObject<EpisodeFile>(job);
+        public static explicit operator EpisodeFileResult(JObject job) =>
+            FromJObject<EpisodeFileResult>(job);
     }
 }

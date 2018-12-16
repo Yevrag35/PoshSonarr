@@ -75,6 +75,15 @@ namespace Sonarr.Api
             return result;
         }
 
+        public void SonarrDelete(ISonarrPostable endpoint)
+        {
+            if (endpoint.UsingMethod != SonarrMethod.DELETE)
+                throw new InvalidOperationException("The endpoint specified does not have its 'method' explicitly set to DELETE!");
+
+            var useUrl = GetUrl(endpoint);
+            this.Delete(useUrl);
+        }
+
         //public ApiResult Send(ISonarrEndpoint endpoint, 
         //    IDictionary reqProps = null, SonarrMethod method = SonarrMethod.GET, RequestParameters reqParams = null)
         //{

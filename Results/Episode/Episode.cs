@@ -11,15 +11,16 @@ namespace Sonarr.Api.Results
 {
     public class EpisodeResult : SonarrResult
     {
-        internal override string[] SkipThese => new string[1] { "Series" };
+        internal override string[] SkipThese => new string[2] { "EpisodeFileId", "Series" };
 
         #region Public Properties
 
         public int? AbsoluteEpisodeNumber { get; internal set; }
         public DateTime? AirDate { get; internal set; }
         public DateTime? AirDateUtc { get; internal set; }
-        public EpisodeFile EpisodeFile { get; internal set; }
-        public int? EpisodeFileId { get; internal set; }
+        public EpisodeFileResult EpisodeFile { get; internal set; }
+        public long? EpisodeFileId =>
+            EpisodeFile != null ? EpisodeFile.Id : (long?)null;
         public int? EpisodeNumber { get; internal set; }
         public bool HasFile { get; internal set; }
         public long Id { get; internal set; }

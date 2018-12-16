@@ -10,9 +10,11 @@ The module can be found in the [PoshSonarr](https://github.com/Yevrag35/PoshSona
 1. Get-SonarrCalendar
 1. Get-SonarrCommandResult -- __\*NEW\*__
 1. Get-SonarrEpisode
+1. Get-SonarrEpisodeFile -- __\*NEW\*__
 1. Get-SonarrSeries
 1. Get-SonarrStatus
 1. Get-SonarrWantedMissing -- __\*NEW\*__
+1. Remove-SonarrEpisodeFile -- __\*NEW\*__
 1. Rename-SonarrSeriesFiles -- __\*NEW\*__
 1. Start-SonarrRefresh
 1. Start-SonarrRescan
@@ -51,7 +53,7 @@ _* Striken text signifies completion. *_
   * ~~Backup~~
 * Diskspace
 * ~~Episode~~
-* EpisodeFile  -- _(object is done)_
+* ~~EpisodeFile~~
 * History
 * Images       -- _(object is done)_
 * ~~Wanted-Missing~~
