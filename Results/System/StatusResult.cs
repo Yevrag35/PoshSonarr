@@ -32,17 +32,5 @@ namespace Sonarr.Api.Results
         public Uri UrlBase => new Uri(SonarrServiceContext.BaseUrl, UriKind.Absolute);
 
         public StatusResult() : base() { }
-
-        //internal d
-        //{
-        //    var sr = FromJObject<StatusResult>(job);
-        //    if (sr.BuildTime.HasValue)
-        //    {
-        //        var realTime = sr.BuildTime.Value.ToLocalTime();
-        //        sr.BuildTimeUtc = sr.BuildTime;
-        //        sr.BuildTime = realTime;
-        //    }
-        //    return sr;
-        //}
     }
 }

@@ -66,6 +66,7 @@
     <Compile Include="Cmdlets\ConnectSonarr.cs" />
     <Compile Include="Cmdlets\EpisodeFiles\DeleteEpisodeFile.cs" />
     <Compile Include="Cmdlets\EpisodeFiles\GetEpisodeFile.cs" />
+    <Compile Include="Cmdlets\GetDiskspace.cs" />
     <Compile Include="Cmdlets\GetSonarrBackup.cs" />
     <Compile Include="Cmdlets\GetSonarrCalendar.cs" />
     <Compile Include="Cmdlets\GetSonarrEpisode.cs" />
@@ -80,7 +81,9 @@
     <Compile Include="Cmdlets\Command\StartSonarrRssSync.cs" />
     <Compile Include="Components\AttributeResolver.cs" />
     <Compile Include="Components\Exceptions.cs" />
+    <Compile Include="Endpoints\Diskspace.cs" />
     <Compile Include="Endpoints\EpisodeFile.cs" />
+    <Compile Include="Results\Diskspace\DiskspaceResult.cs" />
     <Compile Include="Results\SonarrArray.cs" />
     <Compile Include="Components\SonarrServiceContext.cs" />
     <Compile Include="Endpoints\Command.cs" />
@@ -127,7 +130,9 @@
     <None Include="packages.config" />
     <None Include="README.md" />
     <None Include="TypeFormats\CalendarEntry.ps1xml" />
-    <None Include="TypeFormats\EpisodeFileResult.ps1xml.old" />
+    <None Include="TypeFormats\DiskspaceResult.ps1xml" />
+    <None Include="TypeFormats\EpisodeFileResult.ps1xml" />
+    <None Include="TypeFormats\EpisodeResult.ps1xml" />
     <None Include="TypeFormats\SeriesResult.ps1xml" />
     <None Include="TypeFormats\StatusResult.ps1xml" />
   </ItemGroup>
