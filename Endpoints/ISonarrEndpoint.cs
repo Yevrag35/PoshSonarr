@@ -9,5 +9,7 @@ namespace Sonarr.Api.Endpoints
         SonarrMethod[] MethodsAllowed { get; }
 
         string Value { get; }
+
+        string ToString();
     }
 }

@@ -83,7 +83,9 @@
     <Compile Include="Components\Exceptions.cs" />
     <Compile Include="Endpoints\Diskspace.cs" />
     <Compile Include="Endpoints\EpisodeFile.cs" />
+    <Compile Include="Endpoints\History.cs" />
     <Compile Include="Results\Diskspace\DiskspaceResult.cs" />
+    <Compile Include="Results\PagedResult.cs" />
     <Compile Include="Results\SonarrArray.cs" />
     <Compile Include="Components\SonarrServiceContext.cs" />
     <Compile Include="Endpoints\Command.cs" />
@@ -98,7 +100,7 @@
     <Compile Include="Enums\BackupType.cs" />
     <Compile Include="Enums\Commands.cs" />
     <Compile Include="Enums\SortDirection.cs" />
-    <Compile Include="Enums\SortKey.cs" />
+    <Compile Include="Enums\SortKeys.cs" />
     <Compile Include="Results\Calendar\CalendarEntry.cs" />
     <Compile Include="Results\Commands\CommandResult.cs" />
     <Compile Include="Results\Commands\FinalCommandResult.cs" />
@@ -139,6 +141,7 @@
   <ItemGroup>
     <Folder Include="PoshSonarr\" />
     <Folder Include="ReferenceAssemblies\" />
+    <Folder Include="Results\History\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Generic\ParameterCollection.cs" />

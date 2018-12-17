@@ -13,9 +13,8 @@ namespace Sonarr.Api.Endpoints
 
         public Rootfolder() => Value = _ep;
 
-        public static implicit operator string(Rootfolder rf) => rf.Value;
+        public override string ToString() => this.Value;
 
-        //IEnumerator<string> IEnumerable<string>.GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
-        //IEnumerator IEnumerable.GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
+        public static implicit operator string(Rootfolder rf) => rf.ToString();
     }
 }

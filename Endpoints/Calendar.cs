@@ -6,9 +6,8 @@ namespace Sonarr.Api.Endpoints
 {
     public class Calendar : ISonarrEndpoint
     {
-        private protected const string _ep = "/api/calendar";
-        private readonly string _full;
-        public string Value => _full;
+        private const string _ep = "/api/calendar";
+        public string Value { get; }
         public Uri RelativeEndpoint => new Uri(_ep, UriKind.Relative);
         public SonarrMethod[] MethodsAllowed => new SonarrMethod[1] { SonarrMethod.GET };
 
@@ -25,18 +24,17 @@ namespace Sonarr.Api.Endpoints
             }
             if (list.Count <= 0)
             {
-                _full = _ep;
+                Value = _ep;
             }
             else
             {
                 var str = string.Join("&", list.ToArray());
-                _full = _ep + "?" + str;
+                Value = _ep + "?" + str;
             }
         }
 
-        public static implicit operator string(Calendar cal) => cal.Value;
+        public override string ToString() => this.Value;
 
-        //IEnumerator<string> IEnumerable<string>.GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
-        //IEnumerator IEnumerable.GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
+        public static implicit operator string(Calendar cal) => cal.ToString();
     }
 }

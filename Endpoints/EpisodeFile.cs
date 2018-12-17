@@ -41,5 +41,9 @@ namespace Sonarr.Api.Endpoints
         }
 
         public string GetPostBody() => JsonConvert.SerializeObject(Parameters);
+
+        public override string ToString() => this.Value;
+
+        public static implicit operator string(EpisodeFile ef) => ef.ToString();
     }
 }

@@ -14,6 +14,8 @@ namespace Sonarr.Api.Endpoints
 
         public Diskspace() => Value = _ep;
 
-        public static implicit operator string(Diskspace ds) => ds.Value;
+        public override string ToString() => this.Value;
+
+        public static implicit operator string(Diskspace ds) => ds.ToString();
     }
 }

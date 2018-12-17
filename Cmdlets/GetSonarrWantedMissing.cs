@@ -19,7 +19,7 @@ namespace Sonarr.Api.Cmdlets
     public class GetSonarrWantedMissing : BaseCmdlet
     {
         [Parameter(Mandatory = false)]
-        public SortKey SortKey = SortKey.SeriesTitle;
+        public WantedMissingSortKey SortKey = WantedMissingSortKey.SeriesTitle;
 
         [Parameter(Mandatory = false)]
         public SortDirection SortDirection = SortDirection.Ascending;

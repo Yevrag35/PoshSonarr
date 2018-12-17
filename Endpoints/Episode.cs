@@ -6,21 +6,25 @@ namespace Sonarr.Api.Endpoints
     public class Episode : ISonarrEndpoint
     {
         private const string _ep = "/api/episode";
-        private readonly string _full;
 
-        public string Value => _full;
+        public string Value { get; }
 
         public Uri RelativeEndpoint => new Uri(_ep, UriKind.Relative);
         public SonarrMethod[] MethodsAllowed => new SonarrMethod[2] { SonarrMethod.GET, SonarrMethod.PUT };
 
-        public Episode() => _full = _ep;
+        public Episode() => Value = _ep;
 
         public Episode(long id, bool isEpisodeId)
         {
-            var ending = isEpisodeId ? "/" + Convert.ToString(id) : "?seriesId=" + Convert.ToString(id);
-            _full = _ep + ending;
+            var ending = isEpisodeId ? 
+                "/" + Convert.ToString(id) : 
+                "?seriesId=" + Convert.ToString(id);
+
+            Value = _ep + ending;
         }
 
-        public static implicit operator string(Episode ep) => ep.Value;
+        public override string ToString() => this.Value;
+
+        public static implicit operator string(Episode ep) => ep.ToString();
     }
 }

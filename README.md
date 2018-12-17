@@ -9,6 +9,7 @@ The module can be found in the [PoshSonarr](https://github.com/Yevrag35/PoshSona
 1. Get-SonarrBackup
 1. Get-SonarrCalendar
 1. Get-SonarrCommandResult -- __\*NEW\*__
+1. Get-SonarrDisk -- __\*NEW\*__
 1. Get-SonarrEpisode
 1. Get-SonarrEpisodeFile -- __\*NEW\*__
 1. Get-SonarrSeries
@@ -51,7 +52,7 @@ _* Striken text signifies completion. *_
   * RenameFiles  _-- (having api issues)_
   * ~~RenameSeries~~
   * ~~Backup~~
-* Diskspace
+* ~~Diskspace~~
 * ~~Episode~~
 * ~~EpisodeFile~~
 * History

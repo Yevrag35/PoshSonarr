@@ -7,7 +7,6 @@ namespace Sonarr.Api.Endpoints
     public class WantedMissing : ISonarrEndpoint
     {
         private const string _ep = "/api/wanted/missing";
-        private readonly string _full;
 
         private Resolver _res;
 
@@ -15,9 +14,9 @@ namespace Sonarr.Api.Endpoints
 
         public SonarrMethod[] MethodsAllowed => new SonarrMethod[1] { SonarrMethod.GET };
 
-        public string Value => _full;
+        public string Value { get; }
 
-        public WantedMissing(SortKey sortKey, SortDirection direction, int page = 1, int pageSize = 10)
+        public WantedMissing(WantedMissingSortKey sortKey, SortDirection direction, int page = 1, int pageSize = 10)
         {
             _res = new Resolver();
             var strs = new string[4]
@@ -28,12 +27,11 @@ namespace Sonarr.Api.Endpoints
                 "sortDir=" + _res.GetNameAttribute(direction)
             };
             var str = string.Join("&", strs);
-            _full = _ep + "?" + str;
+            Value = _ep + "?" + str;
         }
 
-        public static implicit operator string(WantedMissing wm) => wm.Value;
+        public override string ToString() => this.Value;
 
-        //IEnumerator<string> IEnumerable<string>.GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
-        //IEnumerator IEnumerable.GetEnumerator() => new List<string>(1) { this.Value }.GetEnumerator();
+        public static implicit operator string(WantedMissing wm) => wm.ToString();
     }
 }

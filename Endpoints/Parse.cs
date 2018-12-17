@@ -9,20 +9,21 @@ namespace Sonarr.Api.Endpoints
 {
     public class Parse : ISonarrEndpoint
     {
-        private protected const string _ep = "/api/parse";
+        private const string _ep = "/api/parse";
         public Uri RelativeEndpoint => new Uri(_ep, UriKind.Relative);
-        public string Value => throw new NotImplementedException();
+        public string Value { get; }
 
         public SonarrMethod[] MethodsAllowed =>
             typeof(SonarrMethod).GetEnumValues().Cast<SonarrMethod>().ToArray();    // Allow all methods
 
-        #region Constructors
-        public Parse() { }
+        #region CONSTRUCTORS
 
+        public Parse() { }
 
         #endregion
 
-        //public IEnumerator<string> GetEnumerator() => throw new NotImplementedException();
-        //IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
+        public override string ToString() => this.Value;
+
+        public static implicit operator string(Parse p) => p.ToString();
     }
 }
