@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RootNamespace>MG.Sonarr</RootNamespace>
+    <LangVersion>7.3</LangVersion>
+    <Description>A library consisting of PowerShell cmdlets for querying/managing Sonarr PVR.</Description>
+    <Copyright>Copyright © 2019 Yevrag35, LLC.</Copyright>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/Yevrag35/PoshSonarr</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Yevrag35/PoshSonarr</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <Authors>Mike Garvey</Authors>
+    <Company>Yevrag35, LLC.</Company>
+    <Version>1.0.0</Version>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.PowerShell.SDK" Version="6.2.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Assemblies\" />
+    <Folder Include="Cmdlets\Bases\" />
+    <Folder Include="TypeFormats\" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="&quot;C:\Program Files\PowerShell\6\pwsh.exe&quot; -NoProfile -ExecutionPolicy Bypass -NonInteractive -WindowStyle Hidden -File &quot;$(ProjectDir)GenerateManifest.ps1&quot; -DebugDirectory $(TargetDir) -ModuleFileDirectory &quot;$(ProjectDir)TypeFormats&quot; -TargetFileName &quot;$(TargetFileName)&quot;" />
+  </Target>
+
+</Project>

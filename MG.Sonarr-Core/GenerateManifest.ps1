@@ -6,25 +6,19 @@
     [parameter(Mandatory = $true, Position = 1)]
     [string] $ModuleFileDirectory,
 
-    [parameter(Mandatory = $true, Position = 2)]
-    [string] $AssemblyInfo,
-
     [parameter(Mandatory = $true, Position = 3)]
     [string] $TargetFileName
 )
 
+$curDir = Split-Path -Parent $MyInvocation.MyCommand.Definition;
+
 ## Clear out files
 Get-ChildItem -Path $DebugDirectory -Include *.ps1xml -Recurse | Remove-Item -Force;
 
-## Get Module Version
-$assInfo = Get-Content -Path $AssemblyInfo;
-foreach ($line in $assInfo)
-{
-    if ($line -like "*AssemblyFileVersion(*")
-    {
-        $vers = $line -replace '^\s*\[assembly\:\sAssemblyFileVersion\(\"(.*?)\"\)\]$', '$1';
-    }
-}
+## Get Module Version from project.assets.json
+$json = Get-Content "$curDir\obj\project.assets.json" | ConvertFrom-Json;
+$vers = $json.project.version;
+
 $allFiles = Get-ChildItem $ModuleFileDirectory -Include * -Exclude *.old -Recurse;
 $References = Join-Path "$ModuleFileDirectory\.." "Assemblies";
 
@@ -83,6 +77,7 @@ $manifest = @{
 							'Backup', 'Series', 'Episode', 'Rss', 'Sync', 'Calendar', 'Refresh', 'Rescan',
 							'Status', 'Connect')
 };
+
 if ($Aliases.Count -gt 0)
 {
     $manifest.AliasesToExport = $Aliases.ToArray();

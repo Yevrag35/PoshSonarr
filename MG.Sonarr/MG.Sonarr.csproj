@@ -57,7 +57,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Assemblies\" />
+    <Folder Include="Cmdlets\Bases\" />
     <Folder Include="TypeFormats\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -NonInteractive -WindowStyle Hidden -File "$(ProjectDir)GenerateManifest.ps1" -DebugDirectory "$(ProjectDir)bin\$(ConfigurationName)" -ModuleFileDirectory "$(ProjectDir)TypeFormats" -AssemblyInfo "$(ProjectDir)Properties\AssemblyInfo.cs" -TargetFileName "$(TargetFileName)"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

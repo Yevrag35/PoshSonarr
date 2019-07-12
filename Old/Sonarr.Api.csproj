@@ -148,6 +148,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -NonInteractive -WindowStyle Hidden -File "$(ProjectDir)GenerateManifest.ps1" -DebugDirectory "$(ProjectDir)bin\$(ConfigurationName)" -AssemblyInfo "$(ProjectDir)Properties\AssemblyInfo.cs" -TargetFileName "$(TargetFileName)"</PreBuildEvent>
+    <PreBuildEvent>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -NonInteractive -WindowStyle Hidden -File "$(ProjectDir)GenerateManifest.ps1" -DebugDirectory "$(ProjectDir)bin\$(ConfigurationName)" -ModuleFileDirectory "$(ProjectDir)TypeFormats" -AssemblyInfo "$(ProjectDir)Properties\AssemblyInfo.cs" -TargetFileName "$(TargetFileName)"</PreBuildEvent>
   </PropertyGroup>
 </Project>
