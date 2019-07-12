@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8A0AB5F8-B56E-45B0-8128-6F6895DD3CED}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Sonarr.Api</RootNamespace>
+    <AssemblyName>Sonarr.Api</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>PoshSonarr\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MG.Api, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceAssemblies\MG.Api.dll</HintPath>
+    </Reference>
+    <Reference Include="MG.Attributes">
+      <HintPath>ReferenceAssemblies\MG.Attributes.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceAssemblies\System.Management.Automation.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Cmdlets\Base\BaseCmdlet.cs" />
+    <Compile Include="Cmdlets\Base\NonPipeableCommandCmdlet.cs" />
+    <Compile Include="Cmdlets\Base\PipeableWithEpisode.cs" />
+    <Compile Include="Cmdlets\Base\PipeableWithEpisodeCommand.cs" />
+    <Compile Include="Cmdlets\Base\PipeableWithSeries.cs" />
+    <Compile Include="Cmdlets\Base\PipeableWithSeriesCommand.cs" />
+    <None Include="Cmdlets\Command\RenameFiles.cs" />
+    <Compile Include="Cmdlets\Command\GetCommandResult.cs" />
+    <Compile Include="Cmdlets\Command\StartSonarrSearch.cs" />
+    <Compile Include="Cmdlets\ConnectSonarr.cs" />
+    <Compile Include="Cmdlets\EpisodeFiles\DeleteEpisodeFile.cs" />
+    <Compile Include="Cmdlets\EpisodeFiles\GetEpisodeFile.cs" />
+    <Compile Include="Cmdlets\GetDiskspace.cs" />
+    <Compile Include="Cmdlets\GetSonarrBackup.cs" />
+    <Compile Include="Cmdlets\GetSonarrCalendar.cs" />
+    <Compile Include="Cmdlets\GetSonarrEpisode.cs" />
+    <None Include="Cmdlets\GetSonarrRootFolder.cs" />
+    <Compile Include="Cmdlets\GetSonarrSeries.cs" />
+    <Compile Include="Cmdlets\GetSonarrStatus.cs" />
+    <Compile Include="Cmdlets\Command\BackupSonarr.cs" />
+    <Compile Include="Cmdlets\GetSonarrWantedMissing.cs" />
+    <Compile Include="Cmdlets\Command\RenameSeriesFiles.cs" />
+    <Compile Include="Cmdlets\Command\StartSonarrRefresh.cs" />
+    <Compile Include="Cmdlets\Command\StartSonarrRescan.cs" />
+    <Compile Include="Cmdlets\Command\StartSonarrRssSync.cs" />
+    <Compile Include="Components\AttributeResolver.cs" />
+    <Compile Include="Components\Exceptions.cs" />
+    <Compile Include="Endpoints\Diskspace.cs" />
+    <Compile Include="Endpoints\EpisodeFile.cs" />
+    <Compile Include="Endpoints\History.cs" />
+    <Compile Include="Results\Diskspace\DiskspaceResult.cs" />
+    <Compile Include="Results\PagedResult.cs" />
+    <Compile Include="Results\SonarrArray.cs" />
+    <Compile Include="Components\SonarrServiceContext.cs" />
+    <Compile Include="Endpoints\Command.cs" />
+    <Compile Include="Endpoints\Episode.cs" />
+    <Compile Include="Endpoints\ISonarrEndpoint.cs" />
+    <Compile Include="Components\ApiCaller.cs" />
+    <Compile Include="Endpoints\ISonarrPostable.cs" />
+    <Compile Include="Endpoints\Rootfolder.cs" />
+    <Compile Include="Endpoints\System-Backup.cs" />
+    <Compile Include="Endpoints\System-Status.cs" />
+    <Compile Include="Endpoints\WantedMissing.cs" />
+    <Compile Include="Enums\BackupType.cs" />
+    <Compile Include="Enums\Commands.cs" />
+    <Compile Include="Enums\SortDirection.cs" />
+    <Compile Include="Enums\SortKeys.cs" />
+    <Compile Include="Results\Calendar\CalendarEntry.cs" />
+    <Compile Include="Results\Commands\CommandResult.cs" />
+    <Compile Include="Results\Commands\FinalCommandResult.cs" />
+    <Compile Include="Results\Episode\EpisodeResult.cs" />
+    <Compile Include="Results\Episode\EpisodeFileResult.cs" />
+    <Compile Include="Results\Episode\EpisodeQuality.cs" />
+    <Compile Include="Results\Episode\MediaInfo.cs" />
+    <Compile Include="Results\Episode\WantedMissing.cs" />
+    <Compile Include="Results\Rootfolder\RootfolderResult.cs" />
+    <Compile Include="Results\Season\SeasonStatistics.cs" />
+    <Compile Include="Results\Series\SonarrSeriesImage.cs" />
+    <Compile Include="Results\Series\SeriesResult.cs" />
+    <Compile Include="Results\System\BackupResult.cs" />
+    <Compile Include="Results\System\StatusResult.cs" />
+    <Content Include="DebugScript.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="Cmdlets\UpdateSonarrEpisode.cs" />
+    <None Include="GenerateManifest.ps1" />
+    <None Include="Generic\Parameter.cs" />
+    <None Include="Endpoints\Parse.cs" />
+    <Compile Include="Endpoints\Series.cs" />
+    <Compile Include="Enums\Methods.cs" />
+    <Compile Include="Results\Season\SonarrSeason.cs" />
+    <Compile Include="Results\SonarrResult.cs" />
+    <Compile Include="Components\ApiKey.cs" />
+    <Compile Include="Endpoints\Calendar.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="packages.config" />
+    <None Include="README.md" />
+    <None Include="TypeFormats\CalendarEntry.ps1xml" />
+    <None Include="TypeFormats\DiskspaceResult.ps1xml" />
+    <None Include="TypeFormats\EpisodeFileResult.ps1xml" />
+    <None Include="TypeFormats\EpisodeResult.ps1xml" />
+    <None Include="TypeFormats\SeriesResult.ps1xml" />
+    <None Include="TypeFormats\StatusResult.ps1xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="PoshSonarr\" />
+    <Folder Include="ReferenceAssemblies\" />
+    <Folder Include="Results\History\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Generic\ParameterCollection.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -NonInteractive -WindowStyle Hidden -File "$(ProjectDir)GenerateManifest.ps1" -DebugDirectory "$(ProjectDir)bin\$(ConfigurationName)" -AssemblyInfo "$(ProjectDir)Properties\AssemblyInfo.cs" -TargetFileName "$(TargetFileName)"</PreBuildEvent>
+  </PropertyGroup>
+</Project>
