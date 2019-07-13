@@ -5,9 +5,7 @@ VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sonarr.Api", "Old\Sonarr.Api.csproj", "{8A0AB5F8-B56E-45B0-8128-6F6895DD3CED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MG.Sonarr", "MG.Sonarr\MG.Sonarr.csproj", "{1158DAB9-8840-4027-A6F0-A7E82E5F12C5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MG.Sonarr-Core", "MG.Sonarr-Core\MG.Sonarr-Core.csproj", "{889933B8-71CB-48C7-8A96-F730A0528768}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MG.Sonarr-Core", "MG.Sonarr-Core\MG.Sonarr-Core.csproj", "{889933B8-71CB-48C7-8A96-F730A0528768}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,10 +17,6 @@ Global
 		{8A0AB5F8-B56E-45B0-8128-6F6895DD3CED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A0AB5F8-B56E-45B0-8128-6F6895DD3CED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A0AB5F8-B56E-45B0-8128-6F6895DD3CED}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1158DAB9-8840-4027-A6F0-A7E82E5F12C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1158DAB9-8840-4027-A6F0-A7E82E5F12C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1158DAB9-8840-4027-A6F0-A7E82E5F12C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1158DAB9-8840-4027-A6F0-A7E82E5F12C5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{889933B8-71CB-48C7-8A96-F730A0528768}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{889933B8-71CB-48C7-8A96-F730A0528768}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{889933B8-71CB-48C7-8A96-F730A0528768}.Release|Any CPU.ActiveCfg = Release|Any CPU
