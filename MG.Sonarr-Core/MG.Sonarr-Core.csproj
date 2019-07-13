@@ -27,14 +27,38 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Objects\Interfaces\IApiKey.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="DebugScript.ps1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="DebugScript.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.PowerShell.SDK" Version="6.2.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Assemblies\" />
-    <Folder Include="Cmdlets\Bases\" />
-    <Folder Include="TypeFormats\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Objects\Interfaces\IApiKey.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="MG.Dynamic-Core, Version=3.2.2.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>D:\Local_Repos\PoshSonarr\MG.Sonarr-Core\Assemblies\MG.Dynamic-Core.dll</HintPath>
+      <Private>true</Private>
+      <SpecificVersion>true</SpecificVersion>
+    </Reference>
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

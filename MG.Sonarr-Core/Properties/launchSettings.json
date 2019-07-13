@@ -3,7 +3,7 @@
     "MG.Sonarr-Core": {
       "commandName": "Executable",
       "executablePath": "C:\\Program Files\\PowerShell\\6\\pwsh.exe",
-      "commandLineArgs": "-NoExit -NoLogo -File \"DebugScript.ps1\""
+      "commandLineArgs": "-NoExit -File \"DebugScript.ps1\""
     }
   }
 }

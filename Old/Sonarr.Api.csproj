@@ -54,6 +54,7 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiKey.cs" />
     <Compile Include="Cmdlets\Base\BaseCmdlet.cs" />
     <Compile Include="Cmdlets\Base\NonPipeableCommandCmdlet.cs" />
     <Compile Include="Cmdlets\Base\PipeableWithEpisode.cs" />

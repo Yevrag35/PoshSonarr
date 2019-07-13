@@ -62,13 +62,13 @@ $manifest = @{
     CompanyName            = 'Yevrag35, LLC.'
     Copyright              = '(c) 2019 Yevrag35, LLC.  All rights reserved.'
     ModuleVersion          = $($vers.Trim() -split '\.' | Select-Object -First 3) -join '.'
-    PowerShellVersion      = '5.0'
+    PowerShellVersion      = '5.1'
     DotNetFrameworkVersion = '4.7'
     RootModule             = $TargetFileName
     DefaultCommandPrefix   = "Sonarr"
     RequiredAssemblies     = $allDlls
 	CmdletsToExport		   = $Cmdlets
-#    VariablesToExport      = ''
+	CompatiblePSEditions   = "Core", "Desktop"
     FormatsToProcess       = if ($allFormats.Length -gt 0) { $allFormats } else { @() };
     ProjectUri             = 'https://github.com/Yevrag35/PoshSonarr'
 	LicenseUri			   = 'https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE'
@@ -78,10 +78,5 @@ $manifest = @{
 							'Status', 'Connect')
 };
 
-if ($Aliases.Count -gt 0)
-{
-    $manifest.AliasesToExport = $Aliases.ToArray();
-}
-
 New-ModuleManifest @manifest;
-Update-ModuleManifest -Path $modPath -Prerelease 'alpha';
+Update-ModuleManifest -Path $modPath -Prerelease 'alpha' -FunctionsToExport '';
