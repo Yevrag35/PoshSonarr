@@ -46,11 +46,6 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
-        protected override void EndProcessing()
-        {
-
-        }
-
         #endregion
 
         #region BACKEND METHODS

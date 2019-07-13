@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,6 +16,21 @@ namespace MG.Sonarr.Cmdlets
         #region FIELDS/CONSTANTS
         protected private ApiCaller _api;
         protected private bool _noPre;
+
+        protected private static readonly JsonSerializerSettings Serializer = new JsonSerializerSettings
+        {
+            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            DateFormatHandling = DateFormatHandling.IsoDateFormat,
+            DateParseHandling = DateParseHandling.DateTime,
+            DateTimeZoneHandling = DateTimeZoneHandling.Local,
+            DefaultValueHandling = DefaultValueHandling.Populate,
+            FloatParseHandling = FloatParseHandling.Decimal,
+            Formatting = Formatting.Indented,
+            NullValueHandling = NullValueHandling.Ignore,
+            PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+            ObjectCreationHandling = ObjectCreationHandling.Replace,
+            ReferenceLoopHandling = ReferenceLoopHandling.Serialize
+        };
 
         #endregion
 

@@ -8,4 +8,11 @@ namespace MG.Sonarr
         Manual,
         Update
     }
+
+    public enum CoverType
+    {
+        Banner,
+        Fanart,
+        Poster
+    }
 }
