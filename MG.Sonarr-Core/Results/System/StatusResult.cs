@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace MG.Sonarr.Results
 {
-    public class SonarrStatusResult : ISonarrResult
+    public class SonarrStatusResult : BaseResult
     {
         public string AppData { get; set; }
         public string Authentication { get; set; }

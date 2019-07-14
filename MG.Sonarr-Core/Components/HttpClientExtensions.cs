@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace MG.Sonarr
@@ -38,12 +39,12 @@ namespace MG.Sonarr
             client.DefaultRequestHeaders.Add(kvp.Key, kvp.Value);
         }
 
-        public static SeriesResult ConvertToSeriesResult(string jsonResult)
+        public static SeriesResult ConvertToSeriesResult(string jsonResult, bool fromSearch = false)
         {
             var jtok = JToken.Parse(jsonResult);
-            return ConvertToSeriesResult(jtok);
+            return ConvertToSeriesResult(jtok, fromSearch);
         }
-        public static SeriesResult ConvertToSeriesResult(JToken jtoken)
+        public static SeriesResult ConvertToSeriesResult(JToken jtoken, bool fromSearch = false)
         {
             SeriesResult series = JsonConvert.DeserializeObject<SeriesResult>(JsonConvert.SerializeObject(jtoken, Serializer), Serializer);
 
@@ -55,14 +56,14 @@ namespace MG.Sonarr
             return series;
         }
 
-        public static List<SeriesResult> ConvertToSeriesResults(string jsonResult)
+        public static List<SeriesResult> ConvertToSeriesResults(string jsonResult, bool fromSearch = true)
         {
             var jar = JArray.Parse(jsonResult);
             var list = new List<SeriesResult>(jar.Count);
             for (int i = 0; i < jar.Count; i++)
             {
                 JToken jtok = jar[i];
-                list.Add(ConvertToSeriesResult(jtok));
+                list.Add(ConvertToSeriesResult(jtok, fromSearch));
             }
 
             return list;
@@ -118,7 +119,30 @@ namespace MG.Sonarr
 
         public static string SonarrPost(this HttpClient client, string endpoint, string jsonBody)
         {
-            return null;
+            StringContent sc = null;
+            if (!string.IsNullOrEmpty(jsonBody))
+                sc = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+
+            Task<HttpResponseMessage> call = client.PostAsync(endpoint, sc);
+            call.Wait();
+
+            string res = null;
+            if (!call.IsFaulted && !call.IsCanceled)
+            {
+                using (HttpResponseMessage resp = call.Result)
+                {
+                    if (resp.IsSuccessStatusCode)
+                    {
+                        using (HttpContent content = resp.Content)
+                        {
+                            Task<string> strTask = content.ReadAsStringAsync();
+                            strTask.Wait();
+                            res = strTask.Result;
+                        }
+                    }
+                }
+            }
+            return res;
         }
 
         public static bool IsJsonArray(string jsonStr)

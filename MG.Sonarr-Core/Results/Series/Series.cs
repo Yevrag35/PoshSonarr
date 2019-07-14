@@ -8,9 +8,8 @@ using System.Linq;
 
 namespace MG.Sonarr.Results
 {
-    public class SeriesResult : ISonarrResult
+    public class SeriesResult : BaseResult
     {
-        private List<Season> _seasons;
 
         public DateTime? Added { get; set; }
         public string AirTime { get; set; }
@@ -31,7 +30,7 @@ namespace MG.Sonarr.Results
         public long? Runtime { get; set; }
         public int? SeasonCount { get; set; }
         public bool SeasonFolder { get; set; }
-        public IEnumerable<Season> Seasons => _seasons.AsEnumerable();
+        public SeasonCollection Seasons { get; private set; }
         public string SeriesType { get; set; }
         public string SortTitle { get; set; }
         public string Status { get; set; }
@@ -46,11 +45,11 @@ namespace MG.Sonarr.Results
 
         internal void AddSeason(Season season)
         {
-            if (_seasons == null)
-                _seasons = new List<Season>(new Season[1] { season });
+            if (this.Seasons == null)
+                this.Seasons = new SeasonCollection(new Season[1] { season });
 
             else
-                _seasons.Add(season);
+                this.Seasons.Add(season);
         }
 
         internal void AddSeason(JToken token)

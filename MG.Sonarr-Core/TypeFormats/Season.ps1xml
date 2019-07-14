@@ -13,10 +13,16 @@
 							<ListItem>
 								<Label>EpisodeCount</Label>
 								<ScriptBlock>$_.Statistics.EpisodeCount</ScriptBlock>
+								<ItemSelectionCondition>
+									<ScriptBlock>$_.Statistics -ne $null</ScriptBlock>
+								</ItemSelectionCondition>
 							</ListItem>
 							<ListItem>
 								<Label>EpisodeFileCount</Label>
 								<ScriptBlock>$_.Statistics.EpisodeFileCount</ScriptBlock>
+								<ItemSelectionCondition>
+									<ScriptBlock>$_.Statistics -ne $null</ScriptBlock>
+								</ItemSelectionCondition>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Monitored</PropertyName>
@@ -24,6 +30,9 @@
 							<ListItem>
 								<Label>PercentOfEpisodes</Label>
 								<ScriptBlock>$_.Statistics.PercentOfEpisodes</ScriptBlock>
+								<ItemSelectionCondition>
+									<ScriptBlock>$_.Statistics -ne $null</ScriptBlock>
+								</ItemSelectionCondition>
 							</ListItem>
 							<ListItem>
 								<Label>PreviousAiring</Label>
@@ -38,10 +47,16 @@
 							<ListItem>
 								<Label>SizeOnDisk</Label>
 								<ScriptBlock>"{0} GB" -f $([math]::Round(($_.Statistics.SizeOnDisk / 1GB), 2))</ScriptBlock>
+								<ItemSelectionCondition>
+									<ScriptBlock>$_.Statistics -ne $null</ScriptBlock>
+								</ItemSelectionCondition>
 							</ListItem>
 							<ListItem>
 								<Label>TotalEpisodeCount</Label>
 								<ScriptBlock>$_.Statistics.TotalEpisodeCount</ScriptBlock>
+								<ItemSelectionCondition>
+									<ScriptBlock>$_.Statistics -ne $null</ScriptBlock>
+								</ItemSelectionCondition>
 							</ListItem>
                         </ListItems>
                     </ListEntry>

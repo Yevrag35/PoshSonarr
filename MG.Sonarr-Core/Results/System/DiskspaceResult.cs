@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace MG.Sonarr.Results
 {
-    public class SonarrDiskspaceResult : ISonarrResult
+    public class SonarrDiskspaceResult : BaseResult
     {
         public long? FreeSpace { get; set; }
         public string Label { get; set; }

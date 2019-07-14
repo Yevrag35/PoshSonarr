@@ -53,7 +53,8 @@ namespace MG.Sonarr.Cmdlets
                         if (!string.IsNullOrEmpty(jsonStr))
                         {
                             var tok = JToken.Parse(jsonStr);
-                            base.WriteObject(JsonConvert.DeserializeObject<List<SeriesResult>>(jsonStr, Serializer), true);
+                            var list = SonarrHttpClient.ConvertToSeriesResults(jsonStr, false);
+                            base.WriteObject(list, true);
                         }
                     }
                 }
@@ -75,7 +76,8 @@ namespace MG.Sonarr.Cmdlets
                         if (!string.IsNullOrEmpty(jsonStr))
                         {
                             var tok = JToken.Parse(jsonStr);
-                            base.WriteObject(JsonConvert.DeserializeObject<List<SeriesResult>>(jsonStr, Serializer), true);
+                            var list = SonarrHttpClient.ConvertToSeriesResults(jsonStr, false);
+                            base.WriteObject(list, true);
                         }
                     }
                 }

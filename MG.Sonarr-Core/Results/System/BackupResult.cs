@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MG.Sonarr.Results
 {
-    public class SonarrBackupResult : ISonarrResult
+    public class SonarrBackupResult : BaseResult
     {
         public long Id { get; set; }
         public string Name { get; set; }
