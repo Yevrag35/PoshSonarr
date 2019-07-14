@@ -18,6 +18,7 @@ namespace MG.Sonarr.Results
         public string CleanTitle { get; set; }
         public DateTime? FirstAired { get; set; }
         public string[] Genres { get; set; }
+        public long Id { get; set; }
         public SeriesImage[] Images { get; set; }
         public string IMDBId { get; set; }
         public bool Monitored { get; set; }

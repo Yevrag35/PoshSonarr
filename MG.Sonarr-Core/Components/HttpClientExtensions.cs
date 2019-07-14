@@ -38,6 +38,23 @@ namespace MG.Sonarr
             client.DefaultRequestHeaders.Add(kvp.Key, kvp.Value);
         }
 
+        public static SeriesResult ConvertToSeriesResult(string jsonResult)
+        {
+            var jtok = JToken.Parse(jsonResult);
+            return ConvertToSeriesResult(jtok);
+        }
+        public static SeriesResult ConvertToSeriesResult(JToken jtoken)
+        {
+            SeriesResult series = JsonConvert.DeserializeObject<SeriesResult>(JsonConvert.SerializeObject(jtoken, Serializer), Serializer);
+
+            var seasonArray = jtoken["seasons"] as JArray;
+            for (int s = 0; s < seasonArray.Count; s++)
+            {
+                series.AddSeason(seasonArray[s]);
+            }
+            return series;
+        }
+
         public static List<SeriesResult> ConvertToSeriesResults(string jsonResult)
         {
             var jar = JArray.Parse(jsonResult);
@@ -45,15 +62,7 @@ namespace MG.Sonarr
             for (int i = 0; i < jar.Count; i++)
             {
                 JToken jtok = jar[i];
-                SeriesResult series = JsonConvert.DeserializeObject<SeriesResult>(
-                    JsonConvert.SerializeObject(jtok, Serializer), Serializer);
-
-                var seasonArray = jtok["seasons"] as JArray;
-                for (int s = 0; s < seasonArray.Count; s++)
-                {
-                    series.AddSeason(seasonArray[s]);
-                }
-                list.Add(series);
+                list.Add(ConvertToSeriesResult(jtok));
             }
 
             return list;
