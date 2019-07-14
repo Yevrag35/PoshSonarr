@@ -1,10 +1,17 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace MG.Sonarr.Results
 {
-    public class SeriesResult
+    public class SeriesResult : ISonarrResult
     {
+        private List<Season> _seasons;
+
         public DateTime? Added { get; set; }
         public string AirTime { get; set; }
         public string Certification { get; set; }
@@ -23,6 +30,7 @@ namespace MG.Sonarr.Results
         public long? Runtime { get; set; }
         public int? SeasonCount { get; set; }
         public bool SeasonFolder { get; set; }
+        public IEnumerable<Season> Seasons => _seasons.AsEnumerable();
         public string SeriesType { get; set; }
         public string SortTitle { get; set; }
         public string Status { get; set; }
@@ -35,5 +43,19 @@ namespace MG.Sonarr.Results
         public bool UseSceneNumbering { get; set; }
         public int Year { get; set; }
 
+        internal void AddSeason(Season season)
+        {
+            if (_seasons == null)
+                _seasons = new List<Season>(new Season[1] { season });
+
+            else
+                _seasons.Add(season);
+        }
+
+        internal void AddSeason(JToken token)
+        {
+            var season = new Season(token);
+            this.AddSeason(season);
+        }
     }
 }

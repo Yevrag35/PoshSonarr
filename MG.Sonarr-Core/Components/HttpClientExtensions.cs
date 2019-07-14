@@ -1,8 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using MG.Sonarr.Results;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -15,7 +17,7 @@ namespace MG.Sonarr
         private const string API_PREFIX = "/api";
         private const string CONTENT_TYPE = "application/json";
 
-        private static readonly JsonSerializerSettings Serializer = new JsonSerializerSettings
+        internal static readonly JsonSerializerSettings Serializer = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
             DateFormatHandling = DateFormatHandling.IsoDateFormat,
@@ -34,6 +36,27 @@ namespace MG.Sonarr
         {
             KeyValuePair<string, string> kvp = apiKey.AsKeyValuePair();
             client.DefaultRequestHeaders.Add(kvp.Key, kvp.Value);
+        }
+
+        public static List<SeriesResult> ConvertToSeriesResults(string jsonResult)
+        {
+            var jar = JArray.Parse(jsonResult);
+            var list = new List<SeriesResult>(jar.Count);
+            for (int i = 0; i < jar.Count; i++)
+            {
+                JToken jtok = jar[i];
+                SeriesResult series = JsonConvert.DeserializeObject<SeriesResult>(
+                    JsonConvert.SerializeObject(jtok, Serializer), Serializer);
+
+                var seasonArray = jtok["seasons"] as JArray;
+                for (int s = 0; s < seasonArray.Count; s++)
+                {
+                    series.AddSeason(seasonArray[s]);
+                }
+                list.Add(series);
+            }
+
+            return list;
         }
 
         public static T ConvertToSonarrResult<T>(string jsonResult) where T : ISonarrResult

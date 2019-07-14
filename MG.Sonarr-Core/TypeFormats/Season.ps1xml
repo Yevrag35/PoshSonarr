@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+    <ViewDefinitions>
+        <View>
+            <Name>DiskspaceResult</Name>
+            <ViewSelectedBy>
+                <TypeName>MG.Sonarr.Results.Season</TypeName>
+            </ViewSelectedBy>
+            <ListControl>
+                <ListEntries>
+                    <ListEntry>
+                        <ListItems>
+							<ListItem>
+								<Label>EpisodeCount</Label>
+								<ScriptBlock>$_.Statistics.EpisodeCount</ScriptBlock>
+							</ListItem>
+							<ListItem>
+								<Label>EpisodeFileCount</Label>
+								<ScriptBlock>$_.Statistics.EpisodeFileCount</ScriptBlock>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Monitored</PropertyName>
+							</ListItem>
+							<ListItem>
+								<Label>PercentOfEpisodes</Label>
+								<ScriptBlock>$_.Statistics.PercentOfEpisodes</ScriptBlock>
+							</ListItem>
+							<ListItem>
+								<Label>PreviousAiring</Label>
+								<ScriptBlock>$_.Statistics.PreviousAiring</ScriptBlock>
+								<ItemSelectionCondition>
+									<ScriptBlock>$_.Statistics.PreviousAiring -ne $null</ScriptBlock>
+								</ItemSelectionCondition>
+							</ListItem>
+							<ListItem>
+								<PropertyName>SeasonNumber</PropertyName>
+							</ListItem>
+							<ListItem>
+								<Label>SizeOnDisk</Label>
+								<ScriptBlock>"{0} GB" -f $([math]::Round(($_.Statistics.SizeOnDisk / 1GB), 2))</ScriptBlock>
+							</ListItem>
+							<ListItem>
+								<Label>TotalEpisodeCount</Label>
+								<ScriptBlock>$_.Statistics.TotalEpisodeCount</ScriptBlock>
+							</ListItem>
+                        </ListItems>
+                    </ListEntry>
+                </ListEntries>
+            </ListControl>
+        </View>
+    </ViewDefinitions>
+</Configuration>

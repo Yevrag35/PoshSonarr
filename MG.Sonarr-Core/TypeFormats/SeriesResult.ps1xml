@@ -11,7 +11,8 @@
                     <ListEntry>
                         <ListItems>
 							<ListItem>
-								<PropertyName>Genres</PropertyName>
+								<Label>Genres</Label>
+								<ScriptBlock>$_.Genres -join ', '</ScriptBlock>
 							</ListItem>
                             <ListItem>
                                 <PropertyName>Id</PropertyName>
@@ -48,6 +49,10 @@
                             <ListItem>
                                 <PropertyName>SeasonFolder</PropertyName>
                             </ListItem>
+							<ListItem>
+								<Label>Seasons</Label>
+								<ScriptBlock>$_.Seasons.SeasonNumber</ScriptBlock>
+							</ListItem>
 							<ListItem>
 								<PropertyName>TVDBId</PropertyName>
 							</ListItem>
