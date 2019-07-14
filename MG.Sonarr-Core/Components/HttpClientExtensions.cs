@@ -116,6 +116,11 @@ namespace MG.Sonarr
             return res;
         }
 
+        public static string SonarrPost(this HttpClient client, string endpoint, string jsonBody)
+        {
+            return null;
+        }
+
         public static bool IsJsonArray(string jsonStr)
         {
             var load = new JsonLoadSettings
