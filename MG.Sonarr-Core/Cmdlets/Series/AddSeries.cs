@@ -138,11 +138,17 @@ namespace MG.Sonarr.Cmdlets
 
             if (base.ShouldProcess(string.Format("New Series - {0}", this.Name, "Adding")))
             {
-                string output = _api.SonarrPost("/series", postJson);
-
-                if (this.PassThru.ToBool())
+                try
                 {
-                    base.WriteObject(SonarrHttpClient.ConvertToSeriesResult(output));
+                    string output = _api.SonarrPost("/series", postJson);
+                    if (this.PassThru.ToBool())
+                    {
+                        base.WriteObject(SonarrHttpClient.ConvertToSeriesResult(output));
+                    }
+                }
+                catch (Exception e)
+                {
+                    base.WriteError(e, ErrorCategory.InvalidResult, postJson);
                 }
             }
         }
