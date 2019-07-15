@@ -1,4 +1,7 @@
 ﻿using MG.Sonarr.Results;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,14 +23,14 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
-        [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0)]
-        [Alias("InputObject")]
-        public SeriesResult Series { get; set; }
+        //[Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0)]
+        //[Alias("InputObject")]
+        //public SeriesResult Series { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "ByFullPath")]
         public string FullPath { get; set; }
 
-        [Parameter(Mandatory = true, Position = 1, ParameterSetName = "ByRootFolderPath")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByRootFolderPath")]
         [Alias("path")]
         public string RootFolderPath { get; set; }
 
@@ -43,33 +46,33 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = false)]
         public SwitchParameter PassThru { get; set; }
 
-        //[Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 1)]
-        //[Alias("Title")]
-        //public string Name { get; set; }
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
+        [Alias("Title")]
+        public string Name { get; set; }
 
-        //[Parameter(Mandatory = true, Position = 0)]
-        //[Alias("Path")]
-        //public string DiskPath { get; set; }
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
+        public int TVDBId { get; set; }
 
-        //[Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        //public int TVDBId { get; set; }
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
+        public int QualityProfileId { get; set; }
 
-        //[Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        //public int QualityProfileId { get; set; }
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
+        public string TitleSlug { get; set; }
 
-        //[Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        //public string TitleSlug { get; set; }
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
+        public SeriesImage[] Images { get; set; }
 
-        //[Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        //public SeriesImage[] Images { get; set; }
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
+        public SeasonCollection Seasons { get; set; }
 
-        //[Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        //public Season[] Seasons { get; set; }
+        [Parameter(Mandatory = false)]
+        public SwitchParameter NotMonitored { get; set; }
 
-        #endregion
+        [Parameter(Mandatory = false)]
+        public SwitchParameter UseSeasonFolders { get; set; }
 
-        #region DYNAMIC
-
+        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true)]
+        public int TVRageId { get; set; }
 
         #endregion
 
@@ -78,7 +81,17 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            var parameters = new Dictionary<string, object>()
+            bool usf = false;
+            if (this.MyInvocation.BoundParameters.ContainsKey("UseSeasonFolders"))
+            {
+                usf = this.UseSeasonFolders.ToBool();
+            }
+            else if (this.Seasons != null && this.Seasons.Count > 1)
+            {
+                usf = true;
+            }
+
+            var dict = new Dictionary<string, object>
             {
                 { "addOptions", new Dictionary<string, bool>(3)
                     {
@@ -86,22 +99,44 @@ namespace MG.Sonarr.Cmdlets
                         { "ignoreEpisodesWithoutFiles", this.IgnoreEpisodesWithoutFiles.ToBool() },
                         { "searchForMissingEpisodes", this.SearchForMissingEpisodes.ToBool() }
                     }
-                }
+                },
+                { "images", this.Images },
+                { "monitored", !this.NotMonitored.ToBool() },
+                { "qualityProfileId", 4 },
+                { "seasonFolder", usf },
+                { "seasons", this.Seasons },
+                { "title", this.Name },
+                { "titleSlug", this.TitleSlug },
+                { "tvdbId", this.TVDBId }
             };
+
+            if (this.MyInvocation.BoundParameters.ContainsKey("TVRageId"))
+            {
+                dict.Add("tvRageId", this.TVRageId);
+            }
+
             if (!string.IsNullOrEmpty(this.RootFolderPath))
             {
-                parameters.Add("rootFolderPath", this.RootFolderPath);
+                dict.Add("rootFolderPath", this.RootFolderPath);
             }
             else
             {
-                parameters.Add("path", this.FullPath);
+                dict.Add("path", this.FullPath);
             }
 
-            string postJson = this.Series.ToJson(parameters);
+            string postJson = JsonConvert.SerializeObject(dict, new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                DateFormatHandling = DateFormatHandling.IsoDateFormat,
+                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+                Formatting = Formatting.Indented,
+                NullValueHandling = NullValueHandling.Ignore,
+                MissingMemberHandling = MissingMemberHandling.Ignore
+            });
 
             base.WriteDebug(postJson);
 
-            if (base.ShouldProcess(string.Format("New Series - {0}", this.Series.Title, "Adding")))
+            if (base.ShouldProcess(string.Format("New Series - {0}", this.Name, "Adding")))
             {
                 string output = _api.SonarrPost("/series", postJson);
 

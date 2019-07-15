@@ -38,7 +38,7 @@ foreach ($cs in $csFiles)
 {
 	$match = [regex]::Match($cs.Name, $pattern)
     $Cmdlets.Add(($cmdletFormat -f $match.Groups[1].Value, $match.Groups[2].Value));
-    $content = Get-Content -Path $file -Raw;
+    $content = Get-Content -Path $cs -Raw;
     $aliasMatch = [regex]::Match($content, $aliasPat, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase);
     if ($aliasMatch.Success)
     {
