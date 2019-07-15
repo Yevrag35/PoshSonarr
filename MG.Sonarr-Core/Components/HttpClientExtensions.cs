@@ -156,6 +156,34 @@ namespace MG.Sonarr
             }
         }
 
+        public static string SonarrPut(this HttpClient client, string endpoint, string jsonBody)
+        {
+            StringContent sc = null;
+            if (!string.IsNullOrEmpty(jsonBody))
+                sc = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+
+            Task<HttpResponseMessage> call = client.PutAsync(endpoint, sc);
+            call.Wait();
+
+            string res = null;
+            if (!call.IsFaulted && !call.IsCanceled)
+            {
+                using (HttpResponseMessage resp = call.Result)
+                {
+                    if (resp.IsSuccessStatusCode)
+                    {
+                        using (HttpContent content = resp.Content)
+                        {
+                            Task<string> strTask = content.ReadAsStringAsync();
+                            strTask.Wait();
+                            res = strTask.Result;
+                        }
+                    }
+                }
+            }
+            return res;
+        }
+
         public static bool IsJsonArray(string jsonStr)
         {
             var load = new JsonLoadSettings

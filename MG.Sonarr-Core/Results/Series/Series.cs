@@ -13,6 +13,7 @@ namespace MG.Sonarr.Results
 
         public DateTime? Added { get; set; }
         public string AirTime { get; set; }
+        public AlternateTitle[] AlternateTitles { get; set; }
         public string Certification { get; set; }
         public string CleanTitle { get; set; }
         public DateTime? FirstAired { get; set; }
@@ -23,6 +24,7 @@ namespace MG.Sonarr.Results
         public bool Monitored { get; set; }
         public string Network { get; set; }
         public string Overview { get; set; }
+        public string Path { get; set; }
         public int ProfileId { get; set; }
         public int QualityProfileId { get; set; }
         public object Ratings { get; set; }

@@ -71,7 +71,7 @@ namespace MG.Sonarr.Cmdlets
                     base.WriteObject(_series, true);
                 }
             }
-            else if (this.Id != null && this.Id.Length > 0)
+            else
             {
                 for (int i = 0; i < this.Id.Length; i++)
                 {
