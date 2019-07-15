@@ -145,6 +145,17 @@ namespace MG.Sonarr
             return res;
         }
 
+        public static void SonarrDelete(this HttpClient client, string endpoint)
+        {
+            Task<HttpResponseMessage> call = client.DeleteAsync(endpoint);
+            call.Wait();
+
+            using (var res = call.Result)
+            {
+                res.EnsureSuccessStatusCode();
+            }
+        }
+
         public static bool IsJsonArray(string jsonStr)
         {
             var load = new JsonLoadSettings
