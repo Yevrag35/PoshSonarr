@@ -93,8 +93,15 @@ namespace MG.Sonarr.Cmdlets.Series
             string full = string.Format("/series/{0}", this.InputObject.Id);
             try
             {
-                _api.SonarrPut(full, jsonBody);
+                string outRes =_api.SonarrPut(full, jsonBody);
+                if (!string.IsNullOrEmpty(outRes))
+                {
+                    var series = SonarrHttpClient.ConvertToSeriesResult(outRes);
+                    base
+                }
+
             }
+
         }
 
         #endregion
