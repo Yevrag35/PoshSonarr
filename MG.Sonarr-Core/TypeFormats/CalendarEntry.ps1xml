@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+	<ViewDefinitions>
+		<View>
+			<Name>CalendarEntry ListView</Name>
+			<ViewSelectedBy>
+				<TypeName>MG.Sonarr.Results.CalendarEntry</TypeName>
+			</ViewSelectedBy>
+			<ListControl>
+				<ListEntries>
+					<ListEntry>
+						<ListItems>
+							<ListItem>
+								<PropertyName>AbsoluteEpisodeNumber</PropertyName>
+							</ListItem>
+							<ListItem>
+								<Label>AirDate</Label>
+								<ScriptBlock>$_.AirDateUtc.ToLocalTime()</ScriptBlock>
+							</ListItem>
+							<ListItem>
+								<PropertyName>EpisodeNumber</PropertyName>
+							</ListItem>
+							<ListItem>
+								<Label>FileId</Label>
+								<PropertyName>EpisodeFileId</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>HasFile</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Id</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Monitored</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Title</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>UnverifiedSceneNumbering</PropertyName>
+							</ListItem>
+							<ListItem>
+								<Label>Series</Label>
+								<ScriptBlock>$_.Series.Title</ScriptBlock>
+							</ListItem>
+						</ListItems>
+					</ListEntry>
+				</ListEntries>
+			</ListControl>
+		</View>
+	</ViewDefinitions>
+</Configuration>

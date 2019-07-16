@@ -97,11 +97,13 @@ namespace MG.Sonarr.Cmdlets.Series
                 if (!string.IsNullOrEmpty(outRes))
                 {
                     var series = SonarrHttpClient.ConvertToSeriesResult(outRes);
-                    base
+                    base.WriteObject(series);
                 }
-
             }
-
+            catch (Exception e)
+            {
+                base.WriteError(e, ErrorCategory.InvalidResult, full);
+            }
         }
 
         #endregion
