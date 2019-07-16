@@ -27,8 +27,8 @@ namespace MG.Sonarr.Cmdlets
         [SupportsWildcards]
         public string[] Name{ get; set; }
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId")]
-        public long[] Id { get; set; }
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId", ValueFromPipelineByPropertyName = true)]
+        public long[] SeriesId { get; set; }
 
         #endregion
 
@@ -73,9 +73,9 @@ namespace MG.Sonarr.Cmdlets
             }
             else
             {
-                for (int i = 0; i < this.Id.Length; i++)
+                for (int i = 0; i < this.SeriesId.Length; i++)
                 {
-                    long id = this.Id[i];
+                    long id = this.SeriesId[i];
                     string full = string.Format("/series/{0}", Convert.ToString(id));
                     try
                     {

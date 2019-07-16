@@ -8,7 +8,7 @@ namespace MG.Sonarr.Results
 {
     public class QualityProfile : BaseResult
     {
-        public QualityItemDetails Cutoff { get; set; }
+        public QualityDetails Cutoff { get; set; }
         public int Id { get; set; }
         public QualityItemCollection Items { get; set; }
         public string Language { get; set; }
@@ -18,14 +18,6 @@ namespace MG.Sonarr.Results
     public class QualityItem : BaseResult
     {
         public bool Allowed { get; set; }
-        public QualityItemDetails Quality { get; set; }
-    }
-
-    public class QualityItemDetails : BaseResult
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Source { get; set; }
-        public int Resolution { get; set; }
+        public QualityDetails Quality { get; set; }
     }
 }

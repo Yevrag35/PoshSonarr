@@ -21,7 +21,6 @@ namespace MG.Sonarr.Cmdlets.Series
         #region PARAMETERS
 
         [Parameter(Mandatory = true, Position = 0, ValueFromPipelineByPropertyName = true)]
-        [Alias("Id")]
         public long SeriesId { get; set; }
 
         [Parameter(Mandatory = false)]

@@ -90,7 +90,7 @@ namespace MG.Sonarr.Cmdlets.Series
             string jsonBody = JsonConvert.SerializeObject(job, serializer);
             base.WriteDebug(jsonBody);
 
-            string full = string.Format("/series/{0}", this.InputObject.Id);
+            string full = string.Format("/series/{0}", this.InputObject.SeriesId);
             try
             {
                 string outRes =_api.SonarrPut(full, jsonBody);

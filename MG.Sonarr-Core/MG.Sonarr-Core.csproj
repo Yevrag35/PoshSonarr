@@ -52,7 +52,7 @@
 
   <ItemGroup>
     <None Include="Objects\Interfaces\IApiKey.cs" />
-    <None Include="Results\CustomResult.cs" />
+    <None Include="Results\Bases\CustomResult.cs" />
   </ItemGroup>
 
   <ItemGroup>

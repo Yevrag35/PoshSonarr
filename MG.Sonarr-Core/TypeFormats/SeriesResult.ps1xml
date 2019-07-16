@@ -14,12 +14,6 @@
 								<Label>Genres</Label>
 								<ScriptBlock>$_.Genres -join ', '</ScriptBlock>
 							</ListItem>
-                            <ListItem>
-                                <PropertyName>Id</PropertyName>
-								<ItemSelectionCondition>
-									<ScriptBlock>$_.Id -ne $null</ScriptBlock>
-								</ItemSelectionCondition>
-                            </ListItem>
 							<ListItem>
 								<Label>Images</Label>
 								<ScriptBlock>$_.Images.CoverType</ScriptBlock>
@@ -52,6 +46,12 @@
 							<ListItem>
 								<Label>Seasons</Label>
 								<ScriptBlock>$_.Seasons.SeasonNumber</ScriptBlock>
+							</ListItem>
+							<ListItem>
+								<PropertyName>SeriesId</PropertyName>
+								<ItemSelectionCondition>
+									<ScriptBlock>$_.SeriesId -ne $null</ScriptBlock>
+								</ItemSelectionCondition>
 							</ListItem>
 							<ListItem>
 								<PropertyName>TVDBId</PropertyName>

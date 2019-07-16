@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+	<ViewDefinitions>
+		<View>
+			<Name>EpisodeFile ListView</Name>
+			<ViewSelectedBy>
+				<TypeName>MG.Sonarr.Results.EpisodeFile</TypeName>
+			</ViewSelectedBy>
+			<ListControl>
+				<ListEntries>
+					<ListEntry>
+						<ListItems>
+							<ListItem>
+								<PropertyName>DateAdded</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>EpisodeFileId</PropertyName>
+							</ListItem>
+							<ListItem>
+								<Label>MediaInfo</Label>
+								<ScriptBlock>@($_.MediaInfo.AudioChannels.ToString(), $_.MediaInfo.AudioCodec, $_.MediaInfo.VideoCodec)</ScriptBlock>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Path</PropertyName>
+							</ListItem>
+							<ListItem>
+								<Label>Quality</Label>
+								<ScriptBlock>"{0} ({1}p)" -f $_.Quality.Quality.Name, $_.Quality.Quality.Resolution</ScriptBlock>
+							</ListItem>
+							<ListItem>
+								<PropertyName>QualityCutoffNotMet</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>RelativePath</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>SceneName</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>SeriesId</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>SeasonNumber</PropertyName>
+							</ListItem>
+							<ListItem>
+								<Label>Size</Label>
+								<ScriptBlock>"{0} GB" -f [math]::Round(($_.Size / 1GB), 2)</ScriptBlock>
+							</ListItem>
+						</ListItems>
+					</ListEntry>
+				</ListEntries>
+			</ListControl>
+		</View>
+	</ViewDefinitions>
+</Configuration>
