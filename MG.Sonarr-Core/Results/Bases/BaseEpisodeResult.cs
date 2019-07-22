@@ -9,15 +9,11 @@ namespace MG.Sonarr.Results
     {
         public int AbsoluteEpisodeNumber { get; set; }
         public DateTime? AirDateUtc { get; set; }
-        public int EpisodeFileId { get; set; }
-        public int EpisodeNumber { get; set; }
-        public bool HasFile { get; set; }
-
         [JsonProperty("Id")]
         public long EpisodeId { get; set; }
-
+        public int EpisodeNumber { get; set; }
+        public bool HasFile { get; set; }        
         public bool Monitored { get; set; }
-        public SeriesResult Series { get; set; }
         public int SeriesId { get; set; }
         public string Title { get; set; }
         public bool UnverifiedSceneNumbering { get; set; }

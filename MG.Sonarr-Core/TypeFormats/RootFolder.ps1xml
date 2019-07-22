@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+	<ViewDefinitions>
+		<View>
+			<Name>RootFolder ListView</Name>
+			<ViewSelectedBy>
+				<TypeName>MG.Sonarr.Results.RootFolder</TypeName>
+			</ViewSelectedBy>
+			<ListControl>
+				<ListEntries>
+					<ListEntry>
+						<ListItems>
+							<ListItem>
+								<Label>FreeSpace</Label>
+								<ScriptBlock>"{0} GB" -f $([math]::Round(($_.FreeSpace / 1GB), 2))</ScriptBlock>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Id</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Path</PropertyName>
+							</ListItem>
+							<ListItem>
+								<Label>TotalSpace</Label>
+								<ScriptBlock>"{0} GB" -f $([math]::Round(($_.TotalSpace / 1GB), 2))</ScriptBlock>
+							</ListItem>
+							<ListItem>
+								<Label>UnmappedFolders</Label>
+								<ScriptBlock>$_.UnmappedFolders.Name</ScriptBlock>
+							</ListItem>
+						</ListItems>
+					</ListEntry>
+				</ListEntries>
+			</ListControl>
+		</View>
+	</ViewDefinitions>
+</Configuration>

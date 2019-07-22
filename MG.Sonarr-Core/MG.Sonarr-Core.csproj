@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <Compile Remove="Objects\Interfaces\IApiKey.cs" />
+    <Compile Remove="Results\Bases\CustomResult.cs" />
     <Compile Remove="Results\CustomResult.cs" />
   </ItemGroup>
 

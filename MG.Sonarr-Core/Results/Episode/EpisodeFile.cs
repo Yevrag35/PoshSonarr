@@ -11,7 +11,6 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("Id")]
         public long EpisodeFileId { get; set; }
-
         public MediaInfo MediaInfo { get; set; }
         public string OriginalFilePath { get; set; }
         public string Path { get; set; }
