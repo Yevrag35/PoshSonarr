@@ -119,6 +119,9 @@ namespace MG.Sonarr
 
         public static string SonarrPost(this HttpClient client, string endpoint, string jsonBody)
         {
+            if (!Context.NoApiPrefix)
+                endpoint = API_PREFIX + endpoint;
+
             StringContent sc = null;
             if (!string.IsNullOrEmpty(jsonBody))
                 sc = new StringContent(jsonBody, Encoding.UTF8, "application/json");
@@ -147,6 +150,9 @@ namespace MG.Sonarr
 
         public static void SonarrDelete(this HttpClient client, string endpoint)
         {
+            if (!Context.NoApiPrefix)
+                endpoint = API_PREFIX + endpoint;
+
             Task<HttpResponseMessage> call = client.DeleteAsync(endpoint);
             call.Wait();
 
@@ -158,6 +164,9 @@ namespace MG.Sonarr
 
         public static string SonarrPut(this HttpClient client, string endpoint, string jsonBody)
         {
+            if (!Context.NoApiPrefix)
+                endpoint = API_PREFIX + endpoint;
+
             StringContent sc = null;
             if (!string.IsNullOrEmpty(jsonBody))
                 sc = new StringContent(jsonBody, Encoding.UTF8, "application/json");

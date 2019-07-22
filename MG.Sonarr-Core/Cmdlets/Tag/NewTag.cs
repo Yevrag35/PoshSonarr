@@ -24,9 +24,6 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = true, Position = 0)]
         public string Label { get; set; }
 
-        [Parameter(Mandatory = false)]
-        public SwitchParameter PassThru { get; set; }
-
         #endregion
 
         #region CMDLET PROCESSING
@@ -52,7 +49,7 @@ namespace MG.Sonarr.Cmdlets
                     base.WriteError(e, ErrorCategory.InvalidResult);
                 }
 
-                if (!string.IsNullOrEmpty(jsonRes) && this.PassThru.ToBool())
+                if (!string.IsNullOrEmpty(jsonRes))
                 {
                     Tag res = SonarrHttpClient.ConvertToSonarrResult<Tag>(jsonRes);
                     base.WriteObject(res);
