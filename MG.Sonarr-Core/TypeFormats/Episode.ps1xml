@@ -45,6 +45,9 @@
 								<PropertyName>Monitored</PropertyName>
 							</ListItem>
 							<ListItem>
+								<PropertyName>SeasonNumber</PropertyName>
+							</ListItem>
+							<ListItem>
 								<Label>Series</Label>
 								<ScriptBlock>$_.Series.Title</ScriptBlock>
 								<ItemSelectionCondition>

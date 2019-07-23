@@ -7,7 +7,7 @@ namespace MG.Sonarr.Results
 {
     public abstract class BaseEpisodeResult : BaseResult
     {
-        public int AbsoluteEpisodeNumber { get; set; }
+        public int? AbsoluteEpisodeNumber { get; set; }
         public DateTime? AirDateUtc { get; set; }
         [JsonProperty("Id")]
         public long EpisodeId { get; set; }

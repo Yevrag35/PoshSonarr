@@ -28,6 +28,9 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = true, ParameterSetName = "ByEpisodeId", ValueFromPipelineByPropertyName = true)]
         public long EpisodeId { get; set; }
 
+        [Parameter(Mandatory = false, Position = 1, ParameterSetName = "BySeriesId")]
+        public int[] EpisodeNumber { get; set; }
+
         #endregion
 
         #region CMDLET PROCESSING
@@ -59,7 +62,14 @@ namespace MG.Sonarr.Cmdlets
                         er.AirDateUtc = er.AirDateUtc.Value.ToUniversalTime();
                     }
                 }
-                base.WriteObject(result, true);
+                if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeNumber"))
+                {
+                    var results = result.Where(x => this.EpisodeNumber.Contains(x.EpisodeNumber));
+                    base.WriteObject(results, true);
+                }
+                
+                else
+                    base.WriteObject(result, true);
             }
         }
 
