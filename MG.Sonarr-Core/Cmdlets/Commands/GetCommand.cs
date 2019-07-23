@@ -11,6 +11,7 @@ namespace MG.Sonarr.Cmdlets.Commands
 {
     [Cmdlet(VerbsCommon.Get, "Command", ConfirmImpact = ConfirmImpact.None)]
     [OutputType(typeof(CommandResult))]
+    [Alias("Get-Job")]
     [CmdletBinding(PositionalBinding = false)]
     public class GetCommand : BaseSonarrCmdlet
     {
@@ -54,11 +55,6 @@ namespace MG.Sonarr.Cmdlets.Commands
                 }
             }
         }
-
-        #endregion
-
-        #region BACKEND METHODS
-
 
         #endregion
     }

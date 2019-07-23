@@ -30,7 +30,7 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            parameters = new Dictionary<string, object>(1)
+            parameters = new Dictionary<string, object>(2)
             {
                 { "name", this.Command }
             };
@@ -38,7 +38,15 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            string postBody = JsonConvert.SerializeObject(parameters, Formatting.Indented);
+            this.ProcessRequest(parameters);
+        }
+
+        #endregion
+
+        #region BACKEND METHODS
+        protected void ProcessRequest(IDictionary parameterDict)
+        {
+            string postBody = JsonConvert.SerializeObject(parameterDict, Formatting.Indented);
             string cmdOut = _api.SonarrPost(BASE_EP, postBody);
             if (!string.IsNullOrEmpty(cmdOut))
             {
@@ -46,11 +54,6 @@ namespace MG.Sonarr.Cmdlets
                 base.WriteObject(cmdOutput);
             }
         }
-
-        #endregion
-
-        #region BACKEND METHODS
-
 
         #endregion
     }

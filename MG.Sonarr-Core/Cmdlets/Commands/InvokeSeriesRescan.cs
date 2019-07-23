@@ -9,14 +9,14 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsLifecycle.Invoke, "SeriesRefresh", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsLifecycle.Invoke, "SeriesRescan", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
     [OutputType(typeof(CommandOutput))]
-    [Alias("Start-SeriesRefresh")]
+    [Alias("Start-SeriesRescan")]
     [CmdletBinding(PositionalBinding = false)]
-    public class InvokeSeriesRefresh : BasePostCommandCmdlet
+    public class InvokeSeriesRescan : BasePostCommandCmdlet
     {
         #region FIELDS/CONSTANTS
-        protected override string Command => "RefreshSeries";
+        protected override string Command => "RescanSeries";
 
         #endregion
 
@@ -39,10 +39,10 @@ namespace MG.Sonarr.Cmdlets
                 { "seriesId", this.SeriesId }
             };
 
-            string msg = "Refresh all series";
+            string msg = "Rescan all series";
             if (this.MyInvocation.BoundParameters.ContainsKey("SeriesId"))
             {
-                msg = string.Format("Refresh series id {0}", this.SeriesId);
+                msg = string.Format("Rescan series id {0}", this.SeriesId);
             }
 
             if (this.Force.ToBool() || base.ShouldProcess(msg, "Invoke"))

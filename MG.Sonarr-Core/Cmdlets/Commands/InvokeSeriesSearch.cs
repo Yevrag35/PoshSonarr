@@ -2,26 +2,26 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
 using System.Reflection;
+using System.Security;
 
-namespace MG.Sonarr.Cmdlets
+namespace MG.Sonarr.Cmdlets.Commands
 {
-    [Cmdlet(VerbsLifecycle.Invoke, "SeriesRefresh", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
-    [OutputType(typeof(CommandOutput))]
-    [Alias("Start-SeriesRefresh")]
+    [Cmdlet(VerbsLifecycle.Invoke, "SeriesSearch", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
     [CmdletBinding(PositionalBinding = false)]
-    public class InvokeSeriesRefresh : BasePostCommandCmdlet
+    [OutputType(typeof(CommandOutput))]
+    [Alias("Start-SeriesSearch")]
+    public class InvokeSeriesSearch : BasePostCommandCmdlet
     {
         #region FIELDS/CONSTANTS
-        protected override string Command => "RefreshSeries";
+        protected override string Command => "SeriesSearch";
 
         #endregion
 
         #region PARAMETERS
-        [Parameter(Mandatory = false, Position = 0, ValueFromPipelineByPropertyName = true)]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
         public long SeriesId { get; set; }
 
         [Parameter(Mandatory = false)]
@@ -38,18 +38,17 @@ namespace MG.Sonarr.Cmdlets
             {
                 { "seriesId", this.SeriesId }
             };
-
-            string msg = "Refresh all series";
-            if (this.MyInvocation.BoundParameters.ContainsKey("SeriesId"))
-            {
-                msg = string.Format("Refresh series id {0}", this.SeriesId);
-            }
-
-            if (this.Force.ToBool() || base.ShouldProcess(msg, "Invoke"))
+            string msg = string.Format("Series Id {0}", this.SeriesId);
+            if (this.Force.ToBool() || base.ShouldProcess(msg, "Invoke Series Search"))
             {
                 base.ProcessRequest(newDict);
             }
         }
+
+        #endregion
+
+        #region METHODS
+
 
         #endregion
     }
