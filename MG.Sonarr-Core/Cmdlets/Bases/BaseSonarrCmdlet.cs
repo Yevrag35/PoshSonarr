@@ -55,6 +55,58 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region BACKEND METHODS
+        protected private void TryDeleteSonarrResult(string endpoint)
+        {
+            try
+            {
+                _api.SonarrDelete(endpoint);
+            }
+            catch (Exception e)
+            {
+                base.WriteError(new ErrorRecord(e, e.GetType().FullName, ErrorCategory.InvalidArgument, endpoint));
+            }
+        }
+
+        protected private string TryGetSonarrResult(string endpoint)
+        {
+            try
+            {
+                string strRes = _api.SonarrGet(endpoint);
+                return strRes;
+            }
+            catch (Exception e)
+            {
+                base.WriteError(new ErrorRecord(e, e.GetType().FullName, ErrorCategory.ReadError, endpoint));
+                return null;
+            }
+        }
+
+        protected private string TryPostSonarrResult(string endpoint, string jsonBody)
+        {
+            try
+            {
+                return _api.SonarrPost(endpoint, jsonBody);
+            }
+            catch (Exception e)
+            {
+                base.WriteError(new ErrorRecord(e, e.GetType().FullName, ErrorCategory.InvalidArgument, endpoint));
+                return null;
+            }
+        }
+
+        protected private string TryPutSonarrResult(string endpoint, string jsonBody)
+        {
+            try
+            {
+                return _api.SonarrPut(endpoint, jsonBody);
+            }
+            catch (Exception e)
+            {
+                base.WriteError(new ErrorRecord(e, e.GetType().FullName, ErrorCategory.InvalidArgument, endpoint));
+                return null;
+            }
+        }
+
         protected private void WriteError(string msg, ErrorCategory cat) =>
             this.WriteError(new ArgumentException(msg), cat, null);
 
@@ -72,20 +124,6 @@ namespace MG.Sonarr.Cmdlets
         {
             var errRec = new ErrorRecord(baseEx, baseEx.GetType().FullName, cat, obj);
             base.WriteError(errRec);
-        }
-
-        protected private string TryGetSonarrResult(string endpoint)
-        {
-            try
-            {
-                string strRes = _api.SonarrGet(endpoint);
-                return strRes;
-            }
-            catch (Exception e)
-            {
-                base.WriteError(new ErrorRecord(e, e.GetType().FullName, ErrorCategory.ReadError, endpoint));
-                return null;
-            }
         }
 
         #endregion

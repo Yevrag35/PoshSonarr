@@ -44,21 +44,9 @@ namespace MG.Sonarr.Cmdlets.Series
 
             if (this.Force || base.ShouldProcess(string.Format("Series Id: {0}", this.SeriesId), "Delete"))
             {
-                try
-                {
-                    _api.SonarrDelete(apiUri);
-                }
-                catch (HttpRequestException ex)
-                {
-                    base.WriteError(ex, ErrorCategory.InvalidResult, apiUri);
-                }
+                base.TryDeleteSonarrResult(apiUri);
             }
         }
-
-        #endregion
-
-        #region METHODS
-
 
         #endregion
     }
