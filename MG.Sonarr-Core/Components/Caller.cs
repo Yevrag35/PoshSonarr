@@ -42,6 +42,9 @@ namespace MG.Sonarr
 
         public ApiCaller(HttpMessageHandler handler) 
             : base(handler) { }
+        public ApiCaller(HttpMessageHandler handler, ApiKey apiKey)
+            : base(handler) => this.AddApiKey(apiKey);
+
         public ApiCaller(HttpMessageHandler handler, bool disposeHandler)
             : base(handler, disposeHandler) { }
 

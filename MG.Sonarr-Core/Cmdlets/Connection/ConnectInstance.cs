@@ -5,15 +5,19 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
+using System.Net;
+using System.Net.Http;
 using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets.Connection
 {
     [Cmdlet(VerbsCommunications.Connect, "Instance", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByServerName")]
     [CmdletBinding(PositionalBinding = false)]
-    public class ConnectInstance : PSCmdlet
+    public class ConnectInstance : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
+        private const string EP = "/system/status";
+
         private const string URL_FORMAT = "{0}://{1}:{2}";
 
         #endregion
@@ -33,6 +37,18 @@ namespace MG.Sonarr.Cmdlets.Connection
 
         [Parameter(Mandatory = false, ParameterSetName = "ByServerName")]
         public SwitchParameter UseSSL { get; set; }
+
+        [Parameter(Mandatory = false)]
+        public SwitchParameter SkipCertificateCheck { get; set; }
+
+        [Parameter(Mandatory = false)]
+        public string Proxy { get; set; }
+
+        [Parameter(Mandatory = false)]
+        public ProxyCredential ProxyCredential { get; set; }
+
+        [Parameter(Mandatory = false)]
+        public SwitchParameter ProxyBypassOnLocal { get; set; }
 
         [Parameter(Mandatory = true)]
         [Alias("key")]
@@ -65,7 +81,35 @@ namespace MG.Sonarr.Cmdlets.Connection
                 url = this.SonarrUrl;
             }
 
-            var apiCaller = new ApiCaller(url, this.ApiKey);
+            var handler = new HttpClientHandler()
+            {
+                UseDefaultCredentials = true
+            };
+
+            if (this.SkipCertificateCheck.ToBool())
+            {
+                handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            }
+            if (this.MyInvocation.BoundParameters.ContainsKey("Proxy"))
+            {
+                var wp = new WebProxy(this.Proxy);
+                if (this.MyInvocation.BoundParameters.ContainsKey("ProxyCredential"))
+                {
+                    wp.Credentials = this.ProxyCredential;
+                }
+                if (this.MyInvocation.BoundParameters.ContainsKey("ProxyBypassOnLocal"))
+                {
+                    wp.BypassProxyOnLocal = this.ProxyBypassOnLocal.ToBool();
+                }
+                handler.Proxy = wp;
+                handler.UseProxy = true;
+            }
+
+            var apiCaller = new ApiCaller(handler, this.ApiKey)
+            {
+                BaseAddress = url
+            };
+
             Context.ApiCaller = apiCaller;
             if (this.NoApiPrefix.ToBool())
             {
@@ -74,10 +118,33 @@ namespace MG.Sonarr.Cmdlets.Connection
 
             if (this.PassThru.ToBool())
             {
-                string status = Context.ApiCaller.SonarrGet("/system/status");
-                SonarrStatusResult sr = SonarrHttpClient.ConvertToSonarrResult<SonarrStatusResult>(status);
-                sr.UrlBase = Context.ApiCaller.BaseAddress;
-                base.WriteObject(sr);
+                string status = null;
+                try
+                {
+                    status = Context.ApiCaller.SonarrGet(EP);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception(e.Message, e);
+                }
+                if (string.IsNullOrEmpty(status))
+                {
+                    throw new NoSonarrResponseException(apiCaller);
+                }
+                else
+                {
+                    SonarrStatusResult sr = null;
+                    try
+                    {
+                        sr = SonarrHttpClient.ConvertToSonarrResult<SonarrStatusResult>(status);
+                        sr.UrlBase = Context.ApiCaller.BaseAddress;
+                        base.WriteObject(sr);
+                    }
+                    catch (Exception ex)
+                    {
+                        base.WriteError(ex, ErrorCategory.ParserError, status);
+                    }
+                }
             }
         }
 

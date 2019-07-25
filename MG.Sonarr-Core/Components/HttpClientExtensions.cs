@@ -104,7 +104,7 @@ namespace MG.Sonarr
                 {
                     if (resp.IsSuccessStatusCode)
                     {
-                        using (HttpContent content = resp.Content)
+                        using (var content = resp.Content)
                         {
                             Task<string> strTask = content.ReadAsStringAsync();
                             strTask.Wait();

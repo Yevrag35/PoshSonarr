@@ -8,4 +8,13 @@ namespace MG.Sonarr
         public InvalidApiKeyException()
             : base(EX_MSG) { }
     }
+
+    public class NoSonarrResponseException : InvalidOperationException
+    {
+        private const string MSG = "No response was received from the Sonarr server.";
+
+        public ApiCaller Caller { get; }
+        public NoSonarrResponseException(ApiCaller caller)
+            : base(MSG) => this.Caller = caller;
+    }
 }
