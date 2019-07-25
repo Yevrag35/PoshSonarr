@@ -13,6 +13,7 @@ namespace MG.Sonarr.Cmdlets.Connection
 {
     [Cmdlet(VerbsCommunications.Connect, "Instance", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByServerName")]
     [CmdletBinding(PositionalBinding = false)]
+    [Alias("conson")]
     public class ConnectInstance : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
