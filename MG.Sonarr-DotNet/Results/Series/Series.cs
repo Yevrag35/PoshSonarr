@@ -34,7 +34,7 @@ namespace MG.Sonarr.Results
         public long? Runtime { get; set; }
         public int? SeasonCount { get; set; }
         public bool SeasonFolder { get; set; }
-        public SeasonCollection Seasons { get; private set; }
+        public Collection<Season> Seasons { get; set; }
         public string SeriesType { get; set; }
         public string SortTitle { get; set; }
         public string Status { get; set; }
@@ -46,20 +46,5 @@ namespace MG.Sonarr.Results
         public long? TVRageId { get; set; }
         public bool UseSceneNumbering { get; set; }
         public int Year { get; set; }
-
-        internal void AddSeason(Season season)
-        {
-            if (this.Seasons == null)
-                this.Seasons = new SeasonCollection(new Season[1] { season });
-
-            else
-                this.Seasons.Add(season);
-        }
-
-        internal void AddSeason(JToken token)
-        {
-            var season = new Season(token);
-            this.AddSeason(season);
-        }
     }
 }

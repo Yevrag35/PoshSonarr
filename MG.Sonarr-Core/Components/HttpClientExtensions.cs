@@ -47,12 +47,6 @@ namespace MG.Sonarr
         public static SeriesResult ConvertToSeriesResult(JToken jtoken, bool fromSearch = false)
         {
             SeriesResult series = JsonConvert.DeserializeObject<SeriesResult>(JsonConvert.SerializeObject(jtoken, Serializer), Serializer);
-
-            var seasonArray = jtoken["seasons"] as JArray;
-            for (int s = 0; s < seasonArray.Count; s++)
-            {
-                series.AddSeason(seasonArray[s]);
-            }
             return series;
         }
 
