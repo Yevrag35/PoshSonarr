@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8DD7200C-4DC3-4117-9439-30AD07B4337C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MG.Sonarr</RootNamespace>
+    <AssemblyName>MG.Sonarr</AssemblyName>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.PowerShell.Commands.Utility, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\Microsoft.PowerShell.Commands.Utility\v4.0_3.0.0.0__31bf3856ad364e35\Microsoft.PowerShell.Commands.Utility.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.PowerShell.5.ReferenceAssemblies.1.1.0\lib\net4\System.Management.Automation.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Cmdlets\Bases\BasePostCommandCmdlet.cs" />
+    <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet.cs" />
+    <Compile Include="Cmdlets\Bases\LazySonarrCmdlet.cs" />
+    <Compile Include="Cmdlets\Calendar\GetCalendar.cs" />
+    <Compile Include="Cmdlets\Commands\GetCommand.cs" />
+    <Compile Include="Cmdlets\Commands\InvokeEpisodeSearch.cs" />
+    <Compile Include="Cmdlets\Commands\InvokeRssSync.cs" />
+    <Compile Include="Cmdlets\Commands\InvokeSeasonSearch.cs" />
+    <Compile Include="Cmdlets\Commands\InvokeSeriesRefresh.cs" />
+    <Compile Include="Cmdlets\Commands\InvokeSeriesRescan.cs" />
+    <Compile Include="Cmdlets\Commands\InvokeSeriesSearch.cs" />
+    <Compile Include="Cmdlets\Connection\ConnectInstance.cs" />
+    <Compile Include="Cmdlets\Episodes\GetEpisode.cs" />
+    <Compile Include="Cmdlets\Episodes\GetEpisodeFile.cs" />
+    <Compile Include="Cmdlets\Episodes\RemoveEpisodeFile.cs" />
+    <Compile Include="Cmdlets\Episodes\SetEpisode.cs" />
+    <Compile Include="Cmdlets\History\GetHistory.cs" />
+    <Compile Include="Cmdlets\Profiles\GetQualityProfile.cs" />
+    <Compile Include="Cmdlets\Queue\GetQueue.cs" />
+    <Compile Include="Cmdlets\Releases\AddRelease.cs" />
+    <Compile Include="Cmdlets\Releases\GetRelease.cs" />
+    <Compile Include="Cmdlets\Releases\NewReleasePush.cs" />
+    <Compile Include="Cmdlets\RootFolder\GetRootFolder.cs" />
+    <Compile Include="Cmdlets\Series\AddSeries.cs" />
+    <Compile Include="Cmdlets\Series\GetSeries.cs" />
+    <Compile Include="Cmdlets\Series\RemoveSeries.cs" />
+    <Compile Include="Cmdlets\Series\SearchSeries.cs" />
+    <Compile Include="Cmdlets\Series\UpdateSeries.cs" />
+    <Compile Include="Cmdlets\System\GetBackup.cs" />
+    <Compile Include="Cmdlets\System\GetDiskspace.cs" />
+    <Compile Include="Cmdlets\System\GetStatus.cs" />
+    <Compile Include="Cmdlets\Tag\GetTag.cs" />
+    <Compile Include="Cmdlets\Tag\NewTag.cs" />
+    <Compile Include="Cmdlets\Tag\RemoveTag.cs" />
+    <Compile Include="Cmdlets\Tag\SetTag.cs" />
+    <Compile Include="Cmdlets\WantedMissing\GetWantedMissing.cs" />
+    <Compile Include="Components\Caller.cs" />
+    <Compile Include="Components\Exceptions.cs" />
+    <Compile Include="Components\HttpClientExtensions.cs" />
+    <Compile Include="Components\SonarrContext.cs" />
+    <Compile Include="Objects\AddOptions.cs" />
+    <Compile Include="Objects\ApiKey.cs" />
+    <Compile Include="Objects\Enums\Enums.cs" />
+    <Compile Include="Results\Bases\BaseEpisodeResult.cs" />
+    <Compile Include="Results\Bases\BaseResult.cs" />
+    <Compile Include="Results\Calendar\CalendarEntry.cs" />
+    <Compile Include="Results\Commands\CommandOutput.cs" />
+    <Compile Include="Results\Commands\CommandResult.cs" />
+    <Compile Include="Results\Episode\Episode.cs" />
+    <Compile Include="Results\Episode\EpisodeFile.cs" />
+    <Compile Include="Results\Generic\ItemQuality.cs" />
+    <Compile Include="Results\Generic\Other.cs" />
+    <Compile Include="Results\Profile\QualityItemCollection.cs" />
+    <Compile Include="Results\Profile\QualityProfile.cs" />
+    <Compile Include="Results\Queue\EpisodeQueueItem.cs" />
+    <Compile Include="Results\Queue\QueueItem.cs" />
+    <Compile Include="Results\Releases\Releases.cs" />
+    <Compile Include="Results\RootFolder\RootFolder.cs" />
+    <Compile Include="Results\Series\AlternateTitle.cs" />
+    <Compile Include="Results\Series\Season.cs" />
+    <Compile Include="Results\Series\SeasonCollection.cs" />
+    <Compile Include="Results\Series\Series.cs" />
+    <Compile Include="Results\Series\SeriesImage.cs" />
+    <Compile Include="Results\System\BackupResult.cs" />
+    <Compile Include="Results\System\DiskspaceResult.cs" />
+    <Compile Include="Results\System\StatusResult.cs" />
+    <Compile Include="Results\Tags\Tag.cs" />
+    <None Include="Results\Bases\CustomResult.cs" />
+    <None Include="Objects\Interfaces\IApiKey.cs" />
+    <Compile Include="Objects\Exceptions.cs" />
+    <Compile Include="Objects\Interfaces\ISonarrResult.cs" />
+    <Compile Include="Objects\NameOrId.cs" />
+    <Compile Include="Objects\ProxyCredential.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
