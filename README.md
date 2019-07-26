@@ -7,7 +7,6 @@ The module was completely redesigned from the ground up in PowerShell Core, and 
 
 This will eventually be a complete PowerShell module for quickly issuing [Sonarr PVR API](https://github.com/Sonarr/Sonarr/wiki/API) calls.  As of 7/25/19, I'm missing only the following commands:
 
-1. Backup
 1. DownloadedEpisodesScan
 1. MissingEpisodeSearch
 1. RenameFiles
@@ -17,7 +16,7 @@ The following is the list of the working cmdlets:
 
 1. Add-SonarrRelease
 1. Add-SonarrSeries
-1. Connect-SonarrInstance
+1. Connect-SonarrInstance (Connect-Sonarr)
 1. Get-SonarrBackup
 1. Get-SonarrCalendar
 1. Get-SonarrCommand
@@ -33,6 +32,7 @@ The following is the list of the working cmdlets:
 1. Get-SonarrStatus
 1. Get-SonarrTag
 1. Get-SonarrWantedMissing
+1. Invoke-SonarrBackup (Backup-Sonarr)
 1. Invoke-SonarrEpisodeSearch
 1. Invoke-SonarrRssSync
 1. Invoke-SonarrSeasonSearch

@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Results;
+using MG.Sonarr.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ namespace MG.Sonarr.Cmdlets.Connection
 {
     [Cmdlet(VerbsCommunications.Connect, "Instance", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByServerName")]
     [CmdletBinding(PositionalBinding = false)]
-    [Alias("conson")]
+    [Alias("Connect-", "conson")]
     public class ConnectInstance : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS

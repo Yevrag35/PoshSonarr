@@ -58,6 +58,7 @@
     <Compile Include="Cmdlets\Bases\LazySonarrCmdlet.cs" />
     <Compile Include="Cmdlets\Calendar\GetCalendar.cs" />
     <Compile Include="Cmdlets\Commands\GetCommand.cs" />
+    <Compile Include="Cmdlets\Commands\InvokeBackup.cs" />
     <Compile Include="Cmdlets\Commands\InvokeEpisodeSearch.cs" />
     <Compile Include="Cmdlets\Commands\InvokeRssSync.cs" />
     <Compile Include="Cmdlets\Commands\InvokeSeasonSearch.cs" />
