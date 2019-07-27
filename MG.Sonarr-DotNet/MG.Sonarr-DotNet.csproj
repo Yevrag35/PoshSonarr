@@ -68,6 +68,7 @@
     <Compile Include="Cmdlets\Commands\InvokeSeriesRefresh.cs" />
     <Compile Include="Cmdlets\Commands\InvokeSeriesRescan.cs" />
     <Compile Include="Cmdlets\Commands\InvokeSeriesSearch.cs" />
+    <None Include="Cmdlets\Connection\ConnectInstance-Core.cs" />
     <Compile Include="Cmdlets\Connection\ConnectInstance.cs" />
     <Compile Include="Cmdlets\Episodes\GetEpisode.cs" />
     <Compile Include="Cmdlets\Episodes\GetEpisodeFile.cs" />
@@ -123,6 +124,9 @@
     <Compile Include="Results\System\DiskspaceResult.cs" />
     <Compile Include="Results\System\StatusResult.cs" />
     <Compile Include="Results\Tags\Tag.cs" />
+    <Content Include="DebugScript.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="GenerateManifest.ps1" />
     <None Include="Results\Bases\CustomResult.cs" />
     <None Include="Objects\Interfaces\IApiKey.cs" />
