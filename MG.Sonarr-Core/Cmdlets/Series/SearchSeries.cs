@@ -25,10 +25,13 @@ namespace MG.Sonarr.Cmdlets
 
         #region PARAMETERS
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesName")]
-        public string[] Name { get; set; }      // Each 'name' is a separate search.
+        public string Name { get; set; }      // Each 'name' is a separate search.
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByTVDBId")]
-        public long[] TVDBId { get; set; }
+        public long TVDBId { get; set; }
+
+        [Parameter(Mandatory = false, ParameterSetName = "BySeriesName")]
+        public SwitchParameter Strict { get; set; }
 
         #endregion
 
@@ -39,45 +42,40 @@ namespace MG.Sonarr.Cmdlets
         {
             if (this.ParameterSetName == "BySeriesName")
             {
-                for (int i = 0; i < this.Name.Length; i++)
+                List<SeriesResult> list = null;
+                string searchStr = this.ParseSearchString(this.Name);
+                string full = string.Format(@"/series/lookup?{0}", searchStr);
+
+                if (base.ShouldProcess(full, "Executing API call"))
                 {
-                    string name = this.Name[i];
-                    string searchStr = this.ParseSearchString(name);
-                    string full = string.Format(@"/series/lookup?{0}", searchStr);
-
-                    if (base.ShouldProcess(full, "Executing API call"))
+                    try
                     {
-                        base.WriteProgress(this.NewProgressRecord(i, this.Name.Length, name));
-                        try
-                        {
-                            string jsonStr = base.TryGetSonarrResult(full);
+                        string jsonStr = base.TryGetSonarrResult(full);
 
-                            if (!string.IsNullOrEmpty(jsonStr))
-                            {
-                                var tok = JToken.Parse(jsonStr);
-                                var list = SonarrHttpClient.ConvertToSeriesResults(jsonStr, false);
-                                base.WriteObject(list, true);
-                            }
-                        }
-                        catch (Exception e)
+                        if (!string.IsNullOrEmpty(jsonStr))
                         {
-                            base.WriteError(e, ErrorCategory.InvalidResult, full);
+                            var tok = JToken.Parse(jsonStr);
+                            list = SonarrHttpClient.ConvertToSeriesResults(jsonStr, false);
+                            if (this.Strict.ToBool())
+                                base.WriteObject(list.FindAll(x => x.Title.Contains(this.Name, StringComparison.CurrentCultureIgnoreCase)), true);
+
+                            else
+                                base.WriteObject(list, true);
                         }
+                    }
+                    catch (Exception e)
+                    {
+                        base.WriteError(e, ErrorCategory.InvalidResult, full);
                     }
                 }
             }
             else
             {
-                for (int i = 0; i < this.TVDBId.Length; i++)
-                {
-                    long id = this.TVDBId[i];
-                    string searchStr = this.ParseSearchId(id);
+                    string searchStr = this.ParseSearchId(this.TVDBId);
                     string full = string.Format(@"/series/lookup?{0}", searchStr);
 
                     if (base.ShouldProcess(full, "Executing API call"))
                     {
-                        base.WriteProgress(this.NewProgressRecord(i, this.TVDBId.Length, Convert.ToString(id)));
-
                         try
                         {
                             string jsonStr = base.TryGetSonarrResult(full);
@@ -94,7 +92,7 @@ namespace MG.Sonarr.Cmdlets
                             base.WriteError(e, ErrorCategory.InvalidResult, full);
                         }
                     }
-                }
+                
             }
         }
 
@@ -114,5 +112,11 @@ namespace MG.Sonarr.Cmdlets
         private string ParseSearchId(long id) => string.Format(SEARCH_ID_QUERY, id);
 
         #endregion
+
+        private class IgnoreCase : IEqualityComparer<string>
+        {
+            public bool Equals(string x, string y) => x.Equals(y, StringComparison.CurrentCultureIgnoreCase);
+            public int GetHashCode(string obj) => obj.GetHashCode();
+        }
     }
 }
