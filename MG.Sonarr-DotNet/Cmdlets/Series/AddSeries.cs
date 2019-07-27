@@ -63,7 +63,7 @@ namespace MG.Sonarr.Cmdlets
         public SeriesImage[] Images { get; set; }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        public SeasonCollection Seasons { get; set; }
+        public Collection<Season> Seasons { get; set; }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter NotMonitored { get; set; }

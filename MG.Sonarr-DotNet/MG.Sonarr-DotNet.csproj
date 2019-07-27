@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.PowerShell.Commands.Utility, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -120,6 +123,7 @@
     <Compile Include="Results\System\DiskspaceResult.cs" />
     <Compile Include="Results\System\StatusResult.cs" />
     <Compile Include="Results\Tags\Tag.cs" />
+    <None Include="GenerateManifest.ps1" />
     <None Include="Results\Bases\CustomResult.cs" />
     <None Include="Objects\Interfaces\IApiKey.cs" />
     <Compile Include="Objects\Exceptions.cs" />
@@ -127,9 +131,26 @@
     <Compile Include="Objects\NameOrId.cs" />
     <Compile Include="Objects\ProxyCredential.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="TypeFormats\AlternateTitle.ps1xml" />
+    <None Include="TypeFormats\CalendarEntry.ps1xml" />
+    <None Include="TypeFormats\CommandResult.ps1xml" />
+    <None Include="TypeFormats\DiskspaceResult.ps1xml" />
+    <None Include="TypeFormats\Episode.ps1xml" />
+    <None Include="TypeFormats\EpisodeFile.ps1xml" />
+    <None Include="TypeFormats\QualityItem.ps1xml" />
+    <None Include="TypeFormats\QualityProfile.ps1xml" />
+    <None Include="TypeFormats\QueueItem.ps1xml" />
+    <None Include="TypeFormats\RootFolder.ps1xml" />
+    <None Include="TypeFormats\Season.ps1xml" />
+    <None Include="TypeFormats\SeriesImage.ps1xml" />
+    <None Include="TypeFormats\SeriesResult.ps1xml" />
+    <None Include="TypeFormats\StatusResult.ps1xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -NonInteractive -WindowStyle Hidden -File "$(ProjectDir)GenerateManifest.ps1" -DebugDirectory "$(ProjectDir)bin\$(ConfigurationName)" -ModuleFileDirectory "$(ProjectDir)TypeFormats" -AssemblyInfo "$(ProjectDir)Properties\AssemblyInfo.cs" -TargetFileName "$(TargetFileName)"</PostBuildEvent>
+  </PropertyGroup>
 </Project>
