@@ -112,11 +112,5 @@ namespace MG.Sonarr.Cmdlets
         private string ParseSearchId(long id) => string.Format(SEARCH_ID_QUERY, id);
 
         #endregion
-
-        private class IgnoreCase : IEqualityComparer<string>
-        {
-            public bool Equals(string x, string y) => x.Equals(y, StringComparison.CurrentCultureIgnoreCase);
-            public int GetHashCode(string obj) => obj.GetHashCode();
-        }
     }
 }
