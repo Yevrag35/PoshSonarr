@@ -45,6 +45,9 @@
 								<PropertyName>Monitored</PropertyName>
 							</ListItem>
 							<ListItem>
+								<PropertyName>Name</PropertyName>
+							</ListItem>
+							<ListItem>
 								<PropertyName>SeasonNumber</PropertyName>
 							</ListItem>
 							<ListItem>
@@ -56,9 +59,6 @@
 							</ListItem>
 							<ListItem>
 								<PropertyName>SeriesId</PropertyName>
-							</ListItem>
-							<ListItem>
-								<PropertyName>Title</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>UnverifiedSceneNumbering</PropertyName>

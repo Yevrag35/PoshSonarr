@@ -61,7 +61,7 @@ namespace MG.Sonarr.Cmdlets
                         for (int s = 0; s < _series.Count; s++)
                         {
                             SeriesResult series = _series[s];
-                            if (wcp.IsMatch(series.Title))
+                            if (wcp.IsMatch(series.Name))
                                 base.WriteObject(series);
                         }
                     }

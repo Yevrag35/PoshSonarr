@@ -118,6 +118,7 @@
     <Compile Include="Results\RootFolder\RootFolder.cs" />
     <Compile Include="Results\Series\AlternateTitle.cs" />
     <Compile Include="Results\Series\Season.cs" />
+    <Compile Include="Results\Series\SeasonCollection.cs" />
     <Compile Include="Results\Series\Series.cs" />
     <Compile Include="Results\Series\SeriesImage.cs" />
     <Compile Include="Results\System\BackupResult.cs" />

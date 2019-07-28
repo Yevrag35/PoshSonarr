@@ -25,8 +25,9 @@ namespace MG.Sonarr.Cmdlets.Profiles
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByProfileName")]
         public string[] Name { get; set; }
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByProfileId")]
-        public int[] Id { get; set; }
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByProfileId", ValueFromPipelineByPropertyName = true)]
+        [Alias("QualityProfileId")]
+        public int Id { get; set; }
 
         #endregion
 
@@ -75,23 +76,19 @@ namespace MG.Sonarr.Cmdlets.Profiles
             }
             else
             {
-                for (int i = 0; i < this.Id.Length; i++)
+                string full = string.Format("/profile/{0}", this.Id);
+                try
                 {
-                    int id = this.Id[i];
-                    string full = string.Format("/profile/{0}", id);
-                    try
+                    string oneProf = base.TryGetSonarrResult(full);
+                    if (!string.IsNullOrEmpty(oneProf))
                     {
-                        string oneProf = base.TryGetSonarrResult(full);
-                        if (!string.IsNullOrEmpty(oneProf))
-                        {
-                            var qp = SonarrHttpClient.ConvertToSonarrResult<QualityProfile>(oneProf);
-                            base.WriteObject(qp);
-                        }
+                        var qp = SonarrHttpClient.ConvertToSonarrResult<QualityProfile>(oneProf);
+                        base.WriteObject(qp);
                     }
-                    catch (Exception e)
-                    {
-                        base.WriteError(e, ErrorCategory.InvalidResult, full);
-                    }
+                }
+                catch (Exception e)
+                {
+                    base.WriteError(e, ErrorCategory.InvalidResult, full);
                 }
             }
         }

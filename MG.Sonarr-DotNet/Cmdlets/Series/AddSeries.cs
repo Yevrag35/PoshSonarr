@@ -47,7 +47,6 @@ namespace MG.Sonarr.Cmdlets
         public SwitchParameter PassThru { get; set; }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        [Alias("Title")]
         public string Name { get; set; }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]

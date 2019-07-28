@@ -57,7 +57,7 @@ namespace MG.Sonarr.Cmdlets
                             var tok = JToken.Parse(jsonStr);
                             list = SonarrHttpClient.ConvertToSeriesResults(jsonStr, false);
                             if (this.Strict.ToBool())
-                                base.WriteObject(list.FindAll(x => x.Title.IndexOf(this.Name, StringComparison.CurrentCultureIgnoreCase) >= 0), true);
+                                base.WriteObject(list.FindAll(x => x.Name.IndexOf(this.Name, StringComparison.CurrentCultureIgnoreCase) >= 0), true);
 
                             else
                                 base.WriteObject(list, true);

@@ -18,6 +18,12 @@ namespace MG.Sonarr.Results
         public int Resolution { get; set; }
     }
 
+    public class Ratings : BaseResult
+    {
+        public float Value { get; set; }
+        public int Votes { get; set; }
+    }
+
     public class Revision : BaseResult
     {
         public int Real { get; set; }
