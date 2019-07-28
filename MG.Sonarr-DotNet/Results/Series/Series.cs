@@ -43,10 +43,10 @@ namespace MG.Sonarr.Results
         public SeasonCollection Seasons { get; set; }
         [JsonProperty("id")]
         public long? SeriesId { get; set; }
-        public string SeriesType { get; set; }
+        public SeriesType SeriesType { get; set; }
         public string SortTitle { get; set; }
-        public string Status { get; set; }
-        public object[] Tags { get; set; }
+        public SeriesStatusType Status { get; set; }
+        public HashSet<int> Tags { get; set; }
         public string TitleSlug { get; set; }
         public long TVDBId { get; set; }
         public long? TVMazeId { get; set; }
@@ -61,9 +61,11 @@ namespace MG.Sonarr.Results
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
-            if (!this.Status.Equals("ended", StringComparison.CurrentCultureIgnoreCase) && _additionalData.ContainsKey(AIRTIME))
+            if (this.Status != SeriesStatusType.Ended && _additionalData.ContainsKey(AIRTIME))
             {
-                this.AirTime = this.ConvertFromTokyoTime(_additionalData[AIRTIME]);
+                this.AirTime = this.SeriesType == SeriesType.Anime
+                    ? this.ConvertFromTokyoTime(_additionalData[AIRTIME])
+                    : _additionalData[AIRTIME].ToObject<string>();
             }
 
             JToken rating = _additionalData[RATING];
