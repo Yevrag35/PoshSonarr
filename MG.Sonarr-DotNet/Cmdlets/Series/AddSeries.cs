@@ -47,7 +47,6 @@ namespace MG.Sonarr.Cmdlets
         public SwitchParameter PassThru { get; set; }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        [Alias("Title")]
         public string Name { get; set; }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
@@ -63,7 +62,7 @@ namespace MG.Sonarr.Cmdlets
         public SeriesImage[] Images { get; set; }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        public SeasonCollection Seasons { get; set; }
+        public Collection<Season> Seasons { get; set; }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter NotMonitored { get; set; }

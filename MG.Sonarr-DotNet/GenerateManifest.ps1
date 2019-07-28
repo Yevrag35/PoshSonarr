@@ -6,6 +6,9 @@
     [parameter(Mandatory = $true, Position = 1)]
     [string] $ModuleFileDirectory,
 
+	[parameter(Mandatory = $true, Position = 2)]
+	[string] $AssemblyInfo,
+
     [parameter(Mandatory = $true, Position = 3)]
     [string] $TargetFileName
 )
@@ -15,15 +18,25 @@ $curDir = Split-Path -Parent $MyInvocation.MyCommand.Definition;
 ## Clear out files
 Get-ChildItem -Path $DebugDirectory -Include *.ps1xml -Recurse | Remove-Item -Force;
 
-## Get Module Version from project.assets.json
-$json = Get-Content "$curDir\obj\project.assets.json" | ConvertFrom-Json;
-$vers = $json.project.version;
+## Get Module Version from project.assets.json - PowerShell Core
+#$json = Get-Content "$curDir\obj\project.assets.json" | ConvertFrom-Json;
+#$vers = $json.project.version;
+
+## Get Module Version from Assembly.cs - WindowsPowerShell
+$assInfo = Get-Content -Path $AssemblyInfo;
+foreach ($line in $assInfo)
+{
+    if ($line -like "*AssemblyFileVersion(*")
+    {
+        $vers = $line -replace '^\s*\[assembly\:\sAssemblyFileVersion\(\"(.*?)\"\)\]$', '$1';
+    }
+}
 
 $allFiles = Get-ChildItem $ModuleFileDirectory -Include * -Exclude *.old -Recurse;
 $References = Join-Path "$ModuleFileDirectory\.." "Assemblies";
 
 [string[]]$verbs = Get-Verb | Select-Object -ExpandProperty Verb;
-$patFormat = '^({0})(\S{{1,}})\.cs';
+$patFormat = '^({0})(?:([a-zA-Z]{{1,}})|([a-zA-Z]{{1,}})\-Core)\.cs';
 $pattern = $patFormat -f ($verbs -join '|');
 $cmdletFormat = "{0}-{1}";
 
@@ -37,7 +50,16 @@ $Aliases = New-Object System.Collections.Generic.List[string];
 foreach ($cs in $csFiles)
 {
 	$match = [regex]::Match($cs.Name, $pattern)
-    $Cmdlets.Add(($cmdletFormat -f $match.Groups[1].Value, $match.Groups[2].Value));
+	if ([string]::IsNullOrEmpty($match.Groups[3]))
+	{
+		$name = $cmdletFormat -f $match.Groups[1].Value, $match.Groups[2].Value;
+	}
+	else
+	{
+		$name = $cmdletFormat -f $match.Groups[1].Value, $match.Groups[3].Value
+	}
+    $Cmdlets.Add($name);
+
     $content = Get-Content -Path $cs -Raw;
     $aliasMatch = [regex]::Match($content, $aliasPat, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase);
     if ($aliasMatch.Success)
@@ -45,6 +67,10 @@ foreach ($cs in $csFiles)
         $Aliases.Add($aliasMatch.Groups[1].Value);
     }
 }
+
+[string[]]$Cmdlets = $Cmdlets | Select-Object -Unique;
+#$Cmdlets.Remove("Connect-Instance-Core")
+#$Cmdlets.Add("Connect-Instance")
 
 [string[]]$allDlls = Get-ChildItem $References -Include *.dll -Exclude 'System.Management.Automation.dll' -Recurse | Select-Object -ExpandProperty Name;
 [string[]]$allFormats = $allFiles | Where-Object -FilterScript { $_.Extension -eq ".ps1xml" } | Select-Object -ExpandProperty Name;
@@ -79,4 +105,4 @@ $manifest = @{
 };
 
 New-ModuleManifest @manifest;
-Update-ModuleManifest -Path $modPath -Prerelease 'alpha' -FunctionsToExport '';
+#Update-ModuleManifest -Path $modPath -Prerelease 'alpha' -FunctionsToExport '';

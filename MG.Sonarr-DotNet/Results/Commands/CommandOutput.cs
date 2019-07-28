@@ -12,15 +12,15 @@ namespace MG.Sonarr.Results
         public bool IsManual { get; set; }
         [JsonProperty("id")]
         public long JobId { get; set; }
-        public string Priority { get; set; }
+        public CommandPriority Priority { get; set; }
         public DateTime Queued { get; set; }
         public bool SendUpdatesToClient { get; set; }
         [JsonProperty("startedOn")]
         public DateTime Started { get; set; }
         public DateTime StateChangeTime { get; set; }
-        public string Status { get; set; }
+        public CommandStatus Status { get; set; }
         public string State { get; set; }
-        public string Trigger { get; set; }
+        public CommandTrigger Trigger { get; set; }
         public bool UpdateScheduledTask { get; set; }
     }
 }
