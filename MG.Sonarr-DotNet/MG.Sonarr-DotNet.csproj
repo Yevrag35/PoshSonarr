@@ -68,6 +68,7 @@
     <Compile Include="Cmdlets\Commands\InvokeSeriesRefresh.cs" />
     <Compile Include="Cmdlets\Commands\InvokeSeriesRescan.cs" />
     <Compile Include="Cmdlets\Commands\InvokeSeriesSearch.cs" />
+    <Compile Include="Results\Updates\Update.cs" />
     <None Include="Cmdlets\Connection\ConnectInstance-Core.cs" />
     <Compile Include="Cmdlets\Connection\ConnectInstance.cs" />
     <Compile Include="Cmdlets\Episodes\GetEpisode.cs" />

@@ -11,6 +11,53 @@
                     <ListEntry>
                         <ListItems>
 							<ListItem>
+								<Label>Added</Label>
+								<ScriptBlock>
+									$dtFormat = [System.Globalization.CultureInfo]::CurrentUICulture.DateTimeFormat;
+									$pat = "{0}, yyyy {1}" -f $dtFormat.MonthDayPattern, $dtFormat.ShortTimePattern;
+									$_.Added.ToString($pat);
+								</ScriptBlock>
+								<ItemSelectionCondition>
+									<ScriptBlock>
+										$_.Added -ne $null -and $_.Added -ne [datetime]::MinValue
+									</ScriptBlock>
+								</ItemSelectionCondition>
+							</ListItem>
+							<ListItem>
+								<PropertyName>AirTime</PropertyName>
+								<ItemSelectionCondition>
+									<ScriptBlock>
+										$_.AirTime -ne $null
+									</ScriptBlock>
+								</ItemSelectionCondition>
+							</ListItem>
+							<ListItem>
+								<Label>AlternateTitles</Label>
+								<ScriptBlock>
+									$_.AlternateTitles.Title -join ', '
+								</ScriptBlock>
+								<ItemSelectionCondition>
+									<ScriptBlock>
+										$_.AlternateTitles -ne $null -and $_.AlternateTitles.Length -gt 0
+									</ScriptBlock>
+								</ItemSelectionCondition>
+							</ListItem>
+							<ListItem>
+								<PropertyName>CleanTitle</PropertyName>
+							</ListItem>
+							<ListItem>
+								<Label>FirstAired</Label>
+								<ScriptBlock>
+									$pat = "{0}, yyyy" -f [System.Globalization.CultureInfo]::CurrentUICulture.DateTimeFormat.MonthDayPattern;
+									$_.FirstAired.ToString($pat);
+								</ScriptBlock>
+								<ItemSelectionCondition>
+									<ScriptBlock>
+										$_.FirstAired -ne $null
+									</ScriptBlock>
+								</ItemSelectionCondition>
+							</ListItem>
+							<ListItem>
 								<Label>Genres</Label>
 								<ScriptBlock>$_.Genres -join ', '</ScriptBlock>
 							</ListItem>
@@ -36,11 +83,17 @@
 									<ScriptBlock>$_.Path -ne $null</ScriptBlock>
 								</ItemSelectionCondition>
 							</ListItem>
+							<ListItem>
+								<PropertyName>QualityProfileId</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Rating</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>RatingVotes</PropertyName>
+							</ListItem>
                             <ListItem>
                                 <PropertyName>SeasonCount</PropertyName>
-                            </ListItem>
-                            <ListItem>
-                                <PropertyName>SeasonFolder</PropertyName>
                             </ListItem>
 							<ListItem>
 								<Label>Seasons</Label>
@@ -53,13 +106,19 @@
 								</ItemSelectionCondition>
 							</ListItem>
 							<ListItem>
-								<PropertyName>TVDBId</PropertyName>
+								<PropertyName>SeriesType</PropertyName>
 							</ListItem>
-                            <ListItem>
-                                <PropertyName>SeriesType</PropertyName>
-                            </ListItem>
 							<ListItem>
 								<PropertyName>Status</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>TVDBId</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>TVRating</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>UsingSeasonFolders</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Year</PropertyName>
