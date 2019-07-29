@@ -17,8 +17,11 @@ namespace MG.Sonarr.Cmdlets.Connection
     public class ConnectInstance : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string EP = "/system/status";
+        private const string SLASH_STR = "/";
+        private static readonly char SLASH = char.Parse(SLASH_STR);
 
+        private const string EP = "/system/status";
+        private bool _noApiPrefix;
         private const string URL_FORMAT = "{0}://{1}:{2}";
 
         #endregion
@@ -35,6 +38,10 @@ namespace MG.Sonarr.Cmdlets.Connection
         [Parameter(Mandatory = false, ParameterSetName = "ByServerName")]
         [Alias("Port")]
         public int PortNumber = 8989;
+
+        [Parameter(Mandatory = false, ParameterSetName = "ByServerName")]
+        [Alias("CustomUriBase", "UriBase")]
+        public string ReverseProxyUriBase { get; set; }
 
         [Parameter(Mandatory = false, ParameterSetName = "ByServerName")]
         public SwitchParameter UseSSL { get; set; }
@@ -56,7 +63,11 @@ namespace MG.Sonarr.Cmdlets.Connection
         public ApiKey ApiKey { get; set; }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter NoApiPrefix { get; set; }
+        public SwitchParameter NoApiPrefix
+        {
+            get => _noApiPrefix;
+            set => _noApiPrefix = value;
+        }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter PassThru { get; set; }
@@ -64,18 +75,42 @@ namespace MG.Sonarr.Cmdlets.Connection
         #endregion
 
         #region CMDLET PROCESSING
-        protected override void BeginProcessing() => Context.NoApiPrefix = false;
+        protected override void BeginProcessing()
+        {
+            Context.NoApiPrefix = false;
+            if (this.NoApiPrefix.ToBool())
+            {
+                Context.NoApiPrefix = true;
+            }
+
+            Context.ClearUriBase();
+        }
 
         protected override void ProcessRecord()
         {
-            Uri url = null;
+            var url = new UriBuilder();
+            
             if (this.ParameterSetName == "ByServerName")
             {
                 string scheme = !this.UseSSL.ToBool()
                     ? "http"
                     : "https";
 
-                url = new Uri(string.Format(URL_FORMAT, scheme, this.SonarrServerName, this.PortNumber), UriKind.Absolute);
+                //url = new Uri(string.Format(URL_FORMAT, scheme, this.SonarrServerName, this.PortNumber), UriKind.Absolute);
+                url.Scheme = scheme;
+                url.Host = this.SonarrServerName;
+                url.Port = this.PortNumber;
+                if (!_noApiPrefix)
+                {
+                    url.Path = "/api";
+                }
+
+                if (this.MyInvocation.BoundParameters.ContainsKey("ReverseProxyUriBase"))
+                {
+                    this.ReverseProxyUriBase = this.ReverseProxyUriBase.Trim()
+
+                    url.P
+                }
             }
             else
             {
@@ -105,18 +140,14 @@ namespace MG.Sonarr.Cmdlets.Connection
                 handler.Proxy = wp;
                 handler.UseProxy = true;
             }
+            handler.AllowAutoRedirect = false;
 
             var apiCaller = new ApiCaller(handler, this.ApiKey)
             {
-                //BaseAddress = url
                 BaseAddress = new Uri(url.GetLeftPart(UriPartial.Scheme | UriPartial.Authority))
             };
 
             Context.ApiCaller = apiCaller;
-            if (this.NoApiPrefix.ToBool())
-            {
-                Context.NoApiPrefix = true;
-            }
 
             if (this.PassThru.ToBool())
             {
@@ -147,6 +178,35 @@ namespace MG.Sonarr.Cmdlets.Connection
                         base.WriteError(ex, ErrorCategory.ParserError, status);
                     }
                 }
+            }
+        }
+
+        #endregion
+
+        #region PRIVATE/BACKEND METHODS
+        private string GetStatusString(ApiCaller caller)
+        {
+            string status = null;
+            try
+            {
+                status = Context.ApiCaller.SonarrGet(EP);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message, e);
+            }
+            if (string.IsNullOrEmpty(status))
+            {
+                throw new NoSonarrResponseException(caller);
+            }
+            return status;
+        }
+
+        private SonarrStatusResult GetStatusResult(string statusStr)
+        {
+            try
+            {
+
             }
         }
 

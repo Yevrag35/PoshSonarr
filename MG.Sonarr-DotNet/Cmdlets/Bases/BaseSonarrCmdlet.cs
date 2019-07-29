@@ -86,10 +86,7 @@ namespace MG.Sonarr.Cmdlets
             return res;
         }
 
-        #endregion
-
-        #region BACKEND METHODS
-        protected private void TryDeleteSonarrResult(string endpoint)
+        protected void TryDeleteSonarrResult(string endpoint)
         {
             try
             {
@@ -102,7 +99,7 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
-        protected private string TryGetSonarrResult(string endpoint)
+        protected string TryGetSonarrResult(string endpoint)
         {
             try
             {
@@ -117,7 +114,7 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
-        protected private string TryPostSonarrResult(string endpoint, string jsonBody)
+        protected string TryPostSonarrResult(string endpoint, string jsonBody)
         {
             try
             {
@@ -132,7 +129,7 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
-        protected private string TryPutSonarrResult(string endpoint, string jsonBody)
+        protected string TryPutSonarrResult(string endpoint, string jsonBody)
         {
             try
             {
@@ -147,21 +144,36 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
-        protected private void WriteError(string msg, ErrorCategory cat) =>
+        #endregion
+
+        #region EXCEPTION METHODS
+        protected virtual Exception GetAbsoluteException(Exception e)
+        {
+            while (e.InnerException != null)
+            {
+                e = e.InnerException;
+            }
+            return e;
+        }
+
+        protected void WriteError(string msg, ErrorCategory cat) =>
             this.WriteError(new ArgumentException(msg), cat, null);
 
-        protected private void WriteError(string msg, ErrorCategory cat, object obj) =>
+        protected void WriteError(string msg, ErrorCategory cat, object obj) =>
             this.WriteError(new ArgumentException(msg), cat, obj);
 
-        protected private void WriteError(string msg, Exception exception, ErrorCategory cat, object obj)
+        protected void WriteError(string msg, Exception exception, ErrorCategory cat, object obj)
         {
+            exception = this.GetAbsoluteException(exception);
+
             var errRec = new ErrorRecord(new InvalidOperationException(msg, exception), exception.GetType().FullName, cat, obj);
             base.WriteError(errRec);
         }
 
-        protected private void WriteError(Exception baseEx, ErrorCategory cat) => this.WriteError(baseEx, cat, null);
-        protected private void WriteError(Exception baseEx, ErrorCategory cat, object obj)
+        protected void WriteError(Exception baseEx, ErrorCategory cat) => this.WriteError(baseEx, cat, null);
+        protected void WriteError(Exception baseEx, ErrorCategory cat, object obj)
         {
+            baseEx = this.GetAbsoluteException(baseEx);
             var errRec = new ErrorRecord(baseEx, baseEx.GetType().FullName, cat, obj);
             base.WriteError(errRec);
         }
