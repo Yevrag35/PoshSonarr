@@ -62,24 +62,37 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region API METHODS
-        protected string SonarrGet(string sonarrEndpoint)
+        protected string TrySonarrConnect(string sonarrEndpoint)
         {
-            if (!Context.NoApiPrefix)
-                sonarrEndpoint = API_PREFIX + sonarrEndpoint;
+            //if (!Context.NoApiPrefix)
+            //    sonarrEndpoint = API_PREFIX + sonarrEndpoint;
+            sonarrEndpoint = Context.UriBase + sonarrEndpoint;
 
-            Task<HttpResponseMessage> task = _api.GetAsync(sonarrEndpoint, HttpCompletionOption.ResponseContentRead);
+            Task<HttpResponseMessage> task = Context.ApiCaller.GetAsync(sonarrEndpoint, HttpCompletionOption.ResponseContentRead);
             task.Wait();
             string res = null;
             if (!task.IsFaulted && !task.IsCanceled)
             {
-                using (HttpResponseMessage resp = task.Result.EnsureSuccessStatusCode())
+                try
                 {
-                    using (var content = resp.Content)
+                    using (HttpResponseMessage resp = task.Result.EnsureSuccessStatusCode())
                     {
-                        Task<string> strTask = content.ReadAsStringAsync();
-                        strTask.Wait();
-                        res = strTask.Result;
+                        using (var content = resp.Content)
+                        {
+                            Task<string> strTask = content.ReadAsStringAsync();
+                            strTask.Wait();
+                            res = strTask.Result;
+                        }
                     }
+                }
+                catch (HttpRequestException hre)
+                {
+                    this.WriteError(new SonarrConnectException(sonarrEndpoint, hre), ErrorCategory.ParserError);
+                    return null;
+                }
+                catch (Exception e)
+                {
+                    throw this.GetAbsoluteException(e);
                 }
             }
 
@@ -88,14 +101,17 @@ namespace MG.Sonarr.Cmdlets
 
         protected void TryDeleteSonarrResult(string endpoint)
         {
+            endpoint = Context.UriBase + endpoint;
+            base.WriteVerbose(string.Format("DELETE REQUEST URL: {0}", endpoint));
             try
             {
-                base.WriteVerbose(string.Format("DELETE REQUEST URL: {0}", endpoint));
-                _api.SonarrDelete(endpoint);
+                Task<HttpResponseMessage> task = Context.ApiCaller.DeleteAsync(endpoint);
+                task.Wait();
+                task.Result.EnsureSuccessStatusCode();
             }
-            catch (Exception e)
+            catch (HttpRequestException hre)
             {
-                base.WriteError(new ErrorRecord(e, e.GetType().FullName, ErrorCategory.InvalidArgument, endpoint));
+                this.WriteError(new SonarrDeleteRequestException(endpoint, hre), ErrorCategory.ParserError);
             }
         }
 
@@ -173,7 +189,7 @@ namespace MG.Sonarr.Cmdlets
         protected void WriteError(Exception baseEx, ErrorCategory cat) => this.WriteError(baseEx, cat, null);
         protected void WriteError(Exception baseEx, ErrorCategory cat, object obj)
         {
-            baseEx = this.GetAbsoluteException(baseEx);
+            //baseEx = this.GetAbsoluteException(baseEx);
             var errRec = new ErrorRecord(baseEx, baseEx.GetType().FullName, cat, obj);
             base.WriteError(errRec);
         }

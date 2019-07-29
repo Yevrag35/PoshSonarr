@@ -21,7 +21,12 @@ namespace MG.Sonarr.Cmdlets.Connection
         private static readonly char SLASH = char.Parse(SLASH_STR);
 
         private const string EP = "/system/status";
+        private bool _allowRedirect;
         private bool _noApiPrefix;
+        private bool _passThru;
+        private bool _proxyBypass;
+        private bool _skipCert;
+        private bool _useSsl;
         private const string URL_FORMAT = "{0}://{1}:{2}";
 
         #endregion
@@ -44,10 +49,25 @@ namespace MG.Sonarr.Cmdlets.Connection
         public string ReverseProxyUriBase { get; set; }
 
         [Parameter(Mandatory = false, ParameterSetName = "ByServerName")]
-        public SwitchParameter UseSSL { get; set; }
+        public SwitchParameter UseSSL
+        {
+            get => _useSsl;
+            set => _useSsl = value;
+        }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter SkipCertificateCheck { get; set; }
+        public SwitchParameter SkipCertificateCheck
+        {
+            get => _skipCert;
+            set => _skipCert = value;
+        }
+
+        [Parameter(Mandatory = false)]
+        public SwitchParameter AllowRedirects
+        {
+            get => _allowRedirect;
+            set => _allowRedirect = value;
+        }
 
         [Parameter(Mandatory = false)]
         public string Proxy { get; set; }
@@ -56,7 +76,11 @@ namespace MG.Sonarr.Cmdlets.Connection
         public ProxyCredential ProxyCredential { get; set; }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter ProxyBypassOnLocal { get; set; }
+        public SwitchParameter ProxyBypassOnLocal
+        {
+            get => _proxyBypass;
+            set => _proxyBypass = value;
+        }
 
         [Parameter(Mandatory = true)]
         [Alias("key")]
@@ -70,15 +94,22 @@ namespace MG.Sonarr.Cmdlets.Connection
         }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter PassThru { get; set; }
+        public SwitchParameter PassThru
+        {
+            get => _passThru;
+            set => _passThru = value;
+        }
 
         #endregion
 
         #region CMDLET PROCESSING
         protected override void BeginProcessing()
         {
+            if (_allowRedirect)
+                base.WriteWarning(BaseSonarrHttpException.CAUTION + BaseSonarrHttpException.HOW_CAUTION);
+
             Context.NoApiPrefix = false;
-            if (this.NoApiPrefix.ToBool())
+            if (_noApiPrefix)
             {
                 Context.NoApiPrefix = true;
             }
@@ -88,126 +119,136 @@ namespace MG.Sonarr.Cmdlets.Connection
 
         protected override void ProcessRecord()
         {
-            var url = new UriBuilder();
-            
-            if (this.ParameterSetName == "ByServerName")
-            {
-                string scheme = !this.UseSSL.ToBool()
-                    ? "http"
-                    : "https";
-
-                //url = new Uri(string.Format(URL_FORMAT, scheme, this.SonarrServerName, this.PortNumber), UriKind.Absolute);
-                url.Scheme = scheme;
-                url.Host = this.SonarrServerName;
-                url.Port = this.PortNumber;
-                if (!_noApiPrefix)
-                {
-                    url.Path = "/api";
-                }
-
-                if (this.MyInvocation.BoundParameters.ContainsKey("ReverseProxyUriBase"))
-                {
-                    this.ReverseProxyUriBase = this.ReverseProxyUriBase.Trim()
-
-                    url.P
-                }
-            }
-            else
-            {
-                url = this.SonarrUrl;
-            }
+            UriBuilder url = this.ParameterSetName == "ByServerName"
+                ? FormatUri(this.SonarrServerName, this.PortNumber, this.ReverseProxyUriBase, _useSsl, _noApiPrefix)
+                : new UriBuilder(this.SonarrUrl);
 
             var handler = new HttpClientHandler()
             {
                 UseDefaultCredentials = true
             };
 
-            if (this.SkipCertificateCheck.ToBool())
-            {
-                ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
-            }
-            if (this.MyInvocation.BoundParameters.ContainsKey("Proxy"))
-            {
-                var wp = new WebProxy(this.Proxy);
-                if (this.MyInvocation.BoundParameters.ContainsKey("ProxyCredential"))
-                {
-                    wp.Credentials = this.ProxyCredential;
-                }
-                if (this.MyInvocation.BoundParameters.ContainsKey("ProxyBypassOnLocal"))
-                {
-                    wp.BypassProxyOnLocal = this.ProxyBypassOnLocal.ToBool();
-                }
-                handler.Proxy = wp;
-                handler.UseProxy = true;
-            }
-            handler.AllowAutoRedirect = false;
+            this.CheckCertificateValidity();
 
-            var apiCaller = new ApiCaller(handler, this.ApiKey)
-            {
-                BaseAddress = new Uri(url.GetLeftPart(UriPartial.Scheme | UriPartial.Authority))
-            };
+            ApiCaller apiCaller = this.MyInvocation.BoundParameters.ContainsKey("Proxy")
+                ? NewApiCaller(this.ApiKey, url, _allowRedirect, this.Proxy, this.ProxyCredential, _proxyBypass)
+                : NewApiCaller(this.ApiKey, url, _allowRedirect);
 
             Context.ApiCaller = apiCaller;
+            Context.UriBase = url.Path;
 
-            if (this.PassThru.ToBool())
+            if (_passThru)
             {
-                string status = null;
-                try
-                {
-                    status = Context.ApiCaller.SonarrGet(EP);
-                }
-                catch (Exception e)
-                {
-                    throw new Exception(e.Message, e);
-                }
-                if (string.IsNullOrEmpty(status))
-                {
-                    throw new NoSonarrResponseException(apiCaller);
-                }
-                else
-                {
-                    SonarrStatusResult sr = null;
-                    try
-                    {
-                        sr = SonarrHttpClient.ConvertToSonarrResult<SonarrStatusResult>(status);
-                        sr.UrlBase = Context.ApiCaller.BaseAddress;
-                        base.WriteObject(sr);
-                    }
-                    catch (Exception ex)
-                    {
-                        base.WriteError(ex, ErrorCategory.ParserError, status);
-                    }
-                }
+                string status = this.GetStatusString(Context.ApiCaller);
+                SonarrStatusResult sr = this.GetStatusResult(status);
+                if (sr != null)
+                    base.WriteObject(sr);
             }
         }
 
         #endregion
 
         #region PRIVATE/BACKEND METHODS
+        private void CheckCertificateValidity()
+        {
+            if (_skipCert)
+            {
+                ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+            }
+        }
+
+        public static UriBuilder FormatUri(string serverName, int portNumber, string reverseProxyUriBase, bool useSsl, bool noApiPrefix)
+        {
+            string scheme = !useSsl
+                    ? "http"
+                    : "https";
+
+            var url = new UriBuilder()
+            {
+                Scheme = scheme,
+                Host = serverName,
+                Port = portNumber
+            };
+            if (!noApiPrefix)
+            {
+                url.Path = "/api";
+            }
+
+            if (!string.IsNullOrEmpty(reverseProxyUriBase))
+            {
+                reverseProxyUriBase = reverseProxyUriBase.Trim(SLASH);
+                if (reverseProxyUriBase.IndexOf("/api", StringComparison.CurrentCultureIgnoreCase) >= 0 &&
+                    url.Path.Contains("/api"))
+                {
+                    reverseProxyUriBase = reverseProxyUriBase.Replace("/api", string.Empty);
+                }
+                url.Path = reverseProxyUriBase + url.Path;
+            }
+            return url;
+        }
+
         private string GetStatusString(ApiCaller caller)
         {
-            string status = null;
-            try
-            {
-                status = Context.ApiCaller.SonarrGet(EP);
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message, e);
-            }
+            string status = base.TrySonarrConnect(EP);
             if (string.IsNullOrEmpty(status))
             {
                 throw new NoSonarrResponseException(caller);
             }
             return status;
+            // No call GetStatusResult();
         }
 
         private SonarrStatusResult GetStatusResult(string statusStr)
         {
+            SonarrStatusResult sr = null;
             try
             {
-
+                sr = SonarrHttpClient.ConvertToSonarrResult<SonarrStatusResult>(statusStr);
             }
+            catch (Exception e)
+            {
+                base.WriteError(e, ErrorCategory.ParserError, statusStr);
+            }
+            return sr;
+        }
+
+        public static ApiCaller NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects)
+        {
+            var handler = new HttpClientHandler
+            {
+                AllowAutoRedirect = allowRedirects,
+                UseDefaultCredentials = true
+            };
+            return new ApiCaller(handler, apiKey)
+            {
+                BaseAddress = new Uri(uriBuilder.Uri.GetLeftPart(UriPartial.Scheme | UriPartial.Authority))
+            };
+        }
+
+        public static ApiCaller NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects, string proxy, ProxyCredential proxyCredential, bool proxyBypassLocal)
+        {
+            var wp = new WebProxy(proxy)
+            {
+                BypassProxyOnLocal = proxyBypassLocal,
+            };
+
+            if (proxyCredential != null)
+                wp.Credentials = proxyCredential;
+
+            else
+                wp.UseDefaultCredentials = true;
+
+            var handler = new HttpClientHandler
+            {
+                AllowAutoRedirect = allowRedirects,
+                UseDefaultCredentials = true,
+                Proxy = wp,
+                UseProxy = true
+            };
+            return new ApiCaller(handler, apiKey)
+            {
+                BaseAddress = new Uri(uriBuilder.Uri.GetLeftPart(UriPartial.Scheme | UriPartial.Authority))
+            };
         }
 
         #endregion
