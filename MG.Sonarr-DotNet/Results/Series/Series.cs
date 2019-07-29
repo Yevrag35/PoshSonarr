@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -39,24 +40,24 @@ namespace MG.Sonarr.Results
         public int RatingVotes { get; private set; }
         public string RemotePoster { get; set; }
         public long? Runtime { get; set; }
-        public int? SeasonCount { get; set; }
+        public int SeasonCount { get; set; }
         public SeasonCollection Seasons { get; set; }
         [JsonProperty("id")]
-        public long? SeriesId { get; set; }
+        public long SeriesId { get; set; }
         public SeriesType SeriesType { get; set; }
         public string SortTitle { get; set; }
         public SeriesStatusType Status { get; set; }
         public HashSet<int> Tags { get; set; }
         public string TitleSlug { get; set; }
         public long TVDBId { get; set; }
-        public long? TVMazeId { get; set; }
-        public long? TVRageId { get; set; }
+        public long TVMazeId { get; set; }
+        public long TVRageId { get; set; }
         [JsonProperty("certification")]
         public string TVRating { get; set; }
         public bool UseSceneNumbering { get; set; }
         [JsonProperty("seasonFolder")]
         public bool UsingSeasonFolders { get; set; }
-        public int? Year { get; set; }
+        public int Year { get; set; }
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)

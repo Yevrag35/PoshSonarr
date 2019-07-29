@@ -1,18 +1,22 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results
 {
+    [Serializable]
     public abstract class BaseResult : ISonarrResult
     {
+
         public virtual string ToJson()
         {
-            return JsonConvert.SerializeObject(this, new JsonSerializerSettings
+            var converter = new JsonSerializerSettings
             {
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
                 DateFormatHandling = DateFormatHandling.IsoDateFormat,
@@ -21,7 +25,9 @@ namespace MG.Sonarr.Results
                 Formatting = Formatting.Indented,
                 NullValueHandling = NullValueHandling.Include,
                 MissingMemberHandling = MissingMemberHandling.Error
-            });
+            };
+            converter.Converters.Add(new StringEnumConverter(new CamelCaseNamingStrategy()));
+            return JsonConvert.SerializeObject(this, converter);
         }
 
         public virtual string ToJson(IDictionary parameters)
@@ -42,6 +48,7 @@ namespace MG.Sonarr.Results
                 NullValueHandling = NullValueHandling.Include,
                 MissingMemberHandling = MissingMemberHandling.Error
             };
+            serializer.Converters.Add(new StringEnumConverter(new CamelCaseNamingStrategy()));
 
             var job = JObject.FromObject(this, cSerialize);
 
