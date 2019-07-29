@@ -141,6 +141,8 @@ namespace MG.Sonarr
             if (!Context.NoApiPrefix)
                 endpoint = API_PREFIX + endpoint;
 
+            //endpoint = "/sonarr" + endpoint;
+
             Task<HttpResponseMessage> call = client.DeleteAsync(endpoint);
             call.Wait();
 

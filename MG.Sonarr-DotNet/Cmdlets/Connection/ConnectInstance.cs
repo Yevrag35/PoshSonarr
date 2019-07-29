@@ -64,7 +64,7 @@ namespace MG.Sonarr.Cmdlets.Connection
         #endregion
 
         #region CMDLET PROCESSING
-        protected override void BeginProcessing() { }
+        protected override void BeginProcessing() => Context.NoApiPrefix = false;
 
         protected override void ProcessRecord()
         {
@@ -108,7 +108,8 @@ namespace MG.Sonarr.Cmdlets.Connection
 
             var apiCaller = new ApiCaller(handler, this.ApiKey)
             {
-                BaseAddress = url
+                //BaseAddress = url
+                BaseAddress = new Uri(url.GetLeftPart(UriPartial.Scheme | UriPartial.Authority))
             };
 
             Context.ApiCaller = apiCaller;
