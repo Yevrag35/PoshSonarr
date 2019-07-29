@@ -94,16 +94,13 @@ namespace MG.Sonarr
             string res = null;
             if (!task.IsFaulted && !task.IsCanceled)
             {
-                using (HttpResponseMessage resp = task.Result)
+                using (HttpResponseMessage resp = task.Result.EnsureSuccessStatusCode())
                 {
-                    if (resp.IsSuccessStatusCode)
+                    using (var content = resp.Content)
                     {
-                        using (var content = resp.Content)
-                        {
-                            Task<string> strTask = content.ReadAsStringAsync();
-                            strTask.Wait();
-                            res = strTask.Result;
-                        }
+                        Task<string> strTask = content.ReadAsStringAsync();
+                        strTask.Wait();
+                        res = strTask.Result;
                     }
                 }
             }
@@ -126,16 +123,13 @@ namespace MG.Sonarr
             string res = null;
             if (!call.IsFaulted && !call.IsCanceled)
             {
-                using (HttpResponseMessage resp = call.Result)
+                using (HttpResponseMessage resp = call.Result.EnsureSuccessStatusCode())
                 {
-                    if (resp.IsSuccessStatusCode)
+                    using (var content = resp.Content)
                     {
-                        using (HttpContent content = resp.Content)
-                        {
-                            Task<string> strTask = content.ReadAsStringAsync();
-                            strTask.Wait();
-                            res = strTask.Result;
-                        }
+                        Task<string> strTask = content.ReadAsStringAsync();
+                        strTask.Wait();
+                        res = strTask.Result;
                     }
                 }
             }
@@ -171,16 +165,13 @@ namespace MG.Sonarr
             string res = null;
             if (!call.IsFaulted && !call.IsCanceled)
             {
-                using (HttpResponseMessage resp = call.Result)
+                using (HttpResponseMessage resp = call.Result.EnsureSuccessStatusCode())
                 {
-                    if (resp.IsSuccessStatusCode)
+                    using (var content = resp.Content)
                     {
-                        using (HttpContent content = resp.Content)
-                        {
-                            Task<string> strTask = content.ReadAsStringAsync();
-                            strTask.Wait();
-                            res = strTask.Result;
-                        }
+                        Task<string> strTask = content.ReadAsStringAsync();
+                        strTask.Wait();
+                        res = strTask.Result;
                     }
                 }
             }
