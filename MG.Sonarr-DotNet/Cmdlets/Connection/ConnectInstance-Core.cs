@@ -123,16 +123,9 @@ namespace MG.Sonarr.Cmdlets.Connection
                 ? FormatUri(this.SonarrServerName, this.PortNumber, this.ReverseProxyUriBase, _useSsl, _noApiPrefix)
                 : new UriBuilder(this.SonarrUrl);
 
-            var handler = new HttpClientHandler()
-            {
-                UseDefaultCredentials = true
-            };
-
-            this.CheckCertificateValidity(handler);
-
             ApiCaller apiCaller = this.MyInvocation.BoundParameters.ContainsKey("Proxy")
                 ? NewApiCaller(this.ApiKey, url, _allowRedirect, this.Proxy, this.ProxyCredential, _proxyBypass)
-                : NewApiCaller(this.ApiKey, url, _allowRedirect);
+                : NewApiCaller(this.ApiKey, url, _allowRedirect, _skipCert);
 
             Context.ApiCaller = apiCaller;
             Context.UriBase = url.Path;
@@ -149,13 +142,6 @@ namespace MG.Sonarr.Cmdlets.Connection
         #endregion
 
         #region PRIVATE/BACKEND METHODS
-        private void CheckCertificateValidity(HttpClientHandler handler)
-        {
-            if (_skipCert)
-            {
-                handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-            }
-        }
 
         public static UriBuilder FormatUri(string serverName, int portNumber, string reverseProxyUriBase, bool useSsl, bool noApiPrefix)
         {
@@ -212,13 +198,16 @@ namespace MG.Sonarr.Cmdlets.Connection
             return sr;
         }
 
-        public static ApiCaller NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects)
+        public static ApiCaller NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects, bool skipCertValidity)
         {
             var handler = new HttpClientHandler
             {
                 AllowAutoRedirect = allowRedirects,
                 UseDefaultCredentials = true
             };
+            if (skipCertValidity)
+                handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+
             return new ApiCaller(handler, apiKey)
             {
                 BaseAddress = new Uri(uriBuilder.Uri.GetLeftPart(UriPartial.Scheme | UriPartial.Authority))

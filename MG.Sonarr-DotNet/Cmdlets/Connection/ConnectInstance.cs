@@ -123,11 +123,6 @@ namespace MG.Sonarr.Cmdlets.Connection
                 ? FormatUri(this.SonarrServerName, this.PortNumber, this.ReverseProxyUriBase, _useSsl, _noApiPrefix)
                 : new UriBuilder(this.SonarrUrl);
 
-            var handler = new HttpClientHandler()
-            {
-                UseDefaultCredentials = true
-            };
-
             this.CheckCertificateValidity();
 
             ApiCaller apiCaller = this.MyInvocation.BoundParameters.ContainsKey("Proxy")

@@ -16,7 +16,8 @@ namespace MG.Sonarr.Results
     {
         private const string AIRTIME = "airTime";
         private const string RATING = "ratings";
-        private static readonly TimeZoneInfo TOKYO_TZ = TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time");
+        //private static readonly TimeZoneInfo TOKYO_TZ = 
+        //    TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time");
 
         [JsonExtensionData]
         private IDictionary<string, JToken> _additionalData;
@@ -86,9 +87,17 @@ namespace MG.Sonarr.Results
             string strRes = null;
             if (jtok != null)
             {
-                var tokyoTime = DateTime.Parse(jtok.ToObject<string>()); // In Tokyo Standard Time
-                DateTime localTime = TimeZoneInfo.ConvertTime(tokyoTime, TOKYO_TZ, TimeZoneInfo.Local);
-                strRes = localTime.ToShortTimeString();
+                var tokTime = jtok.ToObject<string>();
+                var tokyoTime = DateTime.Parse(tokTime); // In Tokyo Standard Time
+                var tokyotz = TimeZoneInfo.GetSystemTimeZones().First(x => x.Id.Contains("Tokyo"));
+                if (tokyotz == null)
+                    strRes = tokTime;
+
+                else
+                {
+                    DateTime localTime = TimeZoneInfo.ConvertTime(tokyoTime, tokyotz, TimeZoneInfo.Local);
+                    strRes = localTime.ToShortTimeString();
+                }
             }
 
             return strRes;
