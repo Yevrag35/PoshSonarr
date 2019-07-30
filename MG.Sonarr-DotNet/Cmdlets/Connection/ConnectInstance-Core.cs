@@ -171,7 +171,7 @@ namespace MG.Sonarr.Cmdlets
             string status = base.TrySonarrConnect();
             if (string.IsNullOrEmpty(status))
             {
-                throw new NoSonarrResponseException(caller);
+                throw new NoSonarrResponseException();
             }
             return status;
             // Now call GetStatusResult();
