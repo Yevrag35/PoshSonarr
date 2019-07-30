@@ -66,21 +66,23 @@ namespace MG.Sonarr
             : base(HttpMethod.Get.Method) => this.Url = uriBase;
         public SonarrGetRequestException(HttpRequestMessage msg)
             : base(HttpMethod.Get.Method) => this.Url = msg.RequestUri.ToString();
+
+        public SonarrGetRequestException(string uriBase, HttpRequestException hre)
+            : base(HttpMethod.Get.Method, hre) => this.Url = uriBase;
     }
 
     public class SonarrDeleteRequestException : BaseSonarrHttpException
     {
         public SonarrDeleteRequestException(string uriBase, Exception e)
-            : base(HttpMethod.Delete.Method, e)
-        {
-        }
+            : base(HttpMethod.Delete.Method, e) => this.Url = uriBase;
     }
 
     public class SonarrPostRequestException : BaseSonarrHttpException
     {
         public SonarrPostRequestException(string uriBase, Exception e)
             : base(HttpMethod.Post.Method, e)
-        { 
+        {
+            this.Url = uriBase;
         }
     }
 
@@ -89,6 +91,7 @@ namespace MG.Sonarr
         public SonarrPutRequestException(string uriBase, Exception e)
             : base(HttpMethod.Put.Method, e)
         {
+            this.Url = uriBase;
         }
     }
 }

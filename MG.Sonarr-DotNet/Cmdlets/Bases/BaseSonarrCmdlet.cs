@@ -64,8 +64,6 @@ namespace MG.Sonarr.Cmdlets
         #region API METHODS
         protected string TrySonarrConnect(string sonarrEndpoint)
         {
-            //if (!Context.NoApiPrefix)
-            //    sonarrEndpoint = API_PREFIX + sonarrEndpoint;
             sonarrEndpoint = Context.UriBase + sonarrEndpoint;
 
             Task<HttpResponseMessage> task = Context.ApiCaller.GetAsync(sonarrEndpoint, HttpCompletionOption.ResponseContentRead);
@@ -111,51 +109,101 @@ namespace MG.Sonarr.Cmdlets
             }
             catch (HttpRequestException hre)
             {
-                this.WriteError(new SonarrDeleteRequestException(endpoint, hre), ErrorCategory.ParserError);
+                this.WriteError(new SonarrDeleteRequestException(endpoint, hre), ErrorCategory.MetadataError, endpoint);
             }
         }
 
         protected string TryGetSonarrResult(string endpoint)
         {
+            endpoint = Context.UriBase + endpoint;
+            base.WriteVerbose(string.Format("GET REQUEST URL: {0}", endpoint));
             try
             {
-                base.WriteVerbose(string.Format("GET REQUEST URL: {0}", endpoint));
-                string strRes = _api.SonarrGet(endpoint);
-                return strRes;
+                Task<HttpResponseMessage> task = Context.ApiCaller.GetAsync(endpoint, HttpCompletionOption.ResponseContentRead);
+                task.Wait();
+                string res = null;
+                using (var resp = task.Result.EnsureSuccessStatusCode())
+                {
+                    using (var content = resp.Content)
+                    {
+                        Task<string> strTask = content.ReadAsStringAsync();
+                        strTask.Wait();
+                        res = strTask.Result;
+                    }
+                }
+                return res;
             }
-            catch (Exception e)
+            catch (HttpRequestException hre)
             {
-                base.WriteError(new ErrorRecord(e, e.GetType().FullName, ErrorCategory.ReadError, endpoint));
+                this.WriteError(new SonarrGetRequestException(endpoint, hre), ErrorCategory.ParserError);
                 return null;
             }
         }
 
         protected string TryPostSonarrResult(string endpoint, string jsonBody)
         {
+            endpoint = Context.UriBase + endpoint;
+            base.WriteVerbose(string.Format("POST REQUEST URL: {0}", endpoint));
+            base.WriteDebug("POST BODY:" + Environment.NewLine + jsonBody);
+
+            StringContent sc = null;
+            if (!string.IsNullOrEmpty(jsonBody))
+                sc = new StringContent(jsonBody, Encoding.UTF8, CONTENT_TYPE);
+
             try
             {
-                base.WriteVerbose(string.Format("POST REQUEST URL: {0}", endpoint));
-                base.WriteDebug("POST BODY:" + Environment.NewLine + jsonBody);
-                return _api.SonarrPost(endpoint, jsonBody);
+                Task<HttpResponseMessage> task = Context.ApiCaller.PostAsync(endpoint, sc);
+                task.Wait();
+
+                string res = null;
+                using (HttpResponseMessage resp = task.Result.EnsureSuccessStatusCode())
+                {
+                    using (var content = resp.Content)
+                    {
+                        Task<string> strTask = content.ReadAsStringAsync();
+                        strTask.Wait();
+                        res = strTask.Result;
+                    }
+                }
+                return res;
             }
-            catch (Exception e)
+            catch (HttpRequestException hre)
             {
-                base.WriteError(new ErrorRecord(e, e.GetType().FullName, ErrorCategory.InvalidArgument, endpoint));
+                this.WriteError(new SonarrPostRequestException(endpoint, hre), ErrorCategory.InvalidArgument, jsonBody);
                 return null;
             }
         }
 
         protected string TryPutSonarrResult(string endpoint, string jsonBody)
         {
+            endpoint = Context.UriBase + endpoint;
+            base.WriteVerbose(string.Format("PUT REQUEST URL: {0}", endpoint));
+            base.WriteDebug("PUT BODY:" + Environment.NewLine + jsonBody);
+
+            StringContent sc = null;
+            if (!string.IsNullOrEmpty(jsonBody))
+                sc = new StringContent(jsonBody, Encoding.UTF8, CONTENT_TYPE);
+
             try
             {
-                base.WriteVerbose(string.Format("PUT REQUEST URL: {0}", endpoint));
-                base.WriteDebug("PUT BODY:" + Environment.NewLine + jsonBody);
-                return _api.SonarrPut(endpoint, jsonBody);
+                Task<HttpResponseMessage> task = Context.ApiCaller.PutAsync(endpoint, sc);
+                task.Wait();
+
+                string res = null;
+                using (HttpResponseMessage resp = task.Result.EnsureSuccessStatusCode())
+                {
+                    using (var content = resp.Content)
+                    {
+                        Task<string> strTask = content.ReadAsStringAsync();
+                        strTask.Wait();
+                        res = strTask.Result;
+                    }
+                }
+                return res;
             }
-            catch (Exception e)
+            catch (HttpRequestException hre)
             {
-                base.WriteError(new ErrorRecord(e, e.GetType().FullName, ErrorCategory.InvalidArgument, endpoint));
+                this.WriteError(new SonarrPutRequestException(endpoint, hre), ErrorCategory.InvalidArgument, jsonBody);
                 return null;
             }
         }
