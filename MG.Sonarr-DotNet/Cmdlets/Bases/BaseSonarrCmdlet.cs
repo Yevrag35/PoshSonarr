@@ -15,19 +15,17 @@ using System.Threading.Tasks;
 
 namespace MG.Sonarr.Cmdlets
 {
+    /// <summary>
+    /// The main base <see cref="PSCmdlet"/> class for all PoshSonarr cmdlets.  Includes custom API methods along with advanced error-handling.
+    /// </summary>
     public abstract class BaseSonarrCmdlet : PSCmdlet
     {
         #region FIELDS/CONSTANTS
         private const string API_PREFIX = "/api";
-        private const string CONTENT_TYPE = "application/json";
-
+        private const string CONNECT_EP = "/system/status";
         private const string CONNECT_MSG = "Getting initial Sonarr status from {0}";
         private const string CONNECT_FORMAT = "{0}://{1}:{2}{3}";
-
-        #endregion
-
-        #region PARAMETERS
-
+        private const string CONTENT_TYPE = "application/json";
 
         #endregion
 
@@ -41,19 +39,25 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region API METHODS
-        protected string TrySonarrConnect(string sonarrEndpoint)
+
+        /// <summary>
+        /// Sends a GET request to the specified Sonarr endpoint and returning a JSON-formatted string in response.  This is for exclusive use with <see cref="ConnectInstance"/>.  
+        /// Errors are handled by <see cref="PSCmdlet"/>.WriteError.
+        /// </summary>
+        /// <exception cref="Exception"/>
+        protected string TrySonarrConnect()
         {
-            sonarrEndpoint = Context.UriBase + sonarrEndpoint;
+            string endpoint = Context.UriBase + CONNECT_EP;
             string url = string.Format(CONNECT_FORMAT,
                 Context.ApiCaller.BaseAddress.Scheme,
                 Context.ApiCaller.BaseAddress.Host,
                 Context.ApiCaller.BaseAddress.Port,
-                sonarrEndpoint);
+                endpoint);
 
             string msg = string.Format(CONNECT_MSG, url);
             base.WriteDebug(msg);
 
-            Task<HttpResponseMessage> task = Context.ApiCaller.GetAsync(sonarrEndpoint, HttpCompletionOption.ResponseContentRead);
+            Task<HttpResponseMessage> task = Context.ApiCaller.GetAsync(endpoint, HttpCompletionOption.ResponseContentRead);
             task.Wait();
             string res = null;
             if (!task.IsFaulted && !task.IsCanceled)
@@ -72,7 +76,7 @@ namespace MG.Sonarr.Cmdlets
                 }
                 catch (HttpRequestException hre)
                 {
-                    this.WriteError(new SonarrConnectException(sonarrEndpoint, hre), ErrorCategory.ParserError);
+                    this.WriteError(new SonarrConnectException(endpoint, hre), ErrorCategory.ParserError);
                     return null;
                 }
                 catch (Exception e)
@@ -84,6 +88,10 @@ namespace MG.Sonarr.Cmdlets
             return res;
         }
 
+        /// <summary>
+        /// Sends a DELETE request to the specified Sonarr endpoint.  Errors are handled by <see cref="PSCmdlet"/>.WriteError.
+        /// </summary>
+        /// <param name="endpoint">The Sonarr API endpoint to send the DELETE request to.</param>
         protected void TryDeleteSonarrResult(string endpoint)
         {
             endpoint = Context.UriBase + endpoint;
@@ -100,6 +108,11 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
+        /// <summary>
+        /// Sends a GET request to the specified Sonarr endpoint returning a JSON-formatted string in response.  
+        /// Errors are handled by <see cref="PSCmdlet"/>.WriteError.
+        /// </summary>
+        /// <param name="endpoint">The Sonarr API endpoint to send the GET request to.</param>
         protected string TryGetSonarrResult(string endpoint)
         {
             endpoint = Context.UriBase + endpoint;
@@ -127,6 +140,12 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
+        /// <summary>
+        /// Sends a POST request to the specified Sonarr endpoint with the specified string payload formatted in JSON 
+        /// returning a JSON-formatted string in response.  Errors are handled by <see cref="PSCmdlet"/>.WriteError.
+        /// </summary>
+        /// <param name="endpoint">The Sonarr API endpoint to send the POST request to.</param>
+        /// <param name="jsonBody">The JSON payload content to be sent with the POST request.</param>
         protected string TryPostSonarrResult(string endpoint, string jsonBody)
         {
             endpoint = Context.UriBase + endpoint;
@@ -161,6 +180,12 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
+        /// <summary>
+        /// Sends a PUT request to the specified Sonarr endpoint with the specified string payload formatted in JSON 
+        /// returning a JSON-formatted string in response.  Errors are handled by <see cref="PSCmdlet"/>.WriteError.
+        /// </summary>
+        /// <param name="endpoint">The Sonarr API endpoint to send the PUT request to.</param>
+        /// <param name="jsonBody">The JSON payload content to be sent with the PUT request.</param>
         protected string TryPutSonarrResult(string endpoint, string jsonBody)
         {
             endpoint = Context.UriBase + endpoint;
@@ -198,6 +223,11 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region EXCEPTION METHODS
+
+        /// <summary>
+        /// Takes in an <see cref="Exception"/> and returns the innermost <see cref="Exception"/> as a result.
+        /// </summary>
+        /// <param name="e">The exception to pull the innermost <see cref="Exception"/> from.</param>
         protected virtual Exception GetAbsoluteException(Exception e)
         {
             while (e.InnerException != null)
@@ -207,25 +237,55 @@ namespace MG.Sonarr.Cmdlets
             return e;
         }
 
-        protected void WriteError(string msg, ErrorCategory cat) =>
-            this.WriteError(new ArgumentException(msg), cat, null);
+        /// <summary>
+        /// Issues a <see cref="PSCmdlet"/>.WriteError from a given string message and <see cref="ErrorCategory"/>.
+        /// </summary>
+        /// <param name="message">The exception message to be displayed in the <see cref="ErrorRecord"/>.</param>
+        /// <param name="category">The category of the error.</param>
+        protected void WriteError(string message, ErrorCategory category) =>
+            this.WriteError(new ArgumentException(message), category, null);
 
-        protected void WriteError(string msg, ErrorCategory cat, object obj) =>
-            this.WriteError(new ArgumentException(msg), cat, obj);
+        /// <summary>
+        /// Issues a <see cref="PSCmdlet"/>.WriteError from a given string message, <see cref="ErrorCategory"/>, and Target Object.
+        /// </summary>
+        /// <param name="message">The exception message to be displayed in the <see cref="ErrorRecord"/>.</param>
+        /// <param name="category">The category of the error.</param>
+        /// <param name="targetObject">The object used as the 'targetObject' in an <see cref="ErrorRecord"/>.</param>
+        protected void WriteError(string message, ErrorCategory category, object targetObject) =>
+            this.WriteError(new ArgumentException(message), category, targetObject);
 
-        protected void WriteError(string msg, Exception exception, ErrorCategory cat, object obj)
+        /// <summary>
+        /// /// Issues a <see cref="PSCmdlet"/>.WriteError from a given string message, base <see cref="Exception"/>, <see cref="ErrorCategory"/>, and Target Object.
+        /// </summary>
+        /// <param name="message">The exception message to be displayed in the <see cref="ErrorRecord"/>.</param>
+        /// <param name="exception">The exception whose InnerException will be become the InnerException of the <see cref="ErrorRecord"/> and its type will be used as the FullyQualifiedErrorId.</param>
+        /// <param name="category">The category of the error.</param>
+        /// <param name="targetObject">The object used as the 'targetObject' in an <see cref="ErrorRecord"/>.</param>
+        protected void WriteError(string message, Exception exception, ErrorCategory category, object targetObject)
         {
             exception = this.GetAbsoluteException(exception);
 
-            var errRec = new ErrorRecord(new InvalidOperationException(msg, exception), exception.GetType().FullName, cat, obj);
+            var errRec = new ErrorRecord(new InvalidOperationException(message, exception), exception.GetType().FullName, category, targetObject);
             base.WriteError(errRec);
         }
 
-        protected void WriteError(Exception baseEx, ErrorCategory cat) => this.WriteError(baseEx, cat, null);
-        protected void WriteError(Exception baseEx, ErrorCategory cat, object obj)
+        /// <summary>
+        /// Issues a <see cref="PSCmdlet"/>.WriteError from a given base exception and <see cref="ErrorCategory"/>.
+        /// </summary>
+        /// <param name="baseException">The base exception will be become the InnerException of the <see cref="ErrorRecord"/> and its type will be used as the FullyQualifiedErrorId.</param>
+        /// <param name="category"></param>
+        protected void WriteError(Exception baseException, ErrorCategory category) => this.WriteError(baseException, category, null);
+
+        /// <summary>
+        /// Issues a <see cref="PSCmdlet"/>.WriteError from a base <see cref="Exception"/>, <see cref="ErrorCategory"/>, and Target Object.
+        /// </summary>
+        /// <param name="message">The exception message to be displayed in the <see cref="ErrorRecord"/>.</param>
+        /// <param name="baseException">The base exception will be become the InnerException of the <see cref="ErrorRecord"/> and its type will be used as the FullyQualifiedErrorId.</param>
+        /// <param name="category">The category of the error.</param>
+        /// <param name="targetObject">The object used as the 'targetObject' in an <see cref="ErrorRecord"/>.</param>
+        protected void WriteError(Exception baseException, ErrorCategory category, object targetObject)
         {
-            //baseEx = this.GetAbsoluteException(baseEx);
-            var errRec = new ErrorRecord(baseEx, baseEx.GetType().FullName, cat, obj);
+            var errRec = new ErrorRecord(baseException, baseException.GetType().FullName, category, targetObject);
             base.WriteError(errRec);
         }
 

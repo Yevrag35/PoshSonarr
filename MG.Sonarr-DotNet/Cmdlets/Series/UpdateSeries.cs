@@ -94,7 +94,7 @@ namespace MG.Sonarr.Cmdlets.Series
             string outRes = base.TryPutSonarrResult(full, jsonBody);
             if (!string.IsNullOrEmpty(outRes))
             {
-                var series = SonarrHttpClient.ConvertToSeriesResult(outRes);
+                var series = SonarrHttp.ConvertToSeriesResult(outRes);
                 base.WriteObject(series);
             }
         }

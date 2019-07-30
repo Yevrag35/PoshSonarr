@@ -9,7 +9,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 
-namespace MG.Sonarr.Cmdlets.Connection
+namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommunications.Connect, "Instance", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByServerName")]
     [CmdletBinding(PositionalBinding = false)]
@@ -20,7 +20,6 @@ namespace MG.Sonarr.Cmdlets.Connection
         private const string SLASH_STR = "/";
         private static readonly char SLASH = char.Parse(SLASH_STR);
 
-        private const string EP = "/system/status";
         private bool _allowRedirect;
         private bool _noApiPrefix;
         private bool _passThru;
@@ -108,13 +107,7 @@ namespace MG.Sonarr.Cmdlets.Connection
             if (_allowRedirect)
                 base.WriteWarning(BaseSonarrHttpException.CAUTION + BaseSonarrHttpException.HOW_CAUTION);
 
-            Context.NoApiPrefix = false;
-            if (_noApiPrefix)
-            {
-                Context.NoApiPrefix = true;
-            }
-
-            Context.ClearUriBase();
+            Context.UriBase = null;
         }
 
         protected override void ProcessRecord()
@@ -184,10 +177,10 @@ namespace MG.Sonarr.Cmdlets.Connection
 
         private string GetStatusString(ApiCaller caller)
         {
-            string status = base.TrySonarrConnect(EP);
+            string status = base.TrySonarrConnect();
             if (string.IsNullOrEmpty(status))
             {
-                throw new NoSonarrResponseException(caller);
+                throw new NoSonarrResponseException();
             }
             return status;
             // Now call GetStatusResult();
@@ -198,7 +191,7 @@ namespace MG.Sonarr.Cmdlets.Connection
             SonarrStatusResult sr = null;
             try
             {
-                sr = SonarrHttpClient.ConvertToSonarrResult<SonarrStatusResult>(statusStr);
+                sr = SonarrHttp.ConvertToSonarrResult<SonarrStatusResult>(statusStr);
             }
             catch (Exception e)
             {

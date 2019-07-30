@@ -8,15 +8,13 @@ using System.Reflection;
 
 namespace MG.Sonarr
 {
+    /// <summary>
+    /// A mock <see cref="NetworkCredential"/> class that can implicitly convert <see cref="PSCredential"/> to <see cref="ICredentials"/>.
+    /// </summary>
     public class ProxyCredential : ICredentials
     {
         #region FIELDS/CONSTANTS
         private ICredentials _nc;
-
-        #endregion
-
-        #region PROPERTIES
-
 
         #endregion
 

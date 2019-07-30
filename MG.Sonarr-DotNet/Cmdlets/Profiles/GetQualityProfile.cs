@@ -42,7 +42,7 @@ namespace MG.Sonarr.Cmdlets.Profiles
                 string jsonStr = base.TryGetSonarrResult("/profile");
                 if (!string.IsNullOrEmpty(jsonStr))
                 {
-                    profs = SonarrHttpClient.ConvertToSonarrResults<QualityProfile>(jsonStr, out bool iso);
+                    profs = SonarrHttp.ConvertToSonarrResults<QualityProfile>(jsonStr, out bool iso);
                 }
 
                 if (profs != null && profs.Count > 0)
@@ -73,7 +73,7 @@ namespace MG.Sonarr.Cmdlets.Profiles
                 string oneProf = base.TryGetSonarrResult(full);
                 if (!string.IsNullOrEmpty(oneProf))
                 {
-                    var qp = SonarrHttpClient.ConvertToSonarrResult<QualityProfile>(oneProf);
+                    var qp = SonarrHttp.ConvertToSonarrResult<QualityProfile>(oneProf);
                     base.WriteObject(qp);
                 }
             }

@@ -53,7 +53,7 @@ namespace MG.Sonarr.Cmdlets
                     if (!string.IsNullOrEmpty(jsonStr))
                     {
                         var tok = JToken.Parse(jsonStr);
-                        list = SonarrHttpClient.ConvertToSeriesResults(jsonStr, false);
+                        list = SonarrHttp.ConvertToSeriesResults(jsonStr, false);
                         if (this.Strict.ToBool())
                             base.WriteObject(list.FindAll(x => x.Name.IndexOf(this.Name, StringComparison.CurrentCultureIgnoreCase) >= 0), true);
 
@@ -74,7 +74,7 @@ namespace MG.Sonarr.Cmdlets
                     if (!string.IsNullOrEmpty(jsonStr))
                     {
                         var tok = JToken.Parse(jsonStr);
-                        var list = SonarrHttpClient.ConvertToSeriesResults(jsonStr, false);
+                        var list = SonarrHttp.ConvertToSeriesResults(jsonStr, false);
                         base.WriteObject(list, true);
                     }
                 }

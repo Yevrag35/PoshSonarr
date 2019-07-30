@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace MG.Sonarr.Results
 {
+    /// <summary>
+    /// The class defining a response from the "/command" endpoint.
+    /// </summary>
     public class CommandOutput : BaseResult
     {
         [JsonProperty("name")]

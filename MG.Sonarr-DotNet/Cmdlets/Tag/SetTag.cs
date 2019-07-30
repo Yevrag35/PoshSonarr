@@ -55,7 +55,7 @@ namespace MG.Sonarr.Cmdlets
 
                 if (!string.IsNullOrEmpty(jsonRes) && _passThru)
                 {
-                    Tag res = SonarrHttpClient.ConvertToSonarrResult<Tag>(jsonRes);
+                    Tag res = SonarrHttp.ConvertToSonarrResult<Tag>(jsonRes);
                     base.WriteObject(res);
                 }
             }

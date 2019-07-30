@@ -160,7 +160,7 @@ namespace MG.Sonarr.Cmdlets
                 string output = base.TryPostSonarrResult("/series", postJson);
                 if (_passThru)
                 {
-                    base.WriteObject(SonarrHttpClient.ConvertToSeriesResult(output));
+                    base.WriteObject(SonarrHttp.ConvertToSeriesResult(output));
                 }
             }
         }

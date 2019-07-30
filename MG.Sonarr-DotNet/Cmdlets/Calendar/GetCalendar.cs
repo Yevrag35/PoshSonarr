@@ -46,7 +46,7 @@ namespace MG.Sonarr.Cmdlets
             string jsonRes = base.TryGetSonarrResult(full);
             if (!string.IsNullOrEmpty(jsonRes))
             {
-                var entries = SonarrHttpClient.ConvertToSonarrResults<CalendarEntry>(jsonRes, out bool iso);
+                var entries = SonarrHttp.ConvertToSonarrResults<CalendarEntry>(jsonRes, out bool iso);
                 for (int i = 0; i < entries.Count; i++)
                 {
                     var entry = entries[i];

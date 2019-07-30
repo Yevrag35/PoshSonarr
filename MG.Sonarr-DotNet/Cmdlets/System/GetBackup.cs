@@ -33,7 +33,7 @@ namespace MG.Sonarr.Cmdlets
             string jsonStr = base.TryGetSonarrResult("/system/backup");
             if (!string.IsNullOrWhiteSpace(jsonStr))
             {
-                List<SonarrBackupResult> backups = SonarrHttpClient.ConvertToSonarrResults<SonarrBackupResult>(jsonStr, out bool iso);
+                List<SonarrBackupResult> backups = SonarrHttp.ConvertToSonarrResults<SonarrBackupResult>(jsonStr, out bool iso);
                 
                 if (this.Type != null && this.Type.Length > 0)
                 {

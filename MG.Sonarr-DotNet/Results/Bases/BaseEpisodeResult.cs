@@ -5,6 +5,10 @@ using System.Text;
 
 namespace MG.Sonarr.Results
 {
+    /// <summary>
+    /// The base class for all Episode-related response data from Sonarr.
+    /// </summary>
+    [Serializable]
     public abstract class BaseEpisodeResult : BaseResult
     {
         public int? AbsoluteEpisodeNumber { get; set; }

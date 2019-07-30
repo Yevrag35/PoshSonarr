@@ -5,8 +5,14 @@ using System.Collections.Generic;
 
 namespace MG.Sonarr.Results
 {
+    /// <summary>
+    /// The class that defines a response from the "/diskspace" endpoint.
+    /// </summary>
     public class SonarrDiskspaceResult : BaseResult
     {
+        /// <summary>
+        /// The amount of freespace left in the disk calculated in bytes.
+        /// </summary>
         public long? FreeSpace { get; set; }
         public string Label { get; set; }
         public string Path { get; set; }
@@ -24,8 +30,9 @@ namespace MG.Sonarr.Results
                     return null;
             }
         }
+        /// <summary>
+        /// The total space of the disk in bytes.
+        /// </summary>
         public long? TotalSpace { get; set; }
-        
-        public SonarrDiskspaceResult() { }
     }
 }

@@ -42,7 +42,7 @@ namespace MG.Sonarr.Cmdlets
                 string jsonStr = base.TryGetSonarrResult("/series");
                 if (!string.IsNullOrEmpty(jsonStr))
                 {
-                    _series = SonarrHttpClient.ConvertToSeriesResults(jsonStr);
+                    _series = SonarrHttp.ConvertToSeriesResults(jsonStr);
                 }
 
                 if (_series != null && _series.Count > 0 && this.Name != null && this.Name.Length > 0)
@@ -73,7 +73,7 @@ namespace MG.Sonarr.Cmdlets
                     string oneSeries = base.TryGetSonarrResult(full);
                     if (!string.IsNullOrEmpty(oneSeries))
                     {
-                        var sr = SonarrHttpClient.ConvertToSeriesResult(oneSeries);
+                        var sr = SonarrHttp.ConvertToSeriesResult(oneSeries);
                         base.WriteObject(sr);
                     }
                 }

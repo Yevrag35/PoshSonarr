@@ -46,7 +46,7 @@ namespace MG.Sonarr.Cmdlets
 
             if (!string.IsNullOrEmpty(jsonStr))
             {
-                var result = SonarrHttpClient.ConvertToSonarrResults<EpisodeResult>(jsonStr, out bool iso);
+                var result = SonarrHttp.ConvertToSonarrResults<EpisodeResult>(jsonStr, out bool iso);
                 foreach (EpisodeResult er in result)
                 {
                     if (er.AirDateUtc.HasValue)

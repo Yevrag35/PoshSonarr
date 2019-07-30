@@ -4,6 +4,10 @@ using System.Text;
 
 namespace MG.Sonarr.Results
 {
+    /// <summary>
+    /// The class defining a response from the "/episode" endpoint.
+    /// </summary>
+    [Serializable]
     public class EpisodeResult : BaseEpisodeResult
     {
         public EpisodeFile EpisodeFile { get; set; }

@@ -10,6 +10,9 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
+    /// <summary>
+    /// A base PowerShell <see cref="PSCmdlet"/> class that provides functionality for posting commands to Sonarr.
+    /// </summary>
     [CmdletBinding(SupportsShouldProcess = true)]
     public abstract class BasePostCommandCmdlet : BaseSonarrCmdlet
     {
@@ -44,6 +47,10 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region BACKEND METHODS
+        /// <summary>
+        /// Takes in a generic dictionary of parameters and issues a command to Sonarr with the dictionary as its payload.
+        /// </summary>
+        /// <param name="parameterDict">The set of parameters to build the POST body with,</param>
         protected void ProcessRequest(IDictionary parameterDict)
         {
             string cmdName = parameterDict["name"] as string;
@@ -53,7 +60,7 @@ namespace MG.Sonarr.Cmdlets
             string cmdOut = base.TryPostSonarrResult(BASE_EP, postBody);
             if (!string.IsNullOrEmpty(cmdOut))
             {
-                CommandOutput cmdOutput = SonarrHttpClient.ConvertToSonarrResult<CommandOutput>(cmdOut);
+                CommandOutput cmdOutput = SonarrHttp.ConvertToSonarrResult<CommandOutput>(cmdOut);
                 base.WriteObject(cmdOutput);
             }
         }

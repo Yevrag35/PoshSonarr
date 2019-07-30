@@ -41,7 +41,7 @@ namespace MG.Sonarr.Cmdlets
                 List<Tag> tags = null;
                 if (!string.IsNullOrEmpty(allRes))
                 {
-                    tags = SonarrHttpClient.ConvertToSonarrResults<Tag>(allRes, out bool iso);
+                    tags = SonarrHttp.ConvertToSonarrResults<Tag>(allRes, out bool iso);
                 }
                 if (tags.Count > 0)
                 {
@@ -71,7 +71,7 @@ namespace MG.Sonarr.Cmdlets
                     string jsonRes = base.TryGetSonarrResult(ep);
                     if (!string.IsNullOrEmpty(jsonRes))
                     {
-                        base.WriteObject(SonarrHttpClient.ConvertToSonarrResult<Tag>(jsonRes));
+                        base.WriteObject(SonarrHttp.ConvertToSonarrResult<Tag>(jsonRes));
                     }
                 }
             }

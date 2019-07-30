@@ -10,10 +10,14 @@ using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results
 {
-    [Serializable]
+    /// <summary>
+    /// The base class for all PoshSonarr API request responses.
+    /// </summary>
     public abstract class BaseResult : ISonarrResult
     {
-
+        /// <summary>
+        /// Converts the inheriting class to a JSON-formatted string using programmed serializers.
+        /// </summary>
         public virtual string ToJson()
         {
             var converter = new JsonSerializerSettings
@@ -30,6 +34,10 @@ namespace MG.Sonarr.Results
             return JsonConvert.SerializeObject(this, converter);
         }
 
+        /// <summary>
+        /// Converts the inheriting class to a JSON-formatted string using programmed serializers adding in the contents from the specified generic dictionary.
+        /// </summary>
+        /// <param name="parameters">The dictionary that will have it contents added to resulting JSON string.</param>
         public virtual string ToJson(IDictionary parameters)
         {
             var camel = new CamelCasePropertyNamesContractResolver();

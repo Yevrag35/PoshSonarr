@@ -40,7 +40,7 @@ namespace MG.Sonarr.Cmdlets.Commands
                     string jsonRes = base.TryGetSonarrResult(ep);
                     if (!string.IsNullOrEmpty(jsonRes))
                     {
-                        var output = SonarrHttpClient.ConvertToSonarrResult<CommandResult>(jsonRes);
+                        var output = SonarrHttp.ConvertToSonarrResult<CommandResult>(jsonRes);
                         base.WriteObject(output);
                     }
                 }
@@ -50,7 +50,7 @@ namespace MG.Sonarr.Cmdlets.Commands
                 string jsonRes = base.TryGetSonarrResult(EP);
                 if (!string.IsNullOrEmpty(jsonRes))
                 {
-                    var jobs = SonarrHttpClient.ConvertToSonarrResults<CommandResult>(jsonRes, out bool iso);
+                    var jobs = SonarrHttp.ConvertToSonarrResults<CommandResult>(jsonRes, out bool iso);
                     base.WriteObject(jobs, true);
                 }
             }

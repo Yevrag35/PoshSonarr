@@ -11,13 +11,14 @@ using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results
 {
+    /// <summary>
+    /// The class that defines a response from the "/series" or "/series/lookup" endpoints.
+    /// </summary>
     [Serializable]
     public class SeriesResult : BaseResult
     {
         private const string AIRTIME = "airTime";
         private const string RATING = "ratings";
-        //private static readonly TimeZoneInfo TOKYO_TZ = 
-        //    TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time");
 
         [JsonExtensionData]
         private IDictionary<string, JToken> _additionalData;

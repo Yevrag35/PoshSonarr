@@ -13,10 +13,13 @@ using System.Threading.Tasks;
 
 namespace MG.Sonarr
 {
-    public static class SonarrHttpClient
+    /// <summary>
+    /// A static class providing conversion methods from <see cref="JToken"/> and <see cref="string"/> objects to objects that inherit from <see cref="ISonarrResult"/>.
+    /// </summary>
+    public static class SonarrHttp
     {
+        [Obsolete]
         private const string API_PREFIX = "/api";
-        private const string CONTENT_TYPE = "application/json";
 
         internal static readonly JsonSerializerSettings Serializer = new JsonSerializerSettings
         {
@@ -33,6 +36,7 @@ namespace MG.Sonarr
             ReferenceLoopHandling = ReferenceLoopHandling.Serialize
         };
 
+        [Obsolete]
         public static void AddSonarrApiKey(this HttpClient client, ApiKey apiKey)
         {
             KeyValuePair<string, string> kvp = apiKey.AsKeyValuePair();
@@ -84,6 +88,24 @@ namespace MG.Sonarr
             return list;
         }
 
+        public static bool IsJsonArray(string jsonStr)
+        {
+            var load = new JsonLoadSettings
+            {
+                CommentHandling = CommentHandling.Ignore,
+                DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Replace,
+                LineInfoHandling = LineInfoHandling.Ignore
+            };
+            var jtok = JToken.Parse(jsonStr, load);
+
+            return jtok is JArray jar
+                ? true
+                : false;
+        }
+
+        #region OBSOLETE API METHODS
+
+        [Obsolete]
         public static string SonarrGet(this HttpClient client, string sonarrEndpoint)
         {
             if (!Context.NoApiPrefix)
@@ -108,6 +130,7 @@ namespace MG.Sonarr
             return res;
         }
 
+        [Obsolete]
         public static string SonarrPost(this HttpClient client, string endpoint, string jsonBody)
         {
             if (!Context.NoApiPrefix)
@@ -136,6 +159,7 @@ namespace MG.Sonarr
             return res;
         }
 
+        [Obsolete]
         public static void SonarrDelete(this HttpClient client, string endpoint)
         {
             if (!Context.NoApiPrefix)
@@ -152,6 +176,7 @@ namespace MG.Sonarr
             }
         }
 
+        [Obsolete]
         public static string SonarrPut(this HttpClient client, string endpoint, string jsonBody)
         {
             if (!Context.NoApiPrefix)
@@ -180,19 +205,6 @@ namespace MG.Sonarr
             return res;
         }
 
-        public static bool IsJsonArray(string jsonStr)
-        {
-            var load = new JsonLoadSettings
-            {
-                CommentHandling = CommentHandling.Ignore,
-                DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Replace,
-                LineInfoHandling = LineInfoHandling.Ignore
-            };
-            var jtok = JToken.Parse(jsonStr, load);
-
-            return jtok is JArray jar
-                ? true 
-                : false;
-        }
+        #endregion
     }
 }

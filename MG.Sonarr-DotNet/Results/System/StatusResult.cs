@@ -5,6 +5,9 @@ using System.Collections.Generic;
 
 namespace MG.Sonarr.Results
 {
+    /// <summary>
+    /// The class that defines a response from the "/system/status" endpoint.
+    /// </summary>
     public class SonarrStatusResult : BaseResult
     {
         public string AppData { get; set; }
@@ -25,10 +28,10 @@ namespace MG.Sonarr.Results
         public string RuntimeVersion { get; set; }
         public string SqliteVersion { get; set; }
         public string StartupPath { get; set; }
+        /// <summary>
+        /// The specified url base used for reverse proxy purposes.
+        /// </summary>
         public Uri UrlBase { get; set; }
         public string Version { get; set; }
-
-        public SonarrStatusResult() { }
-        public SonarrStatusResult(Uri baseUrl) => this.UrlBase = baseUrl;
     }
 }
