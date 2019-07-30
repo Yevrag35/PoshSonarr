@@ -17,6 +17,7 @@ namespace MG.Sonarr.Cmdlets
     {
         #region FIELDS/CONSTANTS
         private const string EP = "/tag";
+        private bool _passThru;
 
         #endregion
 
@@ -28,7 +29,11 @@ namespace MG.Sonarr.Cmdlets
         public string NewLabel { get; set; }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter PassThru { get; set; }
+        public SwitchParameter PassThru
+        {
+            get => _passThru;
+            set => _passThru = value;
+        }
 
         #endregion
 
@@ -44,19 +49,11 @@ namespace MG.Sonarr.Cmdlets
             };
             string jsonBody = JsonConvert.SerializeObject(dict, Formatting.Indented);
 
-            string jsonRes = null;
             if (base.ShouldProcess(string.Format("Tag - {0}", this.Id), "Set"))
             {
-                try
-                {
-                    jsonRes = _api.SonarrPut(EP, jsonBody);
-                }
-                catch (Exception e)
-                {
-                    base.WriteError(e, ErrorCategory.InvalidResult);
-                }
+                string jsonRes = base.TryPutSonarrResult(EP, jsonBody);
 
-                if (!string.IsNullOrEmpty(jsonRes) && this.PassThru.ToBool())
+                if (!string.IsNullOrEmpty(jsonRes) && _passThru)
                 {
                     Tag res = SonarrHttpClient.ConvertToSonarrResult<Tag>(jsonRes);
                     base.WriteObject(res);

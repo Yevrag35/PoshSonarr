@@ -20,6 +20,7 @@ namespace MG.Sonarr.Cmdlets
         #region FIELDS/CONSTANTS
         private const string EP = "/release";
         private const string ISO_DATE = "yyyy-MM-ddTHH:mm:ssZ";
+        private bool _passThru;
 
         #endregion
 
@@ -38,7 +39,11 @@ namespace MG.Sonarr.Cmdlets
         public DateTime PublishDate { get; set; }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter PassThru { get; set; }
+        public SwitchParameter PassThru
+        {
+            get => _passThru;
+            set => _passThru = value;
+        }
 
         #endregion
 
@@ -57,17 +62,9 @@ namespace MG.Sonarr.Cmdlets
             string postJson = JsonConvert.SerializeObject(dict, Formatting.Indented);
             if (base.ShouldProcess(string.Format("New Release Push - {0}", this.Title), "New"))
             {
-                string jsonRes = null;
-                try
-                {
-                    jsonRes = _api.SonarrPost(EP, postJson);
-                }
-                catch (Exception e)
-                {
-                    base.WriteError(e, ErrorCategory.InvalidResult);
-                }
+                string jsonRes = base.TryPostSonarrResult(EP, postJson);
 
-                if (!string.IsNullOrEmpty(jsonRes) && this.PassThru.ToBool())
+                if (!string.IsNullOrEmpty(jsonRes) && _passThru)
                 {
                     var reses = SonarrHttpClient.ConvertToSonarrResults<Release>(jsonRes, out bool iso);
                     base.WriteObject(reses, true);

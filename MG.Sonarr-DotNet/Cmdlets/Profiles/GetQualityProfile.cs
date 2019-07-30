@@ -39,17 +39,10 @@ namespace MG.Sonarr.Cmdlets.Profiles
             if (this.ParameterSetName == "ByProfileName")
             {
                 List<QualityProfile> profs = null;
-                try
+                string jsonStr = base.TryGetSonarrResult("/profile");
+                if (!string.IsNullOrEmpty(jsonStr))
                 {
-                    string jsonStr = base.TryGetSonarrResult("/profile");
-                    if (!string.IsNullOrEmpty(jsonStr))
-                    {
-                        profs = SonarrHttpClient.ConvertToSonarrResults<QualityProfile>(jsonStr, out bool iso);
-                    }
-                }
-                catch (Exception e)
-                {
-                    base.WriteError(e, ErrorCategory.InvalidResult, "/profile");
+                    profs = SonarrHttpClient.ConvertToSonarrResults<QualityProfile>(jsonStr, out bool iso);
                 }
 
                 if (profs != null && profs.Count > 0)
@@ -77,18 +70,11 @@ namespace MG.Sonarr.Cmdlets.Profiles
             else
             {
                 string full = string.Format("/profile/{0}", this.Id);
-                try
+                string oneProf = base.TryGetSonarrResult(full);
+                if (!string.IsNullOrEmpty(oneProf))
                 {
-                    string oneProf = base.TryGetSonarrResult(full);
-                    if (!string.IsNullOrEmpty(oneProf))
-                    {
-                        var qp = SonarrHttpClient.ConvertToSonarrResult<QualityProfile>(oneProf);
-                        base.WriteObject(qp);
-                    }
-                }
-                catch (Exception e)
-                {
-                    base.WriteError(e, ErrorCategory.InvalidResult, full);
+                    var qp = SonarrHttpClient.ConvertToSonarrResult<QualityProfile>(oneProf);
+                    base.WriteObject(qp);
                 }
             }
         }

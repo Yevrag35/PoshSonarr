@@ -43,26 +43,21 @@ namespace MG.Sonarr.Cmdlets
                 full = string.Format(EP_WITH_DATE, start, end);
             }
 
-            string jsonRes = null;
-            try
+            string jsonRes = base.TryGetSonarrResult(full);
+            if (!string.IsNullOrEmpty(jsonRes))
             {
-                jsonRes = base.TryGetSonarrResult(full);
-            }
-            catch (Exception e)
-            {
-                base.WriteError(e, ErrorCategory.InvalidResult, full);
-            }
-            var entries = SonarrHttpClient.ConvertToSonarrResults<CalendarEntry>(jsonRes, out bool iso);
-            for (int i = 0; i < entries.Count; i++)
-            {
-                var entry = entries[i];
-                if (entry.AirDateUtc.HasValue)
+                var entries = SonarrHttpClient.ConvertToSonarrResults<CalendarEntry>(jsonRes, out bool iso);
+                for (int i = 0; i < entries.Count; i++)
                 {
-                    entry.AirDateUtc = entry.AirDateUtc.Value.ToUniversalTime();
+                    var entry = entries[i];
+                    if (entry.AirDateUtc.HasValue)
+                    {
+                        entry.AirDateUtc = entry.AirDateUtc.Value.ToUniversalTime();
+                    }
                 }
-            }
 
-            base.WriteObject(entries, true);
+                base.WriteObject(entries, true);
+            }
         }
 
         #endregion

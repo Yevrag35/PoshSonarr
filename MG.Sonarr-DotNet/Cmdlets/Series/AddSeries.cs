@@ -18,14 +18,16 @@ namespace MG.Sonarr.Cmdlets
     public class AddSeries : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-
+        private bool _iewf;
+        private bool _iewof;
+        private bool _nm;
+        private bool _passThru;
+        private bool _sfme;
+        private bool _usf;
 
         #endregion
 
         #region PARAMETERS
-        //[Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0)]
-        //[Alias("InputObject")]
-        //public SeriesResult Series { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "ByFullPath")]
         public string FullPath { get; set; }
@@ -35,16 +37,32 @@ namespace MG.Sonarr.Cmdlets
         public string RootFolderPath { get; set; }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter IgnoreEpisodesWithFiles { get; set; }
+        public SwitchParameter IgnoreEpisodesWithFiles
+        {
+            get => _iewf;
+            set => _iewf = value;
+        }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter IgnoreEpisodesWithoutFiles { get; set; }
+        public SwitchParameter IgnoreEpisodesWithoutFiles
+        {
+            get => _iewof;
+            set => _iewof = value;
+        }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter SearchForMissingEpisodes { get; set; }
+        public SwitchParameter SearchForMissingEpisodes
+        {
+            get => _sfme;
+            set => _sfme = value;
+        }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter PassThru { get; set; }
+        public SwitchParameter PassThru
+        {
+            get => _passThru;
+            set => _passThru = value;
+        }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
         public string Name { get; set; }
@@ -62,13 +80,21 @@ namespace MG.Sonarr.Cmdlets
         public SeriesImage[] Images { get; set; }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        public Collection<Season> Seasons { get; set; }
+        public ICollection<Season> Seasons { get; set; }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter NotMonitored { get; set; }
+        public SwitchParameter NotMonitored
+        {
+            get => _nm;
+            set => _nm = value;
+        }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter UseSeasonFolders { get; set; }
+        public SwitchParameter UseSeasonFolders
+        {
+            get => _usf;
+            set => _usf = value;
+        }
 
         [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true)]
         public int TVRageId { get; set; }
@@ -80,29 +106,22 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            bool usf = false;
-            if (this.MyInvocation.BoundParameters.ContainsKey("UseSeasonFolders"))
-            {
-                usf = this.UseSeasonFolders.ToBool();
-            }
-            else if (this.Seasons != null && this.Seasons.Count > 1)
-            {
-                usf = true;
-            }
+            if (!this.MyInvocation.BoundParameters.ContainsKey("UseSeasonFolders") && this.Seasons != null && this.Seasons.Count > 1)
+                _usf = true;
 
             var dict = new Dictionary<string, object>
             {
                 { "addOptions", new Dictionary<string, bool>(3)
                     {
-                        { "ignoreEpisodesWithFiles", this.IgnoreEpisodesWithFiles.ToBool() },
-                        { "ignoreEpisodesWithoutFiles", this.IgnoreEpisodesWithoutFiles.ToBool() },
-                        { "searchForMissingEpisodes", this.SearchForMissingEpisodes.ToBool() }
+                        { "ignoreEpisodesWithFiles", _iewf },
+                        { "ignoreEpisodesWithoutFiles", _iewof },
+                        { "searchForMissingEpisodes", _sfme }
                     }
                 },
                 { "images", this.Images },
-                { "monitored", !this.NotMonitored.ToBool() },
+                { "monitored", !_nm },
                 { "qualityProfileId", 4 },
-                { "seasonFolder", usf },
+                { "seasonFolder", _usf },
                 { "seasons", this.Seasons },
                 { "title", this.Name },
                 { "titleSlug", this.TitleSlug },
@@ -133,21 +152,15 @@ namespace MG.Sonarr.Cmdlets
                 MissingMemberHandling = MissingMemberHandling.Ignore
             });
 
-            base.WriteDebug(postJson);
+            base.WriteDebug("POST BODY:" + Environment.NewLine + postJson);
 
             if (base.ShouldProcess(string.Format("New Series - {0}", this.Name, "Adding")))
             {
-                try
+                base.WriteVerbose(string.Format("Adding new series - {0} at \"/series\"", this.Name));
+                string output = base.TryPostSonarrResult("/series", postJson);
+                if (_passThru)
                 {
-                    string output = _api.SonarrPost("/series", postJson);
-                    if (this.PassThru.ToBool())
-                    {
-                        base.WriteObject(SonarrHttpClient.ConvertToSeriesResult(output));
-                    }
-                }
-                catch (Exception e)
-                {
-                    base.WriteError(e, ErrorCategory.InvalidResult, postJson);
+                    base.WriteObject(SonarrHttpClient.ConvertToSeriesResult(output));
                 }
             }
         }

@@ -39,17 +39,10 @@ namespace MG.Sonarr.Cmdlets
         {
             if (this.ParameterSetName == "BySeriesName")
             {
-                try
+                string jsonStr = base.TryGetSonarrResult("/series");
+                if (!string.IsNullOrEmpty(jsonStr))
                 {
-                    string jsonStr = base.TryGetSonarrResult("/series");
-                    if (!string.IsNullOrEmpty(jsonStr))
-                    {
-                        _series = SonarrHttpClient.ConvertToSeriesResults(jsonStr);
-                    }
-                }
-                catch (Exception e)
-                {
-                    base.WriteError(e, ErrorCategory.InvalidResult, "/series");
+                    _series = SonarrHttpClient.ConvertToSeriesResults(jsonStr);
                 }
 
                 if (_series != null && _series.Count > 0 && this.Name != null && this.Name.Length > 0)
@@ -77,18 +70,11 @@ namespace MG.Sonarr.Cmdlets
                 {
                     long id = this.SeriesId[i];
                     string full = string.Format("/series/{0}", Convert.ToString(id));
-                    try
+                    string oneSeries = base.TryGetSonarrResult(full);
+                    if (!string.IsNullOrEmpty(oneSeries))
                     {
-                        string oneSeries = base.TryGetSonarrResult(full);
-                        if (!string.IsNullOrEmpty(oneSeries))
-                        {
-                            var sr = SonarrHttpClient.ConvertToSeriesResult(oneSeries);
-                            base.WriteObject(sr);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        base.WriteError(e, ErrorCategory.InvalidResult, full);
+                        var sr = SonarrHttpClient.ConvertToSeriesResult(oneSeries);
+                        base.WriteObject(sr);
                     }
                 }
             }

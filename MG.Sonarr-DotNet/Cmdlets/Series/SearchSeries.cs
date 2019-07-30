@@ -48,24 +48,17 @@ namespace MG.Sonarr.Cmdlets
 
                 if (base.ShouldProcess(full, "Executing API call"))
                 {
-                    try
-                    {
-                        string jsonStr = base.TryGetSonarrResult(full);
+                    string jsonStr = base.TryGetSonarrResult(full);
 
-                        if (!string.IsNullOrEmpty(jsonStr))
-                        {
-                            var tok = JToken.Parse(jsonStr);
-                            list = SonarrHttpClient.ConvertToSeriesResults(jsonStr, false);
-                            if (this.Strict.ToBool())
-                                base.WriteObject(list.FindAll(x => x.Name.IndexOf(this.Name, StringComparison.CurrentCultureIgnoreCase) >= 0), true);
-
-                            else
-                                base.WriteObject(list, true);
-                        }
-                    }
-                    catch (Exception e)
+                    if (!string.IsNullOrEmpty(jsonStr))
                     {
-                        base.WriteError(e, ErrorCategory.InvalidResult, full);
+                        var tok = JToken.Parse(jsonStr);
+                        list = SonarrHttpClient.ConvertToSeriesResults(jsonStr, false);
+                        if (this.Strict.ToBool())
+                            base.WriteObject(list.FindAll(x => x.Name.IndexOf(this.Name, StringComparison.CurrentCultureIgnoreCase) >= 0), true);
+
+                        else
+                            base.WriteObject(list, true);
                     }
                 }
             }
@@ -76,20 +69,13 @@ namespace MG.Sonarr.Cmdlets
 
                 if (base.ShouldProcess(full, "Executing API call"))
                 {
-                    try
-                    {
-                        string jsonStr = base.TryGetSonarrResult(full);
+                    string jsonStr = base.TryGetSonarrResult(full);
 
-                        if (!string.IsNullOrEmpty(jsonStr))
-                        {
-                            var tok = JToken.Parse(jsonStr);
-                            var list = SonarrHttpClient.ConvertToSeriesResults(jsonStr, false);
-                            base.WriteObject(list, true);
-                        }
-                    }
-                    catch (Exception e)
+                    if (!string.IsNullOrEmpty(jsonStr))
                     {
-                        base.WriteError(e, ErrorCategory.InvalidResult, full);
+                        var tok = JToken.Parse(jsonStr);
+                        var list = SonarrHttpClient.ConvertToSeriesResults(jsonStr, false);
+                        base.WriteObject(list, true);
                     }
                 }
 

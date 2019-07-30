@@ -16,6 +16,7 @@ namespace MG.Sonarr.Cmdlets.Episodes
     {
         #region FIELDS/CONSTANTS
         private const string EP = "/episode";
+        private bool _passThru;
 
         #endregion
 
@@ -27,7 +28,11 @@ namespace MG.Sonarr.Cmdlets.Episodes
         public bool IsMonitored { get; set; }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter PassThru { get; set; }
+        public SwitchParameter PassThru
+        {
+            get => _passThru;
+            set => _passThru = value;
+        }
 
         #endregion
 
@@ -40,12 +45,12 @@ namespace MG.Sonarr.Cmdlets.Episodes
 
             if (base.ShouldProcess(
                 string.Format(
-                    "Episode #{0} IsMonitored set to {1}; Series {2}", this.InputObject.AbsoluteEpisodeNumber, this.IsMonitored.ToString(), this.InputObject.SeriesId), 
+                    "Episode #{0} IsMonitored set to {1}; Series {2}", this.InputObject.AbsoluteEpisodeNumber, this.IsMonitored, this.InputObject.SeriesId), 
                 "Set"))
             {
                 string jsonBody = this.InputObject.ToJson();
                 string jsonRes = base.TryPutSonarrResult(EP, jsonBody);
-                if (!string.IsNullOrEmpty(jsonRes) && this.PassThru.ToBool())
+                if (!string.IsNullOrEmpty(jsonRes) && _passThru)
                 {
                     var res = SonarrHttpClient.ConvertToSonarrResult<EpisodeResult>(jsonRes);
                     base.WriteObject(res);
