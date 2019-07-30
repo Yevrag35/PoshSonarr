@@ -46,8 +46,11 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         protected void ProcessRequest(IDictionary parameterDict)
         {
+            string cmdName = parameterDict["name"] as string;
+            string verbMsg = string.Format("Issuing command - {0} at {1}", cmdName, BASE_EP);
+
             string postBody = JsonConvert.SerializeObject(parameterDict, Formatting.Indented);
-            string cmdOut = _api.SonarrPost(BASE_EP, postBody);
+            string cmdOut = base.TryPostSonarrResult(BASE_EP, postBody);
             if (!string.IsNullOrEmpty(cmdOut))
             {
                 CommandOutput cmdOutput = SonarrHttpClient.ConvertToSonarrResult<CommandOutput>(cmdOut);

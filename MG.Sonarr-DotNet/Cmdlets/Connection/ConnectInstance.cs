@@ -33,7 +33,7 @@ namespace MG.Sonarr.Cmdlets.Connection
 
         #region PARAMETERS
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByServerName")]
-        [Alias("Server", "ServerName")]
+        [Alias("Server", "ServerName", "HostName")]
         public string SonarrServerName = "localhost";
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySonarrUrl")]
@@ -82,7 +82,7 @@ namespace MG.Sonarr.Cmdlets.Connection
             set => _proxyBypass = value;
         }
 
-        [Parameter(Mandatory = true)]
+        [Parameter(Mandatory = true, HelpMessage = "Can be retrieved from your Sonarr website (Settings => General => Security), or in the \"Config.xml\" file in the AppData directory.")]
         [Alias("key")]
         public ApiKey ApiKey { get; set; }
 
@@ -195,7 +195,7 @@ namespace MG.Sonarr.Cmdlets.Connection
                 throw new NoSonarrResponseException(caller);
             }
             return status;
-            // No call GetStatusResult();
+            // Now call GetStatusResult();
         }
 
         private SonarrStatusResult GetStatusResult(string statusStr)

@@ -21,23 +21,8 @@ namespace MG.Sonarr.Cmdlets
         private const string API_PREFIX = "/api";
         private const string CONTENT_TYPE = "application/json";
 
-        protected private ApiCaller _api;
-        protected private bool _noPre;
-
-        protected private static readonly JsonSerializerSettings Serializer = new JsonSerializerSettings
-        {
-            ContractResolver = new CamelCasePropertyNamesContractResolver(),
-            DateFormatHandling = DateFormatHandling.IsoDateFormat,
-            DateParseHandling = DateParseHandling.DateTime,
-            DateTimeZoneHandling = DateTimeZoneHandling.Local,
-            DefaultValueHandling = DefaultValueHandling.Populate,
-            FloatParseHandling = FloatParseHandling.Decimal,
-            Formatting = Formatting.Indented,
-            NullValueHandling = NullValueHandling.Ignore,
-            PreserveReferencesHandling = PreserveReferencesHandling.Objects,
-            ObjectCreationHandling = ObjectCreationHandling.Replace,
-            ReferenceLoopHandling = ReferenceLoopHandling.Serialize
-        };
+        private const string CONNECT_MSG = "Getting initial Sonarr status from {0}";
+        private const string CONNECT_FORMAT = "{0}://{1}:{2}{3}";
 
         #endregion
 
@@ -51,12 +36,6 @@ namespace MG.Sonarr.Cmdlets
         {
             if (!Context.IsConnected)
                 throw new SonarrContextNotSetException();
-
-            else
-            {
-                _api = Context.ApiCaller;
-                _noPre = Context.NoApiPrefix;
-            }
         }
 
         #endregion
@@ -65,6 +44,14 @@ namespace MG.Sonarr.Cmdlets
         protected string TrySonarrConnect(string sonarrEndpoint)
         {
             sonarrEndpoint = Context.UriBase + sonarrEndpoint;
+            string url = string.Format(CONNECT_FORMAT,
+                Context.ApiCaller.BaseAddress.Scheme,
+                Context.ApiCaller.BaseAddress.Host,
+                Context.ApiCaller.BaseAddress.Port,
+                sonarrEndpoint);
+
+            string msg = string.Format(CONNECT_MSG, url);
+            base.WriteDebug(msg);
 
             Task<HttpResponseMessage> task = Context.ApiCaller.GetAsync(sonarrEndpoint, HttpCompletionOption.ResponseContentRead);
             task.Wait();
@@ -100,7 +87,7 @@ namespace MG.Sonarr.Cmdlets
         protected void TryDeleteSonarrResult(string endpoint)
         {
             endpoint = Context.UriBase + endpoint;
-            base.WriteVerbose(string.Format("DELETE REQUEST URL: {0}", endpoint));
+            base.WriteDebug(string.Format("DELETE REQUEST URL: {0}", endpoint));
             try
             {
                 Task<HttpResponseMessage> task = Context.ApiCaller.DeleteAsync(endpoint);
@@ -116,7 +103,7 @@ namespace MG.Sonarr.Cmdlets
         protected string TryGetSonarrResult(string endpoint)
         {
             endpoint = Context.UriBase + endpoint;
-            base.WriteVerbose(string.Format("GET REQUEST URL: {0}", endpoint));
+            base.WriteDebug(string.Format("GET REQUEST URL: {0}", endpoint));
             try
             {
                 Task<HttpResponseMessage> task = Context.ApiCaller.GetAsync(endpoint, HttpCompletionOption.ResponseContentRead);
@@ -143,7 +130,7 @@ namespace MG.Sonarr.Cmdlets
         protected string TryPostSonarrResult(string endpoint, string jsonBody)
         {
             endpoint = Context.UriBase + endpoint;
-            base.WriteVerbose(string.Format("POST REQUEST URL: {0}", endpoint));
+            base.WriteDebug(string.Format("POST REQUEST URL: {0}", endpoint));
             base.WriteDebug("POST BODY:" + Environment.NewLine + jsonBody);
 
             StringContent sc = null;
@@ -177,7 +164,7 @@ namespace MG.Sonarr.Cmdlets
         protected string TryPutSonarrResult(string endpoint, string jsonBody)
         {
             endpoint = Context.UriBase + endpoint;
-            base.WriteVerbose(string.Format("PUT REQUEST URL: {0}", endpoint));
+            base.WriteDebug(string.Format("PUT REQUEST URL: {0}", endpoint));
             base.WriteDebug("PUT BODY:" + Environment.NewLine + jsonBody);
 
             StringContent sc = null;
