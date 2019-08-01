@@ -47,14 +47,10 @@ namespace MG.Sonarr.Cmdlets
         /// <exception cref="Exception"/>
         protected string TrySonarrConnect()
         {
-            string endpoint = Context.UriBase + CONNECT_EP;
-            string url = string.Format(CONNECT_FORMAT,
-                Context.ApiCaller.BaseAddress.Scheme,
-                Context.ApiCaller.BaseAddress.Host,
-                Context.ApiCaller.BaseAddress.Port,
-                endpoint);
+            string endpoint = Context.SonarrUrl.Path + CONNECT_EP;
+            string full = string.Format(Context.ZERO_ONE, Context.SonarrUrl.BaseUrl, endpoint);
 
-            string msg = string.Format(CONNECT_MSG, url);
+            string msg = string.Format(CONNECT_MSG, full);
             base.WriteDebug(msg);
 
             Task<HttpResponseMessage> task = Context.ApiCaller.GetAsync(endpoint, HttpCompletionOption.ResponseContentRead);
@@ -94,7 +90,7 @@ namespace MG.Sonarr.Cmdlets
         /// <param name="endpoint">The Sonarr API endpoint to send the DELETE request to.</param>
         protected void TryDeleteSonarrResult(string endpoint)
         {
-            endpoint = Context.UriBase + endpoint;
+            endpoint = Context.SonarrUrl.Path + endpoint;
             base.WriteDebug(string.Format("DELETE REQUEST URL: {0}", endpoint));
             try
             {
@@ -115,7 +111,7 @@ namespace MG.Sonarr.Cmdlets
         /// <param name="endpoint">The Sonarr API endpoint to send the GET request to.</param>
         protected string TryGetSonarrResult(string endpoint)
         {
-            endpoint = Context.UriBase + endpoint;
+            endpoint = Context.SonarrUrl.Path + endpoint;
             base.WriteDebug(string.Format("GET REQUEST URL: {0}", endpoint));
             try
             {
@@ -148,7 +144,7 @@ namespace MG.Sonarr.Cmdlets
         /// <param name="jsonBody">The JSON payload content to be sent with the POST request.</param>
         protected string TryPostSonarrResult(string endpoint, string jsonBody)
         {
-            endpoint = Context.UriBase + endpoint;
+            endpoint = Context.SonarrUrl.Path + endpoint;
             base.WriteDebug(string.Format("POST REQUEST URL: {0}", endpoint));
             base.WriteDebug("POST BODY:" + Environment.NewLine + jsonBody);
 
@@ -188,7 +184,7 @@ namespace MG.Sonarr.Cmdlets
         /// <param name="jsonBody">The JSON payload content to be sent with the PUT request.</param>
         protected string TryPutSonarrResult(string endpoint, string jsonBody)
         {
-            endpoint = Context.UriBase + endpoint;
+            endpoint = Context.SonarrUrl.Path + endpoint;
             base.WriteDebug(string.Format("PUT REQUEST URL: {0}", endpoint));
             base.WriteDebug("PUT BODY:" + Environment.NewLine + jsonBody);
 

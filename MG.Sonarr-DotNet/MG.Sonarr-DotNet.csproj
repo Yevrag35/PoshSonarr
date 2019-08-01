@@ -69,6 +69,8 @@
     <Compile Include="Cmdlets\Commands\InvokeSeriesRescan.cs" />
     <Compile Include="Cmdlets\Commands\InvokeSeriesSearch.cs" />
     <Compile Include="Components\SonarrHttp.cs" />
+    <Compile Include="Objects\Interfaces\ISonarrUrl.cs" />
+    <Compile Include="Objects\SonarrUrl.cs" />
     <Compile Include="Results\Updates\Update.cs" />
     <None Include="Cmdlets\Connection\ConnectInstance-Core.cs" />
     <Compile Include="Cmdlets\Connection\ConnectInstance.cs" />
@@ -130,7 +132,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="GenerateManifest.ps1" />
-    <None Include="Results\Bases\CustomResult.cs" />
     <Compile Include="Objects\Interfaces\IApiKey.cs" />
     <Compile Include="Objects\Interfaces\ISonarrResult.cs" />
     <Compile Include="Objects\NameOrId.cs" />
