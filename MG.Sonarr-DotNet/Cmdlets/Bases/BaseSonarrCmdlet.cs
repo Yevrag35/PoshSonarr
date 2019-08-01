@@ -26,6 +26,8 @@ namespace MG.Sonarr.Cmdlets
         private const string CONNECT_MSG = "Getting initial Sonarr status from {0}";
         private const string CONNECT_FORMAT = "{0}://{1}:{2}{3}";
         private const string CONTENT_TYPE = "application/json";
+        private const string DEBUG_API_MSG = "Sending {0} request to: {1}{2}";
+        private const string DEBUG_API_AND_BODY_MSG = DEBUG_API_MSG + "{3}{3}REQUEST BODY:{4}";
 
         #endregion
 
@@ -47,13 +49,14 @@ namespace MG.Sonarr.Cmdlets
         /// <exception cref="Exception"/>
         protected string TrySonarrConnect()
         {
-            string endpoint = Context.SonarrUrl.Path + CONNECT_EP;
-            string full = string.Format(Context.ZERO_ONE, Context.SonarrUrl.BaseUrl, endpoint);
+            //string endpoint = Context.SonarrUrl.Path + CONNECT_EP;
+            //string full = string.Format(Context.ZERO_ONE, Context.SonarrUrl.BaseUrl, endpoint);
 
-            string msg = string.Format(CONNECT_MSG, full);
-            base.WriteDebug(msg);
+            //string msg = string.Format(CONNECT_MSG, full);
+            //base.WriteDebug(msg);
+            this.WriteApiDebug(CONNECT_EP, HttpMethod.Get, out string apiPath);
 
-            Task<HttpResponseMessage> task = Context.ApiCaller.GetAsync(endpoint, HttpCompletionOption.ResponseContentRead);
+            Task<HttpResponseMessage> task = Context.ApiCaller.GetAsync(apiPath, HttpCompletionOption.ResponseContentRead);
             task.Wait();
             string res = null;
             if (!task.IsFaulted && !task.IsCanceled)
@@ -72,7 +75,7 @@ namespace MG.Sonarr.Cmdlets
                 }
                 catch (HttpRequestException hre)
                 {
-                    this.WriteError(new SonarrConnectException(endpoint, hre), ErrorCategory.ParserError);
+                    this.WriteError(new SonarrConnectException(apiPath, hre), ErrorCategory.ParserError);
                     return null;
                 }
                 catch (Exception e)
@@ -90,17 +93,17 @@ namespace MG.Sonarr.Cmdlets
         /// <param name="endpoint">The Sonarr API endpoint to send the DELETE request to.</param>
         protected void TryDeleteSonarrResult(string endpoint)
         {
-            endpoint = Context.SonarrUrl.Path + endpoint;
-            base.WriteDebug(string.Format("DELETE REQUEST URL: {0}", endpoint));
+            this.WriteApiDebug(endpoint, HttpMethod.Delete, out string apiPath);
+
             try
             {
-                Task<HttpResponseMessage> task = Context.ApiCaller.DeleteAsync(endpoint);
+                Task<HttpResponseMessage> task = Context.ApiCaller.DeleteAsync(apiPath);
                 task.Wait();
                 task.Result.EnsureSuccessStatusCode();
             }
             catch (HttpRequestException hre)
             {
-                this.WriteError(new SonarrDeleteRequestException(endpoint, hre), ErrorCategory.MetadataError, endpoint);
+                this.WriteError(new SonarrDeleteRequestException(apiPath, hre), ErrorCategory.MetadataError, endpoint);
             }
         }
 
@@ -111,11 +114,11 @@ namespace MG.Sonarr.Cmdlets
         /// <param name="endpoint">The Sonarr API endpoint to send the GET request to.</param>
         protected string TryGetSonarrResult(string endpoint)
         {
-            endpoint = Context.SonarrUrl.Path + endpoint;
-            base.WriteDebug(string.Format("GET REQUEST URL: {0}", endpoint));
+            this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
+
             try
             {
-                Task<HttpResponseMessage> task = Context.ApiCaller.GetAsync(endpoint, HttpCompletionOption.ResponseContentRead);
+                Task<HttpResponseMessage> task = Context.ApiCaller.GetAsync(apiPath, HttpCompletionOption.ResponseContentRead);
                 task.Wait();
                 string res = null;
                 using (var resp = task.Result.EnsureSuccessStatusCode())
@@ -131,7 +134,7 @@ namespace MG.Sonarr.Cmdlets
             }
             catch (HttpRequestException hre)
             {
-                this.WriteError(new SonarrGetRequestException(endpoint, hre), ErrorCategory.ParserError);
+                this.WriteError(new SonarrGetRequestException(apiPath, hre), ErrorCategory.ParserError);
                 return null;
             }
         }
@@ -144,9 +147,7 @@ namespace MG.Sonarr.Cmdlets
         /// <param name="jsonBody">The JSON payload content to be sent with the POST request.</param>
         protected string TryPostSonarrResult(string endpoint, string jsonBody)
         {
-            endpoint = Context.SonarrUrl.Path + endpoint;
-            base.WriteDebug(string.Format("POST REQUEST URL: {0}", endpoint));
-            base.WriteDebug("POST BODY:" + Environment.NewLine + jsonBody);
+            this.WriteApiDebug(endpoint, HttpMethod.Post, jsonBody, out string apiPath);
 
             StringContent sc = null;
             if (!string.IsNullOrEmpty(jsonBody))
@@ -154,7 +155,7 @@ namespace MG.Sonarr.Cmdlets
 
             try
             {
-                Task<HttpResponseMessage> task = Context.ApiCaller.PostAsync(endpoint, sc);
+                Task<HttpResponseMessage> task = Context.ApiCaller.PostAsync(apiPath, sc);
                 task.Wait();
 
                 string res = null;
@@ -171,7 +172,7 @@ namespace MG.Sonarr.Cmdlets
             }
             catch (HttpRequestException hre)
             {
-                this.WriteError(new SonarrPostRequestException(endpoint, hre), ErrorCategory.InvalidArgument, jsonBody);
+                this.WriteError(new SonarrPostRequestException(apiPath, hre), ErrorCategory.InvalidArgument, jsonBody);
                 return null;
             }
         }
@@ -184,9 +185,7 @@ namespace MG.Sonarr.Cmdlets
         /// <param name="jsonBody">The JSON payload content to be sent with the PUT request.</param>
         protected string TryPutSonarrResult(string endpoint, string jsonBody)
         {
-            endpoint = Context.SonarrUrl.Path + endpoint;
-            base.WriteDebug(string.Format("PUT REQUEST URL: {0}", endpoint));
-            base.WriteDebug("PUT BODY:" + Environment.NewLine + jsonBody);
+            this.WriteApiDebug(endpoint, HttpMethod.Put, jsonBody, out string apiPath);
 
             StringContent sc = null;
             if (!string.IsNullOrEmpty(jsonBody))
@@ -194,7 +193,7 @@ namespace MG.Sonarr.Cmdlets
 
             try
             {
-                Task<HttpResponseMessage> task = Context.ApiCaller.PutAsync(endpoint, sc);
+                Task<HttpResponseMessage> task = Context.ApiCaller.PutAsync(apiPath, sc);
                 task.Wait();
 
                 string res = null;
@@ -211,7 +210,7 @@ namespace MG.Sonarr.Cmdlets
             }
             catch (HttpRequestException hre)
             {
-                this.WriteError(new SonarrPutRequestException(endpoint, hre), ErrorCategory.InvalidArgument, jsonBody);
+                this.WriteError(new SonarrPutRequestException(apiPath, hre), ErrorCategory.InvalidArgument, jsonBody);
                 return null;
             }
         }
@@ -219,6 +218,35 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region EXCEPTION METHODS
+        protected virtual void WriteApiDebug(string endpoint, HttpMethod method, out string apiPath)
+        {
+            apiPath = Context.SonarrUrl.Path + endpoint;
+
+            string msg = string.Format(
+                DEBUG_API_MSG,
+                method.Method,
+                Context.SonarrUrl.BaseUrl,
+                apiPath
+            );
+
+            base.WriteDebug(msg);
+        }
+
+        protected virtual void WriteApiDebug(string endpoint, HttpMethod method, string body, out string apiPath)
+        {
+            apiPath = Context.SonarrUrl.Path + endpoint;
+
+            string msg = string.Format(
+                DEBUG_API_AND_BODY_MSG,
+                method.Method,
+                Context.SonarrUrl.BaseUrl,
+                apiPath,
+                Environment.NewLine,
+                body
+            );
+
+            base.WriteDebug(msg);
+        }
 
         /// <summary>
         /// Takes in an <see cref="Exception"/> and returns the innermost <see cref="Exception"/> as a result.
