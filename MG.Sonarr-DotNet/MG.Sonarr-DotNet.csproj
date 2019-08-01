@@ -68,6 +68,7 @@
     <Compile Include="Cmdlets\Commands\InvokeSeriesRefresh.cs" />
     <Compile Include="Cmdlets\Commands\InvokeSeriesRescan.cs" />
     <Compile Include="Cmdlets\Commands\InvokeSeriesSearch.cs" />
+    <Compile Include="Components\SonarrHttp.cs" />
     <Compile Include="Results\Updates\Update.cs" />
     <None Include="Cmdlets\Connection\ConnectInstance-Core.cs" />
     <Compile Include="Cmdlets\Connection\ConnectInstance.cs" />
@@ -97,7 +98,6 @@
     <Compile Include="Cmdlets\WantedMissing\GetWantedMissing.cs" />
     <Compile Include="Components\Caller.cs" />
     <Compile Include="Components\Exceptions.cs" />
-    <Compile Include="Components\HttpClientExtensions.cs" />
     <Compile Include="Components\SonarrContext.cs" />
     <Compile Include="Objects\AddOptions.cs" />
     <Compile Include="Objects\ApiKey.cs" />
