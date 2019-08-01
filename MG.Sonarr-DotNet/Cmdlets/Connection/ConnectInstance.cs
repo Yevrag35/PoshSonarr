@@ -19,6 +19,10 @@ namespace MG.Sonarr.Cmdlets
         #region FIELDS/CONSTANTS
         private const string SLASH_STR = "/";
         private static readonly char SLASH = char.Parse(SLASH_STR);
+        private static readonly char[] SLASH_API = new char[4]
+        {
+            SLASH, char.Parse("a"), char.Parse("p"), char.Parse("i")
+        };
 
         private bool _allowRedirect;
         private bool _noApiPrefix;
@@ -114,7 +118,7 @@ namespace MG.Sonarr.Cmdlets
         {
             UriBuilder url = this.ParameterSetName == "ByServerName"
                 ? FormatUri(this.SonarrServerName, this.PortNumber, this.ReverseProxyUriBase, _useSsl, _noApiPrefix)
-                : new UriBuilder(this.SonarrUrl);
+                : FormatUri(this.SonarrUrl, _noApiPrefix);
 
             this.CheckCertificateValidity();
 
@@ -143,6 +147,22 @@ namespace MG.Sonarr.Cmdlets
             {
                 ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
             }
+        }
+
+        public static UriBuilder FormatUri(Uri sonarrUrl, bool noApiPrefix)
+        {
+            var builder = new UriBuilder(sonarrUrl);
+            if (!noApiPrefix && !builder.Path.EndsWith("/api", StringComparison.CurrentCultureIgnoreCase))
+            {
+                builder.Path = builder.Path.EndsWith("/")
+                    ? builder.Path = builder.Path + "api"
+                    : builder.Path = builder.Path + "/api";
+            }
+
+            else if (noApiPrefix && builder.Path.EndsWith("/api", StringComparison.CurrentCultureIgnoreCase))
+                builder.Path = builder.Path.TrimEnd(SLASH_API);
+
+            return builder;
         }
 
         public static UriBuilder FormatUri(string serverName, int portNumber, string reverseProxyUriBase, bool useSsl, bool noApiPrefix)
