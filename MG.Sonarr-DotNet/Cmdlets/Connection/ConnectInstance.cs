@@ -124,7 +124,8 @@ namespace MG.Sonarr.Cmdlets
                 ? new SonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
                 : new SonarrUrl(this.SonarrUrl, !_noApiPrefix);
 
-            this.CheckCertificateValidity();
+            HttpClientHandler handler = null;
+            this.CheckCertificateValidity(ref handler);
 
             Context.ApiCaller = this.MyInvocation.BoundParameters.ContainsKey("Proxy")
                 ? NewApiCaller(Context.SonarrUrl, this.ApiKey, _allowRedirect, this.Proxy, this.ProxyCredential, _proxyBypass)
@@ -142,13 +143,7 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PRIVATE/BACKEND METHODS
-        private void CheckCertificateValidity()
-        {
-            if (_skipCert)
-            {
-                ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
-            }
-        }
+        
 
         //public static UriBuilder FormatUri(Uri sonarrUrl, bool noApiPrefix)
         //{
@@ -221,7 +216,7 @@ namespace MG.Sonarr.Cmdlets
             return sr;
         }
 
-        public static ApiCaller NewApiCaller(ISonarrUrl url, ApiKey apiKey, bool allowRedirects)
+        public ApiCaller NewApiCaller(ISonarrUrl url, ApiKey apiKey, bool allowRedirects)
         {
             var handler = new HttpClientHandler
             {
@@ -232,17 +227,17 @@ namespace MG.Sonarr.Cmdlets
         }
 
         [Obsolete]
-        public static ApiCaller NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects)
+        public ApiCaller NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects)
         {
             var handler = new HttpClientHandler
             {
                 AllowAutoRedirect = allowRedirects,
                 UseDefaultCredentials = true
             };
-            return NewApiCaller(uriBuilder.Uri.GetLeftPart(UriPartial.Scheme | UriPartial.Authority), apiKey, handler);
+            return this.NewApiCaller(uriBuilder.Uri.GetLeftPart(UriPartial.Scheme | UriPartial.Authority), apiKey, handler);
         }
 
-        public static ApiCaller NewApiCaller(ISonarrUrl url, ApiKey apiKey, bool allowRedirects, string proxy, ProxyCredential proxyCredential, bool proxyBypassLocal)
+        public ApiCaller NewApiCaller(ISonarrUrl url, ApiKey apiKey, bool allowRedirects, string proxy, ProxyCredential proxyCredential, bool proxyBypassLocal)
         {
             var wp = new WebProxy(proxy)
             {
@@ -266,7 +261,7 @@ namespace MG.Sonarr.Cmdlets
         }
 
         [Obsolete]
-        public static ApiCaller NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects, string proxy, ProxyCredential proxyCredential, bool proxyBypassLocal)
+        public ApiCaller NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects, string proxy, ProxyCredential proxyCredential, bool proxyBypassLocal)
         {
             var wp = new WebProxy(proxy)
             {
@@ -286,11 +281,14 @@ namespace MG.Sonarr.Cmdlets
                 Proxy = wp,
                 UseProxy = true
             };
+
             return NewApiCaller(uriBuilder.Uri.GetLeftPart(UriPartial.Scheme | UriPartial.Authority), apiKey, handler);
         }
 
-        private static ApiCaller NewApiCaller(string url, ApiKey apiKey, HttpClientHandler handler)
+        private ApiCaller NewApiCaller(string url, ApiKey apiKey, HttpClientHandler handler)
         {
+            this.CheckCertificateValidity(ref handler);
+
             return new ApiCaller(handler, apiKey)
             {
                 BaseAddress = new Uri(url)

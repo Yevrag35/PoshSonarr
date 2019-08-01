@@ -41,7 +41,8 @@ $pattern = $patFormat -f ($verbs -join '|');
 $cmdletFormat = "{0}-{1}";
 
 $baseCmdletDir = Join-Path "$ModuleFileDirectory\.." "Cmdlets";
-[string[]]$folders = [System.IO.Directory]::EnumerateDirectories($baseCmdletDir, "*", [System.IO.SearchOption]::TopDirectoryOnly) | Where-Object { -not $_.EndsWith('Bases') };
+[string[]]$folders = [System.IO.Directory]::EnumerateDirectories($baseCmdletDir, "*", [System.IO.SearchOption]::TopDirectoryOnly) | `
+	Where-Object { -not $_.EndsWith('Bases') -and -not $_.EndsWiths("Exclude") };
 
 $aliasPat = '\[alias\(\"(.{1,})\"\)\]'
 $csFiles = @(Get-ChildItem -Path $folders *.cs -File);

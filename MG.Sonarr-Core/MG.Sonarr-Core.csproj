@@ -29,7 +29,7 @@
   </PropertyGroup>
 
 	<ItemGroup>
-		<Compile Include="..\MG.Sonarr-DotNet\**\*.cs" Exclude="..\MG.Sonarr-DotNet\obj\**\*.cs;..\MG.Sonarr-DotNet\bin\**\*.cs;..\MG.Sonarr-DotNet\Properties\AssemblyInfo.cs;..\MG.Sonarr-DotNet\Cmdlets\Connection\ConnectInstance.cs" />
+		<Compile Include="..\MG.Sonarr-DotNet\**\*.cs" Exclude="..\MG.Sonarr-DotNet\obj\**\*.cs;..\MG.Sonarr-DotNet\bin\**\*.cs;..\MG.Sonarr-DotNet\Properties\AssemblyInfo.cs;..\MG.Sonarr-DotNet\Cmdlets\Connection\Exclude\*-DotNet.cs" />
 	</ItemGroup>
 
   <ItemGroup>
