@@ -9,24 +9,29 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets.Episodes
 {
-    [Cmdlet(VerbsCommon.Remove, "EpisodeFile", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true, DefaultParameterSetName = "ByEpisodeResult")]
+    [Cmdlet(VerbsCommon.Remove, "EpisodeFile", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true, DefaultParameterSetName = "ByEpisodeFile")]
     [CmdletBinding(PositionalBinding = false)]
     public class RemoveEpisodeFile : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
         private const string EP = "/episodefile/{0}";
+        private bool _force;
 
         #endregion
 
         #region PARAMETERS
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByEpisodeResult")]
-        public EpisodeResult Episode { get; set; }
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "ByEpisodeFile")]
+        public EpisodeFile EpisodeFile { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0, ParameterSetName = "ByEpisodeFile")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByEpisodeFileId")]
         public long EpisodeFileId { get; set; }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter Force { get; set; }
+        public SwitchParameter Force
+        {
+            get => _force;
+            set => _force = value;
+        }
 
         #endregion
 
@@ -36,13 +41,13 @@ namespace MG.Sonarr.Cmdlets.Episodes
         protected override void ProcessRecord()
         {
             if (this.MyInvocation.BoundParameters.ContainsKey("Episode"))
-                this.EpisodeFileId = this.Episode.EpisodeFile.EpisodeFileId;
+                this.EpisodeFileId = this.EpisodeFile.EpisodeFileId;
 
             if (this.EpisodeFileId.Equals(0))
                 throw new ArgumentNullException("EpisodeFileId");
 
             string ep = string.Format(EP, this.EpisodeFileId);
-            if (this.Force.ToBool() || base.ShouldProcess(ep, "Delete"))
+            if (_force || base.ShouldProcess(ep, "Delete"))
             {
                 base.TryDeleteSonarrResult(ep);
             }

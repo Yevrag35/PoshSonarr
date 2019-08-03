@@ -37,21 +37,13 @@ namespace MG.Sonarr.Cmdlets
             };
             string jsonBody = JsonConvert.SerializeObject(dict, Formatting.Indented);
 
-            string jsonRes = null;
             if (base.ShouldProcess(string.Format("Tag - {0}", this.Label), "New"))
             {
-                try
-                {
-                    jsonRes = _api.SonarrPost(EP, jsonBody);
-                }
-                catch (Exception e)
-                {
-                    base.WriteError(e, ErrorCategory.InvalidResult);
-                }
+                string jsonRes = base.TryPostSonarrResult(EP, jsonBody);
 
                 if (!string.IsNullOrEmpty(jsonRes))
                 {
-                    Tag res = SonarrHttpClient.ConvertToSonarrResult<Tag>(jsonRes);
+                    Tag res = SonarrHttp.ConvertToSonarrResult<Tag>(jsonRes);
                     base.WriteObject(res);
                 }
             }

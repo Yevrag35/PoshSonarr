@@ -33,7 +33,7 @@ namespace MG.Sonarr.Cmdlets
 
             if (!string.IsNullOrWhiteSpace(strRes))
             {
-                SonarrStatusResult ssr = SonarrHttpClient.ConvertToSonarrResult<SonarrStatusResult>(strRes);
+                SonarrStatusResult ssr = SonarrHttp.ConvertToSonarrResult<SonarrStatusResult>(strRes);
                 ssr.UrlBase = Context.ApiCaller.BaseAddress;
                 base.WriteObject(ssr);
             }

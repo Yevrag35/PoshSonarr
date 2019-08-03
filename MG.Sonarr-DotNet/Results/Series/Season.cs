@@ -15,6 +15,8 @@ namespace MG.Sonarr.Results
         public int SeasonNumber { get; set; }
         public Statistics Statistics { get; set; }
 
+        public bool ShouldSerializeStatistics() => false;
+
         public override string ToJson()
         {
             return JsonConvert.SerializeObject(this, new JsonSerializerSettings

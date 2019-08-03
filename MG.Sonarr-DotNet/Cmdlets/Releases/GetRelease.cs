@@ -7,7 +7,7 @@ using System.Management.Automation;
 using System.Reflection;
 using System.Security;
 
-namespace MG.Sonarr.Cmdlets.Releases
+namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "Release", ConfirmImpact = ConfirmImpact.None)]
     [CmdletBinding(PositionalBinding = false)]
@@ -34,7 +34,7 @@ namespace MG.Sonarr.Cmdlets.Releases
             string jsonRes = base.TryGetSonarrResult(ep);
             if (!string.IsNullOrEmpty(jsonRes))
             {
-                var results = SonarrHttpClient.ConvertToSonarrResults<Release>(jsonRes, out bool iso);
+                var results = SonarrHttp.ConvertToSonarrResults<Release>(jsonRes, out bool iso);
                 base.WriteObject(results, true);
             }
         }

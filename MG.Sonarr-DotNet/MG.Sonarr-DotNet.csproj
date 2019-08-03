@@ -68,8 +68,12 @@
     <Compile Include="Cmdlets\Commands\InvokeSeriesRefresh.cs" />
     <Compile Include="Cmdlets\Commands\InvokeSeriesRescan.cs" />
     <Compile Include="Cmdlets\Commands\InvokeSeriesSearch.cs" />
+    <None Include="Cmdlets\Connection\Exclude\CertValidity-Core.cs" />
+    <Compile Include="Cmdlets\Connection\Exclude\CertValidity-DotNet.cs" />
+    <Compile Include="Components\SonarrHttp.cs" />
+    <Compile Include="Objects\Interfaces\ISonarrUrl.cs" />
+    <Compile Include="Objects\SonarrUrl.cs" />
     <Compile Include="Results\Updates\Update.cs" />
-    <None Include="Cmdlets\Connection\ConnectInstance-Core.cs" />
     <Compile Include="Cmdlets\Connection\ConnectInstance.cs" />
     <Compile Include="Cmdlets\Episodes\GetEpisode.cs" />
     <Compile Include="Cmdlets\Episodes\GetEpisodeFile.cs" />
@@ -97,7 +101,6 @@
     <Compile Include="Cmdlets\WantedMissing\GetWantedMissing.cs" />
     <Compile Include="Components\Caller.cs" />
     <Compile Include="Components\Exceptions.cs" />
-    <Compile Include="Components\HttpClientExtensions.cs" />
     <Compile Include="Components\SonarrContext.cs" />
     <Compile Include="Objects\AddOptions.cs" />
     <Compile Include="Objects\ApiKey.cs" />
@@ -130,9 +133,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="GenerateManifest.ps1" />
-    <None Include="Results\Bases\CustomResult.cs" />
-    <None Include="Objects\Interfaces\IApiKey.cs" />
-    <Compile Include="Objects\Exceptions.cs" />
+    <Compile Include="Objects\Interfaces\IApiKey.cs" />
     <Compile Include="Objects\Interfaces\ISonarrResult.cs" />
     <Compile Include="Objects\NameOrId.cs" />
     <Compile Include="Objects\ProxyCredential.cs" />
@@ -154,6 +155,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Assemblies\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

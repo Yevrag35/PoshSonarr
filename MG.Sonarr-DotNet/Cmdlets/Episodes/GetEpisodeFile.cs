@@ -9,7 +9,7 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Get, "EpisodeFile", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "BySeriesId")]
+    [Cmdlet(VerbsCommon.Get, "EpisodeFile", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByEpisodeFile")]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(EpisodeFile))]
     public class GetEpisodeFile : BaseSonarrCmdlet
@@ -22,6 +22,9 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "ByEpisodeFileInput")]
+        public EpisodeFile EpisodeFile { get; set; }
+
         [Parameter(Mandatory = true, ParameterSetName = "ByEpisodeFileId", ValueFromPipelineByPropertyName = true)]
         public long EpisodeFileId { get; set; }
 
@@ -37,21 +40,15 @@ namespace MG.Sonarr.Cmdlets
         {
             string full = this.ParameterSetName == "BySeriesId"
                 ? string.Format(EP_BY_SERIES, this.Series.SeriesId)
-                : string.Format(EP_BY_EP, this.EpisodeFileId);
+                : this.ParameterSetName == "ByEpisodeFileId"
+                    ? string.Format(EP_BY_EP, this.EpisodeFileId)
+                    : string.Format(EP_BY_EP, this.EpisodeFile.EpisodeFileId);
 
-            string jsonStr = null;
-            try
-            {
-                jsonStr = base.TryGetSonarrResult(full);
-            }
-            catch (Exception e)
-            {
-                base.WriteError(e, ErrorCategory.InvalidResult, full);
-            }
+            string jsonStr = base.TryGetSonarrResult(full);
 
             if (!string.IsNullOrEmpty(jsonStr))
             {
-                var result = SonarrHttpClient.ConvertToSonarrResults<EpisodeFile>(jsonStr, out bool iso);
+                var result = SonarrHttp.ConvertToSonarrResults<EpisodeFile>(jsonStr, out bool iso);
                 base.WriteObject(result, true);
             }
         }

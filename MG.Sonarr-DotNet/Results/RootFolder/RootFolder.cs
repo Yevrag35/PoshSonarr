@@ -3,6 +3,9 @@ using System.Collections.ObjectModel;
 
 namespace MG.Sonarr.Results
 {
+    /// <summary>
+    /// The class that defines a response from the "/rootfolder" endpoint.
+    /// </summary>
     public class RootFolder : BaseResult
     {
         public long FreeSpace { get; set; }

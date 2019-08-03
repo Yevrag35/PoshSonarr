@@ -6,6 +6,9 @@ using System.Collections.Generic;
 
 namespace MG.Sonarr.Results
 {
+    /// <summary>
+    /// The class that defines a response from the "/profile" endpoint.
+    /// </summary>
     public class QualityProfile : BaseResult
     {
         public QualityDetails Cutoff { get; set; }

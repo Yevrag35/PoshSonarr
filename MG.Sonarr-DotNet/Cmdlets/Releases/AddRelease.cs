@@ -19,6 +19,7 @@ namespace MG.Sonarr.Cmdlets.Releases
     {
         #region FIELDS/CONSTANTS
         private const string EP = "/release";
+        private bool _passThru;
 
         #endregion
 
@@ -31,7 +32,11 @@ namespace MG.Sonarr.Cmdlets.Releases
         public int IndexerId { get; set; }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter PassThru { get; set; }
+        public SwitchParameter PassThru
+        {
+            get => _passThru;
+            set => _passThru = value;
+        }
 
         #endregion
 
@@ -49,19 +54,11 @@ namespace MG.Sonarr.Cmdlets.Releases
 
             if (base.ShouldProcess(string.Format("Release - {0}", this.ReleaseUrl.ToString()), "Add"))
             {
-                string jsonRes = null;
-                try
-                {
-                    jsonRes = _api.SonarrPost(EP, postJson);
-                }
-                catch (Exception e)
-                {
-                    base.WriteError(e, ErrorCategory.InvalidResult);
-                }
+                string jsonRes = base.TryPostSonarrResult(EP, postJson);
 
-                if (!string.IsNullOrEmpty(jsonRes) && this.PassThru.ToBool())
+                if (!string.IsNullOrEmpty(jsonRes) && _passThru)
                 {
-                    var reses = SonarrHttpClient.ConvertToSonarrResults<Release>(jsonRes, out bool iso);
+                    var reses = SonarrHttp.ConvertToSonarrResults<Release>(jsonRes, out bool iso);
                     base.WriteObject(reses, true);
                 }
             }

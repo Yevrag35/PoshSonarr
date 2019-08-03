@@ -42,19 +42,11 @@ namespace MG.Sonarr.Cmdlets
                 ? string.Format(EP_BY_SERIES, this.SeriesId) 
                 : string.Format(EP_BY_EP, this.EpisodeId);
 
-            string jsonStr = null;
-            try
-            {
-                jsonStr = base.TryGetSonarrResult(full);
-            }
-            catch (Exception e)
-            {
-                base.WriteError(e, ErrorCategory.InvalidResult, full);
-            }
+            string jsonStr = base.TryGetSonarrResult(full);
 
             if (!string.IsNullOrEmpty(jsonStr))
             {
-                var result = SonarrHttpClient.ConvertToSonarrResults<EpisodeResult>(jsonStr, out bool iso);
+                var result = SonarrHttp.ConvertToSonarrResults<EpisodeResult>(jsonStr, out bool iso);
                 foreach (EpisodeResult er in result)
                 {
                     if (er.AirDateUtc.HasValue)

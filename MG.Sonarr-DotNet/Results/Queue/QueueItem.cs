@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace MG.Sonarr.Results
 {
+    /// <summary>
+    /// The class that defines the response from the "/queue" endpoint.
+    /// </summary>
     public class QueueItem : BaseResult
     {
         public string DownloadId { get; set; }

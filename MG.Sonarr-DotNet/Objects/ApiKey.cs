@@ -7,16 +7,21 @@ using System.Text.RegularExpressions;
 
 namespace MG.Sonarr
 {
-    public class ApiKey
+    /// <summary>
+    /// A validator class to verify a string or <see cref="SecureString"/> can become an appropriate API key for use with Sonarr.
+    /// </summary>
+    public class ApiKey : IApiKey
     {
         #region FIELDS/CONSTANTS
         private const string HEADER_PARAM = "X-Api-Key";
-        private const int KEY_LENGTH = 32;
         private const string KEY_PATTERN = @"^(?:[0-9]|[a-z]){32}$";
 
         #endregion
 
         #region PROPERTIES
+        /// <summary>
+        /// The API key in its string form.
+        /// </summary>
         public string Key { get; }
 
         #endregion
@@ -36,6 +41,9 @@ namespace MG.Sonarr
         #endregion
 
         #region PUBLIC METHODS
+        /// <summary>
+        /// Transforms the string API key into a key value pair for use as a HTTP header.  The 'key' of the key value pair will always be 'X-Api-Key'.
+        /// </summary>
         public KeyValuePair<string, string> AsKeyValuePair() => new KeyValuePair<string, string>(HEADER_PARAM, this.Key);
 
         #endregion
@@ -47,6 +55,11 @@ namespace MG.Sonarr
         #endregion
 
         #region BACKEND/PRIVATE METHODS
+        /// <summary>
+        /// Converts a given <see cref="SecureString"/> into its plain-text string form.
+        /// </summary>
+        /// <param name="ss">The <see cref="SecureString"/> to decrypt.</param>
+        /// <returns></returns>
         private static string ConvertFromSecureString(SecureString ss)
         {
             IntPtr pp = Marshal.SecureStringToBSTR(ss);
@@ -54,6 +67,12 @@ namespace MG.Sonarr
             Marshal.ZeroFreeBSTR(pp);
             return s;
         }
+
+        /// <summary>
+        /// Tests a given <see cref="string"/> against a Regex pattern to verify it is 32 characters in length and only consists of lowercase characters.
+        /// </summary>
+        /// <param name="testStr">The string to validate.</param>
+        /// <returns></returns>
         private bool IsValidKey(string testStr) => Regex.IsMatch(testStr, KEY_PATTERN);
 
         #endregion

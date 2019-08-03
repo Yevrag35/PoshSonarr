@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace MG.Sonarr.Results
 {
+    /// <summary>
+    /// The class that defines a response from the "/release" endpoint.
+    /// </summary>
     public class Release : BaseResult
     {
         public int[] AbsoluteEpisodeNumbers { get; set; }

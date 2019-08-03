@@ -15,7 +15,6 @@
                         <Alignment>Center</Alignment>
                     </TableColumnHeader>
                     <TableColumnHeader>
-                        <Label>Url</Label>
                         <Alignment>Left</Alignment>
                     </TableColumnHeader>
                     <TableColumnHeader>

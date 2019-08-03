@@ -33,7 +33,7 @@ namespace MG.Sonarr.Cmdlets
 
             if (!string.IsNullOrWhiteSpace(strRes))
             {
-                List<SonarrDiskspaceResult> sdr = SonarrHttpClient.ConvertToSonarrResults<SonarrDiskspaceResult>(strRes, out bool iso);
+                List<SonarrDiskspaceResult> sdr = SonarrHttp.ConvertToSonarrResults<SonarrDiskspaceResult>(strRes, out bool iso);
                 base.WriteObject(sdr, true);
             }
         }

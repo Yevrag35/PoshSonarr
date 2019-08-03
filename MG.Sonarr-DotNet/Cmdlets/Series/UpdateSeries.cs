@@ -88,21 +88,13 @@ namespace MG.Sonarr.Cmdlets.Series
             }
 
             string jsonBody = JsonConvert.SerializeObject(job, serializer);
-            base.WriteDebug(jsonBody);
 
             string full = string.Format("/series/{0}", this.InputObject.SeriesId);
-            try
+            string outRes = base.TryPutSonarrResult(full, jsonBody);
+            if (!string.IsNullOrEmpty(outRes))
             {
-                string outRes =_api.SonarrPut(full, jsonBody);
-                if (!string.IsNullOrEmpty(outRes))
-                {
-                    var series = SonarrHttpClient.ConvertToSeriesResult(outRes);
-                    base.WriteObject(series);
-                }
-            }
-            catch (Exception e)
-            {
-                base.WriteError(e, ErrorCategory.InvalidResult, full);
+                var series = SonarrHttp.ConvertToSeriesResult(outRes);
+                base.WriteObject(series);
             }
         }
 

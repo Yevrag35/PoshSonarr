@@ -16,6 +16,7 @@ namespace MG.Sonarr.Cmdlets
     {
         #region FIELDS/CONSTANTS
         private const string EP = "/tag/{0}";
+        private bool _force;
 
         #endregion
 
@@ -24,7 +25,11 @@ namespace MG.Sonarr.Cmdlets
         public int Id { get; set; }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter Force { get; set; }
+        public SwitchParameter Force
+        {
+            get => _force;
+            set => _force = value;
+        }
 
         #endregion
 
@@ -34,9 +39,9 @@ namespace MG.Sonarr.Cmdlets
         protected override void ProcessRecord()
         {
             string ep = string.Format(EP, this.Id);
-            if (this.Force || base.ShouldProcess(string.Format("Tag - {0}", this.Id, "Remove")))
+            if (_force || base.ShouldProcess(string.Format("Tag - {0}", this.Id, "Remove")))
             {
-                _api.SonarrDelete(ep);
+                base.TryDeleteSonarrResult(EP);
             }
         }
 

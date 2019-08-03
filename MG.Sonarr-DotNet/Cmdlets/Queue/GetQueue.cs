@@ -39,7 +39,7 @@ namespace MG.Sonarr.Cmdlets
                     string jsonRes = base.TryGetSonarrResult(ep);
                     if (!string.IsNullOrEmpty(jsonRes))
                     {
-                        var oneRes = SonarrHttpClient.ConvertToSonarrResult<QueueItem>(jsonRes);
+                        var oneRes = SonarrHttp.ConvertToSonarrResult<QueueItem>(jsonRes);
                         base.WriteObject(oneRes);
                     }
                 }
@@ -49,7 +49,7 @@ namespace MG.Sonarr.Cmdlets
                 string jsonRes = base.TryGetSonarrResult(EP);
                 if (!string.IsNullOrEmpty(jsonRes))
                 {
-                    var resses = SonarrHttpClient.ConvertToSonarrResults<QueueItem>(jsonRes, out bool iso);
+                    var resses = SonarrHttp.ConvertToSonarrResults<QueueItem>(jsonRes, out bool iso);
                     base.WriteObject(resses, true);
                 }
             }
