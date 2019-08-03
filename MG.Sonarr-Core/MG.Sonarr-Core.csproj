@@ -29,7 +29,7 @@
   </PropertyGroup>
 
 	<ItemGroup>
-		<Compile Include="..\MG.Sonarr-DotNet\**\*.cs" Exclude="..\MG.Sonarr-DotNet\obj\**\*.cs;..\MG.Sonarr-DotNet\bin\**\*.cs;..\MG.Sonarr-DotNet\Properties\AssemblyInfo.cs;..\MG.Sonarr-DotNet\Cmdlets\Connection\Exclude\*-DotNet.cs" />
+		<Compile Include="..\MG.Sonarr-DotNet\**\*.cs" Exclude="..\MG.Sonarr-DotNet\obj\**\*.cs;..\MG.Sonarr-DotNet\bin\**\*.cs;..\MG.Sonarr-DotNet\Properties\AssemblyInfo.cs;..\MG.Sonarr-DotNet\Cmdlets\Connection\Exclude\*-DotNet.cs;..\MG.Sonarr-DotNet\**\*-BETA.cs" />
 	</ItemGroup>
 
   <ItemGroup>
@@ -39,6 +39,10 @@
 
   <ItemGroup>
     <Folder Include="Assemblies\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\MG.Sonarr-DotNet\Results\Quality\QualityDefinition.cs" />
   </ItemGroup>
 
   <ItemGroup>
