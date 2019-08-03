@@ -30,6 +30,7 @@ namespace MG.Sonarr
             DefaultValueHandling = DefaultValueHandling.Populate,
             FloatParseHandling = FloatParseHandling.Decimal,
             Formatting = Formatting.Indented,
+            MissingMemberHandling = MissingMemberHandling.Ignore,
             NullValueHandling = NullValueHandling.Ignore,
             PreserveReferencesHandling = PreserveReferencesHandling.Objects,
             ObjectCreationHandling = ObjectCreationHandling.Replace,
