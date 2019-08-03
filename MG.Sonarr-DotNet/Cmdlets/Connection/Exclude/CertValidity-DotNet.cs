@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Security;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -16,7 +17,8 @@ namespace MG.Sonarr.Cmdlets
         private void CheckCertificateValidity(ref HttpClientHandler handler)
         {
             if (_skipCert)
-                ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+                handler.ServerCertificateCustomValidationCallback = delegate { return true; };
+            
         }
     }
 }
