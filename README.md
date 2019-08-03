@@ -19,7 +19,15 @@ Connect-Sonarr -Server "MEDIASERVER" -ApiKey "xxxxxxxxxxxxxxxx" -PassThru
 Connect-Sonarr -Url "https://sonarr-api.cloud.com" -ApiKey "xxxxxxxxxxxx" -PassThru
 
 # If you have a reverse proxy that strips away the "/api" path, use the "-NoApiPrefix" switch.
+
+# If you have a reverse proxy URL base set, include that in the -SonarrUrl parameter or use the new "-ReverseProxyUrlBase" parameter when combined with a HostName.
+
+Connect-Sonarr -Url "http://sonarr:8989/sonarr" ...
+# or
+Connect-Sonarr -HostName "mediaserver" -ReverseProxyUrlBase "sonarr" ...
 ```
+
+[See the wiki](https://github.com/Yevrag35/PoshSonarr/wiki) for more information about reverse proxy situations.
 
 An example of some commands in action:
 
