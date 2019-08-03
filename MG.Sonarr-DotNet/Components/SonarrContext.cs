@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MG.Sonarr.Results;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,8 @@ namespace MG.Sonarr
 
         [Obsolete]
         public static bool NoApiPrefix = false;
+
+        public static List<QualityDefinition> Qualities { get; set; }
 
         public static ISonarrUrl SonarrUrl { get; set; }
 

@@ -137,6 +137,15 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
+        protected override void EndProcessing()
+        {
+            string qStr = base.TryGetSonarrResult("/qualitydefinition");
+            if (!string.IsNullOrEmpty(qStr))
+            {
+                Context.Qualities = SonarrHttp.ConvertToSonarrResults<QualityDefinition>(qStr, out bool iso);
+            }
+        }
+
         #endregion
 
         #region PRIVATE/BACKEND METHODS

@@ -36,6 +36,9 @@
     <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MG.Dynamic">
+      <HintPath>..\..\DynamicParameterDll\DynamicParameter-DotNet\bin\Release\MG.Dynamic.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.PowerShell.Commands.Utility, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\Microsoft.PowerShell.Commands.Utility\v4.0_3.0.0.0__31bf3856ad364e35\Microsoft.PowerShell.Commands.Utility.dll</HintPath>
@@ -70,10 +73,12 @@
     <Compile Include="Cmdlets\Commands\InvokeSeriesSearch.cs" />
     <None Include="Cmdlets\Connection\Exclude\CertValidity-Core.cs" />
     <Compile Include="Cmdlets\Connection\Exclude\CertValidity-DotNet.cs" />
+    <Compile Include="Cmdlets\Profiles\NewQualityProfile.cs" />
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <Compile Include="Components\SonarrHttp.cs" />
     <Compile Include="Objects\Interfaces\ISonarrUrl.cs" />
     <Compile Include="Objects\SonarrUrl.cs" />
+    <Compile Include="Results\Quality\QualityDefinition.cs" />
     <Compile Include="Results\Updates\Update.cs" />
     <Compile Include="Cmdlets\Connection\ConnectInstance.cs" />
     <Compile Include="Cmdlets\Episodes\GetEpisode.cs" />
