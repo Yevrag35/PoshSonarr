@@ -88,7 +88,6 @@ namespace MG.Sonarr.Cmdlets.Series
             }
 
             string jsonBody = JsonConvert.SerializeObject(job, serializer);
-            //base.WriteDebug(jsonBody);
 
             string full = string.Format("/series/{0}", this.InputObject.SeriesId);
             string outRes = base.TryPutSonarrResult(full, jsonBody);

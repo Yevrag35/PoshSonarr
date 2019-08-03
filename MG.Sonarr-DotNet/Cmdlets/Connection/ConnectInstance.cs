@@ -116,9 +116,6 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            //UriBuilder url = this.ParameterSetName == "ByServerName"
-            //    ? FormatUri(this.SonarrServerName, this.PortNumber, this.ReverseProxyUriBase, _useSsl, _noApiPrefix)
-            //    : FormatUri(this.SonarrUrl, _noApiPrefix);
 
             Context.SonarrUrl = this.ParameterSetName == "ByServerName"
                 ? new SonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
@@ -143,53 +140,6 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PRIVATE/BACKEND METHODS
-        
-
-        //public static UriBuilder FormatUri(Uri sonarrUrl, bool noApiPrefix)
-        //{
-        //    var builder = new UriBuilder(sonarrUrl);
-        //    if (!noApiPrefix && !builder.Path.EndsWith("/api", StringComparison.CurrentCultureIgnoreCase))
-        //    {
-        //        builder.Path = builder.Path.EndsWith("/")
-        //            ? builder.Path = builder.Path + "api"
-        //            : builder.Path = builder.Path + "/api";
-        //    }
-
-        //    else if (noApiPrefix && builder.Path.EndsWith("/api", StringComparison.CurrentCultureIgnoreCase))
-        //        builder.Path = builder.Path.TrimEnd(SLASH_API);
-
-        //    return builder;
-        //}
-
-        //public static UriBuilder FormatUri(string serverName, int portNumber, string reverseProxyUriBase, bool useSsl, bool noApiPrefix)
-        //{
-        //    string scheme = !useSsl
-        //            ? "http"
-        //            : "https";
-
-        //    var url = new UriBuilder()
-        //    {
-        //        Scheme = scheme,
-        //        Host = serverName,
-        //        Port = portNumber
-        //    };
-        //    if (!noApiPrefix)
-        //    {
-        //        url.Path = "/api";
-        //    }
-
-        //    if (!string.IsNullOrEmpty(reverseProxyUriBase))
-        //    {
-        //        reverseProxyUriBase = reverseProxyUriBase.Trim(SLASH);
-        //        if (reverseProxyUriBase.IndexOf("/api", StringComparison.CurrentCultureIgnoreCase) >= 0 &&
-        //            url.Path.Contains("/api"))
-        //        {
-        //            reverseProxyUriBase = reverseProxyUriBase.Replace("/api", string.Empty);
-        //        }
-        //        url.Path = reverseProxyUriBase + url.Path;
-        //    }
-        //    return url;
-        //}
 
         private string GetStatusString(ApiCaller caller)
         {

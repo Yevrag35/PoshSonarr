@@ -49,11 +49,6 @@ namespace MG.Sonarr.Cmdlets
         /// <exception cref="Exception"/>
         protected string TrySonarrConnect()
         {
-            //string endpoint = Context.SonarrUrl.Path + CONNECT_EP;
-            //string full = string.Format(Context.ZERO_ONE, Context.SonarrUrl.BaseUrl, endpoint);
-
-            //string msg = string.Format(CONNECT_MSG, full);
-            //base.WriteDebug(msg);
             this.WriteApiDebug(CONNECT_EP, HttpMethod.Get, out string apiPath);
 
             Task<HttpResponseMessage> task = Context.ApiCaller.GetAsync(apiPath, HttpCompletionOption.ResponseContentRead);
