@@ -70,6 +70,7 @@
     <Compile Include="Cmdlets\Commands\InvokeSeriesSearch.cs" />
     <None Include="Cmdlets\Connection\Exclude\CertValidity-Core.cs" />
     <Compile Include="Cmdlets\Connection\Exclude\CertValidity-DotNet.cs" />
+    <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <Compile Include="Components\SonarrHttp.cs" />
     <Compile Include="Objects\Interfaces\ISonarrUrl.cs" />
     <Compile Include="Objects\SonarrUrl.cs" />

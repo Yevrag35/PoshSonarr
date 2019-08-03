@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 
 namespace MG.Sonarr.Results
 {
@@ -15,6 +16,8 @@ namespace MG.Sonarr.Results
         private const string CHANGES = "changes";
         private const string FIXED = "fixed";
         private const string NEW = "new";
+
+        private const string REGEX = @"\D{1,}\.\D{1,}\.((?:\d|\.){1,})\.";
 
         [JsonExtensionData]
         private IDictionary<string, JToken> _additionalData;
@@ -28,10 +31,20 @@ namespace MG.Sonarr.Results
         public bool Installable { get; set; }
         public bool Latest { get; set; }
         public Uri Url { get; set; }
+        public Version Version { get; private set; }
 
         [OnDeserialized]
         private void OnDeserialization(StreamingContext streamingContext)
         {
+            if (!string.IsNullOrEmpty(this.FileName))
+            {
+                Match match = Regex.Match(this.FileName, REGEX);
+                if (match.Success)
+                {
+                    this.Version = Version.Parse(match.Groups[1].Value);
+                }
+            }
+
             if (_additionalData.ContainsKey(CHANGES))
             {
                 JToken changes = _additionalData[CHANGES];
