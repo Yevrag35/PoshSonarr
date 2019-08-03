@@ -10,7 +10,7 @@ using System.Text;
 
 namespace MG.Sonarr
 {
-    public static class Context
+    public static partial class Context
     {
         #region FIELDS/CONSTANTS
         private const string SLASH_STR = "/";
@@ -35,8 +35,6 @@ namespace MG.Sonarr
 
         [Obsolete]
         public static bool NoApiPrefix = false;
-
-        public static List<QualityDefinition> Qualities { get; set; }
 
         public static ISonarrUrl SonarrUrl { get; set; }
 

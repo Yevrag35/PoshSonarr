@@ -111,7 +111,7 @@ namespace MG.Sonarr.Cmdlets
             if (_allowRedirect)
                 base.WriteWarning(BaseSonarrHttpException.CAUTION + BaseSonarrHttpException.HOW_CAUTION);
 
-            Context.UriBase = null;
+            Context.SonarrUrl = null;
         }
 
         protected override void ProcessRecord()
@@ -134,15 +134,6 @@ namespace MG.Sonarr.Cmdlets
                 SonarrStatusResult sr = this.GetStatusResult(status);
                 if (sr != null)
                     base.WriteObject(sr);
-            }
-        }
-
-        protected override void EndProcessing()
-        {
-            string qStr = base.TryGetSonarrResult("/qualitydefinition");
-            if (!string.IsNullOrEmpty(qStr))
-            {
-                Context.Qualities = SonarrHttp.ConvertToSonarrResults<QualityDefinition>(qStr, out bool iso);
             }
         }
 
