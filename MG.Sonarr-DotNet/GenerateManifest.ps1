@@ -76,7 +76,7 @@ foreach ($cs in $csFiles)
 [string[]]$allDlls = Get-ChildItem $References -Include *.dll -Exclude 'System.Management.Automation.dll' -Recurse | Select-Object -ExpandProperty Name;
 [string[]]$allFormats = $allFiles | Where-Object -FilterScript { $_.Extension -eq ".ps1xml" } | Select-Object -ExpandProperty Name;
 
-$manifestFile = "PoshSonarr.psd1"
+$manifestFile = "PoshSonarr-Beta.psd1"
 
 $allFiles | Copy-Item -Destination $DebugDirectory -Force;
 $modPath = Join-Path $DebugDirectory $manifestFile;

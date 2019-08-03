@@ -69,6 +69,13 @@ namespace MG.Sonarr
         Never
     }
 
+    public enum FieldType
+    {
+        Password,
+        Select,
+        TextBox
+    }
+
     public enum FileDataType
     {
         None,
@@ -98,7 +105,7 @@ namespace MG.Sonarr
     {
         PreferAndUpgrade,
         DoNotUpgrade,
-        DoNotPreferj
+        DoNotPrefer
     }
 
     public enum ProxyType

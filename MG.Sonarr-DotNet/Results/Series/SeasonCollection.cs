@@ -25,7 +25,7 @@ namespace MG.Sonarr.Results
 
         #region PROPERTIES
         public int Count => _list.Count;
-        public bool IsReadOnly => false;
+        bool ICollection<Season>.IsReadOnly => false;
 
         #endregion
 

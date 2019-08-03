@@ -76,12 +76,15 @@
     <Compile Include="Cmdlets\Connection\Exclude\CertValidity-DotNet.cs" />
     <None Include="Cmdlets\Profiles\Exclude\NewQualityProfile-BETA.cs" />
     <None Include="Cmdlets\Connection\Exclude\ConnectInstance-BETA.cs" />
+    <Compile Include="Cmdlets\DownloadClient\GetDownloadClient.cs" />
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
     <Compile Include="Components\SonarrHttp.cs" />
     <Compile Include="Objects\Interfaces\ISonarrUrl.cs" />
     <Compile Include="Objects\SonarrUrl.cs" />
     <None Include="Results\Quality\QualityDefinition-BETA.cs" />
+    <Compile Include="Results\DownloadClient\DownloadClient.cs" />
+    <Compile Include="Results\DownloadClient\DownloadClientSetting.cs" />
     <Compile Include="Results\Updates\Update.cs" />
     <Compile Include="Cmdlets\Connection\ConnectInstance.cs" />
     <Compile Include="Cmdlets\Episodes\GetEpisode.cs" />
@@ -151,6 +154,8 @@
     <None Include="TypeFormats\CalendarEntry.ps1xml" />
     <None Include="TypeFormats\CommandResult.ps1xml" />
     <None Include="TypeFormats\DiskspaceResult.ps1xml" />
+    <None Include="TypeFormats\DownloadClientSetting.ps1xml" />
+    <None Include="TypeFormats\DownloadClient.ps1xml" />
     <None Include="TypeFormats\Episode.ps1xml" />
     <None Include="TypeFormats\EpisodeFile.ps1xml" />
     <None Include="TypeFormats\QualityItem.ps1xml" />
