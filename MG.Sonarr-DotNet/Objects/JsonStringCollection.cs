@@ -47,6 +47,8 @@ namespace MG.Sonarr
                 }
             }
         }
+
+        public void Clear() => _list.Clear();
         public bool Contains(string term) => _list.Contains(term, new IgnoreCase());
         internal bool Contains(JToken token) => token != null
             ? _list.Contains(token.ToObject<string>(), new IgnoreCase())

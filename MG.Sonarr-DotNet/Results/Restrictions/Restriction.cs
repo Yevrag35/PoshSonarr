@@ -15,8 +15,8 @@ namespace MG.Sonarr.Results
         private const string REQUIRED = "required";
         private static readonly string[] COMMA_ARR = new string[1] { COMMA };
 
-        private bool ContainsIgnored => _additionalData.ContainsKey(IGNORED);
-        private bool ContainsRequired => _additionalData.ContainsKey(REQUIRED);
+        private bool ContainsIgnored => _additionalData != null && _additionalData.ContainsKey(IGNORED);
+        private bool ContainsRequired => _additionalData != null && _additionalData.ContainsKey(REQUIRED);
 
         [JsonExtensionData]
         private IDictionary<string, JToken> _additionalData;
@@ -31,8 +31,26 @@ namespace MG.Sonarr.Results
 
         public Restriction()
         {
+            _additionalData = new Dictionary<string, JToken>();
             this.Ignored = new JsonStringCollection();
             this.Required = new JsonStringCollection();
+        }
+
+        internal Restriction(IDictionary<string, object> parameters)
+        {
+            _additionalData = new Dictionary<string, JToken>();
+            this.Tags = new HashSet<int>();
+            foreach (var kvp in parameters)
+            {
+                if (kvp.Key.Equals("IgnoredTerms") && kvp.Value is string[] igTerms)
+                {
+                    this.Ignored = igTerms;
+                }
+                else if (kvp.Key.Equals("RequiredTerms") && kvp.Value is string[] reqTerms)
+                {
+                    this.Required = reqTerms;
+                }
+            }
         }
 
         [OnDeserialized]

@@ -9,19 +9,27 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Get, "Release", ConfirmImpact = ConfirmImpact.None)]
+    [Cmdlet(VerbsCommon.Search, "Release", ConfirmImpact = ConfirmImpact.None)]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(Release))]
-    public class GetRelease : BaseSonarrCmdlet
+    public class SearchRelease : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
         private const string EP = "/release?episodeId={0}";
+        private bool _exclude;
 
         #endregion
 
         #region PARAMETERS
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, DontShow = true)]
         public long EpisodeId { get; set; }
+
+        [Parameter(Mandatory = false)]
+        public SwitchParameter ExcludeRejected
+        {
+            get => _exclude;
+            set => _exclude = value;
+        }
 
         #endregion
 
@@ -35,7 +43,11 @@ namespace MG.Sonarr.Cmdlets
             if (!string.IsNullOrEmpty(jsonRes))
             {
                 var results = SonarrHttp.ConvertToSonarrResults<Release>(jsonRes, out bool iso);
-                base.WriteObject(results, true);
+                if (_exclude)
+                    base.WriteObject(results.FindAll(x => !x.Rejected), true);
+
+                else
+                    base.WriteObject(results, true);
             }
         }
 

@@ -78,6 +78,7 @@
     <None Include="Cmdlets\Connection\Exclude\ConnectInstance-BETA.cs" />
     <Compile Include="Cmdlets\DownloadClient\GetDownloadClient.cs" />
     <Compile Include="Cmdlets\Restriction\GetRestriction.cs" />
+    <Compile Include="Cmdlets\Restriction\NewRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\RemoveRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\UpdateRestriction.cs" />
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
@@ -167,6 +168,7 @@
     <None Include="TypeFormats\QualityItem.ps1xml" />
     <None Include="TypeFormats\QualityProfile.ps1xml" />
     <None Include="TypeFormats\QueueItem.ps1xml" />
+    <None Include="TypeFormats\Release.ps1xml" />
     <None Include="TypeFormats\Restriction.ps1xml" />
     <None Include="TypeFormats\RootFolder.ps1xml" />
     <None Include="TypeFormats\Season.ps1xml" />

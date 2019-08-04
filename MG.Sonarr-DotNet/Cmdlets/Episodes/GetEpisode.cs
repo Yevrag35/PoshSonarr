@@ -22,18 +22,18 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
-        [Parameter(Mandatory = true, Position = 0, ValueFromPipelineByPropertyName = true, ParameterSetName = "BySeriesId")]
-        [Parameter(Mandatory = true, Position = 0, ValueFromPipelineByPropertyName = true, ParameterSetName = "BySeriesIdAbsoluteEp")]
-        [Parameter(Mandatory = true, Position = 0, ValueFromPipelineByPropertyName = true, ParameterSetName = "BySeriesIdSeasonEp")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "BySeriesId")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "BySeriesIdAbsoluteEp")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "BySeriesIdSeasonEp")]
         public long SeriesId { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "ByEpisodeId", ValueFromPipelineByPropertyName = true)]
         public long EpisodeId { get; set; }
 
-        [Parameter(Mandatory = true, ParameterSetName = "BySeriesIdAbsoluteEp")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesIdAbsoluteEp")]
         public int[] AbsoluteEpisodeNumber { get; set; }
 
-        [Parameter(Mandatory = true, ParameterSetName = "BySeriesIdSeasonEp")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesIdSeasonEp")]
         public EpisodeIdentifier[] EpisodeIdentifier { get; set; }
 
         #endregion
