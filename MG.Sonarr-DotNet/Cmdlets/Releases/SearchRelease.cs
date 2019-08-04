@@ -12,6 +12,7 @@ namespace MG.Sonarr.Cmdlets
     [Cmdlet(VerbsCommon.Search, "Release", ConfirmImpact = ConfirmImpact.None)]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(Release))]
+    [Alias("Get-Release")]
     public class SearchRelease : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS

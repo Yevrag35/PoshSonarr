@@ -52,6 +52,8 @@ As of 7/25/19, I'm missing only the following commands:
 
 The following is the list of the working cmdlets:
 
+* _Commands in __bold__ are new in __v1.2.0___
+
 1. Add-SonarrRelease
 1. Add-SonarrSeries
 1. Connect-SonarrInstance (Connect-Sonarr)
@@ -59,16 +61,18 @@ The following is the list of the working cmdlets:
 1. Get-SonarrCalendar
 1. Get-SonarrCommand
 1. Get-SonarrDiskspace
+1. __Get-SonarrDownloadClient__
 1. Get-SonarrEpisode
 1. Get-SonarrEpisodeFile
 1. Get-SonarrHistory
 1. Get-SonarrQualityProfile
 1. Get-SonarrQueue
-1. Get-SonarrRelease
+1. __Get-SonarrRestriction__
 1. Get-SonarrRootFolder
 1. Get-SonarrSeries
 1. Get-SonarrStatus
 1. Get-SonarrTag
+1. __Get-SonarrUpdate__
 1. Get-SonarrWantedMissing
 1. Invoke-SonarrBackup (Backup-Sonarr)
 1. Invoke-SonarrEpisodeSearch
@@ -78,11 +82,16 @@ The following is the list of the working cmdlets:
 1. Invoke-SonarrSeriesRescan
 1. Invoke-SonarrSeriesSearch
 1. New-SonarrReleasePush
+1. __New-SonarrRestriction__
 1. New-SonarrTag
 1. Remove-SonarrEpisodeFile
+1. __Remove-SonarrRestriction__
 1. Remove-SonarrSeries
 1. Remove-SonarrTag
+1. __Search-SonarrRelease__
 1. Search-SonarrSeries
 1. Set-SonarrEpisode
+1. __Set-SonarrRestriction__
 1. Set-SonarrTag
+1. __Update-SonarrRestriction__
 1. Update-SonarrSeries
