@@ -80,10 +80,14 @@
     <Compile Include="Cmdlets\Restriction\GetRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\NewRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\RemoveRestriction.cs" />
+    <Compile Include="Cmdlets\Restriction\SetRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\UpdateRestriction.cs" />
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
     <Compile Include="Components\SonarrHttp.cs" />
+    <Compile Include="Objects\AddRemoveHashTable.cs" />
+    <Compile Include="Objects\IgnoreCase.cs" />
+    <Compile Include="Objects\ReplaceHashTable.cs" />
     <Compile Include="Objects\EpisodeIdentifier.cs" />
     <Compile Include="Objects\Interfaces\ISonarrUrl.cs" />
     <Compile Include="Objects\JsonStringCollection.cs" />

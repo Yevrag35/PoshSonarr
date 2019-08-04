@@ -15,7 +15,7 @@ namespace MG.Sonarr.Cmdlets
     public class NewRestriction : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string SHOULD_MSG = "Restriction: Ignored - {{ {0} }}, Required - {{ {1} }}";
+        internal const string SHOULD_MSG = "Restriction: Ignored - {{ {0} }}, Required - {{ {1} }}";
 
         #endregion
 

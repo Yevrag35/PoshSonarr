@@ -35,6 +35,7 @@ namespace MG.Sonarr
         #endregion
 
         #region PUBLIC METHODS
+
         public void Add(params string[] ignoredTerms)
         {
             var ieq = new IgnoreCase();
@@ -47,7 +48,14 @@ namespace MG.Sonarr
                 }
             }
         }
+        internal void Add(object obj)
+        {
+            if (obj is string str)
+                _list.Add(str);
 
+            else if (obj is string[] strs)
+                _list.AddRange(strs);
+        }
         public void Clear() => _list.Clear();
         public bool Contains(string term) => _list.Contains(term, new IgnoreCase());
         internal bool Contains(JToken token) => token != null
@@ -57,6 +65,27 @@ namespace MG.Sonarr
         public JToken GetAsToken(string term) => JToken.FromObject(_list.Find(x => x.Equals(term)));
         public IEnumerator<string> GetEnumerator() => _list.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
+
+        public void MergeCollections(JsonStringCollection jsonCol)
+        {
+            if (!jsonCol.ToJson().Equals(this.ToJson()))
+            {
+                for (int i = 0; i < jsonCol.Count; i++)
+                {
+                    string str = jsonCol[i];
+                    if (!this.Contains(str))
+                        _list.Add(str);
+                }
+
+                for (int r = _list.Count - 1; r >= 0; r--)
+                {
+                    string rStr = _list[r];
+                    if (!jsonCol.Contains(rStr))
+                        _list.Remove(rStr);
+                }
+            }
+        }
+
         public void Remove(params string[] ignoredTerms) => _list.RemoveAll(x => ignoredTerms.Contains(x));
         internal bool Remove(JToken token) => token != null
             ? _list.Remove(token.ToObject<string>())
@@ -72,11 +101,5 @@ namespace MG.Sonarr
         public static implicit operator JsonStringCollection(Collection<string> colStrs) => new JsonStringCollection(colStrs);
 
         #endregion
-
-        private class IgnoreCase : IEqualityComparer<string>
-        {
-            public bool Equals(string x, string y) => x.Equals(y, StringComparison.CurrentCultureIgnoreCase);
-            public int GetHashCode(string x) => x.GetHashCode();
-        }
     }
 }
