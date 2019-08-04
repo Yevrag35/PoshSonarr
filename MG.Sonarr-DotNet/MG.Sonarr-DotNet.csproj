@@ -83,6 +83,7 @@
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
     <Compile Include="Components\SonarrHttp.cs" />
+    <Compile Include="Objects\EpisodeIdentifier.cs" />
     <Compile Include="Objects\Interfaces\ISonarrUrl.cs" />
     <Compile Include="Objects\JsonStringCollection.cs" />
     <Compile Include="Objects\SonarrUrl.cs" />
