@@ -77,14 +77,19 @@
     <None Include="Cmdlets\Profiles\Exclude\NewQualityProfile-BETA.cs" />
     <None Include="Cmdlets\Connection\Exclude\ConnectInstance-BETA.cs" />
     <Compile Include="Cmdlets\DownloadClient\GetDownloadClient.cs" />
+    <Compile Include="Cmdlets\Restriction\GetRestriction.cs" />
+    <Compile Include="Cmdlets\Restriction\RemoveRestriction.cs" />
+    <Compile Include="Cmdlets\Restriction\UpdateRestriction.cs" />
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
     <Compile Include="Components\SonarrHttp.cs" />
     <Compile Include="Objects\Interfaces\ISonarrUrl.cs" />
+    <Compile Include="Objects\JsonStringCollection.cs" />
     <Compile Include="Objects\SonarrUrl.cs" />
     <None Include="Results\Quality\QualityDefinition-BETA.cs" />
     <Compile Include="Results\DownloadClient\DownloadClient.cs" />
     <Compile Include="Results\DownloadClient\DownloadClientSetting.cs" />
+    <Compile Include="Results\Restrictions\Restriction.cs" />
     <Compile Include="Results\Updates\Update.cs" />
     <Compile Include="Cmdlets\Connection\ConnectInstance.cs" />
     <Compile Include="Cmdlets\Episodes\GetEpisode.cs" />
@@ -161,6 +166,7 @@
     <None Include="TypeFormats\QualityItem.ps1xml" />
     <None Include="TypeFormats\QualityProfile.ps1xml" />
     <None Include="TypeFormats\QueueItem.ps1xml" />
+    <None Include="TypeFormats\Restriction.ps1xml" />
     <None Include="TypeFormats\RootFolder.ps1xml" />
     <None Include="TypeFormats\Season.ps1xml" />
     <None Include="TypeFormats\SeriesImage.ps1xml" />

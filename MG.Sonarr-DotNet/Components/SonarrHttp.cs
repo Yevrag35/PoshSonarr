@@ -3,11 +3,14 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -73,7 +76,22 @@ namespace MG.Sonarr
             return (T)JsonConvert.DeserializeObject(jsonResult, typeof(T), Serializer);
         }
 
-        public static List<T> ConvertToSonarrResults<T>(string jsonResult, out bool isSingleObject) where T : ISonarrResult
+        public static List<T> ConvertToSonarrResults<T>(string jsonResult) where T : ISonarrResult
+        {
+            var list = new List<T>();
+            if (IsJsonArray(jsonResult))
+            {
+                list.AddRange(JsonConvert.DeserializeObject<List<T>>(jsonResult, Serializer));
+            }
+            else
+            {
+                list.Add(JsonConvert.DeserializeObject<T>(jsonResult, Serializer));
+            }
+
+            return list;
+        }
+
+        internal static List<T> ConvertToSonarrResults<T>(string jsonResult, out bool isSingleObject) where T : ISonarrResult
         {
             var list = new List<T>();
             if (IsJsonArray(jsonResult))
@@ -88,6 +106,39 @@ namespace MG.Sonarr
             isSingleObject = list.Count == 1;
             return list;
         }
+
+#if DEBUG
+        [Obsolete]
+        public static object ConvertToSonarrResult(string jsonResult, Type convertTo)
+        {
+            var currentMethod = MethodBase.GetCurrentMethod();
+            if (!convertTo.GetInterfaces().Contains(typeof(ISonarrResult)))
+                throw new InvalidCastException("The parameter for \"convertTo\" does not inherit the interface \"ISonarrResult\".");
+
+            MethodInfo otherMeth = typeof(SonarrHttp).GetMethod(currentMethod.Name, new Type[1] { typeof(string) });
+            MethodInfo genMeth = otherMeth.MakeGenericMethod(convertTo);
+            return genMeth.Invoke(null, new object[1] { jsonResult });
+        }
+
+        [Obsolete]
+        public static List<object> ConvertToSonarrResults(string jsonResult, Type convertTo)
+        {
+            var currentMethod = MethodBase.GetCurrentMethod();
+            if (!convertTo.GetInterfaces().Contains(typeof(ISonarrResult)))
+                throw new InvalidCastException("The parameter for \"convertTo\" does not inherit the interface \"ISonarrResult\".");
+
+            MethodInfo otherMeth = typeof(SonarrHttp).GetMethod(currentMethod.Name, new Type[1] { typeof(string) });
+            MethodInfo genMeth = otherMeth.MakeGenericMethod(convertTo);
+            object result = genMeth.Invoke(null, new object[1] { jsonResult });
+            if (result is IEnumerable ienum)
+            {
+                var list = ienum.Cast<object>().ToList();
+                return list;
+            }
+            else
+                return null;
+        }
+#endif
 
         public static bool IsJsonArray(string jsonStr)
         {
