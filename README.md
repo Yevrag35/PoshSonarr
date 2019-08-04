@@ -67,6 +67,7 @@ The following is the list of the working cmdlets:
 1. Get-SonarrHistory
 1. Get-SonarrQualityProfile
 1. Get-SonarrQueue
+1. Get-SonarrRelease - * _renamed to Search-SonarrRelease (left behind as alias...)_ *
 1. __Get-SonarrRestriction__
 1. Get-SonarrRootFolder
 1. Get-SonarrSeries
