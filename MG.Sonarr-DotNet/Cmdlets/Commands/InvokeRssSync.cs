@@ -9,6 +9,10 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets.Commands
 {
+    /// <summary>
+    /// <para type="synopsis">Execute an RSS sync.</para>
+    /// <para type="description">Instructs to perform an RSS sync on all specified RSS feeds.</para>
+    /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke, "RssSync", ConfirmImpact = ConfirmImpact.None)]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(CommandOutput))]
@@ -17,11 +21,6 @@ namespace MG.Sonarr.Cmdlets.Commands
     {
         #region FIELDS/CONSTANTS
         protected override string Command => "RssSync";
-
-        #endregion
-
-        #region PARAMETERS
-
 
         #endregion
 

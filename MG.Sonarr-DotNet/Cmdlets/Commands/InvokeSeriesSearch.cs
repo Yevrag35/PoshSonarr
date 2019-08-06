@@ -9,6 +9,10 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets.Commands
 {
+    /// <summary>
+    /// <para type="synopsis">Executes a series search.</para>
+    /// <para type="description">Instructs Sonarr to perform a series search for the specified seriesID.</para>
+    /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke, "SeriesSearch", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(CommandOutput))]
@@ -21,9 +25,15 @@ namespace MG.Sonarr.Cmdlets.Commands
         #endregion
 
         #region PARAMETERS
+        /// <summary>
+        /// <para type="description">The series ID to perform the series search on.</para>
+        /// </summary>
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
         public long SeriesId { get; set; }
 
+        /// <summary>
+        /// <para type="description">Specifies to bypass the confirmation prompt.</para>
+        /// </summary>
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 

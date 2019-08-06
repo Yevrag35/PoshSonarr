@@ -9,6 +9,10 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
+    /// <summary>
+    /// <para type="synopsis">Executes a series rescan.</para>
+    /// <para type="description">Instructs Sonarr to perform a series rescan on all series or a specified series by its ID.</para>
+    /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke, "SeriesRescan", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
     [OutputType(typeof(CommandOutput))]
     [Alias("Start-SeriesRescan")]
@@ -21,9 +25,15 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
+        /// <summary>
+        /// <para type="description">The optional series ID to perform the rescan on.</para>
+        /// </summary>
         [Parameter(Mandatory = false, Position = 0, ValueFromPipelineByPropertyName = true)]
         public long SeriesId { get; set; }
 
+        /// <summary>
+        /// <para type="description">Specifies to bypass the confirmation prompt.</para>
+        /// </summary>
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 

@@ -8,6 +8,18 @@ using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
 {
+    /// <summary>
+    /// <para type="synopsis">Gets any download client in Sonarr.</para>
+    /// <para type="description">Retrieves any/all of the download clients that have been created in Sonarr.</para>
+    /// <para type="description">By default, all clients are returned.</para>
+    /// <para type="description">You optionally specify to return clients by their download protocol or their ID's.</para>
+    /// </summary>
+    /// <example>
+    ///     <code>Get-SonarrDownloadClient Torrent</code>
+    /// </example>
+    /// <example>
+    ///     <code>Get-SonarrDownloadClient -Protocol Usenet, Torrent</code>
+    /// </example>
     [Cmdlet(VerbsCommon.Get, "DownloadClient", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByProtocol")]
     [OutputType(typeof(DownloadClient))]
     [CmdletBinding(PositionalBinding = false)]
@@ -20,9 +32,15 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
+        /// <summary>
+        /// <para type="description">Specifies to only retrive download clients whose download protocol match the given value(s).</para>
+        /// </summary>
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByProtocol")]
         public DownloadProtocol[] Protocol { get; set; }
 
+        /// <summary>
+        /// <para type="description">Retrieve the download client by their IDs.</para>
+        /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "ByClientId")]
         public int[] Id { get; set; }
 

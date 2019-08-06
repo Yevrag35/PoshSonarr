@@ -18,11 +18,20 @@ namespace MG.Sonarr.Cmdlets
     ///         The "/api" path is automatically appended unless the '-NoApiPrefix' parameter is used.  
     ///         If this command is not run first, all other cmdlets will throw an error.
     ///     </para>
-    ///     <para type="link" uri="https://github.com/Yevrag35/PoshSonarr/wiki/Connect-SonarrInstance">Online version:</para>
     /// </summary>
     /// <example>
-    ///     <para>Connect by 'HostName' and 'Port'</para>
-    ///     <code>Connect-Sonarr -Server "MEDIASERVER" -ApiKey "xxxxxxxxxxxxxxxx" -PassThru</code>
+    ///     <code>
+    ///         <para>Connect by 'HostName' and 'Port':</para>
+    ///         <para></para>
+    ///         <para>Connect-Sonarr -Server "MEDIASERVER" -ApiKey "xxxxxxxxxxxxxxxx" -PassThru</para>
+    ///     </code>
+    /// </example>
+    /// <example>
+    ///     <code>
+    ///         <para>Connect by explicit URL:</para>
+    ///         <para></para>
+    ///         <para>Connect-SonarrInstance -Url 'https://sonarr-api.cloud.com/api/custom' -ApiKey "xxxxxxxxxxxxxxxx" -NoApiPrefix</para>
+    ///     </code>
     /// </example>
     [Cmdlet(VerbsCommunications.Connect, "Instance", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByServerName")]
     [CmdletBinding(PositionalBinding = false)]
@@ -137,7 +146,7 @@ namespace MG.Sonarr.Cmdlets
         public ApiKey ApiKey { get; set; }
 
         /// <summary>
-        /// <para type="description">Indicates that all API requests should not append the '/api' uri base.</para>
+        /// <para type="description">Indicates that all API requests should not append '/api' to the end of the URL path.</para>
         /// </summary>
         [Parameter(Mandatory = false)]
         public SwitchParameter NoApiPrefix

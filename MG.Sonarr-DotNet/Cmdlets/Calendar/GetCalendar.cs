@@ -9,6 +9,19 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
+    /// <summary>
+    ///     <para type="synopsis">Retrieves Sonarr calendar entries.</para>
+    ///     <para type="description">
+    ///         Gets the calendar schedule for the specified date range.  By default, the range
+    ///         retrieved is between now and 7 days out.
+    ///     </para>
+    /// </summary>
+    /// <example>
+    ///     <code>Get-SonarrCalendar</code>
+    /// </example>
+    /// <example>
+    ///     <code>Get-SonarrCalendar -DayOfWeek Friday</code>
+    /// </example>
     [Cmdlet(VerbsCommon.Get, "Calendar", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "None")]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(CalendarEntry))]
@@ -22,15 +35,27 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
+        /// <summary>
+        ///     <para type="description">The start date to retrieve calendar entries from.</para>
+        /// </summary>
         [Parameter(Mandatory = false, Position = 0)]
         public DateTime StartDate = DateTime.Now;
 
+        /// <summary>
+        /// <para type="description">The end date to retrieve calendar entries from.</para>
+        /// </summary>
         [Parameter(Mandatory = false, Position = 1)]
         public DateTime EndDate = DateTime.Now.AddDays(7);
 
+        /// <summary>
+        /// <para type="description">Specifies the DayOfWeeks to get entries from the specified date range.</para>
+        /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "ByDayOfWeek")]
         public DayOfWeek[] DayOfWeek { get; set; }
 
+        /// <summary>
+        /// <para type="description">Return only the specified series from the calendar.</para>
+        /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "BySeriesTitle")]
         [Alias("Series")]
         [SupportsWildcards]

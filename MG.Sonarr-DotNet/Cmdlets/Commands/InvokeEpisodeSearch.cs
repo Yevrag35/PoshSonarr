@@ -9,6 +9,10 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets.Commands
 {
+    /// <summary>
+    /// <para type="synopsis">Instructs Sonarr to perform an episode search.</para>
+    /// <para type="description">Tells SOnarr to perform an episode search for the given episodes.</para>
+    /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke, "EpisodeSearch", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(CommandOutput))]
@@ -22,9 +26,15 @@ namespace MG.Sonarr.Cmdlets.Commands
         #endregion
 
         #region PARAMETERS
+        /// <summary>
+        /// <para type="description">The episode id(s) retrieved from 'Get-SonarrEpisode'.</para>
+        /// </summary>
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
         public long[] EpisodeId { get; set; }
 
+        /// <summary>
+        /// <para type="description">Specify to bypass confirmation prompts.</para>
+        /// </summary>
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 
