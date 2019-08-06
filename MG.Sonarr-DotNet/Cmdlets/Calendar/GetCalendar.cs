@@ -48,7 +48,7 @@ namespace MG.Sonarr.Cmdlets
         public DateTime EndDate = DateTime.Now.AddDays(7);
 
         /// <summary>
-        /// <para type="description">Specifies the DayOfWeeks to get entries from the specified date range.</para>
+        /// <para type="description">Specifies the DayOfWeeks to get entries in the specified date range.</para>
         /// </summary>
         [Parameter(Mandatory = true, ParameterSetName = "ByDayOfWeek")]
         public DayOfWeek[] DayOfWeek { get; set; }

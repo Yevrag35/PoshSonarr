@@ -81,6 +81,7 @@
     <None Include="Cmdlets\Profiles\Exclude\NewQualityProfile-BETA.cs" />
     <None Include="Cmdlets\Connection\Exclude\ConnectInstance-BETA.cs" />
     <Compile Include="Cmdlets\DownloadClient\GetDownloadClient.cs" />
+    <Compile Include="Cmdlets\FileSystem\SearchDirectory.cs" />
     <Compile Include="Cmdlets\Restriction\GetRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\NewRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\RemoveRestriction.cs" />
@@ -99,6 +100,8 @@
     <None Include="Results\Quality\QualityDefinition-BETA.cs" />
     <Compile Include="Results\DownloadClient\DownloadClient.cs" />
     <Compile Include="Results\DownloadClient\DownloadClientSetting.cs" />
+    <Compile Include="Results\FileSystem\FileSystem.cs" />
+    <Compile Include="Results\MediaFiles\MediaFile.cs" />
     <Compile Include="Results\Restrictions\Restriction.cs" />
     <Compile Include="Results\Updates\Update.cs" />
     <Compile Include="Cmdlets\Connection\ConnectInstance.cs" />
