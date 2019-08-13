@@ -82,6 +82,9 @@
     <None Include="Cmdlets\Connection\Exclude\ConnectInstance-BETA.cs" />
     <Compile Include="Cmdlets\DownloadClient\GetDownloadClient.cs" />
     <Compile Include="Cmdlets\FileSystem\SearchDirectory.cs" />
+    <Compile Include="Cmdlets\Logging\GetLog.cs" />
+    <Compile Include="Cmdlets\Logging\GetLogFile.cs" />
+    <Compile Include="Cmdlets\Logging\SaveLogFile.cs" />
     <Compile Include="Cmdlets\Restriction\GetRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\NewRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\RemoveRestriction.cs" />
@@ -101,6 +104,7 @@
     <Compile Include="Results\DownloadClient\DownloadClient.cs" />
     <Compile Include="Results\DownloadClient\DownloadClientSetting.cs" />
     <Compile Include="Results\FileSystem\FileSystem.cs" />
+    <Compile Include="Results\LogFile\LogFile.cs" />
     <Compile Include="Results\MediaFiles\MediaFile.cs" />
     <Compile Include="Results\Restrictions\Restriction.cs" />
     <Compile Include="Results\Updates\Update.cs" />

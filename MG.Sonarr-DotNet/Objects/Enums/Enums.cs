@@ -101,6 +101,16 @@ namespace MG.Sonarr
         EpisodeFileRenamed
     }
 
+    public enum LogLevel
+    {
+        Fatal,
+        Error,
+        Warn,
+        Info,
+        Debug,
+        Trace
+    }
+
     public enum ProperDownloadType
     {
         PreferAndUpgrade,

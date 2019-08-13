@@ -9,40 +9,40 @@ using System.Management.Automation;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Search, "Directory", ConfirmImpact = ConfirmImpact.None)]
-    [OutputType(typeof(SonarrDirectory)]
+    [OutputType(typeof(SonarrDirectory))]
     [CmdletBinding()]
-    public class SearchDirectory : PSCmdlet
+    public class SearchDirectory : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-
+        private const string EP = "/filesystem?path={0}";
 
         #endregion
 
         #region PARAMETERS
-
-
-        #endregion
-
-        #region DYNAMIC
-
+        [Parameter(Mandatory = true, Position = 0, ValueFromPipelineByPropertyName = true)]
+        [Alias("FullName")]
+        public string Path { get; set; }
 
         #endregion
 
         #region CMDLET PROCESSING
-        protected override void BeginProcessing()
-        {
-            base.BeginProcessing();
-
-        }
+        protected override void BeginProcessing() => base.BeginProcessing();
 
         protected override void ProcessRecord()
         {
+            if (!this.Path.EndsWith(@"\"))
+                this.Path = this.Path + @"\";
 
-        }
-
-        protected override void EndProcessing()
-        {
-
+            string fullEp = string.Format(EP, this.Path);
+            string jsonRes = base.TryGetSonarrResult(fullEp);
+            if (!string.IsNullOrEmpty(jsonRes))
+            {
+                FileSystem fs = SonarrHttp.ConvertToSonarrResult<FileSystem>(jsonRes);
+                if (fs != null)
+                {
+                    base.WriteObject(fs.Directories, true);
+                }
+            }
         }
 
         #endregion
