@@ -85,6 +85,7 @@
     <Compile Include="Cmdlets\Logging\GetLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLogFile.cs" />
     <Compile Include="Cmdlets\Logging\SaveLogFile.cs" />
+    <Compile Include="Cmdlets\RemotePath\GetMapping.cs" />
     <Compile Include="Cmdlets\Restriction\GetRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\NewRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\RemoveRestriction.cs" />
@@ -106,6 +107,7 @@
     <Compile Include="Results\FileSystem\FileSystem.cs" />
     <Compile Include="Results\LogFile\LogFile.cs" />
     <Compile Include="Results\MediaFiles\MediaFile.cs" />
+    <Compile Include="Results\RemotePath\RemotePathMapping.cs" />
     <Compile Include="Results\Restrictions\Restriction.cs" />
     <Compile Include="Results\Updates\Update.cs" />
     <Compile Include="Cmdlets\Connection\ConnectInstance.cs" />
