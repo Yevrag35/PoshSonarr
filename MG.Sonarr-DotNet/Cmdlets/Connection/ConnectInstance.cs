@@ -35,7 +35,7 @@ namespace MG.Sonarr.Cmdlets
     /// </example>
     [Cmdlet(VerbsCommunications.Connect, "Instance", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByServerName")]
     [CmdletBinding(PositionalBinding = false)]
-    [Alias("Connect-", "conson")]
+    [Alias("Connect-")]
     [OutputType(typeof(SonarrStatusResult))]
     public partial class ConnectInstance : BaseSonarrCmdlet
     {

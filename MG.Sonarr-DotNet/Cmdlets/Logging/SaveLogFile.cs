@@ -14,7 +14,7 @@ namespace MG.Sonarr.Cmdlets.Logging
 {
     [Cmdlet(VerbsData.Save, "LogFile", ConfirmImpact = ConfirmImpact.None)]
     [CmdletBinding(PositionalBinding = false)]
-    [Alias("Download-Log")]
+    [Alias("Download-LogFile")]
     public class SaveLogFile : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
