@@ -1,0 +1,53 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Management.Automation;
+using System.Reflection;
+
+namespace MG.Sonarr.Cmdlets
+{
+    [Cmdlet(VerbsCommon.Get, "Log", ConfirmImpact = ConfirmImpact.None)]
+    [CmdletBinding(PositionalBinding = false)]
+    public class GetLog : LazySonarrCmdlet
+    {
+        #region FIELDS/CONSTANTS
+        protected override string Endpoint => "/log";
+        private string _sortKey;
+
+        #endregion
+
+        #region PARAMETERS
+
+        [Parameter(Mandatory = false, Position = 1)]
+        public LogLevel Severity { get; set; }
+
+        #endregion
+
+        #region CMDLET PROCESSING
+        protected override void BeginProcessing() => base.BeginProcessing();
+
+        protected override void ProcessRecord()
+        {
+            //if (this.MyInvocation.BoundParameters.ContainsKey("SortKey"))
+            //{
+            //    _list.Add(string.Format("sortKey={0}", this.SortKey.ToLower()));
+            //}
+
+            if (this.MyInvocation.BoundParameters.ContainsKey("Severity"))
+            {
+                _list.Add("filterKey=level");
+                _list.Add(string.Format("filterValue={0}", this.Severity.ToString()));
+            }
+            base.ProcessRecord();
+        }
+
+        #endregion
+
+        #region BACKEND METHODS
+
+
+        #endregion
+    }
+}

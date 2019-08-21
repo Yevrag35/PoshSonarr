@@ -14,34 +14,37 @@
 								<PropertyName>AbsoluteEpisodeNumber</PropertyName>
 							</ListItem>
 							<ListItem>
-								<Label>AirDate</Label>
-								<ScriptBlock>$_.AirDateUtc.ToLocalTime()</ScriptBlock>
+								<PropertyName>AirDate</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>DayOfWeek</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>EpisodeFileId</PropertyName>
+								<ItemSelectionCondition>
+									<ScriptBlock>$_.EpisodeFileId -ne $null -and $_.EpisodeFileId -ne 0</ScriptBlock>
+								</ItemSelectionCondition>
+							</ListItem>
+							<ListItem>
+								<PropertyName>EpisodeId</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>EpisodeNumber</PropertyName>
 							</ListItem>
 							<ListItem>
-								<Label>FileId</Label>
-								<PropertyName>EpisodeFileId</PropertyName>
-							</ListItem>
-							<ListItem>
 								<PropertyName>HasFile</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>Id</PropertyName>
+								<PropertyName>IsMonitored</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>Monitored</PropertyName>
+								<PropertyName>Name</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>Title</PropertyName>
+								<PropertyName>Series</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>UnverifiedSceneNumbering</PropertyName>
-							</ListItem>
-							<ListItem>
-								<Label>Series</Label>
-								<ScriptBlock>$_.Series.Title</ScriptBlock>
 							</ListItem>
 						</ListItems>
 					</ListEntry>

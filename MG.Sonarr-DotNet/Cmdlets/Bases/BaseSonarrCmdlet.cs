@@ -134,6 +134,36 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
+#if DEBUG
+        [Obsolete]
+        public static string TryStaticGetSonarrResult(string endpoint)
+        {
+            //this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
+            string apiPath = Context.SonarrUrl.Path + endpoint;
+
+            try
+            {
+                Task<HttpResponseMessage> task = Context.ApiCaller.GetAsync(apiPath, HttpCompletionOption.ResponseContentRead);
+                task.Wait();
+                string res = null;
+                using (var resp = task.Result.EnsureSuccessStatusCode())
+                {
+                    using (var content = resp.Content)
+                    {
+                        Task<string> strTask = content.ReadAsStringAsync();
+                        strTask.Wait();
+                        res = strTask.Result;
+                    }
+                }
+                return res;
+            }
+            catch (HttpRequestException hre)
+            {
+                throw new SonarrGetRequestException(apiPath, hre);
+            }
+        }
+#endif
+
         /// <summary>
         /// Sends a POST request to the specified Sonarr endpoint with the specified string payload formatted in JSON 
         /// returning a JSON-formatted string in response.  Errors are handled by <see cref="PSCmdlet"/>.WriteError.

@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results
 {
@@ -9,12 +11,17 @@ namespace MG.Sonarr.Results
     /// </summary>
     public class Release : BaseResult
     {
+        private const string AGE = "ageMinutes";
+
+        [JsonExtensionData]
+        private IDictionary<string, JToken> _data;
+
         public int[] AbsoluteEpisodeNumbers { get; set; }
-        public int Age { get; set; }
-        public decimal AgeHours { get; set; }
-        public decimal AgeMinutes { get; set; }
+        [JsonIgnore]
+        public TimeSpan Age { get; set; }
+        [JsonProperty("downloadAllowed")]
+        public bool Allowed { get; set; }
         public bool Approved { get; set; }
-        public bool DownloadAllowed { get; set; }
         public Uri DownloadUrl { get; set; }
         public int[] EpisodeNumbers { get; set; }
         public bool FullSeason { get; set; }
@@ -33,7 +40,6 @@ namespace MG.Sonarr.Results
         public string ReleaseGroup { get; set; }
         public string ReleaseHash { get; set; }
         public int ReleaseWeight { get; set; }
-
         [JsonProperty("guid")]
         public Uri ReleaseUrl { get; set; }
         public int SeasonNumber { get; set; }
@@ -44,5 +50,19 @@ namespace MG.Sonarr.Results
         public string Title { get; set; }
         public string TVDBId { get; set; }
         public string TVRageId { get; set; }
+
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext context)
+        {
+            if (_data.ContainsKey(AGE))
+            {
+                JToken tokAge = _data[AGE];
+                if (tokAge != null)
+                {
+                    double ageMin = tokAge.ToObject<double>();
+                    this.Age = TimeSpan.FromMinutes(ageMin);
+                }
+            }
+        }
     }
 }

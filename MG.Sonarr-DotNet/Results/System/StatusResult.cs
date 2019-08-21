@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace MG.Sonarr.Results
 {
     /// <summary>
-    /// The class that defines a response from the "/system/status" endpoint.
+    /// <para type="description">The class that defines a response from the "/system/status" endpoint.</para>
     /// </summary>
     public class SonarrStatusResult : BaseResult
     {

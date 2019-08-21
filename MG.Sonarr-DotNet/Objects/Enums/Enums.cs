@@ -69,6 +69,13 @@ namespace MG.Sonarr
         Never
     }
 
+    public enum FieldType
+    {
+        Password,
+        Select,
+        TextBox
+    }
+
     public enum FileDataType
     {
         None,
@@ -94,11 +101,21 @@ namespace MG.Sonarr
         EpisodeFileRenamed
     }
 
+    public enum LogLevel
+    {
+        Fatal,
+        Error,
+        Warn,
+        Info,
+        Debug,
+        Trace
+    }
+
     public enum ProperDownloadType
     {
         PreferAndUpgrade,
         DoNotUpgrade,
-        DoNotPreferj
+        DoNotPrefer
     }
 
     public enum ProxyType

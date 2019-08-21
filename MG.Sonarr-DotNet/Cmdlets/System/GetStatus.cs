@@ -14,16 +14,6 @@ namespace MG.Sonarr.Cmdlets
     [CmdletBinding(PositionalBinding = false)]
     public class GetStatus : BaseSonarrCmdlet
     {
-        #region FIELDS/CONSTANTS
-
-
-        #endregion
-
-        #region PARAMETERS
-
-
-        #endregion
-
         #region CMDLET PROCESSING
         protected override void BeginProcessing() => base.BeginProcessing();
 
@@ -34,15 +24,9 @@ namespace MG.Sonarr.Cmdlets
             if (!string.IsNullOrWhiteSpace(strRes))
             {
                 SonarrStatusResult ssr = SonarrHttp.ConvertToSonarrResult<SonarrStatusResult>(strRes);
-                ssr.UrlBase = Context.ApiCaller.BaseAddress;
                 base.WriteObject(ssr);
             }
         }
-
-        #endregion
-
-        #region BACKEND METHODS
-
 
         #endregion
     }

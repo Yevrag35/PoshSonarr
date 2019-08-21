@@ -9,6 +9,12 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets.Commands
 {
+    /// <summary>
+    /// <para type="synopsis">Executes a season search.</para>
+    /// <para type="description">Instructs Sonarr to perform a season search for the specified series and, optionally, a given season number.
+    ///     If a season number is not specified, all seasons will be searched.
+    /// </para>
+    /// </summary>
     [Cmdlet(VerbsLifecycle.Invoke, "SeasonSearch", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(CommandOutput))]
@@ -21,12 +27,21 @@ namespace MG.Sonarr.Cmdlets.Commands
         #endregion
 
         #region PARAMETERS
+        /// <summary>
+        /// <para type="description">The ID of the series to perform the search on.</para>
+        /// </summary>
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
         public long SeriesId { get; set; }
 
+        /// <summary>
+        /// <para type="description">The optional season number to perform the search on.  By default, all seasons are searched.</para>
+        /// </summary>
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
         public int SeasonNumber { get; set; }
 
+        /// <summary>
+        /// <para type="description">Specifies to bypass the confirmation prompt.</para>
+        /// </summary>
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 

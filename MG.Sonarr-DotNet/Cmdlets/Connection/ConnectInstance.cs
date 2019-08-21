@@ -11,9 +11,32 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
+    /// <summary>
+    ///     <para type="synopsis">Builds the connection context for subsequent cmdlets.</para>
+    ///     <para type="description">Establishes a custom HttpClient context for use with all subsequent PoshSonarr cmdlets.  
+    ///         The connection is created either via hostname/port/url base or by direct URL.  
+    ///         The "/api" path is automatically appended unless the '-NoApiPrefix' parameter is used.  
+    ///         If this command is not run first, all other cmdlets will throw an error.
+    ///     </para>
+    /// </summary>
+    /// <example>
+    ///     <code>
+    ///         <para>Connect by 'HostName' and 'Port':</para>
+    ///         <para></para>
+    ///         <para>Connect-Sonarr -Server "MEDIASERVER" -ApiKey "xxxxxxxxxxxxxxxx" -PassThru</para>
+    ///     </code>
+    /// </example>
+    /// <example>
+    ///     <code>
+    ///         <para>Connect by explicit URL:</para>
+    ///         <para></para>
+    ///         <para>Connect-SonarrInstance -Url 'https://sonarr-api.cloud.com/api/custom' -ApiKey "xxxxxxxxxxxxxxxx" -NoApiPrefix</para>
+    ///     </code>
+    /// </example>
     [Cmdlet(VerbsCommunications.Connect, "Instance", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByServerName")]
     [CmdletBinding(PositionalBinding = false)]
-    [Alias("Connect-", "conson")]
+    [Alias("Connect-")]
+    [OutputType(typeof(SonarrStatusResult))]
     public partial class ConnectInstance : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
@@ -35,22 +58,37 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
+        /// <summary>
+        /// <para type="description">The hostname of the Sonarr instance.</para>
+        /// </summary>
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByServerName")]
-        [Alias("Server", "ServerName", "HostName")]
+        [Alias("HostName")]
         public string SonarrServerName = "localhost";
 
+        /// <summary>
+        /// <para type="description">Specifies the direct URL to the Sonarr instance; including any reverse proxy bases.  
+        /// The "/api" path is automatically appended unless the '-NoApiPrefix' parameter is used.</para>
+        /// </summary>
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySonarrUrl")]
         [Alias("Url")]
         public Uri SonarrUrl { get; set; }
 
+        /// <summary>
+        /// <para type="description">The port number for the Sonarr website.</para>
+        /// </summary>
         [Parameter(Mandatory = false, ParameterSetName = "ByServerName")]
-        [Alias("Port")]
         public int PortNumber = 8989;
 
+        /// <summary>
+        /// <para type="description">Specifies a custom URL base for use with reverse proxies.  
+        /// If you don't use a reverse proxy with Sonarr, then you don't need this parameter :)</para>
+        /// </summary>
         [Parameter(Mandatory = false, ParameterSetName = "ByServerName")]
-        [Alias("CustomUriBase", "UriBase")]
         public string ReverseProxyUriBase { get; set; }
 
+        /// <summary>
+        /// <para type="description">Indicates that connection should establish over an SSL connection when using the "ByServerName" parameter set.</para>
+        /// </summary>
         [Parameter(Mandatory = false, ParameterSetName = "ByServerName")]
         public SwitchParameter UseSSL
         {
@@ -58,6 +96,9 @@ namespace MG.Sonarr.Cmdlets
             set => _useSsl = value;
         }
 
+        /// <summary>
+        /// <para type="description">Specifies the HttpClient to ignore any certificate errors that may occur.</para>
+        /// </summary>
         [Parameter(Mandatory = false)]
         public SwitchParameter SkipCertificateCheck
         {
@@ -65,6 +106,9 @@ namespace MG.Sonarr.Cmdlets
             set => _skipCert = value;
         }
 
+        /// <summary>
+        /// <para type="description">Specifies the HttpClient to follow any HTTP redirects.  See the wiki article for more information: https://github.com/Yevrag35/PoshSonarr/wiki/Reverse-Proxy-Information</para>
+        /// </summary>
         [Parameter(Mandatory = false)]
         public SwitchParameter AllowRedirects
         {
@@ -72,12 +116,21 @@ namespace MG.Sonarr.Cmdlets
             set => _allowRedirect = value;
         }
 
+        /// <summary>
+        /// <para type="description">Specifies a proxy URL that HttpClient must use.</para>
+        /// </summary>
         [Parameter(Mandatory = false)]
         public string Proxy { get; set; }
 
+        /// <summary>
+        /// <para type="description">Specifies a set of credentials in order to access the proxy.</para>
+        /// </summary>
         [Parameter(Mandatory = false)]
         public ProxyCredential ProxyCredential { get; set; }
 
+        /// <summary>
+        /// <para type="description">Indicates that the proxy should be used on local connections.</para>
+        /// </summary>
         [Parameter(Mandatory = false)]
         public SwitchParameter ProxyBypassOnLocal
         {
@@ -85,10 +138,16 @@ namespace MG.Sonarr.Cmdlets
             set => _proxyBypass = value;
         }
 
+        /// <summary>
+        /// <para type="description">The API key to use for authentication.  The key is 32, all lower-case, alphanumeric characters.  
+        /// The key can be retrieved from your Sonarr website (Settings => General => Security), or in the "Config.xml" file in the AppData directory.</para>
+        /// </summary>
         [Parameter(Mandatory = true, HelpMessage = "Can be retrieved from your Sonarr website (Settings => General => Security), or in the \"Config.xml\" file in the AppData directory.")]
-        [Alias("key")]
         public ApiKey ApiKey { get; set; }
 
+        /// <summary>
+        /// <para type="description">Indicates that all API requests should not append '/api' to the end of the URL path.</para>
+        /// </summary>
         [Parameter(Mandatory = false)]
         public SwitchParameter NoApiPrefix
         {
@@ -96,6 +155,9 @@ namespace MG.Sonarr.Cmdlets
             set => _noApiPrefix = value;
         }
 
+        /// <summary>
+        /// <para type="description">Passes through the connection testing the "/system/status" endpoint.</para>
+        /// </summary>
         [Parameter(Mandatory = false)]
         public SwitchParameter PassThru
         {
@@ -111,7 +173,7 @@ namespace MG.Sonarr.Cmdlets
             if (_allowRedirect)
                 base.WriteWarning(BaseSonarrHttpException.CAUTION + BaseSonarrHttpException.HOW_CAUTION);
 
-            Context.UriBase = null;
+            Context.SonarrUrl = null;
         }
 
         protected override void ProcessRecord()

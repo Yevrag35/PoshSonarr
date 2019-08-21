@@ -9,6 +9,12 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets.Commands
 {
+    /// <summary>
+    ///     <para type="synopsis">Retrieves the status of a given command issued to Sonarr.</para>
+    ///     <para type="description">After issuing a command to Sonarr, this command can retrieve additional details about 
+    ///         how it ran.
+    ///     </para>
+    /// </summary>
     [Cmdlet(VerbsCommon.Get, "Command", ConfirmImpact = ConfirmImpact.None)]
     [OutputType(typeof(CommandResult))]
     [Alias("Get-Job")]
@@ -22,6 +28,9 @@ namespace MG.Sonarr.Cmdlets.Commands
         #endregion
 
         #region PARAMETERS
+        /// <summary>
+        /// <para type="description">The job id(s) of the command(s) to retrieves their statuses.</para>
+        /// </summary>
         [Parameter(Mandatory = false, Position = 0, ValueFromPipelineByPropertyName = true)]
         public long[] JobId { get; set; }
 

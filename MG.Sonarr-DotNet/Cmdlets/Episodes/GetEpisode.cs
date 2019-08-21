@@ -22,14 +22,19 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
-        [Parameter(Mandatory = true, Position = 0, ValueFromPipelineByPropertyName = true, ParameterSetName = "BySeriesId")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "BySeriesId")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "BySeriesIdAbsoluteEp")]
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "BySeriesIdSeasonEp")]
         public long SeriesId { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "ByEpisodeId", ValueFromPipelineByPropertyName = true)]
         public long EpisodeId { get; set; }
 
-        [Parameter(Mandatory = false, Position = 1, ParameterSetName = "BySeriesId")]
-        public int[] EpisodeNumber { get; set; }
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesIdAbsoluteEp")]
+        public int[] AbsoluteEpisodeNumber { get; set; }
+
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesIdSeasonEp")]
+        public EpisodeIdentifier[] EpisodeIdentifier { get; set; }
 
         #endregion
 
@@ -38,7 +43,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            string full = this.ParameterSetName == "BySeriesId" 
+            string full = this.ParameterSetName != "ByEpisodeId" 
                 ? string.Format(EP_BY_SERIES, this.SeriesId) 
                 : string.Format(EP_BY_EP, this.EpisodeId);
 
@@ -54,10 +59,31 @@ namespace MG.Sonarr.Cmdlets
                         er.AirDateUtc = er.AirDateUtc.Value.ToUniversalTime();
                     }
                 }
-                if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeNumber"))
+                if (this.MyInvocation.BoundParameters.ContainsKey("AbsoluteEpisodeNumber"))
                 {
-                    var results = result.Where(x => this.EpisodeNumber.Contains(x.EpisodeNumber));
+                    var results = result.Where(x => x.AbsoluteEpisodeNumber.HasValue && this.AbsoluteEpisodeNumber.Contains(x.AbsoluteEpisodeNumber.Value));
                     base.WriteObject(results, true);
+                }
+
+                else if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeIdentifier"))
+                {
+                    var list = new List<EpisodeResult>(result.Count);
+                    for (int i = 0; i < this.EpisodeIdentifier.Length; i++)
+                    {
+                        EpisodeIdentifier epid = this.EpisodeIdentifier[i];
+                        for (int e = 0; e < result.Count; e++)
+                        {
+                            EpisodeResult er = result[e];
+                            if (er.SeasonNumber == epid.Season)
+                            {
+                                if (!epid.Episode.HasValue || (epid.Episode.HasValue && er.EpisodeNumber == epid.Episode.Value))
+                                    list.Add(er);
+                            }
+                        }
+                    }
+                    list.Sort(new EpisodeComparer());
+                    var ieq = new EpisodeEquality();
+                    base.WriteObject(list.Distinct(ieq), true);
                 }
                 
                 else

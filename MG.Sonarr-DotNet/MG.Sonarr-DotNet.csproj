@@ -9,9 +9,12 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MG.Sonarr</RootNamespace>
     <AssemblyName>MG.Sonarr</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,6 +25,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>7.3</LangVersion>
+    <DocumentationFile>bin\Debug\MG.Sonarr.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -31,11 +35,15 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>7.3</LangVersion>
+    <DocumentationFile>bin\Release\MG.Sonarr.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MG.Dynamic">
+      <HintPath>..\..\DynamicParameterDll\DynamicParameter-DotNet\bin\Release\MG.Dynamic.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.PowerShell.Commands.Utility, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\Microsoft.PowerShell.Commands.Utility\v4.0_3.0.0.0__31bf3856ad364e35\Microsoft.PowerShell.Commands.Utility.dll</HintPath>
@@ -70,9 +78,37 @@
     <Compile Include="Cmdlets\Commands\InvokeSeriesSearch.cs" />
     <None Include="Cmdlets\Connection\Exclude\CertValidity-Core.cs" />
     <Compile Include="Cmdlets\Connection\Exclude\CertValidity-DotNet.cs" />
+    <None Include="Cmdlets\Profiles\Exclude\NewQualityProfile-BETA.cs" />
+    <None Include="Cmdlets\Connection\Exclude\ConnectInstance-BETA.cs" />
+    <Compile Include="Cmdlets\DownloadClient\GetDownloadClient.cs" />
+    <Compile Include="Cmdlets\FileSystem\SearchDirectory.cs" />
+    <Compile Include="Cmdlets\Logging\GetLog.cs" />
+    <Compile Include="Cmdlets\Logging\GetLogFile.cs" />
+    <Compile Include="Cmdlets\Logging\SaveLogFile.cs" />
+    <Compile Include="Cmdlets\RemotePath\GetMapping.cs" />
+    <Compile Include="Cmdlets\Restriction\GetRestriction.cs" />
+    <Compile Include="Cmdlets\Restriction\NewRestriction.cs" />
+    <Compile Include="Cmdlets\Restriction\RemoveRestriction.cs" />
+    <Compile Include="Cmdlets\Restriction\SetRestriction.cs" />
+    <Compile Include="Cmdlets\Restriction\UpdateRestriction.cs" />
+    <Compile Include="Cmdlets\Update\GetUpdate.cs" />
+    <None Include="Components\BETA\SonarrContext-BETA.cs" />
     <Compile Include="Components\SonarrHttp.cs" />
+    <Compile Include="Objects\AddRemoveHashTable.cs" />
+    <Compile Include="Objects\IgnoreCase.cs" />
+    <Compile Include="Objects\ReplaceHashTable.cs" />
+    <Compile Include="Objects\EpisodeIdentifier.cs" />
     <Compile Include="Objects\Interfaces\ISonarrUrl.cs" />
+    <Compile Include="Objects\JsonStringCollection.cs" />
     <Compile Include="Objects\SonarrUrl.cs" />
+    <None Include="Results\Quality\QualityDefinition-BETA.cs" />
+    <Compile Include="Results\DownloadClient\DownloadClient.cs" />
+    <Compile Include="Results\DownloadClient\DownloadClientSetting.cs" />
+    <Compile Include="Results\FileSystem\FileSystem.cs" />
+    <Compile Include="Results\LogFile\LogFile.cs" />
+    <Compile Include="Results\MediaFiles\MediaFile.cs" />
+    <Compile Include="Results\RemotePath\RemotePathMapping.cs" />
+    <Compile Include="Results\Restrictions\Restriction.cs" />
     <Compile Include="Results\Updates\Update.cs" />
     <Compile Include="Cmdlets\Connection\ConnectInstance.cs" />
     <Compile Include="Cmdlets\Episodes\GetEpisode.cs" />
@@ -83,7 +119,7 @@
     <Compile Include="Cmdlets\Profiles\GetQualityProfile.cs" />
     <Compile Include="Cmdlets\Queue\GetQueue.cs" />
     <Compile Include="Cmdlets\Releases\AddRelease.cs" />
-    <Compile Include="Cmdlets\Releases\GetRelease.cs" />
+    <Compile Include="Cmdlets\Releases\SearchRelease.cs" />
     <Compile Include="Cmdlets\Releases\NewReleasePush.cs" />
     <Compile Include="Cmdlets\RootFolder\GetRootFolder.cs" />
     <Compile Include="Cmdlets\Series\AddSeries.cs" />
@@ -142,11 +178,15 @@
     <None Include="TypeFormats\CalendarEntry.ps1xml" />
     <None Include="TypeFormats\CommandResult.ps1xml" />
     <None Include="TypeFormats\DiskspaceResult.ps1xml" />
+    <None Include="TypeFormats\DownloadClientSetting.ps1xml" />
+    <None Include="TypeFormats\DownloadClient.ps1xml" />
     <None Include="TypeFormats\Episode.ps1xml" />
     <None Include="TypeFormats\EpisodeFile.ps1xml" />
     <None Include="TypeFormats\QualityItem.ps1xml" />
     <None Include="TypeFormats\QualityProfile.ps1xml" />
     <None Include="TypeFormats\QueueItem.ps1xml" />
+    <None Include="TypeFormats\Release.ps1xml" />
+    <None Include="TypeFormats\Restriction.ps1xml" />
     <None Include="TypeFormats\RootFolder.ps1xml" />
     <None Include="TypeFormats\Season.ps1xml" />
     <None Include="TypeFormats\SeriesImage.ps1xml" />
@@ -163,4 +203,11 @@
   <PropertyGroup>
     <PostBuildEvent>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -NonInteractive -WindowStyle Hidden -File "$(ProjectDir)GenerateManifest.ps1" -DebugDirectory "$(ProjectDir)bin\$(ConfigurationName)" -ModuleFileDirectory "$(ProjectDir)TypeFormats" -AssemblyInfo "$(ProjectDir)Properties\AssemblyInfo.cs" -TargetFileName "$(TargetFileName)"</PostBuildEvent>
   </PropertyGroup>
+  <Import Project="..\packages\XmlDoc2CmdletDoc.0.2.12\build\XmlDoc2CmdletDoc.targets" Condition="Exists('..\packages\XmlDoc2CmdletDoc.0.2.12\build\XmlDoc2CmdletDoc.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\XmlDoc2CmdletDoc.0.2.12\build\XmlDoc2CmdletDoc.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\XmlDoc2CmdletDoc.0.2.12\build\XmlDoc2CmdletDoc.targets'))" />
+  </Target>
 </Project>

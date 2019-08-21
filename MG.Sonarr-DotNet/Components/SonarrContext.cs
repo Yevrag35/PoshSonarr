@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MG.Sonarr.Results;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +10,11 @@ using System.Text;
 
 namespace MG.Sonarr
 {
-    public static class Context
+    public static partial class Context
     {
         #region FIELDS/CONSTANTS
-        private const string SLASH_STR = "/";
-        private static readonly char SLASH = char.Parse(SLASH_STR);
+        internal const string SLASH_STR = "/";
+        internal static readonly char SLASH = char.Parse(SLASH_STR);
         internal const string ZERO_ONE = "{0}{1}";
 
         [Obsolete]

@@ -12,6 +12,16 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets.Releases
 {
+    /// <summary>
+    ///     <para type="synopsis">Adds a release to be sent to a download client.</para>
+    ///     <para type="description">
+    ///         Takes a given release url and indicates to Sonarr that it should be downloaded.
+    ///     </para>
+    /// </summary>
+    /// <example>
+    ///     <para>Add from pipeline input</para>
+    ///     <code>Get-SonarrSeries veep | Get-SonarrEpisode -EpisodeIdentifier "s1e7" | Search-SonarrRelease | Add-SonarrRelease</code>
+    /// </example>
     [Cmdlet(VerbsCommon.Add, "Release", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(Release))]
@@ -24,13 +34,22 @@ namespace MG.Sonarr.Cmdlets.Releases
         #endregion
 
         #region PARAMETERS
+        /// <summary>
+        /// <para type="description">The url for the release to add.</para>
+        /// </summary>
         [Parameter(Mandatory = true, Position = 0, ValueFromPipelineByPropertyName = true)]
         [Alias("guid")]
         public Uri ReleaseUrl { get; set; }
 
+        /// <summary>
+        /// <para type="description">The id for the indexer that release came from.</para>
+        /// </summary>
         [Parameter(Mandatory = true, Position = 1, ValueFromPipelineByPropertyName = true)]
         public int IndexerId { get; set; }
 
+        /// <summary>
+        ///     <para type="description">Passes through the Release object to show the result.</para>
+        /// </summary>
         [Parameter(Mandatory = false)]
         public SwitchParameter PassThru
         {
