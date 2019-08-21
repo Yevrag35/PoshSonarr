@@ -43,7 +43,7 @@ Search-SonarrSeries "The X-Files" | Add-SonarrSeries -RootFolderPath "\\NAS\Show
 
 ---
 
-As of 7/25/19, I'm missing only the following commands:
+As of 8/20/19, I'm missing only the following commands:
 
 1. DownloadedEpisodesScan
 1. MissingEpisodeSearch
@@ -65,6 +65,9 @@ The following is the list of the working cmdlets:
 1. Get-SonarrEpisode
 1. Get-SonarrEpisodeFile
 1. Get-SonarrHistory
+1. __Get-SonarrLog__
+1. __Get-SonarrLogFile__
+1. __Get-SonarrMapping__
 1. Get-SonarrQualityProfile
 1. Get-SonarrQueue
 1. Get-SonarrRelease - * _renamed to Search-SonarrRelease (left behind as alias...)_ *
@@ -89,6 +92,8 @@ The following is the list of the working cmdlets:
 1. __Remove-SonarrRestriction__
 1. Remove-SonarrSeries
 1. Remove-SonarrTag
+1. __Save-SonarrLogFile__
+1. __Search-SonarrDirectory__
 1. __Search-SonarrRelease__
 1. Search-SonarrSeries
 1. Set-SonarrEpisode
