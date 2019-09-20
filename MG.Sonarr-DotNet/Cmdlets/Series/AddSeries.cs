@@ -120,7 +120,7 @@ namespace MG.Sonarr.Cmdlets
                 },
                 { "images", this.Images },
                 { "monitored", !_nm },
-                { "qualityProfileId", 4 },
+                { "qualityProfileId", 4 },      // WTF?
                 { "seasonFolder", _usf },
                 { "seasons", this.Seasons },
                 { "title", this.Name },
