@@ -109,56 +109,45 @@ namespace MG.Sonarr.Cmdlets
             if (!this.MyInvocation.BoundParameters.ContainsKey("UseSeasonFolders") && this.Seasons != null && this.Seasons.Count > 1)
                 _usf = true;
 
-            var dict = new Dictionary<string, object>
-            {
-                { "addOptions", new Dictionary<string, bool>(3)
-                    {
-                        { "ignoreEpisodesWithFiles", _iewf },
-                        { "ignoreEpisodesWithoutFiles", _iewof },
-                        { "searchForMissingEpisodes", _sfme }
-                    }
-                },
-                { "images", this.Images },
-                { "monitored", !_nm },
-                { "qualityProfileId", 4 },      // WTF?
-                { "seasonFolder", _usf },
-                { "seasons", this.Seasons },
-                { "title", this.Name },
-                { "titleSlug", this.TitleSlug },
-                { "tvdbId", this.TVDBId }
-            };
+            if (this.QualityProfileId == 0)  // There is never a profile with an ID of 0...
+                this.QualityProfileId = 1;
+
+            var postJson = new JObject(
+                new JProperty("images", JArray.FromObject(this.Images)),
+                new JProperty("monitored", !_nm),
+                new JProperty("qualityProfileId", this.QualityProfileId),
+                new JProperty("seasonFolder", _usf),
+                new JProperty("seasons", JArray.FromObject(this.Seasons)),
+                new JProperty("title", this.Name),
+                new JProperty("titleSlug", this.TitleSlug),
+                new JProperty("tvdbId", this.TVDBId),
+                new JProperty("addOptions",
+                    new JObject(
+                        new JProperty("ignoreEpisodesWithFiles", _iewf),
+                        new JProperty("ignoreEpisodesWithoutFiles", _iewof),
+                        new JProperty("searchForMissingEpisodes", _sfme))));
 
             if (this.MyInvocation.BoundParameters.ContainsKey("TVRageId"))
             {
-                dict.Add("tvRageId", this.TVRageId);
+                postJson.Add("tvRageId", JToken.FromObject(this.TVRageId));
             }
 
             if (!string.IsNullOrEmpty(this.RootFolderPath))
             {
-                dict.Add("rootFolderPath", this.RootFolderPath);
+                postJson.Add("rootFolderPath", JToken.FromObject(this.RootFolderPath));
             }
             else
             {
-                dict.Add("path", this.FullPath);
+                postJson.Add("path", JToken.FromObject(this.FullPath));
             }
 
-            string postJson = JsonConvert.SerializeObject(dict, new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                DateFormatHandling = DateFormatHandling.IsoDateFormat,
-                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
-                Formatting = Formatting.Indented,
-                NullValueHandling = NullValueHandling.Ignore,
-                MissingMemberHandling = MissingMemberHandling.Ignore
-            });
-
-            base.WriteDebug("POST BODY:" + Environment.NewLine + postJson);
+            base.WriteDebug("POST BODY:" + Environment.NewLine + postJson.ToString());
 
             if (base.ShouldProcess(string.Format("New Series - {0}", this.Name, "Adding")))
             {
                 base.WriteVerbose(string.Format("Adding new series - {0} at \"/series\"", this.Name));
-                string output = base.TryPostSonarrResult("/series", postJson);
-                if (_passThru)
+                string output = base.TryPostSonarrResult("/series", postJson.ToString());
+                if (_passThru && !string.IsNullOrEmpty(output))
                 {
                     base.WriteObject(SonarrHttp.ConvertToSeriesResult(output));
                 }
