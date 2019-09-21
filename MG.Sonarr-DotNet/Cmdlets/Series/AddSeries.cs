@@ -147,7 +147,7 @@ namespace MG.Sonarr.Cmdlets
             {
                 base.WriteVerbose(string.Format("Adding new series - {0} at \"/series\"", this.Name));
                 string output = base.TryPostSonarrResult("/series", postJson.ToString());
-                if (_passThru)
+                if (_passThru && !string.IsNullOrEmpty(output))
                 {
                     base.WriteObject(SonarrHttp.ConvertToSeriesResult(output));
                 }
