@@ -13,7 +13,7 @@ namespace MG.Sonarr.Results
     /// <summary>
     /// The base class for all PoshSonarr API request responses.
     /// </summary>
-    public abstract class BaseResult : ISonarrResult
+    public abstract class BaseResult : IJsonResult
     {
         /// <summary>
         /// Converts the inheriting class to a JSON-formatted string using programmed serializers.
