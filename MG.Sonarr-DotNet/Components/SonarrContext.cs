@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Sonarr.Cmdlets;
+using MG.Sonarr.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,6 +11,9 @@ using System.Text;
 
 namespace MG.Sonarr
 {
+    /// <summary>
+    /// The static context used by the PoshSonarr module.  The 'Context' is set with the <see cref="ConnectInstance"/> cmdlet.
+    /// </summary>
     public static partial class Context
     {
         #region FIELDS/CONSTANTS
@@ -24,9 +28,9 @@ namespace MG.Sonarr
 
         #region PROPERTIES
         /// <summary>
-        /// The main <see cref="HttpClient"/> from which all PoshSonarr cmdlets issue their API requests.
+        /// The main <see cref="HttpClient"/> from which all PoshSonarr cmdlets issue their REST requests.
         /// </summary>
-        public static ApiCaller ApiCaller { get; internal set; }
+        public static SonarrRestClient ApiCaller { get; internal set; }
 
         /// <summary>
         /// Returns true when <see cref="Context.ApiCaller"/> is not null, has a base address, and contains a valid API key header.
@@ -36,6 +40,9 @@ namespace MG.Sonarr
         [Obsolete]
         public static bool NoApiPrefix = false;
 
+        /// <summary>
+        /// The <see cref="SonarrUrl"/> representation of the base URL for all subsequent REST calls.
+        /// </summary>
         public static ISonarrUrl SonarrUrl { get; set; }
 
         /// <summary>

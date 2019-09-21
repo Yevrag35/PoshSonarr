@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 namespace MG.Sonarr
 {
     /// <summary>
-    /// A validator class to verify a string or <see cref="SecureString"/> can become an appropriate API key for use with Sonarr.
+    /// A validator class to verify a <see cref="string"/> or <see cref="SecureString"/> can become an appropriate API key for use with Sonarr.
     /// </summary>
     public class ApiKey : IApiKey
     {
@@ -20,7 +20,7 @@ namespace MG.Sonarr
 
         #region PROPERTIES
         /// <summary>
-        /// The API key in its string form.
+        /// The <see cref="string"/>-representation of the API key.
         /// </summary>
         public string Key { get; }
 
