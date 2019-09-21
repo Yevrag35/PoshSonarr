@@ -243,6 +243,13 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region EXCEPTION METHODS
+        /// <summary>
+        /// Displays a non-bodied API-specific debug message if the DebugPreference is set to show Debug-level messages.
+        /// It returns the "to-be-used" API uri string no matter what.
+        /// </summary>
+        /// <param name="endpoint">The endpoint Uri string that the <see cref="ApiCaller"/> will execute on.</param>
+        /// <param name="method"></param>
+        /// <param name="apiPath"></param>
         protected virtual void WriteApiDebug(string endpoint, HttpMethod method, out string apiPath)
         {
             apiPath = Context.SonarrUrl.Path + endpoint;
@@ -257,6 +264,14 @@ namespace MG.Sonarr.Cmdlets
             base.WriteDebug(msg);
         }
 
+        /// <summary>
+        /// Displays a bodied API-specific debug message if the DebugPreference is set to show Debug-level messages.
+        /// It returns the "to-be-used" API uri string no matter what.
+        /// </summary>
+        /// <param name="endpoint"></param>
+        /// <param name="method"></param>
+        /// <param name="body"></param>
+        /// <param name="apiPath"></param>
         protected virtual void WriteApiDebug(string endpoint, HttpMethod method, string body, out string apiPath)
         {
             apiPath = Context.SonarrUrl.Path + endpoint;
