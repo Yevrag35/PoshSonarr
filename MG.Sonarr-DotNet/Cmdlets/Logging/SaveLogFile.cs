@@ -25,8 +25,6 @@ namespace MG.Sonarr.Cmdlets.Logging
         #region PARAMETERS
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
         public LogFile InputObject { get; set; }
-        //[Parameter(Mandatory = true, Position = 1, ValueFromPipelineByPropertyName = true)]
-        //public string DownloadUrl { get; set; }
 
         [Parameter(Mandatory = true, Position = 0)]
         [Alias("FolderPath")]
