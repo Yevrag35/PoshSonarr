@@ -43,8 +43,8 @@ namespace MG.Sonarr
         [Obsolete]
         public static void AddSonarrApiKey(this HttpClient client, ApiKey apiKey)
         {
-            KeyValuePair<string, string> kvp = apiKey.AsKeyValuePair();
-            client.DefaultRequestHeaders.Add(kvp.Key, kvp.Value);
+            ValueTuple<string, string> kvp = apiKey.ToTuple();
+            client.DefaultRequestHeaders.Add(kvp.Item1, kvp.Item2);
         }
 
         public static SeriesResult ConvertToSeriesResult(string jsonResult, bool fromSearch = false)

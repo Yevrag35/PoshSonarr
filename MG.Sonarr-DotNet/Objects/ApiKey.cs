@@ -44,7 +44,7 @@ namespace MG.Sonarr
         /// <summary>
         /// Transforms the string API key into a key value pair for use as a HTTP header.  The 'key' of the key value pair will always be 'X-Api-Key'.
         /// </summary>
-        public KeyValuePair<string, string> AsKeyValuePair() => new KeyValuePair<string, string>(HEADER_PARAM, this.Key);
+        public ValueTuple<string, string> ToTuple() => new ValueTuple<string, string>(HEADER_PARAM, this.Key);
 
         #endregion
 

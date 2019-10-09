@@ -94,8 +94,8 @@ namespace MG.Sonarr
         /// <param name="apiKey">The api key to add to the <see cref="HttpClient.DefaultRequestHeaders"/> collection.</param>
         public void AddApiKey(IApiKey apiKey)
         {
-            KeyValuePair<string, string> kvp = apiKey.AsKeyValuePair();
-            base.DefaultRequestHeaders.Add(kvp.Key, kvp.Value);
+            ValueTuple<string, string> kvp = apiKey.ToTuple();
+            base.DefaultRequestHeaders.Add(kvp.Item1, kvp.Item2);
         }
 
         #endregion
