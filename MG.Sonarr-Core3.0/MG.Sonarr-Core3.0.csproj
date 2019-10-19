@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <RootNamespace>MG.Sonarr_Core3._0</RootNamespace>
+    <Company>Yevrag35, LLC.</Company>
+    <Authors>Mike Garvey</Authors>
+    <Version>1.2.1</Version>
+    <PackageProjectUrl>https://github.com/Yevrag35/PoshSonarr</PackageProjectUrl>
+    <RepositoryType>Git</RepositoryType>
+    <RepositoryUrl>https://github.com/Yevrag35/PoshSonarr.git</RepositoryUrl>
+    <Description>A library consisting of PowerShell cmdlets for querying/managing Sonarr PVR.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <DocumentationFile>C:\Repos\PoshSonarr\MG.Sonarr-Core3.0\MG.Sonarr-Core3.0.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="..\MG.Sonarr-DotNet\**\*.cs" Exclude="..\MG.Sonarr-DotNet\obj\**\*.cs;..\MG.Sonarr-DotNet\bin\**\*.cs;..\MG.Sonarr-DotNet\Properties\AssemblyInfo.cs;..\MG.Sonarr-DotNet\Cmdlets\Connection\Exclude\*-DotNet.cs;..\MG.Sonarr-DotNet\**\*-BETA.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0-preview.4" />
+	  <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+	  <PackageReference Include="XmlDoc2CmdletDoc" Version="0.2.13">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	</ItemGroup>
+
+</Project>

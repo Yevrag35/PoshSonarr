@@ -9,10 +9,12 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
+#if (NETCOREAPP == false)
     /// <summary>
     /// <para type="synopsis">Instructs Sonarr to perform a backup.</para>
     /// <para type="description">Sonarr performs a backup of its database when this cmdlet is run.</para>
     /// </summary>
+#endif
     [Cmdlet(VerbsLifecycle.Invoke, "Backup", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
     [OutputType(typeof(CommandOutput))]
     [Alias("Backup-")]
