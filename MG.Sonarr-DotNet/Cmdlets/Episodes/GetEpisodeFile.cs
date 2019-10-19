@@ -48,7 +48,7 @@ namespace MG.Sonarr.Cmdlets
 
             if (!string.IsNullOrEmpty(jsonStr))
             {
-                var result = SonarrHttp.ConvertToSonarrResults<EpisodeFile>(jsonStr, out bool iso);
+                List<EpisodeFile> result = SonarrHttp.ConvertToSonarrResults<EpisodeFile>(jsonStr, out bool iso);
                 base.WriteObject(result, true);
             }
         }

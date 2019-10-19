@@ -9,22 +9,24 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
+#if NETFRAMEWORK
     /// <summary>
     /// <para type="synopsis">Executes a series rescan.</para>
     /// <para type="description">Instructs Sonarr to perform a series rescan on all series or a specified series by its ID.</para>
     /// </summary>
+#endif
     [Cmdlet(VerbsLifecycle.Invoke, "SeriesRescan", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
     [OutputType(typeof(CommandOutput))]
     [Alias("Start-SeriesRescan")]
     [CmdletBinding(PositionalBinding = false)]
     public class InvokeSeriesRescan : BasePostCommandCmdlet
     {
-        #region FIELDS/CONSTANTS
+#region FIELDS/CONSTANTS
         protected override string Command => "RescanSeries";
 
-        #endregion
+#endregion
 
-        #region PARAMETERS
+#region PARAMETERS
         /// <summary>
         /// <para type="description">The optional series ID to perform the rescan on.</para>
         /// </summary>
@@ -37,9 +39,9 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 
-        #endregion
+#endregion
 
-        #region CMDLET PROCESSING
+#region CMDLET PROCESSING
         protected override void BeginProcessing() => base.BeginProcessing();
 
         protected override void ProcessRecord()
@@ -61,6 +63,6 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
-        #endregion
+#endregion
     }
 }

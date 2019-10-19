@@ -77,7 +77,7 @@ namespace MG.Sonarr.Cmdlets.Releases
 
                 if (!string.IsNullOrEmpty(jsonRes) && _passThru)
                 {
-                    var reses = SonarrHttp.ConvertToSonarrResults<Release>(jsonRes, out bool iso);
+                    List<Release> reses = SonarrHttp.ConvertToSonarrResults<Release>(jsonRes, out bool iso);
                     base.WriteObject(reses, true);
                 }
             }

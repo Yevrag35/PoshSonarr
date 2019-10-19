@@ -170,7 +170,7 @@ namespace MG.Sonarr
             {
                 using (HttpResponseMessage resp = task.Result.EnsureSuccessStatusCode())
                 {
-                    using (var content = resp.Content)
+                    using (HttpContent content = resp.Content)
                     {
                         Task<string> strTask = content.ReadAsStringAsync();
                         strTask.Wait();
@@ -200,7 +200,7 @@ namespace MG.Sonarr
             {
                 using (HttpResponseMessage resp = call.Result.EnsureSuccessStatusCode())
                 {
-                    using (var content = resp.Content)
+                    using (HttpContent content = resp.Content)
                     {
                         Task<string> strTask = content.ReadAsStringAsync();
                         strTask.Wait();
@@ -222,7 +222,7 @@ namespace MG.Sonarr
             Task<HttpResponseMessage> call = client.DeleteAsync(endpoint);
             call.Wait();
 
-            using (var res = call.Result)
+            using (HttpResponseMessage res = call.Result)
             {
                 res.EnsureSuccessStatusCode();
             }
@@ -246,7 +246,7 @@ namespace MG.Sonarr
             {
                 using (HttpResponseMessage resp = call.Result.EnsureSuccessStatusCode())
                 {
-                    using (var content = resp.Content)
+                    using (HttpContent content = resp.Content)
                     {
                         Task<string> strTask = content.ReadAsStringAsync();
                         strTask.Wait();

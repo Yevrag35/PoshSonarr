@@ -60,7 +60,7 @@ namespace MG.Sonarr.Cmdlets
                 {
                     using (HttpResponseMessage resp = task.Result.EnsureSuccessStatusCode())
                     {
-                        using (var content = resp.Content)
+                        using (HttpContent content = resp.Content)
                         {
                             Task<string> strTask = content.ReadAsStringAsync();
                             strTask.Wait();
@@ -116,9 +116,9 @@ namespace MG.Sonarr.Cmdlets
                 Task<HttpResponseMessage> task = Context.ApiCaller.GetAsync(apiPath, HttpCompletionOption.ResponseContentRead);
                 task.Wait();
                 string res = null;
-                using (var resp = task.Result.EnsureSuccessStatusCode())
+                using (HttpResponseMessage resp = task.Result.EnsureSuccessStatusCode())
                 {
-                    using (var content = resp.Content)
+                    using (HttpContent content = resp.Content)
                     {
                         Task<string> strTask = content.ReadAsStringAsync();
                         strTask.Wait();
@@ -133,36 +133,6 @@ namespace MG.Sonarr.Cmdlets
                 return null;
             }
         }
-
-#if DEBUG
-        [Obsolete]
-        public static string TryStaticGetSonarrResult(string endpoint)
-        {
-            //this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
-            string apiPath = Context.SonarrUrl.Path + endpoint;
-
-            try
-            {
-                Task<HttpResponseMessage> task = Context.ApiCaller.GetAsync(apiPath, HttpCompletionOption.ResponseContentRead);
-                task.Wait();
-                string res = null;
-                using (var resp = task.Result.EnsureSuccessStatusCode())
-                {
-                    using (var content = resp.Content)
-                    {
-                        Task<string> strTask = content.ReadAsStringAsync();
-                        strTask.Wait();
-                        res = strTask.Result;
-                    }
-                }
-                return res;
-            }
-            catch (HttpRequestException hre)
-            {
-                throw new SonarrGetRequestException(apiPath, hre);
-            }
-        }
-#endif
 
         /// <summary>
         /// Sends a POST request to the specified Sonarr endpoint with the specified string payload formatted in JSON 
@@ -186,7 +156,7 @@ namespace MG.Sonarr.Cmdlets
                 string res = null;
                 using (HttpResponseMessage resp = task.Result.EnsureSuccessStatusCode())
                 {
-                    using (var content = resp.Content)
+                    using (HttpContent content = resp.Content)
                     {
                         Task<string> strTask = content.ReadAsStringAsync();
                         strTask.Wait();
@@ -224,7 +194,7 @@ namespace MG.Sonarr.Cmdlets
                 string res = null;
                 using (HttpResponseMessage resp = task.Result.EnsureSuccessStatusCode())
                 {
-                    using (var content = resp.Content)
+                    using (HttpContent content = resp.Content)
                     {
                         Task<string> strTask = content.ReadAsStringAsync();
                         strTask.Wait();
@@ -242,7 +212,7 @@ namespace MG.Sonarr.Cmdlets
 
         #endregion
 
-        #region EXCEPTION METHODS
+        #region DEBUG METHODS
         protected virtual void WriteApiDebug(string endpoint, HttpMethod method, out string apiPath)
         {
             apiPath = Context.SonarrUrl.Path + endpoint;
@@ -272,6 +242,10 @@ namespace MG.Sonarr.Cmdlets
 
             base.WriteDebug(msg);
         }
+
+        #endregion
+
+        #region EXCEPTION METHODS
 
         /// <summary>
         /// Takes in an <see cref="Exception"/> and returns the innermost <see cref="Exception"/> as a result.

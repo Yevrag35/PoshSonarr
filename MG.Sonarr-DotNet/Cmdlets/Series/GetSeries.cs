@@ -73,7 +73,7 @@ namespace MG.Sonarr.Cmdlets
                     string oneSeries = base.TryGetSonarrResult(full);
                     if (!string.IsNullOrEmpty(oneSeries))
                     {
-                        var sr = SonarrHttp.ConvertToSeriesResult(oneSeries);
+                        SeriesResult sr = SonarrHttp.ConvertToSeriesResult(oneSeries);
                         base.WriteObject(sr);
                     }
                 }

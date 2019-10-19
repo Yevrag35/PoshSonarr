@@ -21,7 +21,7 @@ namespace MG.Sonarr.Results
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
-            var token = _additionalData["body"].SelectToken("$.completionMessage");
+            JToken token = _additionalData["body"].SelectToken("$.completionMessage");
             if (token != null)
             {
                 this.Message = token.ToObject<string>();

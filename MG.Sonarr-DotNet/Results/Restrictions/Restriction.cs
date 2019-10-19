@@ -40,7 +40,7 @@ namespace MG.Sonarr.Results
         {
             _additionalData = new Dictionary<string, JToken>();
             this.Tags = new HashSet<int>();
-            foreach (var kvp in parameters)
+            foreach (KeyValuePair<string, object> kvp in parameters)
             {
                 if (kvp.Key.Equals("IgnoredTerms") && kvp.Value is string[] igTerms)
                 {

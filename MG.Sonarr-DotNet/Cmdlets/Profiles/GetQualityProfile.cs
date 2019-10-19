@@ -73,7 +73,7 @@ namespace MG.Sonarr.Cmdlets.Profiles
                 string oneProf = base.TryGetSonarrResult(full);
                 if (!string.IsNullOrEmpty(oneProf))
                 {
-                    var qp = SonarrHttp.ConvertToSonarrResult<QualityProfile>(oneProf);
+                    QualityProfile qp = SonarrHttp.ConvertToSonarrResult<QualityProfile>(oneProf);
                     base.WriteObject(qp);
                 }
             }

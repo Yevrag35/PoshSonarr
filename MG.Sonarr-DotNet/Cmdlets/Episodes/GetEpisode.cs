@@ -51,7 +51,7 @@ namespace MG.Sonarr.Cmdlets
 
             if (!string.IsNullOrEmpty(jsonStr))
             {
-                var result = SonarrHttp.ConvertToSonarrResults<EpisodeResult>(jsonStr, out bool iso);
+                List<EpisodeResult> result = SonarrHttp.ConvertToSonarrResults<EpisodeResult>(jsonStr, out bool iso);
                 foreach (EpisodeResult er in result)
                 {
                     if (er.AirDateUtc.HasValue)
@@ -61,7 +61,7 @@ namespace MG.Sonarr.Cmdlets
                 }
                 if (this.MyInvocation.BoundParameters.ContainsKey("AbsoluteEpisodeNumber"))
                 {
-                    var results = result.Where(x => x.AbsoluteEpisodeNumber.HasValue && this.AbsoluteEpisodeNumber.Contains(x.AbsoluteEpisodeNumber.Value));
+                    IEnumerable<EpisodeResult> results = result.Where(x => x.AbsoluteEpisodeNumber.HasValue && this.AbsoluteEpisodeNumber.Contains(x.AbsoluteEpisodeNumber.Value));
                     base.WriteObject(results, true);
                 }
 

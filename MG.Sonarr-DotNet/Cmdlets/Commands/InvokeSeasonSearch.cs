@@ -9,24 +9,26 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets.Commands
 {
+#if NETFRAMEWORK
     /// <summary>
     /// <para type="synopsis">Executes a season search.</para>
     /// <para type="description">Instructs Sonarr to perform a season search for the specified series and, optionally, a given season number.
     ///     If a season number is not specified, all seasons will be searched.
     /// </para>
     /// </summary>
+#endif
     [Cmdlet(VerbsLifecycle.Invoke, "SeasonSearch", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(CommandOutput))]
     [Alias("Start-SeasonSearch")]
     public class InvokeSeasonSearch : BasePostCommandCmdlet
     {
-        #region FIELDS/CONSTANTS
+#region FIELDS/CONSTANTS
         protected override string Command => "SeasonSearch";
 
-        #endregion
+#endregion
 
-        #region PARAMETERS
+#region PARAMETERS
         /// <summary>
         /// <para type="description">The ID of the series to perform the search on.</para>
         /// </summary>
@@ -45,9 +47,9 @@ namespace MG.Sonarr.Cmdlets.Commands
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 
-        #endregion
+#endregion
 
-        #region CMDLET PROCESSING
+#region CMDLET PROCESSING
         protected override void BeginProcessing() => base.BeginProcessing();
 
         protected override void ProcessRecord()
@@ -65,11 +67,11 @@ namespace MG.Sonarr.Cmdlets.Commands
             }
         }
 
-        #endregion
+#endregion
 
-        #region METHODS
+#region METHODS
 
 
-        #endregion
+#endregion
     }
 }

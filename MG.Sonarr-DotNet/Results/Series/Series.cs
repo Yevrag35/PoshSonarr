@@ -88,9 +88,9 @@ namespace MG.Sonarr.Results
             string strRes = null;
             if (jtok != null)
             {
-                var tokTime = jtok.ToObject<string>();
+                string tokTime = jtok.ToObject<string>();
                 var tokyoTime = DateTime.Parse(tokTime); // In Tokyo Standard Time
-                var tokyotz = TimeZoneInfo.GetSystemTimeZones().First(x => x.Id.Contains("Tokyo"));
+                TimeZoneInfo tokyotz = TimeZoneInfo.GetSystemTimeZones().First(x => x.Id.Contains("Tokyo"));
                 if (tokyotz == null)
                     strRes = tokTime;
 

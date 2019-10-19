@@ -52,7 +52,7 @@ namespace MG.Sonarr.Cmdlets.Episodes
                 string jsonRes = base.TryPutSonarrResult(EP, jsonBody);
                 if (!string.IsNullOrEmpty(jsonRes) && _passThru)
                 {
-                    var res = SonarrHttp.ConvertToSonarrResult<EpisodeResult>(jsonRes);
+                    EpisodeResult res = SonarrHttp.ConvertToSonarrResult<EpisodeResult>(jsonRes);
                     base.WriteObject(res);
                 }
             }

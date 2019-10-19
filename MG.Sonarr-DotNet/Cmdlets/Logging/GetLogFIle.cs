@@ -45,7 +45,7 @@ namespace MG.Sonarr.Cmdlets.Logging
                 else if (this.MyInvocation.BoundParameters.ContainsKey("Name"))
                 {
                     var ig = new IgnoreCase();
-                    var list = logFiles.FindAll(x => this.Name.Contains(x.FileName, ig));
+                    List<LogFile> list = logFiles.FindAll(x => this.Name.Contains(x.FileName, ig));
                     base.WriteObject(list, true);
                 }
                 else

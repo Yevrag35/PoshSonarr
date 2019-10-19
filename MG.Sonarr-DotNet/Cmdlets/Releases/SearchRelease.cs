@@ -43,7 +43,7 @@ namespace MG.Sonarr.Cmdlets
             string jsonRes = base.TryGetSonarrResult(ep);
             if (!string.IsNullOrEmpty(jsonRes))
             {
-                var results = SonarrHttp.ConvertToSonarrResults<Release>(jsonRes, out bool iso);
+                List<Release> results = SonarrHttp.ConvertToSonarrResults<Release>(jsonRes, out bool iso);
                 if (_exclude)
                     base.WriteObject(results.FindAll(x => !x.Rejected), true);
 

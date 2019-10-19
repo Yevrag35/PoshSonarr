@@ -9,23 +9,25 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets.Commands
 {
+#if NETFRAMEWORK
     /// <summary>
     /// <para type="synopsis">Instructs Sonarr to perform an episode search.</para>
     /// <para type="description">Tells SOnarr to perform an episode search for the given episodes.</para>
     /// </summary>
+#endif
     [Cmdlet(VerbsLifecycle.Invoke, "EpisodeSearch", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(CommandOutput))]
     [Alias("Start-EpisodeSearch")]
     public class InvokeEpisodeSearch : BasePostCommandCmdlet
     {
-        #region FIELDS/CONSTANTS
+#region FIELDS/CONSTANTS
         protected override string Command => "EpisodeSearch";
         private List<long> _ids;
 
-        #endregion
+#endregion
 
-        #region PARAMETERS
+#region PARAMETERS
         /// <summary>
         /// <para type="description">The episode id(s) retrieved from 'Get-SonarrEpisode'.</para>
         /// </summary>
@@ -38,9 +40,9 @@ namespace MG.Sonarr.Cmdlets.Commands
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 
-        #endregion
+#endregion
 
-        #region CMDLET PROCESSING
+#region CMDLET PROCESSING
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
@@ -61,6 +63,6 @@ namespace MG.Sonarr.Cmdlets.Commands
             }
         }
 
-        #endregion
+#endregion
     }
 }

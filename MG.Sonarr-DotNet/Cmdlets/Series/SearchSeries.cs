@@ -74,7 +74,7 @@ namespace MG.Sonarr.Cmdlets
                     if (!string.IsNullOrEmpty(jsonStr))
                     {
                         var tok = JToken.Parse(jsonStr);
-                        var list = SonarrHttp.ConvertToSeriesResults(jsonStr, false);
+                        List<SeriesResult> list = SonarrHttp.ConvertToSeriesResults(jsonStr, false);
                         base.WriteObject(list, true);
                     }
                 }

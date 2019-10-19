@@ -9,10 +9,12 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets.Commands
 {
+#if NETFRAMEWORK
     /// <summary>
     /// <para type="synopsis">Executes a series search.</para>
     /// <para type="description">Instructs Sonarr to perform a series search for the specified seriesID.</para>
     /// </summary>
+#endif
     [Cmdlet(VerbsLifecycle.Invoke, "SeriesSearch", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(CommandOutput))]
@@ -37,9 +39,9 @@ namespace MG.Sonarr.Cmdlets.Commands
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 
-        #endregion
+#endregion
 
-        #region CMDLET PROCESSING
+#region CMDLET PROCESSING
         protected override void BeginProcessing() => base.BeginProcessing();
 
         protected override void ProcessRecord()
@@ -55,11 +57,11 @@ namespace MG.Sonarr.Cmdlets.Commands
             }
         }
 
-        #endregion
+#endregion
 
-        #region METHODS
+#region METHODS
 
 
-        #endregion
+#endregion
     }
 }
