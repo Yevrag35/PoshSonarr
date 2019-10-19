@@ -28,6 +28,7 @@ namespace MG.Sonarr.Cmdlets
         private const string CONTENT_TYPE = "application/json";
         private const string DEBUG_API_MSG = "Sending {0} request to: {1}{2}";
         private const string DEBUG_API_AND_BODY_MSG = DEBUG_API_MSG + "{3}{3}REQUEST BODY:{4}";
+        private const string DEBUG_API_RESPONSE_MSG = "RESPONSE ({0} {1}): {2}{2}{3}";
 
         #endregion
 
@@ -107,7 +108,7 @@ namespace MG.Sonarr.Cmdlets
         /// Errors are handled by <see cref="PSCmdlet"/>.WriteError.
         /// </summary>
         /// <param name="endpoint">The Sonarr API endpoint to send the GET request to.</param>
-        protected string TryGetSonarrResult(string endpoint)
+        protected string TryGetSonarrResult(string endpoint, bool showAllDebug = true)
         {
             this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
 
@@ -123,6 +124,7 @@ namespace MG.Sonarr.Cmdlets
                         Task<string> strTask = content.ReadAsStringAsync();
                         strTask.Wait();
                         res = strTask.Result;
+                        this.WriteApiDebug(res, resp.StatusCode, showAllDebug);
                     }
                 }
                 return res;
@@ -213,6 +215,22 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region DEBUG METHODS
+        protected void WriteApiDebug(string jsonResult, HttpStatusCode code, bool showAllDebug)
+        {
+            if (this.MyInvocation.BoundParameters.ContainsKey("Debug"))
+            {
+                string debugJson = null;
+                if (showAllDebug && !string.IsNullOrWhiteSpace(jsonResult))
+                {
+                    JToken tok = JToken.Parse(jsonResult);
+                    if (tok != null)
+                    {
+                        debugJson = tok.ToString();
+                    }
+                }
+                base.WriteDebug(string.Format(DEBUG_API_RESPONSE_MSG, (int)code, code.ToString(), Environment.NewLine, debugJson));
+            }
+        }
         protected virtual void WriteApiDebug(string endpoint, HttpMethod method, out string apiPath)
         {
             apiPath = Context.SonarrUrl.Path + endpoint;
@@ -226,7 +244,6 @@ namespace MG.Sonarr.Cmdlets
 
             base.WriteDebug(msg);
         }
-
         protected virtual void WriteApiDebug(string endpoint, HttpMethod method, string body, out string apiPath)
         {
             apiPath = Context.SonarrUrl.Path + endpoint;

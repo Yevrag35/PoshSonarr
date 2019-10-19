@@ -19,6 +19,7 @@ namespace MG.Sonarr.Cmdlets
     {
         #region FIELDS/CONSTANTS
         private List<SeriesResult> _series;
+        private bool _showAll = false;
 
         #endregion
 
@@ -30,6 +31,13 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId", ValueFromPipelineByPropertyName = true)]
         public long[] SeriesId { get; set; }
 
+        [Parameter(Mandatory = false, DontShow = true)]
+        public SwitchParameter DebugShowAll
+        {
+            get => _showAll;
+            set => _showAll = value;
+        }
+
         #endregion
 
         #region CMDLET PROCESSING
@@ -39,7 +47,7 @@ namespace MG.Sonarr.Cmdlets
         {
             if (this.ParameterSetName == "BySeriesName")
             {
-                string jsonStr = base.TryGetSonarrResult("/series");
+                string jsonStr = base.TryGetSonarrResult("/series", _showAll);
                 if (!string.IsNullOrEmpty(jsonStr))
                 {
                     _series = SonarrHttp.ConvertToSeriesResults(jsonStr);
