@@ -15,7 +15,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <DocumentationFile>C:\Repos\PoshSonarr\MG.Sonarr-Core3.0\MG.Sonarr-Core3.0.xml</DocumentationFile>
+    <DocumentationFile></DocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -30,10 +32,6 @@
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0-preview.4" />
 	  <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-	  <PackageReference Include="XmlDoc2CmdletDoc" Version="0.2.13">
-	    <PrivateAssets>all</PrivateAssets>
-	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
 	</ItemGroup>
 
 </Project>
