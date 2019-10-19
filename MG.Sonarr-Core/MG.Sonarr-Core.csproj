@@ -21,13 +21,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <DocumentationFile>D:\Local_Repos\PoshSonarr\MG.Sonarr-Core\bin\Debug\netcoreapp2.2\MG.Sonarr-Core.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\netcoreapp2.2\MG.Sonarr-Core.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
-    <DocumentationFile>D:\Local_Repos\PoshSonarr\MG.Sonarr-Core\MG.Sonarr-Core.xml</DocumentationFile>
+    <DocumentationFile>MG.Sonarr-Core.xml</DocumentationFile>
   </PropertyGroup>
 
 	<ItemGroup>
