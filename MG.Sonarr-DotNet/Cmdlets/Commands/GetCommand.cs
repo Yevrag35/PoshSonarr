@@ -9,12 +9,14 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets.Commands
 {
+#if (NETCOREAPP == false)
     /// <summary>
     ///     <para type="synopsis">Retrieves the status of a given command issued to Sonarr.</para>
     ///     <para type="description">After issuing a command to Sonarr, this command can retrieve additional details about 
     ///         how it ran.
     ///     </para>
     /// </summary>
+#endif
     [Cmdlet(VerbsCommon.Get, "Command", ConfirmImpact = ConfirmImpact.None)]
     [OutputType(typeof(CommandResult))]
     [Alias("Get-Job")]

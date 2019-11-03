@@ -1,11 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2026
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29411.108
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MG.Sonarr-Core", "MG.Sonarr-Core\MG.Sonarr-Core.csproj", "{889933B8-71CB-48C7-8A96-F730A0528768}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MG.Sonarr-Core2.0", "MG.Sonarr-Core\MG.Sonarr-Core2.0.csproj", "{889933B8-71CB-48C7-8A96-F730A0528768}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MG.Sonarr-DotNet", "MG.Sonarr-DotNet\MG.Sonarr-DotNet.csproj", "{8DD7200C-4DC3-4117-9439-30AD07B4337C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MG.Sonarr-Core3.0", "MG.Sonarr-Core3.0\MG.Sonarr-Core3.0.csproj", "{E0B1EF91-A152-4836-A56E-27F6390F6382}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MG.Sonarr.Functionality", "MG.Sonarr.Functionality\MG.Sonarr.Functionality.csproj", "{16FD2D22-D7F4-48E1-9208-04D1939F1785}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{8DD7200C-4DC3-4117-9439-30AD07B4337C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8DD7200C-4DC3-4117-9439-30AD07B4337C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8DD7200C-4DC3-4117-9439-30AD07B4337C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0B1EF91-A152-4836-A56E-27F6390F6382}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0B1EF91-A152-4836-A56E-27F6390F6382}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0B1EF91-A152-4836-A56E-27F6390F6382}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0B1EF91-A152-4836-A56E-27F6390F6382}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16FD2D22-D7F4-48E1-9208-04D1939F1785}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16FD2D22-D7F4-48E1-9208-04D1939F1785}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16FD2D22-D7F4-48E1-9208-04D1939F1785}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16FD2D22-D7F4-48E1-9208-04D1939F1785}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

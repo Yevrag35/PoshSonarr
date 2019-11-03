@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 namespace MG.Sonarr.Results
 {
+    [Serializable]
     public class AddOptions : BaseResult
     {
         public bool IgnoreEpisodesWithFiles { get; set; }

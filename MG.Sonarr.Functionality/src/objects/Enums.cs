@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MG.Sonarr
+namespace MG.Sonarr.Functionality
 {
     public enum AuthenticationType
     {

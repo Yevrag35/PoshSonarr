@@ -14,10 +14,9 @@ namespace MG.Sonarr.Results
         public DateTime LastWriteTime { get; set; }
         [JsonProperty("id")]
         public int LogFileId { get; set; }
-    }
 
-    internal class LogFileSortById : IComparer<LogFile>
-    {
-        public int Compare(LogFile x, LogFile y) => x.LogFileId.CompareTo(y.LogFileId);
-    }
-}
+        internal class LogFileSortById : IComparer<LogFile>
+        {
+            public int Compare(LogFile x, LogFile y) => x.LogFileId.CompareTo(y.LogFileId);
+        }
+    }}

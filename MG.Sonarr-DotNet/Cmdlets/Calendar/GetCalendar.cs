@@ -9,6 +9,7 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
+#if (NETCOREAPP == false)
     /// <summary>
     ///     <para type="synopsis">Retrieves Sonarr calendar entries.</para>
     ///     <para type="description">
@@ -22,6 +23,7 @@ namespace MG.Sonarr.Cmdlets
     /// <example>
     ///     <code>Get-SonarrCalendar -DayOfWeek Friday</code>
     /// </example>
+#endif
     [Cmdlet(VerbsCommon.Get, "Calendar", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "None")]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(CalendarEntry))]

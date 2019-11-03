@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace MG.Sonarr
+namespace MG.Sonarr.Functionality
 {
     [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
     public class JsonStringCollection : BaseResult, IEnumerable<string>
@@ -48,7 +48,7 @@ namespace MG.Sonarr
                 }
             }
         }
-        internal void Add(object obj)
+        public void AddObject(object obj)
         {
             if (obj is string str)
                 _list.Add(str);

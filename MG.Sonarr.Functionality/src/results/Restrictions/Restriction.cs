@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MG.Sonarr.Functionality;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace MG.Sonarr.Results
             this.Required = new JsonStringCollection();
         }
 
-        internal Restriction(IDictionary<string, object> parameters)
+        public Restriction(IDictionary<string, object> parameters)
         {
             _additionalData = new Dictionary<string, JToken>();
             this.Tags = new HashSet<int>();

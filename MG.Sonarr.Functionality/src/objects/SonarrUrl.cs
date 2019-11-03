@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace MG.Sonarr
 {
-    public class SonarrUrl : ISonarrUrl
+    internal sealed class SonarrUrl : ISonarrUrl
     {
         #region FIELDS/CONSTANTS
         private UriBuilder _builder;
@@ -22,8 +22,8 @@ namespace MG.Sonarr
         #endregion
 
         #region PROPERTIES
-        public string BaseUrl => _base;
-        public bool IncludeApiPrefix
+        string ISonarrUrl.BaseUrl => _base;
+        bool ISonarrUrl.IncludeApiPrefix
         {
             get => _includeApiPrefix;
             set
@@ -37,7 +37,7 @@ namespace MG.Sonarr
                 _includeApiPrefix = value;
             }
         }
-        public string Path
+        string ISonarrUrl.Path
         {
             get => _builder.Path != "/"
                 ? _builder.Path.TrimEnd(SLASH)
@@ -48,7 +48,7 @@ namespace MG.Sonarr
                 _builder.Path = value;
             }
         }
-        public Uri Url => _builder.Uri;
+        Uri ISonarrUrl.Url => _builder.Uri;
 
         #endregion
 
@@ -69,14 +69,12 @@ namespace MG.Sonarr
                 ? _builder.Path = _builder.Path + "api"
                 : _builder.Path = _builder.Path + "/api";
         }
-
         private void FormatNew(Uri url, bool includeApiPrefix)
         {
             _builder = new UriBuilder(url);
             _base = _builder.Uri.GetLeftPart(UriPartial.Scheme | UriPartial.Authority).TrimEnd(SLASH);
-            this.IncludeApiPrefix = includeApiPrefix;
+            ((ISonarrUrl)this).IncludeApiPrefix = includeApiPrefix;
         }
-
         private void FormatNew(string hostName, int portNumber, bool useSsl, string reverseProxyUriBase, bool includeApiPrefix)
         {
             string scheme = !useSsl
@@ -102,7 +100,6 @@ namespace MG.Sonarr
                 _builder.Path = SLASH_STR + reverseProxyUriBase + _builder.Path;
             }
         }
-
         private void RemoveApiPrefix() => _builder.Path = _builder.Path.Trim(SLASH_API);
 
         #endregion

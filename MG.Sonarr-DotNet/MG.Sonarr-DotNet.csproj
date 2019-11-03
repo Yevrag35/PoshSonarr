@@ -95,21 +95,8 @@
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
     <Compile Include="Components\SonarrHttp.cs" />
     <Compile Include="Objects\AddRemoveHashTable.cs" />
-    <Compile Include="Objects\IgnoreCase.cs" />
     <Compile Include="Objects\ReplaceHashTable.cs" />
     <Compile Include="Objects\EpisodeIdentifier.cs" />
-    <Compile Include="Objects\Interfaces\ISonarrUrl.cs" />
-    <Compile Include="Objects\JsonStringCollection.cs" />
-    <Compile Include="Objects\SonarrUrl.cs" />
-    <None Include="Results\Quality\QualityDefinition-BETA.cs" />
-    <Compile Include="Results\DownloadClient\DownloadClient.cs" />
-    <Compile Include="Results\DownloadClient\DownloadClientSetting.cs" />
-    <Compile Include="Results\FileSystem\FileSystem.cs" />
-    <Compile Include="Results\LogFile\LogFile.cs" />
-    <Compile Include="Results\MediaFiles\MediaFile.cs" />
-    <Compile Include="Results\RemotePath\RemotePathMapping.cs" />
-    <Compile Include="Results\Restrictions\Restriction.cs" />
-    <Compile Include="Results\Updates\Update.cs" />
     <Compile Include="Cmdlets\Connection\ConnectInstance.cs" />
     <Compile Include="Cmdlets\Episodes\GetEpisode.cs" />
     <Compile Include="Cmdlets\Episodes\GetEpisodeFile.cs" />
@@ -138,39 +125,11 @@
     <Compile Include="Components\Caller.cs" />
     <Compile Include="Components\Exceptions.cs" />
     <Compile Include="Components\SonarrContext.cs" />
-    <Compile Include="Objects\AddOptions.cs" />
     <Compile Include="Objects\ApiKey.cs" />
-    <Compile Include="Objects\Enums\Enums.cs" />
-    <Compile Include="Results\Bases\BaseEpisodeResult.cs" />
-    <Compile Include="Results\Bases\BaseResult.cs" />
-    <Compile Include="Results\Calendar\CalendarEntry.cs" />
-    <Compile Include="Results\Commands\CommandOutput.cs" />
-    <Compile Include="Results\Commands\CommandResult.cs" />
-    <Compile Include="Results\Episode\Episode.cs" />
-    <Compile Include="Results\Episode\EpisodeFile.cs" />
-    <Compile Include="Results\Generic\ItemQuality.cs" />
-    <Compile Include="Results\Generic\Other.cs" />
-    <Compile Include="Results\Profile\QualityItemCollection.cs" />
-    <Compile Include="Results\Profile\QualityProfile.cs" />
-    <Compile Include="Results\Queue\EpisodeQueueItem.cs" />
-    <Compile Include="Results\Queue\QueueItem.cs" />
-    <Compile Include="Results\Releases\Releases.cs" />
-    <Compile Include="Results\RootFolder\RootFolder.cs" />
-    <Compile Include="Results\Series\AlternateTitle.cs" />
-    <Compile Include="Results\Series\Season.cs" />
-    <Compile Include="Results\Series\SeasonCollection.cs" />
-    <Compile Include="Results\Series\Series.cs" />
-    <Compile Include="Results\Series\SeriesImage.cs" />
-    <Compile Include="Results\System\BackupResult.cs" />
-    <Compile Include="Results\System\DiskspaceResult.cs" />
-    <Compile Include="Results\System\StatusResult.cs" />
-    <Compile Include="Results\Tags\Tag.cs" />
     <Content Include="DebugScript.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="GenerateManifest.ps1" />
-    <Compile Include="Objects\Interfaces\IApiKey.cs" />
-    <Compile Include="Objects\Interfaces\ISonarrResult.cs" />
     <Compile Include="Objects\NameOrId.cs" />
     <Compile Include="Objects\ProxyCredential.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -199,15 +158,21 @@
   <ItemGroup>
     <Folder Include="Assemblies\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MG.Sonarr.Functionality\MG.Sonarr.Functionality.csproj">
+      <Project>{16fd2d22-d7f4-48e1-9208-04d1939f1785}</Project>
+      <Name>MG.Sonarr.Functionality</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -NonInteractive -WindowStyle Hidden -File "$(ProjectDir)GenerateManifest.ps1" -DebugDirectory "$(ProjectDir)bin\$(ConfigurationName)" -ModuleFileDirectory "$(ProjectDir)TypeFormats" -AssemblyInfo "$(ProjectDir)Properties\AssemblyInfo.cs" -TargetFileName "$(TargetFileName)"</PostBuildEvent>
   </PropertyGroup>
-  <Import Project="..\packages\XmlDoc2CmdletDoc.0.2.12\build\XmlDoc2CmdletDoc.targets" Condition="Exists('..\packages\XmlDoc2CmdletDoc.0.2.12\build\XmlDoc2CmdletDoc.targets')" />
+  <Import Project="..\packages\XmlDoc2CmdletDoc.0.2.13\build\XmlDoc2CmdletDoc.targets" Condition="Exists('..\packages\XmlDoc2CmdletDoc.0.2.13\build\XmlDoc2CmdletDoc.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\XmlDoc2CmdletDoc.0.2.12\build\XmlDoc2CmdletDoc.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\XmlDoc2CmdletDoc.0.2.12\build\XmlDoc2CmdletDoc.targets'))" />
+    <Error Condition="!Exists('..\packages\XmlDoc2CmdletDoc.0.2.13\build\XmlDoc2CmdletDoc.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\XmlDoc2CmdletDoc.0.2.13\build\XmlDoc2CmdletDoc.targets'))" />
   </Target>
 </Project>

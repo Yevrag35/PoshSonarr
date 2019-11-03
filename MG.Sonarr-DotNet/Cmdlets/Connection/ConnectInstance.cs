@@ -1,3 +1,4 @@
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections;
@@ -180,8 +181,8 @@ namespace MG.Sonarr.Cmdlets
         {
 
             Context.SonarrUrl = this.ParameterSetName == "ByServerName"
-                ? new SonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
-                : new SonarrUrl(this.SonarrUrl, !_noApiPrefix);
+                ? ClassFactory.GenerateSonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
+                : ClassFactory.GenerateSonarrUrl(this.SonarrUrl, !_noApiPrefix);
 
             HttpClientHandler handler = null;
             this.CheckCertificateValidity(ref handler);

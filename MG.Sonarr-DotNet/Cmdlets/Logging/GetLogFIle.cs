@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -37,14 +38,14 @@ namespace MG.Sonarr.Cmdlets.Logging
             if (!string.IsNullOrEmpty(jsonRes))
             {
                 List<LogFile> logFiles = SonarrHttp.ConvertToSonarrResults<LogFile>(jsonRes);
-                logFiles.Sort(new LogFileSortById());
+                logFiles.Sort(ClassFactory.GenerateLogFileComparer());
                 if (this.MyInvocation.BoundParameters.ContainsKey("LogFileId"))
                 {
                     base.WriteObject(logFiles.FindAll(x => this.LogFileId.Contains(x.LogFileId)), true);
                 }
                 else if (this.MyInvocation.BoundParameters.ContainsKey("Name"))
                 {
-                    var ig = new IgnoreCase();
+                    IEqualityComparer<string> ig = ClassFactory.NewIgnoreCase();
                     List<LogFile> list = logFiles.FindAll(x => this.Name.Contains(x.FileName, ig));
                     base.WriteObject(list, true);
                 }
