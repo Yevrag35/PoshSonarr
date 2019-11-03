@@ -45,10 +45,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\MG.Sonarr-DotNet\Results\Quality\QualityDefinition.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\MG.Sonarr.Functionality\MG.Sonarr.Functionality.csproj" />
   </ItemGroup>
 
