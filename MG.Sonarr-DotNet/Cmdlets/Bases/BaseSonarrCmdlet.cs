@@ -214,14 +214,9 @@ namespace MG.Sonarr.Cmdlets
 
         #endregion
 
-        /// <summary>
-        /// Displays a non-bodied API-specific debug message if the DebugPreference is set to show Debug-level messages.
-        /// It returns the "to-be-used" API uri string no matter what.
-        /// </summary>
-        /// <param name="endpoint">The endpoint Uri string that the <see cref="SonarrRestClient"/> will execute on.</param>
-        /// <param name="method">The method that will be used in the API call.</param>
-        /// <param name="apiPath">The parsed API uri to be executed on.</param>
+
         #region DEBUG METHODS
+        
         protected void WriteApiDebug(string jsonResult, HttpStatusCode code, bool showAllDebug)
         {
             if (this.MyInvocation.BoundParameters.ContainsKey("Debug"))
@@ -238,6 +233,13 @@ namespace MG.Sonarr.Cmdlets
                 base.WriteDebug(string.Format(DEBUG_API_RESPONSE_MSG, (int)code, code.ToString(), Environment.NewLine, debugJson));
             }
         }
+        /// <summary>
+        /// Displays a non-bodied API-specific debug message if the DebugPreference is set to show Debug-level messages.
+        /// It returns the "to-be-used" API uri string no matter what.
+        /// </summary>
+        /// <param name="endpoint">The endpoint Uri string that the <see cref="SonarrRestClient"/> will execute on.</param>
+        /// <param name="method">The method that will be used in the API call.</param>
+        /// <param name="apiPath">The parsed API uri to be executed on.</param>
         protected virtual void WriteApiDebug(string endpoint, HttpMethod method, out string apiPath)
         {
             apiPath = Context.SonarrUrl.Path + endpoint;
