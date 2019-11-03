@@ -19,7 +19,7 @@ namespace MG.Sonarr
         /// <summary>
         /// A copy of the current context's <see cref="HttpClient"/>.
         /// </summary>
-        public ApiCaller Caller { get; }
+        public SonarrRestClient Caller { get; }
 
         /// <summary>
         /// The request method that caused this exception to be thrown.

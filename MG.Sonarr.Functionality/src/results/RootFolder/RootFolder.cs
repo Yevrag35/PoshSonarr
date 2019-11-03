@@ -15,6 +15,9 @@ namespace MG.Sonarr.Results
         public Collection<UnmappedFolder> UnmappedFolders { get; set; }
     }
 
+    /// <summary>
+    /// The class that defines an unmapped folder in Sonarr.
+    /// </summary>
     public class UnmappedFolder : BaseResult
     {
         public string Name { get; set; }

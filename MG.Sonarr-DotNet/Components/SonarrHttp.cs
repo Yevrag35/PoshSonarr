@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace MG.Sonarr
 {
     /// <summary>
-    /// A static class providing conversion methods from <see cref="JToken"/> and <see cref="string"/> objects to objects that inherit from <see cref="ISonarrResult"/>.
+    /// A static class providing conversion methods from <see cref="JToken"/> and <see cref="string"/> objects to objects that inherit from <see cref="IJsonResult"/>.
     /// </summary>
     public static class SonarrHttp
     {
@@ -43,8 +43,8 @@ namespace MG.Sonarr
         [Obsolete]
         public static void AddSonarrApiKey(this HttpClient client, ApiKey apiKey)
         {
-            KeyValuePair<string, string> kvp = apiKey.AsKeyValuePair();
-            client.DefaultRequestHeaders.Add(kvp.Key, kvp.Value);
+            ValueTuple<string, string> kvp = apiKey.ToTuple();
+            client.DefaultRequestHeaders.Add(kvp.Item1, kvp.Item2);
         }
 
         public static SeriesResult ConvertToSeriesResult(string jsonResult, bool fromSearch = false)
@@ -71,12 +71,12 @@ namespace MG.Sonarr
             return list;
         }
 
-        public static T ConvertToSonarrResult<T>(string jsonResult) where T : ISonarrResult
+        public static T ConvertToSonarrResult<T>(string jsonResult) where T : IJsonResult
         {
             return (T)JsonConvert.DeserializeObject(jsonResult, typeof(T), Serializer);
         }
 
-        public static List<T> ConvertToSonarrResults<T>(string jsonResult) where T : ISonarrResult
+        public static List<T> ConvertToSonarrResults<T>(string jsonResult) where T : IJsonResult
         {
             var list = new List<T>();
             if (IsJsonArray(jsonResult))
@@ -91,7 +91,7 @@ namespace MG.Sonarr
             return list;
         }
 
-        internal static List<T> ConvertToSonarrResults<T>(string jsonResult, out bool isSingleObject) where T : ISonarrResult
+        internal static List<T> ConvertToSonarrResults<T>(string jsonResult, out bool isSingleObject) where T : IJsonResult
         {
             var list = new List<T>();
             if (IsJsonArray(jsonResult))
@@ -112,7 +112,7 @@ namespace MG.Sonarr
         public static object ConvertToSonarrResult(string jsonResult, Type convertTo)
         {
             var currentMethod = MethodBase.GetCurrentMethod();
-            if (!convertTo.GetInterfaces().Contains(typeof(ISonarrResult)))
+            if (!convertTo.GetInterfaces().Contains(typeof(IJsonResult)))
                 throw new InvalidCastException("The parameter for \"convertTo\" does not inherit the interface \"ISonarrResult\".");
 
             MethodInfo otherMeth = typeof(SonarrHttp).GetMethod(currentMethod.Name, new Type[1] { typeof(string) });
@@ -124,7 +124,7 @@ namespace MG.Sonarr
         public static List<object> ConvertToSonarrResults(string jsonResult, Type convertTo)
         {
             var currentMethod = MethodBase.GetCurrentMethod();
-            if (!convertTo.GetInterfaces().Contains(typeof(ISonarrResult)))
+            if (!convertTo.GetInterfaces().Contains(typeof(IJsonResult)))
                 throw new InvalidCastException("The parameter for \"convertTo\" does not inherit the interface \"ISonarrResult\".");
 
             MethodInfo otherMeth = typeof(SonarrHttp).GetMethod(currentMethod.Name, new Type[1] { typeof(string) });

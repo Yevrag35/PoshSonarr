@@ -23,10 +23,11 @@ namespace MG.Sonarr.Cmdlets.Logging
         #endregion
 
         #region PARAMETERS
-        [Parameter(Mandatory = true, Position = 1, ValueFromPipelineByPropertyName = true)]
-        public string DownloadUrl { get; set; }
+        [Parameter(Mandatory = true, ValueFromPipeline = true)]
+        public LogFile InputObject { get; set; }
 
         [Parameter(Mandatory = true, Position = 0)]
+        [Alias("FolderPath")]
         public string Path { get; set; }
 
         #endregion
@@ -39,7 +40,7 @@ namespace MG.Sonarr.Cmdlets.Logging
             if (!Directory.Exists(this.Path))
                 throw new ArgumentException("The output folder specified does not exist.");
 
-            Task task = this.DownloadLogFile(this.Path, this.DownloadUrl);
+            var task = this.DownloadLogFile(this.Path, this.InputObject.DownloadUrl);
             task.Wait();
         }
 

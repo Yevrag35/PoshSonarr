@@ -204,7 +204,7 @@ namespace MG.Sonarr.Cmdlets
 
         #region PRIVATE/BACKEND METHODS
 
-        private string GetStatusString(ApiCaller caller)
+        private string GetStatusString(SonarrRestClient caller)
         {
             string status = base.TrySonarrConnect();
             if (string.IsNullOrEmpty(status))
@@ -229,7 +229,7 @@ namespace MG.Sonarr.Cmdlets
             return sr;
         }
 
-        public ApiCaller NewApiCaller(ISonarrUrl url, ApiKey apiKey, bool allowRedirects)
+        public SonarrRestClient NewApiCaller(ISonarrUrl url, ApiKey apiKey, bool allowRedirects)
         {
             var handler = new HttpClientHandler
             {
@@ -240,7 +240,7 @@ namespace MG.Sonarr.Cmdlets
         }
 
         [Obsolete]
-        public ApiCaller NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects)
+        public SonarrRestClient NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects)
         {
             var handler = new HttpClientHandler
             {
@@ -250,7 +250,7 @@ namespace MG.Sonarr.Cmdlets
             return this.NewApiCaller(uriBuilder.Uri.GetLeftPart(UriPartial.Scheme | UriPartial.Authority), apiKey, handler);
         }
 
-        public ApiCaller NewApiCaller(ISonarrUrl url, ApiKey apiKey, bool allowRedirects, string proxy, ProxyCredential proxyCredential, bool proxyBypassLocal)
+        public SonarrRestClient NewApiCaller(ISonarrUrl url, ApiKey apiKey, bool allowRedirects, string proxy, ProxyCredential proxyCredential, bool proxyBypassLocal)
         {
             var wp = new WebProxy(proxy)
             {
@@ -274,7 +274,7 @@ namespace MG.Sonarr.Cmdlets
         }
 
         [Obsolete]
-        public ApiCaller NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects, string proxy, ProxyCredential proxyCredential, bool proxyBypassLocal)
+        public SonarrRestClient NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects, string proxy, ProxyCredential proxyCredential, bool proxyBypassLocal)
         {
             var wp = new WebProxy(proxy)
             {
@@ -298,11 +298,11 @@ namespace MG.Sonarr.Cmdlets
             return NewApiCaller(uriBuilder.Uri.GetLeftPart(UriPartial.Scheme | UriPartial.Authority), apiKey, handler);
         }
 
-        private ApiCaller NewApiCaller(string url, ApiKey apiKey, HttpClientHandler handler)
+        private SonarrRestClient NewApiCaller(string url, ApiKey apiKey, HttpClientHandler handler)
         {
             this.CheckCertificateValidity(ref handler);
 
-            return new ApiCaller(handler, apiKey)
+            return new SonarrRestClient(handler, apiKey)
             {
                 BaseAddress = new Uri(url)
             };
