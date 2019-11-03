@@ -216,7 +216,12 @@ namespace MG.Sonarr.Cmdlets
 
 
         #region DEBUG METHODS
-        
+        /// <summary>
+        /// Displays the raw JSON response received from the endpoint in the Debug and Verbose output streams.
+        /// </summary>
+        /// <param name="jsonResult">The JSON string from the response payload.</param>
+        /// <param name="code">The status code from the <see cref="HttpResponseMessage"/>.</param>
+        /// <param name="showAllDebug">Indicates whether to show the entire JSON response or to only show the status code.</param>
         protected void WriteApiDebug(string jsonResult, HttpStatusCode code, bool showAllDebug)
         {
             if (this.MyInvocation.BoundParameters.ContainsKey("Debug"))
@@ -230,6 +235,7 @@ namespace MG.Sonarr.Cmdlets
                         debugJson = tok.ToString();
                     }
                 }
+                base.WriteVerbose(string.Format("Received response: {0} ({1}", (int)code, code.ToString()));
                 base.WriteDebug(string.Format(DEBUG_API_RESPONSE_MSG, (int)code, code.ToString(), Environment.NewLine, debugJson));
             }
         }
