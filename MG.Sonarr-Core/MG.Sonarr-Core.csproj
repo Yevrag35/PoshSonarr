@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFrameworks>netcoreapp2.2;netcoreapp3.1</TargetFrameworks>
     <RootNamespace>MG.Sonarr</RootNamespace>
     <LangVersion>7.3</LangVersion>
     <Description>A library consisting of PowerShell cmdlets for querying/managing Sonarr PVR.</Description>
@@ -12,22 +12,20 @@
     <RepositoryType>Git</RepositoryType>
     <Authors>Mike Garvey</Authors>
     <Company>Yevrag35, LLC.</Company>
-    <Version>1.2.1</Version>
+    <Version>1.2.2</Version>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-    <AssemblyVersion>1.2.1</AssemblyVersion>
-    <FileVersion>1.2.1</FileVersion>
+    <AssemblyVersion>1.2.2</AssemblyVersion>
+    <FileVersion>1.2.2</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <DocumentationFile>bin\Debug\netcoreapp2.2\MG.Sonarr-Core.xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
-    <DocumentationFile>MG.Sonarr-Core.xml</DocumentationFile>
   </PropertyGroup>
 
 	<ItemGroup>
@@ -35,25 +33,21 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.PowerShell.SDK" Version="6.2.3" />
+    <PackageReference Include="MG.Dynamic" Version="3.3.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Assemblies\" />
-  </ItemGroup>
+	<ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.2' ">
+		<PackageReference Include="Microsoft.PowerShell.SDK" Version="6.2.3" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
+		<PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0-preview.5" />
+	</ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MG.Sonarr.Functionality\MG.Sonarr.Functionality.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="MG.Dynamic-Core, Version=3.2.2.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>D:\Local_Repos\PoshSonarr\MG.Sonarr-Core\Assemblies\MG.Dynamic-Core.dll</HintPath>
-      <Private>true</Private>
-      <SpecificVersion>true</SpecificVersion>
-    </Reference>
   </ItemGroup>
 
 </Project>

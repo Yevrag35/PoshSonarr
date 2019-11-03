@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "MG.Sonarr-Core3.0": {
-      "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\PowerShell\\7-preview\\pwsh.exe",
-      "commandLineArgs": "-NoExit -NoLogo -Command \"Import-Module \".\\MG.Sonarr-Core3.0.dll;\""
-    }
-  }
-}

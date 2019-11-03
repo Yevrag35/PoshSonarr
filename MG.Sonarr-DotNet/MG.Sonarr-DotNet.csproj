@@ -41,8 +41,8 @@
     <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MG.Dynamic">
-      <HintPath>..\..\DynamicParameterDll\DynamicParameter-DotNet\bin\Release\MG.Dynamic.dll</HintPath>
+    <Reference Include="MG.Dynamic, Version=3.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>D:\Local_Repos\PoshSonarr\MG.Sonarr-DotNet\Assemblies\MG.Dynamic.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.PowerShell.Commands.Utility, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -96,6 +96,7 @@
     <Compile Include="Cmdlets\Restriction\UpdateRestriction.cs" />
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
+    <Compile Include="Components\SonarrHttp.cs" />
     <Compile Include="Objects\AddRemoveHashTable.cs" />
     <Compile Include="Objects\ReplaceHashTable.cs" />
     <Compile Include="Objects\EpisodeIdentifier.cs" />

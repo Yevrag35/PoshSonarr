@@ -41,7 +41,7 @@ namespace MG.Sonarr
         };
 
         [Obsolete]
-        public static void AddSonarrApiKey(this HttpClient client, ApiKey apiKey)
+        public static void AddSonarrApiKey(this HttpClient client, IApiKey apiKey)
         {
             ValueTuple<string, string> kvp = apiKey.ToTuple();
             client.DefaultRequestHeaders.Add(kvp.Item1, kvp.Item2);
@@ -157,105 +157,105 @@ namespace MG.Sonarr
 
         #region OBSOLETE API METHODS
 
-        [Obsolete]
-        public static string SonarrGet(this HttpClient client, string sonarrEndpoint)
-        {
-            if (!Context.NoApiPrefix)
-                sonarrEndpoint = API_PREFIX + sonarrEndpoint;
+        //[Obsolete]
+        //public static string SonarrGet(this HttpClient client, string sonarrEndpoint)
+        //{
+        //    if (!Context.NoApiPrefix)
+        //        sonarrEndpoint = API_PREFIX + sonarrEndpoint;
 
-            Task<HttpResponseMessage> task = client.GetAsync(sonarrEndpoint, HttpCompletionOption.ResponseContentRead);
-            task.Wait();
-            string res = null;
-            if (!task.IsFaulted && !task.IsCanceled)
-            {
-                using (HttpResponseMessage resp = task.Result.EnsureSuccessStatusCode())
-                {
-                    using (HttpContent content = resp.Content)
-                    {
-                        Task<string> strTask = content.ReadAsStringAsync();
-                        strTask.Wait();
-                        res = strTask.Result;
-                    }
-                }
-            }
+        //    Task<HttpResponseMessage> task = client.GetAsync(sonarrEndpoint, HttpCompletionOption.ResponseContentRead);
+        //    task.Wait();
+        //    string res = null;
+        //    if (!task.IsFaulted && !task.IsCanceled)
+        //    {
+        //        using (HttpResponseMessage resp = task.Result.EnsureSuccessStatusCode())
+        //        {
+        //            using (HttpContent content = resp.Content)
+        //            {
+        //                Task<string> strTask = content.ReadAsStringAsync();
+        //                strTask.Wait();
+        //                res = strTask.Result;
+        //            }
+        //        }
+        //    }
 
-            return res;
-        }
+        //    return res;
+        //}
 
-        [Obsolete]
-        public static string SonarrPost(this HttpClient client, string endpoint, string jsonBody)
-        {
-            if (!Context.NoApiPrefix)
-                endpoint = API_PREFIX + endpoint;
+        //[Obsolete]
+        //public static string SonarrPost(this HttpClient client, string endpoint, string jsonBody)
+        //{
+        //    if (!Context.NoApiPrefix)
+        //        endpoint = API_PREFIX + endpoint;
 
-            StringContent sc = null;
-            if (!string.IsNullOrEmpty(jsonBody))
-                sc = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+        //    StringContent sc = null;
+        //    if (!string.IsNullOrEmpty(jsonBody))
+        //        sc = new StringContent(jsonBody, Encoding.UTF8, "application/json");
 
-            Task<HttpResponseMessage> call = client.PostAsync(endpoint, sc);
-            call.Wait();
+        //    Task<HttpResponseMessage> call = client.PostAsync(endpoint, sc);
+        //    call.Wait();
 
-            string res = null;
-            if (!call.IsFaulted && !call.IsCanceled)
-            {
-                using (HttpResponseMessage resp = call.Result.EnsureSuccessStatusCode())
-                {
-                    using (HttpContent content = resp.Content)
-                    {
-                        Task<string> strTask = content.ReadAsStringAsync();
-                        strTask.Wait();
-                        res = strTask.Result;
-                    }
-                }
-            }
-            return res;
-        }
+        //    string res = null;
+        //    if (!call.IsFaulted && !call.IsCanceled)
+        //    {
+        //        using (HttpResponseMessage resp = call.Result.EnsureSuccessStatusCode())
+        //        {
+        //            using (HttpContent content = resp.Content)
+        //            {
+        //                Task<string> strTask = content.ReadAsStringAsync();
+        //                strTask.Wait();
+        //                res = strTask.Result;
+        //            }
+        //        }
+        //    }
+        //    return res;
+        //}
 
-        [Obsolete]
-        public static void SonarrDelete(this HttpClient client, string endpoint)
-        {
-            if (!Context.NoApiPrefix)
-                endpoint = API_PREFIX + endpoint;
+        //[Obsolete]
+        //public static void SonarrDelete(this HttpClient client, string endpoint)
+        //{
+        //    if (!Context.NoApiPrefix)
+        //        endpoint = API_PREFIX + endpoint;
 
-            //endpoint = "/sonarr" + endpoint;
+        //    //endpoint = "/sonarr" + endpoint;
 
-            Task<HttpResponseMessage> call = client.DeleteAsync(endpoint);
-            call.Wait();
+        //    Task<HttpResponseMessage> call = client.DeleteAsync(endpoint);
+        //    call.Wait();
 
-            using (HttpResponseMessage res = call.Result)
-            {
-                res.EnsureSuccessStatusCode();
-            }
-        }
+        //    using (HttpResponseMessage res = call.Result)
+        //    {
+        //        res.EnsureSuccessStatusCode();
+        //    }
+        //}
 
-        [Obsolete]
-        public static string SonarrPut(this HttpClient client, string endpoint, string jsonBody)
-        {
-            if (!Context.NoApiPrefix)
-                endpoint = API_PREFIX + endpoint;
+        //[Obsolete]
+        //public static string SonarrPut(this HttpClient client, string endpoint, string jsonBody)
+        //{
+        //    if (!Context.NoApiPrefix)
+        //        endpoint = API_PREFIX + endpoint;
 
-            StringContent sc = null;
-            if (!string.IsNullOrEmpty(jsonBody))
-                sc = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+        //    StringContent sc = null;
+        //    if (!string.IsNullOrEmpty(jsonBody))
+        //        sc = new StringContent(jsonBody, Encoding.UTF8, "application/json");
 
-            Task<HttpResponseMessage> call = client.PutAsync(endpoint, sc);
-            call.Wait();
+        //    Task<HttpResponseMessage> call = client.PutAsync(endpoint, sc);
+        //    call.Wait();
 
-            string res = null;
-            if (!call.IsFaulted && !call.IsCanceled)
-            {
-                using (HttpResponseMessage resp = call.Result.EnsureSuccessStatusCode())
-                {
-                    using (HttpContent content = resp.Content)
-                    {
-                        Task<string> strTask = content.ReadAsStringAsync();
-                        strTask.Wait();
-                        res = strTask.Result;
-                    }
-                }
-            }
-            return res;
-        }
+        //    string res = null;
+        //    if (!call.IsFaulted && !call.IsCanceled)
+        //    {
+        //        using (HttpResponseMessage resp = call.Result.EnsureSuccessStatusCode())
+        //        {
+        //            using (HttpContent content = resp.Content)
+        //            {
+        //                Task<string> strTask = content.ReadAsStringAsync();
+        //                strTask.Wait();
+        //                res = strTask.Result;
+        //            }
+        //        }
+        //    }
+        //    return res;
+        //}
 
         #endregion
     }

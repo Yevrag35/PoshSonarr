@@ -1,6 +1,6 @@
-﻿using MG.Sonarr.Cmdlets;
+﻿//using MG.Sonarr.Cmdlets;
 using System;
-using System.Management.Automation;
+//using System.Management.Automation;
 using System.Net;
 using System.Net.Http;
 
@@ -11,10 +11,10 @@ namespace MG.Sonarr
     /// </summary>
     public abstract class BaseSonarrHttpException : HttpRequestException
     {
-        internal const string CAUTION = "Allowing redirects ";
-        private const string MSG = "An exception occurred while sending a {0} request to Sonarr.";
-        internal const string HOW_CAUTION = "can cause editing Sonarr objects (POST/PUT requests) to not perform correctly.  Use caution!";
-        internal const string CON_MSG = "Connect-SonarrInstance received a redirect request.  You can have PoshSonarr follow redirects with the '-AllowRedirects' parameter, however this " + HOW_CAUTION;
+        public const string CAUTION = "Allowing redirects ";
+        public const string MSG = "An exception occurred while sending a {0} request to Sonarr.";
+        public const string HOW_CAUTION = "can cause editing Sonarr objects (POST/PUT requests) to not perform correctly.  Use caution!";
+        public const string CON_MSG = "Connect-SonarrInstance received a redirect request.  You can have PoshSonarr follow redirects with the '-AllowRedirects' parameter, however this " + HOW_CAUTION;
 
         /// <summary>
         /// A copy of the current context's <see cref="HttpClient"/>.
