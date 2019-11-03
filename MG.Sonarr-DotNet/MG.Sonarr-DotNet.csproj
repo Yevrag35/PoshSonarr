@@ -96,7 +96,6 @@
     <Compile Include="Cmdlets\Restriction\UpdateRestriction.cs" />
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
-    <Compile Include="Components\SonarrHttp.cs" />
     <Compile Include="Objects\AddRemoveHashTable.cs" />
     <Compile Include="Objects\ReplaceHashTable.cs" />
     <Compile Include="Objects\EpisodeIdentifier.cs" />
@@ -125,14 +124,14 @@
     <Compile Include="Cmdlets\Tag\RemoveTag.cs" />
     <Compile Include="Cmdlets\Tag\SetTag.cs" />
     <Compile Include="Cmdlets\WantedMissing\GetWantedMissing.cs" />
-    <Compile Include="Components\Caller.cs" />
-    <Compile Include="Components\Exceptions.cs" />
     <Compile Include="Components\SonarrContext.cs" />
     <Compile Include="Objects\ApiKey.cs" />
     <Content Include="DebugScript.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Include="GenerateManifest.ps1" />
+    <Content Include="GenerateManifest.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Compile Include="Objects\NameOrId.cs" />
     <Compile Include="Objects\ProxyCredential.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

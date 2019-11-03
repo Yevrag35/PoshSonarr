@@ -42,7 +42,7 @@ $cmdletFormat = "{0}-{1}";
 
 $baseCmdletDir = Join-Path "$ModuleFileDirectory\.." "Cmdlets";
 [string[]]$folders = [System.IO.Directory]::EnumerateDirectories($baseCmdletDir, "*", [System.IO.SearchOption]::TopDirectoryOnly) | `
-	Where-Object { -not $_.EndsWith('Bases') -and -not $_.EndsWiths("Exclude") };
+	Where-Object { -not $_.EndsWith('Bases') -and -not $_.EndsWith("Exclude") };
 
 $aliasPat = '\[alias\(\"(.{1,})\"\)\]'
 $csFiles = @(Get-ChildItem -Path $folders *.cs -File);
@@ -51,22 +51,27 @@ $Aliases = New-Object System.Collections.Generic.List[string];
 foreach ($cs in $csFiles)
 {
 	$match = [regex]::Match($cs.Name, $pattern)
-	if ([string]::IsNullOrEmpty($match.Groups[3]))
+	if ($match.Success)
 	{
-		$name = $cmdletFormat -f $match.Groups[1].Value, $match.Groups[2].Value;
+		if ([string]::IsNullOrEmpty($match.Groups[3]))
+		{
+			$name = $cmdletFormat -f $match.Groups[1].Value, $match.Groups[2].Value;
+		}
+		else
+		{
+			$name = $cmdletFormat -f $match.Groups[1].Value, $match.Groups[3].Value
+		}
+		$Cmdlets.Add($name);
 	}
-	else
+    $content = Get-Content -Path $cs -Raw -ErrorAction SilentlyContinue
+	if ($null -ne $content)
 	{
-		$name = $cmdletFormat -f $match.Groups[1].Value, $match.Groups[3].Value
+		$aliasMatch = [regex]::Match($content, $aliasPat, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase);
+		if ($aliasMatch.Success)
+		{
+			$Aliases.Add($aliasMatch.Groups[1].Value);
+		}
 	}
-    $Cmdlets.Add($name);
-
-    $content = Get-Content -Path $cs -Raw;
-    $aliasMatch = [regex]::Match($content, $aliasPat, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase);
-    if ($aliasMatch.Success)
-    {
-        $Aliases.Add($aliasMatch.Groups[1].Value);
-    }
 }
 
 [string[]]$Cmdlets = $Cmdlets | Select-Object -Unique;
