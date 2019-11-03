@@ -1,18 +1,17 @@
-﻿using System;
+﻿using MG.Sonarr.Functionality;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Security;
-using System.Security.Cryptography.X509Certificates;
 
 namespace MG.Sonarr
 {
     /// <summary>
     /// A Sonarr-specific implementation of the <see cref="HttpClient"/> class used to issue RESTful API requests.
     /// </summary>
-    public class SonarrRestClient : HttpClient
+    public class SonarrRestClient : HttpClient, ISonarrClient
     {
         #region CONSTRUCTORS
         /// <summary>
@@ -96,6 +95,14 @@ namespace MG.Sonarr
         {
             ValueTuple<string, string> kvp = apiKey.ToTuple();
             base.DefaultRequestHeaders.Add(kvp.Item1, kvp.Item2);
+        }
+
+        bool ISonarrClient.IsJsonArray(string jsonString)
+        {
+            var jtok = JToken.Parse(jsonString);
+            return jtok is JArray
+                ? true
+                : false;
         }
 
         #endregion
