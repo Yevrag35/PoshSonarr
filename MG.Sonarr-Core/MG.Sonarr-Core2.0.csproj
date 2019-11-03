@@ -14,8 +14,8 @@
     <Company>Yevrag35, LLC.</Company>
     <Version>1.2.1</Version>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-    <AssemblyVersion>1.2.1.0</AssemblyVersion>
-    <FileVersion>1.2.1.0</FileVersion>
+    <AssemblyVersion>1.2.1</AssemblyVersion>
+    <FileVersion>1.2.1</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -45,6 +45,10 @@
 
   <ItemGroup>
     <None Include="..\MG.Sonarr-DotNet\Results\Quality\QualityDefinition.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MG.Sonarr.Functionality\MG.Sonarr.Functionality.csproj" />
   </ItemGroup>
 
   <ItemGroup>

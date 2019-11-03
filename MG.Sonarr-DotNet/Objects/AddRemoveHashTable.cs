@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MG.Sonarr.Functionality;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -17,7 +18,7 @@ namespace MG.Sonarr
         private AddRemoveHashtable(IDictionary dict)
         {
             string[] keys = dict.Keys.Cast<string>().ToArray();
-            var igc = new IgnoreCase();
+            var igc = ClassFactory.NewIgnoreCase();
             if (keys.Contains(ADD, igc))
             {
                 string addKey = keys.Single(x => x.Equals(ADD, StringComparison.CurrentCultureIgnoreCase));

@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
-    <RootNamespace>MG.Sonarr_Core3._0</RootNamespace>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>MG.Sonarr</RootNamespace>
     <Company>Yevrag35, LLC.</Company>
     <Authors>Mike Garvey</Authors>
     <Version>1.2.1</Version>
@@ -10,6 +10,9 @@
     <RepositoryType>Git</RepositoryType>
     <RepositoryUrl>https://github.com/Yevrag35/PoshSonarr.git</RepositoryUrl>
     <Description>A library consisting of PowerShell cmdlets for querying/managing Sonarr PVR.</Description>
+    <Product>MG.Sonarr-Core3.1</Product>
+    <PackageId>MG.Sonarr-Core3.1</PackageId>
+    <AssemblyVersion>1.2.1</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -30,8 +33,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0-preview.4" />
+	  <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0-preview.5" />
 	  <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\MG.Sonarr.Functionality\MG.Sonarr.Functionality.csproj" />
 	</ItemGroup>
 
 </Project>

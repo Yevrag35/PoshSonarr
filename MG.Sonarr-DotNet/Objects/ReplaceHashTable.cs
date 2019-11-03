@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MG.Sonarr.Functionality;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -49,10 +50,10 @@ namespace MG.Sonarr
             _dict = new Dictionary<string, object>(dict.Count);
             this.AddRange(dict.Cast<DictionaryEntry>());
             if (this.ContainsIgnored)
-                _ig.Add(_dict.Single(x => x.Key.IndexOf("ignored", StringComparison.CurrentCultureIgnoreCase) >= 0).Value);
+                _ig.AddObject(_dict.Single(x => x.Key.IndexOf("ignored", StringComparison.CurrentCultureIgnoreCase) >= 0).Value);
 
             if (this.ContainsRequired)
-                _req.Add(_dict.Single(x => x.Key.IndexOf("required", StringComparison.CurrentCultureIgnoreCase) >= 0).Value);
+                _req.AddObject(_dict.Single(x => x.Key.IndexOf("required", StringComparison.CurrentCultureIgnoreCase) >= 0).Value);
         }
 
         #endregion

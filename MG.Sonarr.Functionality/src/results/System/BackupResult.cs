@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MG.Sonarr.Functionality;
+using System;
 using System.Collections.Generic;
 
 namespace MG.Sonarr.Results
