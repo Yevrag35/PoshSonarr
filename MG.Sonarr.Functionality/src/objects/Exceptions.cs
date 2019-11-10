@@ -71,10 +71,10 @@ namespace MG.Sonarr
     /// </summary>
     public class NoSonarrResponseException : BaseSonarrHttpException
     {
-        private const string MSG = "No response was received from the Sonarr server.";
+        private const string THIS_MSG = "No response was received from the Sonarr server.";
 
         public NoSonarrResponseException()
-            : base(MSG, HttpMethod.Get.Method)
+            : base(THIS_MSG, HttpMethod.Get.Method)
         {
         }
     }
