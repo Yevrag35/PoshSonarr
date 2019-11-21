@@ -5,6 +5,12 @@
 
 This will eventually be a complete PowerShell module for quickly issuing [Sonarr PVR API](https://github.com/Sonarr/Sonarr/wiki/API) calls. The module was completely redesigned from the ground up in PowerShell Core, and I'm happy to say it works (has been tested) in Ubuntu 16.04 and Ubuntu 18.04 as well as Windows.
 
+## Build
+
+This project has a dependency on another library of mine: [MG.Dynamic](https://github.com/Yevrag35/DynamicParameter).  I have it published to my own NuGet server.  You can add it to Visual Studio by going to Tools => NuGet Package Manager => Package Manager Settings.  In the Options window, select "Package Sources".  Click the "+" button, enter a name for the repository and enter https://nuget.yevrag35.com/nuget for the Source.
+
+## Using
+
 To get started, connect to Sonarr with "Connect-SonarrInstance" _(Connect-Sonarr)_ cmdlet:
 
 ```powershell
