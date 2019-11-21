@@ -32,7 +32,7 @@
 								<PropertyName>EpisodeNumber</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>HasFile</PropertyName>
+								<PropertyName>IsDownloaded</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>IsMonitored</PropertyName>

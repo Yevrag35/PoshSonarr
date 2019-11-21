@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,10 +9,14 @@ namespace MG.Sonarr.Results
     /// The class defining a response from the "/episode" endpoint.
     /// </summary>
     [Serializable]
+    [JsonObject(MemberSerialization.OptIn)]
     public class EpisodeResult : BaseEpisodeResult
     {
+        [JsonProperty("episodeFile")]
         public EpisodeFile EpisodeFile { get; set; }
+        [JsonProperty("seasonNumber")]
         public int SeasonNumber { get; set; }
+        [JsonProperty("series")]
         public SeriesResult Series { get; set; }
     }
 
