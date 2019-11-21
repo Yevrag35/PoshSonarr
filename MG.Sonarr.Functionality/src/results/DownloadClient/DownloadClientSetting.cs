@@ -13,22 +13,36 @@ namespace MG.Sonarr.Results
     #region DOWNLOAD CLIENT SETTING
 
     [Serializable]
-    [JsonObject(MissingMemberHandling = MissingMemberHandling.Ignore, ItemNullValueHandling = NullValueHandling.Ignore)]
+    [JsonObject(MemberSerialization.OptIn, MissingMemberHandling = MissingMemberHandling.Ignore, ItemNullValueHandling = NullValueHandling.Ignore)]
     public class DownloadClientSetting : BaseResult
     {
         #region PROPERTIES
 
+        [JsonProperty("advanced")]
         public bool Advanced { get; set; }
+
         [JsonProperty("value")]
         public object BackendValue { get; set; }
+
+        [JsonProperty("helpText")]
         public string HelpText { get; set; }
+
+        [JsonProperty("label")]
         public string Label { get; set; }
+
+        [JsonProperty("name")]
         public string Name { get; set; }
+
+        [JsonProperty("order")]
         public int Order { get; set; }
-        [JsonIgnore]
-        public object Value { get; private set; }
+
+        [JsonProperty("selectionOptions")]
         public SelectOptions[] SelectOptions { get; set; }
+
+        [JsonProperty("type")]
         public FieldType Type { get; set; }
+
+        public object Value { get; private set; }
 
         #endregion
 
@@ -62,9 +76,13 @@ namespace MG.Sonarr.Results
     #region SELECT OPTIONS
 
     [Serializable]
+    [JsonObject(MemberSerialization.OptIn)]
     public class SelectOptions : BaseResult
     {
+        [JsonProperty("name")]
         public string Name { get; set; }
+        
+        [JsonProperty("value")]
         public int Value { get; set; }
     }
 
