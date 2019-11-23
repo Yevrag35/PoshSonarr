@@ -9,6 +9,9 @@ using System.Text;
 
 namespace MG.Sonarr.Results
 {
+    /// <summary>
+    /// A download client set in Sonarr.
+    /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
     public class DownloadClient : BaseResult

@@ -12,6 +12,9 @@ namespace MG.Sonarr.Results
 {
     #region DOWNLOAD CLIENT SETTING
 
+    /// <summary>
+    /// Represents a setting set by download clients.
+    /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization.OptIn, MissingMemberHandling = MissingMemberHandling.Ignore, ItemNullValueHandling = NullValueHandling.Ignore)]
     public class DownloadClientSetting : BaseResult

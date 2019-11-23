@@ -81,9 +81,11 @@ namespace MG.Sonarr.Cmdlets
                             }
                         }
                     }
-                    list.Sort(new EpisodeComparer());
-                    var ieq = new EpisodeEquality();
-                    base.WriteObject(list.Distinct(ieq), true);
+                    //list.Sort(new EpisodeComparer());
+                    list.Sort();
+                    //var ieq = new EpisodeEquality();
+                    //base.WriteObject(list.Distinct(ieq), true);
+                    base.WriteObject(list.Distinct(), true);
                 }
                 
                 else

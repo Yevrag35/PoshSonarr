@@ -142,6 +142,17 @@ namespace MG.Sonarr.Cmdlets
         /// </summary>
         /// <param name="endpoint">The Sonarr API endpoint to send the POST request to.</param>
         /// <param name="jsonBody">The JSON payload content to be sent with the POST request.</param>
+        protected string TryPostSonarrResult(string endpoint, IJsonResult jsonBody)
+        {
+            return this.TryPostSonarrResult(endpoint, jsonBody.ToJson());
+        }
+
+        /// <summary>
+        /// Sends a POST request to the specified Sonarr endpoint with the specified string payload formatted in JSON 
+        /// returning a JSON-formatted string in response.  Errors are handled by <see cref="PSCmdlet"/>.WriteError.
+        /// </summary>
+        /// <param name="endpoint">The Sonarr API endpoint to send the POST request to.</param>
+        /// <param name="jsonBody">The JSON payload content to be sent with the POST request.</param>
         protected string TryPostSonarrResult(string endpoint, string jsonBody)
         {
             this.WriteApiDebug(endpoint, HttpMethod.Post, jsonBody, out string apiPath);
@@ -172,6 +183,17 @@ namespace MG.Sonarr.Cmdlets
                 this.WriteError(new SonarrPostRequestException(apiPath, hre), ErrorCategory.InvalidArgument, jsonBody);
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Sends a PUT request to the specified Sonarr endpoint with the specified string payload formatted in JSON 
+        /// returning a JSON-formatted string in response.  Errors are handled by <see cref="PSCmdlet"/>.WriteError.
+        /// </summary>
+        /// <param name="endpoint">The Sonarr API endpoint to send the PUT request to.</param>
+        /// <param name="jsonBody">The JSON payload content to be sent with the PUT request.</param>
+        protected string TryPutSonarrResult(string endpoint, IJsonResult jsonBody)
+        {
+            return this.TryPutSonarrResult(endpoint, jsonBody.ToJson());
         }
 
         /// <summary>

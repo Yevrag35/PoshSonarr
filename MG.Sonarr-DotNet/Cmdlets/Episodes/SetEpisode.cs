@@ -48,8 +48,7 @@ namespace MG.Sonarr.Cmdlets.Episodes
                     "Episode #{0} IsMonitored set to {1}; Series {2}", this.InputObject.AbsoluteEpisodeNumber, this.IsMonitored, this.InputObject.SeriesId), 
                 "Set"))
             {
-                string jsonBody = this.InputObject.ToJson();
-                string jsonRes = base.TryPutSonarrResult(EP, jsonBody);
+                string jsonRes = base.TryPutSonarrResult(EP, this.InputObject);
                 if (!string.IsNullOrEmpty(jsonRes) && _passThru)
                 {
                     EpisodeResult res = SonarrHttp.ConvertToSonarrResult<EpisodeResult>(jsonRes);

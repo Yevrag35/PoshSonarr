@@ -10,39 +10,39 @@ namespace MG.Sonarr.Results
     /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
-    public class EpisodeResult : BaseEpisodeResult
+    public class EpisodeResult : BaseEpisodeResult, IComparable<EpisodeResult>, IEquatable<EpisodeResult>
     {
         [JsonProperty("episodeFile")]
-        public EpisodeFile EpisodeFile { get; set; }
-        [JsonProperty("seasonNumber")]
-        public int SeasonNumber { get; set; }
-        [JsonProperty("series")]
-        public SeriesResult Series { get; set; }
-    }
+        private EpisodeFile _epf;
+        public EpisodeFile EpisodeFile => _epf;
 
-    public class EpisodeComparer : IComparer<EpisodeResult>
-    {
-        public int Compare(EpisodeResult x, EpisodeResult y)
+        public bool HasAired => this.AirDateUtc.HasValue && DateTime.UtcNow.CompareTo(this.AirDateUtc.Value) >= 0 ? true : false;
+
+        [JsonProperty("seasonNumber")]
+        private int _sn;
+        public int SeasonNumber => _sn;
+
+        [JsonProperty("series")]
+        private SeriesResult _sr;
+        public SeriesResult Series => _sr;
+
+        public int CompareTo(EpisodeResult other)
         {
-            if (x.AbsoluteEpisodeNumber.HasValue && !y.AbsoluteEpisodeNumber.HasValue)
+            if (this.AbsoluteEpisodeNumber.HasValue && !other.AbsoluteEpisodeNumber.HasValue)
                 return 1;
 
-            else if (!x.AbsoluteEpisodeNumber.HasValue && y.AbsoluteEpisodeNumber.HasValue)
+            else if (!this.AbsoluteEpisodeNumber.HasValue && other.AbsoluteEpisodeNumber.HasValue)
                 return -1;
 
-            else if (!x.AbsoluteEpisodeNumber.HasValue && !y.AbsoluteEpisodeNumber.HasValue)
+            else if (!this.AbsoluteEpisodeNumber.HasValue && !other.AbsoluteEpisodeNumber.HasValue)
                 return 0;
 
             else
             {
-                return x.AbsoluteEpisodeNumber.Value.CompareTo(y.AbsoluteEpisodeNumber.Value);
+                return this.AbsoluteEpisodeNumber.Value.CompareTo(other.AbsoluteEpisodeNumber.Value);
             }
         }
-    }
 
-    public class EpisodeEquality : IEqualityComparer<EpisodeResult>
-    {
-        public bool Equals(EpisodeResult x, EpisodeResult y) => y.EpisodeId.Equals(y.EpisodeId);
-        public int GetHashCode(EpisodeResult x) => x.GetHashCode();
+        public bool Equals(EpisodeResult other) => this.EpisodeId.Equals(other.EpisodeId);
     }
 }

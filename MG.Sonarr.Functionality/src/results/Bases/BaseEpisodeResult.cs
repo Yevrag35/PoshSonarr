@@ -13,34 +13,41 @@ namespace MG.Sonarr.Results
     public abstract class BaseEpisodeResult : BaseResult
     {
         [JsonProperty("absoluteEpisodeNumber")]
-        public int? AbsoluteEpisodeNumber { get; set; }
+        private int? _aen;
+        public int? AbsoluteEpisodeNumber => _aen;
 
         [JsonProperty("airDateUtc")]
         public DateTime? AirDateUtc { get; set; }
 
         [JsonProperty("id")]
-        public long EpisodeId { get; set; }
+        private long _epid;
+        public long EpisodeId => _epid;
 
         [JsonProperty("episodeNumber")]
-        public int EpisodeNumber { get; set; }
+        private int _epn;
+        public int EpisodeNumber => _epn;
 
         // Used for backwards compatibility
         [Obsolete]
         public bool HasFile => this.IsDownloaded;
-        
+
         [JsonProperty("hasFile")]
-        public bool IsDownloaded { get; set; }
+        private bool _isd;
+        public bool IsDownloaded => _isd;
 
         [JsonProperty("monitored")]
         public bool Monitored { get; set; }
 
         [JsonProperty("title")]
-        public string Name { get; set; }
+        private string _name;
+        public string Name => _name;
 
         [JsonProperty("seriesId")]
-        public int SeriesId { get; set; }
+        private int _sid;
+        public int SeriesId => _sid;
 
         [JsonProperty("unverifiedSceneNumbering")]
-        public bool UnverifiedSceneNumbering { get; set; }
+        private bool _unvsn;
+        public bool UnverifiedSceneNumbering => _unvsn;
     }
 }
