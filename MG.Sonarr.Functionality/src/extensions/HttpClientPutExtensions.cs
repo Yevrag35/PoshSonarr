@@ -21,7 +21,7 @@ namespace MG.Sonarr.Functionality.Extensions
         public async static Task<T> PutAsJsonAsync<T>(this HttpClient httpClient, string uri, IJsonResult payload, bool suppressExceptions = false)
             where T : IJsonResult
         {
-            return await PutAsJsonAsync<T>(httpClient, new Uri(uri), payload, Encoding.UTF8, suppressExceptions);
+            return await PutAsJsonAsync<T>(httpClient, new Uri(uri), payload, Encoding.UTF8, suppressExceptions).ConfigureAwait(false);
         }
         /// <summary>
         /// Sends a PUT request with the supplied <see cref="string"/> payload, which is encoded using the default encoding (<see cref="Encoding.UTF8"/>), to the designated endpoint.
@@ -36,7 +36,7 @@ namespace MG.Sonarr.Functionality.Extensions
         public async static Task<T> PutAsJsonAsync<T>(this HttpClient httpClient, string uri, string stringPayload, bool suppressExceptions = false)
             where T : IJsonResult
         {
-            return await PutAsJsonAsync<T>(httpClient, new Uri(uri), stringPayload, Encoding.UTF8, suppressExceptions);
+            return await PutAsJsonAsync<T>(httpClient, new Uri(uri), stringPayload, Encoding.UTF8, suppressExceptions).ConfigureAwait(false);
         }
         /// <summary>
         /// Sends a PUT request with the supplied <see cref="IJsonResult"/> payload, which is encoded using the specified <see cref="Encoding"/>, to the designated endpoint.
@@ -52,7 +52,7 @@ namespace MG.Sonarr.Functionality.Extensions
         public async static Task<T> PutAsJsonAsync<T>(this HttpClient httpClient, string uri, IJsonResult payload, Encoding encoding, bool suppressExceptions = false)
             where T : IJsonResult
         {
-            return await PutAsJsonAsync<T>(httpClient, new Uri(uri), payload, encoding, suppressExceptions);
+            return await PutAsJsonAsync<T>(httpClient, new Uri(uri), payload, encoding, suppressExceptions).ConfigureAwait(false);
         }
         /// <summary>
         /// Sends a PUT request with the supplied <see cref="string"/> payload, which is encoded using the specified <see cref="Encoding"/>, to the designated endpoint.
@@ -68,7 +68,7 @@ namespace MG.Sonarr.Functionality.Extensions
         public async static Task<T> PutAsJsonAsync<T>(this HttpClient httpClient, string uri, string stringPayload, Encoding encoding, bool suppressExceptions = false)
             where T : IJsonResult
         {
-            return await PutAsJsonAsync<T>(httpClient, new Uri(uri), stringPayload, encoding, suppressExceptions);
+            return await PutAsJsonAsync<T>(httpClient, new Uri(uri), stringPayload, encoding, suppressExceptions).ConfigureAwait(false);
         }
         /// <summary>
         /// Sends a PUT request with the supplied <see cref="IJsonResult"/> payload, which is encoded using the default encoding (<see cref="Encoding.UTF8"/>), to the designated endpoint.
@@ -83,7 +83,7 @@ namespace MG.Sonarr.Functionality.Extensions
         public async static Task<T> PutAsJsonAsync<T>(this HttpClient httpClient, Uri uri, IJsonResult payload, bool suppressExceptions = false)
             where T : IJsonResult
         {
-            return await PutAsJsonAsync<T>(httpClient, uri, payload, Encoding.UTF8, suppressExceptions);
+            return await PutAsJsonAsync<T>(httpClient, uri, payload, Encoding.UTF8, suppressExceptions).ConfigureAwait(false);
         }
         /// <summary>
         /// Sends a PUT request with the supplied <see cref="string"/> payload, which is encoded using the default encoding (<see cref="Encoding.UTF8"/>), to the designated endpoint.
@@ -98,7 +98,7 @@ namespace MG.Sonarr.Functionality.Extensions
         public async static Task<T> PutAsJsonAsync<T>(this HttpClient httpClient, Uri uri, string stringPayload, bool suppressExceptions = false)
             where T : IJsonResult
         {
-            return await PutAsJsonAsync<T>(httpClient, uri, stringPayload, Encoding.UTF8, suppressExceptions);
+            return await PutAsJsonAsync<T>(httpClient, uri, stringPayload, Encoding.UTF8, suppressExceptions).ConfigureAwait(false);
         }
         /// <summary>
         /// Sends a PUT request with the supplied <see cref="IJsonResult"/> payload, which is encoded using the specified <see cref="Encoding"/>, to the designated endpoint.
@@ -114,7 +114,7 @@ namespace MG.Sonarr.Functionality.Extensions
         public async static Task<T> PutAsJsonAsync<T>(this HttpClient httpClient, Uri uri, IJsonResult payload, Encoding encoding, bool suppressExceptions = false)
             where T : IJsonResult
         {
-            return await PutAsJsonAsync<T>(httpClient, uri, payload.ToJson(), encoding, suppressExceptions);
+            return await PutAsJsonAsync<T>(httpClient, uri, payload.ToJson(), encoding, suppressExceptions).ConfigureAwait(false);
         }
         /// <summary>
         /// Sends a PUT request with the supplied <see cref="string"/> payload, which is encoded using the specified <see cref="Encoding"/>, to the designated endpoint.
@@ -135,9 +135,9 @@ namespace MG.Sonarr.Functionality.Extensions
 
             using (var stringContent = new StringContent(stringPayload, encoding, CONTENT_TYPE))
             {
-                using (HttpResponseMessage response = await httpClient.PutAsync(uri, stringContent))
+                using (HttpResponseMessage response = await httpClient.PutAsync(uri, stringContent).ConfigureAwait(false))
                 {
-                    return await response.Content.ReadAsJsonAsync<T>(suppressExceptions);
+                    return await response.Content.ReadAsJsonAsync<T>(suppressExceptions).ConfigureAwait(false);
                 }
             }
         }

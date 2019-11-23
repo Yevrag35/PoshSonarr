@@ -94,17 +94,6 @@ namespace MG.Sonarr.Cmdlets
             {
                 base.WriteObject(entries, true);
             }
-
-            //string jsonRes = base.TryGetSonarrResult(full);
-            //if (!string.IsNullOrEmpty(jsonRes))
-            //{
-            //    List<CalendarEntry> entries = SonarrHttp.ConvertToSonarrResults<CalendarEntry>(jsonRes, out bool iso);
-            //    if (this.ParameterSetName == "ByDayOfWeek")
-            //    {
-            //        base.WriteObject(entries.FindAll(x => x.DayOfWeek.HasValue && this.DayOfWeek.Contains(x.DayOfWeek.Value)), true);
-            //    }
-                
-            //}
         }
 
         #endregion

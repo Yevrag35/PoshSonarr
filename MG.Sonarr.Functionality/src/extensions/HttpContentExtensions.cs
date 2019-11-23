@@ -20,7 +20,7 @@ namespace MG.Sonarr.Functionality.Extensions
         /// <returns></returns>
         public async static Task<T> ReadAsJsonAsync<T>(this HttpContent content, bool suppressExceptions) where T : IJsonResult
         {
-            string rawJson = await content.ReadAsStringAsync();
+            string rawJson = await content.ReadAsStringAsync().ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(rawJson) && !suppressExceptions)
             {
                 throw new ParseJsonResponseException(rawJson);
@@ -51,7 +51,7 @@ namespace MG.Sonarr.Functionality.Extensions
         /// <returns></returns>
         public async static Task<List<T>> ReadAsJsonListAsync<T>(this HttpContent content, bool suppressExceptions) where T : IJsonResult
         {
-            string rawJson = await content.ReadAsStringAsync();
+            string rawJson = await content.ReadAsStringAsync().ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(rawJson) && !suppressExceptions)
             {
                 throw new ParseJsonResponseException(rawJson);

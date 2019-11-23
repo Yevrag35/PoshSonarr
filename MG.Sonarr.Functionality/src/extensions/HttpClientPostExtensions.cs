@@ -21,7 +21,7 @@ namespace MG.Sonarr.Functionality.Extensions
         public async static Task<T> PostAsJsonAsync<T>(this HttpClient httpClient, string uri, bool suppressExceptions = false)
             where T : IJsonResult
         {
-            return await PostAsJsonAsync<T>(httpClient, new Uri(uri), suppressExceptions);
+            return await PostAsJsonAsync<T>(httpClient, new Uri(uri), suppressExceptions).ConfigureAwait(false);
         }
         /// <summary>
         /// Sends a POST request with no payload to the designated endpoint.
@@ -36,7 +36,7 @@ namespace MG.Sonarr.Functionality.Extensions
         {
             using (HttpResponseMessage response = await httpClient.PostAsync(uri, null))
             {
-                return await response.Content.ReadAsJsonAsync<T>(suppressExceptions);
+                return await response.Content.ReadAsJsonAsync<T>(suppressExceptions).ConfigureAwait(false);
             }
         }
 
@@ -56,7 +56,7 @@ namespace MG.Sonarr.Functionality.Extensions
         public async static Task<T> PostAsJsonAsync<T>(this HttpClient httpClient, string uri, IJsonResult payload, bool suppressExceptions = false)
             where T : IJsonResult
         {
-            return await PostAsJsonAsync<T>(httpClient, new Uri(uri), payload, Encoding.UTF8, suppressExceptions);
+            return await PostAsJsonAsync<T>(httpClient, new Uri(uri), payload, Encoding.UTF8, suppressExceptions).ConfigureAwait(false);
         }
         /// <summary>
         /// Sends a POST request with the supplied <see cref="string"/> payload, which will be encoded with the default encoding (<see cref="Encoding.UTF8"/>), to the designated endpoint. 
@@ -70,7 +70,7 @@ namespace MG.Sonarr.Functionality.Extensions
         public async static Task<T> PostAsJsonAsync<T>(this HttpClient httpClient, string uri, string stringPayload, bool suppressExceptions = false)
             where T : IJsonResult
         {
-            return await PostAsJsonAsync<T>(httpClient, new Uri(uri), stringPayload, Encoding.UTF8, suppressExceptions);
+            return await PostAsJsonAsync<T>(httpClient, new Uri(uri), stringPayload, Encoding.UTF8, suppressExceptions).ConfigureAwait(false);
         }
         /// <summary>
         /// Sends a POST request with the supplied <see cref="IJsonResult"/> payload, which will be encoded with the specified <see cref="Encoding"/>, to the designated endpoint.
@@ -86,7 +86,7 @@ namespace MG.Sonarr.Functionality.Extensions
         public async static Task<T> PostAsJsonAsync<T>(this HttpClient httpClient, string uri, IJsonResult payload, Encoding encoding, bool suppressExceptions = false)
             where T : IJsonResult
         {
-            return await PostAsJsonAsync<T>(httpClient, new Uri(uri), payload, encoding, suppressExceptions);
+            return await PostAsJsonAsync<T>(httpClient, new Uri(uri), payload, encoding, suppressExceptions).ConfigureAwait(false);
         }
         /// <summary>
         /// Sends a POST request with the supplied <see cref="string"/> payload, which will be encoded with the specified <see cref="Encoding"/>, to the designated endpoint.
@@ -101,7 +101,7 @@ namespace MG.Sonarr.Functionality.Extensions
         public async static Task<T> PostAsJsonAsync<T>(this HttpClient httpClient, string uri, string stringPayload, Encoding encoding, bool suppressExceptions = false)
             where T : IJsonResult
         {
-            return await PostAsJsonAsync<T>(httpClient, new Uri(uri), stringPayload, encoding, suppressExceptions);
+            return await PostAsJsonAsync<T>(httpClient, new Uri(uri), stringPayload, encoding, suppressExceptions).ConfigureAwait(false);
         }
         /// <summary>
         /// Sends a POST request with the supplied <see cref="IJsonResult"/> payload, which will be encoded with the default encoding (<see cref="Encoding.UTF8"/>), to the designated endpoint. 
@@ -116,7 +116,7 @@ namespace MG.Sonarr.Functionality.Extensions
         public async static Task<T> PostAsJsonAsync<T>(this HttpClient httpClient, Uri uri, IJsonResult payload, bool suppressExceptions = false)
             where T : IJsonResult
         {
-            return await PostAsJsonAsync<T>(httpClient, uri, payload, Encoding.UTF8, suppressExceptions);
+            return await PostAsJsonAsync<T>(httpClient, uri, payload, Encoding.UTF8, suppressExceptions).ConfigureAwait(false);
         }
         /// <summary>
         /// Sends a POST request with the supplied <see cref="string"/> payload, which will be encoded with the default encoding (<see cref="Encoding.UTF8"/>), to the designated endpoint. 
@@ -130,7 +130,7 @@ namespace MG.Sonarr.Functionality.Extensions
         public async static Task<T> PostAsJsonAsync<T>(this HttpClient httpClient, Uri uri, string stringPayload, bool suppressExceptions = false)
             where T : IJsonResult
         {
-            return await PostAsJsonAsync<T>(httpClient, uri, stringPayload, Encoding.UTF8, suppressExceptions);
+            return await PostAsJsonAsync<T>(httpClient, uri, stringPayload, Encoding.UTF8, suppressExceptions).ConfigureAwait(false);
         }
         /// <summary>
         /// Sends a POST request with the supplied <see cref="IJsonResult"/> payload, which will be encoded with the specified <see cref="Encoding"/>, to the designated endpoint.
@@ -150,7 +150,7 @@ namespace MG.Sonarr.Functionality.Extensions
                 throw new ArgumentNullException("The specified payload object is null.");
 
             else
-                return await PostAsJsonAsync<T>(httpClient, uri, payload.ToJson(), encoding, suppressExceptions);
+                return await PostAsJsonAsync<T>(httpClient, uri, payload.ToJson(), encoding, suppressExceptions).ConfigureAwait(false);
         }
         /// <summary>
         /// Sends a POST request with the supplied <see cref="string"/> payload, which will be encoded with the specified <see cref="Encoding"/>, to the designated endpoint.
@@ -166,15 +166,15 @@ namespace MG.Sonarr.Functionality.Extensions
             where T : IJsonResult
         {
             if (string.IsNullOrEmpty(stringPayload))
-                return await PostAsJsonAsync<T>(httpClient, uri, suppressExceptions);
+                return await PostAsJsonAsync<T>(httpClient, uri, suppressExceptions).ConfigureAwait(false);
 
             else
             {
                 using (var stringContent = new StringContent(stringPayload, encoding, CONTENT_TYPE))
                 {
-                    using (HttpResponseMessage response = await httpClient.PostAsync(uri, stringContent))
+                    using (HttpResponseMessage response = await httpClient.PostAsync(uri, stringContent).ConfigureAwait(false))
                     {
-                        return await response.Content.ReadAsJsonAsync<T>(suppressExceptions);
+                        return await response.Content.ReadAsJsonAsync<T>(suppressExceptions).ConfigureAwait(false);
                     }
                 }
             }
