@@ -21,9 +21,6 @@ namespace MG.Sonarr
     /// </summary>
     public static class SonarrHttp
     {
-        [Obsolete]
-        private const string API_PREFIX = "/api";
-
         internal static readonly JsonSerializerSettings Serializer = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
@@ -39,13 +36,6 @@ namespace MG.Sonarr
             ObjectCreationHandling = ObjectCreationHandling.Replace,
             ReferenceLoopHandling = ReferenceLoopHandling.Serialize
         };
-
-        [Obsolete]
-        public static void AddSonarrApiKey(this HttpClient client, IApiKey apiKey)
-        {
-            ValueTuple<string, string> kvp = apiKey.ToTuple();
-            client.DefaultRequestHeaders.Add(kvp.Item1, kvp.Item2);
-        }
 
         public static SeriesResult ConvertToSeriesResult(string jsonResult, bool fromSearch = false)
         {
