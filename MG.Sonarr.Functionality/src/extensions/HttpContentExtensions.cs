@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MG.Sonarr.Functionality.Extensions
 {
-    public static class HttpContentExtensions
+    internal static class HttpContentExtensions
     {
         /// <summary>
         /// Reads the specified <see cref="HttpContent"/> and deserializes it into a <see cref="IJsonResult"/> object.
@@ -18,7 +18,7 @@ namespace MG.Sonarr.Functionality.Extensions
         /// <param name="content">The content from a <see cref="HttpResponseMessage.Content"/>.</param>
         /// <param name="suppressExceptions">Indicates whether or not to suppress any errors that may occur during deserialization.</param>
         /// <returns></returns>
-        public async static Task<T> ReadAsJsonAsync<T>(this HttpContent content, bool suppressExceptions) where T : IJsonResult
+        internal async static Task<T> ReadAsJsonAsync<T>(this HttpContent content, bool suppressExceptions)
         {
             string rawJson = await content.ReadAsStringAsync().ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(rawJson) && !suppressExceptions)
@@ -38,37 +38,6 @@ namespace MG.Sonarr.Functionality.Extensions
                 };
                 settings.Converters.Add(new StringEnumConverter(new CamelCaseNamingStrategy()));
                 T result = JsonConvert.DeserializeObject<T>(rawJson, settings);
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// Reads the specified <see cref="HttpContent"/> and deserializes it into a list of <see cref="IJsonResult"/> objects.
-        /// </summary>
-        /// <typeparam name="T">The <see cref="IJsonResult"/> type to deserialize the content as.</typeparam>
-        /// <param name="content">The content from a <see cref="HttpResponseMessage.Content"/>.</param>
-        /// <param name="suppressExceptions">Indicates whether or not to suppress any errors that may occur during deserialization.</param>
-        /// <returns></returns>
-        public async static Task<List<T>> ReadAsJsonListAsync<T>(this HttpContent content, bool suppressExceptions) where T : IJsonResult
-        {
-            string rawJson = await content.ReadAsStringAsync().ConfigureAwait(false);
-            if (string.IsNullOrWhiteSpace(rawJson) && !suppressExceptions)
-            {
-                throw new ParseJsonResponseException(rawJson);
-            }
-            else
-            {
-                var settings = new JsonSerializerSettings
-                {
-                    MissingMemberHandling = MissingMemberHandling.Ignore,
-                    NullValueHandling = NullValueHandling.Include,
-                    DateFormatHandling = DateFormatHandling.IsoDateFormat,
-                    DateParseHandling = DateParseHandling.DateTime,
-                    DateTimeZoneHandling = DateTimeZoneHandling.Utc,
-                    FloatParseHandling = FloatParseHandling.Decimal
-                };
-                settings.Converters.Add(new StringEnumConverter(new CamelCaseNamingStrategy()));
-                List<T> result = JsonConvert.DeserializeObject<List<T>>(rawJson, settings);
                 return result;
             }
         }

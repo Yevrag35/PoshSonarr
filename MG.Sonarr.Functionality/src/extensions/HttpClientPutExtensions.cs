@@ -18,7 +18,7 @@ namespace MG.Sonarr.Functionality.Extensions
         /// <param name="suppressExceptions">Indicates whether or not to suppress any errors that may occur during deserialization.</param>
         /// <exception cref="ArgumentNullException">The specified payload is null.</exception>
         /// <exception cref="JsonSerializationException"/>
-        public async static Task<T> PutAsJsonAsync<T>(this HttpClient httpClient, string uri, IJsonResult payload, bool suppressExceptions = false)
+        public async static Task<IRestResponse<T>> PutAsJsonAsync<T>(this HttpClient httpClient, string uri, IJsonResult payload, bool suppressExceptions = false)
             where T : IJsonResult
         {
             return await PutAsJsonAsync<T>(httpClient, new Uri(uri), payload, Encoding.UTF8, suppressExceptions).ConfigureAwait(false);
@@ -33,7 +33,7 @@ namespace MG.Sonarr.Functionality.Extensions
         /// <param name="suppressExceptions">Indicates whether or not to suppress any errors that may occur during deserialization.</param>
         /// <exception cref="ArgumentNullException">The specified payload is null.</exception>
         /// <exception cref="JsonSerializationException"/>
-        public async static Task<T> PutAsJsonAsync<T>(this HttpClient httpClient, string uri, string stringPayload, bool suppressExceptions = false)
+        public async static Task<IRestResponse<T>> PutAsJsonAsync<T>(this HttpClient httpClient, string uri, string stringPayload, bool suppressExceptions = false)
             where T : IJsonResult
         {
             return await PutAsJsonAsync<T>(httpClient, new Uri(uri), stringPayload, Encoding.UTF8, suppressExceptions).ConfigureAwait(false);
@@ -49,7 +49,7 @@ namespace MG.Sonarr.Functionality.Extensions
         /// <param name="suppressExceptions">Indicates whether or not to suppress any errors that may occur during deserialization.</param>
         /// <exception cref="ArgumentNullException">The specified payload is null.</exception>
         /// <exception cref="JsonSerializationException"/>
-        public async static Task<T> PutAsJsonAsync<T>(this HttpClient httpClient, string uri, IJsonResult payload, Encoding encoding, bool suppressExceptions = false)
+        public async static Task<IRestResponse<T>> PutAsJsonAsync<T>(this HttpClient httpClient, string uri, IJsonResult payload, Encoding encoding, bool suppressExceptions = false)
             where T : IJsonResult
         {
             return await PutAsJsonAsync<T>(httpClient, new Uri(uri), payload, encoding, suppressExceptions).ConfigureAwait(false);
@@ -65,7 +65,7 @@ namespace MG.Sonarr.Functionality.Extensions
         /// <param name="suppressExceptions">Indicates whether or not to suppress any errors that may occur during deserialization.</param>
         /// <exception cref="ArgumentNullException">The specified payload is null.</exception>
         /// <exception cref="JsonSerializationException"/>
-        public async static Task<T> PutAsJsonAsync<T>(this HttpClient httpClient, string uri, string stringPayload, Encoding encoding, bool suppressExceptions = false)
+        public async static Task<IRestResponse<T>> PutAsJsonAsync<T>(this HttpClient httpClient, string uri, string stringPayload, Encoding encoding, bool suppressExceptions = false)
             where T : IJsonResult
         {
             return await PutAsJsonAsync<T>(httpClient, new Uri(uri), stringPayload, encoding, suppressExceptions).ConfigureAwait(false);
@@ -80,7 +80,7 @@ namespace MG.Sonarr.Functionality.Extensions
         /// <param name="suppressExceptions">Indicates whether or not to suppress any errors that may occur during deserialization.</param>
         /// <exception cref="ArgumentNullException">The specified payload is null.</exception>
         /// <exception cref="JsonSerializationException"/>
-        public async static Task<T> PutAsJsonAsync<T>(this HttpClient httpClient, Uri uri, IJsonResult payload, bool suppressExceptions = false)
+        public async static Task<IRestResponse<T>> PutAsJsonAsync<T>(this HttpClient httpClient, Uri uri, IJsonResult payload, bool suppressExceptions = false)
             where T : IJsonResult
         {
             return await PutAsJsonAsync<T>(httpClient, uri, payload, Encoding.UTF8, suppressExceptions).ConfigureAwait(false);
@@ -95,7 +95,7 @@ namespace MG.Sonarr.Functionality.Extensions
         /// <param name="suppressExceptions">Indicates whether or not to suppress any errors that may occur during deserialization.</param>
         /// <exception cref="ArgumentNullException">The specified payload is null.</exception>
         /// <exception cref="JsonSerializationException"/>
-        public async static Task<T> PutAsJsonAsync<T>(this HttpClient httpClient, Uri uri, string stringPayload, bool suppressExceptions = false)
+        public async static Task<IRestResponse<T>> PutAsJsonAsync<T>(this HttpClient httpClient, Uri uri, string stringPayload, bool suppressExceptions = false)
             where T : IJsonResult
         {
             return await PutAsJsonAsync<T>(httpClient, uri, stringPayload, Encoding.UTF8, suppressExceptions).ConfigureAwait(false);
@@ -111,7 +111,7 @@ namespace MG.Sonarr.Functionality.Extensions
         /// <param name="suppressExceptions">Indicates whether or not to suppress any errors that may occur during deserialization.</param>
         /// <exception cref="ArgumentNullException">The specified payload is null.</exception>
         /// <exception cref="JsonSerializationException"/>
-        public async static Task<T> PutAsJsonAsync<T>(this HttpClient httpClient, Uri uri, IJsonResult payload, Encoding encoding, bool suppressExceptions = false)
+        public async static Task<IRestResponse<T>> PutAsJsonAsync<T>(this HttpClient httpClient, Uri uri, IJsonResult payload, Encoding encoding, bool suppressExceptions = false)
             where T : IJsonResult
         {
             return await PutAsJsonAsync<T>(httpClient, uri, payload.ToJson(), encoding, suppressExceptions).ConfigureAwait(false);
@@ -127,7 +127,7 @@ namespace MG.Sonarr.Functionality.Extensions
         /// <param name="suppressExceptions">Indicates whether or not to suppress any errors that may occur during deserialization.</param>
         /// <exception cref="ArgumentNullException">The specified payload is null.</exception>
         /// <exception cref="JsonSerializationException"/>
-        public async static Task<T> PutAsJsonAsync<T>(this HttpClient httpClient, Uri uri, string stringPayload, Encoding encoding, bool suppressExceptions = false)
+        public async static Task<IRestResponse<T>> PutAsJsonAsync<T>(this HttpClient httpClient, Uri uri, string stringPayload, Encoding encoding, bool suppressExceptions = false)
             where T : IJsonResult
         {
             if (stringPayload == null)
@@ -137,7 +137,7 @@ namespace MG.Sonarr.Functionality.Extensions
             {
                 using (HttpResponseMessage response = await httpClient.PutAsync(uri, stringContent).ConfigureAwait(false))
                 {
-                    return await response.Content.ReadAsJsonAsync<T>(suppressExceptions).ConfigureAwait(false);
+                    return await ClassFactory.GenerateSingleResponse<T>(response, suppressExceptions).ConfigureAwait(false);
                 }
             }
         }
