@@ -97,11 +97,6 @@
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
     <Compile Include="Components\SonarrHttp.cs" />
-    <Compile Include="Exceptions\ParseJsonResponseException.cs" />
-    <Compile Include="Extensions\HttpClientExtensions.cs" />
-    <Compile Include="Extensions\HttpClientPostExtensions.cs" />
-    <Compile Include="Extensions\HttpClientPutExtensions.cs" />
-    <Compile Include="Extensions\HttpContentExtensions.cs" />
     <Compile Include="Objects\AddRemoveHashTable.cs" />
     <Compile Include="Objects\ReplaceHashTable.cs" />
     <Compile Include="Objects\EpisodeIdentifier.cs" />

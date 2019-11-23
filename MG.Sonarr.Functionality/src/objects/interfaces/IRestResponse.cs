@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 
 namespace MG.Sonarr.Functionality
 {
-    public interface IRestResponse<T>
+    public interface IRestResponse
     {
         Exception Exception { get; }
+        bool HasException { get; }
         bool IsFaulted { get; }
-        T Result { get; }
         HttpStatusCode StatusCode { get; }
 
         Exception GetAbsoluteException();

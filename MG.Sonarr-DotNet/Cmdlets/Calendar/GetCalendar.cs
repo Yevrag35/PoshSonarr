@@ -80,29 +80,38 @@ namespace MG.Sonarr.Cmdlets
             string end = this.DateToString(this.EndDate);
             string full = string.Format(EP_WITH_DATE, start, end);
 
-            string jsonRes = base.TryGetSonarrResult(full);
-            if (!string.IsNullOrEmpty(jsonRes))
+            List<CalendarEntry> entries = this.GetCalendarEntries(full);
+            if (this.ParameterSetName == "ByDayOfWeek")
             {
-                List<CalendarEntry> entries = SonarrHttp.ConvertToSonarrResults<CalendarEntry>(jsonRes, out bool iso);
-                if (this.ParameterSetName == "ByDayOfWeek")
-                {
-                    base.WriteObject(entries.FindAll(x => x.DayOfWeek.HasValue && this.DayOfWeek.Contains(x.DayOfWeek.Value)), true);
-                }
-                else if (this.ParameterSetName == "BySeriesTitle")
-                {
-                    var wcp = new WildcardPattern(this.SeriesTitle, WildcardOptions.IgnoreCase);
-                    base.WriteObject(entries.FindAll(x => wcp.IsMatch(x.Series)), true);
-                }
-                else
-                {
-                    base.WriteObject(entries, true);
-                }
+                base.WriteObject(entries.FindAll(x => x.DayOfWeek.HasValue && this.DayOfWeek.Contains(x.DayOfWeek.Value)), true);
             }
+            else if (this.ParameterSetName == "BySeriesTitle")
+            {
+                var wcp = new WildcardPattern(this.SeriesTitle, WildcardOptions.IgnoreCase);
+                base.WriteObject(entries.FindAll(x => wcp.IsMatch(x.Series)), true);
+            }
+            else
+            {
+                base.WriteObject(entries, true);
+            }
+
+            //string jsonRes = base.TryGetSonarrResult(full);
+            //if (!string.IsNullOrEmpty(jsonRes))
+            //{
+            //    List<CalendarEntry> entries = SonarrHttp.ConvertToSonarrResults<CalendarEntry>(jsonRes, out bool iso);
+            //    if (this.ParameterSetName == "ByDayOfWeek")
+            //    {
+            //        base.WriteObject(entries.FindAll(x => x.DayOfWeek.HasValue && this.DayOfWeek.Contains(x.DayOfWeek.Value)), true);
+            //    }
+                
+            //}
         }
 
         #endregion
 
         #region METHODS
+        private List<CalendarEntry> GetCalendarEntries(string uri) => base.SendSonarrListGet<CalendarEntry>(uri);
+
         private string DateToString(DateTime dt) => dt.ToString(DT_FORMAT);
 
         #endregion

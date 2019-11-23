@@ -8,26 +8,38 @@ namespace MG.Sonarr.Functionality
 {
     internal class SonarrRestResponse<T> : IRestResponse<T>
     {
-        private static HttpStatusCode[] BadStatues => new HttpStatusCode[] { HttpStatusCode.BadRequest, HttpStatusCode.InternalServerError, HttpStatusCode.ServiceUnavailable,
-        HttpStatusCode.Unauthorized, HttpStatusCode.Forbidden, HttpStatusCode.BadGateway, HttpStatusCode.Conflict, HttpStatusCode.GatewayTimeout, HttpStatusCode.Gone };
+        private bool _isFaulted = false;
 
         internal Exception Exception { get; set; }
         internal HttpStatusCode StatusCode { get; set; }
         internal T Result { get; set; }
 
-        Exception IRestResponse<T>.Exception => this.Exception;
-        bool IRestResponse<T>.IsFaulted => this.Exception != null || BadStatues.Contains(this.StatusCode);
-        HttpStatusCode IRestResponse<T>.StatusCode => this.StatusCode;
+        Exception IRestResponse.Exception => this.Exception;
+        bool IRestResponse.HasException => this.Exception != null;
+        bool IRestResponse.IsFaulted => _isFaulted || this.Exception != null;
+        HttpStatusCode IRestResponse.StatusCode => this.StatusCode;
         T IRestResponse<T>.Result => this.Result;
 
-        internal SonarrRestResponse() { }
+        //internal SonarrRestResponse() { }
+        internal SonarrRestResponse(HttpStatusCode statusCode, bool isSuccessCode)
+        {
+            _isFaulted = !isSuccessCode;
+            this.StatusCode = statusCode;
+        }
+        internal SonarrRestResponse(HttpStatusCode statusCode, bool isSuccessCode, T content)
+        {
+            _isFaulted = !isSuccessCode;
+            this.StatusCode = statusCode;
+            this.Result = content;
+        }
         internal SonarrRestResponse(HttpResponseMessage response, T content)
         {
             this.Result = content;
             this.StatusCode = response.StatusCode;
+            _isFaulted = !response.IsSuccessStatusCode;
         }
 
-        Exception IRestResponse<T>.GetAbsoluteException()
+        Exception IRestResponse.GetAbsoluteException()
         {
             Exception e = this.Exception;
             if (e == null)
