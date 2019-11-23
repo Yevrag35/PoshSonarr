@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Sonarr.Functionality.Extensions;
+using MG.Sonarr.Results;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -182,6 +183,21 @@ namespace MG.Sonarr.Cmdlets
             {
                 this.WriteError(new SonarrPostRequestException(apiPath, hre), ErrorCategory.InvalidArgument, jsonBody);
                 return null;
+            }
+        }
+
+        internal async Task<T> TryPostSonarrResultAsync<T>(string endpoint, string jsonBody) where T : IJsonResult
+        {
+            this.WriteApiDebug(endpoint, HttpMethod.Post, jsonBody, out string apiPath);
+            try
+            {
+                T postResult = await Context.ApiCaller.PostAsJsonAsync<T>(apiPath, jsonBody);
+                return postResult;
+            }
+            catch (Exception e)
+            {
+                this.WriteError(e, ErrorCategory.InvalidResult, apiPath);
+                return default;
             }
         }
 
