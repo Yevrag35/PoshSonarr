@@ -12,7 +12,7 @@ namespace MG.Sonarr.Cmdlets
     [Cmdlet(VerbsCommon.Get, "EpisodeFile", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByEpisodeFile")]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(EpisodeFile))]
-    public class GetEpisodeFile : BaseSonarrCmdlet
+    public sealed class GetEpisodeFile : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
         private const string BASE = "/episodefile";

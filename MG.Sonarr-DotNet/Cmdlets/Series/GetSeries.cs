@@ -15,11 +15,11 @@ namespace MG.Sonarr.Cmdlets
     [Cmdlet(VerbsCommon.Get, "Series", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "BySeriesName")]
     [OutputType(typeof(SeriesResult))]
     [CmdletBinding(PositionalBinding = false)]
-    public class GetSeries : BaseSonarrCmdlet
+    public sealed class GetSeries : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
         private List<SeriesResult> _series;
-        private bool _showAll = false;
+        //private bool _showAll = false;
 
         #endregion
 
@@ -31,12 +31,12 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId", ValueFromPipelineByPropertyName = true)]
         public long[] SeriesId { get; set; }
 
-        [Parameter(Mandatory = false, DontShow = true)]
-        public SwitchParameter DebugShowAll
-        {
-            get => _showAll;
-            set => _showAll = value;
-        }
+        //[Parameter(Mandatory = false, DontShow = true)]
+        //public SwitchParameter DebugShowAll
+        //{
+        //    get => _showAll;
+        //    set => _showAll = value;
+        //}
 
         #endregion
 
@@ -47,25 +47,11 @@ namespace MG.Sonarr.Cmdlets
         {
             if (this.ParameterSetName == "BySeriesName")
             {
-                string jsonStr = base.TryGetSonarrResult("/series", _showAll);
-                if (!string.IsNullOrEmpty(jsonStr))
-                {
-                    _series = SonarrHttp.ConvertToSeriesResults(jsonStr);
-                }
+                _series = base.SendSonarrListGet<SeriesResult>("/series");
 
                 if (_series != null && _series.Count > 0 && this.Name != null && this.Name.Length > 0)
                 {
-                    for (int p = 0; p < this.Name.Length; p++)
-                    {
-                        string id = this.Name[p];
-                        var wcp = new WildcardPattern((string)id, WildcardOptions.IgnoreCase);
-                        for (int s = 0; s < _series.Count; s++)
-                        {
-                            SeriesResult series = _series[s];
-                            if (wcp.IsMatch(series.Name))
-                                base.WriteObject(series);
-                        }
-                    }
+                    base.WriteObject(this.FilterByName());
                 }
                 else if (_series != null && _series.Count > 0)
                 {
@@ -77,13 +63,9 @@ namespace MG.Sonarr.Cmdlets
                 for (int i = 0; i < this.SeriesId.Length; i++)
                 {
                     long id = this.SeriesId[i];
-                    string full = string.Format("/series/{0}", Convert.ToString(id));
-                    string oneSeries = base.TryGetSonarrResult(full);
-                    if (!string.IsNullOrEmpty(oneSeries))
-                    {
-                        SeriesResult sr = SonarrHttp.ConvertToSeriesResult(oneSeries);
-                        base.WriteObject(sr);
-                    }
+                    string full = string.Format("/series/{0}", id);
+                    SeriesResult sr = base.SendSonarrGet<SeriesResult>(full);
+                    base.WriteObject(sr);
                 }
             }
         }
@@ -91,7 +73,20 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region BACKEND METHODS
-
+        private IEnumerable<SeriesResult> FilterByName()
+        {
+            for (int i = 0; i < this.Name.Length; i++)
+            {
+                string name = this.Name[i];
+                var wcp = new WildcardPattern(name, WildcardOptions.IgnoreCase);
+                for (int s = 0; s < _series.Count; s++)
+                {
+                    SeriesResult series = _series[s];
+                    if (wcp.IsMatch(series.Name))
+                        yield return series;
+                }
+            }
+        }
 
         #endregion
     }
