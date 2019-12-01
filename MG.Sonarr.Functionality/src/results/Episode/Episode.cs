@@ -13,18 +13,16 @@ namespace MG.Sonarr.Results
     public class EpisodeResult : BaseEpisodeResult, IComparable<EpisodeResult>, IEquatable<EpisodeResult>
     {
         [JsonProperty("episodeFile")]
-        private EpisodeFile _epf;
-        public EpisodeFile EpisodeFile => _epf;
+        public EpisodeFile EpisodeFile { get; private set; }
 
+        [JsonIgnore]
         public bool HasAired => this.AirDateUtc.HasValue && DateTime.UtcNow.CompareTo(this.AirDateUtc.Value) >= 0 ? true : false;
 
         [JsonProperty("seasonNumber")]
-        private int _sn;
-        public int SeasonNumber => _sn;
+        public int SeasonNumber { get; private set; }
 
         [JsonProperty("series")]
-        private SeriesResult _sr;
-        public SeriesResult Series => _sr;
+        public SeriesResult Series { get; private set; }
 
         public int CompareTo(EpisodeResult other)
         {

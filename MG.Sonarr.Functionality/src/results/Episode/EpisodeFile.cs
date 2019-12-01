@@ -10,37 +10,37 @@ namespace MG.Sonarr.Results
     /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
-    public class EpisodeFile : BaseResult
+    public class EpisodeFile : BaseResult, IComparable<EpisodeFile>
     {
         /// <summary>
         /// The date in which this <see cref="EpisodeFile"/> was added to the database.  This can be null.
         /// </summary>
         [JsonProperty("dateAdded")]
-        public DateTime? DateAdded { get; set; }
+        public DateTime? DateAdded { get; private set; }
 
         /// <summary>
         /// The of ID of the <see cref="EpisodeFile"/>.
         /// </summary>
         [JsonProperty("Id")]
-        public long EpisodeFileId { get; set; }
+        public long EpisodeFileId { get; private set; }
 
         /// <summary>
         /// The media details of the <see cref="EpisodeFile"/>.
         /// </summary>
         [JsonProperty("mediaInfo")]
-        public MediaInfo MediaInfo { get; set; }
+        public MediaInfo MediaInfo { get; private set; }
 
         /// <summary>
         /// The name (path) of the file downloaded.
         /// </summary>
         [JsonProperty("originalFilePath")]
-        public string OriginalFilePath { get; set; }
+        public string OriginalFilePath { get; private set; }
 
         /// <summary>
         /// The current path of this <see cref="EpisodeFile"/>.
         /// </summary>
         [JsonProperty("path")]
-        public string Path { get; set; }
+        public string Path { get; private set; }
 
         /// <summary>
         /// The quality details of the <see cref="EpisodeFile"/>.
@@ -58,28 +58,30 @@ namespace MG.Sonarr.Results
         /// The relative path of the <see cref="EpisodeFile"/>.
         /// </summary>
         [JsonProperty("relativePath")]
-        public string RelativePath { get; set; }
+        public string RelativePath { get; private set; }
 
         [JsonProperty("sceneName")]
-        public string SceneName { get; set; }
+        public string SceneName { get; private set; }
 
         /// <summary>
         /// The series ID that the <see cref="EpisodeResult"/> of the <see cref="EpisodeFile"/> is apart of.
         /// </summary>
         [JsonProperty("seriesId")]
-        public int SeriesId { get; set; }
+        public int SeriesId { get; private set; }
 
         /// <summary>
         /// The season number for this <see cref="EpisodeFile"/>.
         /// </summary>
         [JsonProperty("seasonNumber")]
-        public int SeasonNumber { get; set; }
+        public int SeasonNumber { get; private set; }
 
         /// <summary>
         /// The episode file size in bytes.
         /// </summary>
         [JsonProperty("size")]
-        public long Size { get; set; }
+        public long Size { get; private set; }
+
+        public int CompareTo(EpisodeFile other) => this.EpisodeFileId.CompareTo(other.EpisodeFileId);
     }
 
     /// <summary>

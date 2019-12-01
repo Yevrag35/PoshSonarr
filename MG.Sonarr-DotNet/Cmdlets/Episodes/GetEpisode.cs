@@ -52,13 +52,13 @@ namespace MG.Sonarr.Cmdlets
             if (!string.IsNullOrEmpty(jsonStr))
             {
                 List<EpisodeResult> result = SonarrHttp.ConvertToSonarrResults<EpisodeResult>(jsonStr, out bool iso);
-                foreach (EpisodeResult er in result)
-                {
-                    if (er.AirDateUtc.HasValue)
-                    {
-                        er.AirDateUtc = er.AirDateUtc.Value.ToUniversalTime();
-                    }
-                }
+                //foreach (EpisodeResult er in result)
+                //{
+                //    if (er.AirDateUtc.HasValue)
+                //    {
+                //        er.AirDateUtc = er.AirDateUtc.Value.ToUniversalTime();
+                //    }
+                //}
                 if (this.MyInvocation.BoundParameters.ContainsKey("AbsoluteEpisodeNumber"))
                 {
                     IEnumerable<EpisodeResult> results = result.Where(x => x.AbsoluteEpisodeNumber.HasValue && this.AbsoluteEpisodeNumber.Contains(x.AbsoluteEpisodeNumber.Value));

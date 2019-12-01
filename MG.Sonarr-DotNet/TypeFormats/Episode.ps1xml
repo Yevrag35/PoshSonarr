@@ -45,7 +45,7 @@
 								<PropertyName>IsDownloaded</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>Monitored</PropertyName>
+								<PropertyName>IsMonitored</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Name</PropertyName>

@@ -14,7 +14,7 @@ namespace MG.Sonarr.Results
         private IDictionary<string, JToken> _additionalData;
 
         [JsonProperty("absoluteEpisodeNumber")]
-        public int? AbsoluteEpisodeNumber { get; set; }
+        public int? AbsoluteEpisodeNumber { get; private set; }
 
         public DateTime? AirDate { get; private set; }
 
@@ -23,40 +23,40 @@ namespace MG.Sonarr.Results
             : (DayOfWeek?)null;
 
         [JsonProperty("id")]
-        public long EpisodeId { get; set; }
+        public long EpisodeId { get; private set; }
 
         [JsonProperty("episodeNumber")]
-        public int EpisodeNumber { get; set; }
+        public int EpisodeNumber { get; private set; }
 
         // For backwards compatibility
         [Obsolete]
         public bool HasFile => this.IsDownloaded;
 
         [JsonProperty("hasFile")]
-        public bool IsDownloaded { get; set; }
+        public bool IsDownloaded { get; private set; }
 
         [JsonProperty("monitored")]
-        public bool IsMonitored { get; set; }
+        public bool IsMonitored { get; private set; }
 
         [JsonProperty("title")]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         [JsonProperty("sceneAbsoluteEpisodeNumber")]
-        public int SceneAbsoluteEpisodeNumber { get; set; }
+        public int SceneAbsoluteEpisodeNumber { get; private set; }
 
         [JsonProperty("sceneEpisodeNumber")]
-        public int SceneEpisodeNumber { get; set; }
+        public int SceneEpisodeNumber { get; private set; }
 
         [JsonProperty("sceneSeasonNumber")]
-        public int SceneSeasonNumber { get; set; }
+        public int SceneSeasonNumber { get; private set; }
 
         public string Series { get; private set; }
 
         [JsonProperty("seriesId")]
-        public int SeriesId { get; set; }
+        public int SeriesId { get; private set; }
 
         [JsonProperty("unverifiedSceneNumbering")]
-        public bool UnverifiedSceneNumbering { get; set; }
+        public bool UnverifiedSceneNumbering { get; private set; }
 
         public IDictionary GetAdditionalInfo()
         {

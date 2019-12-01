@@ -13,41 +13,46 @@ namespace MG.Sonarr.Results
     public abstract class BaseEpisodeResult : BaseResult
     {
         [JsonProperty("absoluteEpisodeNumber")]
-        private int? _aen;
-        public int? AbsoluteEpisodeNumber => _aen;
+        public int? AbsoluteEpisodeNumber { get; internal set; }
 
         [JsonProperty("airDateUtc")]
-        public DateTime? AirDateUtc { get; set; }
+        public DateTime? AirDateUtc { get; internal set; }
 
         [JsonProperty("id")]
-        private long _epid;
-        public long EpisodeId => _epid;
+        public long EpisodeId { get; internal set; }
 
         [JsonProperty("episodeNumber")]
-        private int _epn;
-        public int EpisodeNumber => _epn;
+        public int EpisodeNumber { get; internal set; }
 
         // Used for backwards compatibility
         [Obsolete]
         public bool HasFile => this.IsDownloaded;
 
         [JsonProperty("hasFile")]
-        private bool _isd;
-        public bool IsDownloaded => _isd;
+        public bool IsDownloaded { get; internal set; }
 
         [JsonProperty("monitored")]
-        public bool Monitored { get; set; }
+        public bool IsMonitored { get; set; }
+
+        [JsonIgnore]
+        [Obsolete]
+        public bool Monitored
+        {
+            get => this.IsMonitored;
+            set
+            {
+                Console.WriteLine("The property \"Monitored\" is deprecated and will be removed from future releases.  Use \"IsMonitored\" instead.");
+                this.IsMonitored = value;
+            }
+        }
 
         [JsonProperty("title")]
-        private string _name;
-        public string Name => _name;
+        public string Name { get; internal set; }
 
         [JsonProperty("seriesId")]
-        private int _sid;
-        public int SeriesId => _sid;
+        public int SeriesId { get; internal set; }
 
         [JsonProperty("unverifiedSceneNumbering")]
-        private bool _unvsn;
-        public bool UnverifiedSceneNumbering => _unvsn;
+        public bool UnverifiedSceneNumbering { get; internal set; }
     }
 }

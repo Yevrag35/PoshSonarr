@@ -25,7 +25,7 @@ namespace MG.Sonarr.Results
         public bool Advanced { get; set; }
 
         [JsonProperty("value")]
-        public object BackendValue { get; set; }
+        public object BackendValue { get; private set; }
 
         [JsonProperty("helpText")]
         public string HelpText { get; set; }
@@ -83,7 +83,7 @@ namespace MG.Sonarr.Results
     public class SelectOptions : BaseResult
     {
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string Name { get; private set; }
         
         [JsonProperty("value")]
         public int Value { get; set; }

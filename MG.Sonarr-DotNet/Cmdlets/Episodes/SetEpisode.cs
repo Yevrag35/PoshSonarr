@@ -41,7 +41,7 @@ namespace MG.Sonarr.Cmdlets.Episodes
 
         protected override void ProcessRecord()
         {
-            this.InputObject.Monitored = this.IsMonitored;
+            this.InputObject.IsMonitored = this.IsMonitored;
 
             if (base.ShouldProcess(
                 string.Format(

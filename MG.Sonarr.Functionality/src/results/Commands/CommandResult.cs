@@ -12,14 +12,15 @@ namespace MG.Sonarr.Results
     public class CommandResult : CommandOutput, IAdditionalInfo
     {
         [JsonExtensionData]
-        private IDictionary<string, JToken> _additionalData;
+        private IDictionary<string, JToken> _additionalData { get; set; } = new Dictionary<string, JToken>();
 
         [JsonProperty("duration")]
-        public TimeSpan Duration { get; set; }
+        public TimeSpan Duration { get; private set; }
 
         [JsonProperty("ended")]
-        public DateTime Ended { get; set; }
+        public DateTime Ended { get; private set; }
 
+        [JsonIgnore]
         public string Message { get; private set; }
 
         public IDictionary GetAdditionalInfo()

@@ -17,19 +17,19 @@ namespace MG.Sonarr.Results
     public class DownloadClient : BaseResult
     {
         [JsonProperty("id")]
-        public int ClientId { get; set; }
+        public int ClientId { get; private set; }
 
         [JsonProperty("fields")]
-        public DownloadClientSettingCollection Config { get; set; }
+        public DownloadClientSettingCollection Config { get; private set; }
 
         [JsonProperty("configContract")]
-        public string ConfigContract { get; set; }
+        public string ConfigContract { get; private set; }
 
         [JsonProperty("implementation")]
-        public string Implementation { get; set; }
+        public string Implementation { get; private set; }
 
         [JsonProperty("implementationName")]
-        public string ImplementationName { get; set; }
+        public string ImplementationName { get; private set; }
 
         [JsonProperty("infoLink")]
         public Uri InfoLink { get; set; }
