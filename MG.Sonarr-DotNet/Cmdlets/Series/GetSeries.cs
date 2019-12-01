@@ -51,7 +51,7 @@ namespace MG.Sonarr.Cmdlets
 
                 if (_series != null && _series.Count > 0 && this.Name != null && this.Name.Length > 0)
                 {
-                    base.WriteObject(this.FilterByName());
+                    base.WriteObject(this.FilterByName(), true);
                 }
                 else if (_series != null && _series.Count > 0)
                 {

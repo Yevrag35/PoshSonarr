@@ -9,6 +9,7 @@ using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results
 {
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public class Restriction : BaseResult
     {
         private const string COMMA = ",";
@@ -16,31 +17,26 @@ namespace MG.Sonarr.Results
         private const string REQUIRED = "required";
         private static readonly string[] COMMA_ARR = new string[1] { COMMA };
 
-        private bool ContainsIgnored => _additionalData != null && _additionalData.ContainsKey(IGNORED);
-        private bool ContainsRequired => _additionalData != null && _additionalData.ContainsKey(REQUIRED);
-
         [JsonExtensionData]
-        private IDictionary<string, JToken> _additionalData;
+        private IDictionary<string, JToken> _additionalData { get; set; } = new Dictionary<string, JToken>();
+
+        public bool ContainsIgnored => _additionalData.ContainsKey(IGNORED);
+        public bool ContainsRequired => _additionalData.ContainsKey(REQUIRED);
 
         [JsonIgnore]
-        public JsonStringCollection Ignored { get; private set; }
+        public JsonStringCollection Ignored { get; } = new JsonStringCollection();
+
         [JsonIgnore]
-        public JsonStringCollection Required { get; private set; }
+        public JsonStringCollection Required { get; } = new JsonStringCollection();
+
         [JsonProperty("id")]
         public int RestrictionId { get; set; }
-        public HashSet<int> Tags { get; set; }
 
-        public Restriction()
-        {
-            _additionalData = new Dictionary<string, JToken>();
-            this.Ignored = new JsonStringCollection();
-            this.Required = new JsonStringCollection();
-        }
+        [JsonProperty("tags")]
+        public HashSet<int> Tags { get; set; } = new HashSet<int>();
 
         public Restriction(IDictionary<string, object> parameters)
         {
-            _additionalData = new Dictionary<string, JToken>();
-            this.Tags = new HashSet<int>();
             foreach (KeyValuePair<string, object> kvp in parameters)
             {
                 if (kvp.Key.Equals("IgnoredTerms") && kvp.Value is string[] igTerms)

@@ -18,7 +18,7 @@ namespace MG.Sonarr.Results
     }
 
     [JsonObject(MemberSerialization.OptIn)]
-    public class QualityDetails : BaseResult
+    public class QualityDetails : BaseResult, IComparable<QualityDetails>
     {
         [JsonProperty("id")]
         public int Id { get; set; }
@@ -31,6 +31,8 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("resolution")]
         public int Resolution { get; set; }
+
+        public int CompareTo(QualityDetails other) => this.Id.CompareTo(other.Id);
     }
 
     [JsonObject(MemberSerialization.OptIn)]

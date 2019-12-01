@@ -45,7 +45,7 @@ namespace MG.Sonarr.Cmdlets
             {
                 List<Release> results = SonarrHttp.ConvertToSonarrResults<Release>(jsonRes, out bool iso);
                 if (_exclude)
-                    base.WriteObject(results.FindAll(x => !x.Rejected), true);
+                    base.WriteObject(results.FindAll(x => !x.IsRejected), true);
 
                 else
                     base.WriteObject(results, true);

@@ -53,7 +53,6 @@ namespace MG.Sonarr.Functionality
             return restResponse;
         }
 
-        public static IComparer<LogFile> GenerateLogFileComparer() => new LogFile.LogFileSortById();
         public static ISonarrUrl GenerateSonarrUrl(Uri url, bool includeApiPrefix) => new SonarrUrl(url, includeApiPrefix);
         public static ISonarrUrl GenerateSonarrUrl(string hostName, int portNumber, bool useSsl, string reverseProxyBase, bool includeApiPrefix)
         {

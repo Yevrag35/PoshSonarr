@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class LogFile : BaseResult
+    public class LogFile : BaseResult, IComparable<LogFile>
     {
         [JsonProperty("contentsUrl")]
         public string ContentsUrl { get; set; }
@@ -24,8 +24,5 @@ namespace MG.Sonarr.Results
         [JsonProperty("id")]
         public int LogFileId { get; set; }
 
-        internal class LogFileSortById : IComparer<LogFile>
-        {
-            public int Compare(LogFile x, LogFile y) => x.LogFileId.CompareTo(y.LogFileId);
-        }
+        public int CompareTo(LogFile other) => this.LogFileId.CompareTo(other.LogFileId);
     }}

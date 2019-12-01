@@ -69,7 +69,7 @@
 								<PropertyName>IMDBId</PropertyName>
 							</ListItem>
                             <ListItem>
-                                <PropertyName>Monitored</PropertyName>
+                                <PropertyName>IsMonitored</PropertyName>
                             </ListItem>
 							<ListItem>
 								<PropertyName>Name</PropertyName>
@@ -95,10 +95,6 @@
                             <ListItem>
                                 <PropertyName>SeasonCount</PropertyName>
                             </ListItem>
-							<ListItem>
-								<Label>Seasons</Label>
-								<ScriptBlock>$_.Seasons.SeasonNumber</ScriptBlock>
-							</ListItem>
 							<ListItem>
 								<PropertyName>SeriesId</PropertyName>
 								<ItemSelectionCondition>

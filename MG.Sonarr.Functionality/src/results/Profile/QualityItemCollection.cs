@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +32,7 @@ namespace MG.Sonarr.Results
         #endregion
 
         #region METHODS
-        public void Add(QualityItem qi) => _list.Add(qi);
+        internal void Add(QualityItem qi) => _list.Add(qi);
 
         public IEnumerator<QualityItem> GetEnumerator() => _list.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();

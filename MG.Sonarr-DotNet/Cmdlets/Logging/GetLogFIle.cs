@@ -38,7 +38,7 @@ namespace MG.Sonarr.Cmdlets.Logging
             if (!string.IsNullOrEmpty(jsonRes))
             {
                 List<LogFile> logFiles = SonarrHttp.ConvertToSonarrResults<LogFile>(jsonRes);
-                logFiles.Sort(ClassFactory.GenerateLogFileComparer());
+                logFiles.Sort();
                 if (this.MyInvocation.BoundParameters.ContainsKey("LogFileId"))
                 {
                     base.WriteObject(logFiles.FindAll(x => this.LogFileId.Contains(x.LogFileId)), true);

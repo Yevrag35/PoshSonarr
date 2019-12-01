@@ -184,12 +184,28 @@ namespace MG.Sonarr.Cmdlets
                 ? ClassFactory.GenerateSonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
                 : ClassFactory.GenerateSonarrUrl(this.SonarrUrl, !_noApiPrefix);
 
-            HttpClientHandler handler = null;
+            HttpClientHandler handler = new HttpClientHandler();
             this.CheckCertificateValidity(ref handler);
 
-            Context.ApiCaller = this.MyInvocation.BoundParameters.ContainsKey("Proxy")
-                ? NewApiCaller(Context.SonarrUrl, this.ApiKey, _allowRedirect, this.Proxy, this.ProxyCredential, _proxyBypass)
-                : NewApiCaller(Context.SonarrUrl, this.ApiKey, _allowRedirect);
+            if (this.MyInvocation.BoundParameters.ContainsKey("Proxy"))
+            {
+                handler.Proxy = new WebProxy(this.Proxy, _proxyBypass, null, this.ProxyCredential);
+                handler.AllowAutoRedirect = _allowRedirect;
+                Context.ApiCaller = new SonarrRestClient(handler)
+                {
+                    BaseAddress = Context.SonarrUrl.Url
+                };
+                Context.ApiCaller.AddApiKey(this.ApiKey);
+            }
+            else
+            {
+                handler.AllowAutoRedirect = _allowRedirect;
+                Context.ApiCaller = new SonarrRestClient(handler)
+                {
+                    BaseAddress = Context.SonarrUrl.Url
+                };
+                Context.ApiCaller.AddApiKey(this.ApiKey);
+            }
 
             if (_passThru)
             {

@@ -11,18 +11,16 @@
 					<ListEntry>
 						<ListItems>
 							<ListItem>
-								<Label>FreeSpace</Label>
-								<ScriptBlock>"{0} GB" -f $([math]::Round(($_.FreeSpace / 1GB), 2))</ScriptBlock>
-							</ListItem>
-							<ListItem>
-								<PropertyName>Id</PropertyName>
+								<PropertyName>FreeSpaceInGB</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Path</PropertyName>
 							</ListItem>
 							<ListItem>
-								<Label>TotalSpace</Label>
-								<ScriptBlock>"{0} GB" -f $([math]::Round(($_.TotalSpace / 1GB), 2))</ScriptBlock>
+								<PropertyName>RootFolderId</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>TotalSpaceInGB</PropertyName>
 							</ListItem>
 							<ListItem>
 								<Label>UnmappedFolders</Label>
