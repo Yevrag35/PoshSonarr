@@ -14,23 +14,25 @@ namespace MG.Sonarr.Results
         private const decimal GB_DECIMAL = 1073741824.00M;
 
         [JsonProperty("freeSpace")]
-        public long FreeSpace { get; set; }
+        public long FreeSpace { get; private set; }
 
+        [JsonIgnore]
         public decimal FreeSpaceInGB { get; private set; }
 
         [JsonProperty("path")]
-        public string Path { get; set; }
+        public string Path { get; private set; }
 
         [JsonProperty("id")]
-        public int RootFolderId { get; set; }
+        public int RootFolderId { get; private set; }
 
         [JsonProperty("totalSpace")]
-        public long TotalSpace { get; set; }
+        public long TotalSpace { get; private set; }
 
+        [JsonIgnore]
         public decimal TotalSpaceInGB { get; private set; }
 
         [JsonProperty("unmappedFolders")]
-        public List<UnmappedFolder> UnmappedFolders { get; set; } = new List<UnmappedFolder>();
+        public List<UnmappedFolder> UnmappedFolders { get; private set; } = new List<UnmappedFolder>();
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext ctx)

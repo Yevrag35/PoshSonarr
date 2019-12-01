@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,14 +9,22 @@ namespace MG.Sonarr.Results
     /// <summary>
     /// The class that defines a response from the "/diskspace" endpoint.
     /// </summary>
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public class SonarrDiskspaceResult : BaseResult
     {
         /// <summary>
         /// The amount of freespace left in the disk calculated in bytes.
         /// </summary>
-        public long? FreeSpace { get; set; }
-        public string Label { get; set; }
-        public string Path { get; set; }
+        [JsonProperty("freeSpace")]
+        public long? FreeSpace { get; private set; }
+
+        [JsonProperty("label")]
+        public string Label { get; private set; }
+
+        [JsonProperty("path")]
+        public string Path { get; private set; }
+
+        [JsonIgnore]
         public decimal? PercentUsed
         {
             get
@@ -33,6 +42,7 @@ namespace MG.Sonarr.Results
         /// <summary>
         /// The total space of the disk in bytes.
         /// </summary>
-        public long? TotalSpace { get; set; }
+        [JsonProperty("totalSpace")]
+        public long? TotalSpace { get; private set; }
     }
 }

@@ -38,7 +38,7 @@ namespace MG.Sonarr.Cmdlets
                 
                 if (this.Type != null && this.Type.Length > 0)
                 {
-                    base.WriteObject(backups.Where(x => this.Type.Contains(x.Type)), true);
+                    base.WriteObject(backups.Where(x => this.Type.Contains(x.BackupType)), true);
                 }
                 else
                 {

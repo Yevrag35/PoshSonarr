@@ -11,7 +11,8 @@ namespace MG.Sonarr.Results
     /// <summary>
     /// The class that defines a response from the "/update" endpoint.
     /// </summary>
-    public class Update : BaseResult
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+    public class Update : BaseResult, IComparable<Update>
     {
         private const string CHANGES = "changes";
         private const string FIXED = "fixed";
@@ -22,16 +23,37 @@ namespace MG.Sonarr.Results
         [JsonExtensionData]
         private IDictionary<string, JToken> _additionalData;
 
-        public string Branch { get; set; }
+        [JsonProperty("branch")]
+        public string Branch { get; private set; }
+
+        [JsonIgnore]
         public IEnumerable<string> ChangesFixed { get; private set; }
+
+        [JsonIgnore]
         public IEnumerable<string> ChangesNew { get; private set; }
-        public string FileName { get; set; }
-        public string Hash { get; set; }
-        public bool Installed { get; set; }
-        public bool Installable { get; set; }
-        public bool Latest { get; set; }
-        public Uri Url { get; set; }
+
+        [JsonProperty("fileName")]
+        public string FileName { get; private set; }
+
+        [JsonProperty("hash")]
+        public string Hash { get; private set; }
+
+        [JsonProperty("installed")]
+        public bool IsInstalled { get; private set; }
+
+        [JsonProperty("installable")]
+        public bool IsInstallable { get; private set; }
+
+        [JsonProperty("latest")]
+        public bool Latest { get; private set; }
+
+        [JsonProperty("url")]
+        public Uri Url { get; private set; }
+
+        [JsonProperty("version")]
         public Version Version { get; private set; }
+
+        public int CompareTo(Update other) => this.Version.CompareTo(other.Version);
 
         [OnDeserialized]
         private void OnDeserialization(StreamingContext streamingContext)

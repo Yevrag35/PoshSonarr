@@ -7,20 +7,21 @@ using System.Collections.Generic;
 namespace MG.Sonarr.Results
 {
     [Serializable]
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public class AddOptions : BaseResult
     {
-        public bool IgnoreEpisodesWithFiles { get; set; }
-        public bool IgnoreEpisodesWithoutFiles { get; set; }
+        [JsonProperty("ignoreEpisodesWithFiles")]
+        public bool IgnoreEpisodesWithFiles { get; set; } = true;
+
+        [JsonProperty("ignoreEpisodesWithoutFiles")]
+        public bool IgnoreEpisodesWithoutFiles { get; set; } = true;
+
+        [JsonProperty("searchForMissingEpisodes")]
         public bool SearchForMissingEpisodes { get; set; }
 
         public override string ToJson()
         {
-            return JsonConvert.SerializeObject(this, new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                DefaultValueHandling = DefaultValueHandling.Populate,
-                Formatting = Formatting.Indented
-            });
+            return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
     }
 }
