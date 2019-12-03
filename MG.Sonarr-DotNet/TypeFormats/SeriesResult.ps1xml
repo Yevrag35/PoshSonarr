@@ -75,7 +75,18 @@
 								<PropertyName>Name</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>Overview</PropertyName>
+								<!--<PropertyName>Overview</PropertyName>-->
+								<Label>Overview</Label>
+								<ScriptBlock>
+									if ($_.Overview.Length -gt 90)
+									{
+										"{0}..." -f $_.Overview.Substring(0, 90).Trim()
+									}
+									else
+									{
+										$_.Overview
+									}
+								</ScriptBlock>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Path</PropertyName>
