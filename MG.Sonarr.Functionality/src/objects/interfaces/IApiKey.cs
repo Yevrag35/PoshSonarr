@@ -20,6 +20,6 @@ namespace MG.Sonarr
         /// Creates the implementing class as a key-value pair so it can be added easily to <see cref="WebHeaderCollection"/>.
         /// </summary>
         /// <returns></returns>
-        ValueTuple<string, string> ToTuple();
+        (string, string) ToTuple();
     }
 }
