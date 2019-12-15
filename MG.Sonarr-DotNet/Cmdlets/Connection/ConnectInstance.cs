@@ -184,50 +184,48 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-
-            Context.SonarrUrl = this.ParameterSetName == "ByServerName"
-                ? ClassFactory.GenerateSonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
-                : ClassFactory.GenerateSonarrUrl(this.SonarrUrl, !_noApiPrefix);
+            this.SetSonarrUrl();
 
             HttpClientHandler handler = new HttpClientHandler();
             this.CheckCertificateValidity(ref handler);
 
             if (this.MyInvocation.BoundParameters.ContainsKey("Proxy"))
-            {
-                handler.Proxy = new WebProxy(this.Proxy, _proxyBypass, null, this.ProxyCredential);
-                handler.AllowAutoRedirect = _allowRedirect;
-                Context.ApiCaller = new SonarrRestClient(handler)
-                {
-                    BaseAddress = Context.SonarrUrl.Url
-                };
-                Context.ApiCaller.AddApiKey(this.ApiKey);
-            }
+                this.BoundCallerWithProxy(handler);
+            
             else
-            {
-                handler.AllowAutoRedirect = _allowRedirect;
-                Context.ApiCaller = new SonarrRestClient(handler)
-                {
-                    BaseAddress = Context.SonarrUrl.Url
-                };
-                Context.ApiCaller.AddApiKey(this.ApiKey);
-            }
+                this.BoundCallerWithoutProxy(handler);
 
             SonarrStatusResult statusResult = this.TryConnect();
 
             if (_passThru)
-            {
                 base.WriteObject(statusResult);
-                //string status = this.GetStatusString(Context.ApiCaller);
-                //SonarrStatusResult sr = this.GetStatusResult(status);
-                //if (sr != null)
-                    //base.WriteObject(sr);
-            }
         }
 
         #endregion
 
         #region PRIVATE/BACKEND METHODS
-
+        private void BoundCallerWithProxy(HttpClientHandler handler)
+        {
+            handler.Proxy = new WebProxy(this.Proxy, _proxyBypass, null, this.ProxyCredential);
+            handler.AllowAutoRedirect = _allowRedirect;
+            Context.ApiCaller = new SonarrRestClient(handler)
+            {
+                BaseAddress = Context.SonarrUrl.Url
+            };
+            Context.ApiCaller.AddApiKey(this.ApiKey);
+        }
+        private void BoundCallerWithoutProxy(HttpClientHandler handler)
+        {
+            handler.AllowAutoRedirect = _allowRedirect;
+            Context.ApiCaller = new SonarrRestClient(handler)
+            {
+                BaseAddress = Context.SonarrUrl.Url
+            };
+            Context.ApiCaller.AddApiKey(this.ApiKey);
+        }
+        private void SetSonarrUrl() => Context.SonarrUrl = this.ParameterSetName == "ByServerName"
+                ? ClassFactory.GenerateSonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
+                : ClassFactory.GenerateSonarrUrl(this.SonarrUrl, !_noApiPrefix);
         private SonarrStatusResult TryConnect()
         {
             base.WriteApiDebug(CONNECT_EP, HttpMethod.Get, out string apiPath);
@@ -248,6 +246,8 @@ namespace MG.Sonarr.Cmdlets
                 return response.Content;
             }
         }
+
+        #region OBSOLETE METHODS
 
         [Obsolete]
         private string GetStatusString(SonarrRestClient caller)
@@ -274,6 +274,17 @@ namespace MG.Sonarr.Cmdlets
                 base.WriteError(e, ErrorCategory.ParserError, statusStr);
             }
             return sr;
+        }
+
+        [Obsolete]
+        private SonarrRestClient NewApiCaller(string url, ApiKey apiKey, HttpClientHandler handler)
+        {
+            this.CheckCertificateValidity(ref handler);
+
+            return new SonarrRestClient(handler, apiKey)
+            {
+                BaseAddress = new Uri(url)
+            };
         }
 
         [Obsolete]
@@ -347,15 +358,7 @@ namespace MG.Sonarr.Cmdlets
             return NewApiCaller(uriBuilder.Uri.GetLeftPart(UriPartial.Scheme | UriPartial.Authority), apiKey, handler);
         }
 
-        private SonarrRestClient NewApiCaller(string url, ApiKey apiKey, HttpClientHandler handler)
-        {
-            this.CheckCertificateValidity(ref handler);
-
-            return new SonarrRestClient(handler, apiKey)
-            {
-                BaseAddress = new Uri(url)
-            };
-        }
+        #endregion
 
         #endregion
     }
