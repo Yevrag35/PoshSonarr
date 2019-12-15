@@ -50,29 +50,43 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region NEW API METHODS
-        private T ProcessSingularResponse<T>(IRestResponse<T> response, string apiPath = null)
+        private T ProcessSingularResponse<T>(IRestResponse<T> response)
             where T : class
         {
             if (!response.IsFaulted)
-            {
                 return response.Content;
-            }
+
             else
             {
-                this.WriteError(response.Exception, ErrorCategory.InvalidOperation);
+                if (response.HasException)
+                    this.WriteError(response.GetAbsoluteException(), ErrorCategory.InvalidOperation);
+
+                else if (!response.IsValidStatusCode)
+                    this.WriteError(new NoSonarrResponseException(), ErrorCategory.ResourceUnavailable);
+
+                else
+                    this.WriteError(new HttpStatusException(response.StatusCode), ErrorCategory.InvalidResult);
+
                 return default;
             }
         }
-        private List<T> ProcessMultiResponse<T>(IRestListResponse<T> response, string apiPath = null)
+        private List<T> ProcessMultiResponse<T>(IRestListResponse<T> response)
             where T : class
         {
             if (!response.IsFaulted)
-            {
                 return response.Content;
-            }
+
             else
             {
-                this.WriteError(response.Exception, ErrorCategory.InvalidOperation);
+                if (response.HasException)
+                    this.WriteError(response.GetAbsoluteException(), ErrorCategory.InvalidOperation);
+
+                else if (!response.IsValidStatusCode)
+                    this.WriteError(new NoSonarrResponseException(), ErrorCategory.ResourceUnavailable);
+
+                else
+                    this.WriteError(new HttpStatusException(response.StatusCode), ErrorCategory.InvalidResult);
+
                 return default;
             }
         }
@@ -81,13 +95,13 @@ namespace MG.Sonarr.Cmdlets
         {
             this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
             IRestResponse<T> response = this.SendSonarrGetAsTask<T>(apiPath).GetAwaiter().GetResult();
-            return this.ProcessSingularResponse(response, apiPath);
+            return this.ProcessSingularResponse(response);
         }
         internal List<T> SendSonarrListGet<T>(string endpoint) where T : class
         {
             this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
             IRestListResponse<T> response = this.SendSonarrListGetAsTask<T>(apiPath).GetAwaiter().GetResult();
-            return this.ProcessMultiResponse(response, apiPath);
+            return this.ProcessMultiResponse(response);
         }
         private ConfiguredTaskAwaitable<IRestResponse<T>> SendSonarrGetAsTask<T>(string apiPath) where T : class
         {
@@ -102,7 +116,7 @@ namespace MG.Sonarr.Cmdlets
         {
             this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
             IRestResponse<T> response = this.SendSonarrPostAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
-            return this.ProcessSingularResponse(response, apiPath);
+            return this.ProcessSingularResponse(response);
         }
         private ConfiguredTaskAwaitable<IRestResponse<T>> SendSonarrPostAsTask<T>(string apiPath, IJsonResult payload) where T : class
         {
@@ -113,7 +127,7 @@ namespace MG.Sonarr.Cmdlets
         {
             this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
             IRestResponse<T> response = this.SendSonarrPutAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
-            return this.ProcessSingularResponse(response, apiPath);
+            return this.ProcessSingularResponse(response);
         }
         private Task<IRestResponse<T>> SendSonarrPutAsTask<T>(string apiPath, IJsonResult payload) where T : class
         {
