@@ -21,12 +21,12 @@ namespace MG.Sonarr.Cmdlets
     [CmdletBinding(PositionalBinding = false)]
     public class InvokeSeriesRefresh : BasePostCommandCmdlet
     {
-#region FIELDS/CONSTANTS
+        #region FIELDS/CONSTANTS
         protected override string Command => "RefreshSeries";
 
-#endregion
+        #endregion
 
-#region PARAMETERS
+        #region PARAMETERS
         /// <summary>
         /// <para type="description">THe optional series ID to perform the refresh on.</para>
         /// </summary>
@@ -39,14 +39,14 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 
-#endregion
+        #endregion
 
-#region CMDLET PROCESSING
+        #region CMDLET PROCESSING
         protected override void BeginProcessing() => base.BeginProcessing();
 
         protected override void ProcessRecord()
         {
-            var newDict = new Dictionary<string, object>(parameters)
+            var newDict = new SonarrBodyParameters(parameters)
             {
                 { "seriesId", this.SeriesId }
             };
@@ -63,6 +63,6 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
-#endregion
+        #endregion
     }
 }

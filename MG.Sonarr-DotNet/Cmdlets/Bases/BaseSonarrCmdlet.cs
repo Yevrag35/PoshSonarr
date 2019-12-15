@@ -91,39 +91,80 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
-        internal T SendSonarrGet<T>(string endpoint) where T : class
+        protected T SendSonarrGet<T>(string endpoint) where T : class
         {
             this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
             IRestResponse<T> response = this.SendSonarrGetAsTask<T>(apiPath).GetAwaiter().GetResult();
             return this.ProcessSingularResponse(response);
         }
-        internal List<T> SendSonarrListGet<T>(string endpoint) where T : class
+        protected string SendSonarrRawGet(string endpoint)
+        {
+            this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
+            IRestResponse response = this.SendSonarrRawGetAsync(apiPath).GetAwaiter().GetResult();
+            if (!response.IsFaulted)
+                return response.Content as string;
+
+            else
+            {
+                if (response.HasException)
+                    this.WriteError(response.GetAbsoluteException(), ErrorCategory.InvalidOperation);
+
+                else if (!response.IsValidStatusCode)
+                    this.WriteError(new NoSonarrResponseException(), ErrorCategory.ResourceUnavailable);
+
+                else
+                    this.WriteError(new HttpStatusException(response.StatusCode), ErrorCategory.InvalidResult);
+
+                return default;
+            }
+        }
+        private async Task<IRestResponse> SendSonarrRawGetAsync(string apiPath)
+        {
+            IRestResponse rr = null;
+            using (var response = await Context.ApiCaller.GetAsync(apiPath, HttpCompletionOption.ResponseContentRead).ConfigureAwait(false))
+            {
+                if (response.IsSuccessStatusCode)
+                {
+                    rr = new RestResponse(response);
+                    using (var content = response.Content)
+                    {
+                        string strRes = await content.ReadAsStringAsync().ConfigureAwait(false);
+                        rr.AddProcessedContent(strRes);
+                    }
+                }
+                else
+                    rr = new RestResponse(response);
+
+                return rr;
+            }
+        }
+        protected List<T> SendSonarrListGet<T>(string endpoint) where T : class
         {
             this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
             IRestListResponse<T> response = this.SendSonarrListGetAsTask<T>(apiPath).GetAwaiter().GetResult();
             return this.ProcessMultiResponse(response);
         }
-        private ConfiguredTaskAwaitable<IRestResponse<T>> SendSonarrGetAsTask<T>(string apiPath) where T : class
+        private Task<IRestResponse<T>> SendSonarrGetAsTask<T>(string apiPath) where T : class
         {
-            return Context.ApiCaller.GetAsJsonAsync<T>(apiPath).ConfigureAwait(false);
+            return Context.ApiCaller.GetAsJsonAsync<T>(apiPath);
         }
         private Task<IRestListResponse<T>> SendSonarrListGetAsTask<T>(string apiPath) where T : class
         {
             return Context.ApiCaller.GetAsJsonListAsync<T>(apiPath);
         }
 
-        internal T SendSonarrPost<T>(string endpoint, IJsonResult payload) where T : class
+        protected T SendSonarrPost<T>(string endpoint, IJsonResult payload) where T : class
         {
             this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
             IRestResponse<T> response = this.SendSonarrPostAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
             return this.ProcessSingularResponse(response);
         }
-        private ConfiguredTaskAwaitable<IRestResponse<T>> SendSonarrPostAsTask<T>(string apiPath, IJsonResult payload) where T : class
+        private Task<IRestResponse<T>> SendSonarrPostAsTask<T>(string apiPath, IJsonResult payload) where T : class
         {
-            return Context.ApiCaller.PostAsJsonAsync<T>(new Uri(apiPath, UriKind.Relative), payload).ConfigureAwait(false);
+            return Context.ApiCaller.PostAsJsonAsync<T>(new Uri(apiPath, UriKind.Relative), payload);
         }
 
-        internal T SendSonarrPut<T>(string endpoint, IJsonResult payload) where T : class
+        protected T SendSonarrPut<T>(string endpoint, IJsonResult payload) where T : class
         {
             this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
             IRestResponse<T> response = this.SendSonarrPutAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
@@ -334,7 +375,6 @@ namespace MG.Sonarr.Cmdlets
         }
 
         #endregion
-
 
         #region DEBUG METHODS
         /// <summary>

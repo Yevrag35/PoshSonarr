@@ -55,7 +55,7 @@ namespace MG.Sonarr.Cmdlets
                 _ep = _ep + "?" + string.Join("&", _list);
             }
 
-            string jsonRes = base.TryGetSonarrResult(_ep);
+            string jsonRes = base.SendSonarrRawGet(_ep);
             if (!string.IsNullOrEmpty(jsonRes))
             {
                 base.WriteObject(JsonObject.ConvertFromJson(jsonRes, out ErrorRecord er));

@@ -18,7 +18,7 @@ namespace MG.Sonarr.Cmdlets
     {
         #region FIELDS/CONSTANTS
         protected private const string BASE_EP = "/command";
-        protected private Dictionary<string, object> parameters;
+        protected private SonarrBodyParameters parameters;
 
         protected abstract string Command { get; }
 
@@ -33,7 +33,7 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            parameters = new Dictionary<string, object>(2)
+            parameters = new SonarrBodyParameters
             {
                 { "name", this.Command }
             };
@@ -51,18 +51,25 @@ namespace MG.Sonarr.Cmdlets
         /// Takes in a generic dictionary of parameters and issues a command to Sonarr with the dictionary as its payload.
         /// </summary>
         /// <param name="parameterDict">The set of parameters to build the POST body with,</param>
-        protected void ProcessRequest(IDictionary parameterDict)
+        protected void ProcessRequest(SonarrBodyParameters parameterDict)
         {
-            string cmdName = parameterDict["name"] as string;
+            object cmdName = parameterDict["name"];
             string verbMsg = string.Format("Issuing command - {0} at {1}", cmdName, BASE_EP);
+            base.WriteVerbose(verbMsg);
 
-            string postBody = JsonConvert.SerializeObject(parameterDict, Formatting.Indented);
-            string cmdOut = base.TryPostSonarrResult(BASE_EP, postBody);
-            if (!string.IsNullOrEmpty(cmdOut))
+            CommandOutput output = base.SendSonarrPost<CommandOutput>(BASE_EP, parameterDict);
+            if (output != null)
             {
-                CommandOutput cmdOutput = SonarrHttp.ConvertToSonarrResult<CommandOutput>(cmdOut);
-                base.WriteObject(cmdOutput);
+                base.WriteObject(output);
             }
+
+            //string postBody = JsonConvert.SerializeObject(parameterDict, Formatting.Indented);
+            //string cmdOut = base.TryPostSonarrResult(BASE_EP, postBody);
+            //if (!string.IsNullOrEmpty(cmdOut))
+            //{
+            //    CommandOutput cmdOutput = SonarrHttp.ConvertToSonarrResult<CommandOutput>(cmdOut);
+            //    base.WriteObject(cmdOutput);
+            //}
         }
 
         #endregion

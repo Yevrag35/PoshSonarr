@@ -46,7 +46,7 @@ namespace MG.Sonarr.Cmdlets.Commands
 
         protected override void ProcessRecord()
         {
-            var newDict = new Dictionary<string, object>(parameters)
+            var newDict = new SonarrBodyParameters(parameters)
             {
                 { "seriesId", this.SeriesId }
             };
