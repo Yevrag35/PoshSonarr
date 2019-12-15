@@ -1,11 +1,6 @@
 ﻿using MG.Sonarr.Results;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -22,7 +17,7 @@ namespace MG.Sonarr.Cmdlets
     public class InvokeBackup : BasePostCommandCmdlet
     {
         #region FIELDS/CONSTANTS
-        protected override string Command => "Backup";
+        protected sealed override string Command => "Backup";
 
         #endregion
 

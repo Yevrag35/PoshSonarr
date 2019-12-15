@@ -1,11 +1,6 @@
 ﻿using MG.Sonarr.Results;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
-using System.Security;
 
 namespace MG.Sonarr.Cmdlets.Commands
 {
@@ -22,7 +17,7 @@ namespace MG.Sonarr.Cmdlets.Commands
     public class InvokeSeriesSearch : BasePostCommandCmdlet
     {
         #region FIELDS/CONSTANTS
-        protected override string Command => "SeriesSearch";
+        protected sealed override string Command => "SeriesSearch";
 
         #endregion
 

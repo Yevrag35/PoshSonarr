@@ -55,7 +55,7 @@
 							</ListItem>
 							<ListItem>
 								<Label>Series</Label>
-								<ScriptBlock>$_.Series.Title</ScriptBlock>
+								<ScriptBlock>$_.Series.Name</ScriptBlock>
 								<ItemSelectionCondition>
 									<ScriptBlock>$_.Series -ne $null</ScriptBlock>
 								</ItemSelectionCondition>

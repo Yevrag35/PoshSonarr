@@ -24,7 +24,7 @@ namespace MG.Sonarr.Cmdlets
     [Cmdlet(VerbsCommon.Get, "DownloadClient", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByProtocol")]
     [OutputType(typeof(DownloadClient))]
     [CmdletBinding(PositionalBinding = false)]
-    public sealed class GetDownloadClient : BaseSonarrCmdlet
+    public class GetDownloadClient : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
         private const string EP = "/downloadclient";

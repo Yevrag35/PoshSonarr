@@ -28,10 +28,7 @@ namespace MG.Sonarr.Cmdlets
     public abstract class BaseSonarrCmdlet : PSCmdlet
     {
         #region FIELDS/CONSTANTS
-        //private const string API_PREFIX = "/api";
         private const string CONNECT_EP = "/system/status";
-        //private const string CONNECT_MSG = "Getting initial Sonarr status from {0}";
-        //private const string CONNECT_FORMAT = "{0}://{1}:{2}{3}";
         [Obsolete]
         private const string CONTENT_TYPE = "application/json";
         private const string DEBUG_API_MSG = "Sending {0} request to: {1}{2}";
@@ -45,6 +42,23 @@ namespace MG.Sonarr.Cmdlets
         {
             if (!Context.IsConnected)
                 throw new SonarrContextNotSetException();
+        }
+
+        #endregion
+
+        #region PIPELINE METHOD
+        /// <summary>
+        /// Sends an <see cref="object"/> to the PowerShell console and optionally specifies whether or not to enumerate it
+        /// if it's a collection.
+        /// </summary>
+        /// <param name="obj">The object to send to the pipeline</param>
+        /// <param name="enumerateCollection">Indicates whether the object will be enumerated as its sent.</param>
+        protected void SendToPipeline(object obj, bool enumerateCollection = true)
+        {
+            if (obj != null)
+            {
+                base.WriteObject(obj, enumerateCollection);
+            }
         }
 
         #endregion

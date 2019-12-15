@@ -51,7 +51,7 @@ namespace MG.Sonarr.Cmdlets
         /// Takes in a generic dictionary of parameters and issues a command to Sonarr with the dictionary as its payload.
         /// </summary>
         /// <param name="parameterDict">The set of parameters to build the POST body with,</param>
-        protected void ProcessRequest(SonarrBodyParameters parameterDict)
+        protected private void ProcessRequest(SonarrBodyParameters parameterDict)
         {
             object cmdName = parameterDict["name"];
             string verbMsg = string.Format("Issuing command - {0} at {1}", cmdName, BASE_EP);
@@ -62,14 +62,6 @@ namespace MG.Sonarr.Cmdlets
             {
                 base.WriteObject(output);
             }
-
-            //string postBody = JsonConvert.SerializeObject(parameterDict, Formatting.Indented);
-            //string cmdOut = base.TryPostSonarrResult(BASE_EP, postBody);
-            //if (!string.IsNullOrEmpty(cmdOut))
-            //{
-            //    CommandOutput cmdOutput = SonarrHttp.ConvertToSonarrResult<CommandOutput>(cmdOut);
-            //    base.WriteObject(cmdOutput);
-            //}
         }
 
         #endregion

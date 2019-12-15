@@ -18,6 +18,7 @@ namespace MG.Sonarr.Cmdlets
         private const string BASE = "/episode";
         private const string EP_BY_SERIES = BASE + "?seriesId={0}";
         private const string EP_BY_EP = BASE + "/{0}";
+        private EpisodeIdentifierCollection _epIdCol;
 
         #endregion
 
@@ -34,69 +35,75 @@ namespace MG.Sonarr.Cmdlets
         public int[] AbsoluteEpisodeNumber { get; set; }
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesIdSeasonEp")]
-        public EpisodeIdentifier[] EpisodeIdentifier { get; set; }
+        public string[] EpisodeIdentifier { get; set; }
 
         #endregion
 
         #region CMDLET PROCESSING
-        protected override void BeginProcessing() => base.BeginProcessing();
+        protected override void BeginProcessing()
+        {
+            if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeIdentifier"))
+                _epIdCol = this.EpisodeIdentifier;
+
+            base.BeginProcessing();
+        }
 
         protected override void ProcessRecord()
         {
-            string full = this.ParameterSetName != "ByEpisodeId" 
-                ? string.Format(EP_BY_SERIES, this.SeriesId) 
-                : string.Format(EP_BY_EP, this.EpisodeId);
-
-            string jsonStr = base.TryGetSonarrResult(full);
-
-            if (!string.IsNullOrEmpty(jsonStr))
+            var epList = new List<EpisodeResult>();
+            if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeId"))
             {
-                List<EpisodeResult> result = SonarrHttp.ConvertToSonarrResults<EpisodeResult>(jsonStr, out bool iso);
-                //foreach (EpisodeResult er in result)
-                //{
-                //    if (er.AirDateUtc.HasValue)
-                //    {
-                //        er.AirDateUtc = er.AirDateUtc.Value.ToUniversalTime();
-                //    }
-                //}
-                if (this.MyInvocation.BoundParameters.ContainsKey("AbsoluteEpisodeNumber"))
-                {
-                    IEnumerable<EpisodeResult> results = result.Where(x => x.AbsoluteEpisodeNumber.HasValue && this.AbsoluteEpisodeNumber.Contains(x.AbsoluteEpisodeNumber.Value));
-                    base.WriteObject(results, true);
-                }
-
-                else if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeIdentifier"))
-                {
-                    var list = new List<EpisodeResult>(result.Count);
-                    for (int i = 0; i < this.EpisodeIdentifier.Length; i++)
-                    {
-                        EpisodeIdentifier epid = this.EpisodeIdentifier[i];
-                        for (int e = 0; e < result.Count; e++)
-                        {
-                            EpisodeResult er = result[e];
-                            if (er.SeasonNumber == epid.Season)
-                            {
-                                if (!epid.Episode.HasValue || (epid.Episode.HasValue && er.EpisodeNumber == epid.Episode.Value))
-                                    list.Add(er);
-                            }
-                        }
-                    }
-                    //list.Sort(new EpisodeComparer());
-                    list.Sort();
-                    //var ieq = new EpisodeEquality();
-                    //base.WriteObject(list.Distinct(ieq), true);
-                    base.WriteObject(list.Distinct(), true);
-                }
-                
-                else
-                    base.WriteObject(result, true);
+                this.GetEpisodeById(this.EpisodeId, epList);
             }
+            else
+            {
+                List<EpisodeResult> allEps = base.SendSonarrListGet<EpisodeResult>(string.Format(EP_BY_SERIES, this.SeriesId));
+
+                if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeIdentifier"))
+                {
+                    this.GetEpisodeByIdentifierString(_epIdCol, allEps, epList);
+                }
+                else if (this.MyInvocation.BoundParameters.ContainsKey("AbsoluteEpisodeNumber"))
+                {
+                    this.GetEpisodeByAbsoluteNumber(this.AbsoluteEpisodeNumber, allEps, epList);
+                }
+                else
+                {
+                    epList.AddRange(allEps);
+                }
+            }
+            epList.Sort();
+            base.WriteObject(epList.Distinct(), true);
         }
 
         #endregion
 
         #region METHODS
+        private void GetEpisodeByAbsoluteNumber(int[] absoluteIds, List<EpisodeResult> allEpisodes, List<EpisodeResult> addToList)
+        {
+            addToList
+                .AddRange(allEpisodes
+                    .FindAll(x => this.AbsoluteEpisodeNumber
+                        .Contains(x.AbsoluteEpisodeNumber
+                            .GetValueOrDefault())));
+        }
+        private void GetEpisodeById(long epId, List<EpisodeResult> addToList)
+        {
+            string uri = string.Format(EP_BY_EP, epId);
+            EpisodeResult epRes = base.SendSonarrGet<EpisodeResult>(uri);
+            if (epRes != null)
+                addToList.Add(epRes);
+        }
 
+        private void GetEpisodeByIdentifierString(EpisodeIdentifierCollection idCol, List<EpisodeResult> allEpisodes, List<EpisodeResult> addToList)
+        {
+            for (int i = 0; i < allEpisodes.Count; i++)
+            {
+                EpisodeResult er = allEpisodes[i];
+                if (idCol.AnyMatchesEpisode(er))
+                    addToList.Add(er);
+            }
+        }
 
         #endregion
     }
