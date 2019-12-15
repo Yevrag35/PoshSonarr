@@ -7,15 +7,41 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="src\extensions\HttpClientExtensions.cs" />
+    <Compile Remove="src\extensions\HttpClientGetExtensions.cs" />
+    <Compile Remove="src\extensions\HttpClientPostExtensions.cs" />
+    <Compile Remove="src\extensions\HttpClientPutExtensions.cs" />
+    <Compile Remove="src\extensions\HttpContentExtensions.cs" />
+    <Compile Remove="src\objects\interfaces\IRestResponse-Generic.cs" />
+    <Compile Remove="src\objects\interfaces\IRestResponse.cs" />
+    <Compile Remove="src\objects\rest\SonarrRestResponse.cs" />
     <Compile Remove="src\results\Quality\QualityDefinition-BETA.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <CodeAnalysisDictionary Include="src\objects\interfaces\IRestResponse-Generic.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="src\extensions\HttpClientExtensions.cs" />
+    <None Include="src\extensions\HttpClientGetExtensions.cs" />
+    <None Include="src\extensions\HttpClientPostExtensions.cs" />
+    <None Include="src\extensions\HttpClientPutExtensions.cs" />
+    <None Include="src\extensions\HttpContentExtensions.cs" />
+    <None Include="src\objects\interfaces\IRestResponse.cs" />
+    <None Include="src\objects\rest\SonarrRestResponse.cs" />
     <None Include="src\results\Quality\QualityDefinition-BETA.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="MG.Api.Json">
+      <HintPath>D:\Local_Repos\MG.Api\MG.Api.Json\bin\Debug\netstandard2.0\MG.Api.Json.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
   </ItemGroup>
 
 </Project>

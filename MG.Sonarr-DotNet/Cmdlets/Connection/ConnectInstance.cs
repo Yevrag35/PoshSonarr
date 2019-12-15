@@ -1,3 +1,7 @@
+using MG.Api.Json;
+using MG.Api.Json.Extensions;
+using MG.Api.Rest.Extensions;
+using MG.Api.Rest.Generic;
 using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
@@ -41,6 +45,7 @@ namespace MG.Sonarr.Cmdlets
     public partial class ConnectInstance : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
+        private const string CONNECT_EP = "/system/status";
         private const string SLASH_STR = "/";
         private static readonly char SLASH = char.Parse(SLASH_STR);
         private static readonly char[] SLASH_API = new char[4]
@@ -207,12 +212,15 @@ namespace MG.Sonarr.Cmdlets
                 Context.ApiCaller.AddApiKey(this.ApiKey);
             }
 
+            SonarrStatusResult statusResult = this.TryConnect();
+
             if (_passThru)
             {
-                string status = this.GetStatusString(Context.ApiCaller);
-                SonarrStatusResult sr = this.GetStatusResult(status);
-                if (sr != null)
-                    base.WriteObject(sr);
+                base.WriteObject(statusResult);
+                //string status = this.GetStatusString(Context.ApiCaller);
+                //SonarrStatusResult sr = this.GetStatusResult(status);
+                //if (sr != null)
+                    //base.WriteObject(sr);
             }
         }
 
@@ -220,6 +228,28 @@ namespace MG.Sonarr.Cmdlets
 
         #region PRIVATE/BACKEND METHODS
 
+        private SonarrStatusResult TryConnect()
+        {
+            base.WriteApiDebug(CONNECT_EP, HttpMethod.Get, out string apiPath);
+            IRestResponse<SonarrStatusResult> response = Context.ApiCaller.GetAsJsonAsync<SonarrStatusResult>(apiPath).GetAwaiter().GetResult();
+            if (response.IsFaulted)
+            {
+                if (response.HasException)
+                    throw response.GetAbsoluteException();
+
+                else if (!response.IsValidStatusCode)
+                    throw new NoSonarrResponseException();
+
+                else
+                    throw new HttpStatusException(response.StatusCode);
+            }   
+            else
+            {
+                return response.Content;
+            }
+        }
+
+        [Obsolete]
         private string GetStatusString(SonarrRestClient caller)
         {
             string status = base.TrySonarrConnect();
@@ -231,6 +261,7 @@ namespace MG.Sonarr.Cmdlets
             // Now call GetStatusResult();
         }
 
+        [Obsolete]
         private SonarrStatusResult GetStatusResult(string statusStr)
         {
             SonarrStatusResult sr = null;
@@ -245,7 +276,8 @@ namespace MG.Sonarr.Cmdlets
             return sr;
         }
 
-        public SonarrRestClient NewApiCaller(ISonarrUrl url, ApiKey apiKey, bool allowRedirects)
+        [Obsolete]
+        private SonarrRestClient NewApiCaller(ISonarrUrl url, ApiKey apiKey, bool allowRedirects)
         {
             var handler = new HttpClientHandler
             {
@@ -256,7 +288,7 @@ namespace MG.Sonarr.Cmdlets
         }
 
         [Obsolete]
-        public SonarrRestClient NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects)
+        private SonarrRestClient NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects)
         {
             var handler = new HttpClientHandler
             {
@@ -266,7 +298,8 @@ namespace MG.Sonarr.Cmdlets
             return this.NewApiCaller(uriBuilder.Uri.GetLeftPart(UriPartial.Scheme | UriPartial.Authority), apiKey, handler);
         }
 
-        public SonarrRestClient NewApiCaller(ISonarrUrl url, ApiKey apiKey, bool allowRedirects, string proxy, ProxyCredential proxyCredential, bool proxyBypassLocal)
+        [Obsolete]
+        private SonarrRestClient NewApiCaller(ISonarrUrl url, ApiKey apiKey, bool allowRedirects, string proxy, ProxyCredential proxyCredential, bool proxyBypassLocal)
         {
             var wp = new WebProxy(proxy)
             {
@@ -290,7 +323,7 @@ namespace MG.Sonarr.Cmdlets
         }
 
         [Obsolete]
-        public SonarrRestClient NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects, string proxy, ProxyCredential proxyCredential, bool proxyBypassLocal)
+        private SonarrRestClient NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects, string proxy, ProxyCredential proxyCredential, bool proxyBypassLocal)
         {
             var wp = new WebProxy(proxy)
             {

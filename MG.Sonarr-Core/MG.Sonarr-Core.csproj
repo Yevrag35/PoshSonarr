@@ -50,4 +50,10 @@
     <ProjectReference Include="..\MG.Sonarr.Functionality\MG.Sonarr.Functionality.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="MG.Api.Json">
+      <HintPath>D:\Local_Repos\MG.Api\MG.Api.Json\bin\Debug\netstandard2.0\MG.Api.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

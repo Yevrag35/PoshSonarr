@@ -1,5 +1,9 @@
-﻿using MG.Sonarr.Functionality;
-using MG.Sonarr.Functionality.Extensions;
+﻿using MG.Api.Json;
+using MG.Api.Json.Extensions;
+using MG.Api.Rest;
+using MG.Api.Rest.Generic;
+using MG.Sonarr.Functionality;
+//using MG.Sonarr.Functionality.Extensions;
 using MG.Sonarr.Results;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -47,72 +51,73 @@ namespace MG.Sonarr.Cmdlets
 
         #region NEW API METHODS
         private T ProcessSingularResponse<T>(IRestResponse<T> response, string apiPath = null)
-            where T : IJsonResult
+            where T : class
         {
             if (!response.IsFaulted)
             {
-                return response.Result;
+                return response.Content;
             }
             else
             {
-                this.WriteError(response, apiPath);
+                this.WriteError(response.Exception, ErrorCategory.InvalidOperation);
                 return default;
             }
         }
-        private List<T> ProcessMultiResponse<T>(IRestResponse<List<T>> response, string apiPath = null)
+        private List<T> ProcessMultiResponse<T>(IRestListResponse<T> response, string apiPath = null)
+            where T : class
         {
             if (!response.IsFaulted)
             {
-                return response.Result;
+                return response.Content;
             }
             else
             {
-                this.WriteError(response, apiPath);
+                this.WriteError(response.Exception, ErrorCategory.InvalidOperation);
                 return default;
             }
         }
 
-        internal T SendSonarrGet<T>(string endpoint) where T : IJsonResult
+        internal T SendSonarrGet<T>(string endpoint) where T : class
         {
             this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
             IRestResponse<T> response = this.SendSonarrGetAsTask<T>(apiPath).GetAwaiter().GetResult();
             return this.ProcessSingularResponse(response, apiPath);
         }
-        internal List<T> SendSonarrListGet<T>(string endpoint) where T : IJsonResult
+        internal List<T> SendSonarrListGet<T>(string endpoint) where T : class
         {
             this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
-            IRestResponse<List<T>> response = this.SendSonarrListGetAsTask<T>(apiPath).GetAwaiter().GetResult();
+            IRestListResponse<T> response = this.SendSonarrListGetAsTask<T>(apiPath).GetAwaiter().GetResult();
             return this.ProcessMultiResponse(response, apiPath);
         }
-        private ConfiguredTaskAwaitable<IRestResponse<T>> SendSonarrGetAsTask<T>(string apiPath) where T : IJsonResult
+        private ConfiguredTaskAwaitable<IRestResponse<T>> SendSonarrGetAsTask<T>(string apiPath) where T : class
         {
             return Context.ApiCaller.GetAsJsonAsync<T>(apiPath).ConfigureAwait(false);
         }
-        private ConfiguredTaskAwaitable<IRestResponse<List<T>>> SendSonarrListGetAsTask<T>(string apiPath) where T : IJsonResult
+        private Task<IRestListResponse<T>> SendSonarrListGetAsTask<T>(string apiPath) where T : class
         {
-            return Context.ApiCaller.GetAsJsonListAsync<T>(apiPath).ConfigureAwait(false);
+            return Context.ApiCaller.GetAsJsonListAsync<T>(apiPath);
         }
 
-        internal T SendSonarrPost<T>(string endpoint, IJsonResult payload) where T : IJsonResult
+        internal T SendSonarrPost<T>(string endpoint, IJsonResult payload) where T : class
         {
             this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
             IRestResponse<T> response = this.SendSonarrPostAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
             return this.ProcessSingularResponse(response, apiPath);
         }
-        private ConfiguredTaskAwaitable<IRestResponse<T>> SendSonarrPostAsTask<T>(string apiPath, IJsonResult payload) where T : IJsonResult
+        private ConfiguredTaskAwaitable<IRestResponse<T>> SendSonarrPostAsTask<T>(string apiPath, IJsonResult payload) where T : class
         {
             return Context.ApiCaller.PostAsJsonAsync<T>(new Uri(apiPath, UriKind.Relative), payload).ConfigureAwait(false);
         }
 
-        internal T SendSonarrPut<T>(string endpoint, IJsonResult payload) where T : IJsonResult
+        internal T SendSonarrPut<T>(string endpoint, IJsonResult payload) where T : class
         {
             this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
             IRestResponse<T> response = this.SendSonarrPutAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
             return this.ProcessSingularResponse(response, apiPath);
         }
-        private ConfiguredTaskAwaitable<IRestResponse<T>> SendSonarrPutAsTask<T>(string apiPath, IJsonResult payload) where T : IJsonResult
+        private Task<IRestResponse<T>> SendSonarrPutAsTask<T>(string apiPath, IJsonResult payload) where T : class
         {
-            return Context.ApiCaller.PostAsJsonAsync<T>(new Uri(apiPath, UriKind.Relative), payload).ConfigureAwait(false);
+            return Context.ApiCaller.PostAsJsonAsync<T>(new Uri(apiPath, UriKind.Relative), payload);
         }
 
         #endregion
@@ -124,6 +129,7 @@ namespace MG.Sonarr.Cmdlets
         /// Errors are handled by <see cref="PSCmdlet"/>.WriteError.
         /// </summary>
         /// <exception cref="Exception"/>
+        [Obsolete]
         protected string TrySonarrConnect()
         {
             this.WriteApiDebug(CONNECT_EP, HttpMethod.Get, out string apiPath);
@@ -454,16 +460,16 @@ namespace MG.Sonarr.Cmdlets
             base.WriteError(errRec);
         }
 
-        protected void WriteError(IRestResponse response, object targetObj = null)
+        protected void WriteError(IRestResponseDetails details, object targetObj = null)
         {
-            if (response.HasException)
+            if (details.HasException)
             {
-                this.WriteError(response.Exception, ErrorCategory.InvalidResult, targetObj);
+                this.WriteError(details.Exception, ErrorCategory.InvalidResult, targetObj);
             }
             else
             {
                 this.WriteError(new ErrorRecord(new HttpRequestException(
-                    string.Format("An unknown error occurred while sending the GET request - {0}", response.StatusCode.ToString())),
+                    string.Format("An unknown error occurred while sending the GET request - {0}", details.StatusCode.ToString())),
                     "MG.Sonarr.UnknownHttpException", ErrorCategory.InvalidOperation, targetObj));
             }
         }
