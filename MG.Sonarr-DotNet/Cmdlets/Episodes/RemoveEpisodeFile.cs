@@ -49,7 +49,8 @@ namespace MG.Sonarr.Cmdlets.Episodes
             string ep = string.Format(EP, this.EpisodeFileId);
             if (_force || base.ShouldProcess(ep, "Delete"))
             {
-                base.TryDeleteSonarrResult(ep);
+                //base.TryDeleteSonarrResult(ep);
+                base.SendSonarrDelete(ep);
             }
         }
 

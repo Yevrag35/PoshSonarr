@@ -31,11 +31,6 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            //if (this.MyInvocation.BoundParameters.ContainsKey("SortKey"))
-            //{
-            //    _list.Add(string.Format("sortKey={0}", this.SortKey.ToLower()));
-            //}
-
             if (this.MyInvocation.BoundParameters.ContainsKey("Severity"))
             {
                 _list.Add("filterKey=level");

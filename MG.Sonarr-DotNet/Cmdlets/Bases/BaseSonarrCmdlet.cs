@@ -64,6 +64,24 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region NEW API METHODS
+
+        #region PROCESSORS
+        private void ProcessVoidResponse(IRestResponse response)
+        {
+            if (response.IsFaulted)
+            {
+                if (response.HasException)
+                    this.WriteError(response.GetAbsoluteException(), ErrorCategory.InvalidOperation);
+
+                else if (!response.IsValidStatusCode)
+                    this.WriteError(new NoSonarrResponseException(), ErrorCategory.ResourceUnavailable);
+            }
+            else
+            {
+                base.WriteDebug(string.Format("Received {0} ({1}) status code from the response.", response.StatusCode, response.StatusCode.ToString()));
+                base.WriteVerbose(string.Format("Received {0} ({1}).", response.StatusCode, response.StatusCode.ToString()));
+            }
+        }
         private T ProcessSingularResponse<T>(IRestResponse<T> response)
             where T : class
         {
@@ -105,15 +123,33 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
+        #endregion
+
+        #region GET
+        /// <summary>
+        /// Sends a GET request to the specified Sonarr endpoint, and processes the result into the specified class.
+        /// </summary>
+        /// <typeparam name="T">The class type to process the result content as.</typeparam>
+        /// <param name="endpoint">The API endpoint that the request is sent to.</param>
         protected T SendSonarrGet<T>(string endpoint) where T : class
         {
             this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
             IRestResponse<T> response = this.SendSonarrGetAsTask<T>(apiPath).GetAwaiter().GetResult();
             return this.ProcessSingularResponse(response);
         }
+
+        /// <summary>
+        /// Sends a GET request to the specified Sonarr endpoint, and returns the raw, unprocessed <see cref="string"/> content as a result.
+        /// </summary>
+        /// <param name="endpoint">The API endpoint that the request is sent to.</param>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="HttpRequestException"/>
         protected string SendSonarrRawGet(string endpoint)
         {
             this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
+            if (string.IsNullOrWhiteSpace(apiPath))
+                throw new ArgumentNullException("endpoint");
+
             IRestResponse response = this.SendSonarrRawGetAsync(apiPath).GetAwaiter().GetResult();
             if (!response.IsFaulted)
                 return response.Content as string;
@@ -134,9 +170,9 @@ namespace MG.Sonarr.Cmdlets
         }
         private async Task<IRestResponse> SendSonarrRawGetAsync(string apiPath)
         {
-            IRestResponse rr = null;
-            using (var response = await Context.ApiCaller.GetAsync(apiPath, HttpCompletionOption.ResponseContentRead).ConfigureAwait(false))
+            using (HttpResponseMessage response = await Context.ApiCaller.GetAsync(apiPath, HttpCompletionOption.ResponseContentRead).ConfigureAwait(false))
             {
+                IRestResponse rr = null;
                 if (response.IsSuccessStatusCode)
                 {
                     rr = new RestResponse(response);
@@ -152,6 +188,12 @@ namespace MG.Sonarr.Cmdlets
                 return rr;
             }
         }
+
+        /// <summary>
+        /// Sends a GET request to the specified Sonarr endpoint, and processes the response's content into a <see cref="List{T}"/> of the specified class.
+        /// </summary>
+        /// <typeparam name="T">The class type to process each result content as.</typeparam>
+        /// <param name="endpoint">The API endpoint that the request is sent to.</param>
         protected List<T> SendSonarrListGet<T>(string endpoint) where T : class
         {
             this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
@@ -167,6 +209,15 @@ namespace MG.Sonarr.Cmdlets
             return Context.ApiCaller.GetAsJsonListAsync<T>(apiPath);
         }
 
+        #endregion
+
+        #region POST
+        /// <summary>
+        /// Sends a POST request to the specified Sonarr endpoint, and processes the result into the specified class.
+        /// </summary>
+        /// <typeparam name="T">The class type to process the result content as.</typeparam>
+        /// <param name="endpoint">The API endpoint that the request is sent to.</param>
+        /// <param name="payload">A <see langword="class"/> object that is sent in the payload of the request.</param>
         protected T SendSonarrPost<T>(string endpoint, IJsonResult payload) where T : class
         {
             this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
@@ -178,20 +229,48 @@ namespace MG.Sonarr.Cmdlets
             return Context.ApiCaller.PostAsJsonAsync<T>(new Uri(apiPath, UriKind.Relative), payload);
         }
 
+        #endregion
+
+        #region PUT
+        /// <summary>
+        /// Sends a PUT request to the specified Sonarr endpoint, and processes the result into the specified class.
+        /// </summary>
+        /// <typeparam name="T">The class type to process the result content as.</typeparam>
+        /// <param name="endpoint">The API endpoint that the request is sent to.</param>
+        /// <param name="payload">A <see langword="class"/> object that is sent in the payload of the request.</param>
         protected T SendSonarrPut<T>(string endpoint, IJsonResult payload) where T : class
         {
-            this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
+            this.WriteApiDebug(endpoint, HttpMethod.Put, out string apiPath);
             IRestResponse<T> response = this.SendSonarrPutAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
             return this.ProcessSingularResponse(response);
         }
         private Task<IRestResponse<T>> SendSonarrPutAsTask<T>(string apiPath, IJsonResult payload) where T : class
         {
-            return Context.ApiCaller.PostAsJsonAsync<T>(new Uri(apiPath, UriKind.Relative), payload);
+            return Context.ApiCaller.PutAsJsonAsync<T>(new Uri(apiPath, UriKind.Relative), payload);
         }
 
         #endregion
 
-        #region API METHODS
+        #region DELETE
+        /// <summary>
+        /// Sends a PUT request to the specified Sonarr endpoint.
+        /// </summary>
+        /// <param name="endpoint">The API endpoint that the request is sent to.</param>
+        protected void SendSonarrDelete(string endpoint)
+        {
+            this.WriteApiDebug(endpoint, HttpMethod.Delete, out string apiPath);
+            this.ProcessVoidResponse(this.SendSonarrDeleteAsTask(apiPath).GetAwaiter().GetResult());
+        }
+        private Task<IRestResponse> SendSonarrDeleteAsTask(string apiPath)
+        {
+            return Context.ApiCaller.DeleteAsJsonAsync(apiPath);
+        }
+
+        #endregion
+
+        #endregion
+
+        #region OLD API METHODS
 
         /// <summary>
         /// Sends a GET request to the specified Sonarr endpoint and returning a JSON-formatted string in response.  This is for exclusive use with <see cref="ConnectInstance"/>.  
