@@ -300,6 +300,12 @@ namespace MG.Sonarr.Functionality
         Anime
     }
 
+    public enum SortDirection
+    {
+        Ascending,
+        Descending
+    }
+
     public enum UpdateMechanism
     {
         BuiltIn = 0,

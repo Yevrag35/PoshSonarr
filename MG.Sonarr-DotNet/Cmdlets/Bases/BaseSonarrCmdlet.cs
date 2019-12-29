@@ -3,20 +3,16 @@ using MG.Api.Json.Extensions;
 using MG.Api.Rest;
 using MG.Api.Rest.Generic;
 using MG.Sonarr.Functionality;
-//using MG.Sonarr.Functionality.Extensions;
 using MG.Sonarr.Results;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Management.Automation;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,7 +21,7 @@ namespace MG.Sonarr.Cmdlets
     /// <summary>
     /// The main base <see cref="PSCmdlet"/> class for all PoshSonarr cmdlets.  Includes custom API methods along with advanced error-handling.
     /// </summary>
-    public abstract class BaseSonarrCmdlet : PSCmdlet
+    public abstract partial class BaseSonarrCmdlet : PSCmdlet
     {
         #region FIELDS/CONSTANTS
         private const string CONNECT_EP = "/system/status";
@@ -71,7 +67,7 @@ namespace MG.Sonarr.Cmdlets
             if (response.IsFaulted)
             {
                 if (response.HasException)
-                    this.WriteError(response.GetAbsoluteException(), ErrorCategory.InvalidOperation);
+                    this.WriteError(response.Exception, ErrorCategory.InvalidOperation);
 
                 else if (!response.IsValidStatusCode)
                     this.WriteError(new NoSonarrResponseException(), ErrorCategory.ResourceUnavailable);
@@ -91,7 +87,7 @@ namespace MG.Sonarr.Cmdlets
             else
             {
                 if (response.HasException)
-                    this.WriteError(response.GetAbsoluteException(), ErrorCategory.InvalidOperation);
+                    this.WriteError(response.Exception, ErrorCategory.InvalidOperation);
 
                 else if (!response.IsValidStatusCode)
                     this.WriteError(new NoSonarrResponseException(), ErrorCategory.ResourceUnavailable);
@@ -111,7 +107,7 @@ namespace MG.Sonarr.Cmdlets
             else
             {
                 if (response.HasException)
-                    this.WriteError(response.GetAbsoluteException(), ErrorCategory.InvalidOperation);
+                    this.WriteError(response.Exception, ErrorCategory.InvalidOperation);
 
                 else if (!response.IsValidStatusCode)
                     this.WriteError(new NoSonarrResponseException(), ErrorCategory.ResourceUnavailable);

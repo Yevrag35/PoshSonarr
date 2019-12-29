@@ -71,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cmdlets\Bases\BasePostCommandCmdlet.cs" />
+    <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet-Linq.cs" />
     <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet.cs" />
     <Compile Include="Cmdlets\Bases\LazySonarrCmdlet.cs" />
     <Compile Include="Cmdlets\Calendar\GetCalendar.cs" />
@@ -97,6 +98,7 @@
     <Compile Include="Cmdlets\Restriction\RemoveRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\SetRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\UpdateRestriction.cs" />
+    <Compile Include="Cmdlets\RootFolder\RegisterRootFolder.cs" />
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
     <Compile Include="Components\SonarrHttp.cs" />

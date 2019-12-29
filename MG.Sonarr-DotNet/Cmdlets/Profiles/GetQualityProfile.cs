@@ -82,10 +82,10 @@ namespace MG.Sonarr.Cmdlets.Profiles
         #endregion
 
         #region METHODS
-        private bool TryGetAllProfiles(out List<QualityProfile> outProfiles)
-        {
-            outProfiles = base.SendSonarrListGet<QualityProfile>("/profile");
-        }
+        //private bool TryGetAllProfiles(out List<QualityProfile> outProfiles)
+        //{
+        //    outProfiles = base.SendSonarrListGet<QualityProfile>("/profile");
+        //}
 
         #endregion
     }
