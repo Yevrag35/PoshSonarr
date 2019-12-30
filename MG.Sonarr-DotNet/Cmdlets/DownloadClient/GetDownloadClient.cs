@@ -55,7 +55,8 @@ namespace MG.Sonarr.Cmdlets
             if (this.ParameterSetName != "ByClientId")
             {
                 List<DownloadClient> clients = this.GetAllDownloadClients();
-                if (!this.MyInvocation.BoundParameters.ContainsKey("Protocol"))
+                //if (!this.MyInvocation.BoundParameters.ContainsKey("Protocol"))
+                if ( ! base.HasParameterSpecified(this, x => x.Protocol))
                     base.WriteObject(clients);
 
                 else

@@ -36,7 +36,7 @@ namespace MG.Sonarr.Cmdlets.Commands
 
 #endregion
 
-#region CMDLET PROCESSING
+        #region CMDLET PROCESSING
         protected override void BeginProcessing() => base.BeginProcessing();
 
         protected override void ProcessRecord()
@@ -52,11 +52,6 @@ namespace MG.Sonarr.Cmdlets.Commands
             }
         }
 
-#endregion
-
-#region METHODS
-
-
-#endregion
+        #endregion
     }
 }

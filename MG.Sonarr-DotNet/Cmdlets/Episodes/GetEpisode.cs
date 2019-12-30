@@ -42,7 +42,8 @@ namespace MG.Sonarr.Cmdlets
         #region CMDLET PROCESSING
         protected override void BeginProcessing()
         {
-            if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeIdentifier"))
+            //if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeIdentifier"))
+            if (base.HasParameterSpecified(this, x => x.EpisodeIdentifier))
                 _epIdCol = this.EpisodeIdentifier;
 
             base.BeginProcessing();
@@ -51,7 +52,8 @@ namespace MG.Sonarr.Cmdlets
         protected override void ProcessRecord()
         {
             var epList = new List<EpisodeResult>();
-            if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeId"))
+            //if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeId"))
+            if (base.HasParameterSpecified(this, x => x.EpisodeId))
             {
                 this.GetEpisodeById(this.EpisodeId, epList);
             }
@@ -59,11 +61,13 @@ namespace MG.Sonarr.Cmdlets
             {
                 List<EpisodeResult> allEps = base.SendSonarrListGet<EpisodeResult>(string.Format(EP_BY_SERIES, this.SeriesId));
 
-                if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeIdentifier"))
+                //if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeIdentifier"))
+                if (base.HasParameterSpecified(this, x => x.EpisodeIdentifier))
                 {
                     this.GetEpisodeByIdentifierString(_epIdCol, allEps, epList);
                 }
-                else if (this.MyInvocation.BoundParameters.ContainsKey("AbsoluteEpisodeNumber"))
+                //else if (this.MyInvocation.BoundParameters.ContainsKey("AbsoluteEpisodeNumber"))
+                if (base.HasParameterSpecified(this, x => x.AbsoluteEpisodeNumber))
                 {
                     this.GetEpisodeByAbsoluteNumber(this.AbsoluteEpisodeNumber, allEps, epList);
                 }

@@ -47,10 +47,9 @@ namespace MG.Sonarr.Cmdlets
             };
 
             string msg = "Refresh all series";
-            if (this.MyInvocation.BoundParameters.ContainsKey("SeriesId"))
-            {
+
+            if (base.HasParameterSpecified(this, x => x.SeriesId))
                 msg = string.Format("Refresh series id {0}", this.SeriesId);
-            }
 
             if (this.Force.ToBool() || base.ShouldProcess(msg, "Invoke"))
             {

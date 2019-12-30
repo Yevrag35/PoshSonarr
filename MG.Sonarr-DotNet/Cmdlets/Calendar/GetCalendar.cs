@@ -69,7 +69,7 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (HasParameterSpecified(this, x => x.StartDate) && !HasParameterSpecified(this, x => x.EndDate))
+            if (base.HasParameterSpecified(this, x => x.StartDate) && ! base.HasParameterSpecified(this, x => x.EndDate))
             {
                 this.EndDate = this.StartDate.AddDays(7);
             }
@@ -83,12 +83,12 @@ namespace MG.Sonarr.Cmdlets
 
             List<CalendarEntry> entries = this.GetCalendarEntries(full);
             //if (this.ParameterSetName == "ByDayOfWeek")
-            if (HasParameterSpecified(this, x => x.DayOfWeek))
+            if (base.HasParameterSpecified(this, x => x.DayOfWeek))
             {
                 base.WriteObject(entries.FindAll(x => x.DayOfWeek.HasValue && this.DayOfWeek.Contains(x.DayOfWeek.Value)), true);
             }
             //else if (this.ParameterSetName == "BySeriesTitle")
-            else if (HasParameterSpecified(this, x => x.SeriesTitle))
+            else if (base.HasParameterSpecified(this, x => x.SeriesTitle))
             {
                 var wcp = new WildcardPattern(this.SeriesTitle, WildcardOptions.IgnoreCase);
                 base.WriteObject(entries.FindAll(x => wcp.IsMatch(x.Series)), true);

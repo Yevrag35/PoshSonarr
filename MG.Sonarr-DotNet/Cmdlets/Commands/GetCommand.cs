@@ -43,7 +43,7 @@ namespace MG.Sonarr.Cmdlets.Commands
 
         protected override void ProcessRecord()
         {
-            if (this.MyInvocation.BoundParameters.ContainsKey("JobId"))
+            if (base.HasParameterSpecified(this, x => x.JobId))
             {
                 for (int i = 0; i < this.JobId.Length; i++)
                 {

@@ -54,12 +54,6 @@ namespace MG.Sonarr.Cmdlets.Episodes
                 EpisodeResult er = base.SendSonarrPut<EpisodeResult>(EP, this.InputObject);
                 if (_passThru)
                     base.SendToPipeline(er);
-                //string jsonRes = base.TryPutSonarrResult(EP, this.InputObject);
-                //if (!string.IsNullOrEmpty(jsonRes) && _passThru)
-                //{
-                //    EpisodeResult res = SonarrHttp.ConvertToSonarrResult<EpisodeResult>(jsonRes);
-                //    base.WriteObject(res);
-                //}
             }
         }
 

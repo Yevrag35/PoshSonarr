@@ -189,7 +189,7 @@ namespace MG.Sonarr.Cmdlets
             HttpClientHandler handler = new HttpClientHandler();
             this.CheckCertificateValidity(ref handler);
 
-            if (this.MyInvocation.BoundParameters.ContainsKey("Proxy"))
+            if (base.HasParameterSpecified(this, x => x.Proxy))
                 this.BoundCallerWithProxy(handler);
             
             else
@@ -223,7 +223,7 @@ namespace MG.Sonarr.Cmdlets
             };
             Context.ApiCaller.AddApiKey(this.ApiKey);
         }
-        private void SetSonarrUrl() => Context.SonarrUrl = this.ParameterSetName == "ByServerName"
+        private void SetSonarrUrl() => Context.SonarrUrl = !base.HasParameterSpecified(this, x => x.SonarrUrl)
                 ? ClassFactory.GenerateSonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
                 : ClassFactory.GenerateSonarrUrl(this.SonarrUrl, !_noApiPrefix);
         private SonarrStatusResult TryConnect()

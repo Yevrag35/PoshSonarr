@@ -47,7 +47,8 @@ namespace MG.Sonarr.Cmdlets
             };
 
             string msg = "Rescan all series";
-            if (this.MyInvocation.BoundParameters.ContainsKey("SeriesId"))
+
+            if (base.HasParameterSpecified(this, x => x.SeriesId))
             {
                 msg = string.Format("Rescan series id {0}", this.SeriesId);
             }

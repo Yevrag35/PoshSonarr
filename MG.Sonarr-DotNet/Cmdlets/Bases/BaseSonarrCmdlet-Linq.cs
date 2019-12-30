@@ -24,16 +24,15 @@ namespace MG.Sonarr.Cmdlets
             bool result = false;
             if (cmdletParameterExpression.Body is MemberExpression memEx)
             {
-                return this.MyInvocation.BoundParameters.ContainsKey(memEx.Member.Name);
+                return cmdlet.MyInvocation.BoundParameters.ContainsKey(memEx.Member.Name);
             }
             else if (cmdletParameterExpression.Body is UnaryExpression une && une.Operand is MemberExpression unMemEx)
             {
-                return this.MyInvocation.BoundParameters.ContainsKey(unMemEx.Member.Name);
+                return cmdlet.MyInvocation.BoundParameters.ContainsKey(unMemEx.Member.Name);
             }
             return result;
         }
-
-        public static bool HasAllParametersSpecified<T>(T cmdlet, params Expression<Func<T, object>>[] cmdletParameterExpressions) where T : PSCmdlet
+        public bool HasAllParametersSpecified<T>(T cmdlet, params Expression<Func<T, object>>[] cmdletParameterExpressions) where T : PSCmdlet
         {
             bool result = false;
             if (cmdletParameterExpressions != null || cmdletParameterExpressions.Length > 0)
@@ -43,8 +42,7 @@ namespace MG.Sonarr.Cmdlets
             }
             return result;
         }
-
-        public static bool HasAnyParameterSpecified<T>(T cmdlet, params Expression<Func<T, object>>[] cmdletParameterExpressions) where T : PSCmdlet
+        public bool HasAnyParameterSpecified<T>(T cmdlet, params Expression<Func<T, object>>[] cmdletParameterExpressions) where T : PSCmdlet
         {
             bool result = false;
             if (cmdletParameterExpressions != null && cmdletParameterExpressions.Length > 0)
@@ -54,8 +52,7 @@ namespace MG.Sonarr.Cmdlets
             }
             return result;
         }
-
-        private static IEnumerable<string> SelectAllParameterNames<T>(IEnumerable<Expression<Func<T, object>>> cmdletParameterExpressions) where T : PSCmdlet
+        private IEnumerable<string> SelectAllParameterNames<T>(IEnumerable<Expression<Func<T, object>>> cmdletParameterExpressions) where T : PSCmdlet
         {
             foreach (Expression<Func<T, object>> expression in cmdletParameterExpressions)
             {
