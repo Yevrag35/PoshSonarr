@@ -264,7 +264,7 @@ namespace MG.Sonarr.Cmdlets
 
         #region DELETE
         /// <summary>
-        /// Sends a PUT request to the specified Sonarr endpoint.
+        /// Sends a DELETE request to the specified Sonarr endpoint.
         /// </summary>
         /// <param name="endpoint">The API endpoint that the request is sent to.</param>
         protected void SendSonarrDelete(string endpoint)

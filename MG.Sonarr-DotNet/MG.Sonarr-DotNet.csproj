@@ -99,6 +99,7 @@
     <Compile Include="Cmdlets\Restriction\SetRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\UpdateRestriction.cs" />
     <Compile Include="Cmdlets\RootFolder\RegisterRootFolder.cs" />
+    <Compile Include="Cmdlets\RootFolder\RemoveRootFolder.cs" />
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
     <Compile Include="Components\SonarrHttp.cs" />
