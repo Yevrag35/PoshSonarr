@@ -88,9 +88,16 @@ namespace MG.Sonarr.Cmdlets
             {
                 if (response.HasException && response.HasRawContent)
                 {
-                    foreach (ErrorResultException ere in response.ContentAsJArray().ToObject<ErrorResultCollection>())
+                    if (!response.ContentAsRaw.StartsWith("["))
                     {
-                        this.WriteError(ere, ErrorCategory.SyntaxError);
+                        this.WriteError(response.ContentAsJObject().ToString(), ErrorCategory.InvalidResult);
+                    }
+                    else
+                    {
+                        foreach (ErrorResultException ere in response.ContentAsJArray().ToObject<ErrorResultCollection>())
+                        {
+                            this.WriteError(ere, ErrorCategory.SyntaxError);
+                        }
                     }
                 }
 
