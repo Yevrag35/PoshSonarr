@@ -6,7 +6,7 @@ using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsLifecycle.Register, "RootFolder", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsLifecycle.Register, "RootFolder", ConfirmImpact = ConfirmImpact.None, SupportsShouldProcess = true)]
     [OutputType(typeof(RootFolder))]
     [Alias("New-RootFolder")]
     [CmdletBinding(PositionalBinding = false, DefaultParameterSetName = "ViaPipeline")]
@@ -33,26 +33,34 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (HasParameterSpecified(this, x => x.Path))
-            {
-                return;
-            }
+            if (base.HasParameterSpecified(this, x => x.Path))
+                _paths = new List<string>(this.Path);
+
+            else
+                _paths = new List<string>();
         }
 
         protected override void ProcessRecord()
         {
-
+            if (base.HasParameterSpecified(this, x => x.InputObject))
+            {
+                _paths.Add(this.InputObject);
+            }
         }
 
-        //protected override void EndProcessing()
-        //{
-
-        //}
-
-        #endregion
-
-        #region BACKEND METHODS
-
+        protected override void EndProcessing()
+        {
+            for (int i = 0; i < _paths.Count; i++)
+            {
+                string path = _paths[i];
+                var bodyParams = new SonarrBodyParameters
+                {
+                    { "path", path }
+                };
+                if (base.ShouldProcess(path, "Register"))
+                    base.SendToPipeline(base.SendSonarrPost<RootFolder>(EP, bodyParams));
+            }
+        }
 
         #endregion
     }

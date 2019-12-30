@@ -31,7 +31,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (this.MyInvocation.BoundParameters.ContainsKey("Severity"))
+            if (base.HasParameterSpecified(this, x => x.Severity))
             {
                 _list.Add("filterKey=level");
                 _list.Add(string.Format("filterValue={0}", this.Severity.ToString()));

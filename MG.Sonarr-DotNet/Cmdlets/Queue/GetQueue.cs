@@ -31,7 +31,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (this.MyInvocation.BoundParameters.ContainsKey("Id"))
+            if (base.HasParameterSpecified(this, x => x.Id))
             {
                 for (int i = 0; i < this.Id.Length; i++)
                 {

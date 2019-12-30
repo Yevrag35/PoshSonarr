@@ -47,17 +47,19 @@ namespace MG.Sonarr.Cmdlets.Logging
         private IEnumerable<LogFile> FilterResults(List<LogFile> logFiles)
         {
             logFiles.Sort();
-            if (this.MyInvocation.BoundParameters.ContainsKey("LogFileId"))
+            if (base.HasParameterSpecified(this, x => x.LogFileId))
             {
                 return logFiles.Where(x => this.LogFileId.Contains(x.LogFileId));
             }
-            else if (this.MyInvocation.BoundParameters.ContainsKey("Name"))
+            if (base.HasParameterSpecified(this, x => x.Name))
             {
                 IEqualityComparer<string> ig = ClassFactory.NewIgnoreCase();
                 return logFiles.Where(x => this.Name.Contains(x.FileName, ig));
             }
             else
+            {
                 return logFiles;
+            }
         }
 
         #endregion

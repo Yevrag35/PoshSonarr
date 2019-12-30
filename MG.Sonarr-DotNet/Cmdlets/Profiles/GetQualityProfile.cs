@@ -27,7 +27,7 @@ namespace MG.Sonarr.Cmdlets.Profiles
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByProfileId", ValueFromPipelineByPropertyName = true)]
         [Alias("QualityProfileId")]
-        public int Id { get; set; }
+        public int[] Id { get; set; }
 
         #endregion
 
@@ -36,45 +36,19 @@ namespace MG.Sonarr.Cmdlets.Profiles
 
         protected override void ProcessRecord()
         {
-            if (this.ParameterSetName == "ByProfileName")
+            if ( ! base.HasParameterSpecified(this, x => x.Id))
             {
-                List<QualityProfile> profs = null;
-                string jsonStr = base.TryGetSonarrResult("/profile");
-                if (!string.IsNullOrEmpty(jsonStr))
+                if (this.TryGetAllProfiles(out List<QualityProfile> profs))
                 {
-                    profs = SonarrHttp.ConvertToSonarrResults<QualityProfile>(jsonStr, out bool iso);
-                }
-
-                if (profs != null && profs.Count > 0)
-                {
-                    if (this.Name != null && this.Name.Length > 0)
-                    {
-                        for (int n = 0; n < this.Name.Length; n++)
-                        {
-                            string name = this.Name[n];
-                            var wcp = new WildcardPattern(name, WildcardOptions.IgnoreCase);
-                            for (int p = 0; p < profs.Count; p++)
-                            {
-                                QualityProfile qp = profs[p];
-                                if (wcp.IsMatch(qp.Name))
-                                    base.WriteObject(qp);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        base.WriteObject(profs, true);
-                    }
+                    base.WriteObject(this.Filter(profs), true);
                 }
             }
             else
             {
-                string full = string.Format("/profile/{0}", this.Id);
-                string oneProf = base.TryGetSonarrResult(full);
-                if (!string.IsNullOrEmpty(oneProf))
+                foreach (int singleId in this.Id)
                 {
-                    QualityProfile qp = SonarrHttp.ConvertToSonarrResult<QualityProfile>(oneProf);
-                    base.WriteObject(qp);
+                    string qpIdEndpoint = this.GetProfileIdEndpoint(singleId);
+                    base.SendToPipeline(base.SendSonarrGet<QualityProfile>(qpIdEndpoint));
                 }
             }
         }
@@ -82,10 +56,27 @@ namespace MG.Sonarr.Cmdlets.Profiles
         #endregion
 
         #region METHODS
-        //private bool TryGetAllProfiles(out List<QualityProfile> outProfiles)
-        //{
-        //    outProfiles = base.SendSonarrListGet<QualityProfile>("/profile");
-        //}
+        private List<QualityProfile> Filter(List<QualityProfile> allProfiles)
+        {
+            if (this.Name == null || this.Name.Length <= 0)
+                return allProfiles;
+
+            else
+            {
+                IEnumerable<WildcardPattern> patterns = this.Name
+                    .Select(x => new WildcardPattern(x, WildcardOptions.IgnoreCase));
+
+                return allProfiles.FindAll(qp => patterns.Any(wp => wp.IsMatch(qp.Name)));
+            }
+        }
+
+        private string GetProfileIdEndpoint(int id) => string.Format("/profile/{0}", id);
+
+        private bool TryGetAllProfiles(out List<QualityProfile> outProfiles)
+        {
+            outProfiles = base.SendSonarrListGet<QualityProfile>("/profile");
+            return outProfiles != null && outProfiles.Count > 0;
+        }
 
         #endregion
     }
