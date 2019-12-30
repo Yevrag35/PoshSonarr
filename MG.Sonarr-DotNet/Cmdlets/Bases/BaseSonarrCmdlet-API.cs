@@ -201,6 +201,18 @@ namespace MG.Sonarr.Cmdlets
             return Context.ApiCaller.PostAsJsonAsync<T>(new Uri(apiPath, UriKind.Relative), payload);
         }
 
+        protected List<T> SendSonarrListPost<T>(string endpoint, IJsonResult payload) where T : class
+        {
+            this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
+            IRestListResponse<T> response = this.SendSonarrListPostAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
+            return this.ProcessMultiResponse(response);
+
+        }
+        private Task<IRestListResponse<T>> SendSonarrListPostAsTask<T>(string apiPath, IJsonResult payload) where T : class
+        {
+            return Context.ApiCaller.PostAsJsonListAsync<T>(apiPath, payload);
+        }
+
         #endregion
 
         #region PUT
