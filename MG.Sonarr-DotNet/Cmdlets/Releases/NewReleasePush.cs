@@ -56,6 +56,8 @@ namespace MG.Sonarr.Cmdlets
 
             if (base.ShouldProcess(string.Format("New Release Push - {0}", this.Title), "New"))
             {
+                Release release = base.SendSonarrPost<Release>(EP, bodyParameters);
+
                 //    string jsonRes = base.TryPostSonarrResult(EP, body);
 
                 //    if (!string.IsNullOrEmpty(jsonRes) && _passThru)
