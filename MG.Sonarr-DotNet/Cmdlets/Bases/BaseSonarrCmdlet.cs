@@ -86,7 +86,15 @@ namespace MG.Sonarr.Cmdlets
 
             else
             {
-                if (response.HasException)
+                if (response.HasException && response.HasRawContent)
+                {
+                    foreach (ErrorResultException ere in response.ContentAsJArray().ToObject<ErrorResultCollection>())
+                    {
+                        this.WriteError(ere, ErrorCategory.SyntaxError);
+                    }
+                }
+
+                else if (response.HasException && !response.HasRawContent)
                     this.WriteError(response.Exception, ErrorCategory.InvalidOperation);
 
                 else if (!response.IsValidStatusCode)
