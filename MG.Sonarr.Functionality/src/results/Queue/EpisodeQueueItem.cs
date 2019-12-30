@@ -12,7 +12,7 @@ namespace MG.Sonarr.Results
         public long EpisodeFileId { get; set; }
 
         [JsonProperty("id")]
-        public long Id { get; set; }
+        public long QueueItemId { get; set; }
 
         [JsonProperty("lastSearchTime")]
         public DateTime LastSearchTime { get; set; }
@@ -26,6 +26,6 @@ namespace MG.Sonarr.Results
         [JsonProperty("sceneSeasonNumber")]
         public int SceneSeasonNumber { get; set; }
 
-        public int CompareTo(EpisodeQueueItem other) => this.Id.CompareTo(other.Id);
+        public int CompareTo(EpisodeQueueItem other) => this.QueueItemId.CompareTo(other.QueueItemId);
     }
 }
