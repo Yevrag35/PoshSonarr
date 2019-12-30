@@ -32,25 +32,28 @@ namespace MG.Sonarr.Cmdlets
         protected override void ProcessRecord()
         {
             if (base.HasParameterSpecified(this, x => x.Id))
-            {
-                for (int i = 0; i < this.Id.Length; i++)
-                {
-                    string ep = string.Format(EP_ID, this.Id[i]);
-                    string jsonRes = base.TryGetSonarrResult(ep);
-                    if (!string.IsNullOrEmpty(jsonRes))
-                    {
-                        QueueItem oneRes = SonarrHttp.ConvertToSonarrResult<QueueItem>(jsonRes);
-                        base.WriteObject(oneRes);
-                    }
-                }
-            }
+                base.WriteObject(this.GetQueueItemsById(this.Id), true);
+            
             else
+                base.WriteObject(this.GetAllQueueItems(), true);
+        }
+
+        #endregion
+
+        #region METHODS
+        private List<QueueItem> GetAllQueueItems()
+        {
+            return base.SendSonarrListGet<QueueItem>(EP);
+        }
+        private IEnumerable<QueueItem> GetQueueItemsById(long[] ids)
+        {
+            foreach (int id in ids)
             {
-                string jsonRes = base.TryGetSonarrResult(EP);
-                if (!string.IsNullOrEmpty(jsonRes))
+                string ep = string.Format(EP_ID, id);
+                QueueItem qi = base.SendSonarrGet<QueueItem>(ep);
+                if (qi != null)
                 {
-                    List<QueueItem> resses = SonarrHttp.ConvertToSonarrResults<QueueItem>(jsonRes, out bool iso);
-                    base.WriteObject(resses, true);
+                    yield return qi;
                 }
             }
         }
