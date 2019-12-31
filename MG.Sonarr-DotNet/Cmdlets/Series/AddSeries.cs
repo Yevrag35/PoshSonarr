@@ -136,11 +136,6 @@ namespace MG.Sonarr.Cmdlets
                 SeriesResult sr = base.SendSonarrPost<SeriesResult>("/series", postJson);
                 if (_passThru)
                     base.SendToPipeline(sr);
-                //string output = base.TryPostSonarrResult("/series", postJson.ToString());
-                //if (_passThru && !string.IsNullOrEmpty(output))
-                //{
-                //    base.WriteObject(SonarrHttp.ConvertToSeriesResult(output));
-                //}
             }
         }
 
