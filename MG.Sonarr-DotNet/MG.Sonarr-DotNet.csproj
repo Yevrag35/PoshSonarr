@@ -71,6 +71,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cmdlets\Bases\BasePostCommandCmdlet.cs" />
+    <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet-API.cs" />
+    <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet-Debug.cs" />
+    <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet-Error.cs" />
     <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet-Linq.cs" />
     <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet.cs" />
     <Compile Include="Cmdlets\Bases\LazySonarrCmdlet.cs" />
@@ -92,6 +95,7 @@
     <Compile Include="Cmdlets\Logging\GetLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLogFile.cs" />
     <Compile Include="Cmdlets\Logging\SaveLogFile.cs" />
+    <Compile Include="Cmdlets\Queue\RemoveQueueItem.cs" />
     <Compile Include="Cmdlets\RemotePath\GetMapping.cs" />
     <Compile Include="Cmdlets\Restriction\GetRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\NewRestriction.cs" />
