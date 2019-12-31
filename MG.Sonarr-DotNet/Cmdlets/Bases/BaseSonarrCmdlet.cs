@@ -59,6 +59,15 @@ namespace MG.Sonarr.Cmdlets
 
         #endregion
 
+        #region SHOULD PROCESS METHODS
+        protected bool FormatShouldProcess(string action, string stringFormat, params object[] arguments)
+        {
+            string msg = string.Format(stringFormat, arguments);
+            return base.ShouldProcess(msg, action);
+        }
+
+        #endregion
+
         #region OLD API METHODS
 
         /// <summary>
