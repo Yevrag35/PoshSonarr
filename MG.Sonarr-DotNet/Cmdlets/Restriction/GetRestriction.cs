@@ -38,12 +38,7 @@ namespace MG.Sonarr.Cmdlets
             if ( ! base.HasParameterSpecified(this, x => x.Id))
             {
                 List<Restriction> restrictions = this.GetAllRestrictions();
-                if (!base.HasParameterSpecified(this, x => x.IgnoredTags))
-                    base.SendToPipeline(restrictions);
-
-                else
-                    //base.SendToPipeline(this.FilterByIgnored(this.IgnoredTags, restrictions));
-                    base.SendToPipeline(base.FilterByStringParameter(restrictions, r => r.Ignored, this, cmd => cmd.IgnoredTags));
+                base.SendToPipeline(base.FilterByStringParameter(restrictions, r => r.Ignored, this, cmd => cmd.IgnoredTags));
             }
             else
             {

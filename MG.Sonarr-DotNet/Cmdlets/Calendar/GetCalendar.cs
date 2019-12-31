@@ -3,9 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Management.Automation;
-using System.Reflection;
-using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -87,15 +86,9 @@ namespace MG.Sonarr.Cmdlets
             {
                 base.SendToPipeline(entries.FindAll(x => x.DayOfWeek.HasValue && this.DayOfWeek.Contains(x.DayOfWeek.Value)));
             }
-            //else if (this.ParameterSetName == "BySeriesTitle")
-            else if (base.HasParameterSpecified(this, x => x.SeriesTitle))
-            {
-                List<CalendarEntry> filtered = base.FilterByStringParameter(entries, e => e.Series, this, cmd => cmd.SeriesTitle);
-                base.SendToPipeline(filtered);
-            }
             else
             {
-                base.SendToPipeline(entries);
+                base.SendToPipeline(base.FilterByStringParameter(entries, e => e.Series, this, cmd => cmd.SeriesTitle));
             }
         }
 

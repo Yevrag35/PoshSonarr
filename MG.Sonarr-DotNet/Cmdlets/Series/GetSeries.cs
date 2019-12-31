@@ -40,7 +40,7 @@ namespace MG.Sonarr.Cmdlets
         protected override void ProcessRecord()
         {
             if ( ! base.HasParameterSpecified(this, x => x.Id))
-                base.SendToPipeline(this.ProcessBySeriesName(), true);
+                base.SendToPipeline(this.ProcessBySeriesName());
             
             else
             {
@@ -59,15 +59,7 @@ namespace MG.Sonarr.Cmdlets
         private List<SeriesResult> ProcessBySeriesName()
         {
             List<SeriesResult> allSeries = base.SendSonarrListGet<SeriesResult>(EP);
-            if (allSeries != null && allSeries.Count > 0 && base.HasParameterSpecified(this, x => x.Name))
-            {
-                List<SeriesResult> filtered = base.FilterByStringParameter(allSeries, x => x.Name, this, c => c.Name);
-                return filtered;
-            }
-            else
-            {
-                return allSeries;
-            }
+            return base.FilterByStringParameter(allSeries, x => x.Name, this, c => c.Name);
         }
 
         #endregion

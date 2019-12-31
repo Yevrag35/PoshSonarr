@@ -15,6 +15,7 @@ namespace MG.Sonarr.Cmdlets
         /// expression should point to a defined parameter property on the cmdlet.
         /// </summary>
         /// <typeparam name="T">The type of the <see cref="PSCmdlet"/> to check on.</typeparam>
+        /// <typeparam name="U">The member type from the expression.</typeparam>
         /// <param name="cmdlet">The <see cref="PSCmdlet"/> whose bound parameters will be checked.</param>
         /// <param name="cmdletParameterExpression">
         ///     The expression targeting the specified <see cref="PSCmdlet"/> whose property will be checked in the
@@ -71,13 +72,33 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region WILDCARD FILTERING
+        /// <summary>
+        /// Takes a list of <typeparamref name="T"/> and compares the <see cref="string"/> property value of each element
+        /// against the specified <see cref="BaseSonarrCmdlet"/>'s parameter which accepts wildcard input.  If the parameter is found not to 
+        /// have been specified, the entire list is returned.
+        /// </summary>
+        /// <typeparam name="T">The <see cref="IJsonResult"/>-implementing class that the <see cref="List{T}"/> is comprised of.</typeparam>
+        /// <typeparam name="U">The <see cref="BaseSonarrCmdlet"/> that the parameter is a property of.</typeparam>
+        /// <param name="listOfItems">The source list of items that will be filtered based on matching criteria.</param>
+        /// <param name="propertyExpressionOfItem">
+        ///     The member <see cref="Expression"/> of <typeparamref name="T"/>.  The subsequent string value of which, 
+        ///     will be put through the <see cref="WildcardPattern"/>s to see if it matches.
+        /// </param>
+        /// <param name="cmdlet">The <see cref="BaseSonarrCmdlet"/> the reference parameter values will be pulled from.</param>
+        /// <param name="parameterExpression">
+        /// The member <see cref="Expression"/> of the cmdlet's parameter.  The <see cref="string"/>
+        /// values will be the wildcard references.
+        /// </param>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="NotImplementedException"/>
+        /// <returns>A <see cref="List{T}"/> of the filtered objects that matched through wildcards.</returns>
         protected List<T> FilterByStringParameter<T, U>(List<T> listOfItems, Expression<Func<T, string>> propertyExpressionOfItem,
             U cmdlet, Expression<Func<U, IEnumerable<string>>> parameterExpression)
-            where T : IJsonResult where U : BaseSonarrCmdlet
+            where T : class, IJsonResult where U : BaseSonarrCmdlet
         {
             if (listOfItems != null && listOfItems.Count > 0
                 && this.HasParameterSpecified(cmdlet, parameterExpression)
-                && propertyExpressionOfItem.Body is MemberExpression propEx)
+                && propertyExpressionOfItem.Body is MemberExpression)
             {
                 Func<U, IEnumerable<string>> cmdletFunc = parameterExpression.Compile();
                 Func<T, string> propertyFunc = propertyExpressionOfItem.Compile();
@@ -98,13 +119,31 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
+        /// <summary>
+        /// Takes a list of <typeparamref name="T"/> and compares the <see cref="IEnumerable{T}"/> (where T is <see cref="string"/>) property values of each element
+        /// against the specified <see cref="BaseSonarrCmdlet"/>'s parameter which accepts wildcard input.  If the parameter is found not to have
+        /// been specified, the entire list is returned.
+        /// </summary>
+        /// <typeparam name="T">The <see cref="IJsonResult"/>-implementing class that the <see cref="List{T}"/> is comprised of.</typeparam>
+        /// <typeparam name="U">The <see cref="BaseSonarrCmdlet"/> that the parameter is a property of.</typeparam>
+        /// <param name="listOfItems">The source list of items that will be filtered based on matching criteria.</param>
+        /// <param name="propertyExpressionOfListItem">
+        ///     The member <see cref="Expression"/> of <typeparamref name="T"/>.  The subsequent string value of which, 
+        ///     will be put through the <see cref="WildcardPattern"/>s to see if it matches.
+        /// </param>
+        /// <param name="cmdlet">The <see cref="BaseSonarrCmdlet"/> the reference parameter values will be pulled from.</param>
+        /// <param name="parameterExpression">
+        /// The member <see cref="Expression"/> of the cmdlet's parameter.  The <see cref="string"/>
+        /// values will be the wildcard references.
+        /// </param>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="NotImplementedException"/>
+        /// <returns>A <see cref="List{T}"/> of the filtered objects that matched through wildcards.</returns>
         protected List<T> FilterByStringParameter<T, U>(List<T> listOfItems, 
             Expression<Func<T, IEnumerable<string>>> propertyExpressionOfListItem,
             U cmdlet, Expression<Func<U, IEnumerable<string>>> parameterExpression) where T : IJsonResult where U : BaseSonarrCmdlet
         {
-            if (listOfItems != null && listOfItems.Count > 0
-                && this.HasParameterSpecified(cmdlet, parameterExpression)
-                && propertyExpressionOfListItem.Body is MemberExpression propEx)
+            if (listOfItems != null && listOfItems.Count > 0 && this.HasParameterSpecified(cmdlet, parameterExpression))
             {
                 Func<U, IEnumerable<string>> cmdletFunc = parameterExpression.Compile();
                 Func<T, IEnumerable<string>> propertyFunc = propertyExpressionOfListItem.Compile();
@@ -116,12 +155,13 @@ namespace MG.Sonarr.Cmdlets
 
                 return listOfItems
                     .FindAll(x =>
-                        patterns.Any(pat =>
-                            propertyFunc(x) != null
-                            &&
-                            propertyFunc(x)
-                                .Any(s =>
-                                    pat.IsMatch(s))));
+                        patterns
+                            .Any(pat =>
+                                propertyFunc(x) != null
+                                &&
+                                propertyFunc(x)
+                                    .Any(s =>
+                                        pat.IsMatch(s))));
             }
             else
             {
