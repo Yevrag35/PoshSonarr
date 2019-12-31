@@ -15,11 +15,11 @@ namespace MG.Sonarr.Cmdlets
     [Cmdlet(VerbsCommon.Get, "Series", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "BySeriesName")]
     [OutputType(typeof(SeriesResult))]
     [CmdletBinding(PositionalBinding = false)]
-    public sealed class GetSeries : BaseSonarrCmdlet
+    public class GetSeries : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private List<SeriesResult> _series;
-        //private bool _showAll = false;
+        private const string EP = "/series";
+        private const string EP_BY_ID = EP + "/{0}";
 
         #endregion
 
@@ -29,14 +29,8 @@ namespace MG.Sonarr.Cmdlets
         public string[] Name{ get; set; }
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId", ValueFromPipelineByPropertyName = true)]
-        public long[] SeriesId { get; set; }
-
-        //[Parameter(Mandatory = false, DontShow = true)]
-        //public SwitchParameter DebugShowAll
-        //{
-        //    get => _showAll;
-        //    set => _showAll = value;
-        //}
+        [Alias("SeriesId")]
+        public long[] Id { get; set; }
 
         #endregion
 
@@ -45,27 +39,16 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (this.ParameterSetName == "BySeriesName")
-            {
-                _series = base.SendSonarrListGet<SeriesResult>("/series");
-
-                if (_series != null && _series.Count > 0 && this.Name != null && this.Name.Length > 0)
-                {
-                    base.WriteObject(this.FilterByName(), true);
-                }
-                else if (_series != null && _series.Count > 0)
-                {
-                    base.WriteObject(_series, true);
-                }
-            }
+            if ( ! base.HasParameterSpecified(this, x => x.Id))
+                base.SendToPipeline(this.ProcessBySeriesName(), true);
+            
             else
             {
-                for (int i = 0; i < this.SeriesId.Length; i++)
+                foreach (long sid in this.Id)
                 {
-                    long id = this.SeriesId[i];
-                    string full = string.Format("/series/{0}", id);
+                    string full = string.Format(EP_BY_ID, sid);
                     SeriesResult sr = base.SendSonarrGet<SeriesResult>(full);
-                    base.WriteObject(sr);
+                    base.SendToPipeline(sr);
                 }
             }
         }
@@ -73,18 +56,17 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region BACKEND METHODS
-        private IEnumerable<SeriesResult> FilterByName()
+        private List<SeriesResult> ProcessBySeriesName()
         {
-            for (int i = 0; i < this.Name.Length; i++)
+            List<SeriesResult> allSeries = base.SendSonarrListGet<SeriesResult>(EP);
+            if (allSeries != null && allSeries.Count > 0 && base.HasParameterSpecified(this, x => x.Name))
             {
-                string name = this.Name[i];
-                var wcp = new WildcardPattern(name, WildcardOptions.IgnoreCase);
-                for (int s = 0; s < _series.Count; s++)
-                {
-                    SeriesResult series = _series[s];
-                    if (wcp.IsMatch(series.Name))
-                        yield return series;
-                }
+                List<SeriesResult> filtered = base.FilterByStringParameter(allSeries, x => x.Name, this, c => c.Name);
+                return filtered;
+            }
+            else
+            {
+                return allSeries;
             }
         }
 

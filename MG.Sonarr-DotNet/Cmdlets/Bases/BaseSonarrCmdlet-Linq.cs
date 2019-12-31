@@ -9,6 +9,7 @@ namespace MG.Sonarr.Cmdlets
 {
     public abstract partial class BaseSonarrCmdlet
     {
+        #region PARAMETERS
         /// <summary>
         /// A LINQ method for performing a "ContainsKey" lookup on the current <see cref="PSCmdlet"/>'s bound parameters.  The parameter
         /// expression should point to a defined parameter property on the cmdlet.
@@ -66,5 +67,33 @@ namespace MG.Sonarr.Cmdlets
                 }
             }
         }
+
+        #endregion
+
+        #region WILDCARD FILTERING
+        protected List<T> FilterByStringParameter<T, U>(List<T> listOfItems, Expression<Func<T, string>> propertyExpressionOfItem,
+            U cmdlet, Expression<Func<U, IEnumerable<string>>> parameterExpression)
+            where T : IJsonResult where U : BaseSonarrCmdlet
+        {
+            if (parameterExpression.Body is MemberExpression memEx && propertyExpressionOfItem.Body is MemberExpression propEx)
+            {
+                Func<U, IEnumerable<string>> cmdletFunc = parameterExpression.Compile();
+                Func<T, string> propertyFunc = propertyExpressionOfItem.Compile();
+
+                IEnumerable<WildcardPattern> patterns = cmdletFunc(cmdlet)
+                    .Select(s => new WildcardPattern(s, WildcardOptions.IgnoreCase));
+
+                return listOfItems
+                    .FindAll(x => patterns
+                        .Any(pat => pat
+                            .IsMatch(propertyFunc(x))));
+            }
+            else
+            {
+                return listOfItems;
+            }
+        }
+
+        #endregion
     }
 }
