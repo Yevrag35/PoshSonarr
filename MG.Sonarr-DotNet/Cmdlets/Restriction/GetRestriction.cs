@@ -35,20 +35,20 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (this.ParameterSetName != "ByRestrictionId")
+            if ( ! base.HasParameterSpecified(this, x => x.Id))
             {
                 List<Restriction> restrictions = this.GetAllRestrictions();
-                if (!this.MyInvocation.BoundParameters.ContainsKey("IgnoredTags"))
-                    base.WriteObject(restrictions, true);
+                if (!base.HasParameterSpecified(this, x => x.IgnoredTags))
+                    base.SendToPipeline(restrictions);
 
                 else
-                    base.WriteObject(this.FilterByIgnored(this.IgnoredTags, restrictions), true);
+                    base.SendToPipeline(this.FilterByIgnored(this.IgnoredTags, restrictions));
             }
             else
             {
                 for (int i = 0; i < this.Id.Length; i++)
                 {
-                    base.WriteObject(this.GetRestrictionById(this.Id[i]));
+                    base.SendToPipeline(this.GetRestrictionById(this.Id[i]));
                 }
             }
         }
@@ -58,27 +58,18 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         private List<Restriction> FilterByIgnored(string[] ignored, List<Restriction> restrictions)
         {
-            var wcps = new List<WildcardPattern>(ignored.Length);
-            for (int i = 0; i < ignored.Length; i++)
-            {
-                wcps.Add(new WildcardPattern(ignored[i], WildcardOptions.IgnoreCase));
-            }
+            IEnumerable<WildcardPattern> patterns = ignored
+                .Select(x => new WildcardPattern(x, WildcardOptions.IgnoreCase));
 
-            return restrictions.FindAll(r => wcps.Exists(w => r.Ignored.Any(inner => w.IsMatch(inner))));
+            return restrictions.FindAll(r => patterns.Any(w => r.Ignored.Any(inner => w.IsMatch(inner))));
         }
 
-        private List<Restriction> GetAllRestrictions()
-        {
-            string jsonRes = base.TryGetSonarrResult(EP);
-            return !string.IsNullOrEmpty(jsonRes)
-                ? SonarrHttp.ConvertToSonarrResults<Restriction>(jsonRes)
-                : null;
-        }
+        private List<Restriction> GetAllRestrictions() => base.SendSonarrListGet<Restriction>(EP);
 
         private Restriction GetRestrictionById(int id)
         {
-            string jsonRes = base.TryGetSonarrResult(string.Format(EP_ID, id));
-            return SonarrHttp.ConvertToSonarrResult<Restriction>(jsonRes);
+            string endpoint = string.Format(EP_ID, id);
+            return base.SendSonarrGet<Restriction>(endpoint);
         }
 
         #endregion

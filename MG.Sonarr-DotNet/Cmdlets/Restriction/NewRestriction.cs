@@ -1,16 +1,11 @@
 ﻿using MG.Sonarr.Results;
-using Newtonsoft.Json;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.New, "Restriction", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsCommon.New, "Restriction", ConfirmImpact = ConfirmImpact.None, SupportsShouldProcess = true)]
     [OutputType(typeof(Restriction))]
     public class NewRestriction : BaseSonarrCmdlet
     {
@@ -38,12 +33,8 @@ namespace MG.Sonarr.Cmdlets
             Restriction newRestrict = this.ParametersToRestriction(this.MyInvocation.BoundParameters);
             if (base.ShouldProcess(string.Format(SHOULD_MSG, newRestrict.Ignored.ToJson(), newRestrict.Required.ToJson()), "New"))
             {
-                string jsonRes = base.TryPostSonarrResult(GetRestriction.EP, newRestrict.ToJson());
-                if (!string.IsNullOrEmpty(jsonRes))
-                {
-                    Restriction restRes = SonarrHttp.ConvertToSonarrResult<Restriction>(jsonRes);
-                    base.WriteObject(restRes);
-                }
+                Restriction restriction = base.SendSonarrPost<Restriction>(GetRestriction.EP, newRestrict);
+                base.SendToPipeline(restriction);
             }
         }
 

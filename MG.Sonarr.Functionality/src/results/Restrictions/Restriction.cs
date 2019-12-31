@@ -35,6 +35,8 @@ namespace MG.Sonarr.Results
         [JsonProperty("tags")]
         public HashSet<int> Tags { get; set; } = new HashSet<int>();
 
+        public Restriction() { }
+
         public Restriction(IDictionary<string, object> parameters)
         {
             foreach (KeyValuePair<string, object> kvp in parameters)

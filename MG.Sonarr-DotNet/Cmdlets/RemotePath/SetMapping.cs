@@ -7,6 +7,7 @@ namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Set, "Mapping", ConfirmImpact = ConfirmImpact.None, SupportsShouldProcess = true)]
     [OutputType(typeof(RemotePathMapping))]
+    [Alias("Update-Mapping")]
     [CmdletBinding(PositionalBinding = false)]
     public class SetMapping : BaseSonarrCmdlet
     {
