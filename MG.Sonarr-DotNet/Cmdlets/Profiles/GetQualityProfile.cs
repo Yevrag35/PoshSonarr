@@ -40,7 +40,6 @@ namespace MG.Sonarr.Cmdlets.Profiles
             {
                 if (this.TryGetAllProfiles(out List<QualityProfile> profs))
                 {
-                    //base.WriteObject(this.Filter(profs), true);
                     base.SendToPipeline(base.FilterByStringParameter(profs, p => p.Name, this, cmd => cmd.Name));
                 }
             }
@@ -57,19 +56,6 @@ namespace MG.Sonarr.Cmdlets.Profiles
         #endregion
 
         #region METHODS
-        //private List<QualityProfile> Filter(List<QualityProfile> allProfiles)
-        //{
-        //    if (this.Name == null || this.Name.Length <= 0)
-        //        return allProfiles;
-
-        //    else
-        //    {
-        //        IEnumerable<WildcardPattern> patterns = this.Name
-        //            .Select(x => new WildcardPattern(x, WildcardOptions.IgnoreCase));
-
-        //        return allProfiles.FindAll(qp => patterns.Any(wp => wp.IsMatch(qp.Name)));
-        //    }
-        //}
 
         private string GetProfileIdEndpoint(int id) => string.Format("/profile/{0}", id);
 

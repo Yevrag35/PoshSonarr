@@ -61,7 +61,7 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = true, ParameterSetName = "BySeriesTitle")]
         [Alias("Series")]
         [SupportsWildcards]
-        public string SeriesTitle { get; set; }
+        public string[] SeriesTitle { get; set; }
 
         #endregion
 
@@ -82,20 +82,20 @@ namespace MG.Sonarr.Cmdlets
             string full = string.Format(EP_WITH_DATE, start, end);
 
             List<CalendarEntry> entries = this.GetCalendarEntries(full);
-            //if (this.ParameterSetName == "ByDayOfWeek")
+
             if (base.HasParameterSpecified(this, x => x.DayOfWeek))
             {
-                base.WriteObject(entries.FindAll(x => x.DayOfWeek.HasValue && this.DayOfWeek.Contains(x.DayOfWeek.Value)), true);
+                base.SendToPipeline(entries.FindAll(x => x.DayOfWeek.HasValue && this.DayOfWeek.Contains(x.DayOfWeek.Value)));
             }
             //else if (this.ParameterSetName == "BySeriesTitle")
             else if (base.HasParameterSpecified(this, x => x.SeriesTitle))
             {
-                var wcp = new WildcardPattern(this.SeriesTitle, WildcardOptions.IgnoreCase);
-                base.WriteObject(entries.FindAll(x => wcp.IsMatch(x.Series)), true);
+                List<CalendarEntry> filtered = base.FilterByStringParameter(entries, e => e.Series, this, cmd => cmd.SeriesTitle);
+                base.SendToPipeline(filtered);
             }
             else
             {
-                base.WriteObject(entries, true);
+                base.SendToPipeline(entries);
             }
         }
 
