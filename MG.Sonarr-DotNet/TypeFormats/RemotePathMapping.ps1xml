@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+	<ViewDefinitions>
+		<View>
+			<Name>RemotePathMapping Table View</Name>
+			<ViewSelectedBy>
+				<TypeName>MG.Sonarr.Results.RemotePathMapping</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<!-- MappingId -->
+						<Alignment>Right</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<!-- Host -->
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<!-- LocalPath -->
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<!-- RemotePath -->
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>MappingId</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Host</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>LocalPath</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>RemotePath</PropertyName>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+	</ViewDefinitions>
+</Configuration>

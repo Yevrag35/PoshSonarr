@@ -40,14 +40,6 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByExplicitRemotePath")]
         public string[] Path { get; set; }
 
-        //[Parameter(Mandatory = false, ParameterSetName = "ByMappingId")]
-        //public int[] MappingId { get; set; }
-
-        //[Parameter(Mandatory = false, Position = 0, ValueFromPipelineByPropertyName = true, ParameterSetName = "ByRemotePathName")]
-        //[SupportsWildcards]
-        //[Alias("FullName")]
-        //public string RemotePath { get; set; }
-
         #endregion
 
         #region CMDLET PROCESSING

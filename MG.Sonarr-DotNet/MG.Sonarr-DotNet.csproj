@@ -97,6 +97,7 @@
     <Compile Include="Cmdlets\Logging\SaveLogFile.cs" />
     <Compile Include="Cmdlets\Queue\RemoveQueueItem.cs" />
     <Compile Include="Cmdlets\RemotePath\GetMapping.cs" />
+    <Compile Include="Cmdlets\RemotePath\SetMapping.cs" />
     <Compile Include="Cmdlets\Restriction\GetRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\NewRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\RemoveRestriction.cs" />
@@ -159,6 +160,7 @@
     <None Include="TypeFormats\QualityProfile.ps1xml" />
     <None Include="TypeFormats\QueueItem.ps1xml" />
     <None Include="TypeFormats\Release.ps1xml" />
+    <None Include="TypeFormats\RemotePathMapping.ps1xml" />
     <None Include="TypeFormats\Restriction.ps1xml" />
     <None Include="TypeFormats\RootFolder.ps1xml" />
     <None Include="TypeFormats\Season.ps1xml" />
