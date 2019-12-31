@@ -1,11 +1,6 @@
 ﻿using MG.Sonarr.Results;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -35,7 +30,8 @@ namespace MG.Sonarr.Cmdlets
         {
             if (_force || base.ShouldProcess(string.Format("Restriction Id: {0}", this.RestrictionId), "Remove"))
             {
-                base.TryDeleteSonarrResult(string.Format(GetRestriction.EP_ID, this.RestrictionId));
+                string endpoint = string.Format(GetRestriction.EP_ID, this.RestrictionId);
+                base.SendSonarrDelete(endpoint);
             }
         }
 

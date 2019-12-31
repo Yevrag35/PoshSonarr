@@ -12,6 +12,7 @@ namespace MG.Sonarr.Cmdlets
     {
         #region FIELDS/CONSTANTS
         private const string EP_FORMAT = "/remotepathmapping/{0}";
+        private bool _force;
 
         #endregion
 
@@ -20,6 +21,13 @@ namespace MG.Sonarr.Cmdlets
         [Alias("MappingId")]
         public int Id { get; set; }
 
+        [Parameter(Mandatory = false)]
+        public SwitchParameter Force
+        {
+            get => _force;
+            set => _force = value;
+        }
+
         #endregion
 
         #region CMDLET PROCESSING
@@ -27,7 +35,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (base.ShouldProcess(string.Format("Remote Path Mapping Id: {0}", this.Id), "Remove"))
+            if (_force || base.ShouldProcess(string.Format("Remote Path Mapping Id: {0}", this.Id), "Remove"))
             {
                 base.SendSonarrDelete(string.Format(EP_FORMAT, this.Id));
             }
