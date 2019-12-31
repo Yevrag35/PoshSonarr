@@ -20,7 +20,7 @@ namespace MG.Sonarr.Cmdlets
         ///     The expression targeting the specified <see cref="PSCmdlet"/> whose property will be checked in the
         ///     bound parameters dictionary.
         /// </param>
-        public bool HasParameterSpecified<T>(T cmdlet, Expression<Func<T, object>> cmdletParameterExpression) where T : PSCmdlet
+        public bool HasParameterSpecified<T, U>(T cmdlet, Expression<Func<T, U>> cmdletParameterExpression) where T : PSCmdlet
         {
             bool result = false;
             if (cmdletParameterExpression.Body is MemberExpression memEx)
@@ -75,12 +75,16 @@ namespace MG.Sonarr.Cmdlets
             U cmdlet, Expression<Func<U, IEnumerable<string>>> parameterExpression)
             where T : IJsonResult where U : BaseSonarrCmdlet
         {
-            if (parameterExpression.Body is MemberExpression memEx && propertyExpressionOfItem.Body is MemberExpression propEx)
+            if (listOfItems != null && listOfItems.Count > 0
+                && this.HasParameterSpecified(cmdlet, parameterExpression)
+                && propertyExpressionOfItem.Body is MemberExpression propEx)
             {
                 Func<U, IEnumerable<string>> cmdletFunc = parameterExpression.Compile();
                 Func<T, string> propertyFunc = propertyExpressionOfItem.Compile();
 
-                IEnumerable<WildcardPattern> patterns = cmdletFunc(cmdlet)
+                IEnumerable<string> propVal = cmdletFunc(cmdlet);
+
+                IEnumerable<WildcardPattern> patterns = propVal
                     .Select(s => new WildcardPattern(s, WildcardOptions.IgnoreCase));
 
                 return listOfItems
