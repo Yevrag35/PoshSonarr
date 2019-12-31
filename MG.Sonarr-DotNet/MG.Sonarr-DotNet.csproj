@@ -97,6 +97,8 @@
     <Compile Include="Cmdlets\Logging\SaveLogFile.cs" />
     <Compile Include="Cmdlets\Queue\RemoveQueueItem.cs" />
     <Compile Include="Cmdlets\RemotePath\GetMapping.cs" />
+    <Compile Include="Cmdlets\RemotePath\NewMapping.cs" />
+    <Compile Include="Cmdlets\RemotePath\RemoveMapping.cs" />
     <Compile Include="Cmdlets\RemotePath\SetMapping.cs" />
     <Compile Include="Cmdlets\Restriction\GetRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\NewRestriction.cs" />

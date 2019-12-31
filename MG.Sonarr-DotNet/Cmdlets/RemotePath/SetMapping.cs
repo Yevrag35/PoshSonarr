@@ -23,7 +23,8 @@ namespace MG.Sonarr.Cmdlets
         public int Id { get; set; }
 
         [Parameter(Mandatory = true, Position = 1, ValueFromPipelineByPropertyName = true)]
-        public string Host { get; set; }
+        [Alias("Host")]
+        public string HostName { get; set; }
 
         [Parameter(Mandatory = true, Position = 2, ValueFromPipelineByPropertyName = true)]
         public string LocalPath { get; set; }
@@ -63,7 +64,7 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region BACKEND METHODS
-        private RemotePathMapping GetBodyParameters() => RemotePathMapping.FormatNew(this.Host, this.LocalPath, this.Id, this.RemotePath);
+        private RemotePathMapping GetBodyParameters() => RemotePathMapping.FormatNew(this.HostName, this.LocalPath, this.Id, this.RemotePath);
 
         #endregion
     }
