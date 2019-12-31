@@ -55,19 +55,19 @@ namespace MG.Sonarr.Cmdlets
             if (this.ParameterSetName != "ByClientId")
             {
                 List<DownloadClient> clients = this.GetAllDownloadClients();
-                //if (!this.MyInvocation.BoundParameters.ContainsKey("Protocol"))
+                
                 if ( ! base.HasParameterSpecified(this, x => x.Protocol))
-                    base.WriteObject(clients);
+                    base.SendToPipeline(clients);
 
                 else
-                    base.WriteObject(this.FindByProtocol(clients), true);
+                    base.SendToPipeline(this.FindByProtocol(clients));
             }
             else
             {
                 for (int i = 0; i < this.Id.Length; i++)
                 {
                     DownloadClient dlc = base.SendSonarrGet<DownloadClient>(string.Format(EP_ID, this.Id[i]));
-                    base.WriteObject(dlc);
+                    base.SendToPipeline(dlc);
                 }
             }
         }

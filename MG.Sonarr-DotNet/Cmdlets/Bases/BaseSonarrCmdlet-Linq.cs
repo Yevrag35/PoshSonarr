@@ -98,6 +98,37 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
+        protected List<T> FilterByStringParameter<T, U>(List<T> listOfItems, 
+            Expression<Func<T, IEnumerable<string>>> propertyExpressionOfListItem,
+            U cmdlet, Expression<Func<U, IEnumerable<string>>> parameterExpression) where T : IJsonResult where U : BaseSonarrCmdlet
+        {
+            if (listOfItems != null && listOfItems.Count > 0
+                && this.HasParameterSpecified(cmdlet, parameterExpression)
+                && propertyExpressionOfListItem.Body is MemberExpression propEx)
+            {
+                Func<U, IEnumerable<string>> cmdletFunc = parameterExpression.Compile();
+                Func<T, IEnumerable<string>> propertyFunc = propertyExpressionOfListItem.Compile();
+
+                IEnumerable<string> parameterVal = cmdletFunc(cmdlet);
+
+                IEnumerable<WildcardPattern> patterns = parameterVal
+                    .Select(s => new WildcardPattern(s, WildcardOptions.IgnoreCase));
+
+                return listOfItems
+                    .FindAll(x =>
+                        patterns.Any(pat =>
+                            propertyFunc(x) != null
+                            &&
+                            propertyFunc(x)
+                                .Any(s =>
+                                    pat.IsMatch(s))));
+            }
+            else
+            {
+                return listOfItems;
+            }
+        }
+
         #endregion
     }
 }

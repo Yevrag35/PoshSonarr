@@ -42,7 +42,8 @@ namespace MG.Sonarr.Cmdlets
                     base.SendToPipeline(restrictions);
 
                 else
-                    base.SendToPipeline(this.FilterByIgnored(this.IgnoredTags, restrictions));
+                    //base.SendToPipeline(this.FilterByIgnored(this.IgnoredTags, restrictions));
+                    base.SendToPipeline(base.FilterByStringParameter(restrictions, r => r.Ignored, this, cmd => cmd.IgnoredTags));
             }
             else
             {
