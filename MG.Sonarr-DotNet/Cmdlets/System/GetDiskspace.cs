@@ -9,29 +9,45 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Get, "Diskspace", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "None")]
+    [Cmdlet(VerbsCommon.Get, "Diskspace", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByExplicitPath")]
     [OutputType(typeof(DiskspaceResult))]
     [CmdletBinding(PositionalBinding = false)]
     public class GetDiskspace : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
         private const string EP = "/diskspace";
+        private bool _showMost;
+        //private string[] _path;
+        //private string[] _labl;
 
-        private List<string> _stringArgs;
+        private List<string> _stringArgs = new List<string>();
 
         #endregion
 
         #region PARAMETERS
-        [Parameter(Mandatory = true, ParameterSetName = "ViaPathPipeline", ValueFromPipelineByPropertyName = true, DontShow = true)]
-        public string InputPath { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "ByExplicitPath", Position = 0)]
         [SupportsWildcards]
-        public string[] Path { get; set; }
+        public string[] Path
+        {
+            get => null;
+            set => _stringArgs.AddRange(value);
+        }
 
         [Parameter(Mandatory = true, ParameterSetName = "ByLabel")]
         [SupportsWildcards]
-        public string[] Label { get; set; }
+        public string[] Label
+        {
+            get => null;
+            set => _stringArgs.AddRange(value);
+        }
+
+        [Parameter(Mandatory = false)]
+        public SwitchParameter ShowMostFreespace
+        {
+            get => _showMost;
+            set => _showMost = value;
+        }
 
         #endregion
 
@@ -39,31 +55,32 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (base.HasParameterSpecified(this, x => x.Path))
-                _stringArgs = new List<string>(this.Path);
-
-            else if (base.HasParameterSpecified(this, x => x.Label))
-                _stringArgs = new List<string>(this.Label);
-
-            else
-                _stringArgs = new List<string>();
         }
         protected override void ProcessRecord()
         {
-            if (base.HasParameterSpecified(this, x => x.InputPath))
-                _stringArgs.Add(this.InputPath);
-        }
-        protected override void EndProcessing()
-        {
             List<DiskspaceResult> allResults = base.SendSonarrListGet<DiskspaceResult>(EP);
-            base.SendToPipeline(this.Filter(allResults));
+            List<DiskspaceResult> filtered = this.Filter(allResults);
+            if (_showMost)
+            {
+                base.SendToPipeline(filtered.
+                    Find(x =>
+                        filtered
+                            .Max(dr =>
+                                dr.FreeSpace.GetValueOrDefault()) == x.FreeSpace.GetValueOrDefault()));
+            }
+            else
+            {
+                base.SendToPipeline(filtered);
+            }
         }
 
         private List<DiskspaceResult> Filter(List<DiskspaceResult> diskspaceResults)
         {
-            if (base.HasAnyParameterSpecified(this, x => x.Path, x => x.InputPath, x => x.Label))
-                //return base.FilterByStrings(diskspaceResults, dsr => dsr.Path, _stringArgs);
-                return base.FilterByMultipleStrings(diskspaceResults, _stringArgs, x => x.Path, x => x.Label);
+            if (base.HasParameterSpecified(this, x => x.Path))
+                return base.FilterByMultipleStrings(diskspaceResults, _stringArgs, x => x.Path);
+
+            else if (base.HasParameterSpecified(this, x => x.Label))
+                return base.FilterByMultipleStrings(diskspaceResults, _stringArgs, x => x.Label);
 
             else
                 return diskspaceResults;

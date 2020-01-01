@@ -41,7 +41,7 @@ namespace MG.Sonarr.Cmdlets
     [Cmdlet(VerbsCommunications.Connect, "Instance", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByServerName")]
     [CmdletBinding(PositionalBinding = false)]
     [Alias("Connect-")]
-    [OutputType(typeof(SonarrStatusResult))]
+    [OutputType(typeof(StatusResult))]
     public partial class ConnectInstance : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
@@ -195,7 +195,7 @@ namespace MG.Sonarr.Cmdlets
             else
                 this.BoundCallerWithoutProxy(handler);
 
-            SonarrStatusResult statusResult = this.TryConnect();
+            StatusResult statusResult = this.TryConnect();
 
             if (_passThru)
                 base.WriteObject(statusResult);
@@ -226,10 +226,10 @@ namespace MG.Sonarr.Cmdlets
         private void SetSonarrUrl() => Context.SonarrUrl = !base.HasParameterSpecified(this, x => x.SonarrUrl)
                 ? ClassFactory.GenerateSonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
                 : ClassFactory.GenerateSonarrUrl(this.SonarrUrl, !_noApiPrefix);
-        private SonarrStatusResult TryConnect()
+        private StatusResult TryConnect()
         {
             base.WriteApiDebug(CONNECT_EP, HttpMethod.Get, out string apiPath);
-            IRestResponse<SonarrStatusResult> response = Context.ApiCaller.GetAsJsonAsync<SonarrStatusResult>(apiPath).GetAwaiter().GetResult();
+            IRestResponse<StatusResult> response = Context.ApiCaller.GetAsJsonAsync<StatusResult>(apiPath).GetAwaiter().GetResult();
             if (response.IsFaulted)
             {
                 if (response.HasException)

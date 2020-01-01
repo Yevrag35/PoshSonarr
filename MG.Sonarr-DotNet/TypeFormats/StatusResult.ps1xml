@@ -4,7 +4,7 @@
         <View>
             <Name>StatusResult</Name>
             <ViewSelectedBy>
-                <TypeName>MG.Sonarr.Results.SonarrStatusResult</TypeName>
+                <TypeName>MG.Sonarr.Results.StatusResult</TypeName>
             </ViewSelectedBy>
             <TableControl>
                 <TableHeaders>
