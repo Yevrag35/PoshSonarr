@@ -72,6 +72,86 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region WILDCARD FILTERING
+        protected List<T> FilterByMultipleStrings<T>(List<T> listOfItems, IEnumerable<string> wildcardContainingStrings,
+            params Expression<Func<T, string>>[] expressions) where T : IJsonResult
+        {
+            if (listOfItems != null && listOfItems.Count > 0)
+            {
+                var masterList = new List<T>(listOfItems.Count);
+                IEnumerable<WildcardPattern> patterns = wildcardContainingStrings
+                    .Select(s => new WildcardPattern(s, WildcardOptions.IgnoreCase));
+
+                Func<T, string>[] funcs = this.CompileFuncs(expressions);
+
+                return listOfItems.FindAll(x =>
+                    funcs.Any(f => patterns.Any(pat => pat.IsMatch(f(x)))));
+            }
+            else
+            {
+                return listOfItems;
+            }
+        }
+
+        private Func<T, string>[] CompileFuncs<T>(params Expression<Func<T, string>>[] expressions)
+        {
+            var funcs = new Func<T, string>[expressions.Length];
+            for (int i = 0; i < expressions.Length; i++)
+            {
+                funcs[i] = expressions[i].Compile();
+            }
+            return funcs;
+        }
+
+        protected List<T> FilterByStrings<T>(List<T> listOfItems, Expression<Func<T, string>> propertyExpressionOfItem, 
+            IEnumerable<string> wildcardContainingStrings) where T : IJsonResult
+        {
+            if (listOfItems != null && listOfItems.Count > 0 && propertyExpressionOfItem.Body is MemberExpression)
+            {
+                Func<T, string> propertyFunc = propertyExpressionOfItem.Compile();
+
+                IEnumerable<WildcardPattern> patterns = wildcardContainingStrings
+                    .Select(s => new WildcardPattern(s, WildcardOptions.IgnoreCase));
+
+                return listOfItems
+                    .FindAll(x =>
+                        propertyFunc(x) != null
+                        &&
+                        patterns
+                            .Any(pat =>
+                                pat.IsMatch(propertyFunc(x))));
+            }
+            else
+            {
+                return listOfItems;
+            }
+        }
+
+        protected List<T> FilterByStrings<T>(List<T> listOfItems, Expression<Func<T, IEnumerable<string>>> propertyExpressionOfItem,
+            IEnumerable<string> wildcardContainingStrings) where T : IJsonResult
+        {
+            if (listOfItems != null && listOfItems.Count > 0 && propertyExpressionOfItem.Body is MemberExpression)
+            {
+                Func<T, IEnumerable<string>> propertyFunc = propertyExpressionOfItem.Compile();
+
+                IEnumerable<WildcardPattern> patterns = wildcardContainingStrings
+                    .Select(s => new WildcardPattern(s, WildcardOptions.IgnoreCase));
+
+                return listOfItems
+                    .FindAll(x =>
+                        propertyFunc(x) != null
+                        &&
+                        patterns
+                            .Any(pat =>
+                                propertyFunc(x)
+                                    .Any(s =>
+                                        pat.IsMatch(s))));
+            }
+            else
+            {
+                return listOfItems;
+            }
+        }
+
         /// <summary>
         /// Takes a list of <typeparamref name="T"/> and compares the <see cref="string"/> property value of each element
         /// against the specified <see cref="BaseSonarrCmdlet"/>'s parameter which accepts wildcard input.  If the parameter is found not to 
@@ -155,10 +235,10 @@ namespace MG.Sonarr.Cmdlets
 
                 return listOfItems
                     .FindAll(x =>
+                        propertyFunc(x) != null
+                        &&
                         patterns
                             .Any(pat =>
-                                propertyFunc(x) != null
-                                &&
                                 propertyFunc(x)
                                     .Any(s =>
                                         pat.IsMatch(s))));
