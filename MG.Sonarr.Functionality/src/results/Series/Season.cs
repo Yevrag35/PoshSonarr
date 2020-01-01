@@ -16,10 +16,10 @@ namespace MG.Sonarr.Results
         public bool IsMonitored { get; set; }
 
         [JsonProperty("seasonNumber")]
-        public int SeasonNumber { get; set; }
+        public int SeasonNumber { get; private set; }
 
         [JsonProperty("statistics")]
-        public Statistics Statistics { get; set; }
+        public Statistics Statistics { get; private set; }
 
         public int CompareTo(Season other) => this.SeasonNumber.CompareTo(other.SeasonNumber);
         public bool ShouldSerializeStatistics() => false;
@@ -44,21 +44,21 @@ namespace MG.Sonarr.Results
     public class Statistics : BaseResult
     {
         [JsonProperty("episodeCount")]
-        public int EpisodeCount { get; set; }
+        public int EpisodeCount { get; private set; }
 
         [JsonProperty("episodeFileCount")]
-        public int EpisodeFileCount { get; set; }
+        public int EpisodeFileCount { get; private set; }
 
         [JsonProperty("percentOfEpisodes")]
-        public decimal PercentOfEpisodes { get; set; }
+        public decimal PercentOfEpisodes { get; private set; }
 
         [JsonProperty("previousAiring")]
-        public DateTime? PreviousAiring { get; set; }
+        public DateTime? PreviousAiring { get; private set; }
 
         [JsonProperty("sizeOnDisk")]
-        public decimal SizeOnDisk { get; set; }
+        public decimal SizeOnDisk { get; private set; }
 
         [JsonProperty("totalEpisodeCount")]
-        public int TotalEpisodeCount { get; set; }
+        public int TotalEpisodeCount { get; private set; }
     }
 }

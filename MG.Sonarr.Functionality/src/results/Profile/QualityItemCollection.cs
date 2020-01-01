@@ -33,7 +33,7 @@ namespace MG.Sonarr.Results
 
         #region METHODS
         internal void Add(QualityItem qi) => _list.Add(qi);
-
+        public int GetNextId() => _list.Max(x => x.Quality.Id) + 1;
         public IEnumerator<QualityItem> GetEnumerator() => _list.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
 

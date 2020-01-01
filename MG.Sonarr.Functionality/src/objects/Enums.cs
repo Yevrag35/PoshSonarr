@@ -242,6 +242,38 @@ namespace MG.Sonarr.Functionality
         Trace
     }
 
+    /// <summary>
+    /// The designated language for a Quality Profile.
+    /// </summary>
+    public enum ProfileLanugage
+    {
+        Cantonese,
+        Czech,
+        Danish,
+        Dutch,
+        English,
+        Finnish,
+        Flemish,
+        French,
+        German,
+        Greek,
+        Hebrew,
+        Hungarian,
+        Italian,
+        Japanese,
+        Korean,
+        Lithuanian,
+        Mandarin,
+        Norwegian,
+        Polish,
+        Portuguese,
+        Russian,
+        Spanish,
+        Swedish,
+        Turkish,
+        Vietnamese
+    }
+
     public enum ProperDownloadType
     {
         PreferAndUpgrade,
