@@ -24,6 +24,8 @@ namespace MG.Sonarr
         #endregion
 
         #region PROPERTIES
+        public static List<Quality> AllQualities { get; internal set; }
+
         /// <summary>
         /// The main <see cref="HttpClient"/> from which all PoshSonarr cmdlets issue their REST requests.
         /// </summary>

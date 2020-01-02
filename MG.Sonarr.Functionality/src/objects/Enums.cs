@@ -288,6 +288,18 @@ namespace MG.Sonarr.Functionality
         Socks5
     }
 
+    public enum QualitySource
+    {
+        Unknown,
+        Television,
+        TelevisionRaw,
+        Web,
+        WebRip,
+        DVD,
+        Bluray,
+        BlurayRaw
+    }
+
     public enum RescanAfterRefreshType
     {
         Always,

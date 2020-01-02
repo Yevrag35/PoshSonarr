@@ -15,7 +15,8 @@
     <Compile Remove="src\objects\interfaces\IRestResponse-Generic.cs" />
     <Compile Remove="src\objects\interfaces\IRestResponse.cs" />
     <Compile Remove="src\objects\rest\SonarrRestResponse.cs" />
-    <Compile Remove="src\results\Quality\QualityDefinition-BETA.cs" />
+    <Compile Remove="src\results\QualityProfile\QualityItemCollection.cs" />
+    <Compile Remove="src\results\Quality\QualityItemCollection.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,7 +31,7 @@
     <None Include="src\extensions\HttpContentExtensions.cs" />
     <None Include="src\objects\interfaces\IRestResponse.cs" />
     <None Include="src\objects\rest\SonarrRestResponse.cs" />
-    <None Include="src\results\Quality\QualityDefinition-BETA.cs" />
+    <None Include="src\results\QualityProfile\QualityItemCollection.cs" />
   </ItemGroup>
 
   <ItemGroup>

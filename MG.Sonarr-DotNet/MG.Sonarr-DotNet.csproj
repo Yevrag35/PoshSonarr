@@ -88,13 +88,14 @@
     <Compile Include="Cmdlets\Commands\InvokeSeriesSearch.cs" />
     <None Include="Cmdlets\Connection\Exclude\CertValidity-Core.cs" />
     <Compile Include="Cmdlets\Connection\Exclude\CertValidity-DotNet.cs" />
-    <None Include="Cmdlets\Profiles\Exclude\NewQualityProfile-BETA.cs" />
+    <None Include="Cmdlets\QualityProfiles\Exclude\NewQualityProfile-BETA.cs" />
     <None Include="Cmdlets\Connection\Exclude\ConnectInstance-BETA.cs" />
     <Compile Include="Cmdlets\DownloadClient\GetDownloadClient.cs" />
     <Compile Include="Cmdlets\FileSystem\SearchDirectory.cs" />
     <Compile Include="Cmdlets\Logging\GetLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLogFile.cs" />
     <Compile Include="Cmdlets\Logging\SaveLogFile.cs" />
+    <Compile Include="Cmdlets\QualityProfiles\NewQualityProfile.cs" />
     <Compile Include="Cmdlets\Queue\RemoveQueueItem.cs" />
     <Compile Include="Cmdlets\RemotePath\GetMapping.cs" />
     <Compile Include="Cmdlets\RemotePath\NewMapping.cs" />
@@ -109,6 +110,7 @@
     <Compile Include="Cmdlets\RootFolder\RemoveRootFolder.cs" />
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
+    <Compile Include="Components\QualityProfileExtensions.cs" />
     <Compile Include="Components\SonarrHttp.cs" />
     <Compile Include="Objects\AddRemoveHashTable.cs" />
     <Compile Include="Objects\EpisodeIdentifierCollection.cs" />
@@ -120,7 +122,7 @@
     <Compile Include="Cmdlets\Episodes\RemoveEpisodeFile.cs" />
     <Compile Include="Cmdlets\Episodes\SetEpisode.cs" />
     <Compile Include="Cmdlets\History\GetHistory.cs" />
-    <Compile Include="Cmdlets\Profiles\GetQualityProfile.cs" />
+    <Compile Include="Cmdlets\QualityProfiles\GetQualityProfile.cs" />
     <Compile Include="Cmdlets\Queue\GetQueue.cs" />
     <Compile Include="Cmdlets\Releases\AddRelease.cs" />
     <Compile Include="Cmdlets\Releases\SearchRelease.cs" />

@@ -197,8 +197,15 @@ namespace MG.Sonarr.Cmdlets
 
             StatusResult statusResult = this.TryConnect();
 
-            if (_passThru)
-                base.WriteObject(statusResult);
+            if (statusResult != null)
+            {
+                List<QualityDefinition> definitions = base.SendSonarrListGet<QualityDefinition>("/qualitydefinition");
+                Context.AllQualities = new List<Quality>(definitions.Select(x => x.Quality));
+                Context.AllQualities.Sort();
+
+                if (_passThru)
+                    base.WriteObject(statusResult);
+            }
         }
 
         #endregion

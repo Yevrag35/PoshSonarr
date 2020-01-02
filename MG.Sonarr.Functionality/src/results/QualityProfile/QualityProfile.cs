@@ -13,10 +13,13 @@ namespace MG.Sonarr.Results
     public class QualityProfileNew : BaseResult
     {
         [JsonProperty("cutoff", Order = 2)]
-        public QualityDetails Cutoff { get; set; }
+        public Quality Cutoff { get; set; }
+
+        //[JsonProperty("items", Order = 3)]
+        //public QualityItemCollection Qualities { get; set; } = new QualityItemCollection();
 
         [JsonProperty("items", Order = 3)]
-        public QualityItemCollection Qualities { get; set; } = new QualityItemCollection();
+        public AllowedQualityCollection AllowedQualities { get; private set; } = new AllowedQualityCollection();
 
         [JsonProperty("language", Order = 4)]
         [JsonConverter(typeof(SonarrStringEnumConverter))]
@@ -26,13 +29,30 @@ namespace MG.Sonarr.Results
         public string Name { get; set; }
 
         public QualityProfileNew() { }
+
+        public bool IsQualityAllowed(string name, bool caseSensitive = false)
+        {
+            bool? result = this.AllowedQualities.GetAllowedQualityByName(name, caseSensitive)?.Allowed;
+            if (!result.HasValue)
+                result = false;
+
+            return result.Value;
+        }
+        public bool IsQualityAllowed(int qualityId)
+        {
+            bool? result = this.AllowedQualities.GetAllowedQualityById(qualityId)?.Allowed;
+            if (!result.HasValue)
+                result = false;
+
+            return result.Value;
+        }
     }
 
     /// <summary>
     /// The class that defines a response from the "/profile" endpoint.
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class QualityProfile : QualityProfileNew, IComparable<QualityProfile>
+    public class QualityProfile : QualityProfileNew, IComparable<QualityProfile>, IEquatable<QualityProfile>
     {
         [JsonProperty("id", Order = 5)]
         public int Id { get; internal set; }
@@ -40,17 +60,7 @@ namespace MG.Sonarr.Results
         public QualityProfile() : base() { }
 
         public int CompareTo(QualityProfile other) => this.Id.CompareTo(other.Id);
-    }
-
-    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class QualityItem : BaseResult, IComparable<QualityItem>
-    {
-        [JsonProperty("allowed")]
-        public bool Allowed { get; set; }
-
-        [JsonProperty("quality")]
-        public QualityDetails Quality { get; set; }
-
-        public int CompareTo(QualityItem other) => this.Quality.CompareTo(other.Quality);
+        public bool Equals(QualityProfile other) => this.Id.Equals(other.Id);
+        public override int GetHashCode() => this.Id.GetHashCode();
     }
 }
