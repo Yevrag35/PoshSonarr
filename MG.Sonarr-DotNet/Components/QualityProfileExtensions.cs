@@ -8,7 +8,7 @@ namespace MG.Sonarr.Extensions
 {
     internal static class QualityProfileExtensions
     {
-        static void AddAllowedQuality(this QualityProfile qualityProfile, string qualityName, bool caseSensitive = false, bool isAllowed = true)
+        public static void AddAllowedQuality(this QualityProfile qualityProfile, string qualityName, bool caseSensitive = false, bool isAllowed = true)
         {
             if (Context.AllQualities == null || Context.AllQualities.Count <= 0)
                 throw new SonarrContextNotSetException();
