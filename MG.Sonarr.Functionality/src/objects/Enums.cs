@@ -184,7 +184,7 @@ namespace MG.Sonarr.Functionality
     }
 
     /// <summary>
-    /// The type of field from a given <see cref="DownloadClientSetting"/>.
+    /// The type of field from a given <see cref="Field"/>.
     /// </summary>
     public enum FieldType
     {

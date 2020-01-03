@@ -51,22 +51,5 @@ namespace MG.Sonarr.Results
 
             this.Order = newOrder;
         }
-        //public async Task SetRealTagsAsync(SonarrRestClient restClient)
-        //{
-        //    if (this.Tags == null && _tagIds != null && _tagIds.Length > 0)
-        //    {
-        //        List<Tag> realTags = new List<Tag>(_tagIds.Length);
-        //        foreach (int tagId in _tagIds)
-        //        {
-        //            string ep = string.Format(ENDPOINT, tagId);
-        //            IRestResponse<Tag> response = await restClient.GetAsJsonAsync<Tag>(ep);
-        //            if (response.IsValidStatusCode && response.Content != null)
-        //            {
-        //                realTags.Add(response.Content);
-        //            }
-        //        }
-        //        this.Tags = realTags.ToArray();
-        //    }
-        //}
     }
 }

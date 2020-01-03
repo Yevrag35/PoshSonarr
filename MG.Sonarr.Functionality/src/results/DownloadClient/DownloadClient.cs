@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -20,7 +21,7 @@ namespace MG.Sonarr.Results
         public int ClientId { get; private set; }
 
         [JsonProperty("fields")]
-        public DownloadClientSettingCollection Config { get; private set; }
+        public FieldCollection Config { get; private set; }
 
         [JsonProperty("configContract")]
         public string ConfigContract { get; private set; }
@@ -41,6 +42,7 @@ namespace MG.Sonarr.Results
         public string Name { get; set; }
 
         [JsonProperty("protocol")]
+        [JsonConverter(typeof(SonarrStringEnumConverter))]
         public DownloadProtocol Protocol { get; set; }
     }
 }
