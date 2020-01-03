@@ -63,7 +63,6 @@ namespace MG.Sonarr.Results
             }
         }
         
-
         public string GetEndpoint() => EP;
 
         [OnDeserialized]

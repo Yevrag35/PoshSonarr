@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+	<ViewDefinitions>
+		<View>
+			<Name>Field ListView</Name>
+			<ViewSelectedBy>
+				<TypeName>MG.Sonarr.Results.Field</TypeName>
+			</ViewSelectedBy>
+			<ListControl>
+				<ListEntries>
+					<ListEntry>
+						<ListItems>
+							<ListItem>
+								<PropertyName>HelpText</PropertyName>
+								<ItemSelectionCondition>
+									<ScriptBlock>-not [string]::IsNullOrEmpty($_.HelpText)</ScriptBlock>
+								</ItemSelectionCondition>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Name</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Order</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>SelectOptions</PropertyName>
+								<ItemSelectionCondition>
+									<ScriptBlock>$_.SelectOptions -ne $null -and $_.SelectOptions.Length -gt 0</ScriptBlock>
+								</ItemSelectionCondition>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Type</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Value</PropertyName>
+							</ListItem>
+						</ListItems>
+					</ListEntry>
+				</ListEntries>
+			</ListControl>
+		</View>
+	</ViewDefinitions>
+</Configuration>

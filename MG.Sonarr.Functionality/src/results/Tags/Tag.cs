@@ -19,12 +19,16 @@ namespace MG.Sonarr.Results
     /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class Tag : TagNew
+    public class Tag : TagNew, IComparable<Tag>, IEquatable<Tag>
     {
         [JsonProperty("id")]
         public int TagId { get; private set; }
 
         public Tag() : base(null) { }
         public Tag(string label) : base(label) { }
+
+        public int CompareTo(Tag other) => this.TagId.CompareTo(other.TagId);
+        public bool Equals(Tag other) => this.TagId.Equals(other.TagId);
+        public override int GetHashCode() => this.TagId.GetHashCode();
     }
 }

@@ -2,9 +2,9 @@
 <Configuration>
 	<ViewDefinitions>
 		<View>
-			<Name>QualityItem ListView</Name>
+			<Name>AllowedQuality ListView</Name>
 			<ViewSelectedBy>
-				<TypeName>MG.Sonarr.Results.QualityItem</TypeName>
+				<TypeName>MG.Sonarr.Results.AllowedQuality</TypeName>
 			</ViewSelectedBy>
 			<TableControl>
 				<TableHeaders>

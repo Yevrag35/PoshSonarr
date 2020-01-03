@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MG.Sonarr</RootNamespace>
     <AssemblyName>MG.Sonarr</AssemblyName>
-    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
@@ -158,11 +158,14 @@
     <None Include="TypeFormats\AlternateTitle.ps1xml" />
     <None Include="TypeFormats\CalendarEntry.ps1xml" />
     <None Include="TypeFormats\CommandResult.ps1xml" />
+    <None Include="TypeFormats\DelayProfile.ps1xml" />
     <None Include="TypeFormats\DiskspaceResult.ps1xml" />
     <None Include="TypeFormats\DownloadClientSetting.ps1xml" />
     <None Include="TypeFormats\DownloadClient.ps1xml" />
     <None Include="TypeFormats\Episode.ps1xml" />
     <None Include="TypeFormats\EpisodeFile.ps1xml" />
+    <None Include="TypeFormats\Field.ps1xml" />
+    <None Include="TypeFormats\Notification.ps1xml" />
     <None Include="TypeFormats\QualityItem.ps1xml" />
     <None Include="TypeFormats\QualityProfile.ps1xml" />
     <None Include="TypeFormats\QueueItem.ps1xml" />
@@ -174,6 +177,7 @@
     <None Include="TypeFormats\SeriesImage.ps1xml" />
     <None Include="TypeFormats\SeriesResult.ps1xml" />
     <None Include="TypeFormats\StatusResult.ps1xml" />
+    <None Include="TypeFormats\Tag.ps1xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

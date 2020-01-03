@@ -11,7 +11,7 @@ using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results
 {
-    #region DOWNLOAD CLIENT SETTING
+    #region FIELD
 
     /// <summary>
     /// Represents a setting set by a provider resource.
@@ -21,15 +21,14 @@ namespace MG.Sonarr.Results
     public class Field : BaseResult
     {
         #region PROPERTIES
-
-        [JsonProperty("advanced")]
-        public bool Advanced { get; private set; }
-
         [JsonProperty("value")]
         public object BackendValue { get; private set; }
 
         [JsonProperty("helpText")]
         public string HelpText { get; private set; }
+
+        [JsonProperty("advanced")]
+        public bool IsAdvanced { get; private set; }
 
         [JsonProperty("label")]
         public string Label { get; private set; }
@@ -93,7 +92,7 @@ namespace MG.Sonarr.Results
 
     #endregion
 
-    #region CLIENT SETTING COLLECTION
+    #region FIELD COLLECTION
 
     [Serializable]
     public class FieldCollection : BaseResult, IEnumerable<Field>
