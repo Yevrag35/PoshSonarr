@@ -33,17 +33,18 @@ namespace MG.Sonarr.Cmdlets
         {
             if (base.HasParameterSpecified(this, x => x.Id))
                 base.WriteObject(this.GetQueueItemsById(this.Id), true);
-            
-            else
-                base.WriteObject(this.GetAllQueueItems(), true);
+
+            else if (this.TryGetAllQueueItems(out List<QueueItem> allItems))
+                base.WriteObject(allItems, true);
         }
 
         #endregion
 
         #region METHODS
-        private List<QueueItem> GetAllQueueItems()
+        private bool TryGetAllQueueItems(out List<QueueItem> allItems)
         {
-            return base.SendSonarrListGet<QueueItem>(EP);
+            allItems = base.SendSonarrListGet<QueueItem>(EP);
+            return allItems != null && allItems.Count > 0;
         }
         private IEnumerable<QueueItem> GetQueueItemsById(long[] ids)
         {
