@@ -10,14 +10,20 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Set, "Tag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsCommon.Rename, "Tag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
     [OutputType(typeof(Tag))]
     [CmdletBinding(PositionalBinding = false)]
-    public class SetTag : BaseSonarrCmdlet
+    public class RenameTag : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
         private const string EP = "/tag";
         private bool _passThru;
+
+        private const string PARAM_ID = "id";
+        private const string PARAM_LBL = "label";
+
+        private const string WHAT_IF_ACT = "Rename to \"{0}\"";
+        private const string WHAT_IF_MSG = "Tag Id: {0}";
 
         #endregion
 
@@ -26,6 +32,7 @@ namespace MG.Sonarr.Cmdlets
         public int Id { get; set; }
 
         [Parameter(Mandatory = true, Position = 1)]
+        [Alias("NewName")]
         public string NewLabel { get; set; }
 
         [Parameter(Mandatory = false)]
@@ -42,23 +49,25 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            var dict = new Dictionary<string, object>(2)
+            if (base.FormatShouldProcess(string.Format(WHAT_IF_ACT, this.NewLabel), WHAT_IF_MSG, this.Id))
             {
-                { "id", this.Id },
-                { "label", this.NewLabel }
-            };
-            string jsonBody = JsonConvert.SerializeObject(dict, Formatting.Indented);
-
-            if (base.ShouldProcess(string.Format("Tag - {0}", this.Id), "Set"))
-            {
-                string jsonRes = base.TryPutSonarrResult(EP, jsonBody);
-
-                if (!string.IsNullOrEmpty(jsonRes) && _passThru)
-                {
-                    Tag res = SonarrHttp.ConvertToSonarrResult<Tag>(jsonRes);
-                    base.WriteObject(res);
-                }
+                SonarrBodyParameters postBody = this.GetPostParameters(this.Id, this.NewLabel);
+                Tag setTag = base.SendSonarrPut<Tag>(EP, postBody);
+                if (_passThru)
+                    base.SendToPipeline(setTag);
             }
+        }
+
+        #endregion
+
+        #region METHODS
+        private SonarrBodyParameters GetPostParameters(int id, string label)
+        {
+            return new SonarrBodyParameters
+            {
+                { PARAM_ID, id },
+                { PARAM_LBL, label }
+            };
         }
 
         #endregion
