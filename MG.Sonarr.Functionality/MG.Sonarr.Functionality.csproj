@@ -40,7 +40,7 @@
 
   <ItemGroup>
     <Reference Include="MG.Api.Json">
-      <HintPath>D:\Local_Repos\MG.Api\MG.Api.Json\bin\Debug\netstandard2.0\MG.Api.Json.dll</HintPath>
+      <HintPath>..\..\MG.Api\MG.Api.Json\bin\Debug\netstandard2.0\MG.Api.Json.dll</HintPath>
       <Private>true</Private>
     </Reference>
   </ItemGroup>
