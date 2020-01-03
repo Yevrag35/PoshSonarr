@@ -90,6 +90,7 @@
     <Compile Include="Cmdlets\Connection\Exclude\CertValidity-DotNet.cs" />
     <None Include="Cmdlets\QualityProfiles\Exclude\NewQualityProfile-BETA.cs" />
     <None Include="Cmdlets\Connection\Exclude\ConnectInstance-BETA.cs" />
+    <Compile Include="Cmdlets\DelayProfile\GetDelayProfile.cs" />
     <Compile Include="Cmdlets\DownloadClient\GetDownloadClient.cs" />
     <Compile Include="Cmdlets\FileSystem\SearchDirectory.cs" />
     <Compile Include="Cmdlets\Logging\GetLog.cs" />
@@ -139,7 +140,7 @@
     <Compile Include="Cmdlets\Tag\GetTag.cs" />
     <Compile Include="Cmdlets\Tag\NewTag.cs" />
     <Compile Include="Cmdlets\Tag\RemoveTag.cs" />
-    <Compile Include="Cmdlets\Tag\SetTag.cs" />
+    <Compile Include="Cmdlets\Tag\RenameTag.cs" />
     <Compile Include="Cmdlets\WantedMissing\GetWantedMissing.cs" />
     <Compile Include="Components\SonarrContext.cs" />
     <Compile Include="Objects\ApiKey.cs" />

@@ -25,7 +25,8 @@ namespace MG.Sonarr.Cmdlets
         [SupportsWildcards]
         public string[] Label { get; set; }
 
-        [Parameter(Mandatory = true, ParameterSetName = "ByTagId")]
+        [Parameter(Mandatory = true, ParameterSetName = "ByTagId", ValueFromPipelineByPropertyName = true)]
+        [Alias("Tags")]
         public int[] Id { get; set; }
 
         #endregion

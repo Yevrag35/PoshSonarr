@@ -22,13 +22,14 @@ namespace MG.Sonarr.Cmdlets
         private const string PARAM_ID = "id";
         private const string PARAM_LBL = "label";
 
-        private const string WHAT_IF_ACT = "Rename to \"{0}\"";
+        private const string WHAT_IF_ACT = "Rename to '{0}'";
         private const string WHAT_IF_MSG = "Tag Id: {0}";
 
         #endregion
 
         #region PARAMETERS
         [Parameter(Mandatory = true, Position = 0, ValueFromPipelineByPropertyName = true)]
+        [Alias("TagId")]
         public int Id { get; set; }
 
         [Parameter(Mandatory = true, Position = 1)]
