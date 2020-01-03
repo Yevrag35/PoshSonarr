@@ -13,10 +13,10 @@ namespace MG.Sonarr.Cmdlets
     {
         #region FIELDS/CONSTANTS
         private const string TAG_EP = "/tag";
-        private bool _isRemove;
-        private Tag[] _removeTags;
-        private int[] _ids;
         private string _ep;
+        private bool _isRemove;
+        private int[] _ids;
+        private bool _passThru;
 
         #endregion
 
@@ -25,44 +25,50 @@ namespace MG.Sonarr.Cmdlets
         public ISupportsTagUpdate InputObject { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "AddExistingTag")]
-        public Tag[] AddExistingTag
+        public Tag[] ExistingTag
         {
-            get => _removeTags;
+            get => null;
             set => _ids = value.Select(x => x.TagId).ToArray();
         }
 
         [Parameter(Mandatory = true, ParameterSetName = "AddExistingTagById")]
-        public int[] AddExistingTagId
+        public int[] ExistingTagId
         {
-            get => _ids;
+            get => null;
             set => _ids = value;
         }
 
-        [Parameter(Mandatory = true, ParameterSetName = "RemoveExistingTag")]
-        public Tag[] RemoveExistingTag
-        {
-            get => _removeTags;
-            set
-            {
-                _isRemove = true;
-                _ids = value.Select(x => x.TagId).ToArray();
-                _removeTags = value;
-            }
-        }
+        //[Parameter(Mandatory = true, ParameterSetName = "RemoveExistingTag")]
+        //public Tag[] RemoveExistingTag
+        //{
+        //    get => null;
+        //    set
+        //    {
+        //        _isRemove = true;
+        //        _ids = value.Select(x => x.TagId).ToArray();
+        //    }
+        //}
 
-        [Parameter(Mandatory = true, ParameterSetName = "RemoveExistingTagById")]
-        public int[] RemoveExistingTagId
-        {
-            get => _ids;
-            set
-            {
-                _isRemove = true;
-                _ids = value;
-            }
-        }
+        //[Parameter(Mandatory = true, ParameterSetName = "RemoveExistingTagById")]
+        //public int[] RemoveExistingTagId
+        //{
+        //    get => _ids;
+        //    set
+        //    {
+        //        _isRemove = true;
+        //        _ids = value;
+        //    }
+        //}
 
         [Parameter(Mandatory = true, ParameterSetName = "AddNewTag")]
         public string[] Tag { get; set; }
+
+        [Parameter(Mandatory = false)]
+        public SwitchParameter PassThru
+        {
+            get => _passThru;
+            set => _passThru = value;
+        }
 
         #endregion
 
@@ -70,9 +76,9 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (base.HasParameterSpecified(this, x => x.AddExistingTag))
+            if (base.HasParameterSpecified(this, x => x.ExistingTag))
             {
-                this.AddExistingTagId = this.AddExistingTag.Select(x => x.TagId).ToArray();
+                this.ExistingTagId = this.ExistingTag.Select(x => x.TagId).ToArray();
                 this.MyInvocation.BoundParameters.Remove("ExistingTag");
             }
         }
@@ -80,17 +86,18 @@ namespace MG.Sonarr.Cmdlets
         protected override void ProcessRecord()
         {
             _ep = this.InputObject.GetEndpoint();
-            if (base.FormatShouldProcess("Update", "Tags on Item: {0}", this.InputObject.Identifier))
+            if (base.FormatShouldProcess("Add", "Tags on Item: {0}", this.InputObject.Identifier))
             {
-                int[] tagIds = null;
+                //int[] tagIds = null;
                 if (base.HasParameterSpecified(this, x => x.Tag))
                 {
-
+                    _ids = this.CreateNewTags(this.Tag);
                 }
-                else
-                {
-
-                }
+                this.InputObject.AddTags(_ids);
+                base.WriteDebug(this.InputObject.ToJson());
+                object updated = base.SendSonarrPut(_ep, this.InputObject, this.InputObject.GetType());
+                if (_passThru)
+                    base.SendToPipeline(updated);
             }
         }
 
@@ -102,7 +109,9 @@ namespace MG.Sonarr.Cmdlets
             int[] tagIds = new int[tags.Length];
             for (int i = 0; i < tags.Length; i++)
             {
-
+                var postTag = new TagNew(tags[i]);
+                Tag newTag = base.SendSonarrPost<Tag>(TAG_EP, postTag);
+                tagIds[i] = newTag.TagId;
             }
             return tagIds;
         }

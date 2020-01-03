@@ -2,7 +2,7 @@
 
 namespace MG.Sonarr.Functionality
 {
-    public interface ISupportsTagUpdate
+    public interface ISupportsTagUpdate : IJsonResult
     {
         object Identifier { get; }
         int[] Tags { get; }

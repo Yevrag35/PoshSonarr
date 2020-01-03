@@ -39,6 +39,11 @@ namespace MG.Sonarr.Cmdlets
                 base.WriteVerbose(string.Format("Received {0} ({1}).", response.StatusCode, response.StatusCode.ToString()));
             }
         }
+        private object ProcessSingularRepsonse(IRestResponse response)
+        {
+            this.ProcessVoidResponse(response);
+            return response.Content;
+        }
         private T ProcessSingularResponse<T>(IRestResponse<T> response)
             where T : class
         {
@@ -196,10 +201,12 @@ namespace MG.Sonarr.Cmdlets
             IRestResponse<T> response = this.SendSonarrPostAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
             return this.ProcessSingularResponse(response);
         }
+        
         private Task<IRestResponse<T>> SendSonarrPostAsTask<T>(string apiPath, IJsonResult payload) where T : class
         {
             return Context.ApiCaller.PostAsJsonAsync<T>(new Uri(apiPath, UriKind.Relative), payload);
         }
+        
 
         protected List<T> SendSonarrListPost<T>(string endpoint, IJsonResult payload) where T : class
         {
@@ -228,9 +235,21 @@ namespace MG.Sonarr.Cmdlets
             IRestResponse<T> response = this.SendSonarrPutAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
             return this.ProcessSingularResponse(response);
         }
+        protected object SendSonarrPut(string endpoint, IJsonResult payload, Type objectType)
+        {
+            this.WriteApiDebug(endpoint, HttpMethod.Put, out string apiPath);
+            IRestResponse response = this.SendSonarrPutAsTask(apiPath, payload, objectType).GetAwaiter().GetResult();
+            return this.ProcessSingularRepsonse(response);
+
+        }
+
         private Task<IRestResponse<T>> SendSonarrPutAsTask<T>(string apiPath, IJsonResult payload) where T : class
         {
             return Context.ApiCaller.PutAsJsonAsync<T>(new Uri(apiPath, UriKind.Relative), payload);
+        }
+        private Task<IRestResponse> SendSonarrPutAsTask(string apiPath, IJsonResult payload, Type payloadType)
+        {
+            return Context.ApiCaller.PutAsObjectAsync(new Uri(apiPath, UriKind.Relative), payload.ToJson(), payloadType, Encoding.UTF8);
         }
 
         #endregion

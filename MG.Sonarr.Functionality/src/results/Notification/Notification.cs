@@ -3,9 +3,11 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results
 {
+    [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Notification : Provider, ISupportsTagUpdate
     {
@@ -19,6 +21,9 @@ namespace MG.Sonarr.Results
         #region JSON PROPERTIES
         [JsonProperty("link")]
         public string Link { get; private set; }
+
+        [JsonProperty("id", Order = 1)]
+        public int NotificationId { get; private set; }
 
         [JsonProperty("onGrab")]
         public bool OnGrab { get; set; }
@@ -60,6 +65,13 @@ namespace MG.Sonarr.Results
         public string TestCommand { get; private set; }
 
         #endregion
+
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext ctx)
+        {
+            if (_appliedTagIds != null)
+                this.Tags = _appliedTagIds.ToArray();
+        }
 
         public void AddTags(params int[] tagIds)
         {
