@@ -29,7 +29,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (this.MyInvocation.BoundParameters.ContainsKey("SortKey"))
+            if (base.HasParameterSpecified(this, x => x.SortKey))
             {
                 if (this.SortKey.Equals("AirDateUtc", StringComparison.CurrentCultureIgnoreCase))
                     _list.Add("sortKey=airDateUtc");
