@@ -105,7 +105,7 @@ namespace MG.Sonarr.Results
         #endregion
 
         #region INDEXERS
-        public Field this[int index] => _list[index];
+        public Field this[int index] => index != -1 ? _list[index] : _list.LastOrDefault();
         public Field this[string settingName] => _list.Find(x => x.Name.Equals(settingName, StringComparison.CurrentCultureIgnoreCase));
 
         #endregion

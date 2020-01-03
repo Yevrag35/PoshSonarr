@@ -96,6 +96,7 @@
     <Compile Include="Cmdlets\Logging\GetLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLogFile.cs" />
     <Compile Include="Cmdlets\Logging\SaveLogFile.cs" />
+    <Compile Include="Cmdlets\Notification\GetNotification.cs" />
     <Compile Include="Cmdlets\QualityProfiles\NewQualityProfile.cs" />
     <Compile Include="Cmdlets\Queue\RemoveQueueItem.cs" />
     <Compile Include="Cmdlets\RemotePath\GetMapping.cs" />

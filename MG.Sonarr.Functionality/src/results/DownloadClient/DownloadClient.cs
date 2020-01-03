@@ -15,34 +15,20 @@ namespace MG.Sonarr.Results
     /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
-    public class DownloadClient : BaseResult
+    public class DownloadClient : Provider
     {
+        private const string EP = "/downloadclient";
+
         [JsonProperty("id")]
         public int ClientId { get; private set; }
-
-        [JsonProperty("fields")]
-        public FieldCollection Config { get; private set; }
-
-        [JsonProperty("configContract")]
-        public string ConfigContract { get; private set; }
-
-        [JsonProperty("implementation")]
-        public string Implementation { get; private set; }
-
-        [JsonProperty("implementationName")]
-        public string ImplementationName { get; private set; }
-
-        [JsonProperty("infoLink")]
-        public Uri InfoLink { get; set; }
 
         [JsonProperty("enable")]
         public bool IsEnabled { get; set; }
 
-        [JsonProperty("name")]
-        public string Name { get; set; }
-
         [JsonProperty("protocol")]
         [JsonConverter(typeof(SonarrStringEnumConverter))]
         public DownloadProtocol Protocol { get; set; }
+
+        public sealed override string GetEndpoint() => EP;
     }
 }

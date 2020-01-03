@@ -11,10 +11,11 @@ using System.Threading.Tasks;
 namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class DelayProfile : BaseResult
+    public class DelayProfile : BaseResult, ISupportsTagUpdate
     {
         private const int DEFAULT_ORDER = 2147483647;
-        private const string ENDPOINT = "/tag/{0}";
+        private const string EP = "/tag";
+        private const string ENDPOINT = EP + "/{0}";
 
         #region JSON PROPERTIES
         [JsonProperty("id", Order = 8)]
@@ -25,6 +26,9 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("enableUsenet", Order = 1)]
         public bool EnableUsenet { get; set; }
+
+        [JsonIgnore]
+        object ISupportsTagUpdate.Identifier => this.DelayProfileId;
 
         [JsonProperty("order", Order = 6)]
         public int Order { get; private set; }
@@ -43,6 +47,8 @@ namespace MG.Sonarr.Results
         public int UsenetDelay { get; set; }
 
         #endregion
+
+        public string GetEndpoint() => EP;
 
         public void SetOrder(int newOrder)
         {

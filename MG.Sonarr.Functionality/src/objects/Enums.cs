@@ -188,6 +188,8 @@ namespace MG.Sonarr.Functionality
     /// </summary>
     public enum FieldType
     {
+        CheckBox,
+
         /// <summary>
         /// An obfuscated text box for entering sensitive information.
         /// </summary>
@@ -279,6 +281,13 @@ namespace MG.Sonarr.Functionality
         PreferAndUpgrade,
         DoNotUpgrade,
         DoNotPrefer
+    }
+
+    public enum ProviderMessageType
+    {
+        Info,
+        Warning,
+        Error
     }
 
     public enum ProxyType
