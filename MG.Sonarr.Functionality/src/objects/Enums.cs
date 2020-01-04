@@ -213,6 +213,12 @@ namespace MG.Sonarr.Functionality
         UtcAirDate
     }
 
+    public enum FirstDayOfWeek
+    {
+        Sunday,
+        Monday
+    }
+
     public enum HealthCheckResult
     {
         Ok,
