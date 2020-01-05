@@ -87,6 +87,7 @@
     <Compile Include="Cmdlets\Commands\InvokeSeriesRescan.cs" />
     <Compile Include="Cmdlets\Commands\InvokeSeriesSearch.cs" />
     <None Include="Cmdlets\Connection\Exclude\CertValidity-Core.cs" />
+    <Compile Include="Cmdlets\Config\GetHostConfig.cs" />
     <Compile Include="Cmdlets\Connection\Exclude\CertValidity-DotNet.cs" />
     <None Include="Cmdlets\QualityProfiles\Exclude\NewQualityProfile-BETA.cs" />
     <None Include="Cmdlets\Connection\Exclude\ConnectInstance-BETA.cs" />
