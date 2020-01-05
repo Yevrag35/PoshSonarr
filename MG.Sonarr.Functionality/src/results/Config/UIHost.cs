@@ -8,7 +8,7 @@ using System.Linq;
 namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class UIHost
+    public class UIHost : BaseResult
     {
         #region JSON PROPERTIES
         [JsonProperty("id")]
@@ -63,10 +63,10 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("updateMechanism", Order = 16)]
         [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public UpdateMechanism UpdateMechanism { get; private set; }
+        public UpdateMechanism UpdateMechanism { get; set; }
 
         [JsonProperty("updateScriptPath", Order = 17)]
-        public string UpdateScriptPath { get; private set; }
+        public string UpdateScriptPath { get; set; }
 
         [JsonProperty("proxyEnabled")]
         public bool ProxyEnabled { get; set; }

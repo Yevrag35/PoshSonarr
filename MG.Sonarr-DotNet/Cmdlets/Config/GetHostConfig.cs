@@ -13,7 +13,7 @@ namespace MG.Sonarr.Cmdlets
     public class GetHostConfig : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string EP = "/config/host";
+        protected private const string EP = "/config/host";
 
         #endregion
 
@@ -27,14 +27,14 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            UIHost uiConfig = base.SendSonarrGet<UIHost>(EP);
+            UIHost uiConfig = this.GetUIHost();
             base.SendToPipeline(uiConfig);
         }
 
         #endregion
 
         #region BACKEND METHODS
-
+        protected private UIHost GetUIHost() => base.SendSonarrGet<UIHost>(EP);
 
         #endregion
     }
