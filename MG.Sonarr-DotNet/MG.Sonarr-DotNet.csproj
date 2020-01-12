@@ -98,6 +98,7 @@
     <Compile Include="Cmdlets\Logging\GetLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLogFile.cs" />
     <Compile Include="Cmdlets\Logging\SaveLogFile.cs" />
+    <Compile Include="Cmdlets\MediaManagement\GetMediaManagement.cs" />
     <Compile Include="Cmdlets\Metadata\GetMetadata.cs" />
     <Compile Include="Cmdlets\Metadata\MetadataCmdlet.cs" />
     <Compile Include="Cmdlets\Metadata\UpdateMetadata.cs" />
