@@ -99,6 +99,8 @@
     <Compile Include="Cmdlets\Logging\GetLogFile.cs" />
     <Compile Include="Cmdlets\Logging\SaveLogFile.cs" />
     <Compile Include="Cmdlets\Metadata\GetMetadata.cs" />
+    <Compile Include="Cmdlets\Metadata\MetadataCmdlet.cs" />
+    <Compile Include="Cmdlets\Metadata\UpdateMetadata.cs" />
     <Compile Include="Cmdlets\Notification\GetNotification.cs" />
     <Compile Include="Cmdlets\QualityProfiles\NewQualityProfile.cs" />
     <Compile Include="Cmdlets\Queue\RemoveQueueItem.cs" />
