@@ -13,6 +13,18 @@ namespace MG.Sonarr.Results
         [JsonProperty("id")]
         private int _backingId;
 
+        [JsonProperty("fileChmod")]
+        private string _fileChmod;
+
+        [JsonProperty("folderChmod")]
+        private string _folderChmod;
+
+        [JsonProperty("chownUser")]
+        private string _chownUser;
+
+        [JsonProperty("chownGroup")]
+        private string _chownGroup;
+
         [JsonProperty("autoDownloadPropers")]
         public bool AutoDownloadPropers { get; set; }
 

@@ -8,16 +8,11 @@ namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "MediaManagement", ConfirmImpact = ConfirmImpact.None)]
     [OutputType(typeof(MediaManagement))]
-    [CmdletBinding(PositionalBinding = false)]
+    [CmdletBinding]
     public class GetMediaManagement : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
         private const string EP = "/config/mediamanagement";
-
-        #endregion
-
-        #region PARAMETERS
-
 
         #endregion
 
