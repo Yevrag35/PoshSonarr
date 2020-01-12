@@ -151,7 +151,10 @@ namespace MG.Sonarr.Cmdlets
                     {
                         Tag newTag = this.CreateNewTag(s);
                         if (newTag != null)
+                        {
+                            _allCurrentTags.Add(newTag);
                             this.InputObject.Tags.Add(newTag.TagId);
+                        }
                     }
                 }
             }
@@ -189,7 +192,10 @@ namespace MG.Sonarr.Cmdlets
                     {
                         Tag newTag = this.CreateNewTag(s);
                         if (newTag != null)
+                        {
+                            _allCurrentTags.Add(newTag);
                             this.InputObject.Tags.Add(newTag.TagId);
+                        }
                     }
                 }
             }
