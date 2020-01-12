@@ -30,6 +30,7 @@ namespace MG.Sonarr.Results
         #region CONSTRUCTORS
         public SeasonCollection() => _list = new List<Season>();
         internal SeasonCollection(int capacity) => _list = new List<Season>(capacity);
+        [JsonConstructor]
         internal SeasonCollection(IEnumerable<Season> seasons) => _list = new List<Season>(seasons);
 
         #endregion

@@ -12,7 +12,7 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Set, "Series", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsCommon.Set, "Series", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true, DefaultParameterSetName = "None")]
     [CmdletBinding(PositionalBinding = false)]
     [Alias("Update-Series")]
     [OutputType(typeof(SeriesResult))]
@@ -25,6 +25,7 @@ namespace MG.Sonarr.Cmdlets
         private List<Tag> _allCurrentTags;
         private TagTable _tagTable;
 
+        private bool _clearTags;
         private bool _isMon;
         private bool _passThru;
         private bool _useFol;
@@ -58,8 +59,15 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = false)]
         public int QualityProfileId { get; set; }
 
-        [Parameter(Mandatory = false)]
+        [Parameter(Mandatory = true, ParameterSetName = "EditingTags")]
         public object[] Tags { get; set; }
+
+        [Parameter(Mandatory = true, ParameterSetName = "ClearTags")]
+        public SwitchParameter ClearTags
+        {
+            get => _clearTags;
+            set => _clearTags = value;
+        }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter PassThru
@@ -84,8 +92,14 @@ namespace MG.Sonarr.Cmdlets
         {
             this.MakeChangesBasedOnParameters();
 
-            string endpoint = string.Format(SERIES_BY_ID, this.InputObject.SeriesId);
+            if (_tagTable != null)
+                this.FormatTags(_tagTable);
+            
+            else if (_clearTags)
+                this.InputObject.Tags.Clear();
 
+            string endpoint = string.Format(SERIES_BY_ID, this.InputObject.SeriesId);
+            base.WriteDebug(this.InputObject.ToJson());
             if (base.FormatShouldProcess("Set", "Series Id: {0}", this.InputObject.SeriesId))
             {
                 SeriesResult putResult = base.SendSonarrPut<SeriesResult>(endpoint, this.InputObject);
@@ -97,8 +111,8 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region METHODS
-        private void AddingTags()
 
+        #region TAGS
         private Tag CreateNewTag(string label)
         {
             var pbp = new SonarrBodyParameters
@@ -107,33 +121,93 @@ namespace MG.Sonarr.Cmdlets
             };
             return base.SendSonarrPost<Tag>(TAG, pbp);
         }
-
-        private void FormatTags()
+        private void FormatTags(TagTable tt)
         {
-            if (_tagTable.IsAdding)
+            if (tt.IsSetting)
+                this.SettingTags(tt);
+
+            else
             {
-                if (_tagTable.HasAddById)
+                if (tt.IsAdding)
                 {
-                    this.InputObject.Tags.UnionWith(_tagTable.AddTagIds);
+                    this.AddingTags(tt);
                 }
-                else
+                if (tt.IsRemoving)
+                    this.RemovingTags(tt);
+            }
+        }
+        private void AddingTags(TagTable tt)
+        {
+            if (tt.HasAddById)
+            {
+                this.InputObject.Tags.UnionWith(tt.AddTagIds);
+            }
+            if (tt.AddTags != null && tt.AddTags.Length > 0)
+            {
+                foreach (string s in tt.AddTags)
                 {
-                    foreach (string s in _tagTable.AddTags)
+                    if (this.TryGetTagId(s, out int tagId))
                     {
-                        if (this.TryGetTagId(s, out int tagId))
-                        {
-                            this.InputObject.Tags.Add(tagId);
-                        }
-                        else
-                        {
-                            Tag newTag = this.CreateNewTag(s);
-                            if (newTag != null)
-                                this.InputObject.Tags.Add(newTag.TagId);
-                        }
+                        this.InputObject.Tags.Add(tagId);
+                    }
+                    else
+                    {
+                        Tag newTag = this.CreateNewTag(s);
+                        if (newTag != null)
+                            this.InputObject.Tags.Add(newTag.TagId);
                     }
                 }
             }
         }
+        private void RemovingTags(TagTable tt)
+        {
+            if (tt.HasRemoveById)
+            {
+                this.InputObject.Tags.ExceptWith(tt.RemoveTagIds);
+            }
+            if (tt.RemoveTags != null && tt.RemoveTags.Length > 0)
+            {
+                foreach (string s in tt.RemoveTags)
+                {
+                    if (this.TryGetTagId(s, out int tagId))
+                        this.InputObject.Tags.Remove(tagId);
+                }
+            }
+        }
+        private void SettingTags(TagTable tt)
+        {
+            this.InputObject.Tags.Clear();
+            if (tt.HasSetById)
+            {
+                this.InputObject.Tags.UnionWith(tt.SetTagIds);
+            }
+            if (tt.SetTags != null && tt.SetTags.Length > 0)
+            {
+                foreach (string s in tt.SetTags)
+                {
+                    if (this.TryGetTagId(s, out int tagId))
+                        this.InputObject.Tags.Add(tagId);
+
+                    else
+                    {
+                        Tag newTag = this.CreateNewTag(s);
+                        if (newTag != null)
+                            this.InputObject.Tags.Add(newTag.TagId);
+                    }
+                }
+            }
+        }
+        private bool TryGetTagId(string tagLabel, out int tagId)
+        {
+            tagId = 0;
+            int? maybe = _allCurrentTags.Find(x => x.Label.Equals(tagLabel, StringComparison.InvariantCultureIgnoreCase))?.TagId;
+            if (maybe.HasValue)
+                tagId = maybe.Value;
+
+            return maybe.HasValue;
+        }
+
+        #endregion
 
         private void MakeChangesBasedOnParameters()
         {
@@ -152,16 +226,6 @@ namespace MG.Sonarr.Cmdlets
                 if (base.HasParameterSpecified(this, x => x.UseSeasonFolder))
                     this.InputObject.UsingSeasonFolders = _useFol;
             }
-        }
-
-        private bool TryGetTagId(string tagLabel, out int tagId)
-        {
-            tagId = 0;
-            int? maybe = _allCurrentTags.Find(x => x.Label.Equals(tagLabel, StringComparison.InvariantCultureIgnoreCase))?.TagId;
-            if (maybe.HasValue)
-                tagId = maybe.Value;
-
-            return maybe.HasValue;
         }
 
         #endregion

@@ -41,15 +41,15 @@ namespace MG.Sonarr
             {
                 this.SetTagActions(outDict);
             }
-            else if (this.TryInputAsStrings(input, out string[] outStrs))
-            {
-                _isSetting = true;
-                this.SetTags = outStrs;
-            }
             else if (this.TryInputAsInts(input, out int[] outInts))
             {
                 _isSetting = true;
                 this.SetTagIds = outInts;
+            }
+            else if (this.TryInputAsStrings(input, out string[] outStrs))
+            {
+                _isSetting = true;
+                this.SetTags = outStrs;
             }
         }
 
