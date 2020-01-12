@@ -12,22 +12,25 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsData.Update, "Series", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsCommon.Set, "Series", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
     [CmdletBinding(PositionalBinding = false)]
-    [Alias("Set-Series")]
+    [Alias("Update-Series")]
     [OutputType(typeof(SeriesResult))]
-    public class UpdateSeries : BaseSonarrCmdlet
+    public class SetSeries : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
         private CamelCasePropertyNamesContractResolver camel;
         private JsonSerializer cSerialize;
         private JsonSerializerSettings serializer;
+        private List<Tag> _allCurrentTags;
+        private TagTable _tagTable;
 
         private bool _isMon;
         private bool _passThru;
         private bool _useFol;
 
         private const string SERIES_BY_ID = "/series/{0}";
+        private const string TAG = "/tag";
 
         #endregion
 
@@ -56,6 +59,9 @@ namespace MG.Sonarr.Cmdlets
         public int QualityProfileId { get; set; }
 
         [Parameter(Mandatory = false)]
+        public object[] Tags { get; set; }
+
+        [Parameter(Mandatory = false)]
         public SwitchParameter PassThru
         {
             get => _passThru;
@@ -65,7 +71,15 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region CMDLET PROCESSING
-        protected override void BeginProcessing() => base.BeginProcessing();
+        protected override void BeginProcessing()
+        {
+            base.BeginProcessing();
+            if (base.HasParameterSpecified(this, x => x.Tags))
+            {
+                _allCurrentTags = base.SendSonarrListGet<Tag>(TAG);
+                _tagTable = new TagTable(this.Tags);
+            }
+        }
         protected override void ProcessRecord()
         {
             this.MakeChangesBasedOnParameters();
@@ -83,6 +97,44 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region METHODS
+        private void AddingTags()
+
+        private Tag CreateNewTag(string label)
+        {
+            var pbp = new SonarrBodyParameters
+            {
+                { "label", label }
+            };
+            return base.SendSonarrPost<Tag>(TAG, pbp);
+        }
+
+        private void FormatTags()
+        {
+            if (_tagTable.IsAdding)
+            {
+                if (_tagTable.HasAddById)
+                {
+                    this.InputObject.Tags.UnionWith(_tagTable.AddTagIds);
+                }
+                else
+                {
+                    foreach (string s in _tagTable.AddTags)
+                    {
+                        if (this.TryGetTagId(s, out int tagId))
+                        {
+                            this.InputObject.Tags.Add(tagId);
+                        }
+                        else
+                        {
+                            Tag newTag = this.CreateNewTag(s);
+                            if (newTag != null)
+                                this.InputObject.Tags.Add(newTag.TagId);
+                        }
+                    }
+                }
+            }
+        }
+
         private void MakeChangesBasedOnParameters()
         {
             if (base.HasAnyParameterSpecified(this, x => x.NewPath, x => x.IsMonitored,
@@ -100,6 +152,16 @@ namespace MG.Sonarr.Cmdlets
                 if (base.HasParameterSpecified(this, x => x.UseSeasonFolder))
                     this.InputObject.UsingSeasonFolders = _useFol;
             }
+        }
+
+        private bool TryGetTagId(string tagLabel, out int tagId)
+        {
+            tagId = 0;
+            int? maybe = _allCurrentTags.Find(x => x.Label.Equals(tagLabel, StringComparison.InvariantCultureIgnoreCase))?.TagId;
+            if (maybe.HasValue)
+                tagId = maybe.Value;
+
+            return maybe.HasValue;
         }
 
         #endregion

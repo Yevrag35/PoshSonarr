@@ -137,7 +137,7 @@
     <Compile Include="Cmdlets\Series\GetSeries.cs" />
     <Compile Include="Cmdlets\Series\RemoveSeries.cs" />
     <Compile Include="Cmdlets\Series\SearchSeries.cs" />
-    <Compile Include="Cmdlets\Series\UpdateSeries.cs" />
+    <Compile Include="Cmdlets\Series\SetSeries.cs" />
     <Compile Include="Cmdlets\System\GetBackup.cs" />
     <Compile Include="Cmdlets\System\GetDiskspace.cs" />
     <Compile Include="Cmdlets\System\GetStatus.cs" />
@@ -156,6 +156,7 @@
     </Content>
     <Compile Include="Objects\NameOrId.cs" />
     <Compile Include="Objects\ProxyCredential.cs" />
+    <Compile Include="Objects\TagTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="TypeFormats\AlternateTitle.ps1xml" />
     <None Include="TypeFormats\CalendarEntry.ps1xml" />

@@ -21,8 +21,8 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
-        [Parameter(Mandatory = true, ParameterSetName = "ByInputRestrictionAddRemove", ValueFromPipeline = true)]
-        [Parameter(Mandatory = true, ParameterSetName = "ByInputRestrictionReplace", ValueFromPipeline = true)]
+        [Parameter(Mandatory = true, ParameterSetName = "ByInputRestrictionAddRemove", ValueFromPipeline = true, DontShow = true)]
+        [Parameter(Mandatory = true, ParameterSetName = "ByInputRestrictionReplace", ValueFromPipeline = true, DontShow = true)]
         public Restriction InputObject { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "ByRestrictionIdAddRemove")]
