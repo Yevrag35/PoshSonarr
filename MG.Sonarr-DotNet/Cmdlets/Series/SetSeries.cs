@@ -19,9 +19,6 @@ namespace MG.Sonarr.Cmdlets
     public class SetSeries : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private CamelCasePropertyNamesContractResolver camel;
-        private JsonSerializer cSerialize;
-        private JsonSerializerSettings serializer;
         private List<Tag> _allCurrentTags;
         private TagTable _tagTable;
 
@@ -229,60 +226,5 @@ namespace MG.Sonarr.Cmdlets
         }
 
         #endregion
-
-        //protected override void BeginProcessing()
-        //{
-        //    base.BeginProcessing();
-        //    camel = new CamelCasePropertyNamesContractResolver();
-        //    cSerialize = new JsonSerializer
-        //    {
-        //        ContractResolver = camel
-        //    };
-
-        //    serializer = new JsonSerializerSettings
-        //    {
-        //        ContractResolver = camel,
-        //        DateFormatHandling = DateFormatHandling.IsoDateFormat,
-        //        DateTimeZoneHandling = DateTimeZoneHandling.Utc,
-        //        DefaultValueHandling = DefaultValueHandling.Populate,
-        //        Formatting = Formatting.Indented,
-        //        NullValueHandling = NullValueHandling.Include,
-        //        MissingMemberHandling = MissingMemberHandling.Error
-        //    };
-        //}
-
-        //protected override void ProcessRecord()
-        //{
-        //    var job = JObject.FromObject(this.InputObject, cSerialize);
-        //    if (this.MyInvocation.BoundParameters.ContainsKey("NewPath"))
-        //    {
-        //        job["path"].Replace(this.NewPath);
-        //    }
-
-        //    if (this.MyInvocation.BoundParameters.ContainsKey("Monitored"))
-        //    {
-        //        job["monitored"].Replace(this.Monitored);
-        //    }
-
-        //    if (this.MyInvocation.BoundParameters.ContainsKey("UseSeasonFolder"))
-        //    {
-        //        job["seasonFolder"].Replace(this.UseSeasonFolder);
-        //    }
-
-        //    if (this.MyInvocation.BoundParameters.ContainsKey("QualityProfileId"))
-        //    {
-        //        job["qualityProfileId"].Replace(this.QualityProfileId);
-        //    }
-
-        //    string jsonBody = JsonConvert.SerializeObject(job, serializer);
-
-        //    string full = string.Format("/series/{0}", this.InputObject.SeriesId);
-        //    string outRes = base.TryPutSonarrResult(full, jsonBody);
-        //    if (!string.IsNullOrEmpty(outRes))
-        //    {
-        //        SeriesResult series = SonarrHttp.ConvertToSeriesResult(outRes);
-        //        base.WriteObject(series);
-        //    }
-        //}   
     }
 }
