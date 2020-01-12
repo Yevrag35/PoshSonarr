@@ -133,7 +133,7 @@ namespace MG.Sonarr.Results
         //bool ICollection<Field>.Contains(Field item) => 
         //    _list.Exists(x => x.Name.Equals(item.Name, StringComparison.InvariantCultureIgnoreCase));
         //void ICollection<Field>.CopyTo(Field[] array, int arrayIndex) => _list.CopyTo(array, arrayIndex);
-        public bool Exists(Predicate<Field> match) => _list.Exists(match);
+        //public bool Exists(Predicate<Field> match) => _list.Exists(match);
         public IEnumerator<Field> GetEnumerator() => _list.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => ((ICollection<Field>)_list).GetEnumerator();
         public FieldCollection GetSettingByType(params FieldType[] types)

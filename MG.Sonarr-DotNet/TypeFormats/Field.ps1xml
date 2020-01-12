@@ -17,6 +17,9 @@
 								</ItemSelectionCondition>
 							</ListItem>
 							<ListItem>
+								<PropertyName>Label</PropertyName>
+							</ListItem>
+							<ListItem>
 								<PropertyName>Name</PropertyName>
 							</ListItem>
 							<ListItem>
