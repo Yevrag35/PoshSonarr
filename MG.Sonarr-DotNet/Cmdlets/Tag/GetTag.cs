@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,6 +22,9 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByInputTagObject")]
+        public IHasTagSet InputObject { get; set; }
+
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByTagLabel")]
         [SupportsWildcards]
         public string[] Label { get; set; }
