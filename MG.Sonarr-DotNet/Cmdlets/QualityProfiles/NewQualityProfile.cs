@@ -13,6 +13,7 @@ namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.New, "QualityProfile", ConfirmImpact = ConfirmImpact.None, SupportsShouldProcess = true)]
     [OutputType(typeof(QualityProfile))]
+    [Alias("New-Profile")]
     [CmdletBinding(PositionalBinding = false)]
     public class NewQualityProfile : BaseSonarrCmdlet, IDynamicParameters
     {

@@ -8,6 +8,7 @@ namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "Notification", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByName")]
     [OutputType(typeof(Notification))]
+    [Alias("Get-Connection")]
     [CmdletBinding(PositionalBinding = false)]
     public class GetNotification : BaseSonarrCmdlet
     {

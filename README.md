@@ -5,9 +5,13 @@
 
 This will eventually be a complete PowerShell module for quickly issuing [Sonarr PVR API](https://github.com/Sonarr/Sonarr/wiki/API) calls. The module was completely redesigned from the ground up in PowerShell Core, and I'm happy to say it works (has been tested) in Ubuntu 16.04 and Ubuntu 18.04 as well as Windows.
 
-## Build
+## Major Overhaul - 1.3.0
 
-This project has a dependency on another library of mine: [MG.Dynamic](https://github.com/Yevrag35/DynamicParameter).  I have it published to my own NuGet server.  You can add it to Visual Studio by going to Tools => NuGet Package Manager => Package Manager Settings.  In the Options window, select "Package Sources".  Click the "+" button, enter a name for the repository and enter https://nuget.yevrag35.com/nuget for the Source.
+Version 1.3.0 will be a major update (even though it's a minor revision :P) as the entire backend for issuing the API calls was overhauled.  The biggest deal was that now every command will have a WriteDebug part prior to issuing __any__ API request.  It also simplified the requesting process and did away the need for explicit type casting on the responses.
+
+Another big error of improvement was the handling of exceptions that may occur on the server end.  Before, exceptions may have been cryptic/vague rendering them utterly useless.  Now, exceptions are either thrown directly, or the exception response(s) from the API request are directly translated to PowerShell ErrorRecord(s).
+
+In addition to the backend changes, improvements were made to the cmdlets as well as introducing new cmdlets.  There are a total of __18 new cmdlets__ in this release (see __Cmdlets__ section for the complete list).
 
 ## Using
 
@@ -49,7 +53,9 @@ Search-SonarrSeries "The X-Files" | Add-SonarrSeries -RootFolderPath "\\NAS\Show
 
 ---
 
-As of 8/20/19, I'm missing only the following commands:
+## Cmdlets
+
+As of 1/13/20, I'm still missing the following commands:
 
 1. DownloadedEpisodesScan
 1. MissingEpisodeSearch
@@ -58,52 +64,73 @@ As of 8/20/19, I'm missing only the following commands:
 
 The following is the list of the working cmdlets:
 
-* _Commands in __bold__ are new in __v1.2.0___
+* _Commands in __bold__ are new in __v1.3.0___
+* _Aliases and notes are italicized_
 
 1. Add-SonarrRelease
 1. Add-SonarrSeries
-1. Connect-SonarrInstance (Connect-Sonarr)
+1. __Add-SonarrTag__ - _* (still working on this one)_
+1. __Clear-SonarrLog__
+1. Connect-SonarrInstance - _(Connect-Sonarr)_
 1. Get-SonarrBackup
 1. Get-SonarrCalendar
-1. Get-SonarrCommand
+1. Get-SonarrCommand - _(Get-SonarrJob)_
+1. __Get-SonarrDelayProfile__
 1. Get-SonarrDiskspace
-1. __Get-SonarrDownloadClient__
+1. Get-SonarrDownloadClient
 1. Get-SonarrEpisode
 1. Get-SonarrEpisodeFile
 1. Get-SonarrHistory
-1. __Get-SonarrLog__
-1. __Get-SonarrLogFile__
-1. __Get-SonarrMapping__
-1. Get-SonarrQualityProfile
+1. __Get-SonarrHostConfig__
+1. Get-SonarrLog
+1. Get-SonarrLogFile
+1. Get-SonarrMapping
+1. __Get-SonarrMediaManagement__
+1. __Get-SonarrMetadata__
+1. __Get-SonarrNotification__ - _(Get-SonarrConnection)_
+1. Get-SonarrQualityProfile - _(Get-SonarrProfile)_
 1. Get-SonarrQueue
-1. Get-SonarrRelease - * _renamed to Search-SonarrRelease (left behind as alias...)_ *
-1. __Get-SonarrRestriction__
+1. Get-SonarrRelease - * _renamed to Search-SonarrRelease (left behind as alias...)_
+1. Get-SonarrRestriction
 1. Get-SonarrRootFolder
 1. Get-SonarrSeries
 1. Get-SonarrStatus
 1. Get-SonarrTag
-1. __Get-SonarrUpdate__
+1. Get-SonarrUpdate
 1. Get-SonarrWantedMissing
-1. Invoke-SonarrBackup (Backup-Sonarr)
+1. Invoke-SonarrBackup - _(Backup-Sonarr)_
 1. Invoke-SonarrEpisodeSearch
 1. Invoke-SonarrRssSync
 1. Invoke-SonarrSeasonSearch
 1. Invoke-SonarrSeriesRefresh
 1. Invoke-SonarrSeriesRescan
 1. Invoke-SonarrSeriesSearch
+1. __New-SonarrMapping__
+1. __New-SonarrQualityProfile__ - _(New-SonarrProfile)_
 1. New-SonarrReleasePush
-1. __New-SonarrRestriction__
+1. New-SonarrRestriction
 1. New-SonarrTag
+1. __Register-SonarrRootFolder__ _(New-SonarrRootFolder)_
 1. Remove-SonarrEpisodeFile
-1. __Remove-SonarrRestriction__
+1. __Remove-SonarrMapping__
+1. __Remove-SonarrQualityProfile__ - _(Remove-SonarrProfile)_
+1. __Remove-SonarrQueueItem__
+1. Remove-SonarrRestriction
+1. __Remove-SonarrRootFolder__
 1. Remove-SonarrSeries
 1. Remove-SonarrTag
-1. __Save-SonarrLogFile__
-1. __Search-SonarrDirectory__
-1. __Search-SonarrRelease__
+1. Rename-SonarrTag - _* (was Set-SonarrTag)_
+1. Save-SonarrLogFile
+1. Search-SonarrDirectory
+1. Search-SonarrRelease
 1. Search-SonarrSeries
 1. Set-SonarrEpisode
-1. __Set-SonarrRestriction__
-1. Set-SonarrTag
-1. __Update-SonarrRestriction__
-1. Update-SonarrSeries
+1. __Set-SonarrHostConfig__
+1. __Set-SonarrMapping__
+1. Set-SonarrRestriction
+1. Set-SonarrSeries - _* (was Update-SonarrSeries)_
+1. Set-SonarrTag - _* (renamed to Rename-SonarrTag; left behind as alias)_
+1. __Update-SonarrMediaManagement__
+1. __Update-SonarrMetadata__
+1. Update-SonarrRestriction
+1. Update-SonarrSeries - _* (renamed to Set-SonarrSeries; left behind as alias)_

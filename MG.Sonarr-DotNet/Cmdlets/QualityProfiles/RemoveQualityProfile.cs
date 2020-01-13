@@ -8,6 +8,7 @@ using System.Management.Automation;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Remove, "QualityProfile", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
+    [Alias("Remove-Profile")]
     [CmdletBinding]
     public class RemoveQualityProfile : BaseSonarrCmdlet
     {

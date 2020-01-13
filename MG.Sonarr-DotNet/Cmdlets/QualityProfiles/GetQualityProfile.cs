@@ -13,6 +13,7 @@ namespace MG.Sonarr.Cmdlets.Profiles
 {
     [Cmdlet(VerbsCommon.Get, "QualityProfile", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByProfileName")]
     [CmdletBinding(PositionalBinding = false)]
+    [Alias("Get-Profile")]
     [OutputType(typeof(QualityProfile))]
     public class GetProfile : BaseSonarrCmdlet
     {
