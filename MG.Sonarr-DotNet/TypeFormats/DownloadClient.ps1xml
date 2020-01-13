@@ -45,7 +45,7 @@
 								<PropertyName>Protocol</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
-								<PropertyName>Config</PropertyName>
+								<PropertyName>Fields</PropertyName>
 							</TableColumnItem>
 						</TableColumnItems>
 					</TableRowEntry>

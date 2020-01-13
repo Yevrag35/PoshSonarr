@@ -95,6 +95,7 @@
     <Compile Include="Cmdlets\DelayProfile\GetDelayProfile.cs" />
     <Compile Include="Cmdlets\DownloadClient\GetDownloadClient.cs" />
     <Compile Include="Cmdlets\FileSystem\SearchDirectory.cs" />
+    <Compile Include="Cmdlets\Logging\ClearLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLogFile.cs" />
     <Compile Include="Cmdlets\Logging\SaveLogFile.cs" />
@@ -105,6 +106,7 @@
     <Compile Include="Cmdlets\Metadata\UpdateMetadata.cs" />
     <Compile Include="Cmdlets\Notification\GetNotification.cs" />
     <Compile Include="Cmdlets\QualityProfiles\NewQualityProfile.cs" />
+    <Compile Include="Cmdlets\QualityProfiles\RemoveQualityProfile.cs" />
     <Compile Include="Cmdlets\Queue\RemoveQueueItem.cs" />
     <Compile Include="Cmdlets\RemotePath\GetMapping.cs" />
     <Compile Include="Cmdlets\RemotePath\NewMapping.cs" />
