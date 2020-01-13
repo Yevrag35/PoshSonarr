@@ -10,7 +10,7 @@ namespace MG.Sonarr.Results
     /// <para type="description">The class that defines a response from the "/system/status" endpoint.</para>
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class SonarrStatusResult : BaseResult
+    public class StatusResult : BaseResult
     {
         [JsonProperty("appData")]
         public string AppData { get; private set; }

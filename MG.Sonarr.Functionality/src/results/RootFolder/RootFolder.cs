@@ -9,7 +9,7 @@ namespace MG.Sonarr.Results
     /// The class that defines a response from the "/rootfolder" endpoint.
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class RootFolder : BaseResult
+    public class RootFolder : BaseResult, IComparable<RootFolder>, IEquatable<RootFolder>
     {
         private const decimal GB_DECIMAL = 1073741824.00M;
 
@@ -33,6 +33,10 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("unmappedFolders")]
         public List<UnmappedFolder> UnmappedFolders { get; private set; } = new List<UnmappedFolder>();
+
+        public int CompareTo(RootFolder other) => this.RootFolderId.CompareTo(other.RootFolderId);
+        public bool Equals(RootFolder other) => this.RootFolderId.Equals(other.RootFolderId);
+        public override int GetHashCode() => this.RootFolderId.GetHashCode();
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext ctx)

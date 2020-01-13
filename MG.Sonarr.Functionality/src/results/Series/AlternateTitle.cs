@@ -8,13 +8,13 @@ namespace MG.Sonarr.Results
     public class AlternateTitle : BaseResult, IComparable<AlternateTitle>
     {
         [JsonProperty("sceneSeasonNumber")]
-        public int? SceneSeasonNumber { get; set; }
+        public int? SceneSeasonNumber { get; private set; }
 
         [JsonProperty("seasonNumber")]
-        public int? SeasonNumber { get; set; }
+        public int? SeasonNumber { get; private set; }
 
         [JsonProperty("title")]
-        public string Title { get; set; }
+        public string Title { get; private set; }
 
         public int CompareTo(AlternateTitle other)
         {

@@ -45,15 +45,15 @@ namespace MG.Sonarr.Cmdlets.Episodes
 
             if (base.ShouldProcess(
                 string.Format(
-                    "Episode #{0} IsMonitored set to {1}; Series {2}", this.InputObject.AbsoluteEpisodeNumber, this.IsMonitored, this.InputObject.SeriesId), 
-                "Set"))
+                    "Episode #{0} IsMonitored set to {1}; Series {2}", 
+                    this.InputObject.AbsoluteEpisodeNumber, 
+                    this.IsMonitored, 
+                    this.InputObject.SeriesId),
+                    "Set"))
             {
-                string jsonRes = base.TryPutSonarrResult(EP, this.InputObject);
-                if (!string.IsNullOrEmpty(jsonRes) && _passThru)
-                {
-                    EpisodeResult res = SonarrHttp.ConvertToSonarrResult<EpisodeResult>(jsonRes);
-                    base.WriteObject(res);
-                }
+                EpisodeResult er = base.SendSonarrPut<EpisodeResult>(EP, this.InputObject);
+                if (_passThru)
+                    base.SendToPipeline(er);
             }
         }
 

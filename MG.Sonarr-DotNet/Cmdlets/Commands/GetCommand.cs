@@ -43,27 +43,17 @@ namespace MG.Sonarr.Cmdlets.Commands
 
         protected override void ProcessRecord()
         {
-            if (this.MyInvocation.BoundParameters.ContainsKey("JobId"))
+            if (base.HasParameterSpecified(this, x => x.JobId))
             {
                 for (int i = 0; i < this.JobId.Length; i++)
                 {
                     string ep = string.Format(EP_ID, this.JobId[i]);
-                    string jsonRes = base.TryGetSonarrResult(ep);
-                    if (!string.IsNullOrEmpty(jsonRes))
-                    {
-                        CommandResult output = SonarrHttp.ConvertToSonarrResult<CommandResult>(jsonRes);
-                        base.WriteObject(output);
-                    }
+                    base.SendToPipeline(base.SendSonarrGet<CommandResult>(ep));
                 }
             }
             else
             {
-                string jsonRes = base.TryGetSonarrResult(EP);
-                if (!string.IsNullOrEmpty(jsonRes))
-                {
-                    List<CommandResult> jobs = SonarrHttp.ConvertToSonarrResults<CommandResult>(jsonRes, out bool iso);
-                    base.WriteObject(jobs, true);
-                }
+                base.SendToPipeline(base.SendSonarrListGet<CommandResult>(EP));
             }
         }
 

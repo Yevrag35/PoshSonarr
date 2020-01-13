@@ -40,8 +40,7 @@ namespace MG.Sonarr.Cmdlets.Logging
             if (!Directory.Exists(this.Path))
                 throw new ArgumentException("The output folder specified does not exist.");
 
-            var task = this.DownloadLogFile(this.Path, this.InputObject.DownloadUrl);
-            task.Wait();
+            this.DownloadLogFile(this.Path, this.InputObject.DownloadUrl).GetAwaiter().GetResult();
         }
 
         #endregion

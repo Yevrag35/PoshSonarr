@@ -5,17 +5,17 @@
     <RootNamespace>MG.Sonarr</RootNamespace>
     <LangVersion>7.3</LangVersion>
     <Description>A library consisting of PowerShell cmdlets for querying/managing Sonarr PVR.</Description>
-    <Copyright>Copyright © 2019 Yevrag35, LLC.</Copyright>
+    <Copyright>Copyright © 2019-2020 Yevrag35, LLC.</Copyright>
     <PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/Yevrag35/PoshSonarr</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Yevrag35/PoshSonarr</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <Authors>Mike Garvey</Authors>
     <Company>Yevrag35, LLC.</Company>
-    <Version>1.2.2</Version>
+    <Version>1.3.0</Version>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-    <AssemblyVersion>1.2.2</AssemblyVersion>
-    <FileVersion>1.2.2</FileVersion>
+    <AssemblyVersion>1.3.0</AssemblyVersion>
+    <FileVersion>1.3.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -33,16 +33,16 @@
 	</ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="MG.Api.Json" Version="1.0.0" />
+    <PackageReference Include="MG.Dynamic" Version="4.0.0-alpha" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
-		<PackageReference Include="MG.Dynamic" Version="3.4.1" />
 		<PackageReference Include="Microsoft.PowerShell.SDK" Version="6.2.3" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
-		<PackageReference Include="MG.Dynamic" Version="4.0.0-alpha" />
 		<PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0-preview.6" />
 	</ItemGroup>
 

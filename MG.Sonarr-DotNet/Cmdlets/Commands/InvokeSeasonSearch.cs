@@ -1,11 +1,6 @@
 ﻿using MG.Sonarr.Results;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
-using System.Security;
 
 namespace MG.Sonarr.Cmdlets.Commands
 {
@@ -23,12 +18,12 @@ namespace MG.Sonarr.Cmdlets.Commands
     [Alias("Start-SeasonSearch")]
     public class InvokeSeasonSearch : BasePostCommandCmdlet
     {
-#region FIELDS/CONSTANTS
-        protected override string Command => "SeasonSearch";
+        #region FIELDS/CONSTANTS
+        protected sealed override string Command => "SeasonSearch";
 
-#endregion
+        #endregion
 
-#region PARAMETERS
+        #region PARAMETERS
         /// <summary>
         /// <para type="description">The ID of the series to perform the search on.</para>
         /// </summary>
@@ -47,14 +42,14 @@ namespace MG.Sonarr.Cmdlets.Commands
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 
-#endregion
+        #endregion
 
-#region CMDLET PROCESSING
+        #region CMDLET PROCESSING
         protected override void BeginProcessing() => base.BeginProcessing();
 
         protected override void ProcessRecord()
         {
-            var newDict = new Dictionary<string, object>(parameters)
+            var newDict = new SonarrBodyParameters(parameters)
             {
                 { "seriesId", this.SeriesId },
                 { "seasonNumber", this.SeasonNumber }
@@ -67,11 +62,11 @@ namespace MG.Sonarr.Cmdlets.Commands
             }
         }
 
-#endregion
+        #endregion
 
-#region METHODS
+        #region METHODS
 
 
-#endregion
+        #endregion
     }
 }

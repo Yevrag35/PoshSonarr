@@ -34,15 +34,10 @@ namespace MG.Sonarr.Cmdlets
                 this.Path = this.Path + @"\";
 
             string fullEp = string.Format(EP, this.Path);
-            string jsonRes = base.TryGetSonarrResult(fullEp);
-            if (!string.IsNullOrEmpty(jsonRes))
-            {
-                FileSystem fs = SonarrHttp.ConvertToSonarrResult<FileSystem>(jsonRes);
-                if (fs != null)
-                {
-                    base.WriteObject(fs.Directories, true);
-                }
-            }
+
+            FileSystem fs = base.SendSonarrGet<FileSystem>(fullEp);
+            if (fs != null && fs.Directories != null && fs.Directories.Length > 0)
+                base.WriteObject(fs.Directories, true);
         }
 
         #endregion

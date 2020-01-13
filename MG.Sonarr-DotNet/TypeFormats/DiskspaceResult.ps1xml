@@ -4,7 +4,7 @@
         <View>
             <Name>DiskspaceResult</Name>
             <ViewSelectedBy>
-                <TypeName>MG.Sonarr.Results.SonarrDiskspaceResult</TypeName>
+                <TypeName>MG.Sonarr.Results.DiskspaceResult</TypeName>
             </ViewSelectedBy>
             <ListControl>
                 <ListEntries>

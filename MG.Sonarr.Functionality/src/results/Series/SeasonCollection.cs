@@ -9,11 +9,9 @@ using System.Linq;
 
 namespace MG.Sonarr.Results
 {
-    public class SeasonCollection : BaseResult, ICollection<Season>
+    public class SeasonCollection : BaseResult, IEnumerable<Season>
     {
         #region FIELDS/CONSTANTS
-        //private static readonly char HYPHEN = char.Parse("-");
-        //private static readonly char COMMA = char.Parse(",");
         private List<Season> _list;
 
         #endregion
@@ -25,23 +23,24 @@ namespace MG.Sonarr.Results
 
         #region PROPERTIES
         public int Count => _list.Count;
-        bool ICollection<Season>.IsReadOnly => false;
+        //bool ICollection<Season>.IsReadOnly => false;
 
         #endregion
 
         #region CONSTRUCTORS
         public SeasonCollection() => _list = new List<Season>();
-        public SeasonCollection(int capacity) => _list = new List<Season>(capacity);
+        internal SeasonCollection(int capacity) => _list = new List<Season>(capacity);
+        [JsonConstructor]
         internal SeasonCollection(IEnumerable<Season> seasons) => _list = new List<Season>(seasons);
 
         #endregion
 
         #region PUBLIC METHODS
-        public void Add(Season season) => _list.Add(season);
-        public void Clear() => _list.Clear();
-        bool ICollection<Season>.Contains(Season item) => _list.Contains(item);
-        void ICollection<Season>.CopyTo(Season[] array, int arrayIndex) => _list.CopyTo(array, arrayIndex);
-        public bool Exists(Predicate<Season> match) => _list.Exists(match);
+        //public void Add(Season season) => _list.Add(season);
+        //public void Clear() => _list.Clear();
+        //bool ICollection<Season>.Contains(Season item) => _list.Contains(item);
+        //void ICollection<Season>.CopyTo(Season[] array, int arrayIndex) => _list.CopyTo(array, arrayIndex);
+        //public bool Exists(Predicate<Season> match) => _list.Exists(match);
         /// <summary>
         /// Returns an array of <see cref="Season"/> instances where the specified number match the corresponding season numbers.
         /// </summary>
@@ -60,9 +59,9 @@ namespace MG.Sonarr.Results
         IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
         public List<Season> GetMonitoredSeasons() => _list.FindAll(x => x.IsMonitored);
         public List<Season> GetUnmonitoredSeasons() => _list.FindAll(x => !x.IsMonitored);
-        public bool Remove(Season item) => _list.Remove(item);
+        //public bool Remove(Season item) => _list.Remove(item);
         public Season[] ToArray() => _list.ToArray();
-        public bool TrueForAll(Predicate<Season> match) => _list.TrueForAll(match);
+        //public bool TrueForAll(Predicate<Season> match) => _list.TrueForAll(match);
 
         #endregion
 

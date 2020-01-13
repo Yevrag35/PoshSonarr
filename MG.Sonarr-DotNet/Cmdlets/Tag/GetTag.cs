@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,71 +17,76 @@ namespace MG.Sonarr.Cmdlets
     {
         #region FIELDS/CONSTANTS
         protected private const string EP = "/tag";
-        protected private const string EP_ID = EP + "/{0}";
+        protected private const string EP_WITH_ID = EP + "/{0}";
+
+        private HashSet<int> _ids;
 
         #endregion
 
         #region PARAMETERS
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByInputTagObject")]
+        public IHasTagSet InputObject { get; set; }
+
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByTagLabel")]
         [SupportsWildcards]
         public string[] Label { get; set; }
 
-        [Parameter(Mandatory = true, ParameterSetName = "ByTagId")]
+        [Parameter(Mandatory = true, ParameterSetName = "ByTagId", ValueFromPipelineByPropertyName = true)]
+        [Alias("Tags")]
         public int[] Id { get; set; }
 
         #endregion
 
         #region CMDLET PROCESSING
-        protected override void BeginProcessing() => base.BeginProcessing();
+        protected override void BeginProcessing()
+        {
+            base.BeginProcessing();
+            _ids = new HashSet<int>();
+        }
 
         protected override void ProcessRecord()
         {
-            if (this.ParameterSetName == "ByTagLabel")
+            if (base.HasParameterSpecified(this, x => x.InputObject) && this.InputObject.Tags != null && this.InputObject.Tags.Count > 0)
             {
-                string allRes = base.TryGetSonarrResult(EP);
-                List<Tag> tags = null;
-                if (!string.IsNullOrEmpty(allRes))
-                {
-                    tags = SonarrHttp.ConvertToSonarrResults<Tag>(allRes, out bool iso);
-                }
-                if (tags.Count > 0)
-                {
-                    if (this.MyInvocation.BoundParameters.ContainsKey("Label"))
-                    {
-                        for (int i = 0; i < this.Label.Length; i++)
-                        {
-                            var wcp = new WildcardPattern(this.Label[i], WildcardOptions.IgnoreCase);
-                            for (int t = 0; t < tags.Count; t++)
-                            {
-                                Tag oneTag = tags[t];
-                                if (wcp.IsMatch(oneTag.Label))
-                                    base.WriteObject(oneTag);
-                            }
-                        }
-                    }
-                    else
-                        base.WriteObject(tags, true);
-                }
-
+                _ids.UnionWith(this.InputObject.Tags);
             }
-            else
+            else if (base.HasParameterSpecified(this, x => x.Id))
             {
-                for (int i = 0; i < this.Id.Length; i++)
-                {
-                    string ep = string.Format(EP_ID, this.Id[i]);
-                    string jsonRes = base.TryGetSonarrResult(ep);
-                    if (!string.IsNullOrEmpty(jsonRes))
-                    {
-                        base.WriteObject(SonarrHttp.ConvertToSonarrResult<Tag>(jsonRes));
-                    }
-                }
+                _ids.UnionWith(this.Id);
+            }
+        }
+
+        protected override void EndProcessing()
+        {
+            if (!base.HasParameterSpecified(this, x => x.Id) && this.TryGetAllTags(out List<Tag> allTags))
+            {
+                base.SendToPipeline(base.FilterByStringParameter(allTags, t => t.Label, this, cmd => cmd.Label));
+            }
+            else if (_ids.Count > 0)
+            {
+                base.SendToPipeline(this.GetTagById(_ids));
             }
         }
 
         #endregion
 
         #region BACKEND METHODS
+        private bool TryGetAllTags(out List<Tag> outTags)
+        {
+            outTags = base.SendSonarrListGet<Tag>(EP);
+            return outTags != null && outTags.Count > 0;
+        }
 
+        private IEnumerable<Tag> GetTagById(IEnumerable<int> ids)
+        {
+            foreach (int id in ids)
+            {
+                string endpoint = string.Format(EP_WITH_ID, id);
+                Tag oneTag = base.SendSonarrGet<Tag>(endpoint);
+                if (oneTag != null)
+                    yield return oneTag;
+            }
+        }
 
         #endregion
     }

@@ -34,29 +34,33 @@ namespace MG.Sonarr.Cmdlets.Logging
 
         protected override void ProcessRecord()
         {
-            string jsonRes = base.TryGetSonarrResult(EP);
-            if (!string.IsNullOrEmpty(jsonRes))
+            List<LogFile> logFiles = base.SendSonarrListGet<LogFile>(EP);
+            if (logFiles != null && logFiles.Count > 0)
             {
-                List<LogFile> logFiles = SonarrHttp.ConvertToSonarrResults<LogFile>(jsonRes);
-                logFiles.Sort();
-                if (this.MyInvocation.BoundParameters.ContainsKey("LogFileId"))
-                {
-                    base.WriteObject(logFiles.FindAll(x => this.LogFileId.Contains(x.LogFileId)), true);
-                }
-                else if (this.MyInvocation.BoundParameters.ContainsKey("Name"))
-                {
-                    IEqualityComparer<string> ig = ClassFactory.NewIgnoreCase();
-                    List<LogFile> list = logFiles.FindAll(x => this.Name.Contains(x.FileName, ig));
-                    base.WriteObject(list, true);
-                }
-                else
-                    base.WriteObject(logFiles, true);
+                base.WriteObject(this.FilterResults(logFiles), true);
             }
         }
 
         #endregion
 
         #region BACKEND METHODS
+        private IEnumerable<LogFile> FilterResults(List<LogFile> logFiles)
+        {
+            logFiles.Sort();
+            if (base.HasParameterSpecified(this, x => x.LogFileId))
+            {
+                return logFiles.Where(x => this.LogFileId.Contains(x.LogFileId));
+            }
+            if (base.HasParameterSpecified(this, x => x.Name))
+            {
+                IEqualityComparer<string> ig = ClassFactory.NewIgnoreCase();
+                return logFiles.Where(x => this.Name.Contains(x.FileName, ig));
+            }
+            else
+            {
+                return logFiles;
+            }
+        }
 
         #endregion
     }

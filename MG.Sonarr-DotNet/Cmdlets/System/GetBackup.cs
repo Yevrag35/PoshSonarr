@@ -11,12 +11,12 @@ using System.Reflection;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "Backup", ConfirmImpact = ConfirmImpact.None)]
-    [OutputType(typeof(SonarrBackupResult))]
+    [OutputType(typeof(BackupResult))]
     [CmdletBinding(PositionalBinding = false)]
     public class GetBackup : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-
+        private const string EP = "/system/backup";
 
         #endregion
 
@@ -31,26 +31,21 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            string jsonStr = base.TryGetSonarrResult("/system/backup");
-            if (!string.IsNullOrWhiteSpace(jsonStr))
-            {
-                List<SonarrBackupResult> backups = SonarrHttp.ConvertToSonarrResults<SonarrBackupResult>(jsonStr, out bool iso);
-                
-                if (this.Type != null && this.Type.Length > 0)
-                {
-                    base.WriteObject(backups.Where(x => this.Type.Contains(x.BackupType)), true);
-                }
-                else
-                {
-                    base.WriteObject(backups, true);
-                }
-            }
+            List<BackupResult> allBackups = base.SendSonarrListGet<BackupResult>(EP);
+            base.SendToPipeline(this.Filter(allBackups));
         }
 
         #endregion
 
         #region BACKEND METHODS
+        private List<BackupResult> Filter(List<BackupResult> allBackups)
+        {
+            if (base.HasParameterSpecified(this, x => x.Type))
+                return allBackups.FindAll(x => this.Type.Contains(x.BackupType));
 
+            else
+                return allBackups;
+        }
 
         #endregion
     }

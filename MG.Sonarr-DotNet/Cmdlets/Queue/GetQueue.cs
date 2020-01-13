@@ -31,26 +31,30 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (this.MyInvocation.BoundParameters.ContainsKey("Id"))
+            if (base.HasParameterSpecified(this, x => x.Id))
+                base.WriteObject(this.GetQueueItemsById(this.Id), true);
+
+            else if (this.TryGetAllQueueItems(out List<QueueItem> allItems))
+                base.WriteObject(allItems, true);
+        }
+
+        #endregion
+
+        #region METHODS
+        private bool TryGetAllQueueItems(out List<QueueItem> allItems)
+        {
+            allItems = base.SendSonarrListGet<QueueItem>(EP);
+            return allItems != null && allItems.Count > 0;
+        }
+        private IEnumerable<QueueItem> GetQueueItemsById(long[] ids)
+        {
+            foreach (int id in ids)
             {
-                for (int i = 0; i < this.Id.Length; i++)
+                string ep = string.Format(EP_ID, id);
+                QueueItem qi = base.SendSonarrGet<QueueItem>(ep);
+                if (qi != null)
                 {
-                    string ep = string.Format(EP_ID, this.Id[i]);
-                    string jsonRes = base.TryGetSonarrResult(ep);
-                    if (!string.IsNullOrEmpty(jsonRes))
-                    {
-                        QueueItem oneRes = SonarrHttp.ConvertToSonarrResult<QueueItem>(jsonRes);
-                        base.WriteObject(oneRes);
-                    }
-                }
-            }
-            else
-            {
-                string jsonRes = base.TryGetSonarrResult(EP);
-                if (!string.IsNullOrEmpty(jsonRes))
-                {
-                    List<QueueItem> resses = SonarrHttp.ConvertToSonarrResults<QueueItem>(jsonRes, out bool iso);
-                    base.WriteObject(resses, true);
+                    yield return qi;
                 }
             }
         }

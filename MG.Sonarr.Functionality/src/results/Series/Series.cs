@@ -17,7 +17,7 @@ namespace MG.Sonarr.Results
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [Serializable]
-    public class SeriesResult : BaseResult
+    public class SeriesResult : BaseResult, IHasTagSet
     {
         private const string AIRTIME = "airTime";
         private const string RATING = "ratings";
@@ -26,28 +26,28 @@ namespace MG.Sonarr.Results
         private IDictionary<string, JToken> _additionalData;
 
         [JsonProperty("added")]
-        public DateTime? Added { get; set; }
+        public DateTime? Added { get; private set; }
 
         [JsonIgnore]
         public string AirTime { get; private set; }
 
         [JsonProperty("alternateTitles")]
-        public AlternateTitle[] AlternateTitles { get; set; }
+        public AlternateTitle[] AlternateTitles { get; private set; }
 
         [JsonProperty("cleanTitle")]
-        public string CleanTitle { get; set; }
+        public string CleanTitle { get; private set; }
 
         [JsonProperty("firstAired")]
-        public DateTime? FirstAired { get; set; }
+        public DateTime? FirstAired { get; private set; }
 
         [JsonProperty("genres")]
-        public string[] Genres { get; set; }
+        public string[] Genres { get; private set; }
 
         [JsonProperty("images")]
-        public SeriesImage[] Images { get; set; }
+        public SeriesImage[] Images { get; private set; }
 
         [JsonProperty("iMDBId")]
-        public string IMDBId { get; set; }
+        public string IMDBId { get; private set; }
 
         [JsonProperty("monitored")]
         public bool IsMonitored { get; set; }
@@ -65,13 +65,13 @@ namespace MG.Sonarr.Results
         }
 
         [JsonProperty("title")]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         [JsonProperty("network")]
-        public string Network { get; set; }
+        public string Network { get; private set; }
 
         [JsonProperty("overview")]
-        public string Overview { get; set; }
+        public string Overview { get; private set; }
 
         [JsonProperty("path")]
         public string Path { get; set; }
@@ -86,55 +86,55 @@ namespace MG.Sonarr.Results
         public int RatingVotes { get; private set; }
 
         [JsonProperty("remotePoster")]
-        public string RemotePoster { get; set; }
+        public string RemotePoster { get; private set; }
 
         [JsonProperty("runtime")]
-        public long? Runtime { get; set; }
+        public long? Runtime { get; private set; }
 
         [JsonProperty("seasonCount")]
-        public int SeasonCount { get; set; }
+        public int SeasonCount { get; private set; }
 
         [JsonProperty("seasons")]
-        public SeasonCollection Seasons { get; set; }
+        public SeasonCollection Seasons { get; private set; }
 
         [JsonProperty("id")]
-        public long SeriesId { get; set; }
+        public long SeriesId { get; private set; }
 
         [JsonProperty("seriesType")]
-        public SeriesType SeriesType { get; set; }
+        public SeriesType SeriesType { get; private set; }
 
         [JsonProperty("sortTitle")]
-        public string SortTitle { get; set; }
+        public string SortTitle { get; private set; }
 
         [JsonProperty("status")]
-        public SeriesStatusType Status { get; set; }
+        public SeriesStatusType Status { get; private set; }
 
         [JsonProperty("tags")]
-        public HashSet<int> Tags { get; set; }
+        public HashSet<int> Tags { get; private set; }
 
         [JsonProperty("titleSlug")]
-        public string TitleSlug { get; set; }
+        public string TitleSlug { get; private set; }
 
         [JsonProperty("tvDBId")]
-        public long TVDBId { get; set; }
+        public long TVDBId { get; private set; }
 
         [JsonProperty("tvMazeId")]
-        public long TVMazeId { get; set; }
+        public long TVMazeId { get; private set; }
 
         [JsonProperty("tvRageId")]
-        public long TVRageId { get; set; }
+        public long TVRageId { get; private set; }
 
         [JsonProperty("certification")]
-        public string TVRating { get; set; }
+        public string TVRating { get; private set; }
 
         [JsonProperty("useSceneNumbering")]
-        public bool UseSceneNumbering { get; set; }
+        public bool UsesSceneNumbering { get; private set; }
 
         [JsonProperty("seasonFolder")]
         public bool UsingSeasonFolders { get; set; }
 
         [JsonProperty("year")]
-        public int Year { get; set; }
+        public int Year { get; private set; }
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)

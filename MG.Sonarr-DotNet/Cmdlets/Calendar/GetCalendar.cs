@@ -3,9 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Management.Automation;
-using System.Reflection;
-using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -61,7 +60,7 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = true, ParameterSetName = "BySeriesTitle")]
         [Alias("Series")]
         [SupportsWildcards]
-        public string SeriesTitle { get; set; }
+        public string[] SeriesTitle { get; set; }
 
         #endregion
 
@@ -69,9 +68,10 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (this.MyInvocation.BoundParameters.ContainsKey("StartDate") &&
-                !this.MyInvocation.BoundParameters.ContainsKey("EndDate"))
+            if (base.HasParameterSpecified(this, x => x.StartDate) && ! base.HasParameterSpecified(this, x => x.EndDate))
+            {
                 this.EndDate = this.StartDate.AddDays(7);
+            }
         }
 
         protected override void ProcessRecord()
@@ -81,18 +81,14 @@ namespace MG.Sonarr.Cmdlets
             string full = string.Format(EP_WITH_DATE, start, end);
 
             List<CalendarEntry> entries = this.GetCalendarEntries(full);
-            if (this.ParameterSetName == "ByDayOfWeek")
+
+            if (base.HasParameterSpecified(this, x => x.DayOfWeek))
             {
-                base.WriteObject(entries.FindAll(x => x.DayOfWeek.HasValue && this.DayOfWeek.Contains(x.DayOfWeek.Value)), true);
-            }
-            else if (this.ParameterSetName == "BySeriesTitle")
-            {
-                var wcp = new WildcardPattern(this.SeriesTitle, WildcardOptions.IgnoreCase);
-                base.WriteObject(entries.FindAll(x => wcp.IsMatch(x.Series)), true);
+                base.SendToPipeline(entries.FindAll(x => x.DayOfWeek.HasValue && this.DayOfWeek.Contains(x.DayOfWeek.Value)));
             }
             else
             {
-                base.WriteObject(entries, true);
+                base.SendToPipeline(base.FilterByStringParameter(entries, e => e.Series, this, cmd => cmd.SeriesTitle));
             }
         }
 

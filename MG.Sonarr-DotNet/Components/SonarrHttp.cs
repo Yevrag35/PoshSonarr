@@ -63,7 +63,7 @@ namespace MG.Sonarr
 
         public static T ConvertToSonarrResult<T>(string jsonResult) where T : IJsonResult
         {
-            return (T)JsonConvert.DeserializeObject(jsonResult, typeof(T), Serializer);
+            return JsonConvert.DeserializeObject<T>(jsonResult, Serializer);
         }
 
         public static List<T> ConvertToSonarrResults<T>(string jsonResult) where T : IJsonResult

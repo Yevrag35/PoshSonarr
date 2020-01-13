@@ -36,7 +36,7 @@ namespace MG.Sonarr.Cmdlets.Series
 
         protected override void ProcessRecord()
         {
-            bool delete = this.MyInvocation.BoundParameters.ContainsKey("DeleteFiles")
+            bool delete = base.HasParameterSpecified(this, x => x.DeleteFiles)
                 ? this.DeleteFiles.ToBool()
                 : false;
 
@@ -44,7 +44,7 @@ namespace MG.Sonarr.Cmdlets.Series
 
             if (this.Force || base.ShouldProcess(string.Format("Series Id: {0}", this.SeriesId), "Delete"))
             {
-                base.TryDeleteSonarrResult(apiUri);
+                base.SendSonarrDelete(apiUri);
             }
         }
 

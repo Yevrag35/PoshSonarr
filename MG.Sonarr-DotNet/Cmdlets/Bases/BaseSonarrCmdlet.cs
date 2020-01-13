@@ -1,18 +1,18 @@
-﻿using MG.Sonarr.Functionality;
-using MG.Sonarr.Functionality.Extensions;
+﻿using MG.Api.Json;
+using MG.Api.Json.Extensions;
+using MG.Api.Rest;
+using MG.Api.Rest.Generic;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Management.Automation;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,13 +21,10 @@ namespace MG.Sonarr.Cmdlets
     /// <summary>
     /// The main base <see cref="PSCmdlet"/> class for all PoshSonarr cmdlets.  Includes custom API methods along with advanced error-handling.
     /// </summary>
-    public abstract class BaseSonarrCmdlet : PSCmdlet
+    public abstract partial class BaseSonarrCmdlet : PSCmdlet
     {
         #region FIELDS/CONSTANTS
-        //private const string API_PREFIX = "/api";
         private const string CONNECT_EP = "/system/status";
-        //private const string CONNECT_MSG = "Getting initial Sonarr status from {0}";
-        //private const string CONNECT_FORMAT = "{0}://{1}:{2}{3}";
         [Obsolete]
         private const string CONTENT_TYPE = "application/json";
         private const string DEBUG_API_MSG = "Sending {0} request to: {1}{2}";
@@ -45,85 +42,40 @@ namespace MG.Sonarr.Cmdlets
 
         #endregion
 
-        #region NEW API METHODS
-        private T ProcessSingularResponse<T>(IRestResponse<T> response, string apiPath = null)
-            where T : IJsonResult
+        #region PIPELINE METHOD
+        /// <summary>
+        /// Sends an <see cref="object"/> to the PowerShell console and optionally specifies whether or not to enumerate it
+        /// if it's a collection.
+        /// </summary>
+        /// <param name="obj">The object to send to the pipeline</param>
+        /// <param name="enumerateCollection">Indicates whether the object will be enumerated as its sent.</param>
+        protected void SendToPipeline(object obj, bool enumerateCollection = true)
         {
-            if (!response.IsFaulted)
+            if (obj != null)
             {
-                return response.Result;
+                base.WriteObject(obj, enumerateCollection);
             }
-            else
-            {
-                this.WriteError(response, apiPath);
-                return default;
-            }
-        }
-        private List<T> ProcessMultiResponse<T>(IRestResponse<List<T>> response, string apiPath = null)
-        {
-            if (!response.IsFaulted)
-            {
-                return response.Result;
-            }
-            else
-            {
-                this.WriteError(response, apiPath);
-                return default;
-            }
-        }
-
-        internal T SendSonarrGet<T>(string endpoint) where T : IJsonResult
-        {
-            this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
-            IRestResponse<T> response = this.SendSonarrGetAsTask<T>(apiPath).GetAwaiter().GetResult();
-            return this.ProcessSingularResponse(response, apiPath);
-        }
-        internal List<T> SendSonarrListGet<T>(string endpoint) where T : IJsonResult
-        {
-            this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
-            IRestResponse<List<T>> response = this.SendSonarrListGetAsTask<T>(apiPath).GetAwaiter().GetResult();
-            return this.ProcessMultiResponse(response, apiPath);
-        }
-        private ConfiguredTaskAwaitable<IRestResponse<T>> SendSonarrGetAsTask<T>(string apiPath) where T : IJsonResult
-        {
-            return Context.ApiCaller.GetAsJsonAsync<T>(apiPath).ConfigureAwait(false);
-        }
-        private ConfiguredTaskAwaitable<IRestResponse<List<T>>> SendSonarrListGetAsTask<T>(string apiPath) where T : IJsonResult
-        {
-            return Context.ApiCaller.GetAsJsonListAsync<T>(apiPath).ConfigureAwait(false);
-        }
-
-        internal T SendSonarrPost<T>(string endpoint, IJsonResult payload) where T : IJsonResult
-        {
-            this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
-            IRestResponse<T> response = this.SendSonarrPostAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
-            return this.ProcessSingularResponse(response, apiPath);
-        }
-        private ConfiguredTaskAwaitable<IRestResponse<T>> SendSonarrPostAsTask<T>(string apiPath, IJsonResult payload) where T : IJsonResult
-        {
-            return Context.ApiCaller.PostAsJsonAsync<T>(new Uri(apiPath, UriKind.Relative), payload).ConfigureAwait(false);
-        }
-
-        internal T SendSonarrPut<T>(string endpoint, IJsonResult payload) where T : IJsonResult
-        {
-            this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
-            IRestResponse<T> response = this.SendSonarrPutAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
-            return this.ProcessSingularResponse(response, apiPath);
-        }
-        private ConfiguredTaskAwaitable<IRestResponse<T>> SendSonarrPutAsTask<T>(string apiPath, IJsonResult payload) where T : IJsonResult
-        {
-            return Context.ApiCaller.PostAsJsonAsync<T>(new Uri(apiPath, UriKind.Relative), payload).ConfigureAwait(false);
         }
 
         #endregion
 
-        #region API METHODS
+        #region SHOULD PROCESS METHODS
+        protected bool FormatShouldProcess(string action, string stringFormat, params object[] arguments)
+        {
+            string msg = string.Format(stringFormat, arguments);
+            return base.ShouldProcess(msg, action);
+        }
+
+        #endregion
+
+        #region OLD API METHODS
 
         /// <summary>
         /// Sends a GET request to the specified Sonarr endpoint and returning a JSON-formatted string in response.  This is for exclusive use with <see cref="ConnectInstance"/>.  
         /// Errors are handled by <see cref="PSCmdlet"/>.WriteError.
         /// </summary>
         /// <exception cref="Exception"/>
+        [Obsolete]
         protected string TrySonarrConnect()
         {
             this.WriteApiDebug(CONNECT_EP, HttpMethod.Get, out string apiPath);
@@ -310,161 +262,6 @@ namespace MG.Sonarr.Cmdlets
             {
                 this.WriteError(new SonarrPutRequestException(apiPath, hre), ErrorCategory.InvalidArgument, jsonBody);
                 return null;
-            }
-        }
-
-        #endregion
-
-
-        #region DEBUG METHODS
-        /// <summary>
-        /// Displays the raw JSON response received from the endpoint in the Debug and Verbose output streams.
-        /// </summary>
-        /// <param name="jsonResult">The JSON string from the response payload.</param>
-        /// <param name="code">The status code from the <see cref="HttpResponseMessage"/>.</param>
-        /// <param name="showAllDebug">Indicates whether to show the entire JSON response or to only show the status code.</param>
-        protected void WriteApiDebug(string jsonResult, HttpStatusCode code, bool showAllDebug)
-        {
-            if (this.MyInvocation.BoundParameters.ContainsKey("Debug"))
-            {
-                string debugJson = null;
-                if (showAllDebug && !string.IsNullOrWhiteSpace(jsonResult))
-                {
-                    JToken tok = JToken.Parse(jsonResult);
-                    if (tok != null)
-                    {
-                        debugJson = tok.ToString();
-                    }
-                }
-                base.WriteVerbose(string.Format("Received response: {0} ({1}", (int)code, code.ToString()));
-                base.WriteDebug(string.Format(DEBUG_API_RESPONSE_MSG, (int)code, code.ToString(), Environment.NewLine, debugJson));
-            }
-        }
-        /// <summary>
-        /// Displays a non-bodied API-specific debug message if the DebugPreference is set to show Debug-level messages.
-        /// It returns the "to-be-used" API uri string no matter what.
-        /// </summary>
-        /// <param name="endpoint">The endpoint Uri string that the <see cref="SonarrRestClient"/> will execute on.</param>
-        /// <param name="method">The method that will be used in the API call.</param>
-        /// <param name="apiPath">The parsed API uri to be executed on.</param>
-        protected virtual void WriteApiDebug(string endpoint, HttpMethod method, out string apiPath)
-        {
-            apiPath = Context.SonarrUrl.Path + endpoint;
-
-            string msg = string.Format(
-                DEBUG_API_MSG,
-                method.Method,
-                Context.SonarrUrl.BaseUrl,
-                apiPath
-            );
-
-            base.WriteDebug(msg);
-        }
-
-        /// <summary>
-        /// Displays a bodied API-specific debug message if the DebugPreference is set to show Debug-level messages.
-        /// It returns the "to-be-used" API uri string no matter what.
-        /// </summary>
-        /// <param name="endpoint"></param>
-        /// <param name="method"></param>
-        /// <param name="body"></param>
-        /// <param name="apiPath"></param>
-        protected virtual void WriteApiDebug(string endpoint, HttpMethod method, string body, out string apiPath)
-        {
-            apiPath = Context.SonarrUrl.Path + endpoint;
-
-            string msg = string.Format(
-                DEBUG_API_AND_BODY_MSG,
-                method.Method,
-                Context.SonarrUrl.BaseUrl,
-                apiPath,
-                Environment.NewLine,
-                body
-            );
-
-            base.WriteDebug(msg);
-        }
-
-        #endregion
-
-        #region EXCEPTION METHODS
-
-        /// <summary>
-        /// Takes in an <see cref="Exception"/> and returns the innermost <see cref="Exception"/> as a result.
-        /// </summary>
-        /// <param name="e">The exception to pull the innermost <see cref="Exception"/> from.</param>
-        protected virtual Exception GetAbsoluteException(Exception e)
-        {
-            while (e.InnerException != null)
-            {
-                e = e.InnerException;
-            }
-            return e;
-        }
-
-        /// <summary>
-        /// Issues a <see cref="PSCmdlet"/>.WriteError from a given string message and <see cref="ErrorCategory"/>.
-        /// </summary>
-        /// <param name="message">The exception message to be displayed in the <see cref="ErrorRecord"/>.</param>
-        /// <param name="category">The category of the error.</param>
-        protected void WriteError(string message, ErrorCategory category) =>
-            this.WriteError(new ArgumentException(message), category, null);
-
-        /// <summary>
-        /// Issues a <see cref="PSCmdlet"/>.WriteError from a given string message, <see cref="ErrorCategory"/>, and Target Object.
-        /// </summary>
-        /// <param name="message">The exception message to be displayed in the <see cref="ErrorRecord"/>.</param>
-        /// <param name="category">The category of the error.</param>
-        /// <param name="targetObject">The object used as the 'targetObject' in an <see cref="ErrorRecord"/>.</param>
-        protected void WriteError(string message, ErrorCategory category, object targetObject) =>
-            this.WriteError(new ArgumentException(message), category, targetObject);
-
-        /// <summary>
-        /// /// Issues a <see cref="PSCmdlet"/>.WriteError from a given string message, base <see cref="Exception"/>, <see cref="ErrorCategory"/>, and Target Object.
-        /// </summary>
-        /// <param name="message">The exception message to be displayed in the <see cref="ErrorRecord"/>.</param>
-        /// <param name="exception">The exception whose InnerException will be become the InnerException of the <see cref="ErrorRecord"/> and its type will be used as the FullyQualifiedErrorId.</param>
-        /// <param name="category">The category of the error.</param>
-        /// <param name="targetObject">The object used as the 'targetObject' in an <see cref="ErrorRecord"/>.</param>
-        protected void WriteError(string message, Exception exception, ErrorCategory category, object targetObject)
-        {
-            exception = this.GetAbsoluteException(exception);
-
-            var errRec = new ErrorRecord(new InvalidOperationException(message, exception), exception.GetType().FullName, category, targetObject);
-            base.WriteError(errRec);
-        }
-
-        /// <summary>
-        /// Issues a <see cref="PSCmdlet"/>.WriteError from a given base exception and <see cref="ErrorCategory"/>.
-        /// </summary>
-        /// <param name="baseException">The base exception will be become the InnerException of the <see cref="ErrorRecord"/> and its type will be used as the FullyQualifiedErrorId.</param>
-        /// <param name="category"></param>
-        protected void WriteError(Exception baseException, ErrorCategory category) => this.WriteError(baseException, category, null);
-
-        /// <summary>
-        /// Issues a <see cref="PSCmdlet"/>.WriteError from a base <see cref="Exception"/>, <see cref="ErrorCategory"/>, and Target Object.
-        /// </summary>
-        /// <param name="message">The exception message to be displayed in the <see cref="ErrorRecord"/>.</param>
-        /// <param name="baseException">The base exception will be become the InnerException of the <see cref="ErrorRecord"/> and its type will be used as the FullyQualifiedErrorId.</param>
-        /// <param name="category">The category of the error.</param>
-        /// <param name="targetObject">The object used as the 'targetObject' in an <see cref="ErrorRecord"/>.</param>
-        protected void WriteError(Exception baseException, ErrorCategory category, object targetObject)
-        {
-            var errRec = new ErrorRecord(baseException, baseException.GetType().FullName, category, targetObject);
-            base.WriteError(errRec);
-        }
-
-        protected void WriteError(IRestResponse response, object targetObj = null)
-        {
-            if (response.HasException)
-            {
-                this.WriteError(response.Exception, ErrorCategory.InvalidResult, targetObj);
-            }
-            else
-            {
-                this.WriteError(new ErrorRecord(new HttpRequestException(
-                    string.Format("An unknown error occurred while sending the GET request - {0}", response.StatusCode.ToString())),
-                    "MG.Sonarr.UnknownHttpException", ErrorCategory.InvalidOperation, targetObj));
             }
         }
 

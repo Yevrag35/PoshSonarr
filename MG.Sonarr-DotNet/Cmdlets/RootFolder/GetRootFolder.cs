@@ -1,11 +1,7 @@
 ﻿using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
-using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -31,34 +27,40 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (this.MyInvocation.BoundParameters.ContainsKey("Id"))
-            {
-                for (int i = 0; i < this.Id.Length; i++)
-                {
-                    string ep = string.Format(EP_ID, this.Id[i]);
-                    string jsonRes = base.TryGetSonarrResult(ep);
-                    if (!string.IsNullOrEmpty(jsonRes))
-                    {
-                        RootFolder res = SonarrHttp.ConvertToSonarrResult<RootFolder>(jsonRes);
-                        base.WriteObject(res);
-                    }
-                }
-            }
-            else
-            {
-                string jsonRes = base.TryGetSonarrResult(EP);
-                if (!string.IsNullOrEmpty(jsonRes))
-                {
-                    List<RootFolder> reses = SonarrHttp.ConvertToSonarrResults<RootFolder>(jsonRes, out bool iso);
-                    base.WriteObject(reses, true);
-                }
-            }
+            IEnumerable<RootFolder> getTheseFolders = this.GetRootFolders(this.Id);
+            base.SendToPipeline(getTheseFolders);
         }
 
         #endregion
 
         #region METHODS
+        private IEnumerable<RootFolder> GetRootFolders(params int[] ids)
+        {
+            if (ids == null || ids.Length <= 0)
+            {
+                return this.GetAllRootFolders();
+            }
+            else
+            {
+                return this.GetSpecificRootFolders(ids);
+            }
+        }
 
+        private List<RootFolder> GetAllRootFolders()
+        {
+            return base.SendSonarrListGet<RootFolder>(EP);
+        }
+
+        private IEnumerable<RootFolder> GetSpecificRootFolders(params int[] ids)
+        {
+            foreach (int id in ids)
+            {
+                string epWithId = string.Format(EP_ID, id);
+                RootFolder oneRf = base.SendSonarrGet<RootFolder>(epWithId);
+                if (oneRf != null)
+                    yield return oneRf;
+            }
+        }
 
         #endregion
     }

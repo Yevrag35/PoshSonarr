@@ -1,11 +1,6 @@
 ﻿using MG.Sonarr.Results;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -21,12 +16,12 @@ namespace MG.Sonarr.Cmdlets
     [CmdletBinding(PositionalBinding = false)]
     public class InvokeSeriesRescan : BasePostCommandCmdlet
     {
-#region FIELDS/CONSTANTS
-        protected override string Command => "RescanSeries";
+        #region FIELDS/CONSTANTS
+        protected sealed override string Command => "RescanSeries";
 
-#endregion
+        #endregion
 
-#region PARAMETERS
+        #region PARAMETERS
         /// <summary>
         /// <para type="description">The optional series ID to perform the rescan on.</para>
         /// </summary>
@@ -39,20 +34,21 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 
-#endregion
+        #endregion
 
-#region CMDLET PROCESSING
+        #region CMDLET PROCESSING
         protected override void BeginProcessing() => base.BeginProcessing();
 
         protected override void ProcessRecord()
         {
-            var newDict = new Dictionary<string, object>(parameters)
+            var newDict = new SonarrBodyParameters(parameters)
             {
                 { "seriesId", this.SeriesId }
             };
 
             string msg = "Rescan all series";
-            if (this.MyInvocation.BoundParameters.ContainsKey("SeriesId"))
+
+            if (base.HasParameterSpecified(this, x => x.SeriesId))
             {
                 msg = string.Format("Rescan series id {0}", this.SeriesId);
             }
@@ -63,6 +59,6 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
-#endregion
+        #endregion
     }
 }

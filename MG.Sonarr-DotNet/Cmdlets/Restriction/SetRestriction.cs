@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Set, "Restriction", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true,
+    [Cmdlet(VerbsCommon.Set, "Restriction", ConfirmImpact = ConfirmImpact.None, SupportsShouldProcess = true,
         DefaultParameterSetName = "ByInputRestrictionAddRemove")]
     [OutputType(typeof(Restriction))]
     [CmdletBinding(PositionalBinding = false)]
@@ -21,8 +21,8 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
-        [Parameter(Mandatory = true, ParameterSetName = "ByInputRestrictionAddRemove", ValueFromPipeline = true)]
-        [Parameter(Mandatory = true, ParameterSetName = "ByInputRestrictionReplace", ValueFromPipeline = true)]
+        [Parameter(Mandatory = true, ParameterSetName = "ByInputRestrictionAddRemove", ValueFromPipeline = true, DontShow = true)]
+        [Parameter(Mandatory = true, ParameterSetName = "ByInputRestrictionReplace", ValueFromPipeline = true, DontShow = true)]
         public Restriction InputObject { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "ByRestrictionIdAddRemove")]
@@ -60,14 +60,10 @@ namespace MG.Sonarr.Cmdlets
         {
             if (!this.ParameterSetName.Contains("ByInputRestriction"))
             {
-                string jsonRes = base.TryGetSonarrResult(string.Format(GetRestriction.EP_ID, this.RestrictionId));
-                if (!string.IsNullOrEmpty(jsonRes))
-                {
-                    this.InputObject = SonarrHttp.ConvertToSonarrResult<Restriction>(jsonRes);
-                }
+                this.InputObject = base.SendSonarrGet<Restriction>(string.Format(GetRestriction.EP_ID, this.RestrictionId));
             }
 
-            if (this.MyInvocation.BoundParameters.ContainsKey("IgnoredTerms"))
+            if (base.HasParameterSpecified(this, x => x.IgnoredTerms))
             {
                 if (this.IgnoredTerms.AddTerms != null && this.IgnoredTerms.AddTerms.Length > 0)
                     this.InputObject.Ignored.Add(this.IgnoredTerms.AddTerms);
@@ -76,7 +72,7 @@ namespace MG.Sonarr.Cmdlets
                     this.InputObject.Ignored.Remove(this.IgnoredTerms.RemoveTerms);
             }
 
-            if (this.MyInvocation.BoundParameters.ContainsKey("RequiredTerms"))
+            if (base.HasParameterSpecified(this, x => x.RequiredTerms))
             {
                 if (this.RequiredTerms.AddTerms != null && this.RequiredTerms.AddTerms.Length > 0)
                     this.InputObject.Required.Add(this.RequiredTerms.AddTerms);
@@ -85,15 +81,15 @@ namespace MG.Sonarr.Cmdlets
                     this.InputObject.Required.Remove(this.RequiredTerms.RemoveTerms);
             }
 
-            if (this.MyInvocation.BoundParameters.ContainsKey("ReplaceTerms"))
+            if (base.HasParameterSpecified(this, x => x.ReplaceTerms))
                 this.MergeChanges(this.ReplaceTerms);
 
             if (base.ShouldProcess(string.Format(NewRestriction.SHOULD_MSG, this.InputObject.Ignored.ToJson(), 
                 this.InputObject.Required.ToJson()), "Set"))
             {
-                string jsonRes = base.TryPutSonarrResult(GetRestriction.EP, this.InputObject.ToJson());
-                if (_passThru && !string.IsNullOrEmpty(jsonRes))
-                    base.WriteObject(SonarrHttp.ConvertToSonarrResult<Restriction>(jsonRes));
+                Restriction restriction = base.SendSonarrPut<Restriction>(GetRestriction.EP, this.InputObject);
+                if (_passThru)
+                    base.SendToPipeline(restriction);
             }
         }
 

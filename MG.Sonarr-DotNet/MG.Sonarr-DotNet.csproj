@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MG.Sonarr</RootNamespace>
     <AssemblyName>MG.Sonarr</AssemblyName>
-    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
@@ -41,6 +41,9 @@
     <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MG.Api.Json, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MG.Api.Json.1.0.0\lib\netstandard2.0\MG.Api.Json.dll</HintPath>
+    </Reference>
     <Reference Include="MG.Dynamic, Version=3.4.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MG.Dynamic.3.4.1\lib\net452\MG.Dynamic.dll</HintPath>
     </Reference>
@@ -68,6 +71,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cmdlets\Bases\BasePostCommandCmdlet.cs" />
+    <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet-API.cs" />
+    <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet-Debug.cs" />
+    <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet-Error.cs" />
+    <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet-Linq.cs" />
     <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet.cs" />
     <Compile Include="Cmdlets\Bases\LazySonarrCmdlet.cs" />
     <Compile Include="Cmdlets\Calendar\GetCalendar.cs" />
@@ -80,24 +87,45 @@
     <Compile Include="Cmdlets\Commands\InvokeSeriesRescan.cs" />
     <Compile Include="Cmdlets\Commands\InvokeSeriesSearch.cs" />
     <None Include="Cmdlets\Connection\Exclude\CertValidity-Core.cs" />
+    <Compile Include="Cmdlets\Config\GetHostConfig.cs" />
+    <Compile Include="Cmdlets\Config\SetHostConfig.cs" />
     <Compile Include="Cmdlets\Connection\Exclude\CertValidity-DotNet.cs" />
-    <None Include="Cmdlets\Profiles\Exclude\NewQualityProfile-BETA.cs" />
+    <None Include="Cmdlets\QualityProfiles\Exclude\NewQualityProfile-BETA.cs" />
     <None Include="Cmdlets\Connection\Exclude\ConnectInstance-BETA.cs" />
+    <Compile Include="Cmdlets\DelayProfile\GetDelayProfile.cs" />
     <Compile Include="Cmdlets\DownloadClient\GetDownloadClient.cs" />
     <Compile Include="Cmdlets\FileSystem\SearchDirectory.cs" />
+    <Compile Include="Cmdlets\Logging\ClearLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLogFile.cs" />
     <Compile Include="Cmdlets\Logging\SaveLogFile.cs" />
+    <Compile Include="Cmdlets\MediaManagement\GetMediaManagement.cs" />
+    <Compile Include="Cmdlets\MediaManagement\UpdateMediaManagement.cs" />
+    <Compile Include="Cmdlets\Metadata\GetMetadata.cs" />
+    <Compile Include="Cmdlets\Metadata\MetadataCmdlet.cs" />
+    <Compile Include="Cmdlets\Metadata\UpdateMetadata.cs" />
+    <Compile Include="Cmdlets\Notification\GetNotification.cs" />
+    <Compile Include="Cmdlets\QualityProfiles\NewQualityProfile.cs" />
+    <Compile Include="Cmdlets\QualityProfiles\RemoveQualityProfile.cs" />
+    <Compile Include="Cmdlets\Queue\RemoveQueueItem.cs" />
     <Compile Include="Cmdlets\RemotePath\GetMapping.cs" />
+    <Compile Include="Cmdlets\RemotePath\NewMapping.cs" />
+    <Compile Include="Cmdlets\RemotePath\RemoveMapping.cs" />
+    <Compile Include="Cmdlets\RemotePath\SetMapping.cs" />
     <Compile Include="Cmdlets\Restriction\GetRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\NewRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\RemoveRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\SetRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\UpdateRestriction.cs" />
+    <Compile Include="Cmdlets\RootFolder\RegisterRootFolder.cs" />
+    <Compile Include="Cmdlets\RootFolder\RemoveRootFolder.cs" />
+    <Compile Include="Cmdlets\Tag\AddTag.cs" />
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
+    <Compile Include="Components\QualityProfileExtensions.cs" />
     <Compile Include="Components\SonarrHttp.cs" />
     <Compile Include="Objects\AddRemoveHashTable.cs" />
+    <Compile Include="Objects\EpisodeIdentifierCollection.cs" />
     <Compile Include="Objects\ReplaceHashTable.cs" />
     <Compile Include="Objects\EpisodeIdentifier.cs" />
     <Compile Include="Cmdlets\Connection\ConnectInstance.cs" />
@@ -106,7 +134,7 @@
     <Compile Include="Cmdlets\Episodes\RemoveEpisodeFile.cs" />
     <Compile Include="Cmdlets\Episodes\SetEpisode.cs" />
     <Compile Include="Cmdlets\History\GetHistory.cs" />
-    <Compile Include="Cmdlets\Profiles\GetQualityProfile.cs" />
+    <Compile Include="Cmdlets\QualityProfiles\GetQualityProfile.cs" />
     <Compile Include="Cmdlets\Queue\GetQueue.cs" />
     <Compile Include="Cmdlets\Releases\AddRelease.cs" />
     <Compile Include="Cmdlets\Releases\SearchRelease.cs" />
@@ -116,14 +144,14 @@
     <Compile Include="Cmdlets\Series\GetSeries.cs" />
     <Compile Include="Cmdlets\Series\RemoveSeries.cs" />
     <Compile Include="Cmdlets\Series\SearchSeries.cs" />
-    <Compile Include="Cmdlets\Series\UpdateSeries.cs" />
+    <Compile Include="Cmdlets\Series\SetSeries.cs" />
     <Compile Include="Cmdlets\System\GetBackup.cs" />
     <Compile Include="Cmdlets\System\GetDiskspace.cs" />
     <Compile Include="Cmdlets\System\GetStatus.cs" />
     <Compile Include="Cmdlets\Tag\GetTag.cs" />
     <Compile Include="Cmdlets\Tag\NewTag.cs" />
     <Compile Include="Cmdlets\Tag\RemoveTag.cs" />
-    <Compile Include="Cmdlets\Tag\SetTag.cs" />
+    <Compile Include="Cmdlets\Tag\RenameTag.cs" />
     <Compile Include="Cmdlets\WantedMissing\GetWantedMissing.cs" />
     <Compile Include="Components\SonarrContext.cs" />
     <Compile Include="Objects\ApiKey.cs" />
@@ -135,25 +163,31 @@
     </Content>
     <Compile Include="Objects\NameOrId.cs" />
     <Compile Include="Objects\ProxyCredential.cs" />
+    <Compile Include="Objects\TagTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="TypeFormats\AlternateTitle.ps1xml" />
     <None Include="TypeFormats\CalendarEntry.ps1xml" />
     <None Include="TypeFormats\CommandResult.ps1xml" />
+    <None Include="TypeFormats\DelayProfile.ps1xml" />
     <None Include="TypeFormats\DiskspaceResult.ps1xml" />
     <None Include="TypeFormats\DownloadClientSetting.ps1xml" />
     <None Include="TypeFormats\DownloadClient.ps1xml" />
     <None Include="TypeFormats\Episode.ps1xml" />
     <None Include="TypeFormats\EpisodeFile.ps1xml" />
+    <None Include="TypeFormats\Field.ps1xml" />
+    <None Include="TypeFormats\Notification.ps1xml" />
     <None Include="TypeFormats\QualityItem.ps1xml" />
     <None Include="TypeFormats\QualityProfile.ps1xml" />
     <None Include="TypeFormats\QueueItem.ps1xml" />
     <None Include="TypeFormats\Release.ps1xml" />
+    <None Include="TypeFormats\RemotePathMapping.ps1xml" />
     <None Include="TypeFormats\Restriction.ps1xml" />
     <None Include="TypeFormats\RootFolder.ps1xml" />
     <None Include="TypeFormats\Season.ps1xml" />
     <None Include="TypeFormats\SeriesImage.ps1xml" />
     <None Include="TypeFormats\SeriesResult.ps1xml" />
     <None Include="TypeFormats\StatusResult.ps1xml" />
+    <None Include="TypeFormats\Tag.ps1xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

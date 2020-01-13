@@ -9,23 +9,23 @@ namespace MG.Sonarr.Results
     /// The class that defines a response from the "/system/backup" endpoint.
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class SonarrBackupResult : BaseResult, IComparable<SonarrBackupResult>
+    public class BackupResult : BaseResult, IComparable<BackupResult>
     {
         [JsonProperty("id")]
-        public long BackupId { get; }
+        public long BackupId { get; private set; }
 
         [JsonProperty("name")]
-        public string BackupName { get; }
+        public string BackupName { get; private set; }
 
         [JsonProperty("type")]
-        public BackupType BackupType { get; }
+        public BackupType BackupType { get; private set; }
 
         [JsonProperty("path")]
-        public string Path { get; }
+        public string Path { get; private set; }
 
         [JsonProperty("time")]
-        public DateTime? Time { get; }
+        public DateTime? Time { get; private set; }
 
-        public int CompareTo(SonarrBackupResult other) => this.BackupId.CompareTo(other.BackupId);
+        public int CompareTo(BackupResult other) => this.BackupId.CompareTo(other.BackupId);
     }
 }

@@ -119,6 +119,9 @@
 								<PropertyName>Status</PropertyName>
 							</ListItem>
 							<ListItem>
+								<PropertyName>Tags</PropertyName>
+							</ListItem>
+							<ListItem>
 								<PropertyName>TVDBId</PropertyName>
 							</ListItem>
 							<ListItem>

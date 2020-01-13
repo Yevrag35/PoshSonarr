@@ -11,10 +11,10 @@ namespace MG.Sonarr.Results
     public class SeriesImage : BaseResult, IComparable<SeriesImage>
     {
         [JsonProperty("coverType")]
-        public CoverType CoverType { get; set; }
+        public CoverType CoverType { get; private set; }
 
         [JsonProperty("url")]
-        public Uri Url { get; set; }
+        public Uri Url { get; private set; }
 
         public int CompareTo(SeriesImage other)
         {

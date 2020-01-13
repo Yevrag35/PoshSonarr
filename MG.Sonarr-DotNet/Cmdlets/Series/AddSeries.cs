@@ -106,58 +106,63 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (!this.MyInvocation.BoundParameters.ContainsKey("UseSeasonFolders") && this.Seasons != null && this.Seasons.Count > 1)
+            if ( ! base.HasParameterSpecified(this, x => x.UseSeasonFolders) && this.Seasons != null && this.Seasons.Count > 1)
                 _usf = true;
 
             if (this.QualityProfileId == 0)  // There is never a profile with an ID of 0...
                 this.QualityProfileId = 1;
 
-            var postJson = new JObject(
-                new JProperty("images", JArray.FromObject(this.Images)),
-                new JProperty("monitored", !_nm),
-                new JProperty("qualityProfileId", this.QualityProfileId),
-                new JProperty("seasonFolder", _usf),
-                new JProperty("seasons", JArray.FromObject(this.Seasons)),
-                new JProperty("title", this.Name),
-                new JProperty("titleSlug", this.TitleSlug),
-                new JProperty("tvdbId", this.TVDBId),
-                new JProperty("addOptions",
-                    new JObject(
-                        new JProperty("ignoreEpisodesWithFiles", _iewf),
-                        new JProperty("ignoreEpisodesWithoutFiles", _iewof),
-                        new JProperty("searchForMissingEpisodes", _sfme))));
+            SonarrBodyParameters postJson = this.GetParameters();
 
-            if (this.MyInvocation.BoundParameters.ContainsKey("TVRageId"))
+            if (base.HasParameterSpecified(this, x => x.TVRageId))
             {
-                postJson.Add("tvRageId", JToken.FromObject(this.TVRageId));
+                postJson.Add("tvRageId", this.TVRageId);
             }
 
             if (!string.IsNullOrEmpty(this.RootFolderPath))
             {
-                postJson.Add("rootFolderPath", JToken.FromObject(this.RootFolderPath));
+                postJson.Add("rootFolderPath", this.RootFolderPath);
             }
             else
             {
-                postJson.Add("path", JToken.FromObject(this.FullPath));
+                postJson.Add("path", this.FullPath);
             }
 
-            base.WriteDebug("POST BODY:" + Environment.NewLine + postJson.ToString());
+            base.WriteDebug("POST BODY:" + Environment.NewLine + postJson.ToJson());
 
             if (base.ShouldProcess(string.Format("New Series - {0}", this.Name, "Adding")))
             {
                 base.WriteVerbose(string.Format("Adding new series - {0} at \"/series\"", this.Name));
-                string output = base.TryPostSonarrResult("/series", postJson.ToString());
-                if (_passThru && !string.IsNullOrEmpty(output))
-                {
-                    base.WriteObject(SonarrHttp.ConvertToSeriesResult(output));
-                }
+                SeriesResult sr = base.SendSonarrPost<SeriesResult>("/series", postJson);
+                if (_passThru)
+                    base.SendToPipeline(sr);
             }
         }
 
         #endregion
 
         #region BACKEND METHODS
-
+        private SonarrBodyParameters GetParameters()
+        {
+            return new SonarrBodyParameters(9)
+            {
+                { "images", this.Images },
+                { "monitored", !_nm },
+                { "qualityProfileId", this.QualityProfileId },
+                { "seasonFolder", _usf },
+                { "seasons", this.Seasons },
+                { "title", this.Name },
+                { "titleSlug", this.TitleSlug },
+                { "tvdbId", this.TVDBId },
+                { "addOptions", new SonarrBodyParameters(3)
+                    {
+                        { "ignoreEpisodesWithFiles", _iewf },
+                        { "ignoreEpisodesWithoutFiles", _iewof },
+                        { "searchForMissingEpisodes", _sfme }
+                    }
+                }
+            };
+        }
 
         #endregion
     }

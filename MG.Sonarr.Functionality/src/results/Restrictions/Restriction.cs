@@ -30,10 +30,12 @@ namespace MG.Sonarr.Results
         public JsonStringCollection Required { get; } = new JsonStringCollection();
 
         [JsonProperty("id")]
-        public int RestrictionId { get; set; }
+        public int RestrictionId { get; private set; }
 
         [JsonProperty("tags")]
-        public HashSet<int> Tags { get; set; } = new HashSet<int>();
+        public HashSet<int> Tags { get; private set; } = new HashSet<int>();
+
+        public Restriction() { }
 
         public Restriction(IDictionary<string, object> parameters)
         {

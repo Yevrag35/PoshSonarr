@@ -1,11 +1,6 @@
 ﻿using MG.Sonarr.Results;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
-using System.Security;
 
 namespace MG.Sonarr.Cmdlets.Commands
 {
@@ -21,24 +16,21 @@ namespace MG.Sonarr.Cmdlets.Commands
     [Alias("Start-RssSync")]
     public class InvokeRssSync : BasePostCommandCmdlet
     {
-#region FIELDS/CONSTANTS
-        protected override string Command => "RssSync";
+        #region FIELDS/CONSTANTS
+        protected sealed override string Command => "RssSync";
 
-#endregion
+        #endregion
 
-#region CMDLET PROCESSING
+        #region CMDLET PROCESSING
         protected override void BeginProcessing() => base.BeginProcessing();
 
-        protected override void ProcessRecord()
-        {
-            base.ProcessRecord();
-        }
+        protected override void ProcessRecord() => base.ProcessRecord();
 
-#endregion
+        #endregion
 
-#region METHODS
+        #region METHODS
 
 
-#endregion
+        #endregion
     }
 }

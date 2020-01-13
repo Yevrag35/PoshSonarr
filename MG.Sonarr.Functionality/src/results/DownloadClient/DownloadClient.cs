@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -14,33 +15,20 @@ namespace MG.Sonarr.Results
     /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
-    public class DownloadClient : BaseResult
+    public class DownloadClient : Provider
     {
+        private const string EP = "/downloadclient";
+
         [JsonProperty("id")]
         public int ClientId { get; private set; }
-
-        [JsonProperty("fields")]
-        public DownloadClientSettingCollection Config { get; private set; }
-
-        [JsonProperty("configContract")]
-        public string ConfigContract { get; private set; }
-
-        [JsonProperty("implementation")]
-        public string Implementation { get; private set; }
-
-        [JsonProperty("implementationName")]
-        public string ImplementationName { get; private set; }
-
-        [JsonProperty("infoLink")]
-        public Uri InfoLink { get; set; }
 
         [JsonProperty("enable")]
         public bool IsEnabled { get; set; }
 
-        [JsonProperty("name")]
-        public string Name { get; set; }
-
         [JsonProperty("protocol")]
+        [JsonConverter(typeof(SonarrStringEnumConverter))]
         public DownloadProtocol Protocol { get; set; }
+
+        public sealed override string GetEndpoint() => EP;
     }
 }

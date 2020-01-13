@@ -24,7 +24,7 @@ namespace MG.Sonarr.Cmdlets
     [Cmdlet(VerbsCommon.Get, "DownloadClient", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByProtocol")]
     [OutputType(typeof(DownloadClient))]
     [CmdletBinding(PositionalBinding = false)]
-    public sealed class GetDownloadClient : BaseSonarrCmdlet
+    public class GetDownloadClient : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
         private const string EP = "/downloadclient";
@@ -55,18 +55,19 @@ namespace MG.Sonarr.Cmdlets
             if (this.ParameterSetName != "ByClientId")
             {
                 List<DownloadClient> clients = this.GetAllDownloadClients();
-                if (!this.MyInvocation.BoundParameters.ContainsKey("Protocol"))
-                    base.WriteObject(clients);
+                
+                if ( ! base.HasParameterSpecified(this, x => x.Protocol))
+                    base.SendToPipeline(clients);
 
                 else
-                    base.WriteObject(this.FindByProtocol(clients), true);
+                    base.SendToPipeline(this.FindByProtocol(clients));
             }
             else
             {
                 for (int i = 0; i < this.Id.Length; i++)
                 {
                     DownloadClient dlc = base.SendSonarrGet<DownloadClient>(string.Format(EP_ID, this.Id[i]));
-                    base.WriteObject(dlc);
+                    base.SendToPipeline(dlc);
                 }
             }
         }

@@ -11,20 +11,20 @@
 					<ListEntry>
 						<ListItems>
 							<ListItem>
+								<PropertyName>RootFolderId</PropertyName>
+							</ListItem>
+							<ListItem>
 								<PropertyName>FreeSpaceInGB</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Path</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>RootFolderId</PropertyName>
-							</ListItem>
-							<ListItem>
 								<PropertyName>TotalSpaceInGB</PropertyName>
 							</ListItem>
 							<ListItem>
 								<Label>UnmappedFolders</Label>
-								<ScriptBlock>$_.UnmappedFolders.Name</ScriptBlock>
+								<ScriptBlock>@($_.UnmappedFolders.Name)</ScriptBlock>
 							</ListItem>
 						</ListItems>
 					</ListEntry>

@@ -40,7 +40,7 @@ namespace MG.Sonarr.Cmdlets.Episodes
 
         protected override void ProcessRecord()
         {
-            if (this.MyInvocation.BoundParameters.ContainsKey("Episode"))
+            if (base.HasParameterSpecified(this, x => x.EpisodeFile))
                 this.EpisodeFileId = this.EpisodeFile.EpisodeFileId;
 
             if (this.EpisodeFileId.Equals(0))
@@ -49,7 +49,7 @@ namespace MG.Sonarr.Cmdlets.Episodes
             string ep = string.Format(EP, this.EpisodeFileId);
             if (_force || base.ShouldProcess(ep, "Delete"))
             {
-                base.TryDeleteSonarrResult(ep);
+                base.SendSonarrDelete(ep);
             }
         }
 

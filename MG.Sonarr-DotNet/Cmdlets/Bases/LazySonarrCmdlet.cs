@@ -1,6 +1,7 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using MG.Sonarr.Functionality;
 using Microsoft.PowerShell.Commands;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Management.Automation;
@@ -10,8 +11,17 @@ namespace MG.Sonarr.Cmdlets
     public abstract class LazySonarrCmdlet : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        protected private string _ep;
+        private string _ep;
         protected private List<string> _list;
+
+        private const string AMPERSAND = "&";
+        private const string PAGE_FORMAT = "page={0}";
+        private const string PAGE_SIZE_FORMAT = "pageSize={0}";
+        private const string QUESTION_MARK = "?";
+        private const string SORTDIR = "sortDir=";
+        private const string SORTDIR_ASC = SORTDIR + "asc";
+        private const string SORTDIR_DESC = SORTDIR + "desc";
+
         protected abstract string Endpoint { get; }
 
         #endregion
@@ -23,8 +33,7 @@ namespace MG.Sonarr.Cmdlets
         public int PageSize = 10;
 
         [Parameter(Mandatory = false)]
-        [ValidateSet("Ascending", "Descending")]
-        public string SortDirection = "Ascending";
+        public SortDirection SortDirection = SortDirection.Ascending;
 
         protected override void BeginProcessing()
         {
@@ -34,28 +43,28 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (this.MyInvocation.BoundParameters.ContainsKey("Page"))
-                _list.Add(string.Format("page={0}", this.Page));
+            if (base.HasParameterSpecified(this, x => x.Page))
+                _list.Add(string.Format(PAGE_FORMAT, this.Page));
 
-            if (this.MyInvocation.BoundParameters.ContainsKey("PageSize"))
-                _list.Add(string.Format("pageSize={0}", this.PageSize));
+            if (base.HasParameterSpecified(this, x => x.PageSize))
+                _list.Add(string.Format(PAGE_SIZE_FORMAT, this.PageSize));
 
-            if (this.MyInvocation.BoundParameters.ContainsKey("SortDirection"))
+            if (base.HasParameterSpecified(this, x => x.SortDirection))
             {
-                if (this.SortDirection == "Ascending")
-                    _list.Add("sortDir=asc");
+                if (this.SortDirection == SortDirection.Ascending)
+                    _list.Add(SORTDIR_ASC);
 
                 else
-                    _list.Add("sortDir=desc");
+                    _list.Add(SORTDIR_DESC);
             }
 
-            _ep = this.Endpoint;
             if (_list.Count > 0)
-            {
-                _ep = _ep + "?" + string.Join("&", _list);
-            }
+                _ep = this.Endpoint + QUESTION_MARK + string.Join(AMPERSAND, _list);
 
-            string jsonRes = base.TryGetSonarrResult(_ep);
+            else
+                _ep = this.Endpoint;
+
+            string jsonRes = base.SendSonarrRawGet(_ep);
             if (!string.IsNullOrEmpty(jsonRes))
             {
                 base.WriteObject(JsonObject.ConvertFromJson(jsonRes, out ErrorRecord er));

@@ -10,23 +10,16 @@ using System.Reflection;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "Status", ConfirmImpact = ConfirmImpact.None)]
-    [OutputType(typeof(SonarrStatusResult))]
+    [OutputType(typeof(StatusResult))]
     [CmdletBinding(PositionalBinding = false)]
     public class GetStatus : BaseSonarrCmdlet
     {
+        private const string EP = "/system/status";
+
         #region CMDLET PROCESSING
         protected override void BeginProcessing() => base.BeginProcessing();
 
-        protected override void ProcessRecord()
-        {
-            string strRes = base.TryGetSonarrResult("/system/status");
-
-            if (!string.IsNullOrWhiteSpace(strRes))
-            {
-                SonarrStatusResult ssr = SonarrHttp.ConvertToSonarrResult<SonarrStatusResult>(strRes);
-                base.WriteObject(ssr);
-            }
-        }
+        protected override void ProcessRecord() => base.SendToPipeline(base.SendSonarrGet<StatusResult>(EP));
 
         #endregion
     }
