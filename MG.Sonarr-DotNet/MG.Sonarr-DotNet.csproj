@@ -70,6 +70,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cmdlets\Bases\BaseEndpointCmdlet.cs" />
+    <Compile Include="Cmdlets\Bases\BaseIdEndpointCmdlet.cs" />
     <Compile Include="Cmdlets\Bases\BasePostCommandCmdlet.cs" />
     <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet-API.cs" />
     <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet-Debug.cs" />
@@ -105,6 +107,9 @@
     <Compile Include="Cmdlets\Metadata\MetadataCmdlet.cs" />
     <Compile Include="Cmdlets\Metadata\UpdateMetadata.cs" />
     <Compile Include="Cmdlets\Notification\GetNotification.cs" />
+    <Compile Include="Cmdlets\Notification\NotificationCmdlet.cs" />
+    <Compile Include="Cmdlets\Notification\RemoveNotification.cs" />
+    <Compile Include="Cmdlets\Notification\UpdateNotification.cs" />
     <Compile Include="Cmdlets\QualityProfiles\NewQualityProfile.cs" />
     <Compile Include="Cmdlets\QualityProfiles\RemoveQualityProfile.cs" />
     <Compile Include="Cmdlets\Queue\RemoveQueueItem.cs" />

@@ -10,14 +10,8 @@ namespace MG.Sonarr.Cmdlets
     [OutputType(typeof(Notification))]
     [Alias("Get-Connection")]
     [CmdletBinding(PositionalBinding = false)]
-    public class GetNotification : BaseSonarrCmdlet
+    public class GetNotification : NotificationCmdlet
     {
-        #region FIELDS/CONSTANTS
-        private const string EP = "/notification";
-        private const string EP_WITH_ID = EP + "/{0}";
-
-        #endregion
-
         #region PARAMETERS
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByName")]
         [SupportsWildcards]
@@ -33,32 +27,13 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if ( ! base.HasParameterSpecified(this, x => x.Id) && this.TryGetAllNotifications(out List<Notification> allNotifs))
+            if ( ! base.HasParameterSpecified(this, x => x.Id) && base.TryGetAllNotifications(out List<Notification> allNotifs))
             {
                 base.SendToPipeline(base.FilterByStringParameter(allNotifs, p => p.Name, this, cmd => cmd.Name));
             }
             else if (base.HasParameterSpecified(this, x => x.Id))
             {
-                base.SendToPipeline(this.GetNotificationsById(this.Id));
-            }
-        }
-
-        #endregion
-
-        #region BACKEND METHODS
-        private bool TryGetAllNotifications(out List<Notification> allNotifs)
-        {
-            allNotifs = base.SendSonarrListGet<Notification>(EP);
-            return allNotifs != null && allNotifs.Count > 0;
-        }
-        private IEnumerable<Notification> GetNotificationsById(int[] ids)
-        {
-            foreach (int oneId in ids)
-            {
-                string endpoint = string.Format(EP_WITH_ID, oneId);
-                Notification oneNotif = base.SendSonarrGet<Notification>(endpoint);
-                if (oneNotif != null)
-                    yield return oneNotif;
+                base.SendToPipeline(base.GetNotificationsById(this.Id));
             }
         }
 
