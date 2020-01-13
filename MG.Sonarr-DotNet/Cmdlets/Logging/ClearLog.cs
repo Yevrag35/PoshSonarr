@@ -35,10 +35,5 @@ namespace MG.Sonarr.Cmdlets.Logging
         }
 
         #endregion
-
-        #region BACKEND METHODS
-
-
-        #endregion
     }
 }
