@@ -105,7 +105,7 @@ namespace MG.Sonarr.Cmdlets
         protected List<T> FilterByStrings<T>(List<T> listOfItems, Expression<Func<T, string>> propertyExpressionOfItem, 
             IEnumerable<string> wildcardContainingStrings) where T : IJsonResult
         {
-            if (listOfItems != null && listOfItems.Count > 0 && propertyExpressionOfItem.Body is MemberExpression)
+            if (listOfItems != null && wildcardContainingStrings != null && listOfItems.Count > 0 && propertyExpressionOfItem.Body is MemberExpression)
             {
                 Func<T, string> propertyFunc = propertyExpressionOfItem.Compile();
 

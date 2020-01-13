@@ -19,6 +19,8 @@ namespace MG.Sonarr.Cmdlets
         protected private const string EP = "/tag";
         protected private const string EP_WITH_ID = EP + "/{0}";
 
+        private HashSet<int> _ids;
+
         #endregion
 
         #region PARAMETERS
@@ -36,17 +38,33 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region CMDLET PROCESSING
-        protected override void BeginProcessing() => base.BeginProcessing();
+        protected override void BeginProcessing()
+        {
+            base.BeginProcessing();
+            _ids = new HashSet<int>();
+        }
 
         protected override void ProcessRecord()
         {
-            if ( ! base.HasParameterSpecified(this, x => x.Id) && this.TryGetAllTags(out List<Tag> allTags))
+            if (base.HasParameterSpecified(this, x => x.InputObject) && this.InputObject.Tags != null && this.InputObject.Tags.Count > 0)
             {
-                base.SendToPipeline(base.FilterByStringParameter(allTags, t => t.Label, this, cmd => cmd.Label));
+                _ids.UnionWith(this.InputObject.Tags);
             }
             else if (base.HasParameterSpecified(this, x => x.Id))
             {
-                base.SendToPipeline(this.GetTagById(this.Id));
+                _ids.UnionWith(this.Id);
+            }
+        }
+
+        protected override void EndProcessing()
+        {
+            if (!base.HasParameterSpecified(this, x => x.Id) && this.TryGetAllTags(out List<Tag> allTags))
+            {
+                base.SendToPipeline(base.FilterByStringParameter(allTags, t => t.Label, this, cmd => cmd.Label));
+            }
+            else if (_ids.Count > 0)
+            {
+                base.SendToPipeline(this.GetTagById(_ids));
             }
         }
 
@@ -55,12 +73,11 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         private bool TryGetAllTags(out List<Tag> outTags)
         {
-            bool result = false;
             outTags = base.SendSonarrListGet<Tag>(EP);
             return outTags != null && outTags.Count > 0;
         }
 
-        private IEnumerable<Tag> GetTagById(int[] ids)
+        private IEnumerable<Tag> GetTagById(IEnumerable<int> ids)
         {
             foreach (int id in ids)
             {
@@ -72,7 +89,5 @@ namespace MG.Sonarr.Cmdlets
         }
 
         #endregion
-
-
     }
 }

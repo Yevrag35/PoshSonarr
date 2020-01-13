@@ -17,7 +17,7 @@ namespace MG.Sonarr.Results
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [Serializable]
-    public class SeriesResult : BaseResult
+    public class SeriesResult : BaseResult, IHasTagSet
     {
         private const string AIRTIME = "airTime";
         private const string RATING = "ratings";

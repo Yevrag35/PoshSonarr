@@ -91,9 +91,9 @@ namespace MG.Sonarr.Cmdlets
 
             if (_tagTable != null)
                 this.FormatTags(_tagTable);
-            
+
             else if (_clearTags)
-                this.InputObject.ClearTags();
+                this.InputObject.Tags.Clear();
 
             string endpoint = string.Format(SERIES_BY_ID, this.InputObject.SeriesId);
             base.WriteDebug(this.InputObject.ToJson());
