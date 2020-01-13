@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Yevrag35, LLC.")]
 [assembly: AssemblyProduct("MG.Sonarr-DotNet")]
-[assembly: AssemblyCopyright("Copyright © 2019 Yevrag35, LLC.")]
+[assembly: AssemblyCopyright("Copyright © 2019-2020 Yevrag35, LLC.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

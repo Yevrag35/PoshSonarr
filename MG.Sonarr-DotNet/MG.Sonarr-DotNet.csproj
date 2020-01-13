@@ -41,8 +41,8 @@
     <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MG.Api.Json">
-      <HintPath>..\..\MG.Api\MG.Api.Json\bin\Debug\netstandard2.0\MG.Api.Json.dll</HintPath>
+    <Reference Include="MG.Api.Json, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MG.Api.Json.1.0.0\lib\netstandard2.0\MG.Api.Json.dll</HintPath>
     </Reference>
     <Reference Include="MG.Dynamic, Version=3.4.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MG.Dynamic.3.4.1\lib\net452\MG.Dynamic.dll</HintPath>
