@@ -32,6 +32,16 @@
 		<Compile Include="..\MG.Sonarr-DotNet\**\*.cs" Exclude="..\MG.Sonarr-DotNet\obj\**\*.cs;..\MG.Sonarr-DotNet\bin\**\*.cs;..\MG.Sonarr-DotNet\Properties\AssemblyInfo.cs;..\MG.Sonarr-DotNet\Cmdlets\Connection\Exclude\*-DotNet.cs;..\MG.Sonarr-DotNet\**\*-BETA.cs" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Remove="DebugScript.ps1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="DebugScript.ps1">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="MG.Api.Json" Version="1.0.0" />
     <PackageReference Include="MG.Dynamic" Version="4.0.0-alpha" />

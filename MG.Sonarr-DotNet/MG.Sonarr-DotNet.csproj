@@ -38,7 +38,7 @@
     <DocumentationFile>bin\Release\MG.Sonarr.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
-    <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MG.Api.Json, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
