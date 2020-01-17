@@ -26,7 +26,7 @@ namespace MG.Sonarr.Cmdlets
 
         #region PARAMETERS
 
-        [Parameter(Mandatory = true, ParameterSetName = "ByExplicitPath", Position = 0)]
+        [Parameter(Mandatory = false, ParameterSetName = "ByExplicitPath", Position = 0)]
         [SupportsWildcards]
         public string[] Path
         {
@@ -52,10 +52,7 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region CMDLET PROCESSING
-        protected override void BeginProcessing()
-        {
-            base.BeginProcessing();
-        }
+        protected override void BeginProcessing() => base.BeginProcessing();
         protected override void ProcessRecord()
         {
             List<DiskspaceResult> allResults = base.SendSonarrListGet<DiskspaceResult>(EP);
