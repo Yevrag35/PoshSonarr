@@ -33,6 +33,9 @@ namespace MG.Sonarr.Cmdlets
         private const string EP = "/calendar";
         private const string EP_WITH_DATE = EP + "?start={0}&end={1}";
 
+        private bool _today;
+        private bool _tomorrow;
+
         #endregion
 
         #region PARAMETERS
@@ -54,6 +57,20 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = true, ParameterSetName = "ByDayOfWeek")]
         public DayOfWeek[] DayOfWeek { get; set; }
 
+        [Parameter(Mandatory = true, ParameterSetName = "ShowToday")]
+        public SwitchParameter Today
+        {
+            get => _today;
+            set => _today = value;
+        }
+
+        [Parameter(Mandatory = true, ParameterSetName = "ShowTomorrow")]
+        public SwitchParameter Tomorrow
+        {
+            get => _tomorrow;
+            set => _tomorrow = value;
+        }
+
         /// <summary>
         /// <para type="description">Return only the specified series from the calendar.</para>
         /// </summary>
@@ -71,6 +88,16 @@ namespace MG.Sonarr.Cmdlets
             if (base.HasParameterSpecified(this, x => x.StartDate) && ! base.HasParameterSpecified(this, x => x.EndDate))
             {
                 this.EndDate = this.StartDate.AddDays(7);
+            }
+            else if (base.HasParameterSpecified(this, x => x.Today))
+            {
+                this.StartDate = DateTime.Today;
+                this.EndDate = DateTime.Today.AddDays(1);
+            }
+            else if (base.HasParameterSpecified(this, x => x.Tomorrow))
+            {
+                this.StartDate = DateTime.Today.AddDays(1);
+                this.EndDate = DateTime.Today.AddDays(2);
             }
         }
 
