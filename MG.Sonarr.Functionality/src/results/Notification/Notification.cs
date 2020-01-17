@@ -9,7 +9,7 @@ namespace MG.Sonarr.Results
 {
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
-    public sealed class Notification : Provider, ISupportsTagUpdate
+    public class Notification : Provider, ISupportsTagUpdate
     {
         private const string EP = "/notification";
 
@@ -20,10 +20,10 @@ namespace MG.Sonarr.Results
 
         #region JSON PROPERTIES
         [JsonProperty("link")]
-        public string Link { get; private set; }
+        public string Link { get; protected private set; }
 
         [JsonProperty("id", Order = 1)]
-        public int NotificationId { get; private set; }
+        public virtual int NotificationId { get; protected private set; }
 
         [JsonProperty("onGrab")]
         public bool OnGrab { get; set; }
@@ -38,31 +38,31 @@ namespace MG.Sonarr.Results
         public bool OnRename { get; set; }
 
         [JsonProperty("onHealthIssue")]
-        public bool OnHealthIssue { get; set; }
+        public virtual bool OnHealthIssue { get; set; }
 
         [JsonProperty("supportsOnGrab")]
-        public bool SupportsOnGrab { get; private set; }
+        public bool SupportsOnGrab { get; protected private set; }
 
         [JsonProperty("supportsOnDownload")]
-        public bool SupportsOnDownload { get; private set; }
+        public bool SupportsOnDownload { get; protected private set; }
 
         [JsonProperty("supportsOnUpgrade")]
-        public bool SupportsOnUpgrade { get; private set; }
+        public bool SupportsOnUpgrade { get; protected private set; }
 
         [JsonProperty("supportsOnRename")]
-        public bool SupportsOnRename { get; private set; }
+        public bool SupportsOnRename { get; protected private set; }
 
         [JsonProperty("supportsOnHealthIssue")]
-        public bool SupportsOnHealthIssue { get; private set; }
+        public virtual bool SupportsOnHealthIssue { get; protected private set; }
 
         [JsonProperty("includeHealthWarnings")]
-        public bool IncludeHealthWarnings { get; private set; }
+        public virtual bool IncludeHealthWarnings { get; protected private set; }
 
         [JsonIgnore]
         public override int[] Tags { get; protected set; }
 
         [JsonProperty("testCommand")]
-        public string TestCommand { get; private set; }
+        public virtual  string TestCommand { get; protected private set; }
 
         #endregion
 
@@ -84,7 +84,7 @@ namespace MG.Sonarr.Results
                 }
             }
         }
-        public override string GetEndpoint() => EP;
+        public sealed override string GetEndpoint() => EP;
         public void RemoveTags(params int[] tagIds)
         {
             if (tagIds != null)

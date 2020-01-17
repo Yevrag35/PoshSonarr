@@ -107,6 +107,7 @@
     <Compile Include="Cmdlets\Metadata\MetadataCmdlet.cs" />
     <Compile Include="Cmdlets\Metadata\UpdateMetadata.cs" />
     <Compile Include="Cmdlets\Notification\GetNotification.cs" />
+    <Compile Include="Cmdlets\Notification\NewPlexNotification.cs" />
     <Compile Include="Cmdlets\Notification\NotificationCmdlet.cs" />
     <Compile Include="Cmdlets\Notification\RemoveNotification.cs" />
     <Compile Include="Cmdlets\Notification\UpdateNotification.cs" />

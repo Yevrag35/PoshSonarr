@@ -48,6 +48,17 @@ namespace MG.Sonarr.Results
 
         public object Value { get; set; }
 
+        internal Field(int order, string name, string label, object value, FieldType type, bool isAdvanced, params SelectOptions[] selectOptions)
+        {
+            Order = order;
+            Name = name;
+            Label = label;
+            BackendValue = value;
+            Type = type;
+            IsAdvanced = isAdvanced;
+            this.SelectOptions = selectOptions;
+        }
+
         #endregion
 
         #region ONDESERIALIZED
@@ -88,6 +99,12 @@ namespace MG.Sonarr.Results
         
         [JsonProperty("value")]
         public int Value { get; set; }
+
+        internal SelectOptions(string name, int value)
+        {
+            this.Name = name;
+            this.Value = value;
+        }
     }
 
     #endregion

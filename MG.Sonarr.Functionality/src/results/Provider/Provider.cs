@@ -10,22 +10,22 @@ namespace MG.Sonarr.Results
     {
         #region JSON PROPERTIES
         [JsonProperty("configContract", Order = 6)]
-        public string ConfigContract { get; private set; }
+        public string ConfigContract { get; protected private set; }
 
         [JsonProperty("fields", Order = 3)]
-        public FieldCollection Fields { get; private set; }
+        public FieldCollection Fields { get; protected private set; }
 
         [JsonProperty("implementationName", Order = 3)]
-        public string ImplementationName { get; private set; }
+        public string ImplementationName { get; protected private set; }
 
         [JsonProperty("implementation", Order = 5)]
-        public string Implementation { get; private set; }
+        public string Implementation { get; protected private set; }
 
         [JsonProperty("infoLink", Order = 7)]
-        public Uri InfoLink { get; private set; }
+        public Uri InfoLink { get; protected private set; }
 
         [JsonProperty("providerMessage", Order = 8)]
-        public ProviderMessage Message { get; private set; }
+        public ProviderMessage Message { get; protected private set; }
 
         [JsonProperty("name", Order = 2)]
         public string Name { get; set; }
