@@ -25,7 +25,7 @@ namespace MG.Sonarr.Results
         public Uri InfoLink { get; protected private set; }
 
         [JsonProperty("providerMessage", Order = 8)]
-        public ProviderMessage Message { get; protected private set; }
+        public virtual ProviderMessage Message { get; protected private set; }
 
         [JsonProperty("name", Order = 2)]
         public string Name { get; set; }

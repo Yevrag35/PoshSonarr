@@ -5,8 +5,6 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Text;
 
 namespace MG.Sonarr.Results
 {
@@ -20,14 +18,20 @@ namespace MG.Sonarr.Results
         private const string EP = "/downloadclient";
 
         [JsonProperty("id")]
-        public int ClientId { get; private set; }
+        public int Id { get; private set; }
 
         [JsonProperty("enable")]
         public bool IsEnabled { get; set; }
 
+        [JsonIgnore]
+        public override ProviderMessage Message { get; protected private set; }
+
         [JsonProperty("protocol")]
         [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public DownloadProtocol Protocol { get; set; }
+        public DownloadProtocol Protocol { get; private set; }
+
+        [JsonIgnore]
+        public override int[] Tags { get; protected set; }
 
         public sealed override string GetEndpoint() => EP;
     }

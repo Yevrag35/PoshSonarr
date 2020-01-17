@@ -48,6 +48,9 @@ namespace MG.Sonarr.Results
 
         public object Value { get; set; }
 
+        [JsonConstructor]
+        public Field() { }
+
         internal Field(int order, string name, string label, object value, FieldType type, bool isAdvanced, params SelectOptions[] selectOptions)
         {
             Order = order;
