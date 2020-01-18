@@ -25,7 +25,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>7.3</LangVersion>
-    <DocumentationFile>bin\Debug\MG.Sonarr.xml</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -35,7 +36,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>7.3</LangVersion>
-    <DocumentationFile>bin\Release\MG.Sonarr.xml</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
@@ -94,7 +96,10 @@
     <Compile Include="Cmdlets\Connection\Exclude\CertValidity-DotNet.cs" />
     <None Include="Cmdlets\QualityProfiles\Exclude\NewQualityProfile-BETA.cs" />
     <None Include="Cmdlets\Connection\Exclude\ConnectInstance-BETA.cs" />
+    <Compile Include="Cmdlets\DelayProfile\DelayProfileCmdlet.cs" />
     <Compile Include="Cmdlets\DelayProfile\GetDelayProfile.cs" />
+    <Compile Include="Cmdlets\DelayProfile\NewDelayProfile.cs" />
+    <Compile Include="Cmdlets\DelayProfile\SetDelayProfile.cs" />
     <Compile Include="Cmdlets\DownloadClient\GetDownloadClient.cs" />
     <Compile Include="Cmdlets\DownloadClient\UpdateDownloadClient.cs" />
     <Compile Include="Cmdlets\FileSystem\SearchDirectory.cs" />
@@ -212,11 +217,4 @@
   <PropertyGroup>
     <PostBuildEvent>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -NonInteractive -WindowStyle Hidden -File "$(ProjectDir)GenerateManifest.ps1" -DebugDirectory "$(ProjectDir)bin\$(ConfigurationName)" -ModuleFileDirectory "$(ProjectDir)TypeFormats" -AssemblyInfo "$(ProjectDir)Properties\AssemblyInfo.cs" -TargetFileName "$(TargetFileName)"</PostBuildEvent>
   </PropertyGroup>
-  <Import Project="..\packages\XmlDoc2CmdletDoc.0.2.13\build\XmlDoc2CmdletDoc.targets" Condition="Exists('..\packages\XmlDoc2CmdletDoc.0.2.13\build\XmlDoc2CmdletDoc.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\XmlDoc2CmdletDoc.0.2.13\build\XmlDoc2CmdletDoc.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\XmlDoc2CmdletDoc.0.2.13\build\XmlDoc2CmdletDoc.targets'))" />
-  </Target>
 </Project>

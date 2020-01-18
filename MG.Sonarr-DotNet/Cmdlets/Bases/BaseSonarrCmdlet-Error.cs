@@ -102,5 +102,27 @@ namespace MG.Sonarr.Cmdlets
         }
 
         #endregion
+
+        #region TERMINATING ERRORS
+
+        protected void ThrowTerminatingError(string argumentMessage, ErrorCategory category) =>
+            this.ThrowTerminatingError(new ArgumentException(argumentMessage), category, null);
+
+        protected void ThrowTerminatingError(string argumentMessage, ErrorCategory category, object targetObject) =>
+            this.ThrowTerminatingError(new ArgumentException(argumentMessage), category, targetObject);
+
+        protected void ThrowTerminatingError(Exception e, ErrorCategory category) =>
+            this.ThrowTerminatingError(e, category, null);
+
+        protected void ThrowTerminatingError(Exception e, ErrorCategory category, object targetObject) =>
+            this.ThrowTerminatingError(e, e.GetType().FullName, category, targetObject);
+
+        protected void ThrowTerminatingError(Exception e, string errorId, ErrorCategory category, object targetObject)
+        {
+            var errRec = new ErrorRecord(e, errorId, category, targetObject);
+            base.ThrowTerminatingError(errRec);
+        }
+
+        #endregion
     }
 }

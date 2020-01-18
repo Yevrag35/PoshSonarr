@@ -12,11 +12,9 @@ namespace MG.Sonarr.Cmdlets
     [Cmdlet(VerbsCommon.Get, "DelayProfile", ConfirmImpact = ConfirmImpact.None)]
     [OutputType(typeof(DelayProfile))]
     [CmdletBinding(PositionalBinding = false)]
-    public class GetDelayProfile : BaseSonarrCmdlet
+    public class GetDelayProfile : DelayProfileCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string EP = "/delayprofile";
-        private const string EP_WITH_ID = EP + "/{0}";
 
         #endregion
 
@@ -31,17 +29,11 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if ( ! base.HasParameterSpecified(this, x => x.Id))
-                base.SendToPipeline(base.SendSonarrListGet<DelayProfile>(EP));
+            if (!base.HasParameterSpecified(this, x => x.Id))
+                base.SendToPipeline(base.GetAllDelayProfiles());
 
             else
-            {
-                foreach (int oneId in this.Id)
-                {
-                    string endpoint = string.Format(EP_WITH_ID, oneId);
-                    base.SendToPipeline(base.SendSonarrGet<DelayProfile>(endpoint));
-                }
-            }
+                base.SendToPipeline(base.GetDelayProfileByIds(this.Id));
         }
 
         #endregion

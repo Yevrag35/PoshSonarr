@@ -23,7 +23,7 @@ namespace MG.Sonarr.Results
 
         #region JSON PROPERTIES
         [JsonProperty("id", Order = 8)]
-        public int DelayProfileId { get; private set; }
+        public virtual int Id { get; protected private set; }
 
         [JsonProperty("enableTorrent", Order = 2)]
         public bool EnableTorrent { get; set; }
@@ -32,16 +32,19 @@ namespace MG.Sonarr.Results
         public bool EnableUsenet { get; set; }
 
         [JsonIgnore]
-        object ISupportsTagUpdate.Identifier => this.DelayProfileId;
+        object ISupportsTagUpdate.Identifier => this.Id;
+
+        [JsonIgnore]
+        public bool IsDefault => this.Order == DEFAULT_ORDER;
 
         [JsonProperty("order", Order = 6)]
-        public int Order { get; private set; }
+        public int Order { get; protected private set; }
 
         [JsonProperty("preferredProtocol", Order = 3)]
         public DownloadProtocol PreferredProtocol { get; set; }
 
         [JsonIgnore]
-        public int[] Tags { get; private set; }
+        public int[] Tags { get; protected private set; }
 
         [JsonProperty("torrentDelay", Order = 5)]
         public int TorrentDelay { get; set; }
@@ -57,8 +60,7 @@ namespace MG.Sonarr.Results
             {
                 foreach (int id in tagIds)
                 {
-                    if (!_appliedTagIds.Contains(id))
-                        _appliedTagIds.Add(id);
+                    _appliedTagIds.Add(id);
                 }
             }
         }
@@ -86,7 +88,7 @@ namespace MG.Sonarr.Results
 
         public void SetOrder(int newOrder)
         {
-            if (DEFAULT_ORDER == this.Order)
+            if (this.IsDefault)
                 throw new InvalidOperationException("Cannot set the order of the default delay profile.");
 
             this.Order = newOrder;

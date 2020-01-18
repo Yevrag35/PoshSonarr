@@ -16,29 +16,8 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
-    /// <summary>
-    ///     <para type="synopsis">Builds the connection context for subsequent cmdlets.</para>
-    ///     <para type="description">Establishes a custom HttpClient context for use with all subsequent PoshSonarr cmdlets.  
-    ///         The connection is created either via hostname/port/url base or by direct URL.  
-    ///         The "/api" path is automatically appended unless the '-NoApiPrefix' parameter is used.  
-    ///         If this command is not run first, all other cmdlets will throw an error.
-    ///     </para>
-    /// </summary>
-    /// <example>
-    ///     <code>
-    ///         <para>Connect by 'HostName' and 'Port':</para>
-    ///         <para></para>
-    ///         <para>Connect-Sonarr -Server "MEDIASERVER" -ApiKey "xxxxxxxxxxxxxxxx" -PassThru</para>
-    ///     </code>
-    /// </example>
-    /// <example>
-    ///     <code>
-    ///         <para>Connect by explicit URL:</para>
-    ///         <para></para>
-    ///         <para>Connect-SonarrInstance -Url 'https://sonarr-api.cloud.com/api/custom' -ApiKey "xxxxxxxxxxxxxxxx" -NoApiPrefix</para>
-    ///     </code>
-    /// </example>
-    [Cmdlet(VerbsCommunications.Connect, "Instance", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByServerName")]
+    [Cmdlet(VerbsCommunications.Connect, "Instance", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByServerName",
+        HelpUri = "https://github.com/Yevrag35/PoshSonarr/wiki/Connect-SonarrInstance")]
     [CmdletBinding(PositionalBinding = false)]
     [Alias("Connect-")]
     [OutputType(typeof(StatusResult))]
@@ -68,6 +47,7 @@ namespace MG.Sonarr.Cmdlets
         /// <para type="description">The hostname of the Sonarr instance.</para>
         /// </summary>
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByServerName")]
+        [ValidateNotNull]
         [Alias("HostName")]
         public string SonarrServerName = "localhost";
 

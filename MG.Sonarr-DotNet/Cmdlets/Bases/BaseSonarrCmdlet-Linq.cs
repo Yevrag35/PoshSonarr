@@ -37,7 +37,7 @@ namespace MG.Sonarr.Cmdlets
         public bool HasAllParametersSpecified<T>(T cmdlet, params Expression<Func<T, object>>[] cmdletParameterExpressions) where T : PSCmdlet
         {
             bool result = false;
-            if (cmdletParameterExpressions != null || cmdletParameterExpressions.Length > 0)
+            if (cmdletParameterExpressions != null && cmdletParameterExpressions.Length > 0)
             {
                 result = SelectAllParameterNames(cmdletParameterExpressions)
                     .All(x => cmdlet.MyInvocation.BoundParameters.ContainsKey(x));
@@ -51,6 +51,16 @@ namespace MG.Sonarr.Cmdlets
             {
                 result = SelectAllParameterNames(cmdletParameterExpressions)
                     .Any(x => cmdlet.MyInvocation.BoundParameters.ContainsKey(x));
+            }
+            return result;
+        }
+        public bool HasNoneOfTheParametersSpecified<T>(T cmdlet, params Expression<Func<T, object>>[] cmdletParameterExpressions) where T : PSCmdlet
+        {
+            bool result = false;
+            if (cmdletParameterExpressions != null || cmdletParameterExpressions.Length > 0)
+            {
+                result = SelectAllParameterNames(cmdletParameterExpressions)
+                    .All(x => ! cmdlet.MyInvocation.BoundParameters.ContainsKey(x));
             }
             return result;
         }
