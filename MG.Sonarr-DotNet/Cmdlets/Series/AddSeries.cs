@@ -29,11 +29,13 @@ namespace MG.Sonarr.Cmdlets
 
         #region PARAMETERS
 
+        [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
+        public SeriesResult
+
         [Parameter(Mandatory = true, ParameterSetName = "ByFullPath")]
         public string FullPath { get; set; }
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByRootFolderPath")]
-        [Alias("path")]
+        [Parameter(Mandatory = true, Position = 1, ParameterSetName = "ByRootFolderPath")]
         public string RootFolderPath { get; set; }
 
         [Parameter(Mandatory = false)]
@@ -64,23 +66,23 @@ namespace MG.Sonarr.Cmdlets
             set => _passThru = value;
         }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        public string Name { get; set; }
+        //[Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
+        //public string Name { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        public int TVDBId { get; set; }
+        //[Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
+        //public int TVDBId { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        public int QualityProfileId { get; set; }
+        //[Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
+        //public int QualityProfileId { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        public string TitleSlug { get; set; }
+        //[Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
+        //public string TitleSlug { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        public SeriesImage[] Images { get; set; }
+        //[Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
+        //public SeriesImage[] Images { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        public ICollection<Season> Seasons { get; set; }
+        //[Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
+        //public ICollection<Season> Seasons { get; set; }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter NotMonitored
@@ -96,8 +98,8 @@ namespace MG.Sonarr.Cmdlets
             set => _usf = value;
         }
 
-        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true)]
-        public int TVRageId { get; set; }
+        //[Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true)]
+        //public int TVRageId { get; set; }
 
         #endregion
 

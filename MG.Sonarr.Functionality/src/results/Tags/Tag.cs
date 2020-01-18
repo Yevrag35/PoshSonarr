@@ -12,6 +12,8 @@ namespace MG.Sonarr.Results
         public string Label { get; set; }
 
         public TagNew(string label) => this.Label = label;
+
+        public static implicit operator TagNew(string label) => new TagNew(label);
     }
 
     /// <summary>

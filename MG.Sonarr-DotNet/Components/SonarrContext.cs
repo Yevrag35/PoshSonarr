@@ -41,6 +41,8 @@ namespace MG.Sonarr
         /// </summary>
         public static ISonarrUrl SonarrUrl { get; set; }
 
+        public static TagManager TagManager { get; internal set; }
+
         #endregion
     }
 }

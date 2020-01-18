@@ -95,9 +95,9 @@ namespace MG.Sonarr.Cmdlets
             else if (_clearTags)
                 this.InputObject.Tags.Clear();
 
-            string endpoint = string.Format(SERIES_BY_ID, this.InputObject.SeriesId);
+            string endpoint = string.Format(SERIES_BY_ID, this.InputObject.Id);
             base.WriteDebug(this.InputObject.ToJson());
-            if (base.FormatShouldProcess("Set", "Series Id: {0}", this.InputObject.SeriesId))
+            if (base.FormatShouldProcess("Set", "Series Id: {0}", this.InputObject.Id))
             {
                 SeriesResult putResult = base.SendSonarrPut<SeriesResult>(endpoint, this.InputObject);
                 if (_passThru)

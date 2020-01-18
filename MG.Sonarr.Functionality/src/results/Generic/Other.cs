@@ -39,10 +39,10 @@ namespace MG.Sonarr.Results
     public class Ratings : BaseResult
     {
         [JsonProperty("value")]
-        public float Value { get; set; }
+        public float Value { get; private set; }
 
         [JsonProperty("votes")]
-        public int Votes { get; set; }
+        public long Votes { get; private set; }
     }
 
     [JsonObject(MemberSerialization.OptIn)]

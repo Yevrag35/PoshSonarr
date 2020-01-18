@@ -131,6 +131,7 @@
     <Compile Include="Cmdlets\Restriction\UpdateRestriction.cs" />
     <Compile Include="Cmdlets\RootFolder\RegisterRootFolder.cs" />
     <Compile Include="Cmdlets\RootFolder\RemoveRootFolder.cs" />
+    <Compile Include="Cmdlets\Series\SeriesCmdlet.cs" />
     <Compile Include="Cmdlets\Tag\AddTag.cs" />
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
@@ -152,9 +153,9 @@
     <Compile Include="Cmdlets\Releases\SearchRelease.cs" />
     <Compile Include="Cmdlets\Releases\NewReleasePush.cs" />
     <Compile Include="Cmdlets\RootFolder\GetRootFolder.cs" />
-    <Compile Include="Cmdlets\Series\AddSeries.cs" />
+    <None Include="Cmdlets\Series\AddSeries.cs" />
     <Compile Include="Cmdlets\Series\GetSeries.cs" />
-    <Compile Include="Cmdlets\Series\RemoveSeries.cs" />
+    <None Include="Cmdlets\Series\RemoveSeries.cs" />
     <Compile Include="Cmdlets\Series\SearchSeries.cs" />
     <Compile Include="Cmdlets\Series\SetSeries.cs" />
     <Compile Include="Cmdlets\System\GetBackup.cs" />

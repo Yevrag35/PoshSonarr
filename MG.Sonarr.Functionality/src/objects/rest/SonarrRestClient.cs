@@ -13,6 +13,8 @@ namespace MG.Sonarr
     /// </summary>
     public class SonarrRestClient : HttpClient, ISonarrClient
     {
+        public bool IsAuthenticated => base.DefaultRequestHeaders.Contains("X-Api-Key") && base.BaseAddress != null;
+
         #region CONSTRUCTORS
         /// <summary>
         /// Initializes a new instance of the <see cref="SonarrRestClient"/> class.
@@ -97,7 +99,7 @@ namespace MG.Sonarr
             base.DefaultRequestHeaders.Add(kvp.Item1, kvp.Item2);
         }
 
-        bool ISonarrClient.IsJsonArray(string jsonString)
+        public bool IsJsonArray(string jsonString)
         {
             var jtok = JToken.Parse(jsonString);
             return jtok is JArray

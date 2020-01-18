@@ -56,7 +56,7 @@ namespace MG.Sonarr.Cmdlets
         {
             isSingular = false;
             if (base.HasParameterSpecified(this, x => x.Series))
-                return string.Format(EP_BY_SERIES, this.Series.SeriesId);
+                return string.Format(EP_BY_SERIES, this.Series.Id);
 
             else if (base.HasParameterSpecified(this, x => x.EpisodeFileId))
             {

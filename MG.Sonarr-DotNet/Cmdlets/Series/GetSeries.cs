@@ -1,28 +1,19 @@
 ﻿using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "Series", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "BySeriesName")]
     [OutputType(typeof(SeriesResult))]
     [CmdletBinding(PositionalBinding = false)]
-    public class GetSeries : BaseSonarrCmdlet
+    public class GetSeries : SeriesCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string EP = "/series";
-        private const string EP_BY_ID = EP + "/{0}";
 
-        private List<SeriesResult> _allSeries;
         private List<string> _names;
         private List<long> _ids;
 
@@ -56,11 +47,11 @@ namespace MG.Sonarr.Cmdlets
         {
             if (_ids.Count > 0)
             {
-                base.SendToPipeline(this.GetSeriesById(_ids));
+                base.SendToPipeline(base.GetSeriesById(_ids));
             }
             else
             {
-                List<SeriesResult> all = base.SendSonarrListGet<SeriesResult>(EP);
+                List<SeriesResult> all = base.GetAllSeries();
                 base.SendToPipeline(base.FilterByStrings(all, x => x.Name, _names.Count > 0 ? _names : null));
             }
         }
@@ -68,15 +59,7 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region BACKEND METHODS
-        private IEnumerable<SeriesResult> GetSeriesById(IEnumerable<long> ids)
-        {
-            foreach (long id in ids)
-            {
-                SeriesResult sr = base.SendSonarrGet<SeriesResult>(string.Format(EP_BY_ID, id));
-                if (sr != null)
-                    yield return sr;
-            }
-        }
+        
 
         private void ProcessNamesParameter(object[] objNames)
         {
