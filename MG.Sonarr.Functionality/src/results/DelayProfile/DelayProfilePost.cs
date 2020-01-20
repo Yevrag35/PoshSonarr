@@ -14,7 +14,26 @@ namespace MG.Sonarr.Results
         public sealed override int Id { get; protected private set; }
 
         public static DelayProfilePost NewPost(bool enableTor, bool enableUse, int order, DownloadProtocol protocol, 
-            int torrentDelay, int usenetDelay, int[] tags)
+            int torrentDelay, int usenetDelay, IEnumerable<int> tags)
+        {
+            if (order <= 0)
+                throw new ArgumentException("The order of the Delay Profile cannot be lower than 1.");
+
+            var dp = new DelayProfilePost
+            {
+                EnableTorrent = enableTor,
+                EnableUsenet = enableUse,
+                PreferredProtocol = protocol,
+                Tags = new HashSet<int>(tags),
+                TorrentDelay = torrentDelay,
+                UsenetDelay = usenetDelay
+            };
+            dp.SetOrder(order);
+            return dp;
+        }
+
+        public static DelayProfilePost NewPost(bool enableTor, bool enableUse, int order, DownloadProtocol protocol,
+            int torrentDelay, int usenetDelay, HashSet<int> tags)
         {
             if (order <= 0)
                 throw new ArgumentException("The order of the Delay Profile cannot be lower than 1.");

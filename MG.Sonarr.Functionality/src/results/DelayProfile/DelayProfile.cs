@@ -18,8 +18,8 @@ namespace MG.Sonarr.Results
         private const string EP = "/delayprofile";
         private const string ENDPOINT = EP + "/{0}";
 
-        [JsonProperty("tags", Order = 9)]
-        private HashSet<int> _appliedTagIds;
+        //[JsonProperty("tags", Order = 9)]
+        //private HashSet<int> _appliedTagIds;
 
         #region JSON PROPERTIES
         [JsonProperty("id", Order = 8)]
@@ -43,8 +43,11 @@ namespace MG.Sonarr.Results
         [JsonProperty("preferredProtocol", Order = 3)]
         public DownloadProtocol PreferredProtocol { get; set; }
 
-        [JsonIgnore]
-        public int[] Tags { get; protected private set; }
+        [JsonProperty("tags", Order = 9)]
+        public HashSet<int> Tags { get; set; }
+
+        //[JsonIgnore]
+        //public int[] Tags { get; protected private set; }
 
         [JsonProperty("torrentDelay", Order = 5)]
         public int TorrentDelay { get; set; }
@@ -54,37 +57,30 @@ namespace MG.Sonarr.Results
 
         #endregion
 
-        public void AddTags(params int[] tagIds)
-        {
-            if (tagIds != null)
-            {
-                foreach (int id in tagIds)
-                {
-                    _appliedTagIds.Add(id);
-                }
-            }
-        }
+        //public void AddTags(IEnumerable<int> tagIds)
+        //{
+        //    foreach (int id in tagIds)
+        //    {
+        //        _appliedTagIds.Add(id);
+        //    }
+        //}
         
         public string GetEndpoint() => EP;
 
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext ctx)
-        {
-            if (_appliedTagIds != null)
-                this.Tags = _appliedTagIds.ToArray();
-        }
+        //[OnDeserialized]
+        //private void OnDeserialized(StreamingContext ctx)
+        //{
+        //    if (_appliedTagIds != null)
+        //        this.Tags = _appliedTagIds.ToArray();
+        //}
 
-        public void RemoveTags(params int[] tagIds)
-        {
-            if (tagIds != null)
-            {
-                foreach (int id in tagIds)
-                {
-                    if (_appliedTagIds.Contains(id))
-                        _appliedTagIds.Remove(id);
-                }
-            }
-        }
+        //public void RemoveTags(IEnumerable<int> tagIds)
+        //{
+        //    foreach (int id in tagIds)
+        //    {
+        //        _appliedTagIds.Remove(id);
+        //    }
+        //}
 
         public void SetOrder(int newOrder)
         {

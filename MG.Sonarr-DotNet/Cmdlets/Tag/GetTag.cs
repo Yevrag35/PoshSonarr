@@ -60,6 +60,7 @@ namespace MG.Sonarr.Cmdlets
         {
             if (!base.HasParameterSpecified(this, x => x.Id) && this.TryGetAllTags(out List<Tag> allTags))
             {
+                allTags.Sort();
                 base.SendToPipeline(base.FilterByStringParameter(allTags, t => t.Label, this, cmd => cmd.Label));
             }
             else if (_ids.Count > 0)

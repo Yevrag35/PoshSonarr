@@ -10,7 +10,7 @@ namespace MG.Sonarr.Results
     public sealed class PlexNotification : Notification
     {
         [JsonIgnore]
-        public override int NotificationId { get; protected private set; }
+        public override int Id { get; protected private set; }
 
         public PlexNotification(string host, int port, string username, string password, bool updateLibrary, bool useSsl)
         {

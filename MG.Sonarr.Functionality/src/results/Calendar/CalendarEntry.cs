@@ -18,6 +18,7 @@ namespace MG.Sonarr.Results
 
         public DateTime? AirDate { get; private set; }
 
+        [JsonIgnore]
         public DayOfWeek? DayOfWeek => this.AirDate.HasValue
             ? this.AirDate.Value.DayOfWeek
             : (DayOfWeek?)null;
@@ -30,6 +31,7 @@ namespace MG.Sonarr.Results
 
         // For backwards compatibility
         [Obsolete]
+        [JsonIgnore]
         public bool HasFile => this.IsDownloaded;
 
         [JsonProperty("hasFile")]
@@ -50,6 +52,7 @@ namespace MG.Sonarr.Results
         [JsonProperty("sceneSeasonNumber")]
         public int SceneSeasonNumber { get; private set; }
 
+        [JsonIgnore]
         public string Series { get; private set; }
 
         [JsonProperty("seriesId")]

@@ -24,13 +24,13 @@ namespace MG.Sonarr.Results
     public class Tag : TagNew, IComparable<Tag>, IEquatable<Tag>
     {
         [JsonProperty("id")]
-        public int TagId { get; private set; }
+        public int Id { get; private set; }
 
         public Tag() : base(null) { }
         public Tag(string label) : base(label) { }
 
-        public int CompareTo(Tag other) => this.TagId.CompareTo(other.TagId);
-        public bool Equals(Tag other) => this.TagId.Equals(other.TagId);
-        public override int GetHashCode() => this.TagId.GetHashCode();
+        public int CompareTo(Tag other) => this.Id.CompareTo(other.Id);
+        public bool Equals(Tag other) => this.Id.Equals(other.Id);
+        public override int GetHashCode() => this.Id.GetHashCode();
     }
 }

@@ -54,10 +54,27 @@ namespace MG.Sonarr
             this.AllTags.Contains(x => x.Label.Equals(tagLabel, comparison));
 
         public int GetId(string tagLabel, StringComparison comparison = StringComparison.CurrentCulture) =>
-            this.GetTag(tagLabel, comparison).TagId;
+            this.GetTag(tagLabel, comparison).Id;
         public string GetLabel(int tagId) => this.GetTag(tagId)?.Label;
 
-        public Tag GetTag(int id) => this.AllTags.Find(x => x.TagId == id);
+        public Tag GetTag(int id) => this.AllTags.Find(x => x.Id == id);
+        public Tag GetTag(object idOrLabel)
+        {
+            Tag result = null;
+            if (idOrLabel is IConvertible icon)
+            {
+                string idStr = Convert.ToString(icon);
+                if (int.TryParse(idStr, out int tryInt) && this.TryGetTag(tryInt, out Tag outTag))
+                {
+                    result = outTag;
+                }
+                else if (this.TryGetTag(idStr, StringComparison.CurrentCultureIgnoreCase, out Tag outTag2))
+                {
+                    result = outTag2;
+                }
+            }
+            return result;
+        }
         public Tag GetTag(string label, StringComparison comparison = StringComparison.CurrentCulture) => 
             this.AllTags.Find(x => x.Label.Equals(label, comparison));
 
@@ -77,25 +94,35 @@ namespace MG.Sonarr
                     yield return outTag;
             }
         }
-        public IEnumerable<Tag> GetTags(IEnumerable<object> possibles)
+        public List<Tag> GetTags(IEnumerable<object> possibles, out HashSet<string> nonMatchingStrs, out HashSet<int> nonMatchingIds)
         {
+            nonMatchingIds = new HashSet<int>();
+            nonMatchingStrs = new HashSet<string>();
+            List<Tag> found = new List<Tag>();
             foreach (IConvertible icon in possibles)
             {
-                if (int.TryParse(Convert.ToString(icon), out int intRes) && this.TryGetTag(intRes, out Tag outTag))
+                string idStr = Convert.ToString(icon);
+                if (int.TryParse(idStr, out int intRes))
                 {
-                    yield return outTag;
+                    if (this.TryGetTag(intRes, out Tag outTag))
+                        found.Add(outTag);
+
+                    else
+                        nonMatchingIds.Add(intRes);
                 }
-                else if (this.TryGetTag(Convert.ToString(icon), StringComparison.CurrentCultureIgnoreCase, out Tag outTag2))
-                {
-                    yield return outTag2;
-                }
+                else if (this.TryGetTag(idStr, StringComparison.CurrentCultureIgnoreCase, out Tag outTag2))
+                    found.Add(outTag2);
+                
+                else
+                    nonMatchingStrs.Add(idStr);
             }
+            return found;
         }
 
         public bool TryGetId(string tagLabel, out int tagId)
         {
             tagId = -1;
-            int? possible = this.GetTag(tagLabel)?.TagId;
+            int? possible = this.GetTag(tagLabel)?.Id;
             if (possible.HasValue)
             {
                 tagId = possible.Value;
@@ -126,6 +153,11 @@ namespace MG.Sonarr
             outTag = this.GetTag(tagId);
             return outTag != null;
         }
+        public bool TryGetTag(object tagObj, out Tag outTag)
+        {
+            outTag = this.GetTag(tagObj);
+            return outTag != null;
+        }
 
         #endregion
 
@@ -133,7 +165,7 @@ namespace MG.Sonarr
         public int AddNew(string label)
         {
             if (this.TryGetTag(label, StringComparison.CurrentCultureIgnoreCase, out Tag outTag))
-                return outTag.TagId;
+                return outTag.Id;
             
             else
             {
@@ -166,17 +198,17 @@ namespace MG.Sonarr
         #region BACKEND/PRIVATE METHODS
         private Tag CreateTag(TagNew newTag)
         {
-            IRestResponse<Tag> response = _client.PostAsJsonAsync<Tag>(Endpoint, newTag).GetAwaiter().GetResult();
+            IRestResponse<Tag> response = _client.PostAsJsonAsync<Tag>(new Uri(Endpoint, UriKind.Relative), newTag).GetAwaiter().GetResult();
             return this.ProcessResponse(response);
         }
         private Tag EditTag(Tag tag)
         {
-            IRestResponse<Tag> response = _client.PutAsJsonAsync<Tag>(Endpoint, tag).GetAwaiter().GetResult();
+            IRestResponse<Tag> response = _client.PutAsJsonAsync<Tag>(new Uri(Endpoint, UriKind.Relative), tag).GetAwaiter().GetResult();
             return this.ProcessResponse(response);
         }
         private bool RemoveTag(Tag tag)
         {
-            IRestResponse response = _client.DeleteAsJsonAsync(string.Format(ID_END, tag.TagId)).GetAwaiter().GetResult();
+            IRestResponse response = _client.DeleteAsJsonAsync(new Uri(string.Format(ID_END, tag.Id), UriKind.Relative)).GetAwaiter().GetResult();
             this.ProcessResponse(response);
             return true;
         }
@@ -195,7 +227,7 @@ namespace MG.Sonarr
         private void LoadTags() => this.AllTags = this.LoadTagsAsync().GetAwaiter().GetResult();
         private async Task<TagCollection> LoadTagsAsync()
         {
-            IRestListResponse<Tag> response = await _client.GetAsJsonListAsync<Tag>(Endpoint).ConfigureAwait(false);
+            IRestListResponse<Tag> response = await _client.GetAsJsonListAsync<Tag>(new Uri(Endpoint, UriKind.Relative)).ConfigureAwait(false);
             return new TagCollection(this.ProcessResponse(response));
         }
 

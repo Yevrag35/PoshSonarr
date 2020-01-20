@@ -13,10 +13,8 @@ namespace MG.Sonarr.Results
     /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
-    public class DownloadClient : Provider
+    public class DownloadClient : Provider, IGetEndpoint
     {
-        private const string EP = "/downloadclient";
-
         [JsonProperty("id")]
         public int Id { get; private set; }
 
@@ -30,9 +28,6 @@ namespace MG.Sonarr.Results
         [JsonConverter(typeof(SonarrStringEnumConverter))]
         public DownloadProtocol Protocol { get; private set; }
 
-        [JsonIgnore]
-        public override int[] Tags { get; protected set; }
-
-        public sealed override string GetEndpoint() => EP;
+        public string GetEndpoint() => "/downloadclient";
     }
 }

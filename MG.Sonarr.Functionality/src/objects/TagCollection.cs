@@ -86,10 +86,10 @@ namespace MG.Sonarr.Functionality
         internal int Add(Tag tag)
         {
             this.InnerList.Add(tag);
-            return tag.TagId;
+            return tag.Id;
         }
         internal void Clear() => this.InnerList.Clear();
-        public bool Contains(int tagId) => this.InnerList.Exists(x => x.TagId == tagId);
+        public bool Contains(int tagId) => this.InnerList.Exists(x => x.Id == tagId);
         internal bool Contains(Tag tag) => this.InnerList.Contains(tag);
         internal bool Contains(Predicate<Tag> match) => this.InnerList.Exists(match);
         internal Tag Find(Predicate<Tag> match) => this.InnerList.Find(match);
@@ -102,7 +102,7 @@ namespace MG.Sonarr.Functionality
         {
             if (this.Contains(tagId))
             {
-                int index = this.InnerList.FindIndex(x => x.TagId == tagId);
+                int index = this.InnerList.FindIndex(x => x.Id == tagId);
                 this.InnerList[index].Label = newLabel;
             }
         }

@@ -19,7 +19,7 @@
                     <TableRowEntry>
                         <TableColumnItems>
                             <TableColumnItem>
-                                <PropertyName>TagId</PropertyName>
+                                <PropertyName>Id</PropertyName>
                             </TableColumnItem>
                             <TableColumnItem>
                                 <PropertyName>Label</PropertyName>

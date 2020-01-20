@@ -30,10 +30,10 @@ namespace MG.Sonarr.Results
         [JsonProperty("name", Order = 2)]
         public string Name { get; set; }
 
-        [JsonProperty("tags", Order = 9)]
-        public virtual int[] Tags { get; protected set; }
+        //[JsonProperty("tags", Order = 9)]
+        //public virtual int[] Tags { get; protected set; }
 
-        public abstract string GetEndpoint();
+        //public abstract string GetEndpoint();
 
         #endregion
     }

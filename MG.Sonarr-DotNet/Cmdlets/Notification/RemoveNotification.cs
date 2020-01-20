@@ -26,7 +26,7 @@ namespace MG.Sonarr.Cmdlets
         protected override void ProcessRecord()
         {
             if (base.HasParameterSpecified(this, x => x.InputObject))
-                this.Id = this.InputObject.NotificationId;
+                this.Id = this.InputObject.Id;
 
             if (base.FormatShouldProcess("Remove", "Notification Connection Id: {0}", this.Id))
                 base.SendSonarrDelete(base.FormatWithId(this.Id));

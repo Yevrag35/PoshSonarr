@@ -20,7 +20,7 @@ namespace MG.Sonarr.Cmdlets
 {
     public abstract partial class BaseSonarrCmdlet
     {
-        #region DEBUG METHODS
+        #region API DEBUG METHODS
         /// <summary>
         /// Displays the raw JSON response received from the endpoint in the Debug and Verbose output streams.
         /// </summary>
@@ -87,6 +87,19 @@ namespace MG.Sonarr.Cmdlets
             );
 
             base.WriteDebug(msg);
+        }
+
+        #endregion
+
+        #region FORMAT DEBUG/VERBOSE METHODS
+        protected void WriteFormatDebug(string format, params object[] arguments)
+        {
+            base.WriteDebug(string.Format(format, arguments));
+        }
+
+        protected void WriteFormatVerbose(string format, params object[] arguments)
+        {
+            base.WriteVerbose(string.Format(format, arguments));
         }
 
         #endregion

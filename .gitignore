@@ -266,3 +266,5 @@ desktop\.ini
 MG\.Sonarr-Core/\.vscode/launch\.json
 
 MG\.Sonarr-Core/\.vscode/tasks\.json
+
+PoshSonarr/

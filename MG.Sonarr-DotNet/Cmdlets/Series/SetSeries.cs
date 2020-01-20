@@ -153,7 +153,7 @@ namespace MG.Sonarr.Cmdlets
                         if (newTag != null)
                         {
                             _allCurrentTags.Add(newTag);
-                            this.InputObject.Tags.Add(newTag.TagId);
+                            this.InputObject.Tags.Add(newTag.Id);
                         }
                     }
                 }
@@ -194,7 +194,7 @@ namespace MG.Sonarr.Cmdlets
                         if (newTag != null)
                         {
                             _allCurrentTags.Add(newTag);
-                            this.InputObject.Tags.Add(newTag.TagId);
+                            this.InputObject.Tags.Add(newTag.Id);
                         }
                     }
                 }
@@ -203,7 +203,7 @@ namespace MG.Sonarr.Cmdlets
         private bool TryGetTagId(string tagLabel, out int tagId)
         {
             tagId = 0;
-            int? maybe = _allCurrentTags.Find(x => x.Label.Equals(tagLabel, StringComparison.InvariantCultureIgnoreCase))?.TagId;
+            int? maybe = _allCurrentTags.Find(x => x.Label.Equals(tagLabel, StringComparison.InvariantCultureIgnoreCase))?.Id;
             if (maybe.HasValue)
                 tagId = maybe.Value;
 

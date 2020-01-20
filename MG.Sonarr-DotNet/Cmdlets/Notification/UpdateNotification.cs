@@ -34,7 +34,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (base.FormatShouldProcess("Update", "Notification Id: {0}", this.InputObject.NotificationId))
+            if (base.FormatShouldProcess("Update", "Notification Id: {0}", this.InputObject.Id))
             {
                 Notification updated = base.SendSonarrPut<Notification>(this.Endpoint, this.InputObject);
                 if (_passThru)

@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Extensions;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
@@ -12,11 +13,17 @@ namespace MG.Sonarr.Cmdlets
     public class AddTag : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string TAG_EP = "/tag";
+        //private const string TAG_EP = "/tag";
+        private const string DBG_MSG_FORMAT = "Total Missing Tags: {0}\n\nMissing Labels: {1}\nMissing IDs: {2}";
+        private const string VERB_MSG_1 = "Some labels did not map to existing tags... ";
+        private const string VERB_MSG_APP = "Creating them.";
+        private const string VERB_MSG_DEC = "But we've been told not to create them.";
+
         private string _ep;
-        private bool _isRemove;
-        private int[] _ids;
+        private List<int> _ids;
+        private bool _noCreateOnMissing;
         private bool _passThru;
+        private bool _whatIfOnTag;
 
         #endregion
 
@@ -24,19 +31,19 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
         public ISupportsTagUpdate InputObject { get; set; }
 
-        [Parameter(Mandatory = true, ParameterSetName = "AddExistingTag")]
-        public Tag[] ExistingTag
-        {
-            get => null;
-            set => _ids = value.Select(x => x.TagId).ToArray();
-        }
+        //[Parameter(Mandatory = true, ParameterSetName = "AddExistingTag")]
+        //public Tag[] ExistingTag
+        //{
+        //    get => null;
+        //    set => _ids = value.Select(x => x.TagId).ToArray();
+        //}
 
-        [Parameter(Mandatory = true, ParameterSetName = "AddExistingTagById")]
-        public int[] ExistingTagId
-        {
-            get => null;
-            set => _ids = value;
-        }
+        //[Parameter(Mandatory = true, ParameterSetName = "AddExistingTagById")]
+        //public int[] ExistingTagId
+        //{
+        //    get => null;
+        //    set => _ids = value;
+        //}
 
         //[Parameter(Mandatory = true, ParameterSetName = "RemoveExistingTag")]
         //public Tag[] RemoveExistingTag
@@ -60,8 +67,15 @@ namespace MG.Sonarr.Cmdlets
         //    }
         //}
 
-        [Parameter(Mandatory = true, ParameterSetName = "AddNewTag")]
-        public string[] Tag { get; set; }
+        [Parameter(Mandatory = true, Position = 0)]
+        public object[] Tag { get; set; }
+
+        [Parameter(Mandatory = false)]
+        public SwitchParameter DontCreateWhenMissing
+        {
+            get => _noCreateOnMissing;
+            set => _noCreateOnMissing = value;
+        }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter PassThru
@@ -76,24 +90,45 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (base.HasParameterSpecified(this, x => x.ExistingTag))
+
+            IEnumerable<Tag> existingTags = Context.TagManager.GetTags(this.Tag, out HashSet<string> createStrs, out HashSet<int> missingIds);
+
+            base.WriteFormatDebug(DBG_MSG_FORMAT, createStrs.Count + missingIds.Count, createStrs.Count, missingIds.Count);
+
+            _ids = new List<int>(existingTags.Select(t => t.Id));
+
+            if (_ids.Count != this.Tag.Length)
             {
-                this.ExistingTagId = this.ExistingTag.Select(x => x.TagId).ToArray();
-                this.MyInvocation.BoundParameters.Remove("ExistingTag");
+                if (!_noCreateOnMissing)
+                {
+                    base.WriteVerbose(VERB_MSG_1 + VERB_MSG_APP);
+                    foreach (string newLabel in createStrs)
+                    {
+                        if (base.FormatShouldProcess("Add", "Create New Tag: {0}", newLabel))
+                            _ids.Add(Context.TagManager.AddNew(newLabel));
+                        
+                        else  // This will indicate that a WhatIf has been accomplished so as not to go any further.
+                            _whatIfOnTag = true;
+                        
+                    }
+                }
+                else
+                    base.WriteVerbose(VERB_MSG_1 + VERB_MSG_DEC);
             }
         }
 
         protected override void ProcessRecord()
         {
+            if (_whatIfOnTag)
+                return;
+
             _ep = this.InputObject.GetEndpoint();
-            if (base.FormatShouldProcess("Add", "Tags on Item: {0}", this.InputObject.Identifier))
+
+            if (_ids.Count > 0 && base.FormatShouldProcess("Add", "Tags on Item: {0}", this.InputObject.Identifier))
             {
-                //int[] tagIds = null;
-                if (base.HasParameterSpecified(this, x => x.Tag))
-                {
-                    _ids = this.CreateNewTags(this.Tag);
-                }
-                this.InputObject.AddTags(_ids);
+                base.WriteFormatVerbose("Adding {0} tags to item \"{1}\"", _ids.Count, this.InputObject.Identifier);
+
+                this.InputObject.Tags.AddRange(_ids);
                 base.WriteDebug(this.InputObject.ToJson());
                 object updated = base.SendSonarrPut(_ep, this.InputObject, this.InputObject.GetType());
                 if (_passThru)
@@ -101,19 +136,12 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
-        #endregion
-
-        #region BACKEND METHODS
-        private int[] CreateNewTags(string[] tags)
+        protected override void EndProcessing()
         {
-            int[] tagIds = new int[tags.Length];
-            for (int i = 0; i < tags.Length; i++)
+            if (_ids.Count <= 0 && !_whatIfOnTag && !_noCreateOnMissing)
             {
-                var postTag = new TagNew(tags[i]);
-                Tag newTag = base.SendSonarrPost<Tag>(TAG_EP, postTag);
-                tagIds[i] = newTag.TagId;
+                base.WriteError(new InvalidOperationException("No tags were found that could be added."), ErrorCategory.ObjectNotFound);
             }
-            return tagIds;
         }
 
         #endregion
