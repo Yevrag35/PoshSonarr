@@ -31,42 +31,6 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
         public ISupportsTagUpdate InputObject { get; set; }
 
-        //[Parameter(Mandatory = true, ParameterSetName = "AddExistingTag")]
-        //public Tag[] ExistingTag
-        //{
-        //    get => null;
-        //    set => _ids = value.Select(x => x.TagId).ToArray();
-        //}
-
-        //[Parameter(Mandatory = true, ParameterSetName = "AddExistingTagById")]
-        //public int[] ExistingTagId
-        //{
-        //    get => null;
-        //    set => _ids = value;
-        //}
-
-        //[Parameter(Mandatory = true, ParameterSetName = "RemoveExistingTag")]
-        //public Tag[] RemoveExistingTag
-        //{
-        //    get => null;
-        //    set
-        //    {
-        //        _isRemove = true;
-        //        _ids = value.Select(x => x.TagId).ToArray();
-        //    }
-        //}
-
-        //[Parameter(Mandatory = true, ParameterSetName = "RemoveExistingTagById")]
-        //public int[] RemoveExistingTagId
-        //{
-        //    get => _ids;
-        //    set
-        //    {
-        //        _isRemove = true;
-        //        _ids = value;
-        //    }
-        //}
-
         [Parameter(Mandatory = true, Position = 0)]
         public object[] Tag { get; set; }
 

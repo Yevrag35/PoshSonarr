@@ -27,7 +27,7 @@ namespace MG.Sonarr.Cmdlets
 
         [Parameter(Mandatory = true, ParameterSetName = "ByRestrictionIdAddRemove")]
         [Parameter(Mandatory = true, ParameterSetName = "ByRestrictionIdReplace")]
-        public int RestrictionId { get; set; }
+        public int Id { get; set; }
 
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByInputRestrictionAddRemove")]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByRestrictionIdAddRemove")]
@@ -60,7 +60,7 @@ namespace MG.Sonarr.Cmdlets
         {
             if (!this.ParameterSetName.Contains("ByInputRestriction"))
             {
-                this.InputObject = base.SendSonarrGet<Restriction>(string.Format(GetRestriction.EP_ID, this.RestrictionId));
+                this.InputObject = base.SendSonarrGet<Restriction>(string.Format(GetRestriction.EP_ID, this.Id));
             }
 
             if (base.HasParameterSpecified(this, x => x.IgnoredTerms))

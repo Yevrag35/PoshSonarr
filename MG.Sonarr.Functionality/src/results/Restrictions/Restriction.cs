@@ -10,18 +10,21 @@ using System.Runtime.Serialization;
 namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class Restriction : BaseResult
+    public class Restriction : BaseResult, ISupportsTagUpdate
     {
         private const string COMMA = ",";
         private const string IGNORED = "ignored";
         private const string REQUIRED = "required";
         private static readonly string[] COMMA_ARR = new string[1] { COMMA };
+        private const string EP = "/restriction";
 
         [JsonExtensionData]
         private IDictionary<string, JToken> _additionalData { get; set; } = new Dictionary<string, JToken>();
 
         public bool ContainsIgnored => _additionalData.ContainsKey(IGNORED);
         public bool ContainsRequired => _additionalData.ContainsKey(REQUIRED);
+
+        object ISupportsTagUpdate.Identifier => this.Id;
 
         [JsonIgnore]
         public JsonStringCollection Ignored { get; } = new JsonStringCollection();
@@ -30,10 +33,10 @@ namespace MG.Sonarr.Results
         public JsonStringCollection Required { get; } = new JsonStringCollection();
 
         [JsonProperty("id")]
-        public int RestrictionId { get; private set; }
+        public int Id { get; private set; }
 
         [JsonProperty("tags")]
-        public HashSet<int> Tags { get; private set; } = new HashSet<int>();
+        public HashSet<int> Tags { get; set; } = new HashSet<int>();
 
         public Restriction() { }
 
@@ -51,6 +54,8 @@ namespace MG.Sonarr.Results
                 }
             }
         }
+
+        public string GetEndpoint() => EP;
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)

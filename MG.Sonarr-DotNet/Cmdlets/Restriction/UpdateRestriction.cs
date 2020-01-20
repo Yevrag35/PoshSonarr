@@ -37,7 +37,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (_force || base.ShouldProcess(string.Format("Restriction: {0}", this.InputObject.RestrictionId), "Update"))
+            if (_force || base.ShouldProcess(string.Format("Restriction: {0}", this.InputObject.Id), "Update"))
             {
                 Restriction newRestriction = this.Update(this.InputObject);
                 base.SendToPipeline(newRestriction);
@@ -49,7 +49,7 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         private Restriction Update(Restriction restriction)
         {
-            string url = string.Format(GetRestriction.EP_ID, restriction.RestrictionId);
+            string url = string.Format(GetRestriction.EP_ID, restriction.Id);
             return base.SendSonarrPut<Restriction>(url, restriction);
         }
 

@@ -35,23 +35,6 @@ namespace MG.Sonarr.Cmdlets
             {
                 base.SendToPipeline(base.NewTag(this.Label));
             }
-
-            //var dict = new Dictionary<string, string>(1)
-            //{
-            //    { "label", this.Label }
-            //};
-            //string jsonBody = JsonConvert.SerializeObject(dict, Formatting.Indented);
-
-            //if (base.ShouldProcess(string.Format("Tag - {0}", this.Label), "New"))
-            //{
-            //    string jsonRes = base.TryPostSonarrResult(EP, jsonBody);
-
-            //    if (!string.IsNullOrEmpty(jsonRes))
-            //    {
-            //        Tag res = SonarrHttp.ConvertToSonarrResult<Tag>(jsonRes);
-            //        base.WriteObject(res);
-            //    }
-            //}
         }
 
         #endregion
