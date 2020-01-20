@@ -10,7 +10,7 @@ namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Add, "Tag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true, DefaultParameterSetName = "AddNewTag")]
     [CmdletBinding(PositionalBinding = false)]
-    public class AddTag : BaseSonarrCmdlet
+    public class AddTag : TagCmdlet
     {
         #region FIELDS/CONSTANTS
         //private const string TAG_EP = "/tag";

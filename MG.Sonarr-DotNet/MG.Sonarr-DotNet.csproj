@@ -133,6 +133,7 @@
     <Compile Include="Cmdlets\RootFolder\RemoveRootFolder.cs" />
     <Compile Include="Cmdlets\Series\SeriesCmdlet.cs" />
     <Compile Include="Cmdlets\Tag\AddTag.cs" />
+    <Compile Include="Cmdlets\Tag\TagCmdlet.cs" />
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
     <Compile Include="Components\QualityProfileExtensions.cs" />

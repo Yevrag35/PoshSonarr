@@ -17,16 +17,23 @@ namespace MG.Sonarr.Results
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [Serializable]
-    public class SeriesResult : SearchSeries
+    public class SeriesResult : SearchSeries, ISupportsTagUpdate
     {
         private const string AIRTIME = "airTime";
         private const string RATING = "ratings";
+        private const string EP = "/series";
 
         //[JsonExtensionData]
         //private IDictionary<string, JToken> _additionalData;
 
+        [JsonIgnore]
+        object ISupportsTagUpdate.Identifier => this.Id;
+
         [JsonProperty("alternateTitles")]
         public AlternateTitle[] AlternateTitles { get; private set; }
+
+        [JsonProperty("id")]
+        public int Id { get; private set; }
 
         [Obsolete]
         [JsonIgnore]
@@ -52,17 +59,16 @@ namespace MG.Sonarr.Results
         [JsonProperty("seasons")]
         public SeasonCollection Seasons { get; private set; }
 
-        [JsonProperty("id")]
-        public int Id { get; private set; }
-
         [JsonProperty("tags")]
-        public HashSet<int> Tags { get; private set; }
+        public HashSet<int> Tags { get; set; }
 
         [JsonProperty("certification")]
         public string TVRating { get; private set; }
 
         [JsonProperty("seasonFolder")]
         public bool UsingSeasonFolders { get; set; }
+
+        public string GetEndpoint() => EP;
 
         //[OnDeserialized]
         //private void OnDeserialized(StreamingContext context)

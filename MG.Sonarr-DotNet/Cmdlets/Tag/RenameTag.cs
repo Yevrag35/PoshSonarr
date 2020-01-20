@@ -13,14 +13,10 @@ namespace MG.Sonarr.Cmdlets
     [Cmdlet(VerbsCommon.Rename, "Tag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
     [OutputType(typeof(Tag))]
     [CmdletBinding(PositionalBinding = false)]
-    public class RenameTag : BaseSonarrCmdlet
+    public class RenameTag : TagCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string EP = "/tag";
         private bool _passThru;
-
-        private const string PARAM_ID = "id";
-        private const string PARAM_LBL = "label";
 
         private const string WHAT_IF_ACT = "Rename to '{0}'";
         private const string WHAT_IF_MSG = "Tag Id: {0}";
@@ -52,23 +48,10 @@ namespace MG.Sonarr.Cmdlets
         {
             if (base.FormatShouldProcess(string.Format(WHAT_IF_ACT, this.NewLabel), WHAT_IF_MSG, this.Id))
             {
-                SonarrBodyParameters postBody = this.GetPostParameters(this.Id, this.NewLabel);
-                Tag setTag = base.SendSonarrPut<Tag>(EP, postBody);
+                Tag modified = base.RenameTag(this.Id, this.NewLabel);
                 if (_passThru)
-                    base.SendToPipeline(setTag);
+                    base.SendToPipeline(modified);
             }
-        }
-
-        #endregion
-
-        #region METHODS
-        private SonarrBodyParameters GetPostParameters(int id, string label)
-        {
-            return new SonarrBodyParameters
-            {
-                { PARAM_ID, id },
-                { PARAM_LBL, label }
-            };
         }
 
         #endregion
