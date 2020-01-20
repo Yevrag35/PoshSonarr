@@ -13,9 +13,9 @@ using System.Reflection;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Search, "Series", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "BySeriesName")]
-    [OutputType(typeof(SeriesResult))]
+    [OutputType(typeof(SearchSeries))]
     [CmdletBinding(PositionalBinding = false)]
-    public class SearchSeries : BaseSonarrCmdlet
+    public class SearchSeriesCmdlet : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
         private const string SEARCH_STR_QUERY = @"term={0}";
@@ -46,7 +46,7 @@ namespace MG.Sonarr.Cmdlets
         protected override void ProcessRecord()
         {
             string endpoint = this.GetEndpoint();
-            List<SeriesResult> searchResults = base.SendSonarrListGet<SeriesResult>(endpoint);
+            List<SearchSeries> searchResults = base.SendSonarrListGet<SearchSeries>(endpoint);
             if (_isStrict)
                 base.SendToPipeline(searchResults.FindAll(x => x.Name.IndexOf(this.Name, StringComparison.CurrentCultureIgnoreCase) >= 0));
 

@@ -56,14 +56,8 @@ namespace MG.Sonarr.Results
         [JsonProperty("remotePoster")]
         public string RemotePoster { get; private set; }
 
-        [JsonProperty("seasons")]
-        public SeasonCollection Seasons { get; private set; }
-
         [JsonProperty("tags")]
         public HashSet<int> Tags { get; set; }
-
-        [JsonProperty("certification")]
-        public string TVRating { get; private set; }
 
         [JsonProperty("seasonFolder")]
         public bool UsingSeasonFolders { get; set; }

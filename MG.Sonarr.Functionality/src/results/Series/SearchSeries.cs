@@ -23,9 +23,6 @@ namespace MG.Sonarr.Results
         [JsonProperty("airTime")]
         public string AirTime { get; protected private set; }
 
-        [JsonProperty("certification")]
-        public string Certification { get; private set; }
-
         [JsonProperty("cleanTitle")]
         public string CleanTitle { get; private set; }
 
@@ -75,7 +72,7 @@ namespace MG.Sonarr.Results
         public int SeasonCount { get; private set; }
 
         [JsonProperty("seasons")]
-        public SeasonCollection Season { get; protected private set; }
+        public SeasonCollection Seasons { get; protected private set; }
 
         [JsonProperty("seriesType")]
         [JsonConverter(typeof(SonarrStringEnumConverter))]
@@ -100,11 +97,17 @@ namespace MG.Sonarr.Results
         [JsonProperty("tvRageId")]
         public long TvRageId { get; private set; }
 
+        [JsonProperty("certification")]
+        public string TvRating { get; private set; }
+
         [JsonProperty("useSceneNumbering")]
         public bool UsesSceneNumbering { get; private set; }
 
         [JsonProperty("year")]
         public int Year { get; private set; }
+
+        [JsonConstructor]
+        public SearchSeries() { }
 
         #endregion
     }

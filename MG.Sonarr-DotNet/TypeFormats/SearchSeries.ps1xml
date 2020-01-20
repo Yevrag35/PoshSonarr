@@ -4,7 +4,7 @@
         <View>
             <Name>SeriesResult</Name>
             <ViewSelectedBy>
-                <TypeName>MG.Sonarr.Results.SeriesResult</TypeName>
+                <TypeName>MG.Sonarr.Results.SearchSeries</TypeName>
             </ViewSelectedBy>
             <ListControl>
                 <ListEntries>
@@ -32,17 +32,6 @@
 								</ItemSelectionCondition>
 							</ListItem>
 							<ListItem>
-								<Label>AlternateTitles</Label>
-								<ScriptBlock>
-									$_.AlternateTitles.Title -join ', '
-								</ScriptBlock>
-								<ItemSelectionCondition>
-									<ScriptBlock>
-										$_.AlternateTitles -ne $null -and $_.AlternateTitles.Length -gt 0
-									</ScriptBlock>
-								</ItemSelectionCondition>
-							</ListItem>
-							<ListItem>
 								<PropertyName>CleanTitle</PropertyName>
 							</ListItem>
 							<ListItem>
@@ -62,12 +51,6 @@
 								<ScriptBlock>$_.Genres -join ', '</ScriptBlock>
 							</ListItem>
 							<ListItem>
-								<PropertyName>Id</PropertyName>
-								<ItemSelectionCondition>
-									<ScriptBlock>$_.Id -ne $null</ScriptBlock>
-								</ItemSelectionCondition>
-							</ListItem>
-							<ListItem>
 								<Label>Images</Label>
 								<ScriptBlock>$_.Images.CoverType</ScriptBlock>
 							</ListItem>
@@ -79,6 +62,9 @@
                             </ListItem>
 							<ListItem>
 								<PropertyName>Name</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Network</PropertyName>
 							</ListItem>
 							<ListItem>
 								<!--<PropertyName>Overview</PropertyName>-->
@@ -93,15 +79,6 @@
 										$_.Overview
 									}
 								</ScriptBlock>
-							</ListItem>
-							<ListItem>
-								<PropertyName>Path</PropertyName>
-								<ItemSelectionCondition>
-									<ScriptBlock>$_.Path -ne $null</ScriptBlock>
-								</ItemSelectionCondition>
-							</ListItem>
-							<ListItem>
-								<PropertyName>QualityProfileId</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Rating</PropertyName>
@@ -122,19 +99,16 @@
 								<PropertyName>SeriesType</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>Status</PropertyName>
+								<PropertyName>SortTitle</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>Tags</PropertyName>
+								<PropertyName>Status</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>TVDBId</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>TvRating</PropertyName>
-							</ListItem>
-							<ListItem>
-								<PropertyName>UsingSeasonFolders</PropertyName>
+								<PropertyName>TVRating</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Year</PropertyName>

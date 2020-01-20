@@ -199,6 +199,7 @@
     <None Include="TypeFormats\RootFolder.ps1xml" />
     <None Include="TypeFormats\Season.ps1xml" />
     <None Include="TypeFormats\SeriesImage.ps1xml" />
+    <None Include="TypeFormats\SearchSeries.ps1xml" />
     <None Include="TypeFormats\SeriesResult.ps1xml" />
     <None Include="TypeFormats\StatusResult.ps1xml" />
     <None Include="TypeFormats\Tag.ps1xml" />
