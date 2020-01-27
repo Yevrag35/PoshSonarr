@@ -83,8 +83,13 @@ namespace MG.Sonarr.Cmdlets
             where T : class
         {
             if (!response.IsFaulted)
-                return response.Content;
+            {
+                Type genComparable = typeof(IComparable<T>);
+                if (typeof(T).GetInterfaces().Contains(genComparable))
+                    response.Content.Sort();
 
+                return response.Content;
+            }
             else
             {
                 if (response.HasException)

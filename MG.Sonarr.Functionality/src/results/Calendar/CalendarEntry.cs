@@ -8,7 +8,7 @@ using System.Runtime.Serialization;
 namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class CalendarEntry : BaseResult, IAdditionalInfo
+    public class CalendarEntry : BaseResult, IAdditionalInfo, IComparable<CalendarEntry>, IEquatable<CalendarEntry>
     {
         [JsonExtensionData]
         private IDictionary<string, JToken> _additionalData;
@@ -16,11 +16,15 @@ namespace MG.Sonarr.Results
         [JsonProperty("absoluteEpisodeNumber")]
         public int? AbsoluteEpisodeNumber { get; private set; }
 
-        public DateTime? AirDate { get; private set; }
+        [JsonProperty("airDateUtc")]
+        public DateTime? AirDateUtc { get; private set; }
 
         [JsonIgnore]
-        public DayOfWeek? DayOfWeek => this.AirDate.HasValue
-            ? this.AirDate.Value.DayOfWeek
+        public DateTime? AirDate => this.AirDateUtc.HasValue ? (DateTime?)this.AirDateUtc.Value.ToLocalTime() : null;
+
+        [JsonIgnore]
+        public DayOfWeek? DayOfWeek => this.AirDateUtc.HasValue
+            ? this.AirDateUtc.Value.DayOfWeek
             : (DayOfWeek?)null;
 
         [JsonProperty("id")]
@@ -29,10 +33,9 @@ namespace MG.Sonarr.Results
         [JsonProperty("episodeNumber")]
         public int EpisodeNumber { get; private set; }
 
-        // For backwards compatibility
         [Obsolete]
         [JsonIgnore]
-        public bool HasFile => this.IsDownloaded;
+        public bool HasFile => this.IsDownloaded;   // For backwards compatibility
 
         [JsonProperty("hasFile")]
         public bool IsDownloaded { get; private set; }
@@ -56,22 +59,52 @@ namespace MG.Sonarr.Results
         public string Series { get; private set; }
 
         [JsonProperty("seriesId")]
-        public int SeriesId { get; private set; }
+        public int SeriesId { get; private set; }     // For backwards compatibility
 
         [JsonProperty("unverifiedSceneNumbering")]
         public bool UnverifiedSceneNumbering { get; private set; }
 
+        #region ICOMPARABLE METHODS
+        public int CompareTo(CalendarEntry other)
+        {
+            int dateCompare = this.AirDateUtc.GetValueOrDefault().CompareTo(other.AirDateUtc.GetValueOrDefault());
+            if (dateCompare != 0)
+                return dateCompare;
+            
+            else
+            {
+                int seriesCompare = this.Series.CompareTo(other.Series);
+                if (seriesCompare != 0)
+                    return seriesCompare;
+
+                else
+                    return this.EpisodeId.CompareTo(other.EpisodeId);
+            }
+        }
+
+        #endregion
+
+        #region IEQUATABLE METHODS
+        public bool Equals(CalendarEntry other)
+        {
+            return this.EpisodeId == other.EpisodeId &&
+                   this.AirDateUtc.GetValueOrDefault().Equals(other.AirDateUtc.GetValueOrDefault());
+        }
+
+        #endregion
+
+        #region OTHER METHODS
         public IDictionary GetAdditionalInfo()
         {
             var ht = new Hashtable();
-            if (this.TryGetValue("airDate", out string ad))
-            {
-                ht.Add("AirDate", ad);
-            }
-            if (this.TryGetValue("airDateUtc", out string adutc))
-            {
-                ht.Add("AirDateUtc", adutc);
-            }
+            //if (this.TryGetValue("airDate", out string ad))
+            //{
+            //    ht.Add("AirDate", ad);
+            //}
+            //if (this.TryGetValue("airDateUtc", out string adutc))
+            //{
+            //    ht.Add("AirDateUtc", adutc);
+            //}
             if (this.TryGetValue("episodeFile", out EpisodeResult sonarrEp))
             {
                 ht.Add("EpisodeFile", sonarrEp);
@@ -90,15 +123,24 @@ namespace MG.Sonarr.Results
             }
             return ht;
         }
+        public SeriesResult GetSeries()
+        {
+            SeriesResult result = null;
+            if (this.TryGetValue("series", out SeriesResult outSer))
+            {
+                result = outSer;
+            }
+            return result;
+        }
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
-            JToken adutc = _additionalData["airDateUtc"];
-            if (adutc != null)
-            {
-                this.AirDate = adutc.ToObject<DateTime>().ToLocalTime();
-            }
+            //JToken adutc = _additionalData["airDateUtc"];
+            //if (adutc != null)
+            //{
+            //    this.AirDate = adutc.ToObject<DateTime>().ToLocalTime();
+            //}
 
             JToken tokSer = _additionalData["series"];
             if (tokSer != null)
@@ -110,7 +152,6 @@ namespace MG.Sonarr.Results
                 }
             }
         }
-
         private bool TryGetValue<T>(string key, out T value)
         {
             value = default;
@@ -131,5 +172,7 @@ namespace MG.Sonarr.Results
 
             return result;
         }
+
+        #endregion
     }
 }

@@ -13,7 +13,7 @@ namespace MG.Sonarr.Results
     /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
-    public class DownloadClient : Provider, IGetEndpoint
+    public class DownloadClient : Provider, IComparable<DownloadClient>, IGetEndpoint
     {
         [JsonProperty("id")]
         public int Id { get; private set; }
@@ -28,6 +28,7 @@ namespace MG.Sonarr.Results
         [JsonConverter(typeof(SonarrStringEnumConverter))]
         public DownloadProtocol Protocol { get; private set; }
 
+        public int CompareTo(DownloadClient other) => this.Id.CompareTo(other.Id);
         public string GetEndpoint() => "/downloadclient";
     }
 }

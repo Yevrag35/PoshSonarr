@@ -10,7 +10,7 @@ namespace MG.Sonarr.Results
     /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
-    public class EpisodeFile : BaseResult, IComparable<EpisodeFile>
+    public class EpisodeFile : BaseResult, IComparable<EpisodeFile>, IEquatable<EpisodeFile>
     {
         /// <summary>
         /// The date in which this <see cref="EpisodeFile"/> was added to the database.  This can be null.
@@ -82,6 +82,7 @@ namespace MG.Sonarr.Results
         public long Size { get; private set; }
 
         public int CompareTo(EpisodeFile other) => this.EpisodeFileId.CompareTo(other.EpisodeFileId);
+        public bool Equals(EpisodeFile other) => this.EpisodeFileId.Equals(other.EpisodeFileId);
     }
 
     /// <summary>

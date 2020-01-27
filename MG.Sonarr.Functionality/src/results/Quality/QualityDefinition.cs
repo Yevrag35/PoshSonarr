@@ -8,7 +8,7 @@ namespace MG.Sonarr.Results
 {
     [Serializable]
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class QualityDefinition : BaseResult
+    public class QualityDefinition : BaseResult, IComparable<QualityDefinition>
     {
         [JsonProperty("maxSize", Order = 5)]
         public double MaxSize { get; set; } = 100.0d;
@@ -30,6 +30,7 @@ namespace MG.Sonarr.Results
 
         public QualityDefinition() { }
 
+        public int CompareTo(QualityDefinition other) => this.QualityDefinitionId.CompareTo(other.QualityDefinitionId);
         public void SetQuality(Quality quality) => this.Quality = quality;
     }
 }
