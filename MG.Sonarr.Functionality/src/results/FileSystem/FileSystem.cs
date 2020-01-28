@@ -105,7 +105,12 @@ namespace MG.Sonarr.Results
 
     public class SonarrFile : FileSystemEntry, IComparable<SonarrFile>
     {
-        private const string MB = "MB";
+        private const string GB = "{0} GB";
+        private const string KB = "{0} KB";
+        private const string MB = "{0} MB";
+        private const double ONE_GB = 1073741824.00d;
+        private const double ONE_KB = 1024.00d;
+        private const double ONE_MB = 1048576.00d;
 
         [JsonProperty("extension")]
         public string Extension { get; private protected set; }
@@ -120,16 +125,26 @@ namespace MG.Sonarr.Results
         [JsonConverter(typeof(SonarrStringEnumConverter))]
         public override FileSystemType Type => FileSystemType.File;
 
-        [JsonExtensionData]
-        private IDictionary<string, object> _data;
-
         public int CompareTo(SonarrFile other) => this.Path.CompareTo(other.Path);
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext ctx)
         {
-            double roundedSize = Math.Round((base._size / 1048576.00d), 2);
-            this.SizeString = string.Format("{0} " + MB, roundedSize);
+            double rounder = ONE_MB;
+            string format = MB;
+
+            if (_size <= 534774L)
+            { 
+                rounder = ONE_KB;
+                format = KB;
+            }
+            else if (_size > 1258291200L)
+            {
+                rounder = ONE_GB;
+                format = GB;
+            }
+            double roundedSize = Math.Round(base._size / rounder, 2);
+            this.SizeString = string.Format(format, roundedSize);
         }
     }
 }

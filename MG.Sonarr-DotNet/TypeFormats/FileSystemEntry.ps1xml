@@ -17,6 +17,10 @@
                         <Alignment>Left</Alignment>
                     </TableColumnHeader>
 					<TableColumnHeader>
+						<!-- SizeString -->
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
 						<!-- Name -->
 						<Alignment>Left</Alignment>
 					</TableColumnHeader>
@@ -34,6 +38,9 @@
                             <TableColumnItem>
                                 <PropertyName>LastModified</PropertyName>
                             </TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>SizeString</PropertyName>
+							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>Name</PropertyName>
 							</TableColumnItem>
