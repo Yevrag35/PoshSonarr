@@ -213,6 +213,12 @@ namespace MG.Sonarr.Functionality
         UtcAirDate
     }
 
+    public enum FileSystemType
+    {
+        File,
+        Folder
+    }
+
     public enum FirstDayOfWeek
     {
         Sunday,

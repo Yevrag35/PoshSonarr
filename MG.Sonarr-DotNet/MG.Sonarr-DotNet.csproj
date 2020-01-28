@@ -202,6 +202,7 @@
     <None Include="TypeFormats\SearchSeries.ps1xml" />
     <None Include="TypeFormats\SeriesResult.ps1xml" />
     <None Include="TypeFormats\StatusResult.ps1xml" />
+    <None Include="TypeFormats\SonarrDirectory.ps1xml" />
     <None Include="TypeFormats\Tag.ps1xml" />
   </ItemGroup>
   <ItemGroup>

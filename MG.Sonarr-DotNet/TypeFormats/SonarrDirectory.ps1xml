@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+    <ViewDefinitions>
+        <View>
+            <Name>Tag</Name>
+            <ViewSelectedBy>
+                <TypeName>MG.Sonarr.Results.FileSystemEntry</TypeName>
+            </ViewSelectedBy>
+            <TableControl>
+                <TableHeaders>
+					<TableColumnHeader>
+						<!-- Type -->
+                        <Alignment>Center</Alignment>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+						<!-- LastModified -->
+                        <Alignment>Left</Alignment>
+                    </TableColumnHeader>
+					<TableColumnHeader>
+						<!-- Name -->
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<!-- Path -->
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <PropertyName>Type</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>LastModified</PropertyName>
+                            </TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Name</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Path</PropertyName>
+							</TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
+    </ViewDefinitions>
+</Configuration>

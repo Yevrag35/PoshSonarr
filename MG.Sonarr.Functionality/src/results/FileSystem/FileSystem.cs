@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Converters;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -13,59 +15,121 @@ namespace MG.Sonarr.Results
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public class FileSystem : BaseResult
     {
+        [JsonExtensionData]
+        private IDictionary<string, JToken> _data;
+
         [JsonProperty("directories")]
-        private List<SonarrDirectory> _dirs;
-        
+        public List<SonarrDirectory> Directories { get; private set; }
+
+        [JsonProperty("files")]
+        public List<SonarrFile> Files { get; private set; }
+
         [JsonIgnore]
-        public SonarrDirectory[] Directories { get; private set; }
+        public bool HasFiles => this.Files != null && this.Files.Count > 0;
 
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext ctx)
+        [JsonIgnore]
+        public bool HasFolders => this.Directories != null && this.Directories.Count > 0;
+
+        [JsonConstructor]
+        public FileSystem()
         {
-            if (_dirs != null && _dirs.Count > 0)
-            {
-                if (_dirs.Count > 1)
-                    _dirs.Sort();
-
-                this.Directories = _dirs.ToArray();
-            }
+            this.Directories = new List<SonarrDirectory>();
+            this.Files = new List<SonarrFile>();
         }
+
+        private void Sort()
+        {
+            if (this.HasFiles)
+                this.Files.Sort();
+
+            if (this.HasFolders)
+                this.Directories.Sort();
+        }
+
+        public List<FileSystemEntry> ToAllList()
+        {
+            this.Sort();
+            var list = new List<FileSystemEntry>(this.Directories.Count + this.Files.Count);
+            list.AddRange(this.Directories);
+            list.AddRange(this.Files);
+            return list;
+        }
+        
+        //[JsonIgnore]
+        //public SonarrDirectory[] Directories { get; private set; }
+
+        //[OnDeserialized]
+        //private void OnDeserialized(StreamingContext ctx)
+        //{
+        //    if (_dirs != null && _dirs.Count > 0)
+        //    {
+        //        if (_dirs.Count > 1)
+        //            _dirs.Sort();
+
+        //        this.Directories = _dirs.ToArray();
+        //    }
+        //}
+    }
+
+    public abstract class FileSystemEntry : BaseResult, IComparable<FileSystemEntry>
+    {
+        [JsonProperty("size")]
+        private protected long _size;
+
+        [JsonProperty("lastModified")]
+        public DateTime LastModified { get; private protected set; }
+
+        [JsonProperty("name")]
+        public string Name { get; private protected set; }
+
+        [JsonProperty("path")]
+        [JsonConverter(typeof(PathConverter))]
+        public string Path { get; private protected set; }
+
+        [JsonIgnore]
+        public abstract FileSystemType Type { get; }
+
+        public int CompareTo(FileSystemEntry other) => this.Path.CompareTo(other.Path);
     }
 
     /// <summary>
     /// <para type="description">Represents a repsonse object from a "/filesystem" request as an individual directory result.</para>
     /// </summary>
-    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class SonarrDirectory : BaseResult, IComparable<SonarrDirectory>
+    [JsonObject(MemberSerialization.OptOut)]
+    public class SonarrDirectory : FileSystemEntry
     {
-        private const string PATH = "path";
-        private static readonly char BACKSLASH = char.Parse(@"\");
+        [JsonProperty("type")]
+        [JsonConverter(typeof(SonarrStringEnumConverter))]
+        public override FileSystemType Type => FileSystemType.Folder;
+    }
 
-        [JsonExtensionData]
-        private IDictionary<string, JToken> _data { get; set; } = new Dictionary<string, JToken>(3);
+    public class SonarrFile : FileSystemEntry, IComparable<SonarrFile>
+    {
+        private const string MB = "MB";
 
-        [JsonProperty("dateModified")]
-        public DateTime LastModified { get; private set; }
-
-        [JsonProperty("name")]
-        public string Name { get; private set; }
+        [JsonProperty("extension")]
+        public string Extension { get; private protected set; }
 
         [JsonIgnore]
-        public string Path { get; private set; }
+        public long Size => base._size;
 
-        public int CompareTo(SonarrDirectory other) => this.Name.CompareTo(other.Name);
+        [JsonIgnore]
+        public string SizeString { get; private set; }
+
+        [JsonProperty("type")]
+        [JsonConverter(typeof(SonarrStringEnumConverter))]
+        public override FileSystemType Type => FileSystemType.File;
+
+        [JsonExtensionData]
+        private IDictionary<string, object> _data;
+
+        public int CompareTo(SonarrFile other) => this.Path.CompareTo(other.Path);
 
         [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
+        private void OnDeserialized(StreamingContext ctx)
         {
-            if (_data.ContainsKey(PATH))
-            {
-                JToken pathTok = _data[PATH];
-                if (pathTok != null)
-                {
-                    this.Path = pathTok.ToObject<string>().TrimEnd(BACKSLASH);
-                }
-            }
+            double roundedSize = Math.Round((base._size / 1048576.00d), 2);
+            this.SizeString = string.Format("{0} " + MB, roundedSize);
         }
     }
 }

@@ -9,12 +9,15 @@ using System.Management.Automation;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Search, "Directory", ConfirmImpact = ConfirmImpact.None)]
-    [OutputType(typeof(SonarrDirectory))]
-    [CmdletBinding()]
+    [OutputType(typeof(FileSystemEntry))]
+    [CmdletBinding(PositionalBinding = false)]
     public class SearchDirectory : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
         private const string EP = "/filesystem?path={0}";
+        private const string EP_WITH_FILES = EP + "&includeFiles=true";
+
+        private bool _excludeFiles;
 
         #endregion
 
@@ -23,21 +26,41 @@ namespace MG.Sonarr.Cmdlets
         [Alias("FullName")]
         public string Path { get; set; }
 
+        [Parameter(Mandatory = false)]
+        public SwitchParameter ExcludeFiles
+        {
+            get => _excludeFiles;
+            set => _excludeFiles = value;
+        }
+
         #endregion
 
         #region CMDLET PROCESSING
-        protected override void BeginProcessing() => base.BeginProcessing();
+        protected override void BeginProcessing()
+        {
+            base.BeginProcessing();
+        }
 
         protected override void ProcessRecord()
         {
             if (!this.Path.EndsWith(@"\"))
                 this.Path = this.Path + @"\";
 
-            string fullEp = string.Format(EP, this.Path);
+            string ep = EP_WITH_FILES;
+            if (_excludeFiles)
+                ep = EP;
+
+            string fullEp = string.Format(ep, this.Path);
 
             FileSystem fs = base.SendSonarrGet<FileSystem>(fullEp);
-            if (fs != null && fs.Directories != null && fs.Directories.Length > 0)
-                base.WriteObject(fs.Directories, true);
+            if (fs != null)
+            {
+                var list = fs.ToAllList();
+                base.SendToPipeline(list);
+
+            }
+            //if (fs != null && fs.Directories != null && fs.Directories.Count > 0)
+            //    base.WriteObject(fs.Directories, true);
         }
 
         #endregion

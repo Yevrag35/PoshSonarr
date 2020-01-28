@@ -8,13 +8,16 @@ namespace MG.Sonarr.Functionality.Converters
 {
     public class PathConverter : JsonConverter<string>
     {
+        public static readonly char BACKSLASH = char.Parse("\\");
+
         public override string ReadJson(JsonReader reader, Type objectType, string existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
-            if (hasExistingValue)
-                return Path.GetDirectoryName(existingValue);
-            
-            else
-                return existingValue;
+            string val = null;
+            if (reader.Value is string strPath)
+            {
+                val = strPath.TrimEnd(BACKSLASH);
+            }
+            return val;
         }
         public override void WriteJson(JsonWriter writer, string value, JsonSerializer serializer)
         {
