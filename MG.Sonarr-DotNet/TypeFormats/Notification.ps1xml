@@ -17,6 +17,9 @@
 								<PropertyName>Fields</PropertyName>
 							</ListItem>
 							<ListItem>
+								<PropertyName>Id</PropertyName>
+							</ListItem>
+							<ListItem>
 								<PropertyName>Implementation</PropertyName>
 							</ListItem>
 							<ListItem>
@@ -42,9 +45,6 @@
 							</ListItem>
 							<ListItem>
 								<PropertyName>Name</PropertyName>
-							</ListItem>
-							<ListItem>
-								<PropertyName>NotificationId</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>OnDownload</PropertyName>

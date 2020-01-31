@@ -57,8 +57,8 @@ namespace MG.Sonarr.Results
         }
         void ICollection<AllowedQuality>.CopyTo(AllowedQuality[] array, int arrayIndex) => _list.CopyTo(array, arrayIndex);
         //public AllowedQuality Find(Predicate<AllowedQuality> match) => _list.Find(match);
-        public AllowedQualityCollection FindAll(Predicate<AllowedQuality> match) => new AllowedQualityCollection(_list.FindAll(match));
-        public int FindIndex(Predicate<AllowedQuality> match) => _list.FindIndex(match);
+        internal AllowedQualityCollection FindAll(Predicate<AllowedQuality> match) => new AllowedQualityCollection(_list.FindAll(match));
+        internal int FindIndex(Predicate<AllowedQuality> match) => _list.FindIndex(match);
         public AllowedQuality GetAllowedQualityByName(string qualityName, bool caseSensitive = false)
         {
             StringComparison comparison = StringComparison.CurrentCultureIgnoreCase;
@@ -79,8 +79,10 @@ namespace MG.Sonarr.Results
             return result.Value;
         }
         public bool Remove(AllowedQuality qualityDefinition) => _list.Remove(qualityDefinition);
+        public void Sort() => _list.Sort();
+        public void Sort(IComparer<AllowedQuality> comparer) => _list.Sort(comparer);
         public AllowedQuality[] ToArray() => _list.ToArray();
-        public bool TrueForAll(Predicate<AllowedQuality> match) => _list.TrueForAll(match);
+        internal bool TrueForAll(Predicate<AllowedQuality> match) => _list.TrueForAll(match);
 
         #endregion
     }

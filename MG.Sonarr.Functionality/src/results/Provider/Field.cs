@@ -137,7 +137,8 @@ namespace MG.Sonarr.Results
         #region CONSTRUCTORS
         public FieldCollection() => _list = new List<Field>(DEFAULT_SETTING_COUNT);
         internal FieldCollection(int capacity) => _list = new List<Field>(capacity);
-        public FieldCollection(IEnumerable<Field> items) => _list = new List<Field>(items);
+        [JsonConstructor]
+        internal FieldCollection(IEnumerable<Field> items) => _list = new List<Field>(items);
 
         #endregion
 

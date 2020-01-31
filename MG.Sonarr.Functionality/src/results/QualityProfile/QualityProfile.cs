@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results
 {
@@ -46,6 +47,12 @@ namespace MG.Sonarr.Results
 
             return result.Value;
         }
+
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext ctx)
+        {
+            this.AllowedQualities.Sort();
+        }
     }
 
     /// <summary>
@@ -61,6 +68,5 @@ namespace MG.Sonarr.Results
 
         public int CompareTo(QualityProfile other) => this.Id.CompareTo(other.Id);
         public bool Equals(QualityProfile other) => this.Id.Equals(other.Id);
-        public override int GetHashCode() => this.Id.GetHashCode();
     }
 }

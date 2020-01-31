@@ -28,7 +28,7 @@ namespace MG.Sonarr.Cmdlets.Profiles
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByProfileId", ValueFromPipelineByPropertyName = true)]
         [Alias("QualityProfileId")]
-        public int[] Id { get; set; }
+        public int[] ProfileId { get; set; }
 
         #endregion
 
@@ -37,7 +37,7 @@ namespace MG.Sonarr.Cmdlets.Profiles
 
         protected override void ProcessRecord()
         {
-            if ( ! base.HasParameterSpecified(this, x => x.Id))
+            if ( ! base.HasParameterSpecified(this, x => x.ProfileId))
             {
                 if (this.TryGetAllProfiles(out List<QualityProfile> profs))
                 {
@@ -46,7 +46,7 @@ namespace MG.Sonarr.Cmdlets.Profiles
             }
             else
             {
-                foreach (int singleId in this.Id)
+                foreach (int singleId in this.ProfileId)
                 {
                     string qpIdEndpoint = this.GetProfileIdEndpoint(singleId);
                     base.SendToPipeline(base.SendSonarrGet<QualityProfile>(qpIdEndpoint));
