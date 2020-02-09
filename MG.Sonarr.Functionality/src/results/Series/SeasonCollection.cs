@@ -58,6 +58,16 @@ namespace MG.Sonarr.Results
         public IEnumerator<Season> GetEnumerator() => _list.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
         public List<Season> GetMonitoredSeasons() => _list.FindAll(x => x.IsMonitored);
+        public decimal GetSeasonFileSize(params int[] seasonNumbers)
+        {
+            if (seasonNumbers == null)
+                return 0M;
+
+            return _list
+                .FindAll(s => seasonNumbers.Contains(s.SeasonNumber))
+                    .Sum(s => s.Statistics.SizeOnDisk);
+        }
+        public decimal GetTotalFileSize() => _list.Sum(s => s.Statistics.SizeOnDisk);
         public List<Season> GetUnmonitoredSeasons() => _list.FindAll(x => !x.IsMonitored);
         //public bool Remove(Season item) => _list.Remove(item);
         public Season[] ToArray() => _list.ToArray();

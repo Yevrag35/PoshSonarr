@@ -33,13 +33,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Remove="..\MG.Sonarr-DotNet\Cmdlets\Series\AddSeries.cs" />
+	  <Compile Remove="..\MG.Sonarr-DotNet\Cmdlets\Series\RemoveSeries.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <None Remove="DebugScript.ps1" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Include="DebugScript.ps1">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
+	  <None Include="..\MG.Sonarr-DotNet\Cmdlets\Series\AddSeries.cs" />
+	  <None Include="..\MG.Sonarr-DotNet\Cmdlets\Series\RemoveSeries.cs" />
 	</ItemGroup>
 
   <ItemGroup>

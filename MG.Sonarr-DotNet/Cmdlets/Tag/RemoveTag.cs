@@ -92,7 +92,7 @@ namespace MG.Sonarr.Cmdlets
                 else
                     msg = string.Format("Remove Tag - {0}", string.Join(", ", _ids));
 
-                if (_force || base.FormatShouldProcess(msg, "Item - {0}", this.RemoveFrom.Identifier))
+                if (_force || base.FormatShouldProcess(msg, "Item - {0}", this.RemoveFrom.Id))
                 {
                     string ep = this.RemoveFrom.GetEndpoint();
                     if (_clearAll)

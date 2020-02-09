@@ -16,7 +16,7 @@ namespace MG.Sonarr.Results
         //[JsonProperty("tags", Order = 8)]
         //private HashSet<int> _appliedTagIds;
 
-        object ISupportsTagUpdate.Identifier => this.Name;
+        object ISupportsTagUpdate.Id => this.Name;
 
         #region JSON PROPERTIES
         //[JsonProperty("link")]

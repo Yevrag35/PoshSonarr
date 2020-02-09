@@ -88,9 +88,9 @@ namespace MG.Sonarr.Cmdlets
 
             _ep = this.InputObject.GetEndpoint();
 
-            if (_ids.Count > 0 && base.FormatShouldProcess("Add", "Tags on Item: {0}", this.InputObject.Identifier))
+            if (_ids.Count > 0 && base.FormatShouldProcess("Add", "Tags on Item: {0}", this.InputObject.Id))
             {
-                base.WriteFormatVerbose("Adding {0} tags to item \"{1}\"", _ids.Count, this.InputObject.Identifier);
+                base.WriteFormatVerbose("Adding {0} tags to item \"{1}\"", _ids.Count, this.InputObject.Id);
 
                 this.InputObject.Tags.AddRange(_ids);
                 base.WriteDebug(this.InputObject.ToJson());

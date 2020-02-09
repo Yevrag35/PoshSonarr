@@ -208,9 +208,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Assemblies\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\MG.Sonarr.Functionality\MG.Sonarr.Functionality.csproj">
       <Project>{16fd2d22-d7f4-48e1-9208-04d1939f1785}</Project>

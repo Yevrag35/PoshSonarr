@@ -29,7 +29,7 @@ namespace MG.Sonarr.Results
         public bool EnableUsenet { get; set; }
 
         [JsonIgnore]
-        object ISupportsTagUpdate.Identifier => this.Id;
+        object ISupportsTagUpdate.Id => this.Id;
 
         [JsonIgnore]
         public bool IsDefault => this.Order == DEFAULT_ORDER;

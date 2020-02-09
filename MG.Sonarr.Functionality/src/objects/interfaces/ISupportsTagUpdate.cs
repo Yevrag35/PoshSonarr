@@ -5,8 +5,11 @@ namespace MG.Sonarr.Functionality
 {
     public interface ISupportsTagUpdate : IGetEndpoint, IJsonResult
     {
-        object Identifier { get; }
+        //object Identifier { get; }
+        object Id { get; }
         HashSet<int> Tags { get; set; }
+
+        //object GetIdentifier();
 
         //void AddTags(IEnumerable<int> tagIds);
         //void AddTags(params int[] tagIds);

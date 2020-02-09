@@ -27,7 +27,7 @@ namespace MG.Sonarr.Results
         //private IDictionary<string, JToken> _additionalData;
 
         [JsonIgnore]
-        object ISupportsTagUpdate.Identifier => this.Id;
+        object ISupportsTagUpdate.Id => this.Id;
 
         [JsonProperty("alternateTitles")]
         public AlternateTitle[] AlternateTitles { get; private set; }
@@ -64,36 +64,6 @@ namespace MG.Sonarr.Results
 
         public string GetEndpoint() => EP;
 
-        //[OnDeserialized]
-        //private void OnDeserialized(StreamingContext context)
-        //{
-        //    if (this.Status != SeriesStatusType.Ended && _additionalData.ContainsKey(AIRTIME))
-        //    {
-        //        this.AirTime = this.SeriesType == SeriesType.Anime
-        //            ? this.ConvertFromTokyoTime(_additionalData[AIRTIME])
-        //            : _additionalData[AIRTIME].ToObject<string>();
-        //    }
-        //}
-
-        //private string ConvertFromTokyoTime(JToken jtok)
-        //{
-        //    string strRes = null;
-        //    if (jtok != null)
-        //    {
-        //        string tokTime = jtok.ToObject<string>();
-        //        var tokyoTime = DateTime.Parse(tokTime); // In Tokyo Standard Time
-        //        TimeZoneInfo tokyotz = TimeZoneInfo.GetSystemTimeZones().First(x => x.Id.Contains("Tokyo"));
-        //        if (tokyotz == null)
-        //            strRes = tokTime;
-
-        //        else
-        //        {
-        //            DateTime localTime = TimeZoneInfo.ConvertTime(tokyoTime, tokyotz, TimeZoneInfo.Local);
-        //            strRes = localTime.ToShortTimeString();
-        //        }
-        //    }
-
-        //    return strRes;
-        //}
+        public decimal GetTotalFileSize() => this.Seasons.GetTotalFileSize();
     }
 }

@@ -103,6 +103,7 @@ namespace MG.Sonarr.Results
         [JsonProperty("value")]
         public int Value { get; set; }
 
+        [JsonConstructor]
         internal SelectOptions(string name, int value)
         {
             this.Name = name;

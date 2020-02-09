@@ -21,10 +21,12 @@ namespace MG.Sonarr.Results
         [JsonExtensionData]
         private IDictionary<string, JToken> _additionalData { get; set; } = new Dictionary<string, JToken>();
 
-        public bool ContainsIgnored => _additionalData.ContainsKey(IGNORED);
-        public bool ContainsRequired => _additionalData.ContainsKey(REQUIRED);
+        [JsonIgnore]
+        internal bool ContainsIgnored => _additionalData.ContainsKey(IGNORED);
+        [JsonIgnore]
+        internal bool ContainsRequired => _additionalData.ContainsKey(REQUIRED);
 
-        object ISupportsTagUpdate.Identifier => this.Id;
+        object ISupportsTagUpdate.Id => this.Id;
 
         [JsonIgnore]
         public JsonStringCollection Ignored { get; } = new JsonStringCollection();

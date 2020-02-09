@@ -76,7 +76,7 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("seriesType")]
         [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public SeriesType SeriesType { get; private set; }
+        public SeriesType SeriesType { get; set; }
 
         [JsonProperty("sortTitle")]
         public string SortTitle { get; private set; }
