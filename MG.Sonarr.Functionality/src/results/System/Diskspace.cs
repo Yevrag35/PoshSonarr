@@ -10,7 +10,7 @@ namespace MG.Sonarr.Results
     /// The class that defines a response from the "/diskspace" endpoint.
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class DiskspaceResult : BaseResult
+    public class Diskspace : BaseResult
     {
         /// <summary>
         /// The amount of freespace left in the disk calculated in bytes.

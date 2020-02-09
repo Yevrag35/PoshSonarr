@@ -20,7 +20,7 @@ namespace MG.Sonarr.Cmdlets
         HelpUri = "https://github.com/Yevrag35/PoshSonarr/wiki/Connect-SonarrInstance")]
     [CmdletBinding(PositionalBinding = false)]
     [Alias("Connect-")]
-    [OutputType(typeof(StatusResult))]
+    [OutputType(typeof(Status))]
     public partial class ConnectInstance : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
@@ -175,7 +175,7 @@ namespace MG.Sonarr.Cmdlets
             else
                 this.BoundCallerWithoutProxy(handler);
 
-            StatusResult statusResult = this.TryConnect();
+            Status statusResult = this.TryConnect();
 
             if (statusResult != null)
             {
@@ -214,10 +214,10 @@ namespace MG.Sonarr.Cmdlets
         private void SetSonarrUrl() => Context.SonarrUrl = !base.HasParameterSpecified(this, x => x.SonarrUrl)
                 ? ClassFactory.GenerateSonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
                 : ClassFactory.GenerateSonarrUrl(this.SonarrUrl, !_noApiPrefix);
-        private StatusResult TryConnect()
+        private Status TryConnect()
         {
             base.WriteApiDebug(CONNECT_EP, HttpMethod.Get, out string apiPath);
-            IRestResponse<StatusResult> response = Context.ApiCaller.GetAsJsonAsync<StatusResult>(apiPath).GetAwaiter().GetResult();
+            IRestResponse<Status> response = Context.ApiCaller.GetAsJsonAsync<Status>(apiPath).GetAwaiter().GetResult();
             if (response.IsFaulted)
             {
                 if (response.HasException)

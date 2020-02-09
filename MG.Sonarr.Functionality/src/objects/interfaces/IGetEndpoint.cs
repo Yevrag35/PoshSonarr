@@ -2,6 +2,9 @@
 
 namespace MG.Sonarr.Functionality
 {
+    /// <summary>
+    /// An interface that provides a method for retrieving the API Uri endpoint for the implementing class.
+    /// </summary>
     public interface IGetEndpoint
     {
         /// <summary>

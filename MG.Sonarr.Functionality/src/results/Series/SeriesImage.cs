@@ -10,12 +10,23 @@ namespace MG.Sonarr.Results
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public class SeriesImage : BaseResult, IComparable<SeriesImage>
     {
+        /// <summary>
+        /// The type of image used for the cover.
+        /// </summary>
         [JsonProperty("coverType")]
         public CoverType CoverType { get; private set; }
 
+        /// <summary>
+        /// The relative Uri of the <see cref="SeriesImage"/>.
+        /// </summary>
         [JsonProperty("url")]
         public Uri Url { get; private set; }
 
+        /// <summary>
+        /// The default comparison method.  If both <see cref="MG.Sonarr.Functionality.CoverType"/>
+        /// are the same, then the <see cref="SeriesImage.Url"/> is compared.
+        /// </summary>
+        /// <param name="other">The other <see cref="SeriesImage"/> to compare this instance against.</param>
         public int CompareTo(SeriesImage other)
         {
             int cct = this.CompareCoverType(other.CoverType);

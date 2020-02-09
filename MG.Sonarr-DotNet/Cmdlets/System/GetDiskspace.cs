@@ -10,7 +10,7 @@ using System.Reflection;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "Diskspace", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByExplicitPath")]
-    [OutputType(typeof(DiskspaceResult))]
+    [OutputType(typeof(Diskspace))]
     [CmdletBinding(PositionalBinding = false)]
     public class GetDiskspace : BaseSonarrCmdlet
     {
@@ -55,8 +55,8 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing() => base.BeginProcessing();
         protected override void ProcessRecord()
         {
-            List<DiskspaceResult> allResults = base.SendSonarrListGet<DiskspaceResult>(EP);
-            List<DiskspaceResult> filtered = this.Filter(allResults);
+            List<Diskspace> allResults = base.SendSonarrListGet<Diskspace>(EP);
+            List<Diskspace> filtered = this.Filter(allResults);
             if (_showMost)
             {
                 base.SendToPipeline(filtered.
@@ -71,7 +71,7 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
-        private List<DiskspaceResult> Filter(List<DiskspaceResult> diskspaceResults)
+        private List<Diskspace> Filter(List<Diskspace> diskspaceResults)
         {
             if (base.HasParameterSpecified(this, x => x.Path))
                 return base.FilterByMultipleStrings(diskspaceResults, _stringArgs, x => x.Path);

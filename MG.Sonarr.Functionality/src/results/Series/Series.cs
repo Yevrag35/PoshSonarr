@@ -13,28 +13,32 @@ using System.Runtime.Serialization;
 namespace MG.Sonarr.Results
 {
     /// <summary>
-    /// The class that defines a response from the "/series" or "/series/lookup" endpoints.
+    /// The class that defines a response from the "/series" endpoint.
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [Serializable]
     public class SeriesResult : SearchSeries, ISupportsTagUpdate
     {
-        private const string AIRTIME = "airTime";
-        private const string RATING = "ratings";
         private const string EP = "/series";
 
-        //[JsonExtensionData]
-        //private IDictionary<string, JToken> _additionalData;
+        /// <summary>
+        /// An array of alternative titles the series is known as.
+        /// </summary>
+        [JsonProperty("alternateTitles")]
+        public AlternateTitle[] AlternateTitles { get; private set; }
+
+        /// <summary>
+        /// The unique ID of the series within Sonarr.
+        /// </summary>
+        [JsonProperty("id")]
+        public int Id { get; private set; }
 
         [JsonIgnore]
         object ISupportsTagUpdate.Id => this.Id;
 
-        [JsonProperty("alternateTitles")]
-        public AlternateTitle[] AlternateTitles { get; private set; }
-
-        [JsonProperty("id")]
-        public int Id { get; private set; }
-
+        /// <summary>
+        /// Indicates whether the series is monitored for new episodes.
+        /// </summary>
         [Obsolete]
         [JsonIgnore]
         public bool Monitored
@@ -47,23 +51,39 @@ namespace MG.Sonarr.Results
             }
         }
 
+        /// <summary>
+        /// The containing folder's path for this series.
+        /// </summary>
         [JsonProperty("path")]
         public string Path { get; set; }
 
+        /// <summary>
+        /// The ID of the <see cref="QualityProfile"/> that this series adheres to.
+        /// </summary>
         [JsonProperty("qualityProfileId")]
         public int QualityProfileId { get; set; }
 
+        /// <summary>
+        /// The remote poster of the series.
+        /// </summary>
         [JsonProperty("remotePoster")]
         public string RemotePoster { get; private set; }
 
+        /// <summary>
+        /// A unique collection of tag ID's applied to the series.
+        /// </summary>
         [JsonProperty("tags")]
         public HashSet<int> Tags { get; set; }
 
+        /// <summary>
+        /// Indicates whether the series keeps episode files organized by season number.
+        /// </summary>
         [JsonProperty("seasonFolder")]
         public bool UsingSeasonFolders { get; set; }
 
+        /// <summary>
+        /// Retrieves the Uri endpoint that instance was retrieved from.
+        /// </summary>
         public string GetEndpoint() => EP;
-
-        public decimal GetTotalFileSize() => this.Seasons.GetTotalFileSize();
     }
 }

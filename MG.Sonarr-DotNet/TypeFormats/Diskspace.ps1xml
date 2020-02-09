@@ -2,9 +2,9 @@
 <Configuration>
     <ViewDefinitions>
         <View>
-            <Name>DiskspaceResult</Name>
+            <Name>Diskspace</Name>
             <ViewSelectedBy>
-                <TypeName>MG.Sonarr.Results.DiskspaceResult</TypeName>
+                <TypeName>MG.Sonarr.Results.Diskspace</TypeName>
             </ViewSelectedBy>
             <ListControl>
                 <ListEntries>

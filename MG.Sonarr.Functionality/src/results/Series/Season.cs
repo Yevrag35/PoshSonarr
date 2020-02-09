@@ -8,21 +8,94 @@ using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results
 {
+    /// <summary>
+    /// A class representing a single season of an individual <see cref="SeriesResult"/>.
+    /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [Serializable]
     public class Season : BaseResult, IComparable<Season>
     {
+        [JsonExtensionData]
+        private Dictionary<string, JToken> _extData;
+
+        [JsonIgnore]
+        private Statistics _stats;
+
+        /// <summary>
+        /// The number of episodes in the season.
+        /// </summary>
+        [JsonIgnore]
+        public int EpisodeCount => _stats.EpisodeCount;
+
+        /// <summary>
+        /// The number of episode files found for the season.
+        /// </summary>
+        [JsonIgnore]
+        public int EpisodeFileCount => _stats.EpisodeFileCount;
+
+        /// <summary>
+        /// Indicates whether the season is being monitored for new episodes.
+        /// This value is superseded by <see cref="SearchSeries.IsMonitored"/>.
+        /// </summary>
         [JsonProperty("monitored")]
         public bool IsMonitored { get; set; }
 
+        /// <summary>
+        /// The percent of episodes downloaded from the total episodes available.
+        /// </summary>
+        [JsonIgnore]
+        public double PercentOfEpisodes => _stats.PercentOfEpisodes;
+
+        /// <summary>
+        /// The localized date of the last airing episode in the season.
+        /// </summary>
+        [JsonIgnore]
+        public DateTime? PreviousAiring => _stats.PreviousAiring;
+
+        /// <summary>
+        /// The <see cref="int"/> value for the season number.
+        /// </summary>
         [JsonProperty("seasonNumber")]
         public int SeasonNumber { get; private set; }
 
-        [JsonProperty("statistics")]
-        public Statistics Statistics { get; private set; }
+        /// <summary>
+        /// The size (in Bytes) of all downloaded episodes for the season.
+        /// </summary>
+        [JsonIgnore]
+        public decimal SizeOnDisk => _stats.SizeOnDisk;
+
+        /// <summary>
+        /// The total number of episodes available in the season.
+        /// </summary>
+        [JsonIgnore]
+        public int TotalEpisodeCount => _stats.TotalEpisodeCount;
+
+        /// <summary>
+        /// Indicates whether the season is being monitored for new episode releases.  This value is superseded by <see cref="SearchSeries.IsMonitored"/>.
+        /// </summary>
+        
+        /// <summary>
+        /// The <see cref="int"/> value of the season number.
+        /// </summary>
+        
+        ///// <summary>
+        ///// Statistics that apply to the season.
+        ///// </summary>
+        //[JsonProperty("statistics")]
+        //public Statistics Statistics { get; private set; }
 
         public int CompareTo(Season other) => this.SeasonNumber.CompareTo(other.SeasonNumber);
-        public bool ShouldSerializeStatistics() => false;
+        //public bool ShouldSerializeStatistics() => false;
+
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext ctx)
+        {
+            if (_extData != null && _extData.ContainsKey("statistics"))
+            {
+                _stats = _extData["statistics"].ToObject<Statistics>();
+                _extData.Clear();
+            }
+        }
 
         public override string ToJson()
         {
@@ -41,24 +114,27 @@ namespace MG.Sonarr.Results
     }
 
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class Statistics : BaseResult
+    internal class Statistics : BaseResult
     {
         [JsonProperty("episodeCount")]
-        public int EpisodeCount { get; private set; }
+        internal int EpisodeCount { get; private set; }
 
         [JsonProperty("episodeFileCount")]
-        public int EpisodeFileCount { get; private set; }
+        internal int EpisodeFileCount { get; private set; }
 
         [JsonProperty("percentOfEpisodes")]
-        public decimal PercentOfEpisodes { get; private set; }
+        internal double PercentOfEpisodes { get; private set; }
 
         [JsonProperty("previousAiring")]
-        public DateTime? PreviousAiring { get; private set; }
+        internal DateTime? PreviousAiring { get; private set; }
 
         [JsonProperty("sizeOnDisk")]
-        public decimal SizeOnDisk { get; private set; }
+        internal decimal SizeOnDisk { get; private set; }
 
         [JsonProperty("totalEpisodeCount")]
-        public int TotalEpisodeCount { get; private set; }
+        internal int TotalEpisodeCount { get; private set; }
+
+        [JsonConstructor]
+        internal Statistics() { }
     }
 }

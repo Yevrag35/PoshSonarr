@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace MG.Sonarr.Results
 { 
+    /// <summary>
+    /// A class that represents an alternative name of a series.
+    /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public class AlternateTitle : BaseResult, IComparable<AlternateTitle>
     {
@@ -26,22 +29,7 @@ namespace MG.Sonarr.Results
         }
         private int CompareSeasonNumbers(AlternateTitle other)
         {
-            if (this.SeasonNumber.HasValue && other.SeasonNumber.HasValue)
-            {
-                return this.SeasonNumber.Value.CompareTo(other.SeasonNumber.Value);
-            }
-            else if (this.SeasonNumber.HasValue && !other.SeasonNumber.HasValue)
-            {
-                return 1;
-            }
-            else if (!this.SeasonNumber.HasValue && other.SeasonNumber.HasValue)
-            {
-                return -1;
-            }
-            else
-            {
-                return 0;
-            }
+            return this.SeasonNumber.GetValueOrDefault().CompareTo(other.SeasonNumber.GetValueOrDefault());
         }
     }
 }

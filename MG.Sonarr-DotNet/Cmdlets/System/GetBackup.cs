@@ -11,7 +11,7 @@ using System.Reflection;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "Backup", ConfirmImpact = ConfirmImpact.None)]
-    [OutputType(typeof(BackupResult))]
+    [OutputType(typeof(Backup))]
     [CmdletBinding(PositionalBinding = false)]
     public class GetBackup : BaseSonarrCmdlet
     {
@@ -31,17 +31,17 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            List<BackupResult> allBackups = base.SendSonarrListGet<BackupResult>(EP);
+            List<Backup> allBackups = base.SendSonarrListGet<Backup>(EP);
             base.SendToPipeline(this.Filter(allBackups));
         }
 
         #endregion
 
         #region BACKEND METHODS
-        private List<BackupResult> Filter(List<BackupResult> allBackups)
+        private List<Backup> Filter(List<Backup> allBackups)
         {
             if (base.HasParameterSpecified(this, x => x.Type))
-                return allBackups.FindAll(x => this.Type.Contains(x.BackupType));
+                return allBackups.FindAll(x => this.Type.Contains(x.Type));
 
             else
                 return allBackups;

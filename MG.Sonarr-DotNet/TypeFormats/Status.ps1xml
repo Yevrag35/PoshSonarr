@@ -2,9 +2,9 @@
 <Configuration>
     <ViewDefinitions>
         <View>
-            <Name>StatusResult</Name>
+            <Name>Status</Name>
             <ViewSelectedBy>
-                <TypeName>MG.Sonarr.Results.StatusResult</TypeName>
+                <TypeName>MG.Sonarr.Results.Status</TypeName>
             </ViewSelectedBy>
             <TableControl>
                 <TableHeaders>

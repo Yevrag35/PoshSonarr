@@ -183,7 +183,7 @@
     <None Include="TypeFormats\CalendarEntry.ps1xml" />
     <None Include="TypeFormats\CommandResult.ps1xml" />
     <None Include="TypeFormats\DelayProfile.ps1xml" />
-    <None Include="TypeFormats\DiskspaceResult.ps1xml" />
+    <None Include="TypeFormats\Diskspace.ps1xml" />
     <None Include="TypeFormats\DownloadClientSetting.ps1xml" />
     <None Include="TypeFormats\DownloadClient.ps1xml" />
     <None Include="TypeFormats\Episode.ps1xml" />
@@ -198,10 +198,11 @@
     <None Include="TypeFormats\Restriction.ps1xml" />
     <None Include="TypeFormats\RootFolder.ps1xml" />
     <None Include="TypeFormats\Season.ps1xml" />
+    <None Include="TypeFormats\Season.ps1xml.old" />
     <None Include="TypeFormats\SeriesImage.ps1xml" />
     <None Include="TypeFormats\SearchSeries.ps1xml" />
     <None Include="TypeFormats\SeriesResult.ps1xml" />
-    <None Include="TypeFormats\StatusResult.ps1xml" />
+    <None Include="TypeFormats\Status.ps1xml" />
     <None Include="TypeFormats\FileSystemEntry.ps1xml" />
     <None Include="TypeFormats\Tag.ps1xml" />
   </ItemGroup>
