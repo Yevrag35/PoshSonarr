@@ -18,10 +18,5 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("searchForMissingEpisodes")]
         public bool SearchForMissingEpisodes { get; set; }
-
-        public override string ToJson()
-        {
-            return JsonConvert.SerializeObject(this, Formatting.Indented);
-        }
     }
 }

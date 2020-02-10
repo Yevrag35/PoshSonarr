@@ -18,8 +18,21 @@ namespace MG.Sonarr
         private void Add(EpisodeIdentifier epId) => _list.Add(epId);
         internal bool AnyMatchesEpisode(EpisodeResult episodeResult)
         {
-            return _list.Exists(x => x.Season == episodeResult.SeasonNumber &&
-                (!x.Episode.HasValue || (x.Episode.HasValue && x.Episode.Value == episodeResult.EpisodeNumber)));
+            bool result = false;
+            foreach (EpisodeIdentifier thing in _list)
+            {
+                if (thing.Season == episodeResult.SeasonNumber)
+                {
+                    if (!thing.Episode.HasValue || thing.Episode.GetValueOrDefault() == episodeResult.EpisodeNumber)
+                    {
+                        result = true;
+                        break;
+                    }
+                }
+            }
+            return result;
+            //return _list.Exists(x => x.Season == episodeResult.SeasonNumber &&
+            //    (!x.Episode.HasValue || (x.Episode.GetValueOrDefault() == episodeResult.EpisodeNumber)));
         }
         public IEnumerator<EpisodeIdentifier> GetEnumerator() => _list.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();

@@ -9,7 +9,7 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Get, "Episode", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "BySeriesId")]
+    [Cmdlet(VerbsCommon.Get, "Episode", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByInputSeasonEp")]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(EpisodeResult))]
     public class GetEpisode : BaseSonarrCmdlet
@@ -23,18 +23,23 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "BySeriesId")]
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "BySeriesIdAbsoluteEp")]
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "BySeriesIdSeasonEp")]
+        [Parameter(Mandatory = true, DontShow = true, ValueFromPipeline = true, ParameterSetName = "ByInputAbsoluteEp")]
+        [Parameter(Mandatory = true, DontShow = true, ValueFromPipeline = true, ParameterSetName = "ByInputSeasonEp")]
+        public SeriesResult InputObject { get; set; }
+
+        [Parameter(Mandatory = true, ParameterSetName = "BySeriesIdAbsoluteEp")]
+        [Parameter(Mandatory = true, ParameterSetName = "BySeriesIdSeasonEp")]
         public long SeriesId { get; set; }
 
-        [Parameter(Mandatory = true, ParameterSetName = "ByEpisodeId", ValueFromPipelineByPropertyName = true)]
+        [Parameter(Mandatory = true, ParameterSetName = "ByEpisodeId")]
         public long EpisodeId { get; set; }
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesIdAbsoluteEp")]
+        [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesIdAbsoluteEp")]
+        [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByInputAbsoluteEp")]
         public int[] AbsoluteEpisodeNumber { get; set; }
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesIdSeasonEp")]
+        [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesIdSeasonEp")]
+        [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByInputSeasonEp")]
         public string[] EpisodeIdentifier { get; set; }
 
         #endregion
@@ -42,7 +47,6 @@ namespace MG.Sonarr.Cmdlets
         #region CMDLET PROCESSING
         protected override void BeginProcessing()
         {
-            //if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeIdentifier"))
             if (base.HasParameterSpecified(this, x => x.EpisodeIdentifier))
                 _epIdCol = this.EpisodeIdentifier;
 
@@ -52,24 +56,24 @@ namespace MG.Sonarr.Cmdlets
         protected override void ProcessRecord()
         {
             var epList = new List<EpisodeResult>();
-            //if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeId"))
             if (base.HasParameterSpecified(this, x => x.EpisodeId))
             {
                 this.GetEpisodeById(this.EpisodeId, epList);
             }
             else
             {
+                if (base.HasParameterSpecified(this, x => x.InputObject))
+                    this.SeriesId = this.InputObject.Id;
+
                 List<EpisodeResult> allEps = base.SendSonarrListGet<EpisodeResult>(string.Format(EP_BY_SERIES, this.SeriesId));
 
-                //if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeIdentifier"))
                 if (base.HasParameterSpecified(this, x => x.EpisodeIdentifier))
                 {
-                    this.GetEpisodeByIdentifierString(_epIdCol, allEps, epList);
+                    this.GetEpisodeByIdentifierString(_epIdCol, allEps, ref epList);
                 }
-                //else if (this.MyInvocation.BoundParameters.ContainsKey("AbsoluteEpisodeNumber"))
-                if (base.HasParameterSpecified(this, x => x.AbsoluteEpisodeNumber))
+                else if (base.HasParameterSpecified(this, x => x.AbsoluteEpisodeNumber))
                 {
-                    this.GetEpisodeByAbsoluteNumber(this.AbsoluteEpisodeNumber, allEps, epList);
+                    this.GetEpisodeByAbsoluteNumber(this.AbsoluteEpisodeNumber, allEps, ref epList);
                 }
                 else
                 {
@@ -83,7 +87,7 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region METHODS
-        private void GetEpisodeByAbsoluteNumber(int[] absoluteIds, List<EpisodeResult> allEpisodes, List<EpisodeResult> addToList)
+        private void GetEpisodeByAbsoluteNumber(int[] absoluteIds, List<EpisodeResult> allEpisodes, ref List<EpisodeResult> addToList)
         {
             addToList
                 .AddRange(allEpisodes
@@ -98,8 +102,7 @@ namespace MG.Sonarr.Cmdlets
             if (epRes != null)
                 addToList.Add(epRes);
         }
-
-        private void GetEpisodeByIdentifierString(EpisodeIdentifierCollection idCol, List<EpisodeResult> allEpisodes, List<EpisodeResult> addToList)
+        private void GetEpisodeByIdentifierString(EpisodeIdentifierCollection idCol, List<EpisodeResult> allEpisodes, ref List<EpisodeResult> addToList)
         {
             for (int i = 0; i < allEpisodes.Count; i++)
             {

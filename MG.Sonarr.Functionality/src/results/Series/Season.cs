@@ -70,22 +70,7 @@ namespace MG.Sonarr.Results
         [JsonIgnore]
         public int TotalEpisodeCount => _stats.TotalEpisodeCount;
 
-        /// <summary>
-        /// Indicates whether the season is being monitored for new episode releases.  This value is superseded by <see cref="SearchSeries.IsMonitored"/>.
-        /// </summary>
-        
-        /// <summary>
-        /// The <see cref="int"/> value of the season number.
-        /// </summary>
-        
-        ///// <summary>
-        ///// Statistics that apply to the season.
-        ///// </summary>
-        //[JsonProperty("statistics")]
-        //public Statistics Statistics { get; private set; }
-
         public int CompareTo(Season other) => this.SeasonNumber.CompareTo(other.SeasonNumber);
-        //public bool ShouldSerializeStatistics() => false;
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext ctx)
