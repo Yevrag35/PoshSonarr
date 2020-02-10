@@ -17,51 +17,53 @@ namespace MG.Sonarr.Results
     /// The class that defines a response from the "/series/lookup" endpoint.
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
-    public class SearchSeries : BaseResult
+    public class SearchSeries : BaseResult, IGetEndpoint
     {
+        private const string EP = "/series";
+
         #region JSON PROPERTIES
 
         /// <summary>
         /// Represents the date when the series was added.
         /// </summary>
         [JsonProperty("added")]
-        public DateTime Added { get; private set; }
+        public DateTime Added { get; private protected set; }
 
         /// <summary>
         /// The localized date of when the series aires.
         /// </summary>
         [JsonProperty("airTime")]
-        public string AirTime { get; protected private set; }
+        public string AirTime { get; private protected set; }
 
         /// <summary>
         /// The cleaned title of the series.
         /// </summary>
         [JsonProperty("cleanTitle")]
-        public string CleanTitle { get; private set; }
+        public string CleanTitle { get; private protected set; }
 
         /// <summary>
         /// The localized date of when the series first aired.
         /// </summary>
         [JsonProperty("firstAired")]
-        public DateTime FirstAired { get; protected private set; }
+        public DateTime FirstAired { get; private protected set; }
 
         /// <summary>
         /// An array of genres that apply to the series.
         /// </summary>
         [JsonProperty("genres")]
-        public string[] Genres { get; protected private set; }
+        public string[] Genres { get; private protected set; }
 
         /// <summary>
         /// An array of images for the series.
         /// </summary>
         [JsonProperty("images")]
-        public SeriesImage[] Images { get; protected private set; }
+        public SeriesImage[] Images { get; private protected set; }
 
         /// <summary>
         /// The IMDB ID for the series.
         /// </summary>
         [JsonProperty("imdbId")]
-        public string IMDBId { get; private set; }
+        public string IMDBId { get; private protected set; }
 
         /// <summary>
         /// Indicates whether the series is monitored for new episodes.
@@ -73,19 +75,19 @@ namespace MG.Sonarr.Results
         /// The standard title of the series.
         /// </summary>
         [JsonProperty("title")]
-        public string Name { get; private set; }
+        public string Name { get; private protected set; }
 
         /// <summary>
         /// The TV network that airs (currently or previously) the series.
         /// </summary>
         [JsonProperty("network")]
-        public string Network { get; private set; }
+        public string Network { get; private protected set; }
 
         /// <summary>
         /// A short synopsis of the series.
         /// </summary>
         [JsonProperty("overview")]
-        public string Overview { get; private set; }
+        public string Overview { get; private protected set; }
 
         /// <summary>
         /// The audience rating of the series.
@@ -94,7 +96,7 @@ namespace MG.Sonarr.Results
         public float Rating => _ratings.Value;
 
         [JsonProperty("ratings")]
-        private Ratings _ratings;
+        internal Ratings _ratings;
 
         /// <summary>
         /// Indicates how many votes were cast for the rating.
@@ -106,25 +108,25 @@ namespace MG.Sonarr.Results
         /// The Uri of the series's poster.
         /// </summary>
         [JsonProperty("remotePoster")]
-        public string PosterUrl { get; private set; }
+        public string PosterUrl { get; private protected set; }
 
         /// <summary>
         /// Represents a single episode's runtime duration for the series.
         /// </summary>
         [JsonProperty("runtime")]
-        public int Runtime { get; protected private set; }
+        public int Runtime { get; private protected set; }
 
         /// <summary>
         /// Indicates how seasons are available for the series.
         /// </summary>
         [JsonProperty("seasonCount")]
-        public int SeasonCount { get; private set; }
+        public int SeasonCount { get; private protected set; }
 
         /// <summary>
         /// A collection of <see cref="Season"/>'s for the series.
         /// </summary>
         [JsonProperty("seasons")]
-        public SeasonCollection Seasons { get; protected private set; }
+        public SeasonCollection Seasons { get; private protected set; }
 
         /// <summary>
         /// Indicates the type of series.
@@ -137,56 +139,56 @@ namespace MG.Sonarr.Results
         /// The title of the series used when sorting or filtering.
         /// </summary>
         [JsonProperty("sortTitle")]
-        public string SortTitle { get; private set; }
+        public string SortTitle { get; private protected set; }
 
         /// <summary>
         /// Indicates the current status of the series.
         /// </summary>
         [JsonProperty("status")]
         [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public SeriesStatusType Status { get; private set; }
+        public SeriesStatusType Status { get; private protected set; }
 
         /// <summary>
         /// The slug title of the series.
         /// </summary>
         [JsonProperty("titleSlug")]
-        public string TitleSlug { get; private set; }
+        public string TitleSlug { get; private protected set; }
 
         /// <summary>
         /// The TVDB ID of the series.
         /// </summary>
         [JsonProperty("tvdbId")]
-        public long TVDBId { get; private set; }
+        public long TVDBId { get; private protected set; }
 
         /// <summary>
         /// The TVMaze ID of the series.
         /// </summary>
         [JsonProperty("tvMazeId")]
-        public long TvMazeId { get; private set; }
+        public long TvMazeId { get; private protected set; }
 
         /// <summary>
         /// The TVRage ID of the series.
         /// </summary>
         [JsonProperty("tvRageId")]
-        public long TvRageId { get; private set; }
+        public long TvRageId { get; private protected set; }
 
         /// <summary>
         /// The TV Parental Guidelines rating for the series.
         /// </summary>
         [JsonProperty("certification")]
-        public string TvRating { get; private set; }
+        public string TvRating { get; private protected set; }
 
         /// <summary>
         /// Indicates if the series uses scene numbering.
         /// </summary>
         [JsonProperty("useSceneNumbering")]
-        public bool UsesSceneNumbering { get; private set; }
+        public bool UsesSceneNumbering { get; private protected set; }
 
         /// <summary>
         /// The year the series first aired.
         /// </summary>
         [JsonProperty("year")]
-        public int Year { get; private set; }
+        public int Year { get; private protected set; }
 
         /// <summary>
         /// Initializes a new instance of <see cref="SearchSeries"/>.
@@ -195,5 +197,7 @@ namespace MG.Sonarr.Results
         public SearchSeries() { }
 
         #endregion
+
+        public string GetEndpoint() => EP;
     }
 }

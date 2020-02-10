@@ -154,7 +154,7 @@
     <Compile Include="Cmdlets\Releases\SearchRelease.cs" />
     <Compile Include="Cmdlets\Releases\NewReleasePush.cs" />
     <Compile Include="Cmdlets\RootFolder\GetRootFolder.cs" />
-    <None Include="Cmdlets\Series\AddSeries.cs" />
+    <Compile Include="Cmdlets\Series\AddSeries.cs" />
     <Compile Include="Cmdlets\Series\GetSeries.cs" />
     <None Include="Cmdlets\Series\RemoveSeries.cs" />
     <Compile Include="Cmdlets\Series\SearchSeries.cs" />
