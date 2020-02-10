@@ -156,7 +156,7 @@
     <Compile Include="Cmdlets\RootFolder\GetRootFolder.cs" />
     <Compile Include="Cmdlets\Series\AddSeries.cs" />
     <Compile Include="Cmdlets\Series\GetSeries.cs" />
-    <None Include="Cmdlets\Series\RemoveSeries.cs" />
+    <Compile Include="Cmdlets\Series\RemoveSeries.cs" />
     <Compile Include="Cmdlets\Series\SearchSeries.cs" />
     <Compile Include="Cmdlets\Series\SetSeries.cs" />
     <Compile Include="Cmdlets\System\GetBackup.cs" />
