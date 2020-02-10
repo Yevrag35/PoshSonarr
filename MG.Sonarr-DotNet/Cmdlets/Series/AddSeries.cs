@@ -30,7 +30,7 @@ namespace MG.Sonarr.Cmdlets
         #region PARAMETERS
 
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
-        public SeriesResult
+        public SearchSeries Series { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "ByFullPath")]
         public string FullPath { get; set; }
