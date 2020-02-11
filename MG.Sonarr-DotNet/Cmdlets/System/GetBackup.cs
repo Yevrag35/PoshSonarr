@@ -10,7 +10,8 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Get, "Backup", ConfirmImpact = ConfirmImpact.None)]
+    [Cmdlet(VerbsCommon.Get, "Backup", ConfirmImpact = ConfirmImpact.None,
+        HelpUri = "https://github.com/Yevrag35/PoshSonarr/wiki/Get-SonarrBackup")]
     [OutputType(typeof(Backup))]
     [CmdletBinding(PositionalBinding = false)]
     public class GetBackup : BaseSonarrCmdlet
