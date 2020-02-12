@@ -55,7 +55,9 @@ namespace MG.Sonarr.Cmdlets
         {
             base.BeginProcessing();
 
-            IEnumerable<Tag> existingTags = Context.TagManager.GetTags(this.Tag, out HashSet<string> createStrs, out HashSet<int> missingIds);
+            HashSet<object> objs = this.CheckForEnumerables(this.Tag);
+
+            IEnumerable<Tag> existingTags = Context.TagManager.GetTags(objs, out HashSet<string> createStrs, out HashSet<int> missingIds);
 
             base.WriteFormatDebug(DBG_MSG_FORMAT, createStrs.Count + missingIds.Count, createStrs.Count, missingIds.Count);
 
@@ -109,5 +111,35 @@ namespace MG.Sonarr.Cmdlets
         }
 
         #endregion
+
+        private HashSet<object> CheckForEnumerables(object[] inputTags)
+        {
+            Type hType = typeof(IEnumerable<int>);
+            HashSet<object> combined = new HashSet<object>(inputTags.Length);
+            if (inputTags.Any(x => x is PSObject xpso && xpso.ImmediateBaseObject is IEnumerable<int>))
+            {
+                IEnumerable<object> innerInts = inputTags
+                    .OfType<PSObject>()
+                        .Where(pso => pso.ImmediateBaseObject is IEnumerable<int>)
+                            .SelectMany(o => (IEnumerable<int>)o.ImmediateBaseObject)
+                                .Cast<object>();
+
+                combined.AddRange(innerInts);
+            }
+            if (inputTags.Any(x => x is PSObject xpso && xpso.ImmediateBaseObject is IConvertible))
+            {
+                combined.AddRange(inputTags
+                    .OfType<PSObject>()
+                        .Where(x => x.ImmediateBaseObject is IConvertible)
+                            .Select(x => x.ImmediateBaseObject));
+            }
+            if (inputTags.Any(x => x is IEnumerable<int>))
+            {
+                combined.AddRange(inputTags.OfType<IEnumerable<int>>().SelectMany(x => x).Cast<object>());
+            }
+
+            combined.AddRange(inputTags.Where(x => x is IConvertible));
+            return combined;
+        }
     }
 }

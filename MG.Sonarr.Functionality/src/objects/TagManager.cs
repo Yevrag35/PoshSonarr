@@ -4,6 +4,7 @@ using MG.Api.Rest.Generic;
 using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -98,26 +99,42 @@ namespace MG.Sonarr
         {
             nonMatchingIds = new HashSet<int>();
             nonMatchingStrs = new HashSet<string>();
-            List<Tag> found = new List<Tag>();
-            foreach (IConvertible icon in possibles)
+            var found = new List<Tag>();
+            //Type hType = typeof(IEnumerable<int>);
+            //HashSet<object> combined = null;
+            //if (possibles.Any(x => x is IEnumerable<int> || (x is PSObject ))
+            //{
+            //    IEnumerable<int> innerInts = possibles.OfType<IEnumerable<int>>().SelectMany(x => x);
+            //    possibles = possibles.Where(x => !x.GetType().Equals(hType)).Concat(innerInts.Cast<object>());
+            //    combined = new HashSet<object>(possibles);
+            //}
+
+            foreach (object possible in possibles)
             {
-                string idStr = Convert.ToString(icon);
-                if (int.TryParse(idStr, out int intRes))
+                if (possible is IConvertible icon)
                 {
-                    if (this.TryGetTag(intRes, out Tag outTag))
-                        found.Add(outTag);
+                    string idStr = Convert.ToString(icon);
+                    if (int.TryParse(idStr, out int intRes))
+                    {
+                        if (this.TryGetTag(intRes, out Tag outTag))
+                            found.Add(outTag);
+
+                        else
+                            nonMatchingIds.Add(intRes);
+                    }
+                    else if (this.TryGetTag(idStr, StringComparison.CurrentCultureIgnoreCase, out Tag outTag2))
+                        found.Add(outTag2);
 
                     else
-                        nonMatchingIds.Add(intRes);
+                        nonMatchingStrs.Add(idStr);
                 }
-                else if (this.TryGetTag(idStr, StringComparison.CurrentCultureIgnoreCase, out Tag outTag2))
-                    found.Add(outTag2);
-                
-                else
-                    nonMatchingStrs.Add(idStr);
             }
             return found;
         }
+        //private void _GetTagWithId(IEnumerable<int> checkIds)
+        //{
+
+        //}
 
         public bool TryGetId(string tagLabel, out int tagId)
         {

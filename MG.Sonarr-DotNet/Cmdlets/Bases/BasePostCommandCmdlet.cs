@@ -24,11 +24,6 @@ namespace MG.Sonarr.Cmdlets
 
         #endregion
 
-        #region PARAMETERS
-
-
-        #endregion
-
         #region CMDLET PROCESSING
         protected override void BeginProcessing()
         {
