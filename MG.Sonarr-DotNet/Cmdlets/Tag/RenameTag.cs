@@ -28,7 +28,7 @@ namespace MG.Sonarr.Cmdlets
         [Alias("TagId")]
         public int Id { get; set; }
 
-        [Parameter(Mandatory = true, Position = 1)]
+        [Parameter(Mandatory = true, Position = 1, ValueFromPipelineByPropertyName = true)]
         [Alias("NewName")]
         public string NewLabel { get; set; }
 
