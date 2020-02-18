@@ -256,6 +256,16 @@ namespace MG.Sonarr.Functionality
         Trace
     }
 
+    public enum LogSortKey
+    {
+        Id,
+        Time,
+        Level,
+        Logger,
+        Exception,
+        ExceptionType
+    }
+
     /// <summary>
     /// The designated language for a Quality Profile.
     /// </summary>
