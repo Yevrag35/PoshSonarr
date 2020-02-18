@@ -189,6 +189,7 @@
     <None Include="TypeFormats\Episode.ps1xml" />
     <None Include="TypeFormats\EpisodeFile.ps1xml" />
     <None Include="TypeFormats\Field.ps1xml" />
+    <None Include="TypeFormats\HostConfig.ps1xml" />
     <None Include="TypeFormats\Notification.ps1xml" />
     <None Include="TypeFormats\QualityItem.ps1xml" />
     <None Include="TypeFormats\QualityProfile.ps1xml" />
