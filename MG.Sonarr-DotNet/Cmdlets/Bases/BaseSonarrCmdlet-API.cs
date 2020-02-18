@@ -23,6 +23,22 @@ namespace MG.Sonarr.Cmdlets
         #region NEW API METHODS
 
         #region PROCESSORS
+        private void ProcessVoidResponse<T>(IRestResponse<T> response) where T : class
+        {
+            if (response.IsFaulted)
+            {
+                if (response.HasException)
+                    this.WriteError(response.Exception, ErrorCategory.InvalidOperation);
+
+                else if (!response.IsValidStatusCode)
+                    this.WriteError(new NoSonarrResponseException(), ErrorCategory.ResourceUnavailable);
+            }
+            else
+            {
+                base.WriteDebug(string.Format("Received {0} ({1}) status code from the response.", response.StatusCode, response.StatusCode.ToString()));
+                base.WriteVerbose(string.Format("Received {0} ({1}).", response.StatusCode, response.StatusCode.ToString()));
+            }
+        }
         private void ProcessVoidResponse(IRestResponse response)
         {
             if (response.IsFaulted)
@@ -212,6 +228,17 @@ namespace MG.Sonarr.Cmdlets
             return Context.ApiCaller.PostAsJsonAsync<T>(new Uri(apiPath, UriKind.Relative), payload);
         }
         
+        protected void SendSonarrPostNoData(string endpoint)
+        {
+            this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
+            IRestResponse<string> response = this.SendSonarrPostNoDataAsTask(apiPath).GetAwaiter().GetResult();
+            this.ProcessVoidResponse(response);
+
+        }
+        private Task<IRestResponse<string>> SendSonarrPostNoDataAsTask(string apiPath)
+        {
+            return Context.ApiCaller.PostAsJsonAsync<string>(new Uri(apiPath, UriKind.Relative));
+        }
 
         protected List<T> SendSonarrListPost<T>(string endpoint, IJsonResult payload) where T : class
         {
