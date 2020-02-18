@@ -248,6 +248,7 @@ namespace MG.Sonarr.Functionality
     /// </summary>
     public enum LogLevel
     {
+        All,
         Fatal,
         Error,
         Warn,

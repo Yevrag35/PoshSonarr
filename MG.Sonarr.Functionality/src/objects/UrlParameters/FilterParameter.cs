@@ -17,7 +17,7 @@ namespace MG.Sonarr.Functionality
 
         public string AsString()
         {
-            return string.Format("filterKey={0}&filterValue={1}", Convert.ToString(this.Key), Convert.ToString(this.Value));
+            return string.Format("filterKey={0}&filterValue={1}", Convert.ToString(this.Key).ToLower(), Convert.ToString(this.Value));
         }
     }
 }
