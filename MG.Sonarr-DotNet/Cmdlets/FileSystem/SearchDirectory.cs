@@ -44,29 +44,25 @@ namespace MG.Sonarr.Cmdlets
         protected override void ProcessRecord()
         {
             if (!this.Path.EndsWith(@"\"))
+            {
                 this.Path = this.Path + @"\";
+            }
 
             string ep = EP_WITH_FILES;
             if (_excludeFiles)
+            {
                 ep = EP;
+            }
 
             string fullEp = string.Format(ep, this.Path);
 
             FileSystem fs = base.SendSonarrGet<FileSystem>(fullEp);
             if (fs != null)
             {
-                var list = fs.ToAllList();
+                List<FileSystemEntry> list = fs.ToAllList();
                 base.SendToPipeline(list);
-
             }
-            //if (fs != null && fs.Directories != null && fs.Directories.Count > 0)
-            //    base.WriteObject(fs.Directories, true);
         }
-
-        #endregion
-
-        #region BACKEND METHODS
-
 
         #endregion
     }

@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -55,10 +56,11 @@ namespace MG.Sonarr.Cmdlets
         private string GetEndpointString(out bool isSingular)
         {
             isSingular = false;
-            if (base.HasParameterSpecified(this, x => x.Series))
+            if (this.ContainsParameter(x => x.Series))
+            {
                 return string.Format(EP_BY_SERIES, this.Series.Id);
-
-            else if (base.HasParameterSpecified(this, x => x.EpisodeFileId))
+            }
+            else if (this.ContainsParameter(x => x.EpisodeFileId))
             {
                 isSingular = true;
                 return string.Format(EP_BY_EP);

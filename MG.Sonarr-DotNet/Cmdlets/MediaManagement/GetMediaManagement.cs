@@ -1,7 +1,5 @@
 ﻿using MG.Sonarr.Results;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
@@ -20,11 +18,6 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing() => base.BeginProcessing();
 
         protected override void ProcessRecord() => base.SendToPipeline(base.SendSonarrGet<MediaManagement>(EP));
-
-        #endregion
-
-        #region BACKEND METHODS
-
 
         #endregion
     }

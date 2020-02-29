@@ -1,8 +1,6 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
 using MG.Sonarr.Results;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
@@ -45,24 +43,14 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region CMDLET PROCESSING
-        protected override void BeginProcessing()
-        {
-            base.BeginProcessing();
-
-            //if (base.HasParameterSpecified(this, x => x.Id))
-            //    this.InputObject = base.GetMetadataById(this.Id).FirstOrDefault();
-
-            //else if (base.HasParameterSpecified(this, x => x.Name))
-            //{
-            //    List<Metadata> all = base.GetAllMetadata();
-            //    this.InputObject = base.GetMetadataByName(this.Name, all);
-            //}
-        }
+        protected override void BeginProcessing() => base.BeginProcessing();
 
         protected override void ProcessRecord()
         {
-            if (base.HasParameterSpecified(this, x => x.Enabled))
+            if (this.ContainsParameter(x => x.Enabled))
+            {
                 this.InputObject.IsEnabled = _enabled;
+            }
 
             if (base.FormatShouldProcess("Update", "Metadata Id: {0}", this.InputObject.Id))
             {
@@ -71,11 +59,6 @@ namespace MG.Sonarr.Cmdlets
                     base.SendToPipeline(updated);
             }
         }
-
-        #endregion
-
-        #region BACKEND METHODS
-
 
         #endregion
     }

@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -47,7 +48,7 @@ namespace MG.Sonarr.Cmdlets
         #region CMDLET PROCESSING
         protected override void BeginProcessing()
         {
-            if (base.HasParameterSpecified(this, x => x.EpisodeIdentifier))
+            if (this.ContainsParameter(x => x.EpisodeIdentifier))
                 _epIdCol = this.EpisodeIdentifier;
 
             base.BeginProcessing();
@@ -56,22 +57,22 @@ namespace MG.Sonarr.Cmdlets
         protected override void ProcessRecord()
         {
             var epList = new List<EpisodeResult>();
-            if (base.HasParameterSpecified(this, x => x.EpisodeId))
+            if (this.ContainsParameter(x => x.EpisodeId))
             {
                 this.GetEpisodeById(this.EpisodeId, epList);
             }
             else
             {
-                if (base.HasParameterSpecified(this, x => x.InputObject))
+                if (this.ContainsParameter(x => x.InputObject))
                     this.SeriesId = this.InputObject.Id;
 
                 List<EpisodeResult> allEps = base.SendSonarrListGet<EpisodeResult>(string.Format(EP_BY_SERIES, this.SeriesId));
 
-                if (base.HasParameterSpecified(this, x => x.EpisodeIdentifier))
+                if (this.ContainsParameter(x => x.EpisodeIdentifier))
                 {
                     this.GetEpisodeByIdentifierString(_epIdCol, allEps, ref epList);
                 }
-                else if (base.HasParameterSpecified(this, x => x.AbsoluteEpisodeNumber))
+                else if (this.ContainsParameter(x => x.AbsoluteEpisodeNumber))
                 {
                     this.GetEpisodeByAbsoluteNumber(this.AbsoluteEpisodeNumber, allEps, ref epList);
                 }
