@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
@@ -54,7 +55,7 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (base.HasNoneOfTheParametersSpecified(this, x => x.EnableTorrent, x => x.EnableUseNet))
+            if ( ! this.ContainsAnyParameters(x => x.EnableTorrent, x => x.EnableUseNet))
             {
                 base.ThrowTerminatingError("Either Torrent or Usenet must be enabled.", ErrorCategory.InvalidArgument);
             }
@@ -70,11 +71,6 @@ namespace MG.Sonarr.Cmdlets
                 base.SendToPipeline(dp);
             }
         }
-
-        #endregion
-
-        #region BACKEND METHODS
-
 
         #endregion
     }

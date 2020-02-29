@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
@@ -66,7 +67,7 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (base.HasParameterSpecified(this, x => x.Id))
+            if (this.ContainsParameter(x => x.Id))
             {
                 if (base.TryGetDelayProfileById(this.Id, out DelayProfile foundProfile))
                 {
@@ -97,13 +98,13 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         private void SetParametersToObject()
         {
-            if (base.HasParameterSpecified(this, x => x.EnableTorrent))
+            if (this.ContainsParameter(x => x.EnableTorrent))
                 this.InputObject.EnableTorrent = _enTor;
 
-            if (base.HasParameterSpecified(this, x => x.EnableUseNet))
+            if (this.ContainsParameter(x => x.EnableUseNet))
                 this.InputObject.EnableUsenet = _enUse;
 
-            if (base.HasParameterSpecified(this, x => x.Order))
+            if (this.ContainsParameter(x => x.Order))
             {
                 if (this.InputObject.IsDefault)
                     base.WriteError(new InvalidOperationException("Cannot set the order of the default delay profile."), ErrorCategory.InvalidOperation, this.InputObject);
@@ -112,13 +113,13 @@ namespace MG.Sonarr.Cmdlets
                     this.InputObject.SetOrder(this.Order);
             }
 
-            if (base.HasParameterSpecified(this, x => x.PreferredProtocol))
+            if (this.ContainsParameter(x => x.PreferredProtocol))
                 this.InputObject.PreferredProtocol = this.PreferredProtocol;
 
-            if (base.HasParameterSpecified(this, x => x.TorrentDelay))
+            if (this.ContainsParameter(x => x.TorrentDelay))
                 this.InputObject.TorrentDelay = this.TorrentDelay;
 
-            if (base.HasParameterSpecified(this, x => x.UsenetDelay))
+            if (this.ContainsParameter(x => x.UsenetDelay))
                 this.InputObject.UsenetDelay = this.UsenetDelay;
         }
 

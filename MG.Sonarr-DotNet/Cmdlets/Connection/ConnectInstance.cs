@@ -2,6 +2,7 @@ using MG.Api.Json;
 using MG.Api.Json.Extensions;
 using MG.Api.Rest.Extensions;
 using MG.Api.Rest.Generic;
+using MG.Posh.Extensions.Bound;
 using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
@@ -169,7 +170,7 @@ namespace MG.Sonarr.Cmdlets
             HttpClientHandler handler = new HttpClientHandler();
             this.CheckCertificateValidity(ref handler);
 
-            if (base.HasParameterSpecified(this, x => x.Proxy))
+            if (this.ContainsParameter(x => x.Proxy))
                 this.BoundCallerWithProxy(handler);
             
             else
@@ -211,7 +212,7 @@ namespace MG.Sonarr.Cmdlets
             };
             Context.ApiCaller.AddApiKey(this.ApiKey);
         }
-        private void SetSonarrUrl() => Context.SonarrUrl = !base.HasParameterSpecified(this, x => x.SonarrUrl)
+        private void SetSonarrUrl() => Context.SonarrUrl = !this.ContainsParameter(x => x.SonarrUrl)
                 ? ClassFactory.GenerateSonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
                 : ClassFactory.GenerateSonarrUrl(this.SonarrUrl, !_noApiPrefix);
         private Status TryConnect()
