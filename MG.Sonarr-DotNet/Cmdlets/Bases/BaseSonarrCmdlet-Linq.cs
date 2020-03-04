@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MG.Posh.Extensions.Bound;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -21,7 +22,7 @@ namespace MG.Sonarr.Cmdlets
         ///     The expression targeting the specified <see cref="PSCmdlet"/> whose property will be checked in the
         ///     bound parameters dictionary.
         /// </param>
-        public bool HasParameterSpecified<T, U>(T cmdlet, Expression<Func<T, U>> cmdletParameterExpression) where T : PSCmdlet
+        private bool HasParameterSpecified<T, U>(T cmdlet, Expression<Func<T, U>> cmdletParameterExpression) where T : PSCmdlet
         {
             bool result = false;
             if (cmdletParameterExpression.Body is MemberExpression memEx)
@@ -34,50 +35,50 @@ namespace MG.Sonarr.Cmdlets
             }
             return result;
         }
-        public bool HasAllParametersSpecified<T>(T cmdlet, params Expression<Func<T, object>>[] cmdletParameterExpressions) where T : PSCmdlet
-        {
-            bool result = false;
-            if (cmdletParameterExpressions != null && cmdletParameterExpressions.Length > 0)
-            {
-                result = SelectAllParameterNames(cmdletParameterExpressions)
-                    .All(x => cmdlet.MyInvocation.BoundParameters.ContainsKey(x));
-            }
-            return result;
-        }
-        public bool HasAnyParameterSpecified<T>(T cmdlet, params Expression<Func<T, object>>[] cmdletParameterExpressions) where T : PSCmdlet
-        {
-            bool result = false;
-            if (cmdletParameterExpressions != null && cmdletParameterExpressions.Length > 0)
-            {
-                result = SelectAllParameterNames(cmdletParameterExpressions)
-                    .Any(x => cmdlet.MyInvocation.BoundParameters.ContainsKey(x));
-            }
-            return result;
-        }
-        public bool HasNoneOfTheParametersSpecified<T>(T cmdlet, params Expression<Func<T, object>>[] cmdletParameterExpressions) where T : PSCmdlet
-        {
-            bool result = false;
-            if (cmdletParameterExpressions != null || cmdletParameterExpressions.Length > 0)
-            {
-                result = SelectAllParameterNames(cmdletParameterExpressions)
-                    .All(x => ! cmdlet.MyInvocation.BoundParameters.ContainsKey(x));
-            }
-            return result;
-        }
-        private IEnumerable<string> SelectAllParameterNames<T>(IEnumerable<Expression<Func<T, object>>> cmdletParameterExpressions) where T : PSCmdlet
-        {
-            foreach (Expression<Func<T, object>> expression in cmdletParameterExpressions)
-            {
-                if (expression.Body is MemberExpression memEx)
-                {
-                    yield return memEx.Member.Name;
-                }
-                else if (expression.Body is UnaryExpression unEx && unEx.Operand is MemberExpression unMemEx)
-                {
-                    yield return unMemEx.Member.Name;
-                }
-            }
-        }
+        //public bool HasAllParametersSpecified<T>(T cmdlet, params Expression<Func<T, object>>[] cmdletParameterExpressions) where T : PSCmdlet
+        //{
+        //    bool result = false;
+        //    if (cmdletParameterExpressions != null && cmdletParameterExpressions.Length > 0)
+        //    {
+        //        result = SelectAllParameterNames(cmdletParameterExpressions)
+        //            .All(x => cmdlet.MyInvocation.BoundParameters.ContainsKey(x));
+        //    }
+        //    return result;
+        //}
+        //public bool HasAnyParameterSpecified<T>(T cmdlet, params Expression<Func<T, object>>[] cmdletParameterExpressions) where T : PSCmdlet
+        //{
+        //    bool result = false;
+        //    if (cmdletParameterExpressions != null && cmdletParameterExpressions.Length > 0)
+        //    {
+        //        result = SelectAllParameterNames(cmdletParameterExpressions)
+        //            .Any(x => cmdlet.MyInvocation.BoundParameters.ContainsKey(x));
+        //    }
+        //    return result;
+        //}
+        //public bool HasNoneOfTheParametersSpecified<T>(T cmdlet, params Expression<Func<T, object>>[] cmdletParameterExpressions) where T : PSCmdlet
+        //{
+        //    bool result = false;
+        //    if (cmdletParameterExpressions != null || cmdletParameterExpressions.Length > 0)
+        //    {
+        //        result = SelectAllParameterNames(cmdletParameterExpressions)
+        //            .All(x => ! cmdlet.MyInvocation.BoundParameters.ContainsKey(x));
+        //    }
+        //    return result;
+        //}
+        //private IEnumerable<string> SelectAllParameterNames<T>(IEnumerable<Expression<Func<T, object>>> cmdletParameterExpressions) where T : PSCmdlet
+        //{
+        //    foreach (Expression<Func<T, object>> expression in cmdletParameterExpressions)
+        //    {
+        //        if (expression.Body is MemberExpression memEx)
+        //        {
+        //            yield return memEx.Member.Name;
+        //        }
+        //        else if (expression.Body is UnaryExpression unEx && unEx.Operand is MemberExpression unMemEx)
+        //        {
+        //            yield return unMemEx.Member.Name;
+        //        }
+        //    }
+        //}
 
         #endregion
 
