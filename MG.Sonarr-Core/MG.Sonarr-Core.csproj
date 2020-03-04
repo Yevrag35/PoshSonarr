@@ -38,8 +38,8 @@
 
   <ItemGroup>
     <PackageReference Include="MG.Api.Json" Version="1.0.0" />
-    <PackageReference Include="MG.Dynamic" Version="3.5.0" />
-    <PackageReference Include="MG.Posh.Extensions" Version="1.0.3" />
+    <PackageReference Include="MG.Dynamic" Version="3.6.0" />
+    <PackageReference Include="MG.Posh.Extensions" Version="1.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
@@ -48,7 +48,7 @@
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
-		<PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0-rc.3" />
+		<PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0" />
 	</ItemGroup>
 
   <ItemGroup>
