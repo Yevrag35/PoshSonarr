@@ -1,11 +1,5 @@
-﻿using MG.Api.Rest.Generic;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
+﻿using System;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -39,11 +33,6 @@ namespace MG.Sonarr.Cmdlets
                 base.SendSonarrPostNoData(EP);
             }
         }
-
-        #endregion
-
-        #region BACKEND METHODS
-
 
         #endregion
     }

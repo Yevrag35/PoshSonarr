@@ -1,10 +1,8 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
@@ -69,21 +67,21 @@ namespace MG.Sonarr.Cmdlets
         {
             base.BeginProcessing();
 
-            if (!base.HasParameterSpecified(this, x => x.Id))
+            if ( ! this.ContainsParameter(x => x.Id))
                 _ids = new HashSet<int>();
         }
 
         protected override void ProcessRecord()
         {
-            if (base.HasParameterSpecified(this, x => x.InputObject))
+            if (this.ContainsParameter(x => x.InputObject))
             {
                 _ids.Add(this.InputObject.Id);
                 _ioSet = true;
             }
-            else if (base.HasNoneOfTheParametersSpecified(this, x => x.InputObject, x => x.RemoveFrom))
+            else if ( ! this.ContainsAnyParameters(x => x.InputObject, x => x.RemoveFrom))
                 _ioSet = true;
 
-            else if (base.HasParameterSpecified(this, x => x.RemoveFrom))
+            else if (this.ContainsParameter(x => x.RemoveFrom))
             {
                 string msg = null;
                 if (_clearAll)
@@ -125,15 +123,15 @@ namespace MG.Sonarr.Cmdlets
 
         #endregion
 
-        private string GetMessage(HashSet<int> ids)
-        {
-            if (_ids == null || _ids.Count <= 0)
-                return "All Tags";
+        //private string GetMessage(HashSet<int> ids)
+        //{
+        //    if (_ids == null || _ids.Count <= 0)
+        //        return "All Tags";
 
-            else
-                return string.Format("Tag - {0}", string.Join(", ", ids));
-        }
+        //    else
+        //        return string.Format("Tag - {0}", string.Join(", ", ids));
+        //}
 
-        private void RemoveTagsFromObject(HashSet<int> ids) => this.RemoveFrom.Tags.ExceptWith(ids);
+        //private void RemoveTagsFromObject(HashSet<int> ids) => this.RemoveFrom.Tags.ExceptWith(ids);
     }
 }

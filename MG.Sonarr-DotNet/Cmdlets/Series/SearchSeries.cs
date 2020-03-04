@@ -1,7 +1,5 @@
-﻿using MG.Sonarr.Results;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -60,7 +58,7 @@ namespace MG.Sonarr.Cmdlets
         private string GetEndpoint()
         {
             string searchStr = null;
-            if (base.HasParameterSpecified(this, x => x.Name))
+            if (this.ContainsParameter(x => x.Name))
             {
                 searchStr = this.ParseSearchString(this.Name);
             }

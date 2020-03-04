@@ -1,14 +1,9 @@
-﻿using MG.Sonarr.Results;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
-using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -79,7 +74,7 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (base.HasParameterSpecified(this, x => x.Tags))
+            if (this.ContainsParameter(x => x.Tags))
             {
                 _allCurrentTags = base.SendSonarrListGet<Tag>(TAG);
                 _tagTable = new TagTable(this.Tags);
@@ -214,19 +209,18 @@ namespace MG.Sonarr.Cmdlets
 
         private void MakeChangesBasedOnParameters()
         {
-            if (base.HasAnyParameterSpecified(this, x => x.NewPath, x => x.IsMonitored,
-                x => x.UseSeasonFolder, x => x.QualityProfileId))
+            if (this.ContainsAnyParameters(x => x.NewPath, x => x.IsMonitored, x => x.UseSeasonFolder, x => x.QualityProfileId))
             {
-                if (base.HasParameterSpecified(this, x => x.NewPath))
+                if (this.ContainsParameter(x => x.NewPath))
                     this.InputObject.Path = this.NewPath;
 
-                if (base.HasParameterSpecified(this, x => x.IsMonitored))
+                if (this.ContainsParameter(x => x.IsMonitored))
                     this.InputObject.IsMonitored = _isMon;
 
-                if (base.HasParameterSpecified(this, x => x.QualityProfileId))
+                if (this.ContainsParameter(x => x.QualityProfileId))
                     this.InputObject.QualityProfileId = this.QualityProfileId;
 
-                if (base.HasParameterSpecified(this, x => x.UseSeasonFolder))
+                if (this.ContainsParameter(x => x.UseSeasonFolder))
                     this.InputObject.UsingSeasonFolders = _useFol;
             }
         }

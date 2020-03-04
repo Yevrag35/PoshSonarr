@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MG.Posh.Extensions.Bound;
+using System;
 using System.Collections.Generic;
 using System.Management.Automation;
 
@@ -29,7 +30,7 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (base.HasParameterSpecified(this, x => x.Id))
+            if (this.ContainsParameter(x => x.Id))
                 _ids = new List<int>(this.Id);
 
             else
@@ -38,7 +39,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (base.HasParameterSpecified(this, x => x.InputObject))
+            if (this.ContainsParameter(x => x.InputObject))
                 _ids.Add(this.InputObject);
         }
 
@@ -53,11 +54,6 @@ namespace MG.Sonarr.Cmdlets
                 }
             }
         }
-
-        #endregion
-
-        #region BACKEND METHODS
-
 
         #endregion
     }

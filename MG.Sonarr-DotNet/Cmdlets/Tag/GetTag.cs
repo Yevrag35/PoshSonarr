@@ -1,12 +1,9 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -42,11 +39,11 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (base.HasParameterSpecified(this, x => x.InputObject) && this.InputObject.Tags != null && this.InputObject.Tags.Count > 0)
+            if (this.ContainsParameter(x => x.InputObject) && this.InputObject.Tags != null && this.InputObject.Tags.Count > 0)
             {
                 _ids.UnionWith(this.InputObject.Tags);
             }
-            else if (base.HasParameterSpecified(this, x => x.Id))
+            else if (this.ContainsParameter(x => x.Id))
             {
                 _ids.UnionWith(this.Id);
             }
@@ -54,7 +51,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void EndProcessing()
         {
-            if (!base.HasParameterSpecified(this, x => x.Id) && base.TryGetAllTags(out TagCollection allTags))
+            if ( ! this.ContainsParameter(x => x.Id) && base.TryGetAllTags(out TagCollection allTags))
             {
                 allTags.Sort();
                 base.SendToPipeline(base.FilterByStringParameter(allTags, t => t.Label, this, cmd => cmd.Label));

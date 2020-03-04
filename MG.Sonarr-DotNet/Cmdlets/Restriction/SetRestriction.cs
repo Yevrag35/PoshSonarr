@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -63,7 +64,7 @@ namespace MG.Sonarr.Cmdlets
                 this.InputObject = base.SendSonarrGet<Restriction>(string.Format(GetRestriction.EP_ID, this.Id));
             }
 
-            if (base.HasParameterSpecified(this, x => x.IgnoredTerms))
+            if (this.ContainsParameter(x => x.IgnoredTerms))
             {
                 if (this.IgnoredTerms.AddTerms != null && this.IgnoredTerms.AddTerms.Length > 0)
                     this.InputObject.Ignored.Add(this.IgnoredTerms.AddTerms);
@@ -72,7 +73,7 @@ namespace MG.Sonarr.Cmdlets
                     this.InputObject.Ignored.Remove(this.IgnoredTerms.RemoveTerms);
             }
 
-            if (base.HasParameterSpecified(this, x => x.RequiredTerms))
+            if (this.ContainsParameter(x => x.RequiredTerms))
             {
                 if (this.RequiredTerms.AddTerms != null && this.RequiredTerms.AddTerms.Length > 0)
                     this.InputObject.Required.Add(this.RequiredTerms.AddTerms);
@@ -81,7 +82,7 @@ namespace MG.Sonarr.Cmdlets
                     this.InputObject.Required.Remove(this.RequiredTerms.RemoveTerms);
             }
 
-            if (base.HasParameterSpecified(this, x => x.ReplaceTerms))
+            if (this.ContainsParameter(x => x.ReplaceTerms))
                 this.MergeChanges(this.ReplaceTerms);
 
             if (base.ShouldProcess(string.Format(NewRestriction.SHOULD_MSG, this.InputObject.Ignored.ToJson(), 

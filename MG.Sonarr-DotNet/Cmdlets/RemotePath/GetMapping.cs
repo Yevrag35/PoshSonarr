@@ -44,14 +44,14 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (base.HasParameterSpecified(this, x => x.Id))
+            if (this.ContainsParameter(x => x.Id))
             {
                 _ids = new List<int>(this.Id);
                 usingIds = true;
                 usingPaths = false;
             }
 
-            else if (base.HasParameterSpecified(this, x => x.Path))
+            else if (this.ContainsParameter(x => x.Path))
             {
                 _paths = new List<string>(this.Path);
             }

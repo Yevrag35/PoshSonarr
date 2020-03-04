@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +34,7 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (base.HasParameterSpecified(this, x => x.Path))
+            if (this.ContainsParameter(x => x.Path))
                 _paths = new List<string>(this.Path);
 
             else
@@ -42,7 +43,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (base.HasParameterSpecified(this, x => x.InputObject))
+            if (this.ContainsParameter(x => x.InputObject))
             {
                 _paths.Add(this.InputObject);
             }

@@ -1,11 +1,9 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -73,10 +71,10 @@ namespace MG.Sonarr.Cmdlets
 
         private List<Diskspace> Filter(List<Diskspace> diskspaceResults)
         {
-            if (base.HasParameterSpecified(this, x => x.Path))
+            if (this.ContainsParameter(x => x.Path))
                 return base.FilterByMultipleStrings(diskspaceResults, _stringArgs, x => x.Path);
 
-            else if (base.HasParameterSpecified(this, x => x.Label))
+            else if (this.ContainsParameter(x => x.Label))
                 return base.FilterByMultipleStrings(diskspaceResults, _stringArgs, x => x.Label);
 
             else

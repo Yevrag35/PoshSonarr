@@ -1,12 +1,10 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -41,7 +39,7 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         private List<Backup> Filter(List<Backup> allBackups)
         {
-            if (base.HasParameterSpecified(this, x => x.Type))
+            if (this.ContainsParameter(x => x.Type))
                 return allBackups.FindAll(x => this.Type.Contains(x.Type));
 
             else

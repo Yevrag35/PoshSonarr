@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
@@ -36,10 +36,10 @@ namespace MG.Sonarr.Cmdlets
             base.BeginProcessing();
             _names = new List<string>();
             _ids = new List<long>();
-            if (base.HasParameterSpecified(this, x => x.Name))
+            if (this.ContainsParameter(x => x.Name))
                 this.ProcessNamesParameter(this.Name);
 
-            else if (base.HasParameterSpecified(this, x => x.Id))
+            else if (this.ContainsParameter(x => x.Id))
                 _ids.AddRange(this.Id);
         }
 

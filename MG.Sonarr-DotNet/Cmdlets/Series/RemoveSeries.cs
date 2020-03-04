@@ -1,13 +1,8 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
 using MG.Sonarr.Results;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
-using System.Net.Http;
-using System.Reflection;
-using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -51,7 +46,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (base.HasParameterSpecified(this, x => x.InputObject))
+            if (this.ContainsParameter(x => x.InputObject))
                 this.SeriesId = this.InputObject.Id;
 
             string apiUri = string.Format("/series/{0}?deleteFiles={1}", this.SeriesId, _deleteFiles.ToString());
