@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections;
@@ -73,7 +74,7 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (base.HasParameterSpecified(this, x => x.Severity) && this.Severity != LogLevel.All)
+            if (this.ContainsParameter(x => x.Severity) && this.Severity != LogLevel.All)
             {
                 this.FilterBy = LogSortKey.Level.ToString();
                 this.FilterValue = this.Severity;
@@ -104,7 +105,6 @@ namespace MG.Sonarr.Cmdlets
         private string MakeUrl() => string.Format(URI_FORMAT, ENDPOINT, this.UrlParameters.ToQueryString());
         private void SetFilterParameter()
         {
-            //if (base.HasParameterSpecified(this, x => x.FilterBy))
             if (!string.IsNullOrEmpty(this.FilterBy))
             {
                 this.UrlParameters.Add(new FilterParameter(this.FilterBy, this.FilterValue));
@@ -112,7 +112,7 @@ namespace MG.Sonarr.Cmdlets
         }
         private void SetPagingParameters()
         {
-            if (base.HasAnyParameterSpecified(this, x => x.Page, x => x.PageSize))
+            if (this.ContainsAnyParameters(x => x.Page, x => x.PageSize))
             {
                 this.UrlParameters.Add(new PagingParameter(this.Page, this.PageSize));
             }
@@ -127,7 +127,7 @@ namespace MG.Sonarr.Cmdlets
 
                 this.UrlParameters.Add(new PagingParameter(PagingParameter.DefaultPage, this.Top));
             }
-            else if (base.HasParameterSpecified(this, x => x.Top))
+            else if (this.ContainsParameter(x => x.Top))
             {
                 this.UrlParameters.Add(new PagingParameter(PagingParameter.DefaultPage, this.Top));
             }

@@ -38,16 +38,17 @@
 
   <ItemGroup>
     <PackageReference Include="MG.Api.Json" Version="1.0.0" />
-    <PackageReference Include="MG.Dynamic" Version="4.0.0-alpha" />
+    <PackageReference Include="MG.Dynamic" Version="3.6.0" />
+    <PackageReference Include="MG.Posh.Extensions" Version="1.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
-		<PackageReference Include="Microsoft.PowerShell.SDK" Version="6.2.3" />
+		<PackageReference Include="Microsoft.PowerShell.SDK" Version="6.2.4" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
-		<PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0-preview.6" />
+		<PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0" />
 	</ItemGroup>
 
   <ItemGroup>

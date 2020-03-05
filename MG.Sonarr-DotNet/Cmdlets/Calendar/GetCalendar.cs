@@ -1,6 +1,6 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -85,16 +85,16 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (base.HasParameterSpecified(this, x => x.StartDate) && ! base.HasParameterSpecified(this, x => x.EndDate))
+            if (this.ContainsParameter(x => x.StartDate) && ! this.ContainsParameter(x => x.EndDate))
             {
                 this.EndDate = this.StartDate.AddDays(7);
             }
-            else if (base.HasParameterSpecified(this, x => x.Today))
+            else if (_today)
             {
                 this.StartDate = DateTime.Today;
                 this.EndDate = DateTime.Today.AddDays(1);
             }
-            else if (base.HasParameterSpecified(this, x => x.Tomorrow))
+            else if (_tomorrow)
             {
                 this.StartDate = DateTime.Today.AddDays(1);
                 this.EndDate = DateTime.Today.AddDays(2);
@@ -109,7 +109,7 @@ namespace MG.Sonarr.Cmdlets
 
             List<CalendarEntry> entries = this.GetCalendarEntries(full);
 
-            if (base.HasParameterSpecified(this, x => x.DayOfWeek))
+            if (this.ContainsParameter(x => x.DayOfWeek))
             {
                 base.SendToPipeline(entries.FindAll(x => x.DayOfWeek.HasValue && this.DayOfWeek.Contains(x.DayOfWeek.Value)));
             }

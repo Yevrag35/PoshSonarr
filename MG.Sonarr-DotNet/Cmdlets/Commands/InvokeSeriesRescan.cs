@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
 using System.Management.Automation;
 
@@ -48,7 +49,7 @@ namespace MG.Sonarr.Cmdlets
 
             string msg = "Rescan all series";
 
-            if (base.HasParameterSpecified(this, x => x.SeriesId))
+            if (this.ContainsParameter(x => x.SeriesId))
             {
                 msg = string.Format("Rescan series id {0}", this.SeriesId);
             }

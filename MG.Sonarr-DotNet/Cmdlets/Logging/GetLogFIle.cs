@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections;
@@ -47,11 +48,11 @@ namespace MG.Sonarr.Cmdlets.Logging
         private IEnumerable<LogFile> FilterResults(List<LogFile> logFiles)
         {
             logFiles.Sort();
-            if (base.HasParameterSpecified(this, x => x.LogFileId))
+            if (this.ContainsParameter(x => x.LogFileId))
             {
                 return logFiles.Where(x => this.LogFileId.Contains(x.LogFileId));
             }
-            if (base.HasParameterSpecified(this, x => x.Name))
+            if (this.ContainsParameter(x => x.Name))
             {
                 IEqualityComparer<string> ig = ClassFactory.NewIgnoreCase();
                 return logFiles.Where(x => this.Name.Contains(x.FileName, ig));

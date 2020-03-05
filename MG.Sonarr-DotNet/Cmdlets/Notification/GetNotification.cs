@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,11 +28,11 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if ( ! base.HasParameterSpecified(this, x => x.Id) && base.TryGetAllNotifications(out List<Notification> allNotifs))
+            if ( ! this.ContainsParameter(x => x.Id) && base.TryGetAllNotifications(out List<Notification> allNotifs))
             {
                 base.SendToPipeline(base.FilterByStringParameter(allNotifs, p => p.Name, this, cmd => cmd.Name));
             }
-            else if (base.HasParameterSpecified(this, x => x.Id))
+            else if (this.ContainsParameter(x => x.Id))
             {
                 base.SendToPipeline(base.GetNotificationsById(this.Id));
             }

@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
@@ -128,8 +129,11 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if ( ! base.HasParameterSpecified(this, x => x.InputObject))
+            //if ( ! base.HasParameterSpecified(this, x => x.InputObject))
+            if (!this.ContainsParameter(x => x.InputObject))
+            {
                 this.InputObject = base.GetUIHost();
+            }
         }
 
         protected override void EndProcessing()
@@ -148,75 +152,75 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         private void ModifyBasedOnParameters()
         {
-            if (base.HasAnyParameterSpecified(this, x => x.BindAddress, x => x.Branch, x => x.AnalyticsEnabled, x => x.LaunchBrowserAtStartup,
-                x => x.LogLevel, x => x.NewCredential, x => x.Port, x => x.ProxyBypassFilter, x => x.ProxyBypassOnLocal, x => x.ProxyCredential,
-                x => x.ProxyEnabled, x => x.ProxyHostName, x => x.ProxyPort, x => x.ProxyType, x => x.SslEnabled, x => x.SslPort, 
-                x => x.UpdateAutomatically, x => x.UpdateMechanism, x => x.UpdateScriptPath, x => x.AuthenticationMethod))
+            if (this.ContainsAnyParameters(x => x.BindAddress, x => x.Branch, x => x.AnalyticsEnabled, x => x.LaunchBrowserAtStartup, x => x.LogLevel,
+                x => x.NewCredential, x => x.Port, x => x.ProxyBypassFilter, x => x.ProxyBypassOnLocal, x => x.ProxyCredential, x => x.ProxyEnabled,
+                x => x.ProxyHostName, x => x.ProxyPort, x => x.ProxyType, x => x.SslEnabled, x => x.SslPort, x => x.UpdateAutomatically,
+                x => x.UpdateMechanism, x => x.UpdateScriptPath, x => x.AuthenticationMethod))
             {
-                if (base.HasParameterSpecified(this, x => x.AuthenticationMethod))
+                if (this.ContainsParameter(x => x.AuthenticationMethod))
                     this.InputObject.AuthenticationMethod = this.AuthenticationMethod;
 
-                if (base.HasParameterSpecified(this, x => x.AnalyticsEnabled))
+                if (this.ContainsParameter(x => x.AnalyticsEnabled))
                     this.InputObject.AnalyticsEnabled = _analyticsEnabled;
 
-                if (base.HasParameterSpecified(this, x => x.BindAddress))
+                if (this.ContainsParameter(x => x.BindAddress))
                     this.InputObject.BindAddress = this.BindAddress;
 
-                if (base.HasParameterSpecified(this, x => x.Branch))
+                if (this.ContainsParameter(x => x.Branch))
                     this.InputObject.Branch = this.Branch;
 
-                if (base.HasParameterSpecified(this, x => x.LaunchBrowserAtStartup))
+                if (this.ContainsParameter(x => x.LaunchBrowserAtStartup))
                     this.InputObject.LaunchBrowser = _launchBrowser;
 
-                if (base.HasParameterSpecified(this, x => x.LogLevel))
+                if (this.ContainsParameter(x => x.LogLevel))
                     this.InputObject.LogLevel = this.LogLevel;
 
-                if (base.HasParameterSpecified(this, x => x.NewCredential))
+                if (this.ContainsParameter(x => x.NewCredential))
                 {
                     this.InputObject.Username = this.NewCredential.UserName;
                     if (this.NewCredential.Password != null)
                         this.InputObject.Password = this.NewCredential.GetNetworkCredential().Password;
                 }
-                if (base.HasParameterSpecified(this, x => x.Port))
+                if (this.ContainsParameter(x => x.Port))
                     this.InputObject.Port = this.Port;
 
-                if (base.HasParameterSpecified(this, x => x.ProxyBypassFilter))
+                if (this.ContainsParameter(x => x.ProxyBypassFilter))
                     this.InputObject.ProxyBypassFilter = this.ProxyBypassFilter;
 
-                if (base.HasParameterSpecified(this, x => x.ProxyBypassOnLocal))
+                if (this.ContainsParameter(x => x.ProxyBypassOnLocal))
                     this.InputObject.ProxyBypassLocalAddresses = _proxyBypass;
 
-                if (base.HasParameterSpecified(this, x => x.ProxyCredential))
+                if (this.ContainsParameter(x => x.ProxyCredential))
                 {
                     this.InputObject.ProxyUsername = this.ProxyCredential.UserName;
                     if (this.ProxyCredential.Password != null)
                         this.InputObject.ProxyPassword = this.ProxyCredential.GetNetworkCredential().Password;
                 }
-                if (base.HasParameterSpecified(this, x => x.ProxyEnabled))
+                if (this.ContainsParameter(x => x.ProxyEnabled))
                     this.InputObject.ProxyEnabled = _proxyEnabled;
 
-                if (base.HasParameterSpecified(this, x => x.ProxyHostName))
+                if (this.ContainsParameter(x => x.ProxyHostName))
                     this.InputObject.ProxyHostname = this.ProxyHostName;
 
-                if (base.HasParameterSpecified(this, x => x.ProxyPort))
+                if (this.ContainsParameter(x => x.ProxyPort))
                     this.InputObject.ProxyPort = this.ProxyPort;
 
-                if (base.HasParameterSpecified(this, x => x.ProxyType))
+                if (this.ContainsParameter(x => x.ProxyType))
                     this.InputObject.ProxyType = this.ProxyType;
 
-                if (base.HasParameterSpecified(this, x => x.SslEnabled))
+                if (this.ContainsParameter(x => x.SslEnabled))
                     this.InputObject.EnableSsl = _sslEnabled;
 
-                if (base.HasParameterSpecified(this, x => x.SslPort))
+                if (this.ContainsParameter(x => x.SslPort))
                     this.InputObject.SslPort = this.SslPort;
 
-                if (base.HasParameterSpecified(this, x => x.UpdateAutomatically))
+                if (this.ContainsParameter(x => x.UpdateAutomatically))
                     this.InputObject.UpdateAutomatically = _updateAuto;
 
-                if (base.HasParameterSpecified(this, x => x.UpdateMechanism))
+                if (this.ContainsParameter(x => x.UpdateMechanism))
                     this.InputObject.UpdateMechanism = this.UpdateMechanism;
 
-                if (base.HasParameterSpecified(this, x => x.UpdateScriptPath))
+                if (this.ContainsParameter(x => x.UpdateScriptPath))
                     this.InputObject.UpdateScriptPath = this.UpdateScriptPath;
 
                 //if (base.HasParameterSpecified(this, x => x.UrlBase))

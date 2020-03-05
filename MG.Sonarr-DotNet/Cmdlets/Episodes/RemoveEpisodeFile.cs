@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -40,11 +41,15 @@ namespace MG.Sonarr.Cmdlets.Episodes
 
         protected override void ProcessRecord()
         {
-            if (base.HasParameterSpecified(this, x => x.EpisodeFile))
+            if (this.ContainsParameter(x => x.EpisodeFile))
+            {
                 this.EpisodeFileId = this.EpisodeFile.EpisodeFileId;
+            }
 
             if (this.EpisodeFileId.Equals(0))
+            {
                 throw new ArgumentNullException("EpisodeFileId");
+            }
 
             string ep = string.Format(EP, this.EpisodeFileId);
             if (_force || base.ShouldProcess(ep, "Delete"))

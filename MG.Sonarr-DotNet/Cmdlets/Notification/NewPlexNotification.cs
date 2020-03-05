@@ -1,7 +1,6 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
@@ -91,23 +90,21 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region CMDLET PROCESSING
-        protected override void BeginProcessing()
-        {
-            base.BeginProcessing();
-
-        }
+        protected override void BeginProcessing() => base.BeginProcessing();
 
         protected override void ProcessRecord()
         {
             if (base.ShouldProcess("Plex Notification Connection", "New"))
             {
                 PlexNotification notif = null;
-                if (base.HasParameterSpecified(this, x => x.PlexCredential))
+                if (this.ContainsParameter(x => x.PlexCredential))
+                {
                     notif = this.Create(this.ConnectionName, this.PlexServerName, this.Port, this.PlexCredential, _upLib, _useSsl);
-
+                }
                 else
+                {
                     notif = this.Create(this.ConnectionName, this.PlexServerName, this.Port, this.UserName, this.Password, _upLib, _useSsl);
-
+                }
                 this.SetNotificationOptions(notif);
                 base.WriteDebug(notif.ToJson());
                 Notification createdNotif = base.SendSonarrPost<Notification>(base.Endpoint, notif);
@@ -136,19 +133,19 @@ namespace MG.Sonarr.Cmdlets
 
         private void SetNotificationOptions(PlexNotification notif)
         {
-            if (this.HasParameterSpecified(this, x => x.NotifyOnDownload))
+            if (this.ContainsParameter(x => x.NotifyOnDownload))
                 notif.OnDownload = _notDown;
 
-            if (this.HasParameterSpecified(this, x => x.NotifyOnRename))
+            if (this.ContainsParameter(x => x.NotifyOnRename))
                 notif.OnRename = _notRen;
 
-            if (this.HasParameterSpecified(this, x => x.NotifyOnUpgrade))
+            if (this.ContainsParameter(x => x.NotifyOnUpgrade))
                 notif.OnUpgrade = _notUpg;
 
-            if (this.HasParameterSpecified(this, x => x.UpdateLibrary))
+            if (this.ContainsParameter(x => x.UpdateLibrary))
                 notif.Fields["UpdateLibrary"].Value = _upLib;
 
-            if (this.HasParameterSpecified(this, x => x.UseSSL))
+            if (this.ContainsParameter(x => x.UseSSL))
                 notif.Fields["UseSsl"].Value = _useSsl;
         }
 

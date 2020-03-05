@@ -1,12 +1,8 @@
 ﻿using MG.Dynamic;
-using MG.Sonarr.Extensions;
 using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
-using Newtonsoft.Json;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
@@ -63,7 +59,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            var cutoff = _dynLib.GetUnderlyingValue<Quality>(CUTOFF_QUALITY);
+            Quality cutoff = _dynLib.GetUnderlyingValue<Quality>(CUTOFF_QUALITY);
             var newProfile = new QualityProfileNew
             {
                 Cutoff = cutoff,

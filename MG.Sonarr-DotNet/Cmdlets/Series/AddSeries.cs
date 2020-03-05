@@ -1,15 +1,10 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -101,7 +96,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if ( ! base.HasParameterSpecified(this, x => x.UseSeasonFolders) && this.Series.Seasons.Count > 1)
+            if ( ! this.ContainsParameter(x => x.UseSeasonFolders) && this.Series.Seasons.Count > 1)
                 _usf = true;
 
             newPost = this.NewPost(this.Series);
@@ -134,7 +129,7 @@ namespace MG.Sonarr.Cmdlets
 
         private void AddPath()
         {
-            if (base.HasParameterSpecified(this, x => x.RootFolderPath))
+            if (this.ContainsParameter(x => x.RootFolderPath))
                 newPost.Path = this.RootFolderPath;
             
             else

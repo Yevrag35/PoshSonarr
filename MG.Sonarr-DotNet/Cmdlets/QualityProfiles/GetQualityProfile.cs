@@ -1,13 +1,8 @@
-﻿using MG.Sonarr.Results;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets.Profiles
 {
@@ -37,7 +32,7 @@ namespace MG.Sonarr.Cmdlets.Profiles
 
         protected override void ProcessRecord()
         {
-            if ( ! base.HasParameterSpecified(this, x => x.ProfileId))
+            if ( ! this.ContainsParameter(x => x.ProfileId))
             {
                 if (this.TryGetAllProfiles(out List<QualityProfile> profs))
                 {

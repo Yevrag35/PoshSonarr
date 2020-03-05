@@ -1,11 +1,8 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
-using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -31,11 +28,14 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (base.HasParameterSpecified(this, x => x.Id))
+            if (this.ContainsParameter(x => x.Id))
+            {
                 base.WriteObject(this.GetQueueItemsById(this.Id), true);
-
+            }
             else if (this.TryGetAllQueueItems(out List<QueueItem> allItems))
+            {
                 base.WriteObject(allItems, true);
+            }
         }
 
         #endregion

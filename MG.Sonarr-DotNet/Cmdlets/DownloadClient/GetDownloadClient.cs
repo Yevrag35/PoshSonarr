@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections;
@@ -52,11 +53,11 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (this.ParameterSetName != "ByClientId")
+            if ( ! this.ContainsParameter(x => x.Id))
             {
                 List<DownloadClient> clients = this.GetAllDownloadClients();
                 
-                if ( ! base.HasParameterSpecified(this, x => x.Protocol))
+                if ( ! this.ContainsParameter(x => x.Protocol))
                     base.SendToPipeline(clients);
 
                 else

@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
@@ -27,14 +28,15 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (base.HasParameterSpecified(this, x => x.Id))
+            if (this.ContainsParameter(x => x.Id))
+            {
                 base.SendToPipeline(base.GetMetadataById(this.Id));
-
+            }
             else
             {
                 List<Metadata> all = base.GetAllMetadata();
                 all.Sort();
-                if (base.HasParameterSpecified(this, x => x.Name))
+                if (this.ContainsParameter(x => x.Name))
                     base.SendToPipeline(base.FilterByStringParameter(all, m => m.Name, this, cmd => cmd.Name));
 
                 else

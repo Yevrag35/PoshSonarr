@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -43,7 +44,7 @@ namespace MG.Sonarr.Cmdlets.Commands
 
         protected override void ProcessRecord()
         {
-            if (base.HasParameterSpecified(this, x => x.JobId))
+            if (this.ContainsParameter(x => x.JobId))
             {
                 for (int i = 0; i < this.JobId.Length; i++)
                 {
