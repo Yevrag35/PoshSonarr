@@ -33,7 +33,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (base.HasParameterSpecified(this, x => x.SortKey))
+            if (this.ContainsParameter(x => x.SortKey))
             {
                 if (this.SortKey.Equals("Date", StringComparison.CurrentCultureIgnoreCase))
                     _list.Add("sortKey=date");
@@ -42,7 +42,7 @@ namespace MG.Sonarr.Cmdlets
                     _list.Add("sortKey=series.title");
             }
 
-            if (base.HasParameterSpecified(this, x => x.EpisodeId))
+            if (this.ContainsParameter(x => x.EpisodeId))
             {
                 _list.Add(string.Format("episodeId={0}", this.EpisodeId));
             }

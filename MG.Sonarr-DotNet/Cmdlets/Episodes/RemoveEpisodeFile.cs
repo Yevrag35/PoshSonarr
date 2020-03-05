@@ -43,7 +43,7 @@ namespace MG.Sonarr.Cmdlets.Episodes
         {
             if (this.ContainsParameter(x => x.EpisodeFile))
             {
-                this.EpisodeFileId = this.EpisodeFile.EpisodeFileId;
+                this.EpisodeFileId = this.EpisodeFile.Id;
             }
 
             if (this.EpisodeFileId.Equals(0))

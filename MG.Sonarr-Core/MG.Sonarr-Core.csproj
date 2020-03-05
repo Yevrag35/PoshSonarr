@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>MG.Sonarr</RootNamespace>
     <LangVersion>7.3</LangVersion>
     <Description>A library consisting of PowerShell cmdlets for querying/managing Sonarr PVR.</Description>
@@ -33,7 +33,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Content Include="$(USERPROFILE)\.nuget\packages\mg.api.json\1.0.0\lib\netstandard2.0\*.dll;$(USERPROFILE)\.nuget\packages\mg.dynamic\3.6.0\lib\netcoreapp3.1\*.dll;$(USERPROFILE)\.nuget\packages\mg.posh.extensions\1.1.0\lib\netcoreapp3.1\*.dll;$(USERPROFILE)\.nuget\packages\newtonsoft.json\12.0.3\lib\netstandard2.0\Newtonsoft.Json.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 	  <None Remove="DebugScript.ps1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="$(USERPROFILE)\DebugScript.ps1">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	</ItemGroup>
 
   <ItemGroup>
@@ -43,12 +52,16 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
-	<ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
-		<PackageReference Include="Microsoft.PowerShell.SDK" Version="6.2.4" />
-	</ItemGroup>
+	<!--<ItemGroup>
+		<ModuleFiles
+			Include="$(USERPROFILE).nuget\packages\mg.api.json\**\*.dll;$(USERPROFILE).nuget\packages\mg.dynamic\**\*.dll;$(USERPROFILE).nuget\packages\mg.posh.extensions\**\*.dll"
+			DestinationPath="$(ProjectDir)bin\Debug\netcoreapp3.1"/>
+	</ItemGroup>-->
 
-	<ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
-		<PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0" />
+	<ItemGroup>
+		<PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0">
+			<IncludeAssets>compile</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 
   <ItemGroup>

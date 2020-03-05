@@ -21,8 +21,8 @@ namespace MG.Sonarr.Results
         /// <summary>
         /// The of ID of the <see cref="EpisodeFile"/>.
         /// </summary>
-        [JsonProperty("Id")]
-        public long EpisodeFileId { get; private set; }
+        [JsonProperty("id")]
+        public int Id { get; private set; }
 
         /// <summary>
         /// The media details of the <see cref="EpisodeFile"/>.
@@ -81,8 +81,8 @@ namespace MG.Sonarr.Results
         [JsonProperty("size")]
         public long Size { get; private set; }
 
-        public int CompareTo(EpisodeFile other) => this.EpisodeFileId.CompareTo(other.EpisodeFileId);
-        public bool Equals(EpisodeFile other) => this.EpisodeFileId.Equals(other.EpisodeFileId);
+        public int CompareTo(EpisodeFile other) => this.Id.CompareTo(other.Id);
+        public bool Equals(EpisodeFile other) => this.Id.Equals(other.Id);
     }
 
     /// <summary>

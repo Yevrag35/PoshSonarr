@@ -14,7 +14,7 @@
 								<PropertyName>DateAdded</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>EpisodeFileId</PropertyName>
+								<PropertyName>Id</PropertyName>
 							</ListItem>
 							<ListItem>
 								<Label>MediaInfo</Label>
@@ -32,9 +32,6 @@
 							</ListItem>
 							<ListItem>
 								<PropertyName>RelativePath</PropertyName>
-							</ListItem>
-							<ListItem>
-								<PropertyName>SceneName</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>SeriesId</PropertyName>

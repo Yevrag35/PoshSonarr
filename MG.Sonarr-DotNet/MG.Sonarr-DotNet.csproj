@@ -176,9 +176,7 @@
     <Content Include="DebugScript.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="GenerateManifest.ps1">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <None Include="GenerateManifest.ps1" />
     <Compile Include="Objects\NameOrId.cs" />
     <Compile Include="Objects\ProxyCredential.cs" />
     <Compile Include="Objects\TagTable.cs" />

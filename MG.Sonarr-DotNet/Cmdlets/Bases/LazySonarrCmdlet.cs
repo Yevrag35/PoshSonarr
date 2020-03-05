@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using Microsoft.PowerShell.Commands;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -43,13 +44,13 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (base.HasParameterSpecified(this, x => x.Page))
+            if (this.ContainsParameter(x => x.Page))
                 _list.Add(string.Format(PAGE_FORMAT, this.Page));
 
-            if (base.HasParameterSpecified(this, x => x.PageSize))
+            if (this.ContainsParameter(x => x.PageSize))
                 _list.Add(string.Format(PAGE_SIZE_FORMAT, this.PageSize));
 
-            if (base.HasParameterSpecified(this, x => x.SortDirection))
+            if (this.ContainsParameter(x => x.SortDirection))
             {
                 if (this.SortDirection == SortDirection.Ascending)
                     _list.Add(SORTDIR_ASC);

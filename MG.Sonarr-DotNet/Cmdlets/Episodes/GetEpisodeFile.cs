@@ -10,7 +10,7 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Get, "EpisodeFile", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByEpisodeFile")]
+    [Cmdlet(VerbsCommon.Get, "EpisodeFile", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByEpisodeFileId")]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(EpisodeFile))]
     public sealed class GetEpisodeFile : BaseSonarrCmdlet
@@ -23,11 +23,11 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "ByEpisodeFileInput")]
-        public EpisodeFile EpisodeFile { get; set; }
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, ValueFromPipeline = true, ParameterSetName = "ByEpisodeFileInput")]
+        public EpisodeResult Episode { get; set; }
 
-        [Parameter(Mandatory = true, ParameterSetName = "ByEpisodeFileId", ValueFromPipelineByPropertyName = true)]
-        public long EpisodeFileId { get; set; }
+        [Parameter(Mandatory = true, ParameterSetName = "ByEpisodeFileId", Position = 0)]
+        public int Id { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "BySeriesId", ValueFromPipeline = true)]
         public SeriesResult Series { get; set; }
@@ -60,15 +60,15 @@ namespace MG.Sonarr.Cmdlets
             {
                 return string.Format(EP_BY_SERIES, this.Series.Id);
             }
-            else if (this.ContainsParameter(x => x.EpisodeFileId))
+            else if (this.ContainsParameter(x => x.Id))
             {
                 isSingular = true;
-                return string.Format(EP_BY_EP);
+                return string.Format(EP_BY_EP, this.Id);
             }
             else
             {
                 isSingular = true;
-                return string.Format(EP_BY_EP, this.EpisodeFile.EpisodeFileId);
+                return string.Format(EP_BY_EP, this.Episode.EpisodeFile.Id);
             }
         }
 
