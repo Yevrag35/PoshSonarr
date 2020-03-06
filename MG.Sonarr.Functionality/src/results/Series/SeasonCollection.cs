@@ -1,15 +1,13 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
+﻿using MG.Sonarr.Functionality;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace MG.Sonarr.Results
 {
-    public class SeasonCollection : BaseResult, IEnumerable<Season>
+    public class SeasonCollection : BaseResult, IEnumerable<Season>, ICanCalculate
     {
         #region FIELDS/CONSTANTS
         private List<Season> _list;

@@ -41,7 +41,7 @@
 							</ListItem>
 							<ListItem>
 								<Label>Size</Label>
-								<ScriptBlock>"{0} GB" -f [math]::Round(($_.Size / 1GB), 2)</ScriptBlock>
+								<ScriptBlock>"{0} MB" -f [math]::Round(($_.Size / 1MB), 2)</ScriptBlock>
 							</ListItem>
 						</ListItems>
 					</ListEntry>

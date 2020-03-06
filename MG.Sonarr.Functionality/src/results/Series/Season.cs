@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MG.Sonarr.Functionality;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -13,7 +14,7 @@ namespace MG.Sonarr.Results
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [Serializable]
-    public class Season : BaseResult, IComparable<Season>
+    public class Season : BaseResult, IComparable<Season>, ICanCalculate
     {
         [JsonExtensionData]
         private Dictionary<string, JToken> _extData;
@@ -71,6 +72,8 @@ namespace MG.Sonarr.Results
         public int TotalEpisodeCount => _stats.TotalEpisodeCount;
 
         public int CompareTo(Season other) => this.SeasonNumber.CompareTo(other.SeasonNumber);
+
+        decimal ICanCalculate.GetTotalFileSize() => this.SizeOnDisk;
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext ctx)

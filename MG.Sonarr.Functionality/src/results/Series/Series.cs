@@ -17,7 +17,7 @@ namespace MG.Sonarr.Results
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [Serializable]
-    public sealed class SeriesResult : SearchSeries, ISupportsTagUpdate
+    public sealed class SeriesResult : SearchSeries, ICanCalculate, ISupportsTagUpdate
     {
         private const string EP = "/series";
 
@@ -80,6 +80,8 @@ namespace MG.Sonarr.Results
         /// </summary>
         [JsonProperty("seasonFolder")]
         public bool UsingSeasonFolders { get; set; }
+
+        public decimal GetTotalFileSize() => base.Seasons.GetTotalFileSize();
 
         /// <summary>
         /// Retrieves the Uri endpoint that instance was retrieved from.

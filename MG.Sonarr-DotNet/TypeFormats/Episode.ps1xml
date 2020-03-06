@@ -63,9 +63,6 @@
 							<ListItem>
 								<PropertyName>SeriesId</PropertyName>
 							</ListItem>
-							<ListItem>
-								<PropertyName>UnverifiedSceneNumbering</PropertyName>
-							</ListItem>
 						</ListItems>
 					</ListEntry>
 				</ListEntries>

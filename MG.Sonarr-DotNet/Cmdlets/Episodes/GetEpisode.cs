@@ -21,6 +21,9 @@ namespace MG.Sonarr.Cmdlets
         private const string EP_BY_EP = BASE + "/{0}";
         private EpisodeIdentifierCollection _epIdCol;
 
+        private bool _dled;
+        private bool _hasAired;
+
         #endregion
 
         #region PARAMETERS
@@ -30,10 +33,10 @@ namespace MG.Sonarr.Cmdlets
 
         [Parameter(Mandatory = true, ParameterSetName = "BySeriesIdAbsoluteEp")]
         [Parameter(Mandatory = true, ParameterSetName = "BySeriesIdSeasonEp")]
-        public long SeriesId { get; set; }
+        public int SeriesId { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "ByEpisodeId")]
-        public long EpisodeId { get; set; }
+        public int EpisodeId { get; set; }
 
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesIdAbsoluteEp")]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByInputAbsoluteEp")]
@@ -42,6 +45,26 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesIdSeasonEp")]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByInputSeasonEp")]
         public string[] EpisodeIdentifier { get; set; }
+
+        [Parameter(Mandatory = false, ParameterSetName = "ByInputAbsoluteEp")]
+        [Parameter(Mandatory = false, ParameterSetName = "ByInputSeasonEp")]
+        [Parameter(Mandatory = false, ParameterSetName = "BySeriesIdAbsoluteEp")]
+        [Parameter(Mandatory = false, ParameterSetName = "BySeriesIdSeasonEp")]
+        public SwitchParameter Downloaded
+        {
+            get => _dled;
+            set => _dled = value;
+        }
+
+        [Parameter(Mandatory = false, ParameterSetName = "ByInputAbsoluteEp")]
+        [Parameter(Mandatory = false, ParameterSetName = "ByInputSeasonEp")]
+        [Parameter(Mandatory = false, ParameterSetName = "BySeriesIdAbsoluteEp")]
+        [Parameter(Mandatory = false, ParameterSetName = "BySeriesIdSeasonEp")]
+        public SwitchParameter HasAired
+        {
+            get => _hasAired;
+            set => _hasAired = value;
+        }
 
         #endregion
 
@@ -82,7 +105,18 @@ namespace MG.Sonarr.Cmdlets
                 }
             }
             epList.Sort();
-            base.WriteObject(epList.Distinct(), true);
+            IEnumerable<EpisodeResult> ers = epList.Distinct();
+            if (this.ContainsParameter(x => x.Downloaded))
+            {
+                ers = ers.Where(x => x.IsDownloaded == _dled);
+            }
+
+            if (this.ContainsParameter(x => x.HasAired))
+            {
+                ers = ers.Where(x => x.HasAired == _hasAired);
+            }
+
+            base.WriteObject(ers, true);
         }
 
         #endregion
