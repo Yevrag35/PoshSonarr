@@ -17,10 +17,9 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommunications.Connect, "Instance", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByServerName",
-        HelpUri = "https://github.com/Yevrag35/PoshSonarr/wiki/Connect-SonarrInstance")]
-    [CmdletBinding(PositionalBinding = false)]
+    [Cmdlet(VerbsCommunications.Connect, "Instance", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByServerName", HelpUri = "https://github.com/Yevrag35/PoshSonarr/wiki/Connect-SonarrInstance")]
     [Alias("Connect-")]
+    [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(Status))]
     public partial class ConnectInstance : BaseSonarrCmdlet
     {

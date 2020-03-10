@@ -25,7 +25,7 @@ namespace MG.Sonarr.Cmdlets.Episodes
         public EpisodeFile EpisodeFile { get; set; }
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByEpisodeFileId")]
-        public long EpisodeFileId { get; set; }
+        public int EpisodeFileId { get; set; }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter Force

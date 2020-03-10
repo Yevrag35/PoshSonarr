@@ -15,7 +15,7 @@ namespace MG.Sonarr.Cmdlets
         #region FIELDS/CONSTANTS
 
         private List<string> _names;
-        private List<long> _ids;
+        private List<int> _ids;
 
         #endregion
 
@@ -26,7 +26,7 @@ namespace MG.Sonarr.Cmdlets
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId", ValueFromPipelineByPropertyName = true)]
         [Alias("SeriesId")]
-        public long[] Id { get; set; }
+        public int[] Id { get; set; }
 
         #endregion
 
@@ -35,7 +35,7 @@ namespace MG.Sonarr.Cmdlets
         {
             base.BeginProcessing();
             _names = new List<string>();
-            _ids = new List<long>();
+            _ids = new List<int>();
             if (this.ContainsParameter(x => x.Name))
                 this.ProcessNamesParameter(this.Name);
 
@@ -75,9 +75,9 @@ namespace MG.Sonarr.Cmdlets
                 for (int i = 0; i < objNames.Length; i++)
                 {
                     object o = objNames[i];
-                    if (o is IConvertible icon && long.TryParse(Convert.ToString(icon), out long outLong))
+                    if (o is IConvertible icon && int.TryParse(Convert.ToString(icon), out int outInt))
                     {
-                        _ids.Add(outLong);
+                        _ids.Add(outInt);
                     }
                     else if (o is string oStr)
                         _names.Add(oStr);

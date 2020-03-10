@@ -21,9 +21,9 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         protected private List<SeriesResult> GetAllSeries() => base.SendSonarrListGet<SeriesResult>(this.Endpoint);
 
-        protected private IEnumerable<SeriesResult> GetSeriesById(IEnumerable<long> ids)
+        protected private IEnumerable<SeriesResult> GetSeriesById(IEnumerable<int> ids)
         {
-            foreach (long id in ids)
+            foreach (int id in ids)
             {
                 SeriesResult sr = base.SendSonarrGet<SeriesResult>(base.FormatWithId(id));
                 if (sr != null)

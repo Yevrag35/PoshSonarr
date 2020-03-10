@@ -174,14 +174,13 @@
     <Compile Include="Cmdlets\WantedMissing\GetWantedMissing.cs" />
     <Compile Include="Components\SonarrContext.cs" />
     <Compile Include="Objects\ApiKey.cs" />
-    <Content Include="DebugScript.ps1">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <None Include="GenerateManifest.ps1" />
     <Compile Include="Objects\NameOrId.cs" />
     <Compile Include="Objects\ProxyCredential.cs" />
     <Compile Include="Objects\TagTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="TypeFormats\AlternateTitle.ps1xml" />
     <None Include="TypeFormats\CalendarEntry.ps1xml" />
     <None Include="TypeFormats\CommandResult.ps1xml" />
@@ -212,6 +211,11 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <Content Include="DebugScript.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\MG.Sonarr.Functionality\MG.Sonarr.Functionality.csproj">
@@ -221,6 +225,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -NonInteractive -WindowStyle Hidden -File "$(ProjectDir)GenerateManifest.ps1" -DebugDirectory "$(ProjectDir)bin\$(ConfigurationName)" -ModuleFileDirectory "$(ProjectDir)TypeFormats" -AssemblyInfo "$(ProjectDir)Properties\AssemblyInfo.cs" -TargetFileName "$(TargetFileName)"</PostBuildEvent>
+    <PostBuildEvent>C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -NonInteractive -WindowStyle Hidden -File "$(ProjectDir)GenerateManifest.ps1" -DebugDirectory "$(ProjectDir)bin\$(ConfigurationName)" -ModuleFileDirectory "$(ProjectDir)TypeFormats" -AssemblyInfo "$(ProjectDir)Properties\AssemblyInfo.cs" -TargetFileName "$(TargetFileName)" -Configuration "$(ConfigurationName)"</PostBuildEvent>
   </PropertyGroup>
 </Project>
