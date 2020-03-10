@@ -54,7 +54,7 @@ namespace MG.Sonarr.Cmdlets
         /// <summary>
         /// <para type="description">Specifies the DayOfWeeks to get entries in the specified date range.</para>
         /// </summary>
-        [Parameter(Mandatory = true)]//, ParameterSetName = "ByDayOfWeek")]
+        [Parameter(Mandatory = false)]//, ParameterSetName = "ByDayOfWeek")]
         public DayOfWeek[] DayOfWeek { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "ShowToday")]
