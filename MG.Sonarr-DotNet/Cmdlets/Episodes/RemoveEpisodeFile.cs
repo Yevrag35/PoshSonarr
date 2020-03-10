@@ -25,7 +25,8 @@ namespace MG.Sonarr.Cmdlets.Episodes
         public EpisodeFile EpisodeFile { get; set; }
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByEpisodeFileId")]
-        public int EpisodeFileId { get; set; }
+        [Alias("EpisodeFileId")]
+        public int Id { get; set; }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter Force
@@ -43,15 +44,15 @@ namespace MG.Sonarr.Cmdlets.Episodes
         {
             if (this.ContainsParameter(x => x.EpisodeFile))
             {
-                this.EpisodeFileId = this.EpisodeFile.Id;
+                this.Id = this.EpisodeFile.Id;
             }
 
-            if (this.EpisodeFileId.Equals(0))
+            if (this.Id.Equals(0))
             {
                 throw new ArgumentNullException("EpisodeFileId");
             }
 
-            string ep = string.Format(EP, this.EpisodeFileId);
+            string ep = string.Format(EP, this.Id);
             if (_force || base.ShouldProcess(ep, "Delete"))
             {
                 base.SendSonarrDelete(ep);

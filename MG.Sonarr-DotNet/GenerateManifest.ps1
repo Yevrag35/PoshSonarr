@@ -83,7 +83,7 @@ foreach ($cs in $csFiles)
 
 [string[]]$allDlls = Get-ChildItem $DebugDirectory -Include *.dll -Exclude 'System.Management.Automation.dll', $TargetFileName -Recurse | Select-Object -ExpandProperty Name;
 [string[]]$allFormats = $allFiles | Where-Object -FilterScript { $_.Extension -eq ".ps1xml" } | `
-	Select-Object @{L="FormatPath";E={"TypeFormats\{0}" -f$_.Name}} | Select-Object -ExpandProperty FormatPath
+	Select-Object @{L="FormatPath";E={"Formats\{0}" -f$_.Name}} | Select-Object -ExpandProperty FormatPath
 	#Select-Object -ExpandProperty Name
 
 if ($Configuration -eq "Debug")
@@ -95,12 +95,12 @@ else
 	$manifestFile = "PoshSonarr.psd1"
 }
 
-$formatsPath = "$DebugDirectory\TypeFormats"
+$formatsPath = "$DebugDirectory\Formats"
 if (-not (Test-Path -Path $formatsPath -PathType Container))
 {
-	New-Item -Path $DebugDirectory -Name "TypeFormats" -ItemType Directory | Out-Null
+	New-Item -Path $DebugDirectory -Name "Formats" -ItemType Directory | Out-Null
 }
-$allFiles | Copy-Item -Destination "$DebugDirectory\TypeFormats" -Force;
+$allFiles | Copy-Item -Destination "$DebugDirectory\Formats" -Force;
 $modPath = Join-Path $DebugDirectory $manifestFile;
 
 #Write-Warning $($Aliases | Out-String)

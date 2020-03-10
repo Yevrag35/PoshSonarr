@@ -5,7 +5,45 @@
 
 This will eventually be a complete PowerShell module for quickly issuing [Sonarr PVR API](https://github.com/Sonarr/Sonarr/wiki/API) calls. The module was completely redesigned from the ground up in PowerShell Core, and I'm happy to say it works (has been tested) in Ubuntu 16.04 and Ubuntu 18.04 as well as Windows.
 
-## Major Overhaul - 1.3.0
+# CHANGELOG
+
+## 1.3.0-beta
+
+_(3/10/2020)_
+
+* __Dropping support for PowerShell 6 in favor of 7__ - v1.3.0 will be the last version to include the binaries for running on PowerShell 6.x.x versions.  To use the newer versions going forward, upgrade to [PowerShell 7](https://github.com/PowerShell/PowerShell/releases/latest).
+* NEW CMDLETS:
+   * __Get-SonarrSize__ _(Returns the total file size of a Series, Season, or EpisodeFile)_
+   * __New-SonarrDelayProfile__
+   * __New-SonarrPlexNotification__ _(New-PlexConnection)_
+   * __Restart-SonarrInstance__ _(Restart-Sonarr)_
+   * __Set-SonarrDelayProfile__
+   * __Update-SonarrDownloadClient__
+
+* TAGS (Better Tag Management)
+   * DelayProfile, Notification (Connection), Restriction, and Series objects can have their tags queried, added to, changed, or removed now very easily with:
+      * <code>Add-SonarrTag</code>
+      * <code>Get-SonarrTag</code>
+      * <code>Remove-SonarrTag</code>
+   ```powershell
+   Get-SonarrSeries "brooklyn*" | Add-SonarrTag -Tag "my favorite"
+   Get-SonarrSeries "*Agents of S*" | Remove-SonarrTag -ClearAll
+   ```
+
+* <code>Add-SonarrSeries</code> now accepts a <code>[SearchSeries]</code> object from the pipeline, instead of properties by name.  It also adds a parameter, <code>-Type</code> to denote the type of series ("Anime", "Daily", "Standard").
+* Added <code>-Today</code> and <code>-Tomorrow</code> switch parameters to <code>Get-SonarrCalendar</code>.
+* Series, Episode, and EpisodeFile ID's are now treated as <code>[int]</code> value types.
+* <code>Get-SonarrEpisode</code> has new switches for filtering results: <code>-Downloaded</code> and <code>-HasAired</code>.
+* <code>Get-SonarrEpisodeFile</code> is now piped from an <code>[EpisodeResult]</code> instead of by property name.
+* <code>Get-SonarrLog</code> has added lots of new parameters for custom filtering log entries.
+* Changed <code>Get-SonarrQualityProfile</code>'s <code>-Id</code> parameter to be <code>-ProfileId</code> to allow for ValueFromPipelineByPropertyName to work properly.
+* Changed <code>Remove-SonarrSeries</code> to accept a <code>[SeriesResult]</code> from the pipeline as opposed to using values from properties.
+* <code>Search-SonarrDirectory</code> has a new switch parameter: <code>-ExcludeFiles</code>.  This tells the query to only return directories.
+* PowerShell format file changes.
+
+## 1.3.0-alpha
+
+_(1/13/2020)_
 
 Version 1.3.0 will be a major update (even though it's a minor revision :P) as the entire backend for issuing the API calls was overhauled.  The biggest deal was that now every command will have a WriteDebug part prior to issuing __any__ API request.  It also simplified the requesting process and did away the need for explicit type casting on the responses.
 
@@ -94,6 +132,7 @@ The following is the list of the working cmdlets:
 1. Get-SonarrRestriction
 1. Get-SonarrRootFolder
 1. Get-SonarrSeries
+1. __Get-SonarrSize__
 1. Get-SonarrStatus
 1. Get-SonarrTag
 1. Get-SonarrUpdate
@@ -105,7 +144,9 @@ The following is the list of the working cmdlets:
 1. Invoke-SonarrSeriesRefresh
 1. Invoke-SonarrSeriesRescan
 1. Invoke-SonarrSeriesSearch
+1. __New-SonarrDelayProfile__
 1. __New-SonarrMapping__
+1. __New-SonarrPlexNotification__ - _(New-PlexNotification)_
 1. __New-SonarrQualityProfile__ - _(New-SonarrProfile)_
 1. New-SonarrReleasePush
 1. New-SonarrRestriction
@@ -120,16 +161,19 @@ The following is the list of the working cmdlets:
 1. Remove-SonarrSeries
 1. Remove-SonarrTag
 1. Rename-SonarrTag - _* (was Set-SonarrTag)_
+1. __Restart-SonarrInstance__ - _(Restart-Sonarr)_
 1. Save-SonarrLogFile
 1. Search-SonarrDirectory
 1. Search-SonarrRelease
 1. Search-SonarrSeries
+1. __Set-SonarrDelayProfile__
 1. Set-SonarrEpisode
 1. __Set-SonarrHostConfig__
 1. __Set-SonarrMapping__
 1. Set-SonarrRestriction
 1. Set-SonarrSeries - _* (was Update-SonarrSeries)_
 1. Set-SonarrTag - _* (renamed to Rename-SonarrTag; left behind as alias)_
+1. __Update-SonarrDownloadClient__
 1. __Update-SonarrMediaManagement__
 1. __Update-SonarrMetadata__
 1. Update-SonarrRestriction

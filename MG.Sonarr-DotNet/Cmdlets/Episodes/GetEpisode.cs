@@ -36,7 +36,8 @@ namespace MG.Sonarr.Cmdlets
         public int SeriesId { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "ByEpisodeId")]
-        public int EpisodeId { get; set; }
+        [Alias("EpisodeId")]
+        public int Id { get; set; }
 
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesIdAbsoluteEp")]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByInputAbsoluteEp")]
@@ -80,9 +81,9 @@ namespace MG.Sonarr.Cmdlets
         protected override void ProcessRecord()
         {
             var epList = new List<EpisodeResult>();
-            if (this.ContainsParameter(x => x.EpisodeId))
+            if (this.ContainsParameter(x => x.Id))
             {
-                this.GetEpisodeById(this.EpisodeId, epList);
+                this.GetEpisodeById(this.Id, epList);
             }
             else
             {

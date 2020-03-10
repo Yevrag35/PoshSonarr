@@ -27,6 +27,7 @@ namespace MG.Sonarr.Cmdlets
         public EpisodeResult Episode { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "ByEpisodeFileId", Position = 0)]
+        [Alias("EpisodeFileId")]
         public int Id { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "BySeriesId", ValueFromPipeline = true)]
