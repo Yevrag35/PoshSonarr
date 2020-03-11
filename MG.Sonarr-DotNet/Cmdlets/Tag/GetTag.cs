@@ -51,7 +51,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void EndProcessing()
         {
-            if ( ! this.ContainsParameter(x => x.Id) && base.TryGetAllTags(out TagCollection allTags))
+            if ( ! this.ContainsAnyParameters(x => x.Id, x => x.InputObject) && base.TryGetAllTags(out TagCollection allTags))
             {
                 allTags.Sort();
                 base.SendToPipeline(base.FilterByStringParameter(allTags, t => t.Label, this, cmd => cmd.Label));
