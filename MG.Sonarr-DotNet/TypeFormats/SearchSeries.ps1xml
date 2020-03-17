@@ -50,10 +50,10 @@
 								<Label>Genres</Label>
 								<ScriptBlock>$_.Genres -join ', '</ScriptBlock>
 							</ListItem>
-							<ListItem>
+							<!--<ListItem>
 								<Label>Images</Label>
 								<ScriptBlock>$_.Images.CoverType</ScriptBlock>
-							</ListItem>
+							</ListItem>-->
 							<ListItem>
 								<PropertyName>IMDBId</PropertyName>
 							</ListItem>

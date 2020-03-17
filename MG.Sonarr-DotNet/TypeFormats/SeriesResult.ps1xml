@@ -34,7 +34,7 @@
 							<ListItem>
 								<Label>AlternateTitles</Label>
 								<ScriptBlock>
-									$_.AlternateTitles.Title -join ', '
+									'{{{0}}}' -f ($_.AlternateTitles.Title -join ', ')
 								</ScriptBlock>
 								<ItemSelectionCondition>
 									<ScriptBlock>
@@ -59,7 +59,7 @@
 							</ListItem>
 							<ListItem>
 								<Label>Genres</Label>
-								<ScriptBlock>$_.Genres -join ', '</ScriptBlock>
+								<ScriptBlock>'{{{0}}}' -f ($_.Genres -join ', ')</ScriptBlock>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Id</PropertyName>
@@ -67,10 +67,10 @@
 									<ScriptBlock>$_.Id -ne $null</ScriptBlock>
 								</ItemSelectionCondition>
 							</ListItem>
-							<ListItem>
+							<!--<ListItem>
 								<Label>Images</Label>
 								<ScriptBlock>$_.Images.CoverType</ScriptBlock>
-							</ListItem>
+							</ListItem>-->
 							<ListItem>
 								<PropertyName>IMDBId</PropertyName>
 							</ListItem>
