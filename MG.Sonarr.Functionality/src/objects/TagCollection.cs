@@ -10,16 +10,8 @@ namespace MG.Sonarr.Functionality
     /// Provides a collection class for <see cref="Tag"/> instances while keeping most
     /// of the <see cref="ICollection"/> and <see cref="IList"/> methods hidden.
 	/// </summary>
-    public sealed class TagCollection : IEnumerable<Tag>
+    public sealed class TagCollection : ResultCollectionBase<Tag> //IEnumerable<Tag>
     {
-        #region FIELDS/CONSTANTS
-        /// <summary>
-        /// The internal, backing <see cref="List{T}"/> collection that all methods invoke against.
-        /// </summary>
-        private List<Tag> InnerList;
-
-        #endregion
-
         #region INDEXERS
         /// <summary>
         /// Gets the element at the specified index.
@@ -29,22 +21,14 @@ namespace MG.Sonarr.Functionality
 
         #endregion
 
-        #region PROPERTIES
-        /// <summary>
-        /// Get the number of elements contained within the <see cref="TagCollection{T}"/>.
-        /// </summary>
-        public int Count => this.InnerList.Count;
-
-        #endregion
-
         #region CONSTRUCTORS
         /// <summary>
         /// Initializes a new instance of the <see cref="TagCollection{T}"/> class that is empty
         /// and has the default initial capacity.
         /// </summary>
-        internal TagCollection()
+        internal TagCollection() : base()
         {
-            this.InnerList = new List<Tag>();
+            //this.InnerList = new List<Tag>();
         }
         /// <summary>
         /// Initializes a new instance of the <see cref="TagCollection{T}"/> class that is empty
@@ -52,9 +36,9 @@ namespace MG.Sonarr.Functionality
         /// </summary>
         /// <param name="capacity">The number of elements that the new collection can initially store.</param>
         /// <exception cref="ArgumentOutOfRangeException"/>
-        internal TagCollection(int capacity)
+        internal TagCollection(int capacity) : base(capacity)
         {
-            this.InnerList = new List<Tag>(capacity);
+            //this.InnerList = new List<Tag>(capacity);
         }
         /// <summary>
         /// Initializes a new instance of the <see cref="TagCollection{T}"/> class that
@@ -63,9 +47,9 @@ namespace MG.Sonarr.Functionality
         /// </summary>
         /// <param name="tags">The collection whose elements are copied to the new list.</param>
         /// <exception cref="ArgumentNullException"/>
-        internal TagCollection(IEnumerable<Tag> tags)
+        internal TagCollection(IEnumerable<Tag> tags) : base(tags)
         {
-            this.InnerList = new List<Tag>(tags);
+            //this.InnerList = new List<Tag>(tags);
         }
 
         #endregion
@@ -77,8 +61,8 @@ namespace MG.Sonarr.Functionality
         #endregion
 
         #region ENUMERATOR
-        public IEnumerator<Tag> GetEnumerator() => this.InnerList.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => this.InnerList.GetEnumerator();
+        //public IEnumerator<Tag> GetEnumerator() => this.InnerList.GetEnumerator();
+        //IEnumerator IEnumerable.GetEnumerator() => this.InnerList.GetEnumerator();
 
         #endregion
 
@@ -90,12 +74,12 @@ namespace MG.Sonarr.Functionality
         }
         internal void Clear() => this.InnerList.Clear();
         public bool Contains(int tagId) => this.InnerList.Exists(x => x.Id == tagId);
-        internal bool Contains(Tag tag) => this.InnerList.Contains(tag);
-        internal bool Contains(Predicate<Tag> match) => this.InnerList.Exists(match);
-        internal Tag Find(Predicate<Tag> match) => this.InnerList.Find(match);
-        internal List<Tag> FindAll(Predicate<Tag> match) => this.InnerList.FindAll(match);
+        //internal bool Contains(Tag tag) => this.InnerList.Contains(tag);
+        //internal bool Contains(Predicate<Tag> match) => this.InnerList.Exists(match);
+        //internal Tag Find(Predicate<Tag> match) => this.InnerList.Find(match);
+        //internal List<Tag> FindAll(Predicate<Tag> match) => this.InnerList.FindAll(match);
         internal int FindIndex(Predicate<Tag> match) => this.InnerList.FindIndex(match);
-        internal int IndexOf(Tag tag) => this.InnerList.IndexOf(tag);
+        //internal int IndexOf(Tag tag) => this.InnerList.IndexOf(tag);
         internal bool Remove(Tag tag) => this.InnerList.Remove(tag);
         internal void RemoveAll(Predicate<Tag> match) => this.InnerList.RemoveAll(match);
         internal void SetTag(int tagId, string newLabel)
@@ -106,7 +90,7 @@ namespace MG.Sonarr.Functionality
                 this.InnerList[index].Label = newLabel;
             }
         }
-        internal void TrueForAll(Predicate<Tag> match) => this.InnerList.TrueForAll(match);
+        //internal void TrueForAll(Predicate<Tag> match) => this.InnerList.TrueForAll(match);
 
         #endregion
     }

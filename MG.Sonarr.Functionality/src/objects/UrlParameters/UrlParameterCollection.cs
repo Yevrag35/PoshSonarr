@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MG.Sonarr.Functionality
 {
-    public class UrlParameterCollection : IUrlParameterCollection
+    public class UrlParameterCollection :  IUrlParameterCollection
     {
         private List<IUrlParameter> _list;
         private const string SEPARATOR = "&";

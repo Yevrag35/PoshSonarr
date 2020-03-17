@@ -28,7 +28,7 @@ namespace MG.Sonarr.Results
         public int TotalRecords { get; private set; }
 
         [JsonProperty("records", ItemConverterType = typeof(RecordConverter))]
-        public List<LogRecord> Records { get; private set; }
+        public RecordCollection Records { get; private set; }
 
         #endregion
     }

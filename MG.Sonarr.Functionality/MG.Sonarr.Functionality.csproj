@@ -22,7 +22,7 @@
     <Compile Remove="src\objects\rest\SonarrRestResponse.cs" />
     <Compile Remove="src\objects\TotalSize.cs" />
     <Compile Remove="src\results\Config\UIConfig.cs" />
-    <Compile Remove="src\results\QualityProfile\QualityItemCollection.cs" />
+    <Compile Remove="src\results\Quality\QualityDefinitionCollection.cs" />
     <Compile Remove="src\results\Quality\QualityItemCollection.cs" />
   </ItemGroup>
 
@@ -39,7 +39,7 @@
     <None Include="src\objects\rest\SonarrRestResponse.cs" />
     <None Include="src\objects\TotalSize.cs" />
     <None Include="src\results\Config\UIConfig.cs" />
-    <None Include="src\results\QualityProfile\QualityItemCollection.cs" />
+    <None Include="src\results\Quality\QualityDefinitionCollection.cs" />
   </ItemGroup>
 
   <ItemGroup>

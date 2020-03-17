@@ -16,10 +16,9 @@
 						<!-- Title -->
 						<Alignment>Left</Alignment>
 					</TableColumnHeader>
-					<TableColumnHeader>
-						<!-- SceneSeasonNumber -->
+					<!--<TableColumnHeader>
 						<Alignment>Left</Alignment>
-					</TableColumnHeader>
+					</TableColumnHeader>-->
 				</TableHeaders>
 				<TableRowEntries>
 					<TableRowEntry>
@@ -30,9 +29,9 @@
 							<TableColumnItem>
 								<PropertyName>Title</PropertyName>
 							</TableColumnItem>
-							<TableColumnItem>
+							<!--<TableColumnItem>
 								<PropertyName>SceneSeasonNumber</PropertyName>
-							</TableColumnItem>
+							</TableColumnItem>-->
 						</TableColumnItems>
 					</TableRowEntry>
 				</TableRowEntries>

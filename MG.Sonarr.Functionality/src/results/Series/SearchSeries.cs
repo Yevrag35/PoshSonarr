@@ -57,7 +57,7 @@ namespace MG.Sonarr.Results
         /// An array of images for the series.
         /// </summary>
         [JsonProperty("images")]
-        public SeriesImage[] Images { get; private protected set; }
+        public SeriesImageCollection Images { get; private protected set; }
 
         /// <summary>
         /// The IMDB ID for the series.

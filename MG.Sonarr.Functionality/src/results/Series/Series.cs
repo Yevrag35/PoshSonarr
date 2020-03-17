@@ -25,7 +25,7 @@ namespace MG.Sonarr.Results
         /// An array of alternative titles the series is known as.
         /// </summary>
         [JsonProperty("alternateTitles")]
-        public AlternateTitle[] AlternateTitles { get; private set; }
+        public AlternateTitleCollection AlternateTitles { get; private set; }
 
         /// <summary>
         /// The unique ID of the series within Sonarr.
@@ -93,5 +93,6 @@ namespace MG.Sonarr.Results
         /// Retrieves the Uri endpoint that instance was retrieved from.
         /// </summary>
         //public string GetEndpoint() => EP;
+        public bool HasAlternateTitles() => this.AlternateTitles != null && this.AlternateTitles.Count > 0;
     }
 }
