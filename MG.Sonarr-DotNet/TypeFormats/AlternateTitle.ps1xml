@@ -2,6 +2,43 @@
 <Configuration>
 	<ViewDefinitions>
 		<View>
+			<Name>AlternateTitle TableView</Name>
+			<ViewSelectedBy>
+				<TypeName>MG.Sonarr.Results.AlternateTitle</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<!-- SeasonNumber -->
+						<Alignment>Center</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<!-- Title -->
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<!-- SceneSeasonNumber -->
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>SeasonNumber</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Title</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>SceneSeasonNumber</PropertyName>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+		<!--<View>
 			<Name>AlternateTitle ListView</Name>
 			<ViewSelectedBy>
 				<TypeName>MG.Sonarr.Results.AlternateTitle</TypeName>
@@ -29,6 +66,6 @@
 					</ListEntry>
 				</ListEntries>
 			</ListControl>
-		</View>
+		</View>-->
 	</ViewDefinitions>
 </Configuration>
