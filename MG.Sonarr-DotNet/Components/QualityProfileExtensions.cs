@@ -23,5 +23,17 @@ namespace MG.Sonarr.Extensions
 
             qualityProfile.AllowedQualities.AddFromQuality(matchingQuality, isAllowed);
         }
+
+        public static void AddAllowedQuality(this QualityProfile qualityProfile, int profileId, bool isAllowed = true)
+        {
+            if (Context.AllQualities == null || Context.AllQualities.Count <= 0)
+                throw new SonarrContextNotSetException();
+
+            Quality theQuality = Context.AllQualities.Find(x => x.Id.Equals(profileId));
+            if (theQuality == null)
+                throw new ArgumentException(string.Format("No matching quality with ID \"{0}\" was found.", profileId));
+
+            qualityProfile.AllowedQualities.AddFromQuality(theQuality, isAllowed);
+        }
     }
 }

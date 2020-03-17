@@ -7,7 +7,7 @@ using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsLifecycle.Register, "RootFolder", ConfirmImpact = ConfirmImpact.None, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsLifecycle.Register, "RootFolder", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
     [OutputType(typeof(RootFolder))]
     [Alias("New-RootFolder")]
     [CmdletBinding(PositionalBinding = false, DefaultParameterSetName = "ViaPipeline")]
@@ -54,12 +54,10 @@ namespace MG.Sonarr.Cmdlets
             for (int i = 0; i < _paths.Count; i++)
             {
                 string path = _paths[i];
-                var bodyParams = new SonarrBodyParameters
+                if (base.FormatShouldProcess("Register", "Path: {0}", path))
                 {
-                    { "path", path }
-                };
-                if (base.ShouldProcess(path, "Register"))
-                    base.SendToPipeline(base.SendSonarrPost<RootFolder>(EP, bodyParams));
+                    base.SendToPipeline(base.SendSonarrPost<RootFolder>(EP, new RootFolderPost(path)));
+                }
             }
         }
 

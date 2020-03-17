@@ -11,8 +11,10 @@ using System.Runtime.Serialization;
 namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class QualityProfileNew : BaseResult
+    public class QualityProfileNew : BaseResult, IGetEndpoint
     {
+        private const string EP = "/profile";
+
         [JsonProperty("cutoff", Order = 2)]
         public Quality Cutoff { get; set; }
 
@@ -48,11 +50,10 @@ namespace MG.Sonarr.Results
             return result.Value;
         }
 
+        public string GetEndpoint() => EP;
+
         [OnDeserialized]
-        private void OnDeserialized(StreamingContext ctx)
-        {
-            this.AllowedQualities.Sort();
-        }
+        private void OnDeserialized(StreamingContext ctx) => this.AllowedQualities.Sort();
     }
 
     /// <summary>

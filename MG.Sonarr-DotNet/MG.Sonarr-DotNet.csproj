@@ -122,6 +122,7 @@
     <Compile Include="Cmdlets\Notification\UpdateNotification.cs" />
     <Compile Include="Cmdlets\QualityProfiles\NewQualityProfile.cs" />
     <Compile Include="Cmdlets\QualityProfiles\RemoveQualityProfile.cs" />
+    <Compile Include="Cmdlets\QualityProfiles\UpdateQualityProfile.cs" />
     <Compile Include="Cmdlets\Queue\RemoveQueueItem.cs" />
     <Compile Include="Cmdlets\RemotePath\GetMapping.cs" />
     <Compile Include="Cmdlets\RemotePath\NewMapping.cs" />
@@ -135,7 +136,6 @@
     <Compile Include="Cmdlets\RootFolder\RegisterRootFolder.cs" />
     <Compile Include="Cmdlets\RootFolder\RemoveRootFolder.cs" />
     <Compile Include="Cmdlets\Series\SeriesCmdlet.cs" />
-    <None Include="Cmdlets\Size\GetSize.cs.old" />
     <Compile Include="Cmdlets\System\RestartInstance.cs" />
     <Compile Include="Cmdlets\Tag\AddTag.cs" />
     <Compile Include="Cmdlets\Tag\TagCmdlet.cs" />

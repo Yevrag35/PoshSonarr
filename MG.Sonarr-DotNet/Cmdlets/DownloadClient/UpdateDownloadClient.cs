@@ -8,6 +8,7 @@ using System.Management.Automation;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsData.Update, "DownloadClient", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [Alias("Set-DownloadClient")]
     [OutputType(typeof(DownloadClient))]
     [CmdletBinding]
     public class UpdateDownloadClient : BaseSonarrCmdlet
