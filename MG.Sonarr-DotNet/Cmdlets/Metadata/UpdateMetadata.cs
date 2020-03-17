@@ -6,6 +6,7 @@ using System.Management.Automation;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsData.Update, "Metadata", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [Alias("Set-Metadata")]
     [OutputType(typeof(Metadata))]
     [CmdletBinding(PositionalBinding = false)]
     public class UpdateMetadata : MetadataCmdlet

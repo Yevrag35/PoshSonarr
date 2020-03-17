@@ -9,6 +9,7 @@ using System.Management.Automation;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Set, "DelayProfile", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true, DefaultParameterSetName = "ViaPipeline")]
+    [Alias("Update-DelayProfile")]
     [OutputType(typeof(DelayProfile))]
     [CmdletBinding(PositionalBinding = false)]
     public class SetDelayProfile : DelayProfileCmdlet

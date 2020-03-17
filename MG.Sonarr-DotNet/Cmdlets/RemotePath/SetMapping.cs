@@ -6,8 +6,8 @@ using System.Management.Automation;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Set, "Mapping", ConfirmImpact = ConfirmImpact.None, SupportsShouldProcess = true)]
-    [OutputType(typeof(RemotePathMapping))]
     [Alias("Update-Mapping")]
+    [OutputType(typeof(RemotePathMapping))]
     [CmdletBinding(PositionalBinding = false)]
     public class SetMapping : BaseSonarrCmdlet
     {

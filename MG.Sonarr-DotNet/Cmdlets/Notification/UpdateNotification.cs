@@ -5,6 +5,7 @@ using System.Management.Automation;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsData.Update, "Notification", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [Alias("Set-Notification", "Update-Connection", "Set-Connection")]
     [OutputType(typeof(Notification))]
     [CmdletBinding(PositionalBinding = false)]
     public class UpdateNotification : NotificationCmdlet

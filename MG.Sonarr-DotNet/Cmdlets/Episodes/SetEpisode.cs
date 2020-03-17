@@ -5,6 +5,7 @@ using System.Management.Automation;
 namespace MG.Sonarr.Cmdlets.Episodes
 {
     [Cmdlet(VerbsCommon.Set, "Episode", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [Alias("Update-Episode")]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(EpisodeResult))]
     public class SetEpisode : BaseSonarrCmdlet

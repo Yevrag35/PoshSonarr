@@ -9,6 +9,7 @@ using System.Management.Automation;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Set, "HostConfig", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
+    [Alias("Update-HostConfig")]
     [OutputType(typeof(UIHost))]
     [CmdletBinding(PositionalBinding = false)]
     public class SetHostConfig : GetHostConfig

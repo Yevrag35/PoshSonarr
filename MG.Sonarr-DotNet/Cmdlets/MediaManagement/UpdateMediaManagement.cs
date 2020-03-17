@@ -5,6 +5,7 @@ using System.Management.Automation;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsData.Update, "MediaManagement", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [Alias("Set-MediaManagement")]
     [OutputType(typeof(MediaManagement))]
     [CmdletBinding(PositionalBinding = false)]
     public class UpdateMediaManagement : BaseSonarrCmdlet
