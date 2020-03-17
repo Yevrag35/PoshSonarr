@@ -16,9 +16,11 @@
     <Compile Remove="src\objects\dateFormats\DateFormatAttribute.cs" />
     <Compile Remove="src\objects\dateFormats\ShortDateFormat.cs" />
     <Compile Remove="src\objects\dateFormats\WeekColumnHeader.cs" />
+    <Compile Remove="src\objects\interfaces\ICanCalculate.cs" />
     <Compile Remove="src\objects\interfaces\IRestResponse-Generic.cs" />
     <Compile Remove="src\objects\interfaces\IRestResponse.cs" />
     <Compile Remove="src\objects\rest\SonarrRestResponse.cs" />
+    <Compile Remove="src\objects\TotalSize.cs" />
     <Compile Remove="src\results\Config\UIConfig.cs" />
     <Compile Remove="src\results\QualityProfile\QualityItemCollection.cs" />
     <Compile Remove="src\results\Quality\QualityItemCollection.cs" />
@@ -32,8 +34,10 @@
     <None Include="src\objects\dateFormats\DateFormatAttribute.cs" />
     <None Include="src\objects\dateFormats\ShortDateFormat.cs" />
     <None Include="src\objects\dateFormats\WeekColumnHeader.cs" />
+    <None Include="src\objects\interfaces\ICanCalculate.cs" />
     <None Include="src\objects\interfaces\IRestResponse.cs" />
     <None Include="src\objects\rest\SonarrRestResponse.cs" />
+    <None Include="src\objects\TotalSize.cs" />
     <None Include="src\results\Config\UIConfig.cs" />
     <None Include="src\results\QualityProfile\QualityItemCollection.cs" />
   </ItemGroup>

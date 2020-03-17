@@ -4,10 +4,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace MG.Sonarr.Results
 {
-    public class SeasonCollection : BaseResult, IEnumerable<Season>, ICanCalculate
+    public class SeasonCollection : BaseResult, IEnumerable<Season>
     {
         #region FIELDS/CONSTANTS
         private List<Season> _list;
@@ -90,19 +91,25 @@ namespace MG.Sonarr.Results
         /// Calculates the total file size (in Bytes) of each <see cref="Season"/> that corresponds to the specified season numbers.
         /// </summary>
         /// <param name="seasonNumbers">The season numbers of each <see cref="Season"/> to calculate.</param>
-        public decimal GetSeasonFileSize(params int[] seasonNumbers)
+        public long GetSeasonFileSize(params int[] seasonNumbers)
         {
-            if (seasonNumbers == null)
-                return 0M;
-
-            return _list
-                .FindAll(s => seasonNumbers.Contains(s.SeasonNumber))
-                    .Sum(s => s.SizeOnDisk);
+            long sum;
+            if (seasonNumbers == null || seasonNumbers.Length <= 0)
+            {
+                sum = _list.Sum(s => s.SizeOnDisk);
+            }
+            else
+            {
+                sum = _list
+                    .FindAll(s => seasonNumbers.Contains(s.SeasonNumber))
+                        .Sum(s => s.SizeOnDisk);
+            }
+            return sum;
         }
-        /// <summary>
-        /// Calculates the total file size (in Bytes) of all <see cref="Season"/> elements contained within the collection.
-        /// </summary>
-        public decimal GetTotalFileSize() => _list.Sum(s => s.SizeOnDisk);
+        ///// <summary>
+        ///// Calculates the total file size (in Bytes) of all <see cref="Season"/> elements contained within the collection.
+        ///// </summary>
+        //public decimal GetTotalFileSize() => _list.Sum(s => s.SizeOnDisk);
         /// <summary>
         /// Enumerates and yields all seasons where <see cref="Season.IsMonitored"/> is <see langword="false"/>.
         /// </summary>

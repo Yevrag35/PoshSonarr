@@ -22,7 +22,7 @@ namespace MG.Sonarr.Cmdlets
         #region PARAMETERS
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesName")]
         [SupportsWildcards]
-        public object[] Name{ get; set; }
+        public object[] Name { get; set; }
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId", ValueFromPipelineByPropertyName = true)]
         [Alias("SeriesId")]

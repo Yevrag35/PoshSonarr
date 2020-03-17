@@ -122,6 +122,9 @@
 								<PropertyName>SeriesType</PropertyName>
 							</ListItem>
 							<ListItem>
+								<PropertyName>SizeOnDisk</PropertyName>
+							</ListItem>
+							<ListItem>
 								<PropertyName>Status</PropertyName>
 							</ListItem>
 							<ListItem>

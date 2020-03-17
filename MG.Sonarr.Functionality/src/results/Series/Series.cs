@@ -17,7 +17,7 @@ namespace MG.Sonarr.Results
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [Serializable]
-    public sealed class SeriesResult : SearchSeries, ICanCalculate, ISupportsTagUpdate
+    public sealed class SeriesResult : SearchSeries, ISupportsTagUpdate
     {
         private const string EP = "/series";
 
@@ -70,6 +70,12 @@ namespace MG.Sonarr.Results
         public string RemotePoster { get; private set; }
 
         /// <summary>
+        /// The size (in bytes) of all downloaded episode files from all seasons.
+        /// </summary>
+        [JsonProperty("sizeOnDisk")]
+        public long SizeOnDisk { get; private set; }
+
+        /// <summary>
         /// A unique collection of tag ID's applied to the series.
         /// </summary>
         [JsonProperty("tags")]
@@ -81,11 +87,11 @@ namespace MG.Sonarr.Results
         [JsonProperty("seasonFolder")]
         public bool UsingSeasonFolders { get; set; }
 
-        public decimal GetTotalFileSize() => base.Seasons.GetTotalFileSize();
+        //public decimal GetTotalFileSize() => base.Seasons.GetTotalFileSize();
 
         /// <summary>
         /// Retrieves the Uri endpoint that instance was retrieved from.
         /// </summary>
-        public string GetEndpoint() => EP;
+        //public string GetEndpoint() => EP;
     }
 }

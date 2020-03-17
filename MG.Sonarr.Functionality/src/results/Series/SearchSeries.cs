@@ -111,7 +111,7 @@ namespace MG.Sonarr.Results
         public string PosterUrl { get; private protected set; }
 
         /// <summary>
-        /// Represents a single episode's runtime duration for the series.
+        /// Represents a single episode's runtime duration (in minutes) for the series.
         /// </summary>
         [JsonProperty("runtime")]
         public int Runtime { get; private protected set; }

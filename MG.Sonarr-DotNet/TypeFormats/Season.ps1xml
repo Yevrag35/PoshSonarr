@@ -29,8 +29,9 @@
 								<PropertyName>SeasonNumber</PropertyName>
 							</ListItem>
 							<ListItem>
-								<Label>SizeOnDisk</Label>
-								<ScriptBlock>"{0} GB" -f $([math]::Round(($_.Statistics.SizeOnDisk / 1GB), 2))</ScriptBlock>
+								<PropertyName>SizeOnDisk</PropertyName>
+								<!--<Label>SizeOnDisk</Label>
+								<ScriptBlock>"{0} GB" -f $([math]::Round(($_.Statistics.SizeOnDisk / 1GB), 2))</ScriptBlock>-->
 							</ListItem>
 							<ListItem>
 								<PropertyName>TotalEpisodeCount</PropertyName>

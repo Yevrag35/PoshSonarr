@@ -135,7 +135,7 @@
     <Compile Include="Cmdlets\RootFolder\RegisterRootFolder.cs" />
     <Compile Include="Cmdlets\RootFolder\RemoveRootFolder.cs" />
     <Compile Include="Cmdlets\Series\SeriesCmdlet.cs" />
-    <Compile Include="Cmdlets\Size\GetSize.cs" />
+    <None Include="Cmdlets\Size\GetSize.cs.old" />
     <Compile Include="Cmdlets\System\RestartInstance.cs" />
     <Compile Include="Cmdlets\Tag\AddTag.cs" />
     <Compile Include="Cmdlets\Tag\TagCmdlet.cs" />
@@ -200,7 +200,6 @@
     <None Include="TypeFormats\Restriction.ps1xml" />
     <None Include="TypeFormats\RootFolder.ps1xml" />
     <None Include="TypeFormats\Season.ps1xml" />
-    <None Include="TypeFormats\Season.ps1xml.old" />
     <None Include="TypeFormats\SeriesImage.ps1xml" />
     <None Include="TypeFormats\SearchSeries.ps1xml" />
     <None Include="TypeFormats\SeriesResult.ps1xml" />
