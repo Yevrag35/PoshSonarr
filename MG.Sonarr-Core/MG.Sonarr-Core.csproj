@@ -39,12 +39,6 @@
 	  <None Remove="DebugScript.ps1" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Content Include="$(USERPROFILE)\DebugScript.ps1">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	</ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="MG.Api.Json" Version="1.0.0" />
     <PackageReference Include="MG.Dynamic" Version="3.6.0" />
