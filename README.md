@@ -148,7 +148,6 @@ The following is the list of the working cmdlets:
 1. Get-SonarrRestriction
 1. Get-SonarrRootFolder
 1. Get-SonarrSeries
-1. __Get-SonarrSize__
 1. Get-SonarrStatus
 1. Get-SonarrTag
 1. Get-SonarrUpdate
