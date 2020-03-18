@@ -16,8 +16,8 @@ namespace MG.Sonarr
         #region FIELDS/CONSTANTS
         private bool _disposed;
 
-        public const string Endpoint = "/tag";
-        private const string ID_END = Endpoint + "/{0}";
+        public string Endpoint { get; set; } = "/tag";
+        private string ID_END;
         private SonarrRestClient _client;
 
         #endregion
@@ -28,10 +28,16 @@ namespace MG.Sonarr
         #endregion
 
         #region CONSTRUCTORS
-        public TagManager(SonarrRestClient restClient)
+        public TagManager(SonarrRestClient restClient, bool addApi)
         {
             if (restClient.IsAuthenticated)
             {
+                if (addApi)
+                {
+                    this.Endpoint = "/api" + this.Endpoint;
+                }
+                ID_END = this.Endpoint + "/{0}";
+
                 _client = restClient;
                 this.LoadTags();
             }

@@ -182,7 +182,7 @@ namespace MG.Sonarr.Cmdlets
                 List<QualityDefinition> definitions = base.SendSonarrListGet<QualityDefinition>("/qualitydefinition");
                 Context.AllQualities = new List<Quality>(definitions.Select(x => x.Quality));
                 Context.AllQualities.Sort();
-                Context.TagManager = new TagManager(Context.ApiCaller);
+                Context.TagManager = new TagManager(Context.ApiCaller, !_noApiPrefix);
 
                 if (_passThru)
                     base.WriteObject(statusResult);
