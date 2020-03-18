@@ -7,6 +7,22 @@ This will eventually be a complete PowerShell module for quickly issuing [Sonarr
 
 # CHANGELOG
 
+## 1.3.0-gamma
+
+_(3/18/2020)_
+
+* Fix major bug with <code>Connect-SonarrInstance</code> that has existed since 'beta'.  When <code>-NoApiPrefix</code> is not used, the TagManager object creation during connection no longer shows an error and tag management will work again.
+
+## 1.3.0-delta
+
+_(3/16/2020)_
+
+* Fixed mandatory parameter requirement for <code>Get-SonarrCalendar</code>.  DayOfWeek is no longer required (as it should never have been...).
+* <code>Get-SonarrTag</code> no longer returns all tags when used in the pipeline.
+* <code>Get-SonarrSize</code> has been removed.  (It was no longer needed)
+* NEW CMDLET:
+   * __Update-SonarrQualityProfile__ _(Set-SonarrQualityProfile/Update-SonarrProfile/Set-SonarrProfile)_
+
 ## 1.3.0-beta
 
 _(3/10/2020)_
