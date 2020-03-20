@@ -29,7 +29,7 @@ namespace MG.Sonarr.Cmdlets
     public class GetCalendar : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string DT_FORMAT = "yyyy-MM-dd";
+        private const string DT_FORMAT = "yyyy-MM-ddTHH:mm:ss";
         private const string EP = "/calendar";
         private const string EP_WITH_DATE = EP + "?start={0}&end={1}";
 
@@ -54,7 +54,7 @@ namespace MG.Sonarr.Cmdlets
         /// <summary>
         /// <para type="description">Specifies the DayOfWeeks to get entries in the specified date range.</para>
         /// </summary>
-        [Parameter(Mandatory = false)]//, ParameterSetName = "ByDayOfWeek")]
+        [Parameter(Mandatory = false)]
         public DayOfWeek[] DayOfWeek { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "ShowToday")]
@@ -91,13 +91,11 @@ namespace MG.Sonarr.Cmdlets
             }
             else if (_today)
             {
-                this.StartDate = DateTime.Today;
-                this.EndDate = DateTime.Today.AddDays(1);
+                this.SetOneDayRange(DateTime.Today);
             }
             else if (_tomorrow)
             {
-                this.StartDate = DateTime.Today.AddDays(1);
-                this.EndDate = DateTime.Today.AddDays(2);
+                this.SetOneDayRange(DateTime.Today.AddDays(1));
             }
         }
 
@@ -125,6 +123,12 @@ namespace MG.Sonarr.Cmdlets
         private List<CalendarEntry> GetCalendarEntries(string uri) => base.SendSonarrListGet<CalendarEntry>(uri);
 
         private string DateToString(DateTime dt) => dt.ToString(DT_FORMAT);
+
+        private void SetOneDayRange(DateTime beginning)
+        {
+            this.StartDate = beginning;
+            this.EndDate = beginning.AddDays(1).AddSeconds(-1);
+        }
 
         #endregion
     }
