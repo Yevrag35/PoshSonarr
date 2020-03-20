@@ -130,7 +130,7 @@ The following is the list of the working cmdlets:
 
 1. Add-SonarrRelease
 1. Add-SonarrSeries
-1. __Add-SonarrTag__ - _* (still working on this one)_
+1. __Add-SonarrTag__
 1. __Clear-SonarrLog__
 1. [Connect-SonarrInstance](https://github.com/Yevrag35/PoshSonarr/wiki/Connect-SonarrInstance) - _(Connect-Sonarr)_
 1. [Get-SonarrBackup](https://github.com/Yevrag35/PoshSonarr/wiki/Get-SonarrBackup)
