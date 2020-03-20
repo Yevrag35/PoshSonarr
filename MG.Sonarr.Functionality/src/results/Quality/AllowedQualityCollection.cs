@@ -10,6 +10,8 @@ namespace MG.Sonarr.Results
         #region INDEXERS
         public AllowedQuality this[int index] => base.InnerList[index];
 
+        public AllowedQuality this[string qualityName] => this.F
+
         #endregion
 
         #region CONSTRUCTORS
@@ -35,21 +37,15 @@ namespace MG.Sonarr.Results
         });
         //public void Clear() => base.InnerList.Clear();
         public bool ContainsQualityById(int qualityId) => base.InnerList.Exists(x => x.Quality.Id.Equals(qualityId));
-        public bool ContainsQualityByName(string qualityName, bool caseSensitive = false)
+        public bool ContainsQualityByName(string qualityName)
         {
             StringComparison comparison = StringComparison.CurrentCultureIgnoreCase;
-            if (caseSensitive)
-                comparison = StringComparison.CurrentCulture;
-
             return base.InnerList.Exists(x => x.Quality.Name.Equals(qualityName, comparison));
         }
         internal int FindIndex(Predicate<AllowedQuality> match) => base.InnerList.FindIndex(match);
-        public AllowedQuality GetAllowedQualityByName(string qualityName, bool caseSensitive = false)
+        public AllowedQuality GetAllowedQualityByName(string qualityName)
         {
             StringComparison comparison = StringComparison.CurrentCultureIgnoreCase;
-            if (caseSensitive)
-                comparison = StringComparison.CurrentCulture;
-
             return base.InnerList.Find(x => x.Quality.Name.Equals(qualityName, comparison));
         }
         public AllowedQuality GetAllowedQualityById(int qualityId) => base.InnerList.Find(x => x.Quality.Id.Equals(qualityId));

@@ -33,9 +33,11 @@ namespace MG.Sonarr.Results
 
         public QualityProfileNew() { }
 
-        public bool IsQualityAllowed(string name, bool caseSensitive = false)
+        public string GetEndpoint() => EP;
+
+        public bool IsQualityAllowed(string name)
         {
-            bool? result = this.AllowedQualities.GetAllowedQualityByName(name, caseSensitive)?.Allowed;
+            bool? result = this.AllowedQualities.GetAllowedQualityByName(name)?.Allowed;
             if (!result.HasValue)
                 result = false;
 
@@ -49,8 +51,6 @@ namespace MG.Sonarr.Results
 
             return result.Value;
         }
-
-        public string GetEndpoint() => EP;
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext ctx) => this.AllowedQualities.Sort();
