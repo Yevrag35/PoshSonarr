@@ -21,7 +21,7 @@ namespace MG.Sonarr.Results
         public bool AnalyticsEnabled { get; set; }
 
         [JsonProperty("apiKey", Order = 12)]
-        public IApiKey ApiKey { get; private set; }
+        public string ApiKey { get; private set; }
 
         [JsonProperty("authenticationMethod", Order = 6)]
         [JsonConverter(typeof(SonarrStringEnumConverter))]
