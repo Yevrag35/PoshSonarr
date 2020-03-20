@@ -10,7 +10,7 @@ namespace MG.Sonarr.Results
         #region INDEXERS
         public AllowedQuality this[int index] => base.InnerList[index];
 
-        public AllowedQuality this[string qualityName] => this.F
+        public AllowedQuality this[string qualityName] => this.Find(x => x.Quality.Name.Equals(qualityName, StringComparison.CurrentCultureIgnoreCase));
 
         #endregion
 
