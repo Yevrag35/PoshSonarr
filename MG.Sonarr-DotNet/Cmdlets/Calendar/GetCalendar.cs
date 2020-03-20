@@ -91,13 +91,11 @@ namespace MG.Sonarr.Cmdlets
             }
             else if (_today)
             {
-                this.StartDate = DateTime.Today;
-                this.EndDate = DateTime.Today.AddDays(1).AddSeconds(-1);
+                this.SetOneDayRange(DateTime.Today);
             }
             else if (_tomorrow)
             {
-                this.StartDate = DateTime.Today.AddDays(1);
-                this.EndDate = DateTime.Today.AddDays(2).AddSeconds(-1);
+                this.SetOneDayRange(DateTime.Today.AddDays(1));
             }
         }
 
@@ -125,6 +123,12 @@ namespace MG.Sonarr.Cmdlets
         private List<CalendarEntry> GetCalendarEntries(string uri) => base.SendSonarrListGet<CalendarEntry>(uri);
 
         private string DateToString(DateTime dt) => dt.ToString(DT_FORMAT);
+
+        private void SetOneDayRange(DateTime beginning)
+        {
+            this.StartDate = beginning;
+            this.EndDate = beginning.AddDays(1).AddSeconds(-1);
+        }
 
         #endregion
     }
