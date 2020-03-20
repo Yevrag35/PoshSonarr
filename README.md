@@ -7,6 +7,13 @@ This will eventually be a complete PowerShell module for quickly issuing [Sonarr
 
 # CHANGELOG
 
+## 1.3.0 (Release)
+
+* Includes all the changes from the prerelease versions.
+* Fixed these issues:
+   * [Issue#12](https://github.com/Yevrag35/PoshSonarr/issues/12) - Get-SonarrEpisode -SeriesId invalid parameter binding
+   * [Issue#13](https://github.com/Yevrag35/PoshSonarr/issues/13) - Get-SonarrCalendar -Today displays episode airing at midnight tomorrow
+
 ## 1.3.0-gamma
 
 _(3/18/2020)_
