@@ -39,7 +39,7 @@ namespace MG.Sonarr.Cmdlets
         [Alias("EpisodeId")]
         public int Id { get; set; }
 
-        [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesIdAbsoluteEp")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesIdAbsoluteEp")]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByInputAbsoluteEp")]
         public int[] AbsoluteEpisodeNumber { get; set; }
 
