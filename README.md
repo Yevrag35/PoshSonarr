@@ -116,7 +116,7 @@ Search-SonarrSeries "The X-Files" | Add-SonarrSeries -RootFolderPath "\\NAS\Show
 
 ## Cmdlets
 
-As of 1/13/20, I'm still missing the following commands:
+As of 3/20/2020, I'm still missing the following commands:
 
 1. DownloadedEpisodesScan
 1. MissingEpisodeSearch
@@ -132,8 +132,8 @@ The following is the list of the working cmdlets:
 1. Add-SonarrSeries
 1. __Add-SonarrTag__ - _* (still working on this one)_
 1. __Clear-SonarrLog__
-1. Connect-SonarrInstance - _(Connect-Sonarr)_
-1. Get-SonarrBackup
+1. [Connect-SonarrInstance](https://github.com/Yevrag35/PoshSonarr/wiki/Connect-SonarrInstance) - _(Connect-Sonarr)_
+1. [Get-SonarrBackup](https://github.com/Yevrag35/PoshSonarr/wiki/Get-SonarrBackup)
 1. Get-SonarrCalendar
 1. Get-SonarrCommand - _(Get-SonarrJob)_
 1. __Get-SonarrDelayProfile__
@@ -198,5 +198,6 @@ The following is the list of the working cmdlets:
 1. __Update-SonarrDownloadClient__
 1. __Update-SonarrMediaManagement__
 1. __Update-SonarrMetadata__
+1. __Update-SonarrQualityProfile__ _(Set-SonarrQualityProfile/Update-SonarrProfile/Set-SonarrProfile)_
 1. Update-SonarrRestriction
 1. Update-SonarrSeries - _* (renamed to Set-SonarrSeries; left behind as alias)_
