@@ -36,7 +36,12 @@
 		<Content Include="$(USERPROFILE)\.nuget\packages\mg.api.json\1.0.0\lib\netstandard2.0\*.dll;$(USERPROFILE)\.nuget\packages\mg.dynamic\3.6.0\lib\netcoreapp3.1\*.dll;$(USERPROFILE)\.nuget\packages\mg.posh.extensions\1.1.0\lib\netcoreapp3.1\*.dll;$(USERPROFILE)\.nuget\packages\newtonsoft.json\12.0.3\lib\netstandard2.0\Newtonsoft.Json.dll">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
+		<Compile Remove="..\MG.Sonarr-DotNet\Cmdlets\Logging\SaveLogFile.cs" />
 	  <None Remove="DebugScript.ps1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="..\MG.Sonarr-DotNet\Cmdlets\Logging\SaveLogFile.cs" />
 	</ItemGroup>
 
   <ItemGroup>

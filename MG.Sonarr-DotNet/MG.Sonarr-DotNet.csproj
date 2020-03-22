@@ -109,7 +109,7 @@
     <Compile Include="Cmdlets\Logging\ClearLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLogFile.cs" />
-    <Compile Include="Cmdlets\Logging\SaveLogFile.cs" />
+    <None Include="Cmdlets\Logging\SaveLogFile.cs" />
     <Compile Include="Cmdlets\MediaManagement\GetMediaManagement.cs" />
     <Compile Include="Cmdlets\MediaManagement\UpdateMediaManagement.cs" />
     <Compile Include="Cmdlets\Metadata\GetMetadata.cs" />
