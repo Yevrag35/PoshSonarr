@@ -21,11 +21,11 @@
 								<PropertyName>EstimatedCompletionTime</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>Id</PropertyName>
-							</ListItem>
-							<ListItem>
 								<Label>Quality</Label>
 								<ScriptBlock>$_.Quality.Quality.Name</ScriptBlock>
+							</ListItem>
+							<ListItem>
+								<PropertyName>QueueItemId</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Protocol</PropertyName>

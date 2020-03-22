@@ -1,3 +1,8 @@
+using MG.Api.Json;
+using MG.Api.Json.Extensions;
+using MG.Api.Rest.Extensions;
+using MG.Api.Rest.Generic;
+using MG.Posh.Extensions.Bound;
 using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
@@ -12,35 +17,14 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
-    /// <summary>
-    ///     <para type="synopsis">Builds the connection context for subsequent cmdlets.</para>
-    ///     <para type="description">Establishes a custom HttpClient context for use with all subsequent PoshSonarr cmdlets.  
-    ///         The connection is created either via hostname/port/url base or by direct URL.  
-    ///         The "/api" path is automatically appended unless the '-NoApiPrefix' parameter is used.  
-    ///         If this command is not run first, all other cmdlets will throw an error.
-    ///     </para>
-    /// </summary>
-    /// <example>
-    ///     <code>
-    ///         <para>Connect by 'HostName' and 'Port':</para>
-    ///         <para></para>
-    ///         <para>Connect-Sonarr -Server "MEDIASERVER" -ApiKey "xxxxxxxxxxxxxxxx" -PassThru</para>
-    ///     </code>
-    /// </example>
-    /// <example>
-    ///     <code>
-    ///         <para>Connect by explicit URL:</para>
-    ///         <para></para>
-    ///         <para>Connect-SonarrInstance -Url 'https://sonarr-api.cloud.com/api/custom' -ApiKey "xxxxxxxxxxxxxxxx" -NoApiPrefix</para>
-    ///     </code>
-    /// </example>
-    [Cmdlet(VerbsCommunications.Connect, "Instance", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByServerName")]
-    [CmdletBinding(PositionalBinding = false)]
+    [Cmdlet(VerbsCommunications.Connect, "Instance", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByServerName", HelpUri = "https://github.com/Yevrag35/PoshSonarr/wiki/Connect-SonarrInstance")]
     [Alias("Connect-")]
-    [OutputType(typeof(SonarrStatusResult))]
+    [CmdletBinding(PositionalBinding = false)]
+    [OutputType(typeof(Status))]
     public partial class ConnectInstance : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
+        private const string CONNECT_EP = "/system/status";
         private const string SLASH_STR = "/";
         private static readonly char SLASH = char.Parse(SLASH_STR);
         private static readonly char[] SLASH_API = new char[4]
@@ -63,6 +47,7 @@ namespace MG.Sonarr.Cmdlets
         /// <para type="description">The hostname of the Sonarr instance.</para>
         /// </summary>
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByServerName")]
+        [ValidateNotNull]
         [Alias("HostName")]
         public string SonarrServerName = "localhost";
 
@@ -179,133 +164,75 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
+            this.SetSonarrUrl();
 
-            Context.SonarrUrl = this.ParameterSetName == "ByServerName"
-                ? ClassFactory.GenerateSonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
-                : ClassFactory.GenerateSonarrUrl(this.SonarrUrl, !_noApiPrefix);
-
-            HttpClientHandler handler = null;
+            HttpClientHandler handler = new HttpClientHandler();
             this.CheckCertificateValidity(ref handler);
 
-            Context.ApiCaller = this.MyInvocation.BoundParameters.ContainsKey("Proxy")
-                ? NewApiCaller(Context.SonarrUrl, this.ApiKey, _allowRedirect, this.Proxy, this.ProxyCredential, _proxyBypass)
-                : NewApiCaller(Context.SonarrUrl, this.ApiKey, _allowRedirect);
+            if (this.ContainsParameter(x => x.Proxy))
+                this.BoundCallerWithProxy(handler);
+            
+            else
+                this.BoundCallerWithoutProxy(handler);
 
-            if (_passThru)
+            Status statusResult = this.TryConnect();
+
+            if (statusResult != null)
             {
-                string status = this.GetStatusString(Context.ApiCaller);
-                SonarrStatusResult sr = this.GetStatusResult(status);
-                if (sr != null)
-                    base.WriteObject(sr);
+                List<QualityDefinition> definitions = base.SendSonarrListGet<QualityDefinition>("/qualitydefinition");
+                Context.AllQualities = new List<Quality>(definitions.Select(x => x.Quality));
+                Context.AllQualities.Sort();
+                Context.TagManager = new TagManager(Context.ApiCaller, !_noApiPrefix);
+
+                if (_passThru)
+                    base.WriteObject(statusResult);
             }
         }
 
         #endregion
 
         #region PRIVATE/BACKEND METHODS
-
-        private string GetStatusString(SonarrRestClient caller)
+        private void BoundCallerWithProxy(HttpClientHandler handler)
         {
-            string status = base.TrySonarrConnect();
-            if (string.IsNullOrEmpty(status))
+            handler.Proxy = new WebProxy(this.Proxy, _proxyBypass, null, this.ProxyCredential);
+            handler.AllowAutoRedirect = _allowRedirect;
+            Context.ApiCaller = new SonarrRestClient(handler)
             {
-                throw new NoSonarrResponseException();
-            }
-            return status;
-            // Now call GetStatusResult();
-        }
-
-        private SonarrStatusResult GetStatusResult(string statusStr)
-        {
-            SonarrStatusResult sr = null;
-            try
-            {
-                sr = SonarrHttp.ConvertToSonarrResult<SonarrStatusResult>(statusStr);
-            }
-            catch (Exception e)
-            {
-                base.WriteError(e, ErrorCategory.ParserError, statusStr);
-            }
-            return sr;
-        }
-
-        public SonarrRestClient NewApiCaller(ISonarrUrl url, ApiKey apiKey, bool allowRedirects)
-        {
-            var handler = new HttpClientHandler
-            {
-                AllowAutoRedirect = allowRedirects,
-                UseDefaultCredentials = true
+                BaseAddress = Context.SonarrUrl.Url
             };
-            return NewApiCaller(url.BaseUrl, apiKey, handler);
+            Context.ApiCaller.AddApiKey(this.ApiKey);
         }
-
-        [Obsolete]
-        public SonarrRestClient NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects)
+        private void BoundCallerWithoutProxy(HttpClientHandler handler)
         {
-            var handler = new HttpClientHandler
+            handler.AllowAutoRedirect = _allowRedirect;
+            Context.ApiCaller = new SonarrRestClient(handler)
             {
-                AllowAutoRedirect = allowRedirects,
-                UseDefaultCredentials = true
+                BaseAddress = Context.SonarrUrl.Url
             };
-            return this.NewApiCaller(uriBuilder.Uri.GetLeftPart(UriPartial.Scheme | UriPartial.Authority), apiKey, handler);
+            Context.ApiCaller.AddApiKey(this.ApiKey);
         }
-
-        public SonarrRestClient NewApiCaller(ISonarrUrl url, ApiKey apiKey, bool allowRedirects, string proxy, ProxyCredential proxyCredential, bool proxyBypassLocal)
+        private void SetSonarrUrl() => Context.SonarrUrl = !this.ContainsParameter(x => x.SonarrUrl)
+                ? ClassFactory.GenerateSonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
+                : ClassFactory.GenerateSonarrUrl(this.SonarrUrl, !_noApiPrefix);
+        private Status TryConnect()
         {
-            var wp = new WebProxy(proxy)
+            base.WriteApiDebug(CONNECT_EP, HttpMethod.Get, out string apiPath);
+            IRestResponse<Status> response = Context.ApiCaller.GetAsJsonAsync<Status>(apiPath).GetAwaiter().GetResult();
+            if (response.IsFaulted)
             {
-                BypassProxyOnLocal = proxyBypassLocal,
-            };
+                if (response.HasException)
+                    throw response.GetAbsoluteException();
 
-            if (proxyCredential != null)
-                wp.Credentials = proxyCredential;
+                else if (!response.IsValidStatusCode)
+                    throw new NoSonarrResponseException();
 
+                else
+                    throw new HttpStatusException(response.StatusCode);
+            }   
             else
-                wp.UseDefaultCredentials = true;
-
-            var proxyHandler = new HttpClientHandler
             {
-                AllowAutoRedirect = allowRedirects,
-                UseDefaultCredentials = true,
-                Proxy = wp,
-                UseProxy = true
-            };
-            return NewApiCaller(url.BaseUrl, apiKey, proxyHandler);
-        }
-
-        [Obsolete]
-        public SonarrRestClient NewApiCaller(ApiKey apiKey, UriBuilder uriBuilder, bool allowRedirects, string proxy, ProxyCredential proxyCredential, bool proxyBypassLocal)
-        {
-            var wp = new WebProxy(proxy)
-            {
-                BypassProxyOnLocal = proxyBypassLocal,
-            };
-
-            if (proxyCredential != null)
-                wp.Credentials = proxyCredential;
-
-            else
-                wp.UseDefaultCredentials = true;
-
-            var handler = new HttpClientHandler
-            {
-                AllowAutoRedirect = allowRedirects,
-                UseDefaultCredentials = true,
-                Proxy = wp,
-                UseProxy = true
-            };
-
-            return NewApiCaller(uriBuilder.Uri.GetLeftPart(UriPartial.Scheme | UriPartial.Authority), apiKey, handler);
-        }
-
-        private SonarrRestClient NewApiCaller(string url, ApiKey apiKey, HttpClientHandler handler)
-        {
-            this.CheckCertificateValidity(ref handler);
-
-            return new SonarrRestClient(handler, apiKey)
-            {
-                BaseAddress = new Uri(url)
-            };
+                return response.Content;
+            }
         }
 
         #endregion

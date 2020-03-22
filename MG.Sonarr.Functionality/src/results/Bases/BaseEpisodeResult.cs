@@ -9,18 +9,50 @@ namespace MG.Sonarr.Results
     /// The base class for all Episode-related response data from Sonarr.
     /// </summary>
     [Serializable]
+    [JsonObject(MemberSerialization.OptIn)]
     public abstract class BaseEpisodeResult : BaseResult
     {
-        public int? AbsoluteEpisodeNumber { get; set; }
-        public DateTime? AirDateUtc { get; set; }
+        [JsonProperty("absoluteEpisodeNumber")]
+        public int? AbsoluteEpisodeNumber { get; internal set; }
+
+        [JsonProperty("airDateUtc")]
+        public DateTime? AirDateUtc { get; internal set; }
+
         [JsonProperty("id")]
-        public long EpisodeId { get; set; }
-        public int EpisodeNumber { get; set; }
-        public bool HasFile { get; set; }        
-        public bool Monitored { get; set; }
+        public long EpisodeId { get; internal set; }
+
+        [JsonProperty("episodeNumber")]
+        public int EpisodeNumber { get; internal set; }
+
+        // Used for backwards compatibility
+        [Obsolete]
+        public bool HasFile => this.IsDownloaded;
+
+        [JsonProperty("hasFile")]
+        public bool IsDownloaded { get; internal set; }
+
+        [JsonProperty("monitored")]
+        public bool IsMonitored { get; set; }
+
+        [JsonIgnore]
+        [Obsolete]
+        public bool Monitored
+        {
+            get => this.IsMonitored;
+            set
+            {
+                Console.WriteLine("The property \"Monitored\" is deprecated and will be removed from future releases.  Use \"IsMonitored\" instead.");
+                this.IsMonitored = value;
+            }
+        }
+
         [JsonProperty("title")]
-        public string Name { get; set; }
-        public int SeriesId { get; set; }
-        public bool UnverifiedSceneNumbering { get; set; }
+        public string Name { get; internal set; }
+
+        [JsonProperty("seriesId")]
+        public int SeriesId { get; internal set; }
+
+        [JsonProperty("unverifiedSceneNumbering")]
+        public bool UnverifiedSceneNumbering { get; internal set; }
     }
 }

@@ -1,11 +1,7 @@
 ﻿using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
-using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -40,22 +36,22 @@ namespace MG.Sonarr.Cmdlets
         protected override void ProcessRecord()
         {
             string ep = string.Format(EP, this.EpisodeId);
-            string jsonRes = base.TryGetSonarrResult(ep);
-            if (!string.IsNullOrEmpty(jsonRes))
-            {
-                List<Release> results = SonarrHttp.ConvertToSonarrResults<Release>(jsonRes, out bool iso);
-                if (_exclude)
-                    base.WriteObject(results.FindAll(x => !x.Rejected), true);
-
-                else
-                    base.WriteObject(results, true);
-            }
+            List<Release> releases = base.SendSonarrListGet<Release>(ep);
+            if (releases != null && releases.Count > 0)
+                base.WriteObject(this.Filter(releases), true);
         }
 
         #endregion
 
         #region METHODS
+        private List<Release> Filter(List<Release> releases)
+        {
+            if (_exclude)
+                return releases.FindAll(x => !x.IsRejected);
 
+            else
+                return releases;
+        }
 
         #endregion
     }

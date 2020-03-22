@@ -1,26 +1,26 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
+using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "Tag", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByTagLabel")]
     [OutputType(typeof(Tag))]
     [CmdletBinding(PositionalBinding = false)]
-    public class GetTag : BaseSonarrCmdlet
+    public class GetTag : TagCmdlet
     {
         #region FIELDS/CONSTANTS
-        protected private const string EP = "/tag";
-        protected private const string EP_ID = EP + "/{0}";
+        private HashSet<int> _ids;
 
         #endregion
 
         #region PARAMETERS
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByInputTagObject")]
+        public ISupportsTagUpdate InputObject { get; set; }
+
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByTagLabel")]
         [SupportsWildcards]
         public string[] Label { get; set; }
@@ -31,56 +31,36 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region CMDLET PROCESSING
-        protected override void BeginProcessing() => base.BeginProcessing();
+        protected override void BeginProcessing()
+        {
+            base.BeginProcessing();
+            _ids = new HashSet<int>();
+        }
 
         protected override void ProcessRecord()
         {
-            if (this.ParameterSetName == "ByTagLabel")
+            if (this.ContainsParameter(x => x.InputObject) && this.InputObject.Tags != null && this.InputObject.Tags.Count > 0)
             {
-                string allRes = base.TryGetSonarrResult(EP);
-                List<Tag> tags = null;
-                if (!string.IsNullOrEmpty(allRes))
-                {
-                    tags = SonarrHttp.ConvertToSonarrResults<Tag>(allRes, out bool iso);
-                }
-                if (tags.Count > 0)
-                {
-                    if (this.MyInvocation.BoundParameters.ContainsKey("Label"))
-                    {
-                        for (int i = 0; i < this.Label.Length; i++)
-                        {
-                            var wcp = new WildcardPattern(this.Label[i], WildcardOptions.IgnoreCase);
-                            for (int t = 0; t < tags.Count; t++)
-                            {
-                                Tag oneTag = tags[t];
-                                if (wcp.IsMatch(oneTag.Label))
-                                    base.WriteObject(oneTag);
-                            }
-                        }
-                    }
-                    else
-                        base.WriteObject(tags, true);
-                }
-
+                _ids.UnionWith(this.InputObject.Tags);
             }
-            else
+            else if (this.ContainsParameter(x => x.Id))
             {
-                for (int i = 0; i < this.Id.Length; i++)
-                {
-                    string ep = string.Format(EP_ID, this.Id[i]);
-                    string jsonRes = base.TryGetSonarrResult(ep);
-                    if (!string.IsNullOrEmpty(jsonRes))
-                    {
-                        base.WriteObject(SonarrHttp.ConvertToSonarrResult<Tag>(jsonRes));
-                    }
-                }
+                _ids.UnionWith(this.Id);
             }
         }
 
-        #endregion
-
-        #region BACKEND METHODS
-
+        protected override void EndProcessing()
+        {
+            if ( ! this.ContainsAnyParameters(x => x.Id, x => x.InputObject) && base.TryGetAllTags(out TagCollection allTags))
+            {
+                allTags.Sort();
+                base.SendToPipeline(base.FilterByStringParameter(allTags, t => t.Label, this, cmd => cmd.Label));
+            }
+            else if (_ids.Count > 0)
+            {
+                base.SendToPipeline(base.GetTagById(_ids));
+            }
+        }
 
         #endregion
     }

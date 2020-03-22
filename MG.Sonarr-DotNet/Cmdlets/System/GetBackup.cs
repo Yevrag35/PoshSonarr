@@ -1,22 +1,21 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Get, "Backup", ConfirmImpact = ConfirmImpact.None)]
-    [OutputType(typeof(SonarrBackupResult))]
+    [Cmdlet(VerbsCommon.Get, "Backup", ConfirmImpact = ConfirmImpact.None,
+        HelpUri = "https://github.com/Yevrag35/PoshSonarr/wiki/Get-SonarrBackup")]
+    [OutputType(typeof(Backup))]
     [CmdletBinding(PositionalBinding = false)]
     public class GetBackup : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-
+        private const string EP = "/system/backup";
 
         #endregion
 
@@ -31,26 +30,21 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            string jsonStr = base.TryGetSonarrResult("/system/backup");
-            if (!string.IsNullOrWhiteSpace(jsonStr))
-            {
-                List<SonarrBackupResult> backups = SonarrHttp.ConvertToSonarrResults<SonarrBackupResult>(jsonStr, out bool iso);
-                
-                if (this.Type != null && this.Type.Length > 0)
-                {
-                    base.WriteObject(backups.Where(x => this.Type.Contains(x.Type)), true);
-                }
-                else
-                {
-                    base.WriteObject(backups, true);
-                }
-            }
+            List<Backup> allBackups = base.SendSonarrListGet<Backup>(EP);
+            base.SendToPipeline(this.Filter(allBackups));
         }
 
         #endregion
 
         #region BACKEND METHODS
+        private List<Backup> Filter(List<Backup> allBackups)
+        {
+            if (this.ContainsParameter(x => x.Type))
+                return allBackups.FindAll(x => this.Type.Contains(x.Type));
 
+            else
+                return allBackups;
+        }
 
         #endregion
     }

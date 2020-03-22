@@ -12,19 +12,24 @@
 						<ListItems>
 							<ListItem>
 								<Label>Cutoff</Label>
-								<ScriptBlock>"{0}p" -f $_.Cutoff.Resolution</ScriptBlock>
+								<ScriptBlock>"{{{0}}}" -f $_.Cutoff.Name</ScriptBlock>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Id</PropertyName>
 							</ListItem>
 							<ListItem>
-								<Label>Items</Label>
+								<Label>AllowedQualities</Label>
 								<ScriptBlock>
 									$str = "{0} - {1}"
-									@(foreach ($i in $_.Items)
-									{
-										$str -f $i.Quality.Resolution, $i.Allowed
-									})
+									$allowed,$notAllowed = $_.AllowedQualities.Where({$_.Allowed},"Split")
+									$list = New-Object -TypeName "System.Collections.Generic.List[string]" -ArgumentList $_.AllowedQualities.Count
+									foreach ($a in $allowed) {
+										$list.Add(($str -f $a.Quality.Name, $a.Allowed))
+									}
+									foreach ($n in $notAllowed) {
+										$list.Add(($str -f $n.Quality.Name, $n.Allowed))
+									}
+									$list
 								</ScriptBlock>
 							</ListItem>
 							<ListItem>

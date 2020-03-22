@@ -11,7 +11,7 @@ using System.Runtime.Serialization;
 namespace MG.Sonarr.Results
 {
     /// <summary>
-    /// The base class for all PoshSonarr RESTful API responses.
+    /// The base class for all PoshSonarr RESTful API responses and payloads.
     /// </summary>
     public abstract class BaseResult : IJsonResult
     {

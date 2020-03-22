@@ -1,11 +1,8 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
-using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -31,26 +28,33 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (this.MyInvocation.BoundParameters.ContainsKey("Id"))
+            if (this.ContainsParameter(x => x.Id))
             {
-                for (int i = 0; i < this.Id.Length; i++)
-                {
-                    string ep = string.Format(EP_ID, this.Id[i]);
-                    string jsonRes = base.TryGetSonarrResult(ep);
-                    if (!string.IsNullOrEmpty(jsonRes))
-                    {
-                        QueueItem oneRes = SonarrHttp.ConvertToSonarrResult<QueueItem>(jsonRes);
-                        base.WriteObject(oneRes);
-                    }
-                }
+                base.WriteObject(this.GetQueueItemsById(this.Id), true);
             }
-            else
+            else if (this.TryGetAllQueueItems(out List<QueueItem> allItems))
             {
-                string jsonRes = base.TryGetSonarrResult(EP);
-                if (!string.IsNullOrEmpty(jsonRes))
+                base.WriteObject(allItems, true);
+            }
+        }
+
+        #endregion
+
+        #region METHODS
+        private bool TryGetAllQueueItems(out List<QueueItem> allItems)
+        {
+            allItems = base.SendSonarrListGet<QueueItem>(EP);
+            return allItems != null && allItems.Count > 0;
+        }
+        private IEnumerable<QueueItem> GetQueueItemsById(long[] ids)
+        {
+            foreach (int id in ids)
+            {
+                string ep = string.Format(EP_ID, id);
+                QueueItem qi = base.SendSonarrGet<QueueItem>(ep);
+                if (qi != null)
                 {
-                    List<QueueItem> resses = SonarrHttp.ConvertToSonarrResults<QueueItem>(jsonRes, out bool iso);
-                    base.WriteObject(resses, true);
+                    yield return qi;
                 }
             }
         }

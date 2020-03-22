@@ -14,7 +14,7 @@
 								<PropertyName>DateAdded</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>EpisodeFileId</PropertyName>
+								<PropertyName>Id</PropertyName>
 							</ListItem>
 							<ListItem>
 								<Label>MediaInfo</Label>
@@ -34,17 +34,13 @@
 								<PropertyName>RelativePath</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>SceneName</PropertyName>
+								<PropertyName>SeasonNumber</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>SeriesId</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>SeasonNumber</PropertyName>
-							</ListItem>
-							<ListItem>
-								<Label>Size</Label>
-								<ScriptBlock>"{0} GB" -f [math]::Round(($_.Size / 1GB), 2)</ScriptBlock>
+								<PropertyName>Size</PropertyName>
 							</ListItem>
 						</ListItems>
 					</ListEntry>

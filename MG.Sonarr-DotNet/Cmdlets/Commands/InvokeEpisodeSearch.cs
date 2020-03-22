@@ -1,11 +1,7 @@
 ﻿using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
-using System.Security;
 
 namespace MG.Sonarr.Cmdlets.Commands
 {
@@ -21,13 +17,13 @@ namespace MG.Sonarr.Cmdlets.Commands
     [Alias("Start-EpisodeSearch")]
     public class InvokeEpisodeSearch : BasePostCommandCmdlet
     {
-#region FIELDS/CONSTANTS
-        protected override string Command => "EpisodeSearch";
+        #region FIELDS/CONSTANTS
+        protected sealed override string Command => "EpisodeSearch";
         private List<long> _ids;
 
-#endregion
+        #endregion
 
-#region PARAMETERS
+        #region PARAMETERS
         /// <summary>
         /// <para type="description">The episode id(s) retrieved from 'Get-SonarrEpisode'.</para>
         /// </summary>
@@ -40,9 +36,9 @@ namespace MG.Sonarr.Cmdlets.Commands
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 
-#endregion
+        #endregion
 
-#region CMDLET PROCESSING
+        #region CMDLET PROCESSING
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
@@ -63,6 +59,6 @@ namespace MG.Sonarr.Cmdlets.Commands
             }
         }
 
-#endregion
+        #endregion
     }
 }

@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,10 +10,10 @@ using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Get, "EpisodeFile", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByEpisodeFile")]
+    [Cmdlet(VerbsCommon.Get, "EpisodeFile", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByEpisodeFileId")]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(EpisodeFile))]
-    public class GetEpisodeFile : BaseSonarrCmdlet
+    public sealed class GetEpisodeFile : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
         private const string BASE = "/episodefile";
@@ -22,11 +23,12 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "ByEpisodeFileInput")]
-        public EpisodeFile EpisodeFile { get; set; }
+        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, ValueFromPipeline = true, ParameterSetName = "ByEpisodeFileInput")]
+        public EpisodeResult Episode { get; set; }
 
-        [Parameter(Mandatory = true, ParameterSetName = "ByEpisodeFileId", ValueFromPipelineByPropertyName = true)]
-        public long EpisodeFileId { get; set; }
+        [Parameter(Mandatory = true, ParameterSetName = "ByEpisodeFileId", Position = 0)]
+        [Alias("EpisodeFileId")]
+        public int Id { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "BySeriesId", ValueFromPipeline = true)]
         public SeriesResult Series { get; set; }
@@ -38,25 +40,38 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            string full = this.ParameterSetName == "BySeriesId"
-                ? string.Format(EP_BY_SERIES, this.Series.SeriesId)
-                : this.ParameterSetName == "ByEpisodeFileId"
-                    ? string.Format(EP_BY_EP, this.EpisodeFileId)
-                    : string.Format(EP_BY_EP, this.EpisodeFile.EpisodeFileId);
-
-            string jsonStr = base.TryGetSonarrResult(full);
-
-            if (!string.IsNullOrEmpty(jsonStr))
+            string fullEndpoint = this.GetEndpointString(out bool isSingular);
+            if (isSingular)
             {
-                List<EpisodeFile> result = SonarrHttp.ConvertToSonarrResults<EpisodeFile>(jsonStr, out bool iso);
-                base.WriteObject(result, true);
+                base.SendToPipeline(base.SendSonarrGet<EpisodeFile>(fullEndpoint));
+            }
+            else
+            {
+                base.SendToPipeline(base.SendSonarrListGet<EpisodeFile>(fullEndpoint), true);
             }
         }
 
         #endregion
 
         #region METHODS
-
+        private string GetEndpointString(out bool isSingular)
+        {
+            isSingular = false;
+            if (this.ContainsParameter(x => x.Series))
+            {
+                return string.Format(EP_BY_SERIES, this.Series.Id);
+            }
+            else if (this.ContainsParameter(x => x.Id))
+            {
+                isSingular = true;
+                return string.Format(EP_BY_EP, this.Id);
+            }
+            else
+            {
+                isSingular = true;
+                return string.Format(EP_BY_EP, this.Episode.EpisodeFile.Id);
+            }
+        }
 
         #endregion
     }

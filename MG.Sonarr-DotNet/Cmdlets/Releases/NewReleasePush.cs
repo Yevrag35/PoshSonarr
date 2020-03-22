@@ -1,18 +1,11 @@
 ﻿using MG.Sonarr.Results;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
-using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.New, "ReleasePush", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsCommon.New, "ReleasePush", ConfirmImpact = ConfirmImpact.None, SupportsShouldProcess = true)]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(Release))]
     public class NewReleasePush : BaseSonarrCmdlet
@@ -52,23 +45,12 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            var dict = new Dictionary<string, object>(4)
-            {
-                { "title", this.Title },
-                { "downloadUrl", this.DownloadUrl },
-                { "protocol", this.Protocol },
-                { "publishDate", this.DateToISODate(this.PublishDate) }
-            };
-            string postJson = JsonConvert.SerializeObject(dict, Formatting.Indented);
+            SonarrBodyParameters bodyParameters = this.GetBodyParameters();
+
             if (base.ShouldProcess(string.Format("New Release Push - {0}", this.Title), "New"))
             {
-                string jsonRes = base.TryPostSonarrResult(EP, postJson);
-
-                if (!string.IsNullOrEmpty(jsonRes) && _passThru)
-                {
-                    List<Release> reses = SonarrHttp.ConvertToSonarrResults<Release>(jsonRes, out bool iso);
-                    base.WriteObject(reses, true);
-                }
+                List<Release> release = base.SendSonarrListPost<Release>(EP, bodyParameters);
+                base.SendToPipeline(release);
             }
         }
 
@@ -82,6 +64,17 @@ namespace MG.Sonarr.Cmdlets
                 dt = dt.ToUniversalTime();
             }
             return dt.ToString(ISO_DATE);
+        }
+
+        private SonarrBodyParameters GetBodyParameters()
+        {
+            return new SonarrBodyParameters(4)
+            {
+                { "title", this.Title },
+                { "downloadUrl", this.DownloadUrl },
+                { "protocol", this.Protocol },
+                { "publishDate", this.DateToISODate(this.PublishDate) }
+            };
         }
 
         #endregion

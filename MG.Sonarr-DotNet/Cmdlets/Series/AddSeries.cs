@@ -1,14 +1,10 @@
-﻿using MG.Sonarr.Results;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
+using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -18,22 +14,27 @@ namespace MG.Sonarr.Cmdlets
     public class AddSeries : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private bool _iewf;
-        private bool _iewof;
+
+        private bool _iewf = true;
+        private bool _iewof = true;
         private bool _nm;
         private bool _passThru;
         private bool _sfme;
         private bool _usf;
 
+        private SeriesPost newPost;
+
         #endregion
 
         #region PARAMETERS
 
+        [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
+        public SearchSeries Series { get; set; }
+
         [Parameter(Mandatory = true, ParameterSetName = "ByFullPath")]
         public string FullPath { get; set; }
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByRootFolderPath")]
-        [Alias("path")]
+        [Parameter(Mandatory = true, Position = 1, ParameterSetName = "ByRootFolderPath")]
         public string RootFolderPath { get; set; }
 
         [Parameter(Mandatory = false)]
@@ -64,23 +65,15 @@ namespace MG.Sonarr.Cmdlets
             set => _passThru = value;
         }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        public string Name { get; set; }
-
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        public int TVDBId { get; set; }
-
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
+        [Parameter(Mandatory = true)]
+        [ValidateRange(1, int.MaxValue)]
         public int QualityProfileId { get; set; }
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        public string TitleSlug { get; set; }
+        [Parameter(Mandatory = false)]
+        public int[] Tags { get; set; } = new int[] { };
 
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        public SeriesImage[] Images { get; set; }
-
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
-        public ICollection<Season> Seasons { get; set; }
+        [Parameter(Mandatory = false)]
+        public SeriesType Type { get; set; }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter NotMonitored
@@ -96,9 +89,6 @@ namespace MG.Sonarr.Cmdlets
             set => _usf = value;
         }
 
-        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true)]
-        public int TVRageId { get; set; }
-
         #endregion
 
         #region CMDLET PROCESSING
@@ -106,51 +96,28 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (!this.MyInvocation.BoundParameters.ContainsKey("UseSeasonFolders") && this.Seasons != null && this.Seasons.Count > 1)
+            if ( ! this.ContainsParameter(x => x.UseSeasonFolders) && this.Series.Seasons.Count > 1)
                 _usf = true;
 
-            if (this.QualityProfileId == 0)  // There is never a profile with an ID of 0...
-                this.QualityProfileId = 1;
+            newPost = this.NewPost(this.Series);
+            newPost.IsMonitored = !_nm;
+            newPost.Options.IgnoreEpisodesWithFiles = _iewf;
+            newPost.Options.IgnoreEpisodesWithoutFiles = _iewof;
+            newPost.Options.SearchForMissingEpisodes = _sfme;
+            newPost.QualityProfileId = this.QualityProfileId;
+            newPost.SeriesType = this.Type;
+            newPost.Tags = new HashSet<int>(this.Tags);
+            newPost.UsingSeasonFolders = _usf;
 
-            var postJson = new JObject(
-                new JProperty("images", JArray.FromObject(this.Images)),
-                new JProperty("monitored", !_nm),
-                new JProperty("qualityProfileId", this.QualityProfileId),
-                new JProperty("seasonFolder", _usf),
-                new JProperty("seasons", JArray.FromObject(this.Seasons)),
-                new JProperty("title", this.Name),
-                new JProperty("titleSlug", this.TitleSlug),
-                new JProperty("tvdbId", this.TVDBId),
-                new JProperty("addOptions",
-                    new JObject(
-                        new JProperty("ignoreEpisodesWithFiles", _iewf),
-                        new JProperty("ignoreEpisodesWithoutFiles", _iewof),
-                        new JProperty("searchForMissingEpisodes", _sfme))));
+            // Add Path
+            this.AddPath();
 
-            if (this.MyInvocation.BoundParameters.ContainsKey("TVRageId"))
+            base.WriteDebug(newPost.ToJson());
+            if (base.FormatShouldProcess("Add", "Series: {0}", newPost.Name))
             {
-                postJson.Add("tvRageId", JToken.FromObject(this.TVRageId));
-            }
-
-            if (!string.IsNullOrEmpty(this.RootFolderPath))
-            {
-                postJson.Add("rootFolderPath", JToken.FromObject(this.RootFolderPath));
-            }
-            else
-            {
-                postJson.Add("path", JToken.FromObject(this.FullPath));
-            }
-
-            base.WriteDebug("POST BODY:" + Environment.NewLine + postJson.ToString());
-
-            if (base.ShouldProcess(string.Format("New Series - {0}", this.Name, "Adding")))
-            {
-                base.WriteVerbose(string.Format("Adding new series - {0} at \"/series\"", this.Name));
-                string output = base.TryPostSonarrResult("/series", postJson.ToString());
-                if (_passThru && !string.IsNullOrEmpty(output))
-                {
-                    base.WriteObject(SonarrHttp.ConvertToSeriesResult(output));
-                }
+                SeriesResult postBack = base.SendSonarrPost<SeriesResult>(this.Series.GetEndpoint(), newPost);
+                if (_passThru)
+                    base.SendToPipeline(postBack);
             }
         }
 
@@ -158,6 +125,19 @@ namespace MG.Sonarr.Cmdlets
 
         #region BACKEND METHODS
 
+        private SeriesPost NewPost(SearchSeries result) => SeriesPost.NewPost(result);
+
+        private void AddPath()
+        {
+            if (this.ContainsParameter(x => x.RootFolderPath))
+                newPost.Path = this.RootFolderPath;
+            
+            else
+            {
+                newPost.IsFullPath = true;
+                newPost.Path = this.FullPath;
+            }
+        }
 
         #endregion
     }

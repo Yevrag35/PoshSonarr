@@ -2,8 +2,8 @@
   "profiles": {
     "MG.Sonarr-Core": {
       "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\PowerShell\\6\\pwsh.exe",
-      "commandLineArgs": "-NoExit -NoLogo -Command \"Import-Module .\\MG."
+      "executablePath": "C:\\Program Files\\PowerShell\\7-preview\\pwsh.exe",
+      "commandLineArgs": "-NoExit -NoLogo -File \"DebugScript.ps1\""
     }
   }
 }

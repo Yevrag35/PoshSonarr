@@ -19,10 +19,10 @@ namespace MG.Sonarr
         /// Compares and judges two instance of <see cref="string"/> to be equal to one another
         /// while ignoring case.
         /// </summary>
-        public bool Equals(string x, string y) => x.Equals(y, StringComparison.CurrentCultureIgnoreCase);
+        public bool Equals(string x, string y) => x.Equals(y, StringComparison.InvariantCultureIgnoreCase);
         /// <summary>
         /// Retrieves the <see cref="string"/>'s hash code.
         /// </summary>
-        public int GetHashCode(string x) => x.GetHashCode();
+        public int GetHashCode(string x) => x.ToLower().GetHashCode();
     }
 }

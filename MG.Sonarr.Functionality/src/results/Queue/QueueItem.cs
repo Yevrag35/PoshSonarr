@@ -1,25 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace MG.Sonarr.Results
 {
     /// <summary>
     /// The class that defines the response from the "/queue" endpoint.
     /// </summary>
-    public class QueueItem : BaseResult
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+    public class QueueItem : BaseResult, IComparable<QueueItem>
     {
-        public string DownloadId { get; set; }
-        public EpisodeQueueItem Episode { get; set; }
-        public DateTime? EstimatedCompletionTime { get; set; }
-        public long Id { get; set; }
-        public ItemQuality Quality { get; set; }
-        public string Protocol { get; set; }
-        public SeriesResult Series { get; set; }
-        public decimal Size { get; set; }
-        public decimal SizeLeft { get; set; }
-        public string Status { get; set; }
-        public string[] StatusMessages { get; set; }
-        public TimeSpan? TimeLeft { get; set; }
-        public string TrackedDownloadStatus { get; set; }
+        [JsonProperty("downloadId")]
+        public string DownloadId { get; private set; }
+
+        [JsonProperty("episode")]
+        public EpisodeQueueItem Episode { get; private set; }
+
+        [JsonProperty("estimatedCompletionTime")]
+        public DateTime? EstimatedCompletionTime { get; private set; }
+
+        [JsonProperty("id")]
+        public long QueueItemId { get; private set; }
+
+        [JsonProperty("quality")]
+        public ItemQuality Quality { get; private set; }
+
+        [JsonProperty("protocol")]
+        public string Protocol { get; private set; }
+
+        [JsonProperty("series")]
+        public SeriesResult Series { get; private set; }
+
+        [JsonProperty("size")]
+        public decimal Size { get; private set; }
+
+        [JsonProperty("sizeLeft")]
+        public decimal SizeLeft { get; private set; }
+
+        [JsonProperty("status")]
+        public string Status { get; private set; }
+
+        [JsonProperty("statusMessages")]
+        public string[] StatusMessages { get; private set; }
+
+        [JsonProperty("timeLeft")]
+        public TimeSpan? TimeLeft { get; private set; }
+
+        [JsonProperty("trackedDownloadStatus")]
+        public string TrackedDownloadStatus { get; private set; }
+
+        public int CompareTo(QueueItem other) => this.QueueItemId.CompareTo(other.QueueItemId);
     }
 }

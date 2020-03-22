@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Converters;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -10,38 +12,139 @@ namespace MG.Sonarr.Results
     /// <summary>
     /// <para type="description">Represents a response object from "/filesystem".</para>
     /// </summary>
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public class FileSystem : BaseResult
     {
-        public List<SonarrDirectory> Directories { get; set; }
+        [JsonExtensionData]
+        private IDictionary<string, JToken> _data;
+
+        [JsonProperty("directories")]
+        public List<SonarrDirectory> Directories { get; private set; }
+
+        [JsonProperty("files")]
+        public List<SonarrFile> Files { get; private set; }
+
+        [JsonIgnore]
+        public bool HasFiles => this.Files != null && this.Files.Count > 0;
+
+        [JsonIgnore]
+        public bool HasFolders => this.Directories != null && this.Directories.Count > 0;
+
+        [JsonConstructor]
+        public FileSystem()
+        {
+            this.Directories = new List<SonarrDirectory>();
+            this.Files = new List<SonarrFile>();
+        }
+
+        private void Sort()
+        {
+            if (this.HasFiles)
+                this.Files.Sort();
+
+            if (this.HasFolders)
+                this.Directories.Sort();
+        }
+
+        public List<FileSystemEntry> ToAllList()
+        {
+            this.Sort();
+            var list = new List<FileSystemEntry>(this.Directories.Count + this.Files.Count);
+            list.AddRange(this.Directories);
+            list.AddRange(this.Files);
+            return list;
+        }
+        
+        //[JsonIgnore]
+        //public SonarrDirectory[] Directories { get; private set; }
+
+        //[OnDeserialized]
+        //private void OnDeserialized(StreamingContext ctx)
+        //{
+        //    if (_dirs != null && _dirs.Count > 0)
+        //    {
+        //        if (_dirs.Count > 1)
+        //            _dirs.Sort();
+
+        //        this.Directories = _dirs.ToArray();
+        //    }
+        //}
+    }
+
+    public abstract class FileSystemEntry : BaseResult, IComparable<FileSystemEntry>
+    {
+        [JsonProperty("size")]
+        private protected long _size;
+
+        [JsonProperty("lastModified")]
+        public DateTime LastModified { get; private protected set; }
+
+        [JsonProperty("name")]
+        public string Name { get; private protected set; }
+
+        [JsonProperty("path")]
+        [JsonConverter(typeof(PathConverter))]
+        public string Path { get; private protected set; }
+
+        [JsonIgnore]
+        public abstract FileSystemType Type { get; }
+
+        public int CompareTo(FileSystemEntry other) => this.Path.CompareTo(other.Path);
     }
 
     /// <summary>
     /// <para type="description">Represents a repsonse object from a "/filesystem" request as an individual directory result.</para>
     /// </summary>
-    public class SonarrDirectory : BaseResult
+    [JsonObject(MemberSerialization.OptOut)]
+    public class SonarrDirectory : FileSystemEntry
     {
-        private const string PATH = "path";
-        private static readonly char BACKSLASH = char.Parse(@"\");
+        [JsonProperty("type")]
+        [JsonConverter(typeof(SonarrStringEnumConverter))]
+        public override FileSystemType Type => FileSystemType.Folder;
+    }
 
-        [JsonExtensionData]
-        private IDictionary<string, JToken> _data;
+    public class SonarrFile : FileSystemEntry, IComparable<SonarrFile>
+    {
+        private const string GB = "{0} GB";
+        private const string KB = "{0} KB";
+        private const string MB = "{0} MB";
+        private const double ONE_GB = 1073741824.00d;
+        private const double ONE_KB = 1024.00d;
+        private const double ONE_MB = 1048576.00d;
 
-        public DateTime LastModified { get; set; }
-        public string Name { get; set; }
+        [JsonProperty("extension")]
+        public string Extension { get; private protected set; }
+
         [JsonIgnore]
-        public string Path { get; private set; }
+        public long Size => base._size;
+
+        [JsonIgnore]
+        public string SizeString { get; private set; }
+
+        [JsonProperty("type")]
+        [JsonConverter(typeof(SonarrStringEnumConverter))]
+        public override FileSystemType Type => FileSystemType.File;
+
+        public int CompareTo(SonarrFile other) => this.Path.CompareTo(other.Path);
 
         [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
+        private void OnDeserialized(StreamingContext ctx)
         {
-            if (_data.ContainsKey(PATH))
-            {
-                JToken pathTok = _data[PATH];
-                if (pathTok != null)
-                {
-                    this.Path = pathTok.ToObject<string>().TrimEnd(BACKSLASH);
-                }
+            double rounder = ONE_MB;
+            string format = MB;
+
+            if (_size <= 534774L)
+            { 
+                rounder = ONE_KB;
+                format = KB;
             }
+            else if (_size > 1258291200L)
+            {
+                rounder = ONE_GB;
+                format = GB;
+            }
+            double roundedSize = Math.Round(base._size / rounder, 2);
+            this.SizeString = string.Format(format, roundedSize);
         }
     }
 }

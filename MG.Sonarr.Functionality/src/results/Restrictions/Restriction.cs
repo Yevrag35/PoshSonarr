@@ -9,38 +9,41 @@ using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results
 {
-    public class Restriction : BaseResult
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+    public class Restriction : BaseResult, ISupportsTagUpdate
     {
         private const string COMMA = ",";
         private const string IGNORED = "ignored";
         private const string REQUIRED = "required";
         private static readonly string[] COMMA_ARR = new string[1] { COMMA };
-
-        private bool ContainsIgnored => _additionalData != null && _additionalData.ContainsKey(IGNORED);
-        private bool ContainsRequired => _additionalData != null && _additionalData.ContainsKey(REQUIRED);
+        private const string EP = "/restriction";
 
         [JsonExtensionData]
-        private IDictionary<string, JToken> _additionalData;
+        private IDictionary<string, JToken> _additionalData { get; set; } = new Dictionary<string, JToken>();
 
         [JsonIgnore]
-        public JsonStringCollection Ignored { get; private set; }
+        internal bool ContainsIgnored => _additionalData.ContainsKey(IGNORED);
         [JsonIgnore]
-        public JsonStringCollection Required { get; private set; }
+        internal bool ContainsRequired => _additionalData.ContainsKey(REQUIRED);
+
+        object ISupportsTagUpdate.Id => this.Id;
+
+        [JsonIgnore]
+        public JsonStringCollection Ignored { get; } = new JsonStringCollection();
+
+        [JsonIgnore]
+        public JsonStringCollection Required { get; } = new JsonStringCollection();
+
         [JsonProperty("id")]
-        public int RestrictionId { get; set; }
-        public HashSet<int> Tags { get; set; }
+        public int Id { get; private set; }
 
-        public Restriction()
-        {
-            _additionalData = new Dictionary<string, JToken>();
-            this.Ignored = new JsonStringCollection();
-            this.Required = new JsonStringCollection();
-        }
+        [JsonProperty("tags")]
+        public HashSet<int> Tags { get; set; } = new HashSet<int>();
+
+        public Restriction() { }
 
         public Restriction(IDictionary<string, object> parameters)
         {
-            _additionalData = new Dictionary<string, JToken>();
-            this.Tags = new HashSet<int>();
             foreach (KeyValuePair<string, object> kvp in parameters)
             {
                 if (kvp.Key.Equals("IgnoredTerms") && kvp.Value is string[] igTerms)
@@ -53,6 +56,8 @@ namespace MG.Sonarr.Results
                 }
             }
         }
+
+        public string GetEndpoint() => EP;
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)

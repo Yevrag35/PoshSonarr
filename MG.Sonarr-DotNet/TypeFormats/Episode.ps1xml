@@ -27,22 +27,19 @@
 								</ItemSelectionCondition>
 							</ListItem>
 							<ListItem>
-								<PropertyName>EpisodeFileId</PropertyName>
-								<ItemSelectionCondition>
-									<ScriptBlock>$_.EpisodeFileId -ne $null</ScriptBlock>
-								</ItemSelectionCondition>
-							</ListItem>
-							<ListItem>
 								<PropertyName>EpisodeId</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>EpisodeNumber</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>HasFile</PropertyName>
+								<PropertyName>HasAired</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>Monitored</PropertyName>
+								<PropertyName>IsDownloaded</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>IsMonitored</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Name</PropertyName>
@@ -52,16 +49,13 @@
 							</ListItem>
 							<ListItem>
 								<Label>Series</Label>
-								<ScriptBlock>$_.Series.Title</ScriptBlock>
+								<ScriptBlock>$_.Series.Name</ScriptBlock>
 								<ItemSelectionCondition>
 									<ScriptBlock>$_.Series -ne $null</ScriptBlock>
 								</ItemSelectionCondition>
 							</ListItem>
 							<ListItem>
 								<PropertyName>SeriesId</PropertyName>
-							</ListItem>
-							<ListItem>
-								<PropertyName>UnverifiedSceneNumbering</PropertyName>
 							</ListItem>
 						</ListItems>
 					</ListEntry>

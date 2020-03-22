@@ -1,28 +1,34 @@
 ﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Text;
 
 namespace MG.Sonarr.Results
 {
+    /// <summary>
+    /// A download client set in Sonarr.
+    /// </summary>
     [Serializable]
-    public class DownloadClient : BaseResult
+    [JsonObject(MemberSerialization.OptIn)]
+    public class DownloadClient : Provider, IComparable<DownloadClient>, IGetEndpoint
     {
         [JsonProperty("id")]
-        public int ClientId { get; set; }
-        [JsonProperty("fields")]
-        public DownloadClientSettingCollection Config { get; set; }
-        public string ConfigContract { get; set; }
-        public string Implementation { get; set; }
-        public string ImplementationName { get; set; }
-        public Uri InfoLink { get; set; }
+        public int Id { get; private set; }
+
         [JsonProperty("enable")]
         public bool IsEnabled { get; set; }
-        public string Name { get; set; }
-        public DownloadProtocol Protocol { get; set; }
+
+        [JsonIgnore]
+        public override ProviderMessage Message { get; protected private set; }
+
+        [JsonProperty("protocol")]
+        [JsonConverter(typeof(SonarrStringEnumConverter))]
+        public DownloadProtocol Protocol { get; private set; }
+
+        public int CompareTo(DownloadClient other) => this.Id.CompareTo(other.Id);
+        public string GetEndpoint() => "/downloadclient";
     }
 }

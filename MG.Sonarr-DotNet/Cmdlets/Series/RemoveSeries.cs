@@ -1,33 +1,43 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
+using System;
 using System.Linq;
 using System.Management.Automation;
-using System.Net.Http;
-using System.Reflection;
-using System.Security;
 
-namespace MG.Sonarr.Cmdlets.Series
+namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Remove, "Series", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsCommon.Remove, "Series", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true, DefaultParameterSetName = "ViaPipeline")]
     [CmdletBinding(PositionalBinding = false)]
     public class RemoveSeries : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-
+        private bool _deleteFiles;
+        private bool _force;
 
         #endregion
 
         #region PARAMETERS
 
-        [Parameter(Mandatory = true, Position = 0, ValueFromPipelineByPropertyName = true)]
-        public long SeriesId { get; set; }
+        [Parameter(Mandatory = true, ValueFromPipeline = true, DontShow = true, ParameterSetName = "ViaPipeline")]
+        public SeriesResult InputObject { get; set; }
+
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByExplicitSeriesId")]
+        [Alias("Id")]
+        public int SeriesId { get; set; }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter DeleteFiles { get; set; }
+        public SwitchParameter DeleteFiles
+        {
+            get => _deleteFiles;
+            set => _deleteFiles = value;
+        }
 
         [Parameter(Mandatory = false)]
-        public SwitchParameter Force { get; set; }
+        public SwitchParameter Force
+        {
+            get => _force;
+            set => _force = value;
+        }
 
         #endregion
 
@@ -36,16 +46,14 @@ namespace MG.Sonarr.Cmdlets.Series
 
         protected override void ProcessRecord()
         {
-            bool delete = this.MyInvocation.BoundParameters.ContainsKey("DeleteFiles")
-                ? this.DeleteFiles.ToBool()
-                : false;
+            if (this.ContainsParameter(x => x.InputObject))
+                this.SeriesId = this.InputObject.Id;
 
-            string apiUri = string.Format("/series/{0}?deleteFiles={1}", this.SeriesId, delete.ToString().ToLower());
+            string apiUri = string.Format("/series/{0}?deleteFiles={1}", this.SeriesId, _deleteFiles.ToString());
 
-            if (this.Force || base.ShouldProcess(string.Format("Series Id: {0}", this.SeriesId), "Delete"))
-            {
-                base.TryDeleteSonarrResult(apiUri);
-            }
+            if (_force || base.FormatShouldProcess("Delete", "Series Id: {0}", this.SeriesId))
+                base.SendSonarrDelete(apiUri);
+            
         }
 
         #endregion

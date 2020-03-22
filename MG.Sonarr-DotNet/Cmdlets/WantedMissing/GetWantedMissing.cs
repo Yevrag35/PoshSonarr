@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using MG.Posh.Extensions.Bound;
+using System;
 using System.Management.Automation;
-using System.Reflection;
-using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -29,7 +25,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (this.MyInvocation.BoundParameters.ContainsKey("SortKey"))
+            if (this.ContainsParameter(x => x.SortKey))
             {
                 if (this.SortKey.Equals("AirDateUtc", StringComparison.CurrentCultureIgnoreCase))
                     _list.Add("sortKey=airDateUtc");

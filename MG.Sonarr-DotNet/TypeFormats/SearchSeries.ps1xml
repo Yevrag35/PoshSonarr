@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Configuration>
+    <ViewDefinitions>
+        <View>
+            <Name>SeriesResult</Name>
+            <ViewSelectedBy>
+                <TypeName>MG.Sonarr.Results.SearchSeries</TypeName>
+            </ViewSelectedBy>
+            <ListControl>
+                <ListEntries>
+                    <ListEntry>
+                        <ListItems>
+							<ListItem>
+								<Label>Added</Label>
+								<ScriptBlock>
+									$dtFormat = [System.Globalization.CultureInfo]::CurrentUICulture.DateTimeFormat;
+									$pat = "{0}, yyyy {1}" -f $dtFormat.MonthDayPattern, $dtFormat.ShortTimePattern;
+									$_.Added.ToString($pat);
+								</ScriptBlock>
+								<ItemSelectionCondition>
+									<ScriptBlock>
+										$_.Added -ne $null -and $_.Added -ne [datetime]::MinValue
+									</ScriptBlock>
+								</ItemSelectionCondition>
+							</ListItem>
+							<ListItem>
+								<PropertyName>AirTime</PropertyName>
+								<ItemSelectionCondition>
+									<ScriptBlock>
+										$_.AirTime -ne $null
+									</ScriptBlock>
+								</ItemSelectionCondition>
+							</ListItem>
+							<ListItem>
+								<PropertyName>CleanTitle</PropertyName>
+							</ListItem>
+							<ListItem>
+								<Label>FirstAired</Label>
+								<ScriptBlock>
+									$pat = "{0}, yyyy" -f [System.Globalization.CultureInfo]::CurrentUICulture.DateTimeFormat.MonthDayPattern;
+									$_.FirstAired.ToString($pat);
+								</ScriptBlock>
+								<ItemSelectionCondition>
+									<ScriptBlock>
+										$_.FirstAired -ne $null
+									</ScriptBlock>
+								</ItemSelectionCondition>
+							</ListItem>
+							<ListItem>
+								<Label>Genres</Label>
+								<ScriptBlock>$_.Genres -join ', '</ScriptBlock>
+							</ListItem>
+							<!--<ListItem>
+								<Label>Images</Label>
+								<ScriptBlock>$_.Images.CoverType</ScriptBlock>
+							</ListItem>-->
+							<ListItem>
+								<PropertyName>IMDBId</PropertyName>
+							</ListItem>
+                            <ListItem>
+                                <PropertyName>IsMonitored</PropertyName>
+                            </ListItem>
+							<ListItem>
+								<PropertyName>Name</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Network</PropertyName>
+							</ListItem>
+							<ListItem>
+								<!--<PropertyName>Overview</PropertyName>-->
+								<Label>Overview</Label>
+								<ScriptBlock>
+									if ($_.Overview.Length -gt 90)
+									{
+										"{0}..." -f $_.Overview.Substring(0, 90).Trim()
+									}
+									else
+									{
+										$_.Overview
+									}
+								</ScriptBlock>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Rating</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>RatingVotes</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Runtime</PropertyName>
+								<ItemSelectionCondition>
+									<ScriptBlock>-not [string]::IsNullOrEmpty($_.Runtime)</ScriptBlock>
+								</ItemSelectionCondition>
+							</ListItem>
+                            <ListItem>
+                                <PropertyName>SeasonCount</PropertyName>
+                            </ListItem>
+							<ListItem>
+								<PropertyName>SeriesType</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>SortTitle</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Status</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>TVDBId</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>TVRating</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Year</PropertyName>
+							</ListItem>
+                        </ListItems>
+                    </ListEntry>
+                </ListEntries>
+            </ListControl>
+        </View>
+    </ViewDefinitions>
+</Configuration>

@@ -2,21 +2,31 @@
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results
 {
-    public class CommandResult : CommandOutput
+    [JsonObject(MemberSerialization.OptIn)]
+    public class CommandResult : CommandOutput, IAdditionalInfo
     {
         [JsonExtensionData]
-        private IDictionary<string, JToken> _additionalData;
+        private IDictionary<string, JToken> _additionalData { get; set; } = new Dictionary<string, JToken>();
 
-        public TimeSpan Duration { get; set; }
-        public DateTime Ended { get; set; }
+        [JsonProperty("duration")]
+        public TimeSpan Duration { get; private set; }
+
+        [JsonProperty("ended")]
+        public DateTime Ended { get; private set; }
+
+        [JsonIgnore]
         public string Message { get; private set; }
 
-        public CommandResult() => _additionalData = new Dictionary<string, JToken>();
+        public IDictionary GetAdditionalInfo()
+        {
+            return (IDictionary)_additionalData;
+        }
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)

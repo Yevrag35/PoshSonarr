@@ -184,10 +184,12 @@ namespace MG.Sonarr.Functionality
     }
 
     /// <summary>
-    /// The type of field from a given <see cref="DownloadClientSetting"/>.
+    /// The type of field from a given <see cref="Field"/>.
     /// </summary>
     public enum FieldType
     {
+        CheckBox,
+
         /// <summary>
         /// An obfuscated text box for entering sensitive information.
         /// </summary>
@@ -209,6 +211,18 @@ namespace MG.Sonarr.Functionality
         None,
         LocalAirDate,
         UtcAirDate
+    }
+
+    public enum FileSystemType
+    {
+        File,
+        Folder
+    }
+
+    public enum FirstDayOfWeek
+    {
+        Sunday,
+        Monday
     }
 
     public enum HealthCheckResult
@@ -234,12 +248,55 @@ namespace MG.Sonarr.Functionality
     /// </summary>
     public enum LogLevel
     {
+        All,
         Fatal,
         Error,
         Warn,
         Info,
         Debug,
         Trace
+    }
+
+    public enum LogSortKey
+    {
+        Id,
+        Time,
+        Level,
+        Logger,
+        Exception,
+        ExceptionType
+    }
+
+    /// <summary>
+    /// The designated language for a Quality Profile.
+    /// </summary>
+    public enum ProfileLanugage
+    {
+        Cantonese,
+        Czech,
+        Danish,
+        Dutch,
+        English,
+        Finnish,
+        Flemish,
+        French,
+        German,
+        Greek,
+        Hebrew,
+        Hungarian,
+        Italian,
+        Japanese,
+        Korean,
+        Lithuanian,
+        Mandarin,
+        Norwegian,
+        Polish,
+        Portuguese,
+        Russian,
+        Spanish,
+        Swedish,
+        Turkish,
+        Vietnamese
     }
 
     public enum ProperDownloadType
@@ -249,11 +306,30 @@ namespace MG.Sonarr.Functionality
         DoNotPrefer
     }
 
+    public enum ProviderMessageType
+    {
+        Info,
+        Warning,
+        Error
+    }
+
     public enum ProxyType
     {
         Http,
         Socks4,
         Socks5
+    }
+
+    public enum QualitySource
+    {
+        Unknown,
+        Television,
+        TelevisionRaw,
+        Web,
+        WebRip,
+        DVD,
+        Bluray,
+        BlurayRaw
     }
 
     public enum RescanAfterRefreshType
@@ -298,6 +374,12 @@ namespace MG.Sonarr.Functionality
         /// The series follows a regimen synonymous with Japanese anime.
         /// </summary>
         Anime
+    }
+
+    public enum SortDirection
+    {
+        Ascending,
+        Descending
     }
 
     public enum UpdateMechanism

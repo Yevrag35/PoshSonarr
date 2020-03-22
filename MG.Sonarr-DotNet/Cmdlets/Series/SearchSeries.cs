@@ -1,7 +1,5 @@
-﻿using MG.Sonarr.Results;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,14 +10,15 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Search, "Series", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true, DefaultParameterSetName = "BySeriesName")]
-    //[OutputType(typeof())]
+    [Cmdlet(VerbsCommon.Search, "Series", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "BySeriesName")]
+    [OutputType(typeof(SearchSeries))]
     [CmdletBinding(PositionalBinding = false)]
-    public class SearchSeries : BaseSonarrCmdlet
+    public class SearchSeriesCmdlet : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
         private const string SEARCH_STR_QUERY = @"term={0}";
         private const string SEARCH_ID_QUERY = @"term=tvdb:{0}";
+        private bool _isStrict;
 
         #endregion
 
@@ -31,7 +30,11 @@ namespace MG.Sonarr.Cmdlets
         public long TVDBId { get; set; }
 
         [Parameter(Mandatory = false, ParameterSetName = "BySeriesName")]
-        public SwitchParameter Strict { get; set; }
+        public SwitchParameter Strict
+        {
+            get => _isStrict;
+            set => _isStrict = value;
+        }
 
         #endregion
 
@@ -40,54 +43,30 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (this.ParameterSetName == "BySeriesName")
-            {
-                List<SeriesResult> list = null;
-                string searchStr = this.ParseSearchString(this.Name);
-                string full = string.Format(@"/series/lookup?{0}", searchStr);
+            string endpoint = this.GetEndpoint();
+            List<SearchSeries> searchResults = base.SendSonarrListGet<SearchSeries>(endpoint);
+            if (_isStrict)
+                base.SendToPipeline(searchResults.FindAll(x => x.Name.IndexOf(this.Name, StringComparison.CurrentCultureIgnoreCase) >= 0));
 
-                if (base.ShouldProcess(full, "Executing API call"))
-                {
-                    string jsonStr = base.TryGetSonarrResult(full);
-
-                    if (!string.IsNullOrEmpty(jsonStr))
-                    {
-                        var tok = JToken.Parse(jsonStr);
-                        list = SonarrHttp.ConvertToSeriesResults(jsonStr, false);
-                        if (this.Strict.ToBool())
-                            base.WriteObject(list.FindAll(x => x.Name.IndexOf(this.Name, StringComparison.CurrentCultureIgnoreCase) >= 0), true);
-
-                        else
-                            base.WriteObject(list, true);
-                    }
-                }
-            }
             else
-            {
-                string searchStr = this.ParseSearchId(this.TVDBId);
-                string full = string.Format(@"/series/lookup?{0}", searchStr);
-
-                if (base.ShouldProcess(full, "Executing API call"))
-                {
-                    string jsonStr = base.TryGetSonarrResult(full);
-
-                    if (!string.IsNullOrEmpty(jsonStr))
-                    {
-                        var tok = JToken.Parse(jsonStr);
-                        List<SeriesResult> list = SonarrHttp.ConvertToSeriesResults(jsonStr, false);
-                        base.WriteObject(list, true);
-                    }
-                }
-
-            }
+                base.SendToPipeline(searchResults);
         }
 
         #endregion
 
         #region BACKEND METHODS
-        private ProgressRecord NewProgressRecord(int on, int total, string name)
+        private string GetEndpoint()
         {
-            return new ProgressRecord(0, "Series Lookup", string.Format("Searching for series {0}/{1}... {2}", on, total, name));
+            string searchStr = null;
+            if (this.ContainsParameter(x => x.Name))
+            {
+                searchStr = this.ParseSearchString(this.Name);
+            }
+            else
+            {
+                searchStr = this.ParseSearchId(this.TVDBId);
+            }
+            return string.Format(@"/series/lookup?{0}", searchStr);
         }
 
         private string ParseSearchString(string name)

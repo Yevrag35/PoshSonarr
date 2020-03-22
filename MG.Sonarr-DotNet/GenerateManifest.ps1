@@ -10,13 +10,16 @@
 	[string] $AssemblyInfo,
 
     [parameter(Mandatory = $true, Position = 3)]
-    [string] $TargetFileName
+    [string] $TargetFileName,
+
+	[Parameter(Mandatory = $true, Position = 4)]
+	[string] $Configuration
 )
 
 $curDir = Split-Path -Parent $MyInvocation.MyCommand.Definition;
 
 ## Clear out files
-Get-ChildItem -Path $DebugDirectory -Include *.ps1xml -Recurse | Remove-Item -Force;
+Get-ChildItem -Path $DebugDirectory -Include *.ps1xml,*.psd1 -Recurse | Remove-Item -Force;
 
 ## Get Module Version from project.assets.json - PowerShell Core
 #$json = Get-Content "$curDir\obj\project.assets.json" | ConvertFrom-Json;
@@ -42,44 +45,65 @@ $cmdletFormat = "{0}-{1}";
 
 $baseCmdletDir = Join-Path "$ModuleFileDirectory\.." "Cmdlets";
 [string[]]$folders = [System.IO.Directory]::EnumerateDirectories($baseCmdletDir, "*", [System.IO.SearchOption]::TopDirectoryOnly) | `
-	Where-Object { -not $_.EndsWith('Bases') -and -not $_.EndsWiths("Exclude") };
+	Where-Object { -not $_.EndsWith('Bases') -and -not $_.EndsWith("Exclude") };
 
-$aliasPat = '\[alias\(\"(.{1,})\"\)\]'
+$aliasPat = '\[(?:A|a)lias\(\"(\S+)\"\)\]'
 $csFiles = @(Get-ChildItem -Path $folders *.cs -File);
 $Cmdlets = New-Object System.Collections.Generic.List[string] $csFiles.Count;
 $Aliases = New-Object System.Collections.Generic.List[string];
 foreach ($cs in $csFiles)
 {
 	$match = [regex]::Match($cs.Name, $pattern)
-	if ([string]::IsNullOrEmpty($match.Groups[3]))
+	if ($match.Success)
 	{
-		$name = $cmdletFormat -f $match.Groups[1].Value, $match.Groups[2].Value;
+		if ([string]::IsNullOrEmpty($match.Groups[3]))
+		{
+			$name = $cmdletFormat -f $match.Groups[1].Value, $match.Groups[2].Value;
+		}
+		else
+		{
+			$name = $cmdletFormat -f $match.Groups[1].Value, $match.Groups[3].Value
+		}
+		$Cmdlets.Add($name);
 	}
-	else
+	<#
+    $content = Get-Content -Path $cs.FullName -Raw -ErrorAction SilentlyContinue
+	if ($null -ne $content)
 	{
-		$name = $cmdletFormat -f $match.Groups[1].Value, $match.Groups[3].Value
+		$aliasMatch = [regex]::Match($content, $aliasPat, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase);
+		if ($aliasMatch.Success)
+		{
+			$Aliases.Add($aliasMatch.Groups[1].Value);
+		}
 	}
-    $Cmdlets.Add($name);
-
-    $content = Get-Content -Path $cs -Raw;
-    $aliasMatch = [regex]::Match($content, $aliasPat, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase);
-    if ($aliasMatch.Success)
-    {
-        $Aliases.Add($aliasMatch.Groups[1].Value);
-    }
+	#>
 }
 
 [string[]]$Cmdlets = $Cmdlets | Select-Object -Unique;
-#$Cmdlets.Remove("Connect-Instance-Core")
-#$Cmdlets.Add("Connect-Instance")
 
-[string[]]$allDlls = Get-ChildItem $References -Include *.dll -Exclude 'System.Management.Automation.dll' -Recurse | Select-Object -ExpandProperty Name;
-[string[]]$allFormats = $allFiles | Where-Object -FilterScript { $_.Extension -eq ".ps1xml" } | Select-Object -ExpandProperty Name;
+[string[]]$allDlls = Get-ChildItem $DebugDirectory -Include *.dll -Exclude 'System.Management.Automation.dll', $TargetFileName -Recurse | Select-Object -ExpandProperty Name;
+[string[]]$allFormats = $allFiles | Where-Object -FilterScript { $_.Extension -eq ".ps1xml" } | `
+	Select-Object @{L="FormatPath";E={"Formats\{0}" -f$_.Name}} | Select-Object -ExpandProperty FormatPath
+	#Select-Object -ExpandProperty Name
 
-$manifestFile = "PoshSonarr-Beta.psd1"
+if ($Configuration -eq "Debug")
+{
+	$manifestFile = "PoshSonarr-Beta.psd1"
+}
+else
+{
+	$manifestFile = "PoshSonarr.psd1"
+}
 
-$allFiles | Copy-Item -Destination $DebugDirectory -Force;
+$formatsPath = "$DebugDirectory\Formats"
+if (-not (Test-Path -Path $formatsPath -PathType Container))
+{
+	New-Item -Path $DebugDirectory -Name "Formats" -ItemType Directory | Out-Null
+}
+$allFiles | Copy-Item -Destination "$DebugDirectory\Formats" -Force;
 $modPath = Join-Path $DebugDirectory $manifestFile;
+
+#Write-Warning $($Aliases | Out-String)
 
 $manifest = @{
     Path                   = $modPath
@@ -87,14 +111,15 @@ $manifest = @{
     Description            = 'A PowerShell module for querying and managing Sonarr PVR through its API''s.'
     Author                 = 'Mike Garvey'
     CompanyName            = 'Yevrag35, LLC.'
-    Copyright              = '(c) 2019 Yevrag35, LLC.  All rights reserved.'
+    Copyright              = '(c) 2019-2020 Yevrag35, LLC.  All rights reserved.'
     ModuleVersion          = $($vers.Trim() -split '\.' | Select-Object -First 3) -join '.'
     PowerShellVersion      = '5.1'
-    DotNetFrameworkVersion = '4.7'
+    DotNetFrameworkVersion = '4.8'
     RootModule             = $TargetFileName
     DefaultCommandPrefix   = "Sonarr"
     RequiredAssemblies     = $allDlls
 	CmdletsToExport		   = $Cmdlets
+#	AliasesToExport		   = $Aliases
 	CompatiblePSEditions   = "Core", "Desktop"
     FormatsToProcess       = if ($allFormats.Length -gt 0) { $allFormats } else { @() };
     ProjectUri             = 'https://github.com/Yevrag35/PoshSonarr'

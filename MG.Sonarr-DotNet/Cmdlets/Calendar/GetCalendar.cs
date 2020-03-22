@@ -1,11 +1,10 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Management.Automation;
-using System.Reflection;
-using System.Security;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -30,9 +29,12 @@ namespace MG.Sonarr.Cmdlets
     public class GetCalendar : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string DT_FORMAT = "yyyy-MM-dd";
+        private const string DT_FORMAT = "yyyy-MM-ddTHH:mm:ss";
         private const string EP = "/calendar";
         private const string EP_WITH_DATE = EP + "?start={0}&end={1}";
+
+        private bool _today;
+        private bool _tomorrow;
 
         #endregion
 
@@ -52,8 +54,22 @@ namespace MG.Sonarr.Cmdlets
         /// <summary>
         /// <para type="description">Specifies the DayOfWeeks to get entries in the specified date range.</para>
         /// </summary>
-        [Parameter(Mandatory = true, ParameterSetName = "ByDayOfWeek")]
+        [Parameter(Mandatory = false)]
         public DayOfWeek[] DayOfWeek { get; set; }
+
+        [Parameter(Mandatory = true, ParameterSetName = "ShowToday")]
+        public SwitchParameter Today
+        {
+            get => _today;
+            set => _today = value;
+        }
+
+        [Parameter(Mandatory = true, ParameterSetName = "ShowTomorrow")]
+        public SwitchParameter Tomorrow
+        {
+            get => _tomorrow;
+            set => _tomorrow = value;
+        }
 
         /// <summary>
         /// <para type="description">Return only the specified series from the calendar.</para>
@@ -61,7 +77,7 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = true, ParameterSetName = "BySeriesTitle")]
         [Alias("Series")]
         [SupportsWildcards]
-        public string SeriesTitle { get; set; }
+        public string[] SeriesTitle { get; set; }
 
         #endregion
 
@@ -69,9 +85,18 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (this.MyInvocation.BoundParameters.ContainsKey("StartDate") &&
-                !this.MyInvocation.BoundParameters.ContainsKey("EndDate"))
+            if (this.ContainsParameter(x => x.StartDate) && ! this.ContainsParameter(x => x.EndDate))
+            {
                 this.EndDate = this.StartDate.AddDays(7);
+            }
+            else if (_today)
+            {
+                this.SetOneDayRange(DateTime.Today);
+            }
+            else if (_tomorrow)
+            {
+                this.SetOneDayRange(DateTime.Today.AddDays(1));
+            }
         }
 
         protected override void ProcessRecord()
@@ -80,30 +105,30 @@ namespace MG.Sonarr.Cmdlets
             string end = this.DateToString(this.EndDate);
             string full = string.Format(EP_WITH_DATE, start, end);
 
-            string jsonRes = base.TryGetSonarrResult(full);
-            if (!string.IsNullOrEmpty(jsonRes))
+            List<CalendarEntry> entries = this.GetCalendarEntries(full);
+
+            if (this.ContainsParameter(x => x.DayOfWeek))
             {
-                List<CalendarEntry> entries = SonarrHttp.ConvertToSonarrResults<CalendarEntry>(jsonRes, out bool iso);
-                if (this.ParameterSetName == "ByDayOfWeek")
-                {
-                    base.WriteObject(entries.FindAll(x => x.DayOfWeek.HasValue && this.DayOfWeek.Contains(x.DayOfWeek.Value)), true);
-                }
-                else if (this.ParameterSetName == "BySeriesTitle")
-                {
-                    var wcp = new WildcardPattern(this.SeriesTitle, WildcardOptions.IgnoreCase);
-                    base.WriteObject(entries.FindAll(x => wcp.IsMatch(x.Series)), true);
-                }
-                else
-                {
-                    base.WriteObject(entries, true);
-                }
+                base.SendToPipeline(entries.FindAll(x => x.DayOfWeek.HasValue && this.DayOfWeek.Contains(x.DayOfWeek.Value)));
+            }
+            else
+            {
+                base.SendToPipeline(base.FilterByStringParameter(entries, e => e.Series, this, cmd => cmd.SeriesTitle));
             }
         }
 
         #endregion
 
         #region METHODS
+        private List<CalendarEntry> GetCalendarEntries(string uri) => base.SendSonarrListGet<CalendarEntry>(uri);
+
         private string DateToString(DateTime dt) => dt.ToString(DT_FORMAT);
+
+        private void SetOneDayRange(DateTime beginning)
+        {
+            this.StartDate = beginning;
+            this.EndDate = beginning.AddDays(1).AddSeconds(-1);
+        }
 
         #endregion
     }

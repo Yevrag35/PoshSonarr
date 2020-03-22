@@ -1,97 +1,89 @@
-﻿using MG.Sonarr.Results;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "Series", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "BySeriesName")]
     [OutputType(typeof(SeriesResult))]
     [CmdletBinding(PositionalBinding = false)]
-    public class GetSeries : BaseSonarrCmdlet
+    public class GetSeries : SeriesCmdlet
     {
         #region FIELDS/CONSTANTS
-        private List<SeriesResult> _series;
-        private bool _showAll = false;
+
+        private List<string> _names;
+        private List<int> _ids;
 
         #endregion
 
         #region PARAMETERS
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesName")]
         [SupportsWildcards]
-        public string[] Name{ get; set; }
+        public object[] Name { get; set; }
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId", ValueFromPipelineByPropertyName = true)]
-        public long[] SeriesId { get; set; }
-
-        [Parameter(Mandatory = false, DontShow = true)]
-        public SwitchParameter DebugShowAll
-        {
-            get => _showAll;
-            set => _showAll = value;
-        }
+        [Alias("SeriesId")]
+        public int[] Id { get; set; }
 
         #endregion
 
         #region CMDLET PROCESSING
-        protected override void BeginProcessing() => base.BeginProcessing();
+        protected override void BeginProcessing()
+        {
+            base.BeginProcessing();
+            _names = new List<string>();
+            _ids = new List<int>();
+            if (this.ContainsParameter(x => x.Name))
+                this.ProcessNamesParameter(this.Name);
+
+            else if (this.ContainsParameter(x => x.Id))
+                _ids.AddRange(this.Id);
+        }
 
         protected override void ProcessRecord()
         {
-            if (this.ParameterSetName == "BySeriesName")
+            if (_ids.Count > 0)
             {
-                string jsonStr = base.TryGetSonarrResult("/series", _showAll);
-                if (!string.IsNullOrEmpty(jsonStr))
-                {
-                    _series = SonarrHttp.ConvertToSeriesResults(jsonStr);
-                }
-
-                if (_series != null && _series.Count > 0 && this.Name != null && this.Name.Length > 0)
-                {
-                    for (int p = 0; p < this.Name.Length; p++)
-                    {
-                        string id = this.Name[p];
-                        var wcp = new WildcardPattern((string)id, WildcardOptions.IgnoreCase);
-                        for (int s = 0; s < _series.Count; s++)
-                        {
-                            SeriesResult series = _series[s];
-                            if (wcp.IsMatch(series.Name))
-                                base.WriteObject(series);
-                        }
-                    }
-                }
-                else if (_series != null && _series.Count > 0)
-                {
-                    base.WriteObject(_series, true);
-                }
+                base.SendToPipeline(base.GetSeriesById(_ids));
             }
             else
             {
-                for (int i = 0; i < this.SeriesId.Length; i++)
-                {
-                    long id = this.SeriesId[i];
-                    string full = string.Format("/series/{0}", Convert.ToString(id));
-                    string oneSeries = base.TryGetSonarrResult(full);
-                    if (!string.IsNullOrEmpty(oneSeries))
-                    {
-                        SeriesResult sr = SonarrHttp.ConvertToSeriesResult(oneSeries);
-                        base.WriteObject(sr);
-                    }
-                }
+                List<SeriesResult> all = base.GetAllSeries();
+                base.SendToPipeline(base.FilterByStrings(all, x => x.Name, _names.Count > 0 ? _names : null));
             }
         }
 
         #endregion
 
         #region BACKEND METHODS
+        
 
+        private void ProcessNamesParameter(object[] objNames)
+        {
+            if (this.MyInvocation.Line.IndexOf(" -Name ", StringComparison.InvariantCultureIgnoreCase) >= 0)
+            {
+                foreach (IConvertible ic in objNames)
+                {
+                    _names.Add(Convert.ToString(ic));
+                }
+            }
+            else
+            {
+                for (int i = 0; i < objNames.Length; i++)
+                {
+                    object o = objNames[i];
+                    if (o is IConvertible icon && int.TryParse(Convert.ToString(icon), out int outInt))
+                    {
+                        _ids.Add(outInt);
+                    }
+                    else if (o is string oStr)
+                        _names.Add(oStr);
+                }
+            }
+        }
 
         #endregion
     }

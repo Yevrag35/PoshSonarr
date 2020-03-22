@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsData.Update, "Restriction", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsData.Update, "Restriction", ConfirmImpact = ConfirmImpact.None, SupportsShouldProcess = true)]
     [OutputType(typeof(Restriction))]
     [CmdletBinding(PositionalBinding = false)]
     public class UpdateRestriction : BaseSonarrCmdlet
@@ -37,10 +37,10 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (_force || base.ShouldProcess(string.Format("Restriction: {0}", this.InputObject.RestrictionId), "Update"))
+            if (_force || base.ShouldProcess(string.Format("Restriction: {0}", this.InputObject.Id), "Update"))
             {
                 Restriction newRestriction = this.Update(this.InputObject);
-                base.WriteObject(newRestriction);
+                base.SendToPipeline(newRestriction);
             }
         }
 
@@ -49,9 +49,8 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         private Restriction Update(Restriction restriction)
         {
-            string url = string.Format(GetRestriction.EP_ID, restriction.RestrictionId);
-            string jsonRes = base.TryPutSonarrResult(url, restriction.ToJson());
-            return SonarrHttp.ConvertToSonarrResult<Restriction>(jsonRes);
+            string url = string.Format(GetRestriction.EP_ID, restriction.Id);
+            return base.SendSonarrPut<Restriction>(url, restriction);
         }
 
         #endregion

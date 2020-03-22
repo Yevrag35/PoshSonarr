@@ -1,9 +1,6 @@
 ﻿using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
@@ -15,7 +12,7 @@ namespace MG.Sonarr.Cmdlets
     {
         #region FIELDS/CONSTANTS
         private const string EP = "/update";
-        private bool _older;
+        private bool _showOlder;
 
         #endregion
 
@@ -23,8 +20,8 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = false)]
         public SwitchParameter IncludeOlder
         {
-            get => _older;
-            set => _older = value;
+            get => _showOlder;
+            set => _showOlder = value;
         }
 
         #endregion
@@ -34,26 +31,21 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            string strRes = base.TryGetSonarrResult(EP);
-            
-            if (!string.IsNullOrWhiteSpace(strRes))
-            {
-                List<Update> ups = this.ConvertToUpdates(strRes);
-                if (ups.Count > 0)
-                {
-                    if (!_older)
-                        base.WriteObject(ups.Single(x => x.Latest));
-
-                    else
-                        base.WriteObject(ups, true);
-                }
-            }
+            List<Update> allUpdates = base.SendSonarrListGet<Update>(EP);
+            base.SendToPipeline(this.ApplyFilter(allUpdates));
         }
 
         #endregion
 
         #region BACKEND METHODS
-        private List<Update> ConvertToUpdates(string jsonResult) => SonarrHttp.ConvertToSonarrResults<Update>(jsonResult, out bool iso);
+        private object ApplyFilter(List<Update> updates)
+        {
+            if (!_showOlder && updates != null && updates.Count > 0)
+                return updates.Find(x => x.Latest);
+
+            else
+                return updates;
+        }
 
         #endregion
     }

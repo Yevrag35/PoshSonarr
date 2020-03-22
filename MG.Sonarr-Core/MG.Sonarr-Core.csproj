@@ -1,0 +1,76 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.1;netcoreapp3.1</TargetFrameworks>
+    <RootNamespace>MG.Sonarr</RootNamespace>
+    <LangVersion>7.3</LangVersion>
+    <Description>A library consisting of PowerShell cmdlets for querying/managing Sonarr PVR.</Description>
+    <Copyright>Copyright © 2019-2020 Yevrag35, LLC.</Copyright>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/Yevrag35/PoshSonarr</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Yevrag35/PoshSonarr</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <Authors>Mike Garvey</Authors>
+    <Company>Yevrag35, LLC.</Company>
+    <Version>1.3.0</Version>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <AssemblyVersion>1.3.0</AssemblyVersion>
+    <FileVersion>1.3.0.5</FileVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="..\MG.Sonarr-DotNet\**\*.cs" Exclude="..\MG.Sonarr-DotNet\obj\**\*.cs;..\MG.Sonarr-DotNet\bin\**\*.cs;..\MG.Sonarr-DotNet\Properties\AssemblyInfo.cs;..\MG.Sonarr-DotNet\Cmdlets\Connection\Exclude\*-DotNet.cs;..\MG.Sonarr-DotNet\**\*-BETA.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="$(USERPROFILE)\.nuget\packages\mg.api.json\1.0.0\lib\netstandard2.0\*.dll;$(USERPROFILE)\.nuget\packages\mg.dynamic\3.6.0\lib\netcoreapp3.1\*.dll;$(USERPROFILE)\.nuget\packages\mg.posh.extensions\1.1.0\lib\netcoreapp3.1\*.dll;$(USERPROFILE)\.nuget\packages\newtonsoft.json\12.0.3\lib\netstandard2.0\Newtonsoft.Json.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Compile Remove="..\MG.Sonarr-DotNet\Cmdlets\Logging\SaveLogFile.cs" />
+	  <None Remove="DebugScript.ps1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="..\MG.Sonarr-DotNet\Cmdlets\Logging\SaveLogFile.cs" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MG.Api.Json" Version="1.0.0" />
+    <PackageReference Include="MG.Dynamic" Version="3.6.0" />
+    <PackageReference Include="MG.Posh.Extensions" Version="1.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+	<!--<ItemGroup>
+		<ModuleFiles
+			Include="$(USERPROFILE).nuget\packages\mg.api.json\**\*.dll;$(USERPROFILE).nuget\packages\mg.dynamic\**\*.dll;$(USERPROFILE).nuget\packages\mg.posh.extensions\**\*.dll"
+			DestinationPath="$(ProjectDir)bin\Debug\netcoreapp3.1"/>
+	</ItemGroup>-->
+
+	<ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
+		<PackageReference Include="Microsoft.PowerShell.SDK" Version="6.2.4">
+			<IncludeAssets>compile</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">
+		<PackageReference Include="Microsoft.PowerShell.SDK" Version="7.0.0">
+			<IncludeAssets>compile</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MG.Sonarr.Functionality\MG.Sonarr.Functionality.csproj" />
+  </ItemGroup>
+
+</Project>

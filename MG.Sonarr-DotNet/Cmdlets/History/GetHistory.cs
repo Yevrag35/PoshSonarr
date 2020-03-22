@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MG.Posh.Extensions.Bound;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,7 +33,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (this.MyInvocation.BoundParameters.ContainsKey("SortKey"))
+            if (this.ContainsParameter(x => x.SortKey))
             {
                 if (this.SortKey.Equals("Date", StringComparison.CurrentCultureIgnoreCase))
                     _list.Add("sortKey=date");
@@ -41,7 +42,7 @@ namespace MG.Sonarr.Cmdlets
                     _list.Add("sortKey=series.title");
             }
 
-            if (this.MyInvocation.BoundParameters.ContainsKey("EpisodeId"))
+            if (this.ContainsParameter(x => x.EpisodeId))
             {
                 _list.Add(string.Format("episodeId={0}", this.EpisodeId));
             }

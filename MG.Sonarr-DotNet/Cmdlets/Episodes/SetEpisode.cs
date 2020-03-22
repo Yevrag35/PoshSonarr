@@ -1,15 +1,11 @@
 ﻿using MG.Sonarr.Results;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
-using System.Security;
 
 namespace MG.Sonarr.Cmdlets.Episodes
 {
     [Cmdlet(VerbsCommon.Set, "Episode", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [Alias("Update-Episode")]
     [CmdletBinding(PositionalBinding = false)]
     [OutputType(typeof(EpisodeResult))]
     public class SetEpisode : BaseSonarrCmdlet
@@ -41,27 +37,21 @@ namespace MG.Sonarr.Cmdlets.Episodes
 
         protected override void ProcessRecord()
         {
-            this.InputObject.Monitored = this.IsMonitored;
+            this.InputObject.IsMonitored = this.IsMonitored;
 
             if (base.ShouldProcess(
                 string.Format(
-                    "Episode #{0} IsMonitored set to {1}; Series {2}", this.InputObject.AbsoluteEpisodeNumber, this.IsMonitored, this.InputObject.SeriesId), 
-                "Set"))
+                    "Episode #{0} IsMonitored set to {1}; Series {2}", 
+                    this.InputObject.AbsoluteEpisodeNumber, 
+                    this.IsMonitored, 
+                    this.InputObject.SeriesId),
+                    "Set"))
             {
-                string jsonBody = this.InputObject.ToJson();
-                string jsonRes = base.TryPutSonarrResult(EP, jsonBody);
-                if (!string.IsNullOrEmpty(jsonRes) && _passThru)
-                {
-                    EpisodeResult res = SonarrHttp.ConvertToSonarrResult<EpisodeResult>(jsonRes);
-                    base.WriteObject(res);
-                }
+                EpisodeResult er = base.SendSonarrPut<EpisodeResult>(EP, this.InputObject);
+                if (_passThru)
+                    base.SendToPipeline(er);
             }
         }
-
-        #endregion
-
-        #region METHODS
-
 
         #endregion
     }

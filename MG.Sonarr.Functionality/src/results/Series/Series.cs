@@ -13,96 +13,86 @@ using System.Runtime.Serialization;
 namespace MG.Sonarr.Results
 {
     /// <summary>
-    /// The class that defines a response from the "/series" or "/series/lookup" endpoints.
+    /// The class that defines a response from the "/series" endpoint.
     /// </summary>
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [Serializable]
-    public class SeriesResult : BaseResult
+    public sealed class SeriesResult : SearchSeries, ISupportsTagUpdate
     {
-        private const string AIRTIME = "airTime";
-        private const string RATING = "ratings";
+        private const string EP = "/series";
 
-        [JsonExtensionData]
-        private IDictionary<string, JToken> _additionalData;
+        /// <summary>
+        /// An array of alternative titles the series is known as.
+        /// </summary>
+        [JsonProperty("alternateTitles")]
+        public AlternateTitleCollection AlternateTitles { get; private set; }
 
-        public DateTime? Added { get; set; }
-        public string AirTime { get; private set; }
-        public AlternateTitle[] AlternateTitles { get; set; }
-        public string CleanTitle { get; set; }
-        public DateTime? FirstAired { get; set; }
-        public string[] Genres { get; set; }
-        public SeriesImage[] Images { get; set; }
-        public string IMDBId { get; set; }
-        public bool Monitored { get; set; }
-        [JsonProperty("title")]
-        public string Name { get; set; }
-        public string Network { get; set; }
-        public string Overview { get; set; }
-        public string Path { get; set; }
-        public int QualityProfileId { get; set; }
-        public float Rating { get; private set; }
-        public int RatingVotes { get; private set; }
-        public string RemotePoster { get; set; }
-        public long? Runtime { get; set; }
-        public int SeasonCount { get; set; }
-        public SeasonCollection Seasons { get; set; }
+        /// <summary>
+        /// The unique ID of the series within Sonarr.
+        /// </summary>
         [JsonProperty("id")]
-        public long SeriesId { get; set; }
-        public SeriesType SeriesType { get; set; }
-        public string SortTitle { get; set; }
-        public SeriesStatusType Status { get; set; }
+        public int Id { get; private set; }
+
+        [JsonIgnore]
+        object ISupportsTagUpdate.Id => this.Id;
+
+        /// <summary>
+        /// Indicates whether the series is monitored for new episodes.
+        /// </summary>
+        [Obsolete]
+        [JsonIgnore]
+        public bool Monitored
+        {
+            get => this.IsMonitored;
+            set
+            {
+                Console.WriteLine("The property \"Monitored\" is deprecated and will be removed from future releases.  Use \"IsMonitored\" instead.");
+                this.IsMonitored = value;
+            }
+        }
+
+        /// <summary>
+        /// The containing folder's path for this series.
+        /// </summary>
+        [JsonProperty("path")]
+        public string Path { get; set; }
+
+        /// <summary>
+        /// The ID of the <see cref="QualityProfile"/> that this series adheres to.
+        /// </summary>
+        [JsonProperty("qualityProfileId")]
+        public int QualityProfileId { get; set; }
+
+        /// <summary>
+        /// The remote poster of the series.
+        /// </summary>
+        [JsonProperty("remotePoster")]
+        public string RemotePoster { get; private set; }
+
+        /// <summary>
+        /// The size (in bytes) of all downloaded episode files from all seasons.
+        /// </summary>
+        [JsonProperty("sizeOnDisk")]
+        public long SizeOnDisk { get; private set; }
+
+        /// <summary>
+        /// A unique collection of tag ID's applied to the series.
+        /// </summary>
+        [JsonProperty("tags")]
         public HashSet<int> Tags { get; set; }
-        public string TitleSlug { get; set; }
-        public long TVDBId { get; set; }
-        public long TVMazeId { get; set; }
-        public long TVRageId { get; set; }
-        [JsonProperty("certification")]
-        public string TVRating { get; set; }
-        public bool UseSceneNumbering { get; set; }
+
+        /// <summary>
+        /// Indicates whether the series keeps episode files organized by season number.
+        /// </summary>
         [JsonProperty("seasonFolder")]
         public bool UsingSeasonFolders { get; set; }
-        public int Year { get; set; }
 
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
-        {
-            if (this.Status != SeriesStatusType.Ended && _additionalData.ContainsKey(AIRTIME))
-            {
-                this.AirTime = this.SeriesType == SeriesType.Anime
-                    ? this.ConvertFromTokyoTime(_additionalData[AIRTIME])
-                    : _additionalData[AIRTIME].ToObject<string>();
-            }
+        //public decimal GetTotalFileSize() => base.Seasons.GetTotalFileSize();
 
-            JToken rating = _additionalData[RATING];
-            JToken rat = rating.SelectToken("$.value");
-            if (rat != null)
-                this.Rating = rat.ToObject<float>();
-
-            JToken votes = rating.SelectToken("$.votes");
-            if (votes != null)
-            {
-                this.RatingVotes = votes.ToObject<int>();
-            }
-        }
-
-        private string ConvertFromTokyoTime(JToken jtok)
-        {
-            string strRes = null;
-            if (jtok != null)
-            {
-                string tokTime = jtok.ToObject<string>();
-                var tokyoTime = DateTime.Parse(tokTime); // In Tokyo Standard Time
-                TimeZoneInfo tokyotz = TimeZoneInfo.GetSystemTimeZones().First(x => x.Id.Contains("Tokyo"));
-                if (tokyotz == null)
-                    strRes = tokTime;
-
-                else
-                {
-                    DateTime localTime = TimeZoneInfo.ConvertTime(tokyoTime, tokyotz, TimeZoneInfo.Local);
-                    strRes = localTime.ToShortTimeString();
-                }
-            }
-
-            return strRes;
-        }
+        /// <summary>
+        /// Retrieves the Uri endpoint that instance was retrieved from.
+        /// </summary>
+        //public string GetEndpoint() => EP;
+        public bool HasAlternateTitles() => this.AlternateTitles != null && this.AlternateTitles.Count > 0;
     }
 }

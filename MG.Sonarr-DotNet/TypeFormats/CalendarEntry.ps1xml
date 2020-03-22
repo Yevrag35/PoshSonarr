@@ -19,12 +19,12 @@
 							<ListItem>
 								<PropertyName>DayOfWeek</PropertyName>
 							</ListItem>
-							<ListItem>
+							<!--<ListItem>
 								<PropertyName>EpisodeFileId</PropertyName>
 								<ItemSelectionCondition>
 									<ScriptBlock>$_.EpisodeFileId -ne $null -and $_.EpisodeFileId -ne 0</ScriptBlock>
 								</ItemSelectionCondition>
-							</ListItem>
+							</ListItem>-->
 							<ListItem>
 								<PropertyName>EpisodeId</PropertyName>
 							</ListItem>
@@ -32,7 +32,7 @@
 								<PropertyName>EpisodeNumber</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>HasFile</PropertyName>
+								<PropertyName>IsDownloaded</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>IsMonitored</PropertyName>
@@ -43,9 +43,9 @@
 							<ListItem>
 								<PropertyName>Series</PropertyName>
 							</ListItem>
-							<ListItem>
+							<!--<ListItem>
 								<PropertyName>UnverifiedSceneNumbering</PropertyName>
-							</ListItem>
+							</ListItem>-->
 						</ListItems>
 					</ListEntry>
 				</ListEntries>

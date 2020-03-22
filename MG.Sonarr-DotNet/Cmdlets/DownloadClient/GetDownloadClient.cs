@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections;
@@ -52,28 +53,22 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (this.ParameterSetName != "ByClientId")
+            if ( ! this.ContainsParameter(x => x.Id))
             {
                 List<DownloadClient> clients = this.GetAllDownloadClients();
-                if (clients != null)
-                {
-                    if (!this.MyInvocation.BoundParameters.ContainsKey("Protocol"))
-                        base.WriteObject(clients, true);
+                
+                if ( ! this.ContainsParameter(x => x.Protocol))
+                    base.SendToPipeline(clients);
 
-                    else
-                        base.WriteObject(this.FindByProtocol(clients), true);
-                }
+                else
+                    base.SendToPipeline(this.FindByProtocol(clients));
             }
             else
             {
                 for (int i = 0; i < this.Id.Length; i++)
                 {
-                    string jsonRes = base.TryGetSonarrResult(string.Format(EP_ID, this.Id[i]));
-                    if (!string.IsNullOrEmpty(jsonRes))
-                    {
-                        DownloadClient dlCli = SonarrHttp.ConvertToSonarrResult<DownloadClient>(jsonRes);
-                        base.WriteObject(dlCli);
-                    }
+                    DownloadClient dlc = base.SendSonarrGet<DownloadClient>(string.Format(EP_ID, this.Id[i]));
+                    base.SendToPipeline(dlc);
                 }
             }
         }
@@ -83,13 +78,12 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         private List<DownloadClient> GetAllDownloadClients()
         {
-            string jsonRes = base.TryGetSonarrResult(EP);
-            return !string.IsNullOrEmpty(jsonRes) 
-                ? SonarrHttp.ConvertToSonarrResults<DownloadClient>(jsonRes, out bool iso) 
-                : null;
+            return base.SendSonarrListGet<DownloadClient>(EP);
         }
 
-        private List<DownloadClient> FindByProtocol(List<DownloadClient> list) => list.FindAll(x => this.Protocol.Contains(x.Protocol));
+        private List<DownloadClient> FindByProtocol(List<DownloadClient> list) => 
+            list
+                .FindAll(x => this.Protocol.Contains(x.Protocol));
 
         #endregion
     }

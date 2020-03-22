@@ -10,6 +10,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
+using IO = System.IO;
+
 namespace MG.Sonarr.Cmdlets.Logging
 {
     [Cmdlet(VerbsData.Save, "LogFile", ConfirmImpact = ConfirmImpact.None)]
@@ -40,8 +42,7 @@ namespace MG.Sonarr.Cmdlets.Logging
             if (!Directory.Exists(this.Path))
                 throw new ArgumentException("The output folder specified does not exist.");
 
-            var task = this.DownloadLogFile(this.Path, this.InputObject.DownloadUrl);
-            task.Wait();
+            this.DownloadLogFile(this.Path, this.InputObject.DownloadUrl).GetAwaiter().GetResult();
         }
 
         #endregion
@@ -49,7 +50,7 @@ namespace MG.Sonarr.Cmdlets.Logging
         #region BACKEND METHODS
         private async Task DownloadLogFile(string folderPath, string downloadUrl)
         {
-            string fileName = System.IO.Path.GetFileName(downloadUrl);
+            string fileName = IO.Path.GetFileName(downloadUrl);
             string fullPath = folderPath + @"\" + fileName;
             using (var request = new HttpRequestMessage(HttpMethod.Get, downloadUrl))
             {

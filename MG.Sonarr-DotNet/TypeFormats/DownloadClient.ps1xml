@@ -33,7 +33,7 @@
 					<TableRowEntry>
 						<TableColumnItems>
 							<TableColumnItem>
-								<PropertyName>ClientId</PropertyName>
+								<PropertyName>Id</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>Name</PropertyName>
@@ -45,7 +45,7 @@
 								<PropertyName>Protocol</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
-								<PropertyName>Config</PropertyName>
+								<PropertyName>Fields</PropertyName>
 							</TableColumnItem>
 						</TableColumnItems>
 					</TableRowEntry>
