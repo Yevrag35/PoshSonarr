@@ -16,7 +16,9 @@ namespace MG.Sonarr.Cmdlets
         #region FIELDS/CONSTANTS
 
         private List<string> _names;
+        private bool _noTags;
         private List<int> _ids;
+        private bool _isMon;
         private IEqualityComparer<string> _ig;
 
         #endregion
@@ -34,6 +36,46 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = false)]
         public string[] Genres { get; set; }
 
+        [Parameter(Mandatory = false)]
+        public SwitchParameter HasNoTags
+        {
+            get => _noTags;
+            set => _noTags = value;
+        }
+
+        [Parameter(Mandatory = false)]
+        public SwitchParameter IsMonitored
+        {
+            get => _isMon;
+            set => _isMon = value;
+        }
+
+        [Parameter(Mandatory = false)]
+        public float MaximumRating { get; set; }
+
+        [Parameter(Mandatory = false)]
+        public float MinimumRating { get; set; }
+
+        [Parameter(Mandatory = false)]
+        [SupportsWildcards]
+        public string[] Network { get; set; }
+
+        [Parameter(Mandatory = false)]
+        [SupportsWildcards]
+        public string[] Path { get; set; }
+
+        [Parameter(Mandatory = false)]
+        public int[] Tag { get; set; }
+
+        [Parameter(Mandatory = false)]
+        public SeriesType[] Type { get; set; }
+
+        [Parameter(Mandatory = false)]
+        public SeriesStatusType Status { get; set; }
+
+        [Parameter(Mandatory = false)]
+        public int[] Year { get; set; }
+
         #endregion
 
         #region CMDLET PROCESSING
@@ -48,6 +90,11 @@ namespace MG.Sonarr.Cmdlets
 
             else if (this.ContainsParameter(x => x.Id))
                 _ids.AddRange(this.Id);
+
+            if (this.ContainsAllParameters(x => x.MaximumRating, x => x.MinimumRating) && this.MinimumRating > this.MaximumRating)
+            {
+                throw new ArgumentException("The MinimumRating cannot be greater than the MaximumRating.");
+            }
         }
 
         protected override void ProcessRecord()
@@ -60,7 +107,32 @@ namespace MG.Sonarr.Cmdlets
             {
                 IEnumerable<SeriesResult> filtered = base.GetAllSeries();
                 filtered = base.FilterByStrings(filtered, x => x.Name, _names.Count > 0 ? _names : null);
-                
+
+                if (this.ContainsParameter(x => x.Type))
+                {
+                    filtered = filtered
+                        .Where(x => 
+                            this.Type
+                                .Contains(x.SeriesType));
+                }
+                if (this.ContainsParameter(x => x.Tag))
+                {
+                    filtered = filtered
+                        .Where(x =>
+                            x.Tags.Count > 0 
+                            && 
+                            this.Tag
+                                .All(tag =>
+                                    x.Tags
+                                        .Contains(tag)));
+                }
+                else if (_noTags)
+                {
+                    filtered = filtered
+                        .Where(x =>
+                            x.Tags.Count <= 0);
+                }
+
                 if (this.ContainsParameter(x => x.Genres))
                 {
                     filtered = filtered
@@ -69,6 +141,40 @@ namespace MG.Sonarr.Cmdlets
                                 .All(gen => 
                                     x.Genres
                                         .Contains(gen, _ig)));
+                }
+                if (this.ContainsParameter(x => x.IsMonitored))
+                {
+                    filtered = filtered.Where(x => x.IsMonitored == _isMon);
+                }
+                if (this.ContainsParameter(x => x.MinimumRating))
+                {
+                    filtered = filtered
+                        .Where(x =>
+                            x.Rating.CompareTo(this.MinimumRating) >= 0);
+                }
+                if (this.ContainsParameter(x => x.MaximumRating))
+                {
+                    filtered = filtered
+                        .Where(x =>
+                            x.Rating.CompareTo(this.MaximumRating) <= 0);
+                }
+                if (this.ContainsParameter(x => x.Network))
+                {
+                    filtered = base.FilterByStrings(filtered, x => x.Network, this.Network);
+                }
+                if (this.ContainsParameter(x => x.Path))
+                {
+                    filtered = base.FilterByStrings(filtered, x => x.Path, this.Path);
+                }
+                if (this.ContainsParameter(x => x.Status))
+                {
+                    filtered = filtered
+                        .Where(x => x.Status == this.Status);
+                }
+                if (this.ContainsParameter(x => x.Year))
+                {
+                    filtered = filtered
+                        .Where(x => this.Year.Contains(x.Year));
                 }
 
                 base.SendToPipeline(filtered);
