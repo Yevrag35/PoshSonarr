@@ -1,4 +1,5 @@
 ﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace MG.Sonarr.Cmdlets
 
         private List<string> _names;
         private List<int> _ids;
+        private IEqualityComparer<string> _ig;
 
         #endregion
 
@@ -28,12 +30,17 @@ namespace MG.Sonarr.Cmdlets
         [Alias("SeriesId")]
         public int[] Id { get; set; }
 
+        // EXTRA FILTERS
+        [Parameter(Mandatory = false)]
+        public string[] Genres { get; set; }
+
         #endregion
 
         #region CMDLET PROCESSING
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
+            _ig = ClassFactory.NewIgnoreCase();
             _names = new List<string>();
             _ids = new List<int>();
             if (this.ContainsParameter(x => x.Name))
@@ -51,8 +58,20 @@ namespace MG.Sonarr.Cmdlets
             }
             else
             {
-                List<SeriesResult> all = base.GetAllSeries();
-                base.SendToPipeline(base.FilterByStrings(all, x => x.Name, _names.Count > 0 ? _names : null));
+                IEnumerable<SeriesResult> filtered = base.GetAllSeries();
+                filtered = base.FilterByStrings(filtered, x => x.Name, _names.Count > 0 ? _names : null);
+                
+                if (this.ContainsParameter(x => x.Genres))
+                {
+                    filtered = filtered
+                        .Where(x => 
+                            this.Genres
+                                .All(gen => 
+                                    x.Genres
+                                        .Contains(gen, _ig)));
+                }
+
+                base.SendToPipeline(filtered);
             }
         }
 
