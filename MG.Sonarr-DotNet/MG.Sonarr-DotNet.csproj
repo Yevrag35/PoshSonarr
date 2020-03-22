@@ -186,7 +186,6 @@
     <None Include="TypeFormats\CommandResult.ps1xml" />
     <None Include="TypeFormats\DelayProfile.ps1xml" />
     <None Include="TypeFormats\Diskspace.ps1xml" />
-    <None Include="TypeFormats\DownloadClientSetting.ps1xml" />
     <None Include="TypeFormats\DownloadClient.ps1xml" />
     <None Include="TypeFormats\Episode.ps1xml" />
     <None Include="TypeFormats\EpisodeFile.ps1xml" />

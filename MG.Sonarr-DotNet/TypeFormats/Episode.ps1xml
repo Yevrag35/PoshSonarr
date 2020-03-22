@@ -27,12 +27,6 @@
 								</ItemSelectionCondition>
 							</ListItem>
 							<ListItem>
-								<PropertyName>EpisodeFileId</PropertyName>
-								<ItemSelectionCondition>
-									<ScriptBlock>$_.EpisodeFileId -ne $null</ScriptBlock>
-								</ItemSelectionCondition>
-							</ListItem>
-							<ListItem>
 								<PropertyName>EpisodeId</PropertyName>
 							</ListItem>
 							<ListItem>

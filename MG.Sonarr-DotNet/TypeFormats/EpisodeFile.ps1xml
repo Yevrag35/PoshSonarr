@@ -34,14 +34,13 @@
 								<PropertyName>RelativePath</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>SeriesId</PropertyName>
-							</ListItem>
-							<ListItem>
 								<PropertyName>SeasonNumber</PropertyName>
 							</ListItem>
 							<ListItem>
-								<Label>Size</Label>
-								<ScriptBlock>"{0} MB" -f [math]::Round(($_.Size / 1MB), 2)</ScriptBlock>
+								<PropertyName>SeriesId</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Size</PropertyName>
 							</ListItem>
 						</ListItems>
 					</ListEntry>
