@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MG.Sonarr.Results
 {
@@ -15,34 +17,42 @@ namespace MG.Sonarr.Results
         #endregion
 
         #region CONSTRUCTORS
-        public AllowedQualityCollection() : this(14) { }
-        public AllowedQualityCollection(int capacity) : base(capacity) { }
-        public AllowedQualityCollection(IEnumerable<AllowedQuality> qualityItems) : base(qualityItems) { }
+        //public AllowedQualityCollection() : this(14) { }
+        //public AllowedQualityCollection(int capacity) : base(capacity) { }
+        [JsonConstructor]
+        internal AllowedQualityCollection(IEnumerable<AllowedQuality> qualityItems) : base(qualityItems) { }
 
         #endregion
 
         #region METHODS
-        public void Add(AllowedQuality qi)
+        internal void Allow(IEnumerable<Quality> allowables)
         {
-            if (base.InnerList.Exists(x => x.Quality.Id.Equals(qi.Quality.Id)))
-                throw new ArgumentException(string.Format("The QualityDefinition (Id: {0}) has already been added.", qi.Quality.Id));
-
-            else
-                base.InnerList.Add(qi);
+            base.InnerList.ForEach((x) =>
+            {
+                if (allowables.Contains(x.Quality))
+                {
+                    x.Allowed = true;
+                }
+            });
         }
-        public void AddFromQuality(Quality quality, bool isAllowed) => this.Add(new AllowedQuality
-        {
-            Allowed = isAllowed,
-            Quality = quality
-        });
-        //public void Clear() => base.InnerList.Clear();
         public bool ContainsQualityById(int qualityId) => base.InnerList.Exists(x => x.Quality.Id.Equals(qualityId));
         public bool ContainsQualityByName(string qualityName)
         {
             StringComparison comparison = StringComparison.CurrentCultureIgnoreCase;
             return base.InnerList.Exists(x => x.Quality.Name.Equals(qualityName, comparison));
         }
+        internal void Disallow(IEnumerable<Quality> disallowables)
+        {
+            base.InnerList.ForEach((x) =>
+            {
+                if (disallowables.Contains(x.Quality))
+                {
+                    x.Allowed = false;
+                }
+            });
+        }
         internal int FindIndex(Predicate<AllowedQuality> match) => base.InnerList.FindIndex(match);
+        internal void ForEach(Action<AllowedQuality> action) => base.InnerList.ForEach(action);
         public AllowedQuality GetAllowedQualityByName(string qualityName)
         {
             StringComparison comparison = StringComparison.CurrentCultureIgnoreCase;
@@ -57,11 +67,14 @@ namespace MG.Sonarr.Results
 
             return result.Value;
         }
-        //internal bool Remove(AllowedQuality qualityDefinition) => base.InnerList.Remove(qualityDefinition);
         public void Sort() => base.InnerList.Sort();
         public void Sort(IComparer<AllowedQuality> comparer) => base.InnerList.Sort(comparer);
         public AllowedQuality[] ToArray() => base.InnerList.ToArray();
+        internal bool TrueForAll(Predicate<AllowedQuality> match) => base.InnerList.TrueForAll(match);
 
         #endregion
+
+        public static explicit operator AllowedQualityCollection(List<Quality> qualities) => 
+            new AllowedQualityCollection(qualities.Select(x => AllowedQuality.FromQuality(x, false)));
     }
 }

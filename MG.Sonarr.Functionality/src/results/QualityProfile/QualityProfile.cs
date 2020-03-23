@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results
@@ -14,15 +15,13 @@ namespace MG.Sonarr.Results
     public class QualityProfileNew : BaseResult, IGetEndpoint
     {
         private const string EP = "/profile";
+        private IEqualityComparer<string> _comparer;
 
         [JsonProperty("cutoff", Order = 2)]
         public Quality Cutoff { get; set; }
 
-        //[JsonProperty("items", Order = 3)]
-        //public QualityItemCollection Qualities { get; set; } = new QualityItemCollection();
-
         [JsonProperty("items", Order = 3)]
-        public AllowedQualityCollection AllowedQualities { get; private set; } = new AllowedQualityCollection();
+        public AllowedQualityCollection AllowedQualities { get; private set; }
 
         [JsonProperty("language", Order = 4)]
         [JsonConverter(typeof(SonarrStringEnumConverter))]
@@ -31,7 +30,10 @@ namespace MG.Sonarr.Results
         [JsonProperty("name", Order = 1)]
         public string Name { get; set; }
 
-        public QualityProfileNew() { }
+        public QualityProfileNew()
+        {
+            _comparer = ClassFactory.NewIgnoreCase();
+        }
 
         public string GetEndpoint() => EP;
 
@@ -54,6 +56,24 @@ namespace MG.Sonarr.Results
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext ctx) => this.AllowedQualities.Sort();
+
+        public void ApplyAllowables(IEnumerable<Quality> allowables)
+        {
+            this.AllowedQualities.Allow(allowables);
+        }
+        public void ApplyDisallowables(IEnumerable<Quality> disallowables)
+        {
+            this.AllowedQualities.Disallow(disallowables.Where(x => this.Cutoff.Id != x.Id));
+        }
+
+        public void PopulateQualities(IEnumerable<Quality> qualities)
+        {
+            this.AllowedQualities = new AllowedQualityCollection(qualities.Select(x => AllowedQuality.FromQuality(x, false)));
+            if (this.Cutoff != null)
+            {
+                this.AllowedQualities[this.Cutoff.Name].Allowed = true;
+            }
+        }
     }
 
     /// <summary>

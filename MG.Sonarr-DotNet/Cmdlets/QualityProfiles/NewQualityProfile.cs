@@ -17,7 +17,7 @@ namespace MG.Sonarr.Cmdlets
         private const string EP = "/profile";
         private DynamicLibrary _dynLib;
         private const string CUTOFF_QUALITY = "CutoffQuality";
-        private const string ALLOWED_QUALITIES = "AllowedQualities";
+        internal const string ALLOWED_QUALITIES = "AllowedQualities";
 
         private const string WHAT_IF_FORMAT = "{0} Profile \"{1}\" with {2} allowed qualities and {3} as the cutoff.";
 
@@ -66,7 +66,11 @@ namespace MG.Sonarr.Cmdlets
                 Language = this.Language,
                 Name = this.Name
             };
-            this.SetAllowedQualities(newProfile, _dynLib.GetUnderlyingValues<Quality>(ALLOWED_QUALITIES));
+            newProfile.PopulateQualities(Context.AllQualities);
+            IEnumerable<Quality> allowables = _dynLib.GetUnderlyingValues<Quality>(ALLOWED_QUALITIES);
+            newProfile.ApplyAllowables(allowables);
+
+            base.WriteDebug(newProfile.ToJson());
 
             if (base.FormatShouldProcess("New", WHAT_IF_FORMAT, this.Language.ToString(), this.Name, newProfile.AllowedQualities.Count, cutoff.Name))
             {
@@ -78,13 +82,6 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region BACKEND METHODS
-        private void SetAllowedQualities(QualityProfileNew newProfile, IEnumerable<Quality> qualities)
-        {
-            foreach (Quality quality in qualities)
-            {
-                newProfile.AllowedQualities.AddFromQuality(quality, true);
-            }
-        }
 
         #endregion
     }

@@ -120,8 +120,10 @@
     <Compile Include="Cmdlets\Notification\NotificationCmdlet.cs" />
     <Compile Include="Cmdlets\Notification\RemoveNotification.cs" />
     <Compile Include="Cmdlets\Notification\UpdateNotification.cs" />
+    <Compile Include="Cmdlets\QualityProfiles\DisableQuality.cs" />
     <Compile Include="Cmdlets\QualityProfiles\NewQualityProfile.cs" />
     <Compile Include="Cmdlets\QualityProfiles\RemoveQualityProfile.cs" />
+    <Compile Include="Cmdlets\QualityProfiles\EnableQuality.cs" />
     <Compile Include="Cmdlets\QualityProfiles\UpdateQualityProfile.cs" />
     <Compile Include="Cmdlets\Queue\RemoveQueueItem.cs" />
     <Compile Include="Cmdlets\RemotePath\GetMapping.cs" />
@@ -141,7 +143,6 @@
     <Compile Include="Cmdlets\Tag\TagCmdlet.cs" />
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
-    <Compile Include="Components\QualityProfileExtensions.cs" />
     <Compile Include="Components\SonarrHttp.cs" />
     <Compile Include="Objects\AddRemoveHashTable.cs" />
     <Compile Include="Objects\EpisodeIdentifierCollection.cs" />
