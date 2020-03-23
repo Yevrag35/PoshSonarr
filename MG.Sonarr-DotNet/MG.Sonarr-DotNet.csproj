@@ -145,6 +145,7 @@
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
     <Compile Include="Components\SonarrHttp.cs" />
     <Compile Include="Objects\AddRemoveHashTable.cs" />
+    <Compile Include="Objects\AnyAllHashtable.cs" />
     <Compile Include="Objects\EpisodeIdentifierCollection.cs" />
     <Compile Include="Objects\ReplaceHashTable.cs" />
     <Compile Include="Objects\EpisodeIdentifier.cs" />

@@ -2,6 +2,7 @@
 using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
@@ -20,6 +21,7 @@ namespace MG.Sonarr.Cmdlets
         private List<int> _ids;
         private bool _isMon;
         private IEqualityComparer<string> _ig;
+        private AnyAllHashtable _anyall;
 
         #endregion
 
@@ -58,14 +60,10 @@ namespace MG.Sonarr.Cmdlets
 
         [Parameter(Mandatory = false)]
         [SupportsWildcards]
-        public string[] Network { get; set; }
-
-        [Parameter(Mandatory = false)]
-        [SupportsWildcards]
         public string[] Path { get; set; }
 
         [Parameter(Mandatory = false)]
-        public int[] Tag { get; set; }
+        public object[] Tag { get; set; }
 
         [Parameter(Mandatory = false)]
         public SeriesType[] Type { get; set; }
@@ -90,6 +88,11 @@ namespace MG.Sonarr.Cmdlets
 
             else if (this.ContainsParameter(x => x.Id))
                 _ids.AddRange(this.Id);
+
+            if (this.ContainsParameter(x => x.Tag))
+            {
+                _anyall = this.AnyAllFromObjects(this.Tag);
+            }
 
             if (this.ContainsAllParameters(x => x.MaximumRating, x => x.MinimumRating) && this.MinimumRating > this.MaximumRating)
             {
@@ -117,14 +120,18 @@ namespace MG.Sonarr.Cmdlets
                 }
                 if (this.ContainsParameter(x => x.Tag))
                 {
-                    filtered = filtered
-                        .Where(x =>
-                            x.Tags.Count > 0 
-                            && 
-                            this.Tag
-                                .All(tag =>
-                                    x.Tags
-                                        .Contains(tag)));
+                    if (_anyall.Count > 0)
+                    {
+                        filtered = filtered.Where(x => x.Tags.Count > 0);
+                        if (_anyall.IsAll)
+                        {
+                            filtered = filtered.Where(x => _anyall.IsSubsetOf(x.Tags));
+                        }
+                        else
+                        {
+                            filtered = filtered.Where(x => _anyall.Overlaps(x.Tags));
+                        }
+                    }
                 }
                 else if (_noTags)
                 {
@@ -158,10 +165,6 @@ namespace MG.Sonarr.Cmdlets
                         .Where(x =>
                             x.Rating.CompareTo(this.MaximumRating) <= 0);
                 }
-                if (this.ContainsParameter(x => x.Network))
-                {
-                    filtered = base.FilterByStrings(filtered, x => x.Network, this.Network);
-                }
                 if (this.ContainsParameter(x => x.Path))
                 {
                     filtered = base.FilterByStrings(filtered, x => x.Path, this.Path);
@@ -185,7 +188,17 @@ namespace MG.Sonarr.Cmdlets
 
         #region BACKEND METHODS
         
-
+        private AnyAllHashtable AnyAllFromObjects(object[] objs)
+        {
+            if (this.Tag.OfType<Hashtable>().Any())
+            {
+                return this.Tag.OfType<Hashtable>().First();
+            }
+            else
+            {
+                return new AnyAllHashtable(this.Tag);
+            }
+        }
         private void ProcessNamesParameter(object[] objNames)
         {
             if (this.MyInvocation.Line.IndexOf(" -Name ", StringComparison.InvariantCultureIgnoreCase) >= 0)

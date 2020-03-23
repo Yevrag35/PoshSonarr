@@ -63,7 +63,7 @@ namespace MG.Sonarr.Results
         }
         public void ApplyDisallowables(IEnumerable<Quality> disallowables)
         {
-            this.AllowedQualities.Disallow(disallowables.Where(x => this.Cutoff.Id != x.Id));
+            this.AllowedQualities.Disallow(disallowables.Where(x => this.Cutoff?.Id != x.Id));
         }
 
         public void PopulateQualities(IEnumerable<Quality> qualities)
