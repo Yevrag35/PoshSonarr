@@ -16,12 +16,13 @@ namespace MG.Sonarr.Cmdlets
     {
         #region FIELDS/CONSTANTS
 
+        private AnyAllStringSet _genres;
         private List<string> _names;
         private bool _noTags;
-        private List<int> _ids;
+        private HashSet<int> _ids;
         private bool _isMon;
         private IEqualityComparer<string> _ig;
-        private AnyAllHashtable _anyall;
+        private AnyAllIntSet _anyall;
 
         #endregion
 
@@ -36,7 +37,7 @@ namespace MG.Sonarr.Cmdlets
 
         // EXTRA FILTERS
         [Parameter(Mandatory = false)]
-        public string[] Genres { get; set; }
+        public object[] Genres { get; set; }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter HasNoTags
@@ -82,16 +83,21 @@ namespace MG.Sonarr.Cmdlets
             base.BeginProcessing();
             _ig = ClassFactory.NewIgnoreCase();
             _names = new List<string>();
-            _ids = new List<int>();
+            _ids = new HashSet<int>();
             if (this.ContainsParameter(x => x.Name))
                 this.ProcessNamesParameter(this.Name);
 
             else if (this.ContainsParameter(x => x.Id))
-                _ids.AddRange(this.Id);
+                _ids.UnionWith(this.Id);
 
             if (this.ContainsParameter(x => x.Tag))
             {
                 _anyall = this.AnyAllFromObjects(this.Tag);
+            }
+
+            if (this.ContainsParameter(x => x.Genres))
+            {
+                _genres = this.AnyAllFromGenres(this.Genres);
             }
 
             if (this.ContainsAllParameters(x => x.MaximumRating, x => x.MinimumRating) && this.MinimumRating > this.MaximumRating)
@@ -142,12 +148,11 @@ namespace MG.Sonarr.Cmdlets
 
                 if (this.ContainsParameter(x => x.Genres))
                 {
-                    filtered = filtered
-                        .Where(x => 
-                            this.Genres
-                                .All(gen => 
-                                    x.Genres
-                                        .Contains(gen, _ig)));
+                    if (_genres.IsAll)
+                        filtered = filtered.Where(x => _genres.IsSubsetOf(x.Genres));
+
+                    else
+                        filtered = filtered.Where(x => _genres.Overlaps(x.Genres));
                 }
                 if (this.ContainsParameter(x => x.IsMonitored))
                 {
@@ -188,7 +193,7 @@ namespace MG.Sonarr.Cmdlets
 
         #region BACKEND METHODS
         
-        private AnyAllHashtable AnyAllFromObjects(object[] objs)
+        private AnyAllIntSet AnyAllFromObjects(object[] objs)
         {
             if (this.Tag.OfType<Hashtable>().Any())
             {
@@ -196,7 +201,18 @@ namespace MG.Sonarr.Cmdlets
             }
             else
             {
-                return new AnyAllHashtable(this.Tag);
+                return new AnyAllIntSet(this.Tag);
+            }
+        }
+        private AnyAllStringSet AnyAllFromGenres(object[] genres)
+        {
+            if (this.Genres.OfType<Hashtable>().Any())
+            {
+                return this.Genres.OfType<Hashtable>().First();
+            }
+            else
+            {
+                return new AnyAllStringSet(this.Genres.OfType<IConvertible>().Select(x => Convert.ToString(x)));
             }
         }
         private void ProcessNamesParameter(object[] objNames)

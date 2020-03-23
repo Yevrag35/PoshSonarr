@@ -7,43 +7,31 @@ using System.Linq;
 
 namespace MG.Sonarr
 {
-    public class AnyAllHashtable : HashSet<int>
-    {
-        private const string ALL = "All";
-        private const string ANY = "Any";
-
-        private IEqualityComparer<string> _comparer;
-
-        //public int Count => this.Ids.Count;
-        //public HashSet<int> Ids { get; }
-        public bool IsAll { get; private set; }
-        
-        private AnyAllHashtable() : base()
+    public class AnyAllIntSet : AnyAllSet<int>
+    {   
+        private AnyAllIntSet() : base()
         {
-            _comparer = ClassFactory.NewIgnoreCase();
         }
-        public AnyAllHashtable(IEnumerable<int> ids) : base(ids)
+        public AnyAllIntSet(IEnumerable<int> ids) : base(ids)
         {
-            _comparer = ClassFactory.NewIgnoreCase();
         }
-        public AnyAllHashtable(object[] objs) : base(FindAllTags(objs))
+        public AnyAllIntSet(object[] objs) : base(FindAllTags(objs))
         {
-            _comparer = ClassFactory.NewIgnoreCase();
         }
 
-        public static implicit operator AnyAllHashtable(Hashtable ht)
+        public static implicit operator AnyAllIntSet(Hashtable ht)
         {
-            AnyAllHashtable anyall = null;
+            AnyAllIntSet anyall = null;
             if (ht.Count <= 0)
-                return new AnyAllHashtable();
+                return new AnyAllIntSet();
 
             else
-                anyall = new AnyAllHashtable();
+                anyall = new AnyAllIntSet();
 
             IEnumerable<string> keys = ht.Keys.Cast<string>();
-            if (keys.Contains(ALL, anyall._comparer))
+            if (keys.Contains(ALL, anyall.StringComparer))
             {
-                string key = GetAllKey(keys);
+                string key = anyall.GetAllKey(keys);
                 if (ht[key] is IEnumerable moreThanOne1)
                 {
                     anyall.AddAllTags(moreThanOne1);
@@ -55,9 +43,9 @@ namespace MG.Sonarr
 
                 anyall.IsAll = true;
             }
-            else if (keys.Contains(ANY, anyall._comparer))
+            else if (keys.Contains(ANY, anyall.StringComparer))
             {
-                string key = GetAnyKey(keys);
+                string key = anyall.GetAnyKey(keys);
                 if (ht[key] is IEnumerable moreThanOne2)
                 {
                     anyall.AddAllTags(moreThanOne2);
@@ -92,7 +80,6 @@ namespace MG.Sonarr
                 }
             }
         }
-        private static string GetAllKey(IEnumerable<string> keys) => keys.Single(x => x.Equals(ALL, StringComparison.CurrentCultureIgnoreCase));
-        private static string GetAnyKey(IEnumerable<string> keys) => keys.Single(x => x.Equals(ANY, StringComparison.CurrentCultureIgnoreCase));
+        
     }
 }
