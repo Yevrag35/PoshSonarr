@@ -24,7 +24,12 @@ namespace MG.Sonarr
         #endregion
 
         #region PROPERTIES
-        public static List<Quality> AllQualities { get; internal set; }
+
+#if DEBUG
+        public static List<Quality> AllQualities { get; set; }
+#else
+        internal static List<Quality> AllQualities { get; set; }
+#endif
 
         /// <summary>
         /// The main <see cref="HttpClient"/> from which all PoshSonarr cmdlets issue their REST requests.
@@ -39,9 +44,13 @@ namespace MG.Sonarr
         /// <summary>
         /// The <see cref="SonarrUrl"/> representation of the base URL for all subsequent REST calls.
         /// </summary>
-        public static ISonarrUrl SonarrUrl { get; set; }
+        internal static ISonarrUrl SonarrUrl { get; set; }
 
+#if DEBUG
         public static TagManager TagManager { get; internal set; }
+#else
+        internal static TagManager TagManager { get; set; }
+#endif
 
         #endregion
     }

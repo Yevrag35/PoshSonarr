@@ -143,7 +143,6 @@
     <Compile Include="Cmdlets\Tag\TagCmdlet.cs" />
     <Compile Include="Cmdlets\Update\GetUpdate.cs" />
     <None Include="Components\BETA\SonarrContext-BETA.cs" />
-    <Compile Include="Components\SonarrHttp.cs" />
     <Compile Include="Objects\AddRemoveHashTable.cs" />
     <Compile Include="Objects\AnyAllIntSet.cs" />
     <Compile Include="Objects\AnyAllSet.cs" />
