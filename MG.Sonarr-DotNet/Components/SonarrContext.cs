@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Cmdlets;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Cmdlets;
 using MG.Sonarr.Results;
 using System;
 using System.Collections;
@@ -26,9 +27,9 @@ namespace MG.Sonarr
         #region PROPERTIES
 
 #if DEBUG
-        public static List<Quality> AllQualities { get; set; }
+        public static QualityDictionary AllQualities { get; set; }
 #else
-        internal static List<Quality> AllQualities { get; set; }
+        internal static QualityDictionary AllQualities { get; set; }
 #endif
 
         /// <summary>

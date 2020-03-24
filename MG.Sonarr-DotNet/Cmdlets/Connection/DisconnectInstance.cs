@@ -22,7 +22,8 @@ namespace MG.Sonarr.Cmdlets
             Context.SonarrUrl = null;
             Context.ApiCaller.Dispose();
             Context.ApiCaller = null;
-            Context.AllQualities.Clear();
+            //Context.AllQualities.Clear();
+            Context.AllQualities = null;
 
             GC.Collect();
         }
