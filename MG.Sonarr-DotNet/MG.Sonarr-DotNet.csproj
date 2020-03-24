@@ -96,6 +96,7 @@
     <None Include="Cmdlets\Connection\Exclude\CertValidity-Core.cs" />
     <Compile Include="Cmdlets\Config\GetHostConfig.cs" />
     <Compile Include="Cmdlets\Config\SetHostConfig.cs" />
+    <Compile Include="Cmdlets\Connection\DisconnectInstance.cs" />
     <Compile Include="Cmdlets\Connection\Exclude\CertValidity-DotNet.cs" />
     <None Include="Cmdlets\QualityProfiles\Exclude\NewQualityProfile-BETA.cs" />
     <None Include="Cmdlets\Connection\Exclude\ConnectInstance-BETA.cs" />
@@ -148,7 +149,6 @@
     <Compile Include="Objects\AnyAllSet.cs" />
     <Compile Include="Objects\AnyAllStringSet.cs" />
     <Compile Include="Objects\EpisodeIdentifierCollection.cs" />
-    <None Include="Objects\HashSetExtensions.cs" />
     <Compile Include="Objects\ReplaceHashTable.cs" />
     <Compile Include="Objects\EpisodeIdentifier.cs" />
     <Compile Include="Cmdlets\Connection\ConnectInstance.cs" />

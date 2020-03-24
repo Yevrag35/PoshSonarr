@@ -33,7 +33,7 @@ namespace MG.Sonarr
                 throw new InvalidApiKeyException();
 
             else
-                this.Key = keyStr;
+                this.Key = keyStr.ToLower();
         }
         private ApiKey(SecureString keySs)
             : this(ConvertFromSecureString(keySs)) { }
@@ -73,7 +73,7 @@ namespace MG.Sonarr
         /// </summary>
         /// <param name="testStr">The string to validate.</param>
         /// <returns></returns>
-        private bool IsValidKey(string testStr) => Regex.IsMatch(testStr, KEY_PATTERN);
+        private bool IsValidKey(string testStr) => Regex.IsMatch(testStr, KEY_PATTERN, RegexOptions.IgnoreCase);
 
         #endregion
     }
