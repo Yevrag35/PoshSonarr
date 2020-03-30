@@ -13,11 +13,8 @@ namespace MG.Sonarr
         private bool _includeApiPrefix;
 
         private const string SLASH_STR = "/";
-        private static readonly char SLASH = char.Parse(SLASH_STR);
-        private static readonly char[] SLASH_API = new char[4]
-        {
-            SLASH, char.Parse("a"), char.Parse("p"), char.Parse("i")
-        };
+        private const char SLASH = (char)47;
+        private const string SLASH_API = SLASH_STR + "api";
 
         #endregion
 
@@ -28,10 +25,10 @@ namespace MG.Sonarr
             get => _includeApiPrefix;
             set
             {
-                if (value && !_builder.Path.EndsWith("/api", StringComparison.CurrentCultureIgnoreCase))
+                if (value && !_builder.Path.EndsWith(SLASH_API, StringComparison.CurrentCultureIgnoreCase))
                     this.AddApiPreifx();
 
-                else if (!value && _builder.Path.EndsWith("/api", StringComparison.CurrentCulture))
+                else if (!value && _builder.Path.EndsWith(SLASH_API, StringComparison.CurrentCulture))
                     this.RemoveApiPrefix();
 
                 _includeApiPrefix = value;
@@ -39,12 +36,12 @@ namespace MG.Sonarr
         }
         string ISonarrUrl.Path
         {
-            get => _builder.Path != "/"
+            get => _builder.Path != SLASH_STR
                 ? _builder.Path.TrimEnd(SLASH)
                 : string.Empty;
             set
             {
-                _includeApiPrefix = value.EndsWith("/api");
+                _includeApiPrefix = value.EndsWith(SLASH_API);
                 _builder.Path = value;
             }
         }
@@ -65,9 +62,9 @@ namespace MG.Sonarr
         #region METHODS
         private void AddApiPreifx()
         {
-            _builder.Path = _builder.Path.EndsWith("/")
-                ? _builder.Path = _builder.Path + "api"
-                : _builder.Path = _builder.Path + "/api";
+            _builder.Path = _builder.Path.EndsWith(SLASH_STR)
+                ? _builder.Path = _builder.Path + SLASH_API
+                : _builder.Path = _builder.Path + SLASH_API;
         }
         private void FormatNew(Uri url, bool includeApiPrefix)
         {
@@ -82,7 +79,7 @@ namespace MG.Sonarr
                     : "https";
 
             string path = includeApiPrefix
-                ? "/api"
+                ? SLASH_API
                 : null;
 
             _builder = new UriBuilder(scheme, hostName, portNumber, path);
@@ -92,15 +89,15 @@ namespace MG.Sonarr
             if (!string.IsNullOrEmpty(reverseProxyUriBase))
             {
                 reverseProxyUriBase = reverseProxyUriBase.Trim(SLASH);
-                if (reverseProxyUriBase.IndexOf("/api", StringComparison.CurrentCultureIgnoreCase) >= 0 &&
-                    _builder.Path.Contains("/api"))
+                if (reverseProxyUriBase.IndexOf(SLASH_API, StringComparison.CurrentCultureIgnoreCase) >= 0 &&
+                    _builder.Path.Contains(SLASH_API))
                 {
-                    reverseProxyUriBase = reverseProxyUriBase.Replace("/api", string.Empty);
+                    reverseProxyUriBase = reverseProxyUriBase.Replace(SLASH_API, string.Empty);
                 }
                 _builder.Path = SLASH_STR + reverseProxyUriBase + _builder.Path;
             }
         }
-        private void RemoveApiPrefix() => _builder.Path = _builder.Path.Trim(SLASH_API);
+        private void RemoveApiPrefix() => _builder.Path = _builder.Path.Substring(0, _builder.Path.LastIndexOf(SLASH_API));
 
         #endregion
     }
