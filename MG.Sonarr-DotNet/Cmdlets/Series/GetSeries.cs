@@ -22,6 +22,7 @@ namespace MG.Sonarr.Cmdlets
         private HashSet<int> _ids;
         //private IEqualityComparer<string> _ig;
         private bool _isMon;
+        private bool _isDebugging;
         private List<string> _names;
         private bool _noTags;
         private string REGEX_PATTERN = "^.+\\s+(?:\\-n|\\\"|\\')";
@@ -83,7 +84,12 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            //_ig = ClassFactory.NewIgnoreCase();
+
+            if (this.ContainsAllParameters("Debug"))
+            {
+                _isDebugging = ((SwitchParameter)this.MyInvocation.BoundParameters["Debug"]).ToBool();
+            }
+
             _names = new List<string>();
             _ids = new HashSet<int>();
             if (this.ContainsParameter(x => x.Name))
@@ -112,24 +118,44 @@ namespace MG.Sonarr.Cmdlets
         {
             if (_ids.Count > 0)
             {
-                base.SendToPipeline(base.GetSeriesById(_ids));
+                base.SendToPipeline(base.GetSeriesById(_ids, _isDebugging));
             }
             else
             {
-                IEnumerable<SeriesResult> filtered = base.GetAllSeries();
-                filtered = base.FilterByStrings(filtered, x => x.Name, _names.Count > 0 ? _names : null);
+                IEnumerable<SeriesResult> filtered = base.GetAllSeries(_isDebugging);
+
+                filtered = this.FilterByName(filtered);
 
                 if (this.ContainsParameter(x => x.Type))
                 {
+                    if (!_isDebugging)
+                        base.WriteVerbose("Filtering by 'Type'.");
+
                     filtered = filtered
                         .Where(x => 
                             this.Type
                                 .Contains(x.SeriesType));
+
+                    if (_isDebugging)
+                    {
+                        base.WriteFormatDebug("The following series names are left after filtering by 'Type':{0}{1}",
+                            Environment.NewLine,
+                            string.Join(Environment.NewLine, filtered.Select(x => x.CleanTitle)));
+                    }
                 }
                 if (this.ContainsParameter(x => x.Tag))
                 {
                     if (_anyall.Count > 0)
                     {
+                        if (!_isDebugging)
+                            base.WriteVerbose("Filtering by 'Tag'.");
+
+                        else
+                            base.WriteFormatDebug("Found {0} tag(s) to filter on:{1}{2}",
+                                _anyall.Count,
+                                Environment.NewLine,
+                                string.Join(Environment.NewLine, _anyall));
+
                         filtered = filtered.Where(x => x.Tags.Count > 0);
                         if (_anyall.IsAll)
                         {
@@ -139,17 +165,31 @@ namespace MG.Sonarr.Cmdlets
                         {
                             filtered = filtered.Where(x => _anyall.Overlaps(x.Tags));
                         }
+
+                        if (_isDebugging)
+                            base.WriteFormatDebug("The following series names are left after filtering by 'Tag':{0}{1}",
+                                Environment.NewLine,
+                                string.Join(Environment.NewLine, filtered.Select(x => x.CleanTitle)));
                     }
+                    else if (_isDebugging)
+                        base.WriteDebug("No tags match those specified.");
                 }
                 else if (_noTags)
                 {
+                    base.WriteVerbose("Filtering by 'NoTag'.");
                     filtered = filtered
                         .Where(x =>
                             x.Tags.Count <= 0);
+
+                    if (_isDebugging)
+                        base.WriteFormatDebug("The following series names are left after filtering by 'NoTags':{0}{1}",
+                            Environment.NewLine,
+                            string.Join(Environment.NewLine, filtered.Select(x => x.CleanTitle)));
                 }
 
                 if (this.ContainsParameter(x => x.Genres))
                 {
+                    base.WriteVerbose("Filtering by 'Genre'.");
                     if (_genres.IsAll)
                         filtered = filtered.Where(x => _genres.IsSubsetOf(x.Genres));
 
@@ -158,31 +198,37 @@ namespace MG.Sonarr.Cmdlets
                 }
                 if (this.ContainsParameter(x => x.IsMonitored))
                 {
+                    base.WriteVerbose("Filtering by 'IsMonitored'.");
                     filtered = filtered.Where(x => x.IsMonitored == _isMon);
                 }
                 if (this.ContainsParameter(x => x.MinimumRating))
                 {
+                    base.WriteFormatVerbose("Filtering by the lowest rating: {0}", this.MinimumRating);
                     filtered = filtered
                         .Where(x =>
                             x.Rating.CompareTo(this.MinimumRating) >= 0);
                 }
                 if (this.ContainsParameter(x => x.MaximumRating))
                 {
+                    base.WriteFormatVerbose("Filtering by the highest rating: {0}", this.MaximumRating);
                     filtered = filtered
                         .Where(x =>
                             x.Rating.CompareTo(this.MaximumRating) <= 0);
                 }
                 if (this.ContainsParameter(x => x.Path))
                 {
+                    base.WriteVerbose("Filtering by 'Path'.");
                     filtered = base.FilterByStrings(filtered, x => x.Path, this.Path);
                 }
                 if (this.ContainsParameter(x => x.Status))
                 {
+                    base.WriteVerbose("Filtering by 'Status'.");
                     filtered = filtered
                         .Where(x => x.Status == this.Status);
                 }
                 if (this.ContainsParameter(x => x.Year))
                 {
+                    base.WriteVerbose("Filtering by 'Year'.");
                     filtered = filtered
                         .Where(x => this.Year.Contains(x.Year));
                 }
@@ -194,7 +240,28 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region BACKEND METHODS
-        
+
+        #region FILTERING METHODS
+
+        private IEnumerable<SeriesResult> FilterByName(IEnumerable<SeriesResult> filterThis)
+        {
+            if (!_isDebugging)
+                base.WriteVerbose("Filtering by the specified 'Name' (if any).");
+
+            filterThis = base.FilterByStrings(filterThis, x => x.Name, _names.Count > 0 ? _names : null);
+
+            if (_isDebugging)
+            {
+                base.WriteFormatDebug("The following series names are left after filtering by 'Name':{0}{1}",
+                    Environment.NewLine,
+                    string.Join(Environment.NewLine, filterThis.Select(x => x.CleanTitle)));
+            }
+
+            return filterThis;
+        }
+
+        #endregion
+
         private AnyAllIntSet AnyAllFromObjects(object[] objs)
         {
             if (this.Tag.OfType<Hashtable>().Any())
