@@ -18,8 +18,8 @@ namespace MG.Sonarr
     public static partial class Context
     {
         #region FIELDS/CONSTANTS
-        internal const string SLASH_STR = "/";
-        internal static readonly char SLASH = char.Parse(SLASH_STR);
+        //internal const string SLASH_STR = "/";
+        internal const char SLASH = (char)47;
         internal const string ZERO_ONE = "{0}{1}";
 
         #endregion

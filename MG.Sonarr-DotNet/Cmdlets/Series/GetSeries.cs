@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
+using System.Text.RegularExpressions;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -16,13 +17,14 @@ namespace MG.Sonarr.Cmdlets
     {
         #region FIELDS/CONSTANTS
 
+        private AnyAllIntSet _anyall;
         private AnyAllStringSet _genres;
+        private HashSet<int> _ids;
+        //private IEqualityComparer<string> _ig;
+        private bool _isMon;
         private List<string> _names;
         private bool _noTags;
-        private HashSet<int> _ids;
-        private bool _isMon;
-        private IEqualityComparer<string> _ig;
-        private AnyAllIntSet _anyall;
+        private string REGEX_PATTERN = "^.+\\s+(?:\\-n|\\\"|\\')";
 
         #endregion
 
@@ -81,7 +83,7 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            _ig = ClassFactory.NewIgnoreCase();
+            //_ig = ClassFactory.NewIgnoreCase();
             _names = new List<string>();
             _ids = new HashSet<int>();
             if (this.ContainsParameter(x => x.Name))
@@ -215,9 +217,17 @@ namespace MG.Sonarr.Cmdlets
                 return new AnyAllStringSet(this.Genres.OfType<IConvertible>().Select(x => Convert.ToString(x)));
             }
         }
+        private string GetInvocation()
+        {
+            return this.MyInvocation.Line.Substring(this.MyInvocation.OffsetInLine - 1);
+        }
+        private bool Matches()
+        {
+            return Regex.IsMatch(this.GetInvocation(), REGEX_PATTERN, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        }
         private void ProcessNamesParameter(object[] objNames)
         {
-            if (this.MyInvocation.Line.IndexOf(" -Name ", StringComparison.InvariantCultureIgnoreCase) >= 0)
+            if (this.Matches())
             {
                 foreach (IConvertible ic in objNames)
                 {
