@@ -139,6 +139,7 @@
     <Compile Include="Cmdlets\RootFolder\RegisterRootFolder.cs" />
     <Compile Include="Cmdlets\RootFolder\RemoveRootFolder.cs" />
     <Compile Include="Cmdlets\Series\SeriesCmdlet.cs" />
+    <Compile Include="Cmdlets\Series\SeriesEnumerable.cs" />
     <Compile Include="Cmdlets\System\RestartInstance.cs" />
     <Compile Include="Cmdlets\Tag\AddTag.cs" />
     <Compile Include="Cmdlets\Tag\TagCmdlet.cs" />
