@@ -9,7 +9,7 @@ using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
 {
-    internal static class SeriesEnumerable
+    internal static class EnumerableExtensions
     {
         internal static IEnumerable<T2> ThenFilterByStrings<T1, T2>(this IEnumerable<T2> filterThis,
             T1 cmdlet,
@@ -34,7 +34,7 @@ namespace MG.Sonarr.Cmdlets
             {
                 if (condition != null)
                 {
-                    Func<GetSeries, bool> func = condition.Compile();
+                    Func<T1, bool> func = condition.Compile();
                     if (!func(cmdlet))
                         return filterThis;
                 }
