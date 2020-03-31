@@ -5,31 +5,32 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
 {
     internal static class SeriesEnumerable
     {
-        internal static IEnumerable<SeriesResult> ThenFilterByStrings(this IEnumerable<SeriesResult> filterThis,
-            GetSeries cmdlet,
-            Expression<Func<GetSeries, object>> paramExp,
-            Expression<Func<SeriesResult, string>> propExp,
-            IEnumerable<string> wildcardStrings)
+        internal static IEnumerable<T2> ThenFilterByStrings<T1, T2>(this IEnumerable<T2> filterThis,
+            T1 cmdlet,
+            Expression<Func<T1, object>> parameter,
+            Expression<Func<T2, string>> property,
+            IEnumerable<string> wildcardStrings) where T1 : BaseSonarrCmdlet where T2 : IJsonResult
         {
-            if (cmdlet.ContainsParameter(paramExp))
+            if (cmdlet.ContainsParameter(parameter))
             {
-                filterThis = cmdlet.FilterByStrings(filterThis, propExp, wildcardStrings);
+                filterThis = cmdlet.FilterByStrings(filterThis, property, wildcardStrings);
             }
             return filterThis;
         }
 
-        internal static IEnumerable<SeriesResult> ThenFilterBy(this IEnumerable<SeriesResult> filterThis, 
-            GetSeries cmdlet, 
-            Expression<Func<GetSeries, object>> propExp,
-            Expression<Func<GetSeries, bool>> condition,
-            Expression<Func<SeriesResult, bool>> whereClause)
+        internal static IEnumerable<T2> ThenFilterBy<T1, T2>(this IEnumerable<T2> filterThis, 
+            T1 cmdlet, 
+            Expression<Func<T1, object>> parameter,
+            Expression<Func<T1, bool>> condition,
+            Expression<Func<T2, bool>> whereClause) where T1 : BaseSonarrCmdlet where T2 : IJsonResult
         {
-            if (cmdlet.ContainsParameter(propExp))
+            if (cmdlet.ContainsParameter(parameter))
             {
                 if (condition != null)
                 {

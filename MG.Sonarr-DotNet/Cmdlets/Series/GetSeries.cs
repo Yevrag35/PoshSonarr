@@ -156,18 +156,7 @@ namespace MG.Sonarr.Cmdlets
 
         private IEnumerable<SeriesResult> FilterByName(IEnumerable<SeriesResult> filterThis)
         {
-            //if (!_isDebugging)
-            //    base.WriteVerbose("Filtering by the specified 'Name' (if any).");
-
             filterThis = base.FilterByStrings(filterThis, x => x.Name, _names.Count > 0 ? _names : null);
-
-            //if (_isDebugging)
-            //{
-            //    base.WriteFormatDebug("The following series names are left after filtering by 'Name':{0}{1}",
-            //        Environment.NewLine,
-            //        string.Join(Environment.NewLine, filterThis.Select(_func)));
-            //}
-
             return filterThis;
         }
         
@@ -229,10 +218,5 @@ namespace MG.Sonarr.Cmdlets
         }
 
         #endregion
-
-        private static class EnumerableExtensions
-        {
-            
-        }
     }
 }
