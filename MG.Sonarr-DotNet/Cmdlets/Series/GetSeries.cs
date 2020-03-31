@@ -130,19 +130,58 @@ namespace MG.Sonarr.Cmdlets
 
                 filtered = this
                     .FilterByName(filtered)
-                        .ThenFilterBy(this, x => x.Tag, c => _anyall.Count > 0, w => w.Tags.Count > 0)
-                        .ThenFilterBy(this, x => x.Tag, c => _anyall.IsAll, w => _anyall.IsSubsetOf(w.Tags))
-                        .ThenFilterBy(this, x => x.Tag, c => !_anyall.IsAll, w => _anyall.Overlaps(w.Tags))
-                        .ThenFilterBy(this, x => x.HasNoTags, c => _noTags, w => w.Tags.Count <= 0)
-                        .ThenFilterBy(this, x => x.Type, null, w => this.Type.Contains(w.SeriesType))
-                        .ThenFilterBy(this, x => x.Genres, c => _genres.IsAll, w => _genres.IsSubsetOf(w.Genres))
-                        .ThenFilterBy(this, x => x.Genres, c => !_genres.IsAll, w => _genres.Overlaps(w.Genres))
-                        .ThenFilterBy(this, x => x.IsMonitored, null, w => w.IsMonitored == _isMon)
-                        .ThenFilterBy(this, x => x.MinimumRating, null, w => w.Rating.CompareTo(this.MinimumRating) >= 0)
-                        .ThenFilterBy(this, x => x.MaximumRating, null, w => w.Rating.CompareTo(this.MaximumRating) <= 0)
-                        .ThenFilterBy(this, x => x.Status, null, w => w.Status == this.Status)
-                        .ThenFilterBy(this, x => x.Year, null, w => this.Year.Contains(w.Year))
-                        .ThenFilterByStrings(this, x => x.Path, p => p.Path, this.Path);
+                        .ThenFilterBy(this, 
+                            p => p.Tag, 
+                            c => _anyall.Count > 0, 
+                            w => w.Tags.Count > 0)
+                        .ThenFilterBy(this, 
+                            p => p.Tag, 
+                            c => _anyall.IsAll, 
+                            w => _anyall.IsSubsetOf(w.Tags))
+                        .ThenFilterBy(this, 
+                            p => p.Tag, 
+                            c => !_anyall.IsAll, 
+                            w => _anyall.Overlaps(w.Tags))
+                        .ThenFilterBy(this, 
+                            p => p.HasNoTags, 
+                            c => _noTags, 
+                            w => w.Tags.Count <= 0)
+                        .ThenFilterBy(this,
+                            p => p.Type, 
+                            null, 
+                            w => this.Type.Contains(w.SeriesType))
+                        .ThenFilterBy(this, 
+                            p => p.Genres, 
+                            c => _genres.IsAll, 
+                            w => _genres.IsSubsetOf(w.Genres))
+                        .ThenFilterBy(this, 
+                            p => p.Genres, 
+                            c => !_genres.IsAll, 
+                            w => _genres.Overlaps(w.Genres))
+                        .ThenFilterBy(this, 
+                            p => p.IsMonitored, 
+                            null,
+                            w => w.IsMonitored == _isMon)
+                        .ThenFilterBy(this,
+                            p => p.MinimumRating, 
+                            null, 
+                            w => w.Rating.CompareTo(this.MinimumRating) >= 0)
+                        .ThenFilterBy(this, 
+                            p => p.MaximumRating, 
+                            null, 
+                            w => w.Rating.CompareTo(this.MaximumRating) <= 0)
+                        .ThenFilterBy(this, 
+                            p => p.Status, 
+                            null, 
+                            w => w.Status == this.Status)
+                        .ThenFilterBy(this, 
+                            p => p.Year, 
+                            null, 
+                            w => this.Year.Contains(w.Year))
+                        .ThenFilterByStrings(this, 
+                            p => p.Path, 
+                            m => m.Path,
+                            this.Path);
 
                 base.SendToPipeline(filtered);
             }

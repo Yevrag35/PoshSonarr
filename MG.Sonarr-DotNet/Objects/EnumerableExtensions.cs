@@ -14,12 +14,12 @@ namespace MG.Sonarr.Cmdlets
         internal static IEnumerable<T2> ThenFilterByStrings<T1, T2>(this IEnumerable<T2> filterThis,
             T1 cmdlet,
             Expression<Func<T1, object>> parameter,
-            Expression<Func<T2, string>> property,
+            Expression<Func<T2, string>> member,
             IEnumerable<string> wildcardStrings) where T1 : BaseSonarrCmdlet where T2 : IJsonResult
         {
             if (cmdlet.ContainsParameter(parameter))
             {
-                filterThis = cmdlet.FilterByStrings(filterThis, property, wildcardStrings);
+                filterThis = cmdlet.FilterByStrings(filterThis, member, wildcardStrings);
             }
             return filterThis;
         }
