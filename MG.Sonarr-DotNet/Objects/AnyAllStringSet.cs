@@ -8,9 +8,10 @@ namespace MG.Sonarr
 {
     public class AnyAllStringSet : AnyAllSet<string>
     {
-        private AnyAllStringSet() : base() { }
+        private AnyAllStringSet() : base() => base.IsAll = true;
         public AnyAllStringSet(IEnumerable<string> strings) : base(strings)
         {
+            base.IsAll = true;
         }
 
         public static implicit operator AnyAllStringSet(Hashtable ht)
