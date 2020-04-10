@@ -69,13 +69,16 @@ namespace MG.Sonarr.Cmdlets
         public string[] Path { get; set; }
 
         [Parameter(Mandatory = false)]
+        public SeriesStatusType Status { get; set; }
+
+        [Parameter(Mandatory = false)]
         public object[] Tag { get; set; }
 
         [Parameter(Mandatory = false)]
-        public SeriesType[] Type { get; set; }
+        public long[] TVDBId { get; set; }
 
         [Parameter(Mandatory = false)]
-        public SeriesStatusType Status { get; set; }
+        public SeriesType[] Type { get; set; }
 
         [Parameter(Mandatory = false)]
         public int[] Year { get; set; }
@@ -130,54 +133,58 @@ namespace MG.Sonarr.Cmdlets
 
                 filtered = this
                     .FilterByName(filtered)
-                        .ThenFilterBy(this, 
-                            p => p.Tag, 
-                            c => _anyall.Count > 0, 
+                        .ThenFilterBy(this,
+                            p => p.Tag,
+                            c => _anyall.Count > 0,
                             w => w.Tags.Count > 0)
-                        .ThenFilterBy(this, 
-                            p => p.Tag, 
-                            c => _anyall.IsAll, 
+                        .ThenFilterBy(this,
+                            p => p.Tag,
+                            c => _anyall.IsAll,
                             w => _anyall.IsSubsetOf(w.Tags))
-                        .ThenFilterBy(this, 
-                            p => p.Tag, 
-                            c => !_anyall.IsAll, 
+                        .ThenFilterBy(this,
+                            p => p.Tag,
+                            c => !_anyall.IsAll,
                             w => _anyall.Overlaps(w.Tags))
-                        .ThenFilterBy(this, 
-                            p => p.HasNoTags, 
-                            c => _noTags, 
+                        .ThenFilterBy(this,
+                            p => p.HasNoTags,
+                            c => _noTags,
                             w => w.Tags.Count <= 0)
                         .ThenFilterBy(this,
-                            p => p.Type, 
-                            null, 
+                            p => p.Type,
+                            null,
                             w => this.Type.Contains(w.SeriesType))
-                        .ThenFilterBy(this, 
-                            p => p.Genres, 
-                            c => _genres.IsAll, 
+                        .ThenFilterBy(this,
+                            p => p.Genres,
+                            c => _genres.IsAll,
                             w => _genres.IsSubsetOf(w.Genres))
-                        .ThenFilterBy(this, 
-                            p => p.Genres, 
-                            c => !_genres.IsAll, 
+                        .ThenFilterBy(this,
+                            p => p.Genres,
+                            c => !_genres.IsAll,
                             w => _genres.Overlaps(w.Genres))
-                        .ThenFilterBy(this, 
-                            p => p.IsMonitored, 
+                        .ThenFilterBy(this,
+                            p => p.IsMonitored,
                             null,
                             w => w.IsMonitored == _isMon)
                         .ThenFilterBy(this,
-                            p => p.MinimumRating, 
-                            null, 
+                            p => p.MinimumRating,
+                            null,
                             w => w.Rating.CompareTo(this.MinimumRating) >= 0)
-                        .ThenFilterBy(this, 
-                            p => p.MaximumRating, 
-                            null, 
+                        .ThenFilterBy(this,
+                            p => p.MaximumRating,
+                            null,
                             w => w.Rating.CompareTo(this.MaximumRating) <= 0)
-                        .ThenFilterBy(this, 
-                            p => p.Status, 
-                            null, 
+                        .ThenFilterBy(this,
+                            p => p.Status,
+                            null,
                             w => w.Status == this.Status)
-                        .ThenFilterBy(this, 
-                            p => p.Year, 
-                            null, 
+                        .ThenFilterBy(this,
+                            p => p.Year,
+                            null,
                             w => this.Year.Contains(w.Year))
+                        .ThenFilterByValues(this,
+                            p => p.TVDBId,
+                            m => m.TVDBId,
+                            this.TVDBId)
                         .ThenFilterByStrings(this, 
                             p => p.Path, 
                             m => m.Path,

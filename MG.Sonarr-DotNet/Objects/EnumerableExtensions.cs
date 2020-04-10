@@ -11,6 +11,22 @@ namespace MG.Sonarr.Cmdlets
 {
     internal static class EnumerableExtensions
     {
+        internal static IEnumerable<T2> ThenFilterByValues<T1, T2, T3>(this IEnumerable<T2> filterThis,
+            T1 cmdlet,
+            Expression<Func<T1, object>> parameter,
+            Expression<Func<T2, T3>> member,
+            IEnumerable<T3> values) where T1 : BaseSonarrCmdlet where T2 : IJsonResult
+        {
+            if (cmdlet.ContainsParameter(parameter) && filterThis != null && values != null)
+            {
+                Func<T2, T3> func = member.Compile();
+                return filterThis
+                    .Where(x =>
+                        values.Contains(func(x)));
+            }
+            return filterThis;
+        }
+
         internal static IEnumerable<T2> ThenFilterByStrings<T1, T2>(this IEnumerable<T2> filterThis,
             T1 cmdlet,
             Expression<Func<T1, object>> parameter,
