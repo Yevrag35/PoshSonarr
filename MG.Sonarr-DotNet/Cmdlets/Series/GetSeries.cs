@@ -27,7 +27,7 @@ namespace MG.Sonarr.Cmdlets
         internal bool _isMon;
         private List<string> _names;
         private bool _noTags;
-        private string REGEX_PATTERN = "^.+\\s+(?:\\-n|\\\"|\\')";
+        private const string REGEX_PATTERN = "^.+\\s+(?:\\-n|\\\"|\\')";
 
         #endregion
 
