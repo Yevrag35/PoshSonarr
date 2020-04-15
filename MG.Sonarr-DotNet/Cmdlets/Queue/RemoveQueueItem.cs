@@ -65,14 +65,6 @@ namespace MG.Sonarr.Cmdlets
                     base.SendSonarrDelete(string.Format(EP_FORMAT, id));
                 }
             }
-            //for (int i = 0; i < _ids.Count; i++)
-            //{
-            //    long oneId = _ids[i];
-            //    if (base.ShouldProcess(string.Format("QueueItemId: {0}", oneId), "Remove"))
-            //    {
-            //        base.SendSonarrDelete(string.Format(EP_FORMAT, oneId));
-            //    }
-            //}
         }
 
         #endregion
