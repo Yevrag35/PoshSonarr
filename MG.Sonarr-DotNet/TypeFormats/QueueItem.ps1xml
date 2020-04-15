@@ -15,7 +15,11 @@
 							</ListItem>
 							<ListItem>
 								<Label>Episode</Label>
-								<ScriptBlock>"{0} - {1}" -f $_.Episode.AbsoluteEpisodeNumber, $_.Episode.Title</ScriptBlock>
+								<ScriptBlock>if ($_.Episode.AbsoluteEpisodeNumber -eq $null) {
+									"{$($_.Episode.Name)}"
+								} else {
+									"{$($_.Episode.AbsoluteEpisodeNumber); $($_.Episode.Name)}"
+								}</ScriptBlock>
 							</ListItem>
 							<ListItem>
 								<PropertyName>EstimatedCompletionTime</PropertyName>
@@ -25,14 +29,14 @@
 								<ScriptBlock>$_.Quality.Quality.Name</ScriptBlock>
 							</ListItem>
 							<ListItem>
-								<PropertyName>QueueItemId</PropertyName>
+								<PropertyName>Id</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Protocol</PropertyName>
 							</ListItem>
 							<ListItem>
 								<Label>Series</Label>
-								<ScriptBlock>$_.Series.Title</ScriptBlock>
+								<ScriptBlock>"{$($_.Series.Name)}"</ScriptBlock>
 							</ListItem>
 							<ListItem>
 								<Label>Size</Label>

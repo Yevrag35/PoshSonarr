@@ -22,10 +22,10 @@ namespace MG.Sonarr.Cmdlets
         private Func<SeriesResult, string> _func;
         internal AnyAllStringSet _genres;
         internal HashSet<int> _ids;
-        //private IEqualityComparer<string> _ig;
         internal bool _isDebugging;
         internal bool _isMon;
-        private List<string> _names;
+        //private List<string> _names;
+        private HashSet<string> _names;
         private bool _noTags;
         private const string REGEX_PATTERN = "^.+\\s+(?:\\-n|\\\"|\\')";
 
@@ -97,7 +97,8 @@ namespace MG.Sonarr.Cmdlets
                     _func = x => x.CleanTitle;
             }
 
-            _names = new List<string>();
+            //_names = new List<string>();
+            _names = new HashSet<string>(ClassFactory.NewIgnoreCase());
             _ids = new HashSet<int>();
             if (this.ContainsParameter(x => x.Name))
                 this.ProcessNamesParameter(this.Name);
