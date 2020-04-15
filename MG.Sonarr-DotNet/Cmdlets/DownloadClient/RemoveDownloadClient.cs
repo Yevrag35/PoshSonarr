@@ -1,4 +1,5 @@
 ﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
@@ -61,7 +62,7 @@ namespace MG.Sonarr.Cmdlets
             {
                 if (_force || base.FormatShouldProcess("Remove", "Download Client Id: {0}", id))
                 {
-                    base.SendSonarrDelete()
+                    base.SendSonarrDelete(string.Format(ApiEndpoint.DownloadClient_ById, id));
                 }
             }
         }

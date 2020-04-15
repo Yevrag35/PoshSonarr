@@ -16,6 +16,7 @@ namespace MG.Sonarr.Functionality
         public const string HostConfig = CONFIG + "/host";
         public const string DelayProfile = "/delayprofile";
         public const string DownloadClient = "/downloadclient";
+        public const string DownloadClient_ById = DownloadClient + BY_ID;
         public const string Episode = "/episode";
         public const string EpisodeFile = "/episodefile";
         public const string FileSystem = "/filesystem";
@@ -38,6 +39,10 @@ namespace MG.Sonarr.Functionality
         public const string Tag = "/tag";
         public const string Update = "/update";
         public const string WantedMissing = "/wanted/missing";
+
+        // Calendar - Extra paths
+        public const string Calendar_DTFormat = "yyyy-MM-ddTHH:mm:ss";
+        public const string Calendar_WithDate = Calendar + "?start={0}&end={1}";
 
         // Episode - Extra paths
         public const string Episode_SeriesId = Episode + "?seriesId={0}";

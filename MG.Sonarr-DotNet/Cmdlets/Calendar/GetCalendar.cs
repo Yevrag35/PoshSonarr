@@ -1,4 +1,5 @@
 ﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
@@ -29,9 +30,9 @@ namespace MG.Sonarr.Cmdlets
     public class GetCalendar : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string DT_FORMAT = "yyyy-MM-ddTHH:mm:ss";
-        private const string EP = "/calendar";
-        private const string EP_WITH_DATE = EP + "?start={0}&end={1}";
+        //private const string DT_FORMAT = "yyyy-MM-ddTHH:mm:ss";
+        //private const string EP = "/calendar";
+        //private const string EP_WITH_DATE = EP + "?start={0}&end={1}";
 
         private bool _today;
         private bool _tomorrow;
@@ -103,7 +104,8 @@ namespace MG.Sonarr.Cmdlets
         {
             string start = this.DateToString(this.StartDate);
             string end = this.DateToString(this.EndDate);
-            string full = string.Format(EP_WITH_DATE, start, end);
+            //string full = string.Format(EP_WITH_DATE, start, end);
+            string full = string.Format(ApiEndpoint.Calendar_WithDate, start, end);
 
             List<CalendarEntry> entries = this.GetCalendarEntries(full);
 
@@ -122,7 +124,7 @@ namespace MG.Sonarr.Cmdlets
         #region METHODS
         private List<CalendarEntry> GetCalendarEntries(string uri) => base.SendSonarrListGet<CalendarEntry>(uri);
 
-        private string DateToString(DateTime dt) => dt.ToString(DT_FORMAT);
+        private string DateToString(DateTime dt) => dt.ToString(ApiEndpoint.Calendar_DTFormat); //dt.ToString(DT_FORMAT);
 
         private void SetOneDayRange(DateTime beginning)
         {
