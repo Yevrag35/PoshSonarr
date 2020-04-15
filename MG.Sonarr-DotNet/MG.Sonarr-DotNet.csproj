@@ -105,6 +105,7 @@
     <Compile Include="Cmdlets\DelayProfile\NewDelayProfile.cs" />
     <Compile Include="Cmdlets\DelayProfile\SetDelayProfile.cs" />
     <Compile Include="Cmdlets\DownloadClient\GetDownloadClient.cs" />
+    <Compile Include="Cmdlets\DownloadClient\RemoveDownloadClient.cs" />
     <Compile Include="Cmdlets\DownloadClient\UpdateDownloadClient.cs" />
     <Compile Include="Cmdlets\FileSystem\SearchDirectory.cs" />
     <Compile Include="Cmdlets\Logging\ClearLog.cs" />
