@@ -7,6 +7,7 @@ namespace MG.Sonarr.Functionality
     public static class ApiEndpoint
     {
         internal const string CONFIG = "/config";
+        internal const string BY_ID = "/{0}";
 
         public const string Backup = System + "/backup";
         public const string Calendar = "/calendar";
@@ -37,5 +38,23 @@ namespace MG.Sonarr.Functionality
         public const string Tag = "/tag";
         public const string Update = "/update";
         public const string WantedMissing = "/wanted/missing";
+
+        // Episode - Extra paths
+        public const string Episode_SeriesId = Episode + "?seriesId={0}";
+        public const string Episode_ById = Episode + BY_ID;
+
+        // Release - Extra paths
+        public const string Release_EpisodeId = Release + "?episodeId={0}";
+
+        // FileSystem - Extra paths
+        public const string FileSystem_Path = FileSystem + "?path={0}";
+        public const string FileSystem_PathWithFiles = FileSystem_Path + "&includeFiles=true";
+
+        // Series - Extra paths
+        public const string Series_ById = Series + BY_ID;
+        internal const string Series_LookupFormat = Series + "/lookup?";
+        public const string Series_LookupByStr = Series_LookupFormat + "term={0}";
+        public const string Series_LookupById = Series_LookupFormat + "term=tvdb:{0}";
+
     }
 }
