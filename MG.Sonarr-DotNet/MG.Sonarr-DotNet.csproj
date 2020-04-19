@@ -112,6 +112,7 @@
     <Compile Include="Cmdlets\Indexer\GetIndexerSchema.cs" />
     <Compile Include="Cmdlets\Indexer\IndexerCmdlet.cs" />
     <Compile Include="Cmdlets\Indexer\RemoveIndexer.cs" />
+    <Compile Include="Cmdlets\Indexer\UpdateIndexer.cs" />
     <Compile Include="Cmdlets\Logging\ClearLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLogFile.cs" />
@@ -200,6 +201,7 @@
     <None Include="TypeFormats\Episode.ps1xml" />
     <None Include="TypeFormats\EpisodeFile.ps1xml" />
     <None Include="TypeFormats\Field.ps1xml" />
+    <None Include="TypeFormats\Indexer.ps1xml" />
     <None Include="TypeFormats\Notification.ps1xml" />
     <None Include="TypeFormats\QualityItem.ps1xml" />
     <None Include="TypeFormats\QualityProfile.ps1xml" />

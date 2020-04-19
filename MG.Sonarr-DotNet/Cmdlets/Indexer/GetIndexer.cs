@@ -10,6 +10,7 @@ namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "Indexer", ConfirmImpact = ConfirmImpact.None,
         DefaultParameterSetName = "None")]
+    [OutputType(typeof(Indexer))]
     public class GetIndexer : IndexerCmdlet
     {
         [Parameter(Mandatory = true, ParameterSetName = "ByIndexerId")]
