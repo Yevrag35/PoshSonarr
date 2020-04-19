@@ -13,16 +13,13 @@ namespace MG.Sonarr.Results
     /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
-    public class DownloadClient : Provider, IComparable<DownloadClient>, IGetEndpoint
+    public class DownloadClient : ProviderBase, IComparable<DownloadClient>, IGetEndpoint
     {
         [JsonProperty("id")]
         public int Id { get; private set; }
 
         [JsonProperty("enable")]
         public bool IsEnabled { get; set; }
-
-        [JsonIgnore]
-        public override ProviderMessage Message { get; protected private set; }
 
         [JsonProperty("protocol")]
         [JsonConverter(typeof(SonarrStringEnumConverter))]

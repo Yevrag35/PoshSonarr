@@ -108,6 +108,8 @@
     <Compile Include="Cmdlets\DownloadClient\RemoveDownloadClient.cs" />
     <Compile Include="Cmdlets\DownloadClient\UpdateDownloadClient.cs" />
     <Compile Include="Cmdlets\FileSystem\SearchDirectory.cs" />
+    <Compile Include="Cmdlets\Indexer\GetIndexer.cs" />
+    <Compile Include="Cmdlets\Indexer\IndexerCmdlet.cs" />
     <Compile Include="Cmdlets\Logging\ClearLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLogFile.cs" />

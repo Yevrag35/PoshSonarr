@@ -21,6 +21,8 @@ namespace MG.Sonarr.Functionality
         public const string EpisodeFile = "/episodefile";
         public const string FileSystem = "/filesystem";
         public const string History = "/history";
+        public const string Indexer = "/indexer";
+        public const string Indexer_ById = Indexer + BY_ID;
         public const string Log = "/log";
         public const string LogFile = Log + "/file";
         public const string Mapping = "/remotepathmapping";
