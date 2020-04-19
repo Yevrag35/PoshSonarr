@@ -110,6 +110,7 @@
     <Compile Include="Cmdlets\FileSystem\SearchDirectory.cs" />
     <Compile Include="Cmdlets\Indexer\GetIndexer.cs" />
     <Compile Include="Cmdlets\Indexer\IndexerCmdlet.cs" />
+    <Compile Include="Cmdlets\Indexer\RemoveIndexer.cs" />
     <Compile Include="Cmdlets\Logging\ClearLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLogFile.cs" />
