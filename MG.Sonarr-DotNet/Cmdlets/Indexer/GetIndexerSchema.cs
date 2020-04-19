@@ -13,11 +13,18 @@ namespace MG.Sonarr.Cmdlets
     {
 
 
-        protected override void BeginProcessing() => base.BeginProcessing();
+        protected override void BeginProcessing()
+        {
+            base.BeginProcessing();
+            if (Context.IndexerSchemas == null)
+            {
+                List<IndexerSchema> schemas = base.SendSonarrListGet<IndexerSchema>(ApiEndpoint.IndexerSchema);
+                Context.IndexerSchemas = new IndexerSchemaDictionary(schemas);
+            }
+        }
         protected override void ProcessRecord()
         {
-            List<IndexerSchema> schemas = base.GetAllSchemas();
-            base.SendToPipeline(schemas);
+            base.SendToPipeline(Context.IndexerSchemas);
         }
     }
 }

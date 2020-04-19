@@ -10,7 +10,11 @@ namespace MG.Sonarr.Cmdlets
 {
     public abstract class IndexerCmdlet : BaseSonarrCmdlet
     {
-        protected override void BeginProcessing() => base.BeginProcessing();
+        protected override void BeginProcessing()
+        {
+            base.BeginProcessing();
+            
+        }
 
         protected List<Indexer> GetAllIndexers()
         {
