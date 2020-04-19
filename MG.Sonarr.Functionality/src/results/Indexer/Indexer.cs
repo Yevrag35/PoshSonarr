@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results
 {
+    [JsonObject(MemberSerialization.OptIn)]
     public class Indexer : IndexerBase, IComparable<Indexer>
     {
         [JsonProperty("id")]
