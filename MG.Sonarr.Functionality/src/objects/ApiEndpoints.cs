@@ -23,6 +23,7 @@ namespace MG.Sonarr.Functionality
         public const string History = "/history";
         public const string Indexer = "/indexer";
         public const string Indexer_ById = Indexer + BY_ID;
+        public const string IndexerSchema = Indexer + "/schema";
         public const string Log = "/log";
         public const string LogFile = Log + "/file";
         public const string Mapping = "/remotepathmapping";

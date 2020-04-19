@@ -17,7 +17,7 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = true, ParameterSetName = "ByInput", ValueFromPipeline = true)]
         public Indexer[] InputObject { get; set; }
 
-        [Parameter(Mandatory = true, ParameterSetName = "ByExplicitId")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByExplicitId")]
         public int[] Id { get; set; }
 
         [Parameter(Mandatory = false)]
@@ -33,8 +33,7 @@ namespace MG.Sonarr.Cmdlets
             
             if (this.ContainsParameter(x => x.Id))
             {
-                IEnumerable<Indexer> chosen = base.GetIndexers(this.Id);
-                _toRemove = new HashSet<int>(chosen.Select(x => x.Id));
+                _toRemove = new HashSet<int>(this.Id);
             }
             else
             {

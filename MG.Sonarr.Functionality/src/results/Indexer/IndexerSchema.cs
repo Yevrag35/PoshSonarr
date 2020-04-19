@@ -3,16 +3,15 @@ using MG.Sonarr.Functionality.Converters;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results
 {
-    public class Indexer : IndexerBase, IComparable<Indexer>
+    public sealed class IndexerSchema : IndexerBase
     {
-        [JsonProperty("id")]
-        public int Id { get; private set; }
-
-        public int CompareTo(Indexer other) => this.Id.CompareTo(other.Id);
+        [JsonProperty("presets")]
+        public ReadOnlyCollection<Indexer> Presets { get; private set; }
     }
 }

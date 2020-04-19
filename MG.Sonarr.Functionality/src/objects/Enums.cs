@@ -188,6 +188,8 @@ namespace MG.Sonarr.Functionality
     /// </summary>
     public enum FieldType
     {
+        Captcha,
+
         CheckBox,
 
         /// <summary>

@@ -30,5 +30,9 @@ namespace MG.Sonarr.Cmdlets
                 }
             }
         }
+        protected List<IndexerSchema> GetAllSchemas()
+        {
+            return base.SendSonarrListGet<IndexerSchema>(ApiEndpoint.IndexerSchema);
+        }
     }
 }
