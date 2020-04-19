@@ -5,12 +5,13 @@ using System.Linq;
 
 namespace MG.Sonarr.Functionality
 {
-    public class ReadOnlyKeySet : IEnumerable<string>
+    public class ReadOnlyKeySet : IReadOnlyCollection<string>, IReadOnlyList<string>
     {
         private StringComparison _comparison = StringComparison.CurrentCultureIgnoreCase;
         private HashSet<string> _keys;
 
         public string this[string key] => _keys.FirstOrDefault(x => x.Equals(key, _comparison));
+        public string this[int index] => _keys.ElementAt(index);
         public int Count => _keys.Count;
         public bool IsCaseSensitive
         {
