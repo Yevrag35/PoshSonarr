@@ -77,21 +77,27 @@ namespace MG.Sonarr.Results
         public IEnumerable<Season> GetMonitoredSeasons() => base.InnerList.FindAll(x => x.IsMonitored);
 
         /// <summary>
-        /// Calculates the total file size (in Bytes) of each <see cref="Season"/> that corresponds to the specified season numbers.
+        /// Calculates the total file size (in Bytes) of each <see cref="Season"/> that 
+        /// corresponds to the specified season numbers.  If no season numbers are specified,
+        /// then the sum total of bytes from all seasons will be returned.
         /// </summary>
         /// <param name="seasonNumbers">The season numbers of each <see cref="Season"/> to calculate.</param>
         public long GetSeasonFileSize(params int[] seasonNumbers)
         {
-            long sum;
-            if (seasonNumbers == null || seasonNumbers.Length <= 0)
+            long sum = 0L;
+            if (base.InnerList.Count > 0)
             {
-                sum = base.InnerList.Sum(s => s.SizeOnDisk);
-            }
-            else
-            {
-                sum = base.InnerList
-                    .FindAll(s => seasonNumbers.Contains(s.SeasonNumber))
-                        .Sum(s => s.SizeOnDisk);
+                if (seasonNumbers == null || seasonNumbers.Length <= 0)
+                {
+                    sum = base.InnerList.Sum(s => s.SizeOnDisk);
+                }
+                else
+                {
+                    sum = base.InnerList
+                        .FindAll(s => 
+                            seasonNumbers.Contains(s.SeasonNumber))
+                                .Sum(s => s.SizeOnDisk);
+                }
             }
             return sum;
         }

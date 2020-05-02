@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MG.Sonarr.Functionality;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +11,7 @@ namespace MG.Sonarr.Results
     /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
-    public class EpisodeFile : BaseResult, IComparable<EpisodeFile>, IEquatable<EpisodeFile>
+    public class EpisodeFile : SizedResult, IComparable<EpisodeFile>, IEquatable<EpisodeFile>
     {
         /// <summary>
         /// The date in which this <see cref="EpisodeFile"/> was added to the database.  This can be null.
@@ -83,6 +84,7 @@ namespace MG.Sonarr.Results
 
         public int CompareTo(EpisodeFile other) => this.Id.CompareTo(other.Id);
         public bool Equals(EpisodeFile other) => this.Id.Equals(other.Id);
+
     }
 
     /// <summary>

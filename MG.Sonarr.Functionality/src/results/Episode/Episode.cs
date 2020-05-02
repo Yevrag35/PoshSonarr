@@ -27,21 +27,7 @@ namespace MG.Sonarr.Results
         public int CompareTo(EpisodeResult other)
         {
             return this.AbsoluteEpisodeNumber.GetValueOrDefault().CompareTo(other.AbsoluteEpisodeNumber.GetValueOrDefault());
-            //if (this.AbsoluteEpisodeNumber.HasValue && !other.AbsoluteEpisodeNumber.HasValue)
-            //    return 1;
-
-            //else if (!this.AbsoluteEpisodeNumber.HasValue && other.AbsoluteEpisodeNumber.HasValue)
-            //    return -1;
-
-            //else if (!this.AbsoluteEpisodeNumber.HasValue && !other.AbsoluteEpisodeNumber.HasValue)
-            //    return 0;
-
-            //else
-            //{
-            //    return this.AbsoluteEpisodeNumber.Value.CompareTo(other.AbsoluteEpisodeNumber.Value);
-            //}
         }
-
         public bool Equals(EpisodeResult other) => this.EpisodeId.Equals(other.EpisodeId);
     }
 }

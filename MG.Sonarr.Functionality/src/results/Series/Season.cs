@@ -14,7 +14,7 @@ namespace MG.Sonarr.Results
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [Serializable]
-    public class Season : BaseResult, IComparable<Season>
+    public class Season : SizedResult, IComparable<Season>
     {
         //[JsonExtensionData]
         //private Dictionary<string, JToken> _extData;
@@ -64,7 +64,7 @@ namespace MG.Sonarr.Results
         /// The size (in Bytes) of all downloaded episodes for the season.
         /// </summary>
         [JsonIgnore]
-        public long SizeOnDisk => _stats.SizeOnDisk;
+        public override long SizeOnDisk => _stats.SizeOnDisk;
 
         /// <summary>
         /// The total number of episodes available in the season.
@@ -73,18 +73,6 @@ namespace MG.Sonarr.Results
         public int TotalEpisodeCount => _stats.TotalEpisodeCount;
 
         public int CompareTo(Season other) => this.SeasonNumber.CompareTo(other.SeasonNumber);
-
-        //decimal ICanCalculate.GetTotalFileSize() => this.SizeOnDisk;
-
-        //[OnDeserialized]
-        //private void OnDeserialized(StreamingContext ctx)
-        //{
-        //    if (_extData != null && _extData.ContainsKey("statistics"))
-        //    {
-        //        _stats = _extData["statistics"].ToObject<Statistics>();
-        //        _extData.Clear();
-        //    }
-        //}
 
         public override string ToJson()
         {
