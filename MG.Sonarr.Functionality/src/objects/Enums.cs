@@ -45,6 +45,32 @@ namespace MG.Sonarr.Functionality
         Update
     }
 
+    /// <summary>
+    /// The multiples of the unit "byte" used for storing digital information.
+    /// </summary>
+    public enum ByteUnit
+    {
+        /// <summary>
+        /// Kilobyte: Represents 10^3 bytes (1 thousand).
+        /// </summary>
+        KB,
+
+        /// <summary>
+        /// Megabyte: Represents 10^6 bytes (1 million).
+        /// </summary>
+        MB,
+
+        /// <summary>
+        /// Gigabyte: Represents 10^9 bytes (1 billion).
+        /// </summary>
+        GB,
+
+        /// <summary>
+        /// Terabyte: Represents 10^12 bytes (1 trillion).
+        /// </summary>
+        TB
+    }
+
     public enum CertificateValidationType
     {
         Enabled,
