@@ -19,15 +19,31 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region BACKEND METHODS
-        protected private List<SeriesResult> GetAllSeries() => base.SendSonarrListGet<SeriesResult>(this.Endpoint);
+        protected private List<SeriesResult> GetAllSeries(bool debugging)
+        {
+            if (!debugging)
+                base.WriteFormatVerbose("Retrieving all series from {0}.", this.Endpoint);
 
-        protected private IEnumerable<SeriesResult> GetSeriesById(IEnumerable<int> ids)
+            List<SeriesResult> allSeries = base.SendSonarrListGet<SeriesResult>(this.Endpoint);
+
+            if (debugging)
+                base.WriteFormatVerbose("Found {0} series.", allSeries.Count);
+
+            return allSeries;
+        }
+
+        protected private IEnumerable<SeriesResult> GetSeriesById(IEnumerable<int> ids, bool debugging)
         {
             foreach (int id in ids)
             {
                 SeriesResult sr = base.SendSonarrGet<SeriesResult>(base.FormatWithId(id));
                 if (sr != null)
+                {
+                    if (debugging)
+                        base.WriteFormatDebug("Found series with ID \"{0}\" - {1}", id, sr.CleanTitle);
+
                     yield return sr;
+                }
             }
         }
 

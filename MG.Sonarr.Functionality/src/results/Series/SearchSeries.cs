@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 
 namespace MG.Sonarr.Results
 {
@@ -20,6 +21,8 @@ namespace MG.Sonarr.Results
     public class SearchSeries : BaseResult, IGetEndpoint
     {
         private const string EP = "/series";
+        private const int SPACE = 32;
+        private const int SHORT_OVERVIEW = 89;
 
         #region JSON PROPERTIES
 
@@ -199,5 +202,32 @@ namespace MG.Sonarr.Results
         #endregion
 
         public string GetEndpoint() => EP;
+        private bool OverviewEndsInNonSpace(string shortStr) => !shortStr.EndsWith(" ");
+        public string TruncateOverview()
+        {
+            if (string.IsNullOrWhiteSpace(this.Overview))
+                return null;
+
+            var sb = new StringBuilder();
+            string firstNinety = this.Overview.Substring(0, SHORT_OVERVIEW);
+            
+            if (firstNinety.Length < this.Overview.Length && this.OverviewEndsInNonSpace(firstNinety))
+            {
+                sb.Append(firstNinety);
+                sb.Append(this.TakeUntilSpace().ToArray());
+            }
+            else
+            {
+                sb.Append(firstNinety.Trim());
+            }
+            sb.Append("...");
+            return sb.ToString();
+        }
+
+        private IEnumerable<char> TakeUntilSpace()
+        {
+            return this.Overview.Substring(SHORT_OVERVIEW)
+                .TakeWhile(x => x != SPACE);
+        }
     }
 }

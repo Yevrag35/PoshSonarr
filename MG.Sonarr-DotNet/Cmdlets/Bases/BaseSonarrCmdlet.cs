@@ -42,6 +42,21 @@ namespace MG.Sonarr.Cmdlets
 
         #endregion
 
+        #region FILTERING METHODS
+        protected internal IEnumerable<T> FilterWhere<T>(IEnumerable<T> items, params Expression<Func<T, bool>>[] parameterExpressions)
+        {
+            if (parameterExpressions == null || parameterExpressions.Length <= 0)
+                return items;
+
+            for (int i = 0; i < parameterExpressions.Length; i++)
+            {
+                items = items.Where(parameterExpressions[i].Compile());
+            }
+            return items;
+        }
+
+        #endregion
+
         #region PIPELINE METHOD
         /// <summary>
         /// Sends an <see cref="object"/> to the PowerShell console and optionally specifies whether or not to enumerate it

@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Cmdlets;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Cmdlets;
 using MG.Sonarr.Results;
 using System;
 using System.Collections;
@@ -17,14 +18,19 @@ namespace MG.Sonarr
     public static partial class Context
     {
         #region FIELDS/CONSTANTS
-        internal const string SLASH_STR = "/";
-        internal static readonly char SLASH = char.Parse(SLASH_STR);
+        //internal const string SLASH_STR = "/";
+        internal const char SLASH = (char)47;
         internal const string ZERO_ONE = "{0}{1}";
 
         #endregion
 
         #region PROPERTIES
-        public static List<Quality> AllQualities { get; internal set; }
+
+#if DEBUG
+        public static QualityDictionary AllQualities { get; set; }
+#else
+        internal static QualityDictionary AllQualities { get; set; }
+#endif
 
         /// <summary>
         /// The main <see cref="HttpClient"/> from which all PoshSonarr cmdlets issue their REST requests.
@@ -39,9 +45,13 @@ namespace MG.Sonarr
         /// <summary>
         /// The <see cref="SonarrUrl"/> representation of the base URL for all subsequent REST calls.
         /// </summary>
-        public static ISonarrUrl SonarrUrl { get; set; }
+        internal static ISonarrUrl SonarrUrl { get; set; }
 
+#if DEBUG
         public static TagManager TagManager { get; internal set; }
+#else
+        internal static TagManager TagManager { get; set; }
+#endif
 
         #endregion
     }

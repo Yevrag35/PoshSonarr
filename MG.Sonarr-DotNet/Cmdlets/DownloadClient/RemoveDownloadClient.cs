@@ -1,29 +1,29 @@
 ﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Remove, "QueueItem", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
-    [OutputType(typeof(void))]
-    [CmdletBinding(PositionalBinding = false, DefaultParameterSetName = "ByQueueItemIds")]
-    public class RemoveQueueItem : BaseSonarrCmdlet
+    [Cmdlet(VerbsCommon.Remove, "DownloadClient", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
+    [CmdletBinding()]
+    public class RemoveDownloadClient : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string EP_FORMAT = "/queue/{0}";
         private bool _force;
-        private HashSet<long> _ids;
+        private HashSet<int> _ids;
 
         #endregion
 
         #region PARAMETERS
         [Parameter(Mandatory = true, ParameterSetName = "ViaPipeline", ValueFromPipeline = true)]
-        public QueueItem InputObject { get; set; }
+        public DownloadClient InputObject { get; set; }
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByQueueItemIds")]
-        public long[] Id { get; set; }
+        [Parameter(Mandatory = true, ParameterSetName = "ByExplicitIds", Position = 0)]
+        public int[] Id { get; set; }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter Force
@@ -40,11 +40,11 @@ namespace MG.Sonarr.Cmdlets
             base.BeginProcessing();
             if (this.ContainsParameter(x => x.Id))
             {
-                _ids = new HashSet<long>(this.Id);
+                _ids = new HashSet<int>(this.Id);
             }
             else
             {
-                _ids = new HashSet<long>();
+                _ids = new HashSet<int>();
             }
         }
 
@@ -58,11 +58,11 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void EndProcessing()
         {
-            foreach (long id in _ids)
+            foreach (int id in _ids)
             {
-                if (_force || base.FormatShouldProcess("Remove", "Queue Item Id: {0}", id))
+                if (_force || base.FormatShouldProcess("Remove", "Download Client Id: {0}", id))
                 {
-                    base.SendSonarrDelete(string.Format(EP_FORMAT, id));
+                    base.SendSonarrDelete(string.Format(ApiEndpoint.DownloadClient_ById, id));
                 }
             }
         }

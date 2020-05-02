@@ -19,7 +19,7 @@ namespace MG.Sonarr.Results
         public DateTime? EstimatedCompletionTime { get; private set; }
 
         [JsonProperty("id")]
-        public long QueueItemId { get; private set; }
+        public long Id { get; private set; }
 
         [JsonProperty("quality")]
         public ItemQuality Quality { get; private set; }
@@ -48,6 +48,6 @@ namespace MG.Sonarr.Results
         [JsonProperty("trackedDownloadStatus")]
         public string TrackedDownloadStatus { get; private set; }
 
-        public int CompareTo(QueueItem other) => this.QueueItemId.CompareTo(other.QueueItemId);
+        public int CompareTo(QueueItem other) => this.Id.CompareTo(other.Id);
     }
 }

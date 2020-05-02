@@ -92,12 +92,12 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region FORMAT DEBUG/VERBOSE METHODS
-        protected void WriteFormatDebug(string format, params object[] arguments)
+        protected internal void WriteFormatDebug(string format, params object[] arguments)
         {
             base.WriteDebug(string.Format(format, arguments));
         }
 
-        protected void WriteFormatVerbose(string format, params object[] arguments)
+        protected internal void WriteFormatVerbose(string format, params object[] arguments)
         {
             base.WriteVerbose(string.Format(format, arguments));
         }

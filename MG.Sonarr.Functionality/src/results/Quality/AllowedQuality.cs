@@ -13,6 +13,15 @@ namespace MG.Sonarr.Results
         [JsonProperty("quality")]
         public Quality Quality { get; internal set; }
 
+        public AllowedQuality() { }
+        private AllowedQuality(Quality quality)
+        {
+            this.Quality = quality;
+        }
+
         public int CompareTo(AllowedQuality other) => this.Quality.CompareTo(other.Quality);
+
+        public static explicit operator AllowedQuality(Quality quality) => new AllowedQuality(quality);
+        public static AllowedQuality FromQuality(Quality quality, bool allowed) => new AllowedQuality(quality) { Allowed = allowed };
     }
 }

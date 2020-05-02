@@ -35,6 +35,23 @@ namespace MG.Sonarr.Cmdlets
             }
             return result;
         }
+
+        internal string GetNameFromExpression<T>(Expression<Func<T, object>> propExpression) where T : PSCmdlet
+        {
+            if (propExpression.Body is MemberExpression memEx)
+            {
+                return memEx.Member.Name;
+            }
+            else if (propExpression.Body is UnaryExpression une && une.Operand is MemberExpression unMemEx)
+            {
+                return unMemEx.Member.Name;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         //public bool HasAllParametersSpecified<T>(T cmdlet, params Expression<Func<T, object>>[] cmdletParameterExpressions) where T : PSCmdlet
         //{
         //    bool result = false;
@@ -137,7 +154,7 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
-        protected IEnumerable<T> FilterByStrings<T>(IEnumerable<T> listOfItems, Expression<Func<T, string>> propertyExpressionOfItem,
+        protected internal IEnumerable<T> FilterByStrings<T>(IEnumerable<T> listOfItems, Expression<Func<T, string>> propertyExpressionOfItem,
             IEnumerable<string> wildcardContainingStrings) where T : IJsonResult
         {
             if (listOfItems != null && wildcardContainingStrings != null && propertyExpressionOfItem.Body is MemberExpression)

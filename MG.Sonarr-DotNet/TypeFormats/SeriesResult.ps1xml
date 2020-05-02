@@ -63,14 +63,7 @@
 							</ListItem>
 							<ListItem>
 								<PropertyName>Id</PropertyName>
-								<ItemSelectionCondition>
-									<ScriptBlock>$_.Id -ne $null</ScriptBlock>
-								</ItemSelectionCondition>
 							</ListItem>
-							<!--<ListItem>
-								<Label>Images</Label>
-								<ScriptBlock>$_.Images.CoverType</ScriptBlock>
-							</ListItem>-->
 							<ListItem>
 								<PropertyName>IMDBId</PropertyName>
 							</ListItem>
@@ -86,7 +79,7 @@
 								<ScriptBlock>
 									if ($_.Overview.Length -gt 90)
 									{
-										"{0}..." -f $_.Overview.Substring(0, 90).Trim()
+										$_.TruncateOverview()
 									}
 									else
 									{
