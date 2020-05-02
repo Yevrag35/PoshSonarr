@@ -9,7 +9,7 @@ namespace MG.Sonarr.Results
 {
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
-    public class Notification : Provider, ISupportsTagUpdate
+    public class Notification : MessageProvider, ISupportsTagUpdate
     {
         private const string EP = "/notification";
 

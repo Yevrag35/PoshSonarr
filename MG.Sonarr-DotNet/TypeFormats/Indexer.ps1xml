@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+	<ViewDefinitions>
+		<View>
+			<Name>Indexer ListView</Name>
+			<ViewSelectedBy>
+				<TypeName>MG.Sonarr.Results.Indexer</TypeName>
+			</ViewSelectedBy>
+			<ListControl>
+				<ListEntries>
+					<ListEntry>
+						<ListItems>
+							<ListItem>
+								<PropertyName>Id</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>ConfigContract</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Fields</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Implementation</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>InfoLink</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Name</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Protocol</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>RssEnabled</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>RssSupported</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>SearchEnabled</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>SearchSupported</PropertyName>
+							</ListItem>
+						</ListItems>
+					</ListEntry>
+				</ListEntries>
+			</ListControl>
+		</View>
+	</ViewDefinitions>
+</Configuration>

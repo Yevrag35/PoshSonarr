@@ -37,6 +37,12 @@ namespace MG.Sonarr
         /// </summary>
         public static SonarrRestClient ApiCaller { get; internal set; }
 
+#if DEBUG
+        public static IndexerSchemaDictionary IndexerSchemas { get; internal set; }
+#else
+        internal static IndexerSchemaDictionary IndexerSchemas { get; set; }
+#endif
+
         /// <summary>
         /// Returns true when <see cref="Context.ApiCaller"/> is not null, has a base address, and contains a valid API key header.
         /// </summary>
@@ -53,6 +59,6 @@ namespace MG.Sonarr
         internal static TagManager TagManager { get; set; }
 #endif
 
-        #endregion
+#endregion
     }
 }
