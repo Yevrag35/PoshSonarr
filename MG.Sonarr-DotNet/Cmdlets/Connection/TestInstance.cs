@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Functionality;
+﻿//using MG.Sonarr.Extensions;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-
+            base.WriteObject(Context.GetConnectionStatus());
         }
 
         protected override void EndProcessing() { }
