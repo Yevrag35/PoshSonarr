@@ -46,11 +46,11 @@
     <Reference Include="MG.Api.Json, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MG.Api.Json.1.0.0\lib\netstandard2.0\MG.Api.Json.dll</HintPath>
     </Reference>
-    <Reference Include="MG.Dynamic, Version=3.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MG.Dynamic.3.6.0\lib\net452\MG.Dynamic.dll</HintPath>
+    <Reference Include="MG.Dynamic, Version=3.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MG.Dynamic.3.7.0\lib\net452\MG.Dynamic.dll</HintPath>
     </Reference>
-    <Reference Include="MG.Posh.Extensions, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MG.Posh.Extensions.1.1.0\lib\net452\MG.Posh.Extensions.dll</HintPath>
+    <Reference Include="MG.Posh.Extensions, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MG.Posh.Extensions.1.3.0\lib\net452\MG.Posh.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.PowerShell.Commands.Utility, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -100,6 +100,7 @@
     <Compile Include="Cmdlets\Connection\Exclude\CertValidity-DotNet.cs" />
     <None Include="Cmdlets\QualityProfiles\Exclude\NewQualityProfile-BETA.cs" />
     <None Include="Cmdlets\Connection\Exclude\ConnectInstance-BETA.cs" />
+    <Compile Include="Cmdlets\Connection\TestInstance.cs" />
     <Compile Include="Cmdlets\DelayProfile\DelayProfileCmdlet.cs" />
     <Compile Include="Cmdlets\DelayProfile\GetDelayProfile.cs" />
     <Compile Include="Cmdlets\DelayProfile\NewDelayProfile.cs" />
