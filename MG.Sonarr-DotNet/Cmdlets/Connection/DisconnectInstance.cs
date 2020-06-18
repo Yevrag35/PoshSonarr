@@ -6,6 +6,7 @@ using System.Management.Automation;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommunications.Disconnect, "Instance", ConfirmImpact = ConfirmImpact.None)]
+    [Alias("Disconnect-")]
     public class DisconnectInstance : BaseSonarrCmdlet
     {
         protected override void BeginProcessing() { }
