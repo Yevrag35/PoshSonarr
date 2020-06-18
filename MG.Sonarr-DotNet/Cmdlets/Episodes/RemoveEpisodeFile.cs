@@ -21,11 +21,13 @@ namespace MG.Sonarr.Cmdlets.Episodes
         #endregion
 
         #region PARAMETERS
-        [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, ParameterSetName = "ByEpisodeFile")]
+        [Parameter(Mandatory = true, ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true, ParameterSetName = "ByEpisodeFile")]
         public EpisodeFile EpisodeFile { get; set; }
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByEpisodeFileId")]
         [Alias("EpisodeFileId")]
+        [ValidateRange(1, int.MaxValue)]
         public int Id { get; set; }
 
         [Parameter(Mandatory = false)]
