@@ -51,7 +51,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            string[] names = _dynLib.GetParameterValues<string>(QUALITY);
+            IEnumerable<string> names = _dynLib.GetParameterValues<string>(QUALITY);
             if (base.FormatShouldProcess(string.Format("Enabling '{0}'", string.Join("', '", names)), "Profile Id: {0}",
                 this.InputObject.Id))
             {
