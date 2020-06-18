@@ -1,17 +1,8 @@
-﻿using MG.Api.Json;
-using MG.Api.Json.Extensions;
-using MG.Api.Rest;
-using MG.Api.Rest.Generic;
-using MG.Sonarr.Functionality;
-using MG.Sonarr.Results;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Management.Automation;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -80,6 +71,11 @@ namespace MG.Sonarr.Cmdlets
             string msg = string.Format(stringFormat, arguments);
             return base.ShouldProcess(msg, action);
         }
+
+        #endregion
+
+        #region PSOBJECT METHODS
+        
 
         #endregion
 

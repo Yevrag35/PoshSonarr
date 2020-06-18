@@ -2,13 +2,8 @@
 using MG.Sonarr.Cmdlets;
 using MG.Sonarr.Results;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
+using System.Management.Automation;
 
 namespace MG.Sonarr
 {
@@ -24,6 +19,14 @@ namespace MG.Sonarr
 
         #endregion
 
+        internal static PSObject GetConnectionStatus()
+        {
+            var pso = new PSObject();
+            pso.Properties.Add(new PSNoteProperty("IsConnected", IsConnected));
+            pso.Properties.Add(new PSNoteProperty("SonarrUrl", SonarrUrl?.Url));
+            return pso;
+        }
+
         #region PROPERTIES
 
 #if DEBUG
@@ -35,17 +38,35 @@ namespace MG.Sonarr
         /// <summary>
         /// The main <see cref="HttpClient"/> from which all PoshSonarr cmdlets issue their REST requests.
         /// </summary>
+#if DEBUG
         public static SonarrRestClient ApiCaller { get; internal set; }
+#else
+        internal static SonarrRestClient ApiCaller { get; set; }
+#endif
+
+#if DEBUG
+        public static IndexerSchemaDictionary IndexerSchemas { get; internal set; }
+#else
+        internal static IndexerSchemaDictionary IndexerSchemas { get; set; }
+#endif
 
         /// <summary>
         /// Returns true when <see cref="Context.ApiCaller"/> is not null, has a base address, and contains a valid API key header.
         /// </summary>
+#if DEBUG
         public static bool IsConnected => ApiCaller != null && ApiCaller.BaseAddress != null && ApiCaller.DefaultRequestHeaders.Contains("X-Api-Key");
+#else
+        internal static bool IsConnected => ApiCaller != null && ApiCaller.BaseAddress != null && ApiCaller.DefaultRequestHeaders.Contains("X-Api-Key");
+#endif
 
         /// <summary>
         /// The <see cref="SonarrUrl"/> representation of the base URL for all subsequent REST calls.
         /// </summary>
+#if DEBUG
+        public static ISonarrUrl SonarrUrl { get; internal set; }
+#else
         internal static ISonarrUrl SonarrUrl { get; set; }
+#endif
 
 #if DEBUG
         public static TagManager TagManager { get; internal set; }
@@ -53,6 +74,6 @@ namespace MG.Sonarr
         internal static TagManager TagManager { get; set; }
 #endif
 
-        #endregion
+#endregion
     }
 }

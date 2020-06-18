@@ -16,7 +16,6 @@
     <Compile Remove="src\objects\dateFormats\DateFormatAttribute.cs" />
     <Compile Remove="src\objects\dateFormats\ShortDateFormat.cs" />
     <Compile Remove="src\objects\dateFormats\WeekColumnHeader.cs" />
-    <Compile Remove="src\objects\interfaces\ICanCalculate.cs" />
     <Compile Remove="src\objects\interfaces\IRestResponse-Generic.cs" />
     <Compile Remove="src\objects\interfaces\IRestResponse.cs" />
     <Compile Remove="src\objects\rest\SonarrRestResponse.cs" />
@@ -34,7 +33,6 @@
     <None Include="src\objects\dateFormats\DateFormatAttribute.cs" />
     <None Include="src\objects\dateFormats\ShortDateFormat.cs" />
     <None Include="src\objects\dateFormats\WeekColumnHeader.cs" />
-    <None Include="src\objects\interfaces\ICanCalculate.cs" />
     <None Include="src\objects\interfaces\IRestResponse.cs" />
     <None Include="src\objects\rest\SonarrRestResponse.cs" />
     <None Include="src\objects\TotalSize.cs" />
