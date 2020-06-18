@@ -40,7 +40,7 @@
 								<PropertyName>SeriesId</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>Size</PropertyName>
+								<PropertyName>SizeOnDisk</PropertyName>
 							</ListItem>
 						</ListItems>
 					</ListEntry>

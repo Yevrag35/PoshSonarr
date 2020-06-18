@@ -80,7 +80,7 @@ namespace MG.Sonarr.Results
         /// The episode file size in bytes.
         /// </summary>
         [JsonProperty("size")]
-        public long SizeOnDisk { get; private set; }
+        public override long SizeOnDisk { get; protected set; }
 
         public int CompareTo(EpisodeFile other) => this.Id.CompareTo(other.Id);
         public bool Equals(EpisodeFile other) => this.Id.Equals(other.Id);
