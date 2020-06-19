@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MG.Posh.Extensions.Writes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -28,7 +29,21 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             if (!Context.IsConnected)
-                throw new SonarrContextNotSetException();
+            {
+                var exc = new SonarrContextNotSetException();
+                var errRec = new ErrorRecord(
+                    exc,
+                    exc.GetType().FullName,
+                    ErrorCategory.ConnectionError,
+                    null
+                );
+                errRec.CategoryInfo.Reason = "Context not set.  \"Connect-Instance\" has not been executed.";
+                errRec.ErrorDetails = new ErrorDetails("Context not set.  \"Connect-SonarrInstance\" has not been executed.")
+                {
+                    RecommendedAction = "Run \"Connect-SonarrInstance\" before any other cmdlets."
+                };
+                base.ThrowTerminatingError(errRec);
+            }
         }
 
         #endregion
