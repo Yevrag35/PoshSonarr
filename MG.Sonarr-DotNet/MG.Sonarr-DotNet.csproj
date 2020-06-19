@@ -115,7 +115,6 @@
     <Compile Include="Cmdlets\Indexer\IndexerCmdlet.cs" />
     <Compile Include="Cmdlets\Indexer\RemoveIndexer.cs" />
     <Compile Include="Cmdlets\Indexer\SetIndexerOptions.cs" />
-    <Compile Include="Cmdlets\Indexer\UpdateIndexer.cs" />
     <Compile Include="Cmdlets\Logging\ClearLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLogFile.cs" />

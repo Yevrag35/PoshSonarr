@@ -1,4 +1,5 @@
 ﻿using MG.Posh.Extensions.Bound;
+using MG.Posh.Extensions.Writes;
 using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
@@ -16,24 +17,28 @@ namespace MG.Sonarr.Cmdlets
         private bool _passThru;
 
         #region PARAMETERS
-        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true)]
+        [Parameter(Mandatory = false, ValueFromPipeline = true)]
+        public IndexerOptions InputObject { get; set; }
+
+        [Parameter(Mandatory = false)]
         [ValidateRange(0, int.MaxValue)]
         [Alias("MaximumSizeInGB")]
         public int MaximumSize { get; set; }
 
-        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true)]
+        [Parameter(Mandatory = false)]
         [ValidateRange(0, int.MaxValue)]
         [Alias("MinimumAgeInMins")]
         public int MinimumAge { get; set; }
 
-        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true)]
+        [Parameter(Mandatory = false)]
         [Alias("RetentionInDays")]
         [ValidateRange(0, int.MaxValue)]
         public int Retention { get; set; }
 
-        [Parameter(Mandatory = false, ValueFromPipelineByPropertyName = true)]
+        [Parameter(Mandatory = false)]
         [Alias("RssSyncIntervalInMins")]
-        [ValidateRange(0, int.MaxValue)]
+        //[ValidateRange(0, int.MaxValue)]
+        [Validate]
         public int RssSyncInterval { get; set; }
 
         [Parameter(Mandatory = false)]
@@ -50,33 +55,41 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            IndexerOptions options = base.SendSonarrGet<IndexerOptions>(ApiEndpoint.IndexerOptions);
+            if (!this.ContainsParameter(x => x.InputObject))
+            {
+                this.InputObject = base.SendSonarrGet<IndexerOptions>(ApiEndpoint.IndexerOptions);
+            }
+
             if (this.ContainsParameter(x => x.MaximumSize))
             {
                 _changed = true;
-                options.MaximumSizeInGB = this.MaximumSize;
+                this.InputObject.MaximumSizeInGB = this.MaximumSize;
             }
             if (this.ContainsParameter(x => x.MinimumAge))
             {
                 _changed = true;
-                options.MinimumAgeInMins = this.MinimumAge;
+                this.InputObject.MinimumAgeInMins = this.MinimumAge;
             }    
             if (this.ContainsParameter(x => x.Retention))
             {
                 _changed = true;
-                options.RetentionInDays = this.Retention;
+                this.InputObject.RetentionInDays = this.Retention;
             }
             if (this.ContainsParameter(x => x.RssSyncInterval))
             {
                 _changed = true;
-                options.RssSyncIntervalInMins = this.RssSyncInterval;
+                this.InputObject.RssSyncIntervalInMins = this.RssSyncInterval;
             }
 
             if (_changed && base.ShouldProcess("Indexer Options", "Set"))
             {
-                IndexerOptions changed = base.SendSonarrPut<IndexerOptions>(ApiEndpoint.IndexerOptions, options);
+                IndexerOptions changed = base.SendSonarrPut<IndexerOptions>(ApiEndpoint.IndexerOptions, this.InputObject);
                 if (_passThru)
                     base.SendToPipeline(changed);
+            }
+            else if (!_changed)
+            {
+                base.WriteWarning("No Indexer options were updated as no difference was detected.");
             }
         }
 

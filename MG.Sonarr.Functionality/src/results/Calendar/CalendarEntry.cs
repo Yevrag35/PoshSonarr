@@ -33,10 +33,6 @@ namespace MG.Sonarr.Results
         [JsonProperty("episodeNumber")]
         public int EpisodeNumber { get; private set; }
 
-        [Obsolete]
-        [JsonIgnore]
-        public bool HasFile => this.IsDownloaded;   // For backwards compatibility
-
         [JsonProperty("hasFile")]
         public bool IsDownloaded { get; private set; }
 

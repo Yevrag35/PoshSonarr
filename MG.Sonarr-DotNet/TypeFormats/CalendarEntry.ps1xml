@@ -19,12 +19,6 @@
 							<ListItem>
 								<PropertyName>DayOfWeek</PropertyName>
 							</ListItem>
-							<!--<ListItem>
-								<PropertyName>EpisodeFileId</PropertyName>
-								<ItemSelectionCondition>
-									<ScriptBlock>$_.EpisodeFileId -ne $null -and $_.EpisodeFileId -ne 0</ScriptBlock>
-								</ItemSelectionCondition>
-							</ListItem>-->
 							<ListItem>
 								<PropertyName>EpisodeId</PropertyName>
 							</ListItem>
@@ -43,9 +37,6 @@
 							<ListItem>
 								<PropertyName>Series</PropertyName>
 							</ListItem>
-							<!--<ListItem>
-								<PropertyName>UnverifiedSceneNumbering</PropertyName>
-							</ListItem>-->
 						</ListItems>
 					</ListEntry>
 				</ListEntries>
