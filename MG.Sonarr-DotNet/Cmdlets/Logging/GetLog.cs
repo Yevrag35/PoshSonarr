@@ -37,7 +37,7 @@ namespace MG.Sonarr.Cmdlets
         public LogSortKey SortBy = LogSortKey.Time;
 
         [Parameter(Mandatory = false, Position = 2)]
-        public SortDirection SortDirection = SortDirection.Ascending;
+        public SortDirection SortDirection = SortDirection.Descending;
 
         [Parameter(Mandatory = true, ParameterSetName = "ByPagingIncludeFiltering")]
         [Parameter(Mandatory = true, ParameterSetName = "ByTopIncludeFiltering")]

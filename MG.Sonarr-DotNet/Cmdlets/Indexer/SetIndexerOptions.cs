@@ -38,7 +38,6 @@ namespace MG.Sonarr.Cmdlets
         [Parameter(Mandatory = false)]
         [Alias("RssSyncIntervalInMins")]
         //[ValidateRange(0, int.MaxValue)]
-        [Validate]
         public int RssSyncInterval { get; set; }
 
         [Parameter(Mandatory = false)]

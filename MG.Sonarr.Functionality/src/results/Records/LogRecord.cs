@@ -1,5 +1,7 @@
 ﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Converters;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +9,7 @@ using System.Linq;
 namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization.OptOut)]
-    public class LogRecord
+    public class LogRecord : BaseResult
     {
         #region JSON PROPERTIES
         [JsonProperty("id")]
@@ -23,6 +25,7 @@ namespace MG.Sonarr.Results
         public string Message { get; private set; }
 
         [JsonProperty("time")]
+        [JsonConverter(typeof(UtcTimeConverter))]
         public DateTime Time { get; private set; }
 
         #endregion
