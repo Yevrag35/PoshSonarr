@@ -149,6 +149,7 @@
     <Compile Include="Cmdlets\Series\SeriesCmdlet.cs" />
     <Compile Include="Extensions\PSObjectExtensions.cs" />
     <Compile Include="Extensions\PSOFactory.cs" />
+    <Compile Include="Extensions\StringOrIdExtensions.cs" />
     <Compile Include="Objects\EnumerableExtensions.cs" />
     <Compile Include="Cmdlets\System\RestartInstance.cs" />
     <Compile Include="Cmdlets\Tag\AddTag.cs" />

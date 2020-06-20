@@ -276,7 +276,6 @@ namespace MG.Sonarr.Cmdlets
             where T : class, IJsonResult where U : BaseSonarrCmdlet
         {
             if (listOfItems != null
-                && this.HasParameterSpecified(cmdlet, parameterExpression)
                 && propertyExpressionOfItem.Body is MemberExpression)
             {
                 Func<U, IEnumerable<string>> cmdletFunc = parameterExpression.Compile();

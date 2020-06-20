@@ -1,4 +1,5 @@
 ﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Extensions;
 using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
@@ -14,6 +15,7 @@ namespace MG.Sonarr.Cmdlets
     {
         #region FIELDS/CONSTANTS
         private HashSet<int> _ids;
+        private HashSet<string> _labels;
 
         #endregion
 
@@ -23,7 +25,9 @@ namespace MG.Sonarr.Cmdlets
 
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByTagLabel")]
         [SupportsWildcards]
-        public string[] Label { get; set; }
+        [Alias("l")]
+        //public string[] Label { get; set; }
+        public object[] Label { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "ByTagId")]
         public int[] Id { get; set; }
@@ -35,6 +39,8 @@ namespace MG.Sonarr.Cmdlets
         {
             base.BeginProcessing();
             _ids = new HashSet<int>();
+            _labels = new HashSet<string>();
+            this.ProcessStringOrIdParameter(this.Label, _labels, _ids, (char)108);
         }
 
         protected override void ProcessRecord()
@@ -51,10 +57,10 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void EndProcessing()
         {
-            if ( ! this.ContainsAnyParameters(x => x.Id, x => x.InputObject) && base.TryGetAllTags(out TagCollection allTags))
+            if (_ids.Count <= 0 && base.TryGetAllTags(out TagCollection allTags))
             {
                 allTags.Sort();
-                base.SendToPipeline(base.FilterByStringParameter(allTags, t => t.Label, this, cmd => cmd.Label));
+                base.SendToPipeline(base.FilterByStringParameter(allTags, t => t.Label, this, cmd => cmd._labels));
             }
             else if (_ids.Count > 0)
             {
