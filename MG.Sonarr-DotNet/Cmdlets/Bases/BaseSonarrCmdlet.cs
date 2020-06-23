@@ -56,7 +56,8 @@ namespace MG.Sonarr.Cmdlets
 
             for (int i = 0; i < parameterExpressions.Length; i++)
             {
-                items = items.Where(parameterExpressions[i].Compile());
+                var pExp = parameterExpressions[i].Compile();
+                items = items.Where(pExp);
             }
             return items;
         }

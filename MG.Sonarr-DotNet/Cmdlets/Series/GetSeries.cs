@@ -90,7 +90,7 @@ namespace MG.Sonarr.Cmdlets
         {
             base.BeginProcessing();
 
-            if (this.ContainsAllParameters("Debug"))
+            if (this.ContainsBuiltinParameter(BuiltInParameter.Debug))
             {
                 _isDebugging = ((SwitchParameter)this.MyInvocation.BoundParameters["Debug"]).ToBool();
                 if (_isDebugging)
@@ -138,14 +138,14 @@ namespace MG.Sonarr.Cmdlets
                             p => p.Tag,
                             c => _anyall.Count > 0,
                             w => w.Tags.Count > 0)
-                        .ThenFilterBy(this,
-                            p => p.Tag,
-                            c => _anyall.IsAll,
-                            w => _anyall.IsSubsetOf(w.Tags))
-                        .ThenFilterBy(this,
-                            p => p.Tag,
-                            c => !_anyall.IsAll,
-                            w => _anyall.Overlaps(w.Tags))
+                        //.ThenFilterBy(this,
+                        //    p => p.Tag,
+                        //    c => _anyall.IsAll,
+                        //    w => _anyall.IsSubsetOf(w.Tags))
+                        //.ThenFilterBy(this,
+                        //    p => p.Tag,
+                        //    c => !_anyall.IsAll,
+                        //    w => _anyall.Overlaps(w.Tags))
                         .ThenFilterBy(this,
                             p => p.HasNoTags,
                             c => _noTags,
@@ -156,12 +156,16 @@ namespace MG.Sonarr.Cmdlets
                             w => this.Type.Contains(w.SeriesType))
                         .ThenFilterBy(this,
                             p => p.Genres,
-                            c => _genres.IsAll,
+                            c => _genres.Type == AnyAllNoneSet.All,
+                            w => _genres.Overlaps(w.Genres))
+                        .ThenFilterBy(this,
+                            p => p.Genres,
+                            c => _genres.Type == AnyAllNoneSet.Any,
                             w => _genres.IsSubsetOf(w.Genres))
                         .ThenFilterBy(this,
                             p => p.Genres,
-                            c => !_genres.IsAll,
-                            w => _genres.Overlaps(w.Genres))
+                            c => _genres.Type == AnyAllNoneSet.None,
+                            w => !_genres.Overlaps(w.Genres))
                         .ThenFilterBy(this,
                             p => p.IsMonitored,
                             null,
@@ -223,9 +227,10 @@ namespace MG.Sonarr.Cmdlets
         }
         private AnyAllStringSet AnyAllFromGenres(object[] genres)
         {
-            if (this.Genres.OfType<Hashtable>().Any())
+            Hashtable ht = this.Genres.OfType<Hashtable>().FirstOrDefault();
+            if (ht != null)
             {
-                return this.Genres.OfType<Hashtable>().First();
+                return ht;
             }
             else
             {
