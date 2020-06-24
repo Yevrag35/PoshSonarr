@@ -107,7 +107,7 @@ namespace MG.Sonarr.Cmdlets
         {
             if (!string.IsNullOrEmpty(this.FilterBy))
             {
-                this.UrlParameters.Add(new FilterParameter(this.FilterBy, this.FilterValue));
+                this.UrlParameters.Add(new FilterLogParameter(this.FilterBy, this.FilterValue));
             }
         }
         private void SetPagingParameters()

@@ -27,6 +27,7 @@ namespace MG.Sonarr.Functionality
         public const string IndexerSchema = Indexer + "/schema";
         public const string Log = "/log";
         public const string LogFile = Log + "/file";
+        public const string ManualImport = "/manualimport";
         public const string Mapping = "/remotepathmapping";
         public const string MediaManagement = CONFIG + "/mediamanagement";
         public const string Metadata = "/metadata";

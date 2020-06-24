@@ -360,6 +360,12 @@ namespace MG.Sonarr.Functionality
         BlurayRaw
     }
 
+    public enum RejectionType
+    {
+        Permanent,
+        Temporary
+    }
+
     public enum RescanAfterRefreshType
     {
         Always,

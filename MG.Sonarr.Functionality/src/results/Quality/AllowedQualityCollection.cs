@@ -70,7 +70,7 @@ namespace MG.Sonarr.Results
         public void Sort() => base.InnerList.Sort();
         public void Sort(IComparer<AllowedQuality> comparer) => base.InnerList.Sort(comparer);
         public AllowedQuality[] ToArray() => base.InnerList.ToArray();
-        internal bool TrueForAll(Predicate<AllowedQuality> match) => base.InnerList.TrueForAll(match);
+        //internal bool TrueForAll(Predicate<AllowedQuality> match) => base.InnerList.TrueForAll(match);
 
         #endregion
 

@@ -119,6 +119,9 @@
     <Compile Include="Cmdlets\Logging\GetLog.cs" />
     <Compile Include="Cmdlets\Logging\GetLogFile.cs" />
     <None Include="Cmdlets\Logging\SaveLogFile.cs" />
+    <Compile Include="Cmdlets\ManualImport\BaseManualImportCmdlet.cs" />
+    <Compile Include="Cmdlets\ManualImport\GetManualImport.cs" />
+    <Compile Include="Cmdlets\ManualImport\InvokeManualImport.cs" />
     <Compile Include="Cmdlets\MediaManagement\GetMediaManagement.cs" />
     <Compile Include="Cmdlets\MediaManagement\UpdateMediaManagement.cs" />
     <Compile Include="Cmdlets\Metadata\GetMetadata.cs" />
@@ -207,6 +210,7 @@
     <None Include="TypeFormats\EpisodeFile.ps1xml" />
     <None Include="TypeFormats\Field.ps1xml" />
     <None Include="TypeFormats\Indexer.ps1xml" />
+    <None Include="TypeFormats\ManualImport.ps1xml" />
     <None Include="TypeFormats\Notification.ps1xml" />
     <None Include="TypeFormats\QualityItem.ps1xml" />
     <None Include="TypeFormats\QualityProfile.ps1xml" />

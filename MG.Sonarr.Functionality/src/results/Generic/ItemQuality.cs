@@ -8,9 +8,9 @@ namespace MG.Sonarr.Results
     public class ItemQuality : BaseResult
     {
         [JsonProperty("quality")]
-        public QualityDetails Quality { get; set; }
+        public QualityDetails Quality { get; private set; }
 
         [JsonProperty("revision")]
-        public Revision Revision { get; set; }
+        public Revision Revision { get; private set; }
     }
 }
