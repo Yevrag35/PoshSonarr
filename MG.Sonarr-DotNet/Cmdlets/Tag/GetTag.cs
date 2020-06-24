@@ -40,7 +40,7 @@ namespace MG.Sonarr.Cmdlets
             base.BeginProcessing();
             _ids = new HashSet<int>();
             _labels = new HashSet<string>();
-            this.ProcessStringOrIdParameter(this.Label, _labels, _ids, (char)108);
+            this.ProcessStringOrIdParameter(this.Label, _labels, _ids);
         }
 
         protected override void ProcessRecord()

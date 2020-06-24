@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 namespace MG.Sonarr.Extensions
 {
@@ -14,16 +15,25 @@ namespace MG.Sonarr.Extensions
         {
             return psCmdlet.MyInvocation.Line.Substring(psCmdlet.MyInvocation.OffsetInLine - 1);
         }
-        private static bool Matches(PSCmdlet psCmdlet, char firstLetter)
+        private static bool Matches(PSCmdlet psCmdlet)
         {
-            return Regex.IsMatch(GetInvocation(psCmdlet), string.Format(REGEX_PATTERN, firstLetter), 
-                RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            Type bpt = psCmdlet.MyInvocation.BoundParameters.GetType();
+            PropertyInfo pi = bpt.GetProperty("BoundPositionally");
+            if (pi?.GetValue(psCmdlet.MyInvocation.BoundParameters) is List<string> positionParams && positionParams.Count > 0)
+            {
+                return false;
+            }
+            else
+                return true;
         }
         public static void ProcessStringOrIdParameter<T>(this T psCmdlet, object[] objs,
-            ISet<string> names, ISet<int> ids, char firstLetterOfParameter)
+            ISet<string> names, ISet<int> ids)
             where T : PSCmdlet
         {
-            if (Matches(psCmdlet, firstLetterOfParameter))
+            if (objs == null)
+                return;
+
+            else if (Matches(psCmdlet))
             {
                 foreach (IConvertible ic in objs)
                 {

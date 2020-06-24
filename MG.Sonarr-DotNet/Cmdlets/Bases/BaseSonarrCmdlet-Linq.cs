@@ -283,13 +283,18 @@ namespace MG.Sonarr.Cmdlets
 
                 IEnumerable<string> propVal = cmdletFunc(cmdlet);
 
-                IEnumerable<WildcardPattern> patterns = propVal
-                    .Select(s => new WildcardPattern(s, WildcardOptions.IgnoreCase));
+                if (propVal.Any())
+                {
+                    IEnumerable<WildcardPattern> patterns = propVal
+                        .Select(s => new WildcardPattern(s, WildcardOptions.IgnoreCase));
 
-                return listOfItems
-                    .Where(x => patterns
-                        .Any(pat => pat
-                            .IsMatch(propertyFunc(x))));
+                    return listOfItems
+                        .Where(x => patterns
+                            .Any(pat => pat
+                                .IsMatch(propertyFunc(x))));
+                }
+                else
+                    return listOfItems;
             }
             else
             {

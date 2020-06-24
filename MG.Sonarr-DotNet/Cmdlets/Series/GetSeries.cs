@@ -138,14 +138,18 @@ namespace MG.Sonarr.Cmdlets
                             p => p.Tag,
                             c => _anyall.Count > 0,
                             w => w.Tags.Count > 0)
-                        //.ThenFilterBy(this,
-                        //    p => p.Tag,
-                        //    c => _anyall.IsAll,
-                        //    w => _anyall.IsSubsetOf(w.Tags))
-                        //.ThenFilterBy(this,
-                        //    p => p.Tag,
-                        //    c => !_anyall.IsAll,
-                        //    w => _anyall.Overlaps(w.Tags))
+                        .ThenFilterBy(this,
+                            p => p.Tag,
+                            c => _anyall.Type == AnyAllNoneSet.All,
+                            w => _anyall.IsSubsetOf(w.Tags))
+                        .ThenFilterBy(this,
+                            p => p.Tag,
+                            c => _anyall.Type == AnyAllNoneSet.Any,
+                            w => _anyall.Overlaps(w.Tags))
+                        .ThenFilterBy(this,
+                            p => p.Tag,
+                            c => _anyall.Type == AnyAllNoneSet.None,
+                            w => !_anyall.Overlaps(w.Tags))
                         .ThenFilterBy(this,
                             p => p.HasNoTags,
                             c => _noTags,
