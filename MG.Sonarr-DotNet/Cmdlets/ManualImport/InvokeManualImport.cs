@@ -1,4 +1,6 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Writes;
+using MG.Sonarr.Functionality;
+using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,12 +14,20 @@ namespace MG.Sonarr.Cmdlets
     {
         #region FIELDS/CONSTANTS
         private List<ManualImport> _toDo;
+        private bool _force;
 
         #endregion
 
         #region PARAMETERS
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
         public ManualImport[] InputObject { get; set; }
+
+        [Parameter(Mandatory = false)]
+        public SwitchParameter Force
+        {
+            get => _force;
+            set => _force = value;
+        }
 
         #endregion
 
@@ -30,18 +40,36 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            _toDo.AddRange(this.InputObject);
+            _toDo.AddRange(this.CheckEach(this.InputObject));
         }
 
         protected override void EndProcessing()
         {
-
+            if (_force || base.FormatShouldProcess("Import", "{0} manual import(s)", _toDo.Count))
+            {
+                SonarrBodyParameters sbp = ManualImportPost.NewManualImportObject(_toDo);
+                CommandResult cr = base.SendSonarrPost<CommandResult>(ApiEndpoint.Command, sbp);
+                base.SendToPipeline(cr);
+            }
         }
 
         #endregion
 
         #region BACKEND METHODS
-
+        private IEnumerable<ManualImport> CheckEach(IEnumerable<ManualImport> each)
+        {
+            foreach (ManualImport mi in each)
+            {
+                if (mi.Rejections.Length > 0)
+                {
+                    base.WriteWarning(string.Format("{0} has rejections.  Skipping...", mi.Id));
+                }
+                else
+                {
+                    yield return mi;
+                }
+            }
+        }
 
         #endregion
     }

@@ -210,6 +210,7 @@
     <None Include="TypeFormats\EpisodeFile.ps1xml" />
     <None Include="TypeFormats\Field.ps1xml" />
     <None Include="TypeFormats\Indexer.ps1xml" />
+    <None Include="TypeFormats\ImportEpisode.ps1xml" />
     <None Include="TypeFormats\ManualImport.ps1xml" />
     <None Include="TypeFormats\Notification.ps1xml" />
     <None Include="TypeFormats\QualityItem.ps1xml" />

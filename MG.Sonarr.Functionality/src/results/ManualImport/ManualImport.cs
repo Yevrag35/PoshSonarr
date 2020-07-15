@@ -18,8 +18,8 @@ namespace MG.Sonarr.Results
         [JsonProperty("quality", Order = 5)]
         internal ItemQuality _quality;
 
-        //[JsonProperty("series")]
-        internal SearchSeries _series;
+        [JsonProperty("series")]
+        internal JObject _series;
 
         #region JSON PROPERTIES
         [JsonProperty("episodes")]
@@ -50,11 +50,22 @@ namespace MG.Sonarr.Results
         public string RelativePath { get; private set; }
 
         [JsonIgnore]
-        public string Series => _series?.Name;
+        public string Series => _series?.SelectToken("$.title").ToObject<string>();
 
         [JsonProperty("size", Order = 4)]
         public override sealed long SizeOnDisk { get; protected set; }
 
         #endregion
+
+        public JObject PostThis()
+        {
+            return new JObject
+            {
+                new JProperty("episodeIds", this.Episodes.Select(x => x.Id).ToArray()),
+                new JProperty("path", this.FullPath),
+                new JProperty("quality", JObject.FromObject(_quality)),
+                new JProperty("seriesId", _series["id"].ToObject<long>()),
+            };
+        }
     }
 }

@@ -6,42 +6,20 @@ using System.Linq;
 
 namespace MG.Sonarr.Results
 {
-    public sealed class ManualImportPost : BaseResult
+    public static class ManualImportPost
     {
-        public SonarrBodyParameters Body { get; }
-
-        private ManualImportPost(ICollection<ManualImport> importThese) : base()
+        public static SonarrBodyParameters NewManualImportObject(ManualImport import)
         {
-            this.Body = new SonarrBodyParameters(importThese.Count);
-
-
-            this.Body.Add("body", new JObject
-            {
-                new JProperty("completionMessage", "Completed"),
-                new JProperty("importMode", "move"),
-                new JProperty("name", "ManualImport"),
-                new JProperty("sendUpdatesToClient", true),
-                new JProperty("trigger", "manual"),
-                new JProperty("updateScheduledTask", true),
-                new JProperty("files", new JArray
-                {
-
-                })
-            });
+            return NewManualImportObject(new ManualImport[1] { import });
         }
-
-        private IEnumerable<JObject> FormatImport(IEnumerable<ManualImport> importThese)
+        public static SonarrBodyParameters NewManualImportObject(IEnumerable<ManualImport> imports)
         {
-            foreach (ManualImport im in importThese)
+            return new SonarrBodyParameters
             {
-                yield return new JObject
-                {
-                    new JProperty("episodeIds", JArray.FromObject(im.Episodes.Select(x => x.EpisodeId))),
-                    new JProperty("path", im.FullPath),
-                    new JProperty("quality", im._quality),
-                    new JProperty("seriesId", im._series.TVDBId)
-                };
-            }
+                { "files", new JArray(imports.Select(x => x.PostThis()).ToArray()) },
+                { "importMode", "Move" },
+                { "name", "manualImport" }
+            };
         }
     }
 }
