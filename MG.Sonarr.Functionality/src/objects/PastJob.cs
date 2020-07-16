@@ -9,12 +9,12 @@ namespace MG.Sonarr.Functionality.Internal
         public string Command { get; }
         public DateTimeOffset Ended { get; }
         public long Id { get; }
-        internal int Order { get; }
+        //internal int Order { get; set; }
         public DateTimeOffset Started { get; }
 
-        internal PastJob(CommandResult output, int order)
+        internal PastJob(CommandResult output)
         {
-            this.Order = order;
+            //this.Order = order;
             this.Command = output.CommandName;
             this.Id = output.JobId;
             this.Ended = output.Ended.GetValueOrDefault();
@@ -24,10 +24,10 @@ namespace MG.Sonarr.Functionality.Internal
         int IComparable<PastJob>.CompareTo(PastJob other) => this.CompareTo(other);
         public int CompareTo(IPastJob other)
         {
-            int start = this.Started.CompareTo(other.Started);
+            int start = this.Started.CompareTo(other.Started) * -1;
             if (start == 0)
             {
-                int ended = this.Ended.CompareTo(other.Ended);
+                int ended = this.Ended.CompareTo(other.Ended) * -1;
                 if (ended == 0)
                 {
                     return this.Command.CompareTo(other.Command);
@@ -39,12 +39,12 @@ namespace MG.Sonarr.Functionality.Internal
                 return start;
         }
 
-        internal static bool TryFromResult(CommandResult result, int order, out IPastJob pastJob)
+        internal static bool TryFromResult(CommandResult result, out IPastJob pastJob)
         {
             pastJob = null;
             if (result != null && result.Status == CommandStatus.Completed && result.Started.HasValue)
             {
-                pastJob = new PastJob(result, order);
+                pastJob = new PastJob(result);
             }
 
             return pastJob != null;

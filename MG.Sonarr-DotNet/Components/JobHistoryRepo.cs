@@ -5,35 +5,12 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 
-namespace MG.Sonarr.Components
+namespace MG.Sonarr
 {
-    public static class JobHistoryRepo
+    public static class History
     {
-        private static HashSet<long> _jobRepo;
+        public static IJobHistory Jobs { get; private set; }
 
-        public static void Initialize()
-        {
-            _jobRepo = new HashSet<long>();
-        }
-
-        internal static IEnumerable<bool> AddIdsToLog(IEnumerable<CommandOutput> outputs)
-        {
-            foreach (CommandOutput cmd in outputs)
-            {
-                yield return _jobRepo.Add(cmd.JobId);
-            }
-        }
-        internal static bool AddIdToLog(CommandOutput cmdOutput) => _jobRepo.Add(cmdOutput.JobId);
-        internal static bool AddIdToLog(long id) => _jobRepo.Add(id);
-
-        public static long[] GetPastJobIds()
-        {
-            if (_jobRepo != null && _jobRepo.Count > 0)
-            {
-                return _jobRepo.ToArray();
-            }
-            else
-                return null;
-        }
+        public static void Initialize() => Jobs = ClassFactory.NewJobHistory();
     }
 }

@@ -7,5 +7,9 @@ namespace MG.Sonarr.Functionality
     public interface IJobHistory : IEnumerable<IPastJob>
     {
         int Count { get; }
+        void AddResult(CommandResult newEntry);
+        void AddResults(IEnumerable<CommandResult> newEntries);
+
+        void Sort();
     }
 }

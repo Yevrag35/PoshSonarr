@@ -1,6 +1,7 @@
 ﻿//using MG.Sonarr.Functionality.Extensions;
 using MG.Api.Json;
 using MG.Api.Rest.Generic;
+using MG.Sonarr.Functionality.Internal;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,6 @@ namespace MG.Sonarr.Functionality
         }
         public static IEqualityComparer<string> NewIgnoreCase() => new IgnoreCase();
 
-        public static 
+        public static IJobHistory NewJobHistory() => new JobHistoryRepository();
     }
 }

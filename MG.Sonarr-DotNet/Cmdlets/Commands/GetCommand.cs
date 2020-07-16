@@ -49,15 +49,28 @@ namespace MG.Sonarr.Cmdlets.Commands
                 for (int i = 0; i < this.JobId.Length; i++)
                 {
                     string ep = string.Format(EP_ID, this.JobId[i]);
-                    base.SendToPipeline(base.SendSonarrGet<CommandResult>(ep));
+                    CommandResult result = base.SendSonarrGet<CommandResult>(ep);
+                    if (result != null)
+                    {
+                        base.WriteObject(result);
+                        this.AddToHistory(result);
+                    }
                 }
             }
             else
             {
-                base.SendToPipeline(base.SendSonarrListGet<CommandResult>(EP));
+                List<CommandResult> list = base.SendSonarrListGet<CommandResult>(EP);
+                if (list != null && list.Count > 0)
+                {
+                    base.WriteObject(list, true);
+                    this.AddToHistory(list);
+                }
             }
         }
 
         #endregion
+
+        private void AddToHistory(CommandResult result) => History.Jobs.AddResult(result);
+        private void AddToHistory(IEnumerable<CommandResult> results) => History.Jobs.AddResults(results);
     }
 }

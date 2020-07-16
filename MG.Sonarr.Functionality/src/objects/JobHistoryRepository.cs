@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 
 namespace MG.Sonarr.Functionality.Internal
@@ -13,36 +12,42 @@ namespace MG.Sonarr.Functionality.Internal
 
         public int Count => _jobs.Count;
 
+        internal JobHistoryRepository() => _jobs = new List<PastJob>();
+
         private JobHistoryRepository(CommandResult single)
         {
             _jobs = new List<PastJob>(1);
-            PastJob pj = new PastJob(single, 0);
+            PastJob pj = new PastJob(single);
             _jobs.Add(pj);
         }
         private JobHistoryRepository(IEnumerable<CommandResult> results)
         {
-            CommandResult[] orderedArray = results
+            _jobs = new List<PastJob>(results
                 .Where(x => this.ResultIsValid(x))
-                    .OrderByDescending(x => x.Started.GetValueOrDefault())
-                        .ThenByDescending(x => x.Ended.GetValueOrDefault())
-                            .ToArray();
-
-            _jobs = new List<PastJob>(orderedArray.Length);
-            for (int i = 0; i < orderedArray.Length; i++)
-            {
-                CommandResult cr = orderedArray[i];
-                PastJob job = new PastJob(cr, i);
-                _jobs.Add(job);
-            }
+                .Select(x => new PastJob(x))
+                    .OrderByDescending(x => x.Started)
+                    .ThenByDescending(x => x.Ended)
+            );
         }
 
-        public int Add(CommandResult newEntry)
+        private void AddResultInternal(CommandResult newEntry)
         {
-            if (this.ResultIsValid(newEntry))
+            if (!_jobs.Exists(x => x.Id == newEntry.JobId))
             {
-                int nextId = _jobs.Count;
-
+                _jobs.Add(new PastJob(newEntry));
             }
+        }
+        public void AddResult(CommandResult newEntry)
+        {
+            this.AddResultInternal(newEntry);
+            this.Sort();
+        }
+        public void AddResults(IEnumerable<CommandResult> entries)
+        {
+            foreach (CommandResult cr in entries) {
+                this.AddResultInternal(cr);
+            }
+            this.Sort();
         }
 
         IEnumerator<IPastJob> IEnumerable<IPastJob>.GetEnumerator()
@@ -54,6 +59,8 @@ namespace MG.Sonarr.Functionality.Internal
         }
         public IEnumerator<PastJob> GetEnumerator() => _jobs.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _jobs.GetEnumerator();
+
+        public void Sort() => _jobs.Sort();
 
         private bool ResultIsValid(CommandResult result) => result != null && result.Status == CommandStatus.Completed && result.Started.HasValue;
     }
