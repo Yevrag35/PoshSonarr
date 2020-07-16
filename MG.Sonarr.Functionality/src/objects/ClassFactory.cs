@@ -18,5 +18,7 @@ namespace MG.Sonarr.Functionality
             return new SonarrUrl(hostName, portNumber, useSsl, reverseProxyBase, includeApiPrefix);
         }
         public static IEqualityComparer<string> NewIgnoreCase() => new IgnoreCase();
+
+        public static 
     }
 }

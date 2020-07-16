@@ -150,7 +150,8 @@
     <Compile Include="Cmdlets\RootFolder\RegisterRootFolder.cs" />
     <Compile Include="Cmdlets\RootFolder\RemoveRootFolder.cs" />
     <Compile Include="Cmdlets\Series\SeriesCmdlet.cs" />
-    <Compile Include="Cmdlets\System\ShowData.cs" />
+    <Compile Include="Cmdlets\System\ShowHiddenData.cs" />
+    <Compile Include="Components\JobHistoryRepo.cs" />
     <Compile Include="Extensions\PSObjectExtensions.cs" />
     <Compile Include="Extensions\PSOFactory.cs" />
     <Compile Include="Extensions\StringOrIdExtensions.cs" />

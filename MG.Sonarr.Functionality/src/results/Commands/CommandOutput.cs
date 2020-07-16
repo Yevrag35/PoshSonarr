@@ -1,5 +1,7 @@
 ﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Converters;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 
@@ -11,6 +13,9 @@ namespace MG.Sonarr.Results
     [JsonObject(MemberSerialization.OptIn)]
     public class CommandOutput : BaseResult
     {
+        [JsonExtensionData]
+        protected private IDictionary<string, JToken> _additionalData;
+
         [JsonProperty("name")]
         public string CommandName { get; private set; }
 
@@ -24,16 +29,19 @@ namespace MG.Sonarr.Results
         public CommandPriority Priority { get; private set; }
 
         [JsonProperty("queued")]
-        public DateTime Queued { get; private set; }
+        [JsonConverter(typeof(UtcOffsetConverter))]
+        public DateTimeOffset? Queued { get; private set; }
 
         [JsonProperty("sendUpdatesToClient")]
         public bool SendUpdatesToClient { get; private set; }
 
         [JsonProperty("startedOn")]
-        public DateTime Started { get; private set; }
+        [JsonConverter(typeof(UtcOffsetConverter))]
+        public DateTimeOffset? Started { get; private set; }
 
         [JsonProperty("stateChangeTime")]
-        public DateTime StateChangeTime { get; private set; }
+        [JsonConverter(typeof(UtcOffsetConverter))]
+        public DateTimeOffset? StateChangeTime { get; private set; }
 
         [JsonProperty("status")]
         public CommandStatus Status { get; private set; }

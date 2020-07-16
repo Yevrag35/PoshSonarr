@@ -10,7 +10,11 @@ namespace MG.Sonarr
     /// <summary>
     /// The static context used by the PoshSonarr module.  The 'Context' is set with the <see cref="ConnectInstance"/> cmdlet.
     /// </summary>
+#if DEBUG
     public static partial class Context
+#else
+    internal static partial class Context
+#endif
     {
         #region FIELDS/CONSTANTS
         //internal const string SLASH_STR = "/";
@@ -19,7 +23,11 @@ namespace MG.Sonarr
 
         #endregion
 
+#if DEBUG
+        public static PSObject GetConnectionStatus()
+#else
         internal static PSObject GetConnectionStatus()
+#endif
         {
             var pso = new PSObject();
             pso.Properties.Add(new PSNoteProperty("IsConnected", IsConnected));
@@ -27,7 +35,7 @@ namespace MG.Sonarr
             return pso;
         }
 
-        #region PROPERTIES
+#region PROPERTIES
 
 #if DEBUG
         public static QualityDictionary AllQualities { get; set; }
