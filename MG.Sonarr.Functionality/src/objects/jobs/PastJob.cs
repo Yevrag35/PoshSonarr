@@ -9,7 +9,6 @@ namespace MG.Sonarr.Functionality.Internal
         public string Command { get; }
         public DateTimeOffset Ended { get; }
         public long Id { get; }
-        //internal int Order { get; set; }
         public DateTimeOffset Started { get; }
 
         internal PastJob(CommandResult output)
@@ -39,6 +38,7 @@ namespace MG.Sonarr.Functionality.Internal
                 return start;
         }
 
+        [Obsolete]
         internal static bool TryFromResult(CommandResult result, out IPastJob pastJob)
         {
             pastJob = null;

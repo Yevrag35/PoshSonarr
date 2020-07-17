@@ -86,6 +86,7 @@
     <Compile Include="Cmdlets\Bases\LazySonarrCmdlet.cs" />
     <Compile Include="Cmdlets\Calendar\GetCalendar.cs" />
     <Compile Include="Cmdlets\Commands\GetCommand.cs" />
+    <Compile Include="Cmdlets\Commands\GetCommandHistory.cs" />
     <Compile Include="Cmdlets\Commands\InvokeBackup.cs" />
     <Compile Include="Cmdlets\Commands\InvokeEpisodeSearch.cs" />
     <Compile Include="Cmdlets\Commands\InvokeRssSync.cs" />
@@ -151,7 +152,7 @@
     <Compile Include="Cmdlets\RootFolder\RemoveRootFolder.cs" />
     <Compile Include="Cmdlets\Series\SeriesCmdlet.cs" />
     <Compile Include="Cmdlets\System\ShowHiddenData.cs" />
-    <Compile Include="Components\JobHistoryRepo.cs" />
+    <Compile Include="Components\History.cs" />
     <Compile Include="Extensions\PSObjectExtensions.cs" />
     <Compile Include="Extensions\PSOFactory.cs" />
     <Compile Include="Extensions\StringOrIdExtensions.cs" />
