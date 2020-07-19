@@ -7,7 +7,7 @@ using System.Linq;
 namespace MG.Sonarr.Results
 {
     [Serializable]
-    public class FieldCollection : ResultCollectionBase<Field>
+    public class FieldCollection : ResultCollectionBase<Field>, IEnumerable<IField>
     {
         #region FIELDS/CONSTANTS
         private const int DEFAULT_SETTING_COUNT = 8;
@@ -26,9 +26,19 @@ namespace MG.Sonarr.Results
         [JsonConstructor]
         internal FieldCollection(IEnumerable<Field> items) : base(items) { }
 
+        internal FieldCollection(IEnumerable<IField> items) : base(items.Select(x => new Field(x))) { }
+
         #endregion
 
         #region PUBLIC METHODS
+        IEnumerator<IField> IEnumerable<IField>.GetEnumerator()
+        {
+            foreach (IField field in base.InnerList)
+            {
+                yield return field;
+            }
+        }
+
         public FieldCollection GetSettingByType(params FieldType[] types) => new FieldCollection(base.InnerList.FindAll(x => types.Contains(x.Type)));
         public Field[] ToArray() => base.InnerList.ToArray();
 

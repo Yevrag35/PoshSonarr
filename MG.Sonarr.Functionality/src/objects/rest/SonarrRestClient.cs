@@ -1,10 +1,16 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Api.Json;
+using MG.Api.Json.Extensions;
+using MG.Api.Rest;
+using MG.Api.Rest.Extensions;
+using MG.Api.Rest.Generic;
+using MG.Sonarr.Functionality;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace MG.Sonarr
 {
@@ -105,6 +111,15 @@ namespace MG.Sonarr
             return jtok is JArray
                 ? true
                 : false;
+        }
+
+        public Task<IRestResponse<T>> GetAsJsonAsync<T>(string url) where T : class
+        {
+            return this.GetAsJsonAsync<T>(url, UriKind.Relative);
+        }
+        public Task<IRestListResponse<T>> GetAsJsonListAsync<T>(string url) where T : class
+        {
+            return this.GetAsJsonListAsync<T>(url, UriKind.Relative);
         }
 
         #endregion

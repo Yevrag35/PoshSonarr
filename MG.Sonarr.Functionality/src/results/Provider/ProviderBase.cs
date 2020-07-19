@@ -22,6 +22,6 @@ namespace MG.Sonarr.Results
         public Uri InfoLink { get; protected private set; }
 
         [JsonProperty("name", Order = 2)]
-        public string Name { get; set; }
+        public virtual string Name { get; protected set; }
     }
 }

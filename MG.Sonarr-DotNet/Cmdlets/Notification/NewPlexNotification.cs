@@ -118,17 +118,15 @@ namespace MG.Sonarr.Cmdlets
 
         private PlexNotification Create(string name, string host, int port, PSCredential psCreds, bool updateLibrary, bool useSsl)
         {
-            return new PlexNotification(host, port, psCreds.UserName, psCreds.GetNetworkCredential().Password, updateLibrary, useSsl)
-            {
-                Name = name
-            };
+            var plex = new PlexNotification(host, port, psCreds.UserName, psCreds.GetNetworkCredential().Password, updateLibrary, useSsl);
+            plex.SetName(name);
+            return plex;
         }
         private PlexNotification Create(string name, string host, int port, string username, string password, bool updateLibrary, bool useSsl)
         {
-            return new PlexNotification(host, port, username, password, updateLibrary, useSsl)
-            {
-                Name = name
-            };
+            var plex = new PlexNotification(host, port, username, password, updateLibrary, useSsl);
+            plex.SetName(name);
+            return plex;
         }
 
         private void SetNotificationOptions(PlexNotification notif)

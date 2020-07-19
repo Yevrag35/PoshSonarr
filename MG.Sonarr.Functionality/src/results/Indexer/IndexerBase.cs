@@ -12,18 +12,18 @@ namespace MG.Sonarr.Results
     {
         [JsonProperty("protocol")]
         [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public DownloadProtocol Protocol { get; private set; }
+        public DownloadProtocol Protocol { get; protected private set; }
 
         [JsonProperty("enableRss")]
-        public bool RssEnabled { get; set; }
+        public virtual bool RssEnabled { get; set; }
 
         [JsonProperty("supportsRss")]
-        public bool RssSupported { get; private set; }
+        public bool RssSupported { get; protected private set; }
 
         [JsonProperty("enableSearch")]
-        public bool SearchEnabled { get; set; }
+        public virtual bool SearchEnabled { get; set; }
 
         [JsonProperty("supportsSearch")]
-        public bool SearchSupported { get; private set; }
+        public bool SearchSupported { get; protected private set; }
     }
 }

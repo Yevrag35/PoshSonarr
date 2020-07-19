@@ -11,16 +11,9 @@ namespace MG.Sonarr.Results
     [JsonObject(MemberSerialization.OptIn)]
     public class Notification : MessageProvider, ISupportsTagUpdate
     {
-        private const string EP = "/notification";
-
-        //[JsonProperty("tags", Order = 8)]
-        //private HashSet<int> _appliedTagIds;
-
         object ISupportsTagUpdate.Id => this.Name;
 
         #region JSON PROPERTIES
-        //[JsonProperty("link")]
-        //public string Link { get; protected private set; }
 
         [JsonProperty("id", Order = 1)]
         public virtual int Id { get; protected private set; }
@@ -37,9 +30,6 @@ namespace MG.Sonarr.Results
         [JsonProperty("onRename")]
         public bool OnRename { get; set; }
 
-        //[JsonProperty("onHealthIssue")]
-        //public virtual bool OnHealthIssue { get; set; }
-
         [JsonProperty("supportsOnGrab")]
         public bool SupportsOnGrab { get; protected private set; }
 
@@ -52,19 +42,14 @@ namespace MG.Sonarr.Results
         [JsonProperty("supportsOnRename")]
         public bool SupportsOnRename { get; protected private set; }
 
-        //[JsonProperty("supportsOnHealthIssue")]
-        //public virtual bool SupportsOnHealthIssue { get; protected private set; }
-
         [JsonProperty("includeHealthWarnings")]
         public virtual bool IncludeHealthWarnings { get; protected private set; }
 
         [JsonProperty("tags", Order = 8)]
         public HashSet<int> Tags { get; set; }
 
-        //[JsonProperty("testCommand")]
-        //public virtual string TestCommand { get; protected private set; }
-
         #endregion
-        public string GetEndpoint() => EP;
+        public string GetEndpoint() => ApiEndpoint.Notification;
+        public void SetName(string name) => base.Name = name;
     }
 }

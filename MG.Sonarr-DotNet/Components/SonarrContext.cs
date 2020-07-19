@@ -53,9 +53,11 @@ namespace MG.Sonarr
 #endif
 
 #if DEBUG
-        public static IndexerSchemaDictionary IndexerSchemas { get; internal set; }
+        //public static IndexerSchemaDictionary IndexerSchemas { get; internal set; }
+        public static IndexerSchemaCollection IndexerSchemas { get; internal set; }
 #else
-        internal static IndexerSchemaDictionary IndexerSchemas { get; set; }
+        //internal static IndexerSchemaDictionary IndexerSchemas { get; set; }
+        internal static IndexerSchemaCollection IndexerSchemas { get; set; }
 #endif
 
         /// <summary>

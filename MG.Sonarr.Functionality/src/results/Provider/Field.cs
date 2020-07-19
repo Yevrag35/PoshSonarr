@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Security;
 
 namespace MG.Sonarr.Results
 {
@@ -18,7 +19,7 @@ namespace MG.Sonarr.Results
     /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization.OptIn, MissingMemberHandling = MissingMemberHandling.Ignore, ItemNullValueHandling = NullValueHandling.Ignore)]
-    public class Field : BaseResult
+    public class Field : BaseResult, IField
     {
         #region PROPERTIES
         [JsonProperty("value")]
@@ -41,6 +42,7 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("selectionOptions")]
         public SelectOptions[] SelectOptions { get; private set; }
+        IEnumerable<ISelectOption> IField.SelectOptions => this.SelectOptions;
 
         [JsonProperty("type")]
         [JsonConverter(typeof(SonarrStringEnumConverter))]
@@ -50,6 +52,18 @@ namespace MG.Sonarr.Results
 
         [JsonConstructor]
         public Field() { }
+        internal Field(IField field)
+        {
+            this.Name = field.Name;
+            this.BackendValue = field.BackendValue;
+            this.HelpText = field.HelpText;
+            this.IsAdvanced = field.IsAdvanced;
+            this.Label = field.Label;
+            this.Order = field.Order;
+            this.SelectOptions = field.SelectOptions?.Select(x => new SelectOptions(x.Name, x.Value)).ToArray();
+            this.Type = field.Type;
+            this.Value = field.Value;
+        }
 
         internal Field(int order, string name, string label, object value, FieldType type, bool isAdvanced, params SelectOptions[] selectOptions)
         {
@@ -87,6 +101,23 @@ namespace MG.Sonarr.Results
         }
 
         #endregion
+
+        public Type GetDotNetTypeFromFieldType()
+        {
+            switch (this.Type)
+            {
+                case FieldType.CheckBox:
+                    return typeof(bool);
+
+                case FieldType.Password:
+                    return typeof(SecureString);
+
+                default:
+                    return typeof(string);
+            }
+        }
+
+        public string GetLabelNoSpaces() => this.Label.Replace(" ", string.Empty);
     }
 
     #endregion
@@ -95,7 +126,7 @@ namespace MG.Sonarr.Results
 
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
-    public class SelectOptions : BaseResult
+    public class SelectOptions : BaseResult, ISelectOption
     {
         [JsonProperty("name")]
         public string Name { get; private set; }

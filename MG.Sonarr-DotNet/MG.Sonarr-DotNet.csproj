@@ -112,8 +112,10 @@
     <Compile Include="Cmdlets\FileSystem\SearchDirectory.cs" />
     <Compile Include="Cmdlets\Indexer\GetIndexer.cs" />
     <Compile Include="Cmdlets\Indexer\GetIndexerOptions.cs" />
-    <Compile Include="Cmdlets\Indexer\GetIndexerSchema.cs" />
+    <None Include="Cmdlets\Indexer\GetIndexerSchema.cs.old" />
+    <Compile Include="Cmdlets\Indexer\NewIndexerTemplate.cs" />
     <Compile Include="Cmdlets\Indexer\IndexerCmdlet.cs" />
+    <Compile Include="Cmdlets\Indexer\NewIndexer.cs" />
     <Compile Include="Cmdlets\Indexer\RemoveIndexer.cs" />
     <Compile Include="Cmdlets\Indexer\SetIndexerOptions.cs" />
     <Compile Include="Cmdlets\Logging\ClearLog.cs" />
