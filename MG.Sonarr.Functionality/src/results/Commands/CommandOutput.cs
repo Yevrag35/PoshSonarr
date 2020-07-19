@@ -3,6 +3,7 @@ using MG.Sonarr.Functionality.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace MG.Sonarr.Results
@@ -11,7 +12,7 @@ namespace MG.Sonarr.Results
     /// The class defining a response from the "/command" endpoint.
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
-    public class CommandOutput : BaseResult, ICommandOutput
+    public class CommandOutput : BaseResult, IAdditionalInfo, ICommandOutput
     {
         [JsonExtensionData]
         protected private IDictionary<string, JToken> _additionalData;
@@ -54,5 +55,7 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("updateScheduledTask")]
         public bool UpdateScheduledTask { get; private set; }
+
+        public IDictionary GetAdditionalInfo() => _additionalData as IDictionary;
     }
 }

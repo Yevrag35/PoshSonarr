@@ -81,12 +81,6 @@ namespace MG.Sonarr.Results
         [JsonProperty("seasonFolder")]
         public bool UsingSeasonFolders { get; set; }
 
-        //public decimal GetTotalFileSize() => base.Seasons.GetTotalFileSize();
-
-        /// <summary>
-        /// Retrieves the Uri endpoint that instance was retrieved from.
-        /// </summary>
-        //public string GetEndpoint() => EP;
         public bool HasAlternateTitles() => this.AlternateTitles != null && this.AlternateTitles.Count > 0;
 
         public decimal ToSize(ByteUnit inUnit) => this.ToSize(inUnit, -1);
@@ -101,7 +95,6 @@ namespace MG.Sonarr.Results
                 return 0M;
         }
 
-        //public decimal ToSize(ByteUnit inUnit) => this.ToSize(inUnit, 2);
         private decimal ToDecimalSize(long size, ByteUnit inUnit, int numberOfDecimalPlaces)
         {
             switch (inUnit)

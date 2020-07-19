@@ -13,11 +13,6 @@ namespace MG.Sonarr.Results
         [JsonProperty("providerMessage", Order = 8)]
         public virtual ProviderMessage Message { get; protected private set; }
 
-        //[JsonProperty("tags", Order = 9)]
-        //public virtual int[] Tags { get; protected set; }
-
-        //public abstract string GetEndpoint();
-
         #endregion
     }
 }

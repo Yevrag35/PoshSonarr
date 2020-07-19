@@ -3,6 +3,7 @@ using MG.Sonarr.Functionality.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -13,7 +14,7 @@ namespace MG.Sonarr.Results
     /// <para type="description">Represents a response object from "/filesystem".</para>
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class FileSystem : BaseResult
+    public class FileSystem : BaseResult, IAdditionalInfo
     {
         [JsonExtensionData]
         private IDictionary<string, JToken> _data;
@@ -37,6 +38,8 @@ namespace MG.Sonarr.Results
             this.Files = new List<SonarrFile>();
         }
 
+        public IDictionary GetAdditionalInfo() => _data as IDictionary;
+
         private void Sort()
         {
             if (this.HasFiles)
@@ -54,21 +57,6 @@ namespace MG.Sonarr.Results
             list.AddRange(this.Files);
             return list;
         }
-        
-        //[JsonIgnore]
-        //public SonarrDirectory[] Directories { get; private set; }
-
-        //[OnDeserialized]
-        //private void OnDeserialized(StreamingContext ctx)
-        //{
-        //    if (_dirs != null && _dirs.Count > 0)
-        //    {
-        //        if (_dirs.Count > 1)
-        //            _dirs.Sort();
-
-        //        this.Directories = _dirs.ToArray();
-        //    }
-        //}
     }
 
     public abstract class FileSystemEntry : BaseResult, IComparable<FileSystemEntry>

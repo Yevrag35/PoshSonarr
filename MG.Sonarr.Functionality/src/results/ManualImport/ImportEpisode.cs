@@ -2,13 +2,14 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class ImportEpisode : BaseResult, IEpisode
+    public class ImportEpisode : BaseResult, IAdditionalInfo, IEpisode
     {
         [JsonExtensionData]
         private IDictionary<string, JToken> _extData;
@@ -39,6 +40,8 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("seriesId")]
         public long? SeriesId { get; private set; }
+
+        public IDictionary GetAdditionalInfo() => _extData as IDictionary;
 
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)

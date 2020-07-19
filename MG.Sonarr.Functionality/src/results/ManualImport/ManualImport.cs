@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -12,16 +13,13 @@ namespace MG.Sonarr.Results
     /// A result model from the /api/manualimport endpoint.
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
-    public class ManualImport : SizedResult
+    public class ManualImport : SizedResult, IAdditionalInfo
     {
         [JsonExtensionData]
         private IDictionary<string, JToken> _extData;
 
         [JsonProperty("quality", Order = 5)]
         internal ItemQuality _quality;
-
-        //[JsonProperty("series")]
-        //internal JObject _series;
 
         [JsonProperty("series")]
         private NameId _series;
@@ -45,9 +43,6 @@ namespace MG.Sonarr.Results
         [JsonIgnore]
         public string Quality => _quality?.Quality?.Name;
 
-        //[JsonIgnore]  // This turns to be wrong somehow?
-        //public int QualityProfileId => _quality.Quality.Id;
-
         [JsonProperty("qualityWeight", Order = 6)]
         public int QualityWeight { get; private set; }
 
@@ -59,7 +54,6 @@ namespace MG.Sonarr.Results
 
         [JsonIgnore]
         public string Series => _series.Name;
-        //public string Series => _series?.SelectToken("$.title").ToObject<string>();
 
         [JsonProperty("size", Order = 4)]
         public override sealed long SizeOnDisk { get; protected set; }
@@ -71,6 +65,8 @@ namespace MG.Sonarr.Results
             _series.Id = series.Id;
             _series.Name = series.Name;
         }
+
+        public IDictionary GetAdditionalInfo() => _extData as IDictionary;
 
         public bool IsReadyToPost()
         {
@@ -99,7 +95,6 @@ namespace MG.Sonarr.Results
                 };
             }
         }
-
         public JObject PostThis()
         {
             if (!this.IsReadyToPost())
@@ -115,7 +110,16 @@ namespace MG.Sonarr.Results
                 new JProperty("seriesId", _series.Id)
             };
         }
+        public override string ToJson() => JsonConvert.SerializeObject(this.PostThis(), Formatting.Indented);
+        public override string ToJson(IDictionary parameters)
+        {
+            JObject posted = this.PostThis();
+            foreach (DictionaryEntry de in parameters)
+            {
+                posted.Add(new JProperty(Convert.ToString(de.Key), de.Value));
+            }
 
-        
+            return JsonConvert.SerializeObject(posted, Formatting.Indented);
+        }
     }
 }

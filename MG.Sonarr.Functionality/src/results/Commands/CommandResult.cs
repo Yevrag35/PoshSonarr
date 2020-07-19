@@ -11,7 +11,7 @@ using System.Runtime.Serialization;
 namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class CommandResult : CommandOutput, IAdditionalInfo, ICommandResult
+    public class CommandResult : CommandOutput, ICommandResult
     {
         [JsonProperty("duration")]
         public TimeSpan? Duration { get; private set; }
@@ -22,20 +22,5 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("message")]
         public string Message { get; private set; }
-
-        public IDictionary GetAdditionalInfo()
-        {
-            return _additionalData as IDictionary;
-        }
-
-        //[OnDeserialized]
-        //private void OnDeserialized(StreamingContext context)
-        //{
-        //    JToken token = _additionalData["body"].SelectToken("$.completionMessage");
-        //    if (token != null)
-        //    {
-        //        this.Message = token.ToObject<string>();
-        //    }
-        //}
     }
 }

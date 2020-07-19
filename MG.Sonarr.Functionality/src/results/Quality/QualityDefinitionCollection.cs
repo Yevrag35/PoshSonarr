@@ -25,10 +25,5 @@ namespace MG.Sonarr.Results
         }
 
         #endregion
-
-        #region METHODS
-        //public void Add(QualityDefinition qi) => base.InnerList.Add(qi);
-
-        #endregion
     }
 }
