@@ -29,7 +29,14 @@ namespace MG.Sonarr.Results
         #region CONSTRUCTORS
         public ResultCollectionBase() => this.InnerList = new List<T>();
         public ResultCollectionBase(int capacity) => this.InnerList = new List<T>(capacity);
-        public ResultCollectionBase(IEnumerable<T> items) => this.InnerList = new List<T>(items);
+        public ResultCollectionBase(IEnumerable<T> items)
+        {
+            if (items == null)
+                this.InnerList = new List<T>();
+            
+            else
+                this.InnerList = new List<T>(items);
+        }
 
         #endregion
 

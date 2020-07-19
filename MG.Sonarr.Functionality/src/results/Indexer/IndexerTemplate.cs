@@ -74,9 +74,9 @@ namespace MG.Sonarr.Functionality
             this.InfoLink = schema.InfoLink;
             this.Name = schema.Name;
             this.Protocol = schema.Protocol;
-            this.RssEnabled = schema.RssEnabled;
+            _rss = schema.RssEnabled;
             this.RssSupported = schema.RssSupported;
-            this.SearchEnabled = schema.SearchEnabled;
+            _search = schema.SearchEnabled;
             this.SearchSupported = schema.SearchSupported;
 
             this.Fields = new FieldCollection(schema.Fields);

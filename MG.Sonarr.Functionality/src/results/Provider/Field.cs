@@ -60,7 +60,7 @@ namespace MG.Sonarr.Results
             this.IsAdvanced = field.IsAdvanced;
             this.Label = field.Label;
             this.Order = field.Order;
-            this.SelectOptions = field.SelectOptions.Select(x => new SelectOptions(x.Name, x.Value)).ToArray();
+            this.SelectOptions = field.SelectOptions?.Select(x => new SelectOptions(x.Name, x.Value)).ToArray();
             this.Type = field.Type;
             this.Value = field.Value;
         }

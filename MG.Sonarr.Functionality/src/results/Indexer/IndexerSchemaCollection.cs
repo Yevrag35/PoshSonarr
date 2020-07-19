@@ -20,7 +20,14 @@ namespace MG.Sonarr.Functionality
         public int Count => _list.Count;
         public string[] Names => _list.Select(x => x.Name).ToArray();
 
-        private IndexerSchemaCollection(IList<IndexerSchema> schemas) => _list = new List<IndexerSchema>(schemas);
+        private IndexerSchemaCollection(IList<IndexerSchema> schemas)
+        {
+            if (schemas == null)
+                _list = new List<IndexerSchema>();
+
+            else
+                _list = new List<IndexerSchema>(schemas);
+        }
 
         public IEnumerator<IndexerSchema> GetEnumerator() => _list.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();

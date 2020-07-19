@@ -16,6 +16,9 @@ namespace MG.Sonarr.Results
         [JsonProperty("name")]
         private string _name;
 
+        //[JsonProperty("presets")]
+        //private List<Indexer> _presets;
+
         [JsonIgnore]
         IEnumerable<IField> IIndexer.Fields => base.Fields;
 
@@ -31,5 +34,14 @@ namespace MG.Sonarr.Results
 
         [JsonIgnore]
         IReadOnlyList<IIndexer> IIndexerSchema.Presets => this.Presets;
+
+        //[OnDeserialized]
+        //private void OnDeserialized(StreamingContext context)
+        //{
+        //    if (_presets != null && _presets.Count > 0)
+        //    {
+        //        this.Presets = new PresetIndexerCollection(_presets);
+        //    }
+        //}
     }
 }
