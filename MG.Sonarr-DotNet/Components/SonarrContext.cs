@@ -47,7 +47,7 @@ namespace MG.Sonarr
         /// The main <see cref="HttpClient"/> from which all PoshSonarr cmdlets issue their REST requests.
         /// </summary>
 #if DEBUG
-        public static SonarrRestClient ApiCaller { get; internal set; }
+        public static ISonarrClient ApiCaller { get; internal set; }
 #else
         internal static SonarrRestClient ApiCaller { get; set; }
 #endif
@@ -79,7 +79,7 @@ namespace MG.Sonarr
 #endif
 
 #if DEBUG
-        public static TagManager TagManager { get; internal set; }
+        public static ITagManager TagManager { get; internal set; }
 #else
         internal static TagManager TagManager { get; set; }
 #endif

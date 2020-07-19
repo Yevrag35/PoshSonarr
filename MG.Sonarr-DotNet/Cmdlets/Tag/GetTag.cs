@@ -57,7 +57,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void EndProcessing()
         {
-            if (_ids.Count <= 0 && base.TryGetAllTags(out TagCollection allTags))
+            if (_ids.Count <= 0 && base.TryGetAllTags(out ITagCollection allTags))
             {
                 allTags.Sort();
                 base.SendToPipeline(base.FilterByStringParameter(allTags, t => t.Label, this, cmd => cmd._labels));

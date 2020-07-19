@@ -8,6 +8,8 @@ namespace MG.Sonarr.Functionality
     {
         Tag this[int index] { get; }
 
+        int Count { get; }
+
         bool Contains(int tagId);
         void Sort();
         void Sort(IComparer<Tag> comparer);

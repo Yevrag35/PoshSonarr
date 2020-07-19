@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace MG.Sonarr
@@ -125,7 +126,10 @@ namespace MG.Sonarr
         {
             return this.GetAsJsonListAsync<T>(url, UriKind.Relative);
         }
-        
+        Task<IRestResponse<string>> ISonarrClient.PostAsJsonAsync(string url)
+        {
+            return this.PostAsJsonAsync<string>(url);
+        }
         Task<IRestResponse<T>> ISonarrClient.PostAsJsonAsync<T>(string url, IJsonResult payload)
         {
             return this.PostAsJsonAsync<T>(new Uri(url, UriKind.Relative), payload);
@@ -138,9 +142,9 @@ namespace MG.Sonarr
         {
             return this.PutAsJsonAsync<T>(new Uri(url, UriKind.Relative), payload);
         }
-        Task<IRestResponse> PutAsObjectAsync(string url, IJsonResult payload, Type type)
+        Task<IRestResponse> ISonarrClient.PutAsObjectAsync(string url, IJsonResult payload, Type type)
         {
-            return this.PutAsObjectAsync(url, payload, type);
+            return this.PutAsObjectAsync(url, payload, type, Encoding.UTF8);
         }
 
         #endregion

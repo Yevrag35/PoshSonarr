@@ -225,7 +225,7 @@ namespace MG.Sonarr.Cmdlets
         
         private Task<IRestResponse<T>> SendSonarrPostAsTask<T>(string apiPath, IJsonResult payload) where T : class
         {
-            return Context.ApiCaller.PostAsJsonAsync<T>(new Uri(apiPath, UriKind.Relative), payload);
+            return Context.ApiCaller.PostAsJsonAsync<T>(apiPath, payload);
         }
         
         protected void SendSonarrPostNoData(string endpoint)
@@ -237,7 +237,7 @@ namespace MG.Sonarr.Cmdlets
         }
         private Task<IRestResponse<string>> SendSonarrPostNoDataAsTask(string apiPath)
         {
-            return Context.ApiCaller.PostAsJsonAsync<string>(new Uri(apiPath, UriKind.Relative));
+            return Context.ApiCaller.PostAsJsonAsync(apiPath);
         }
 
         protected List<T> SendSonarrListPost<T>(string endpoint, IJsonResult payload) where T : class
@@ -277,11 +277,11 @@ namespace MG.Sonarr.Cmdlets
 
         private Task<IRestResponse<T>> SendSonarrPutAsTask<T>(string apiPath, IJsonResult payload) where T : class
         {
-            return Context.ApiCaller.PutAsJsonAsync<T>(new Uri(apiPath, UriKind.Relative), payload);
+            return Context.ApiCaller.PutAsJsonAsync<T>(apiPath, payload);
         }
         private Task<IRestResponse> SendSonarrPutAsTask(string apiPath, IJsonResult payload, Type payloadType)
         {
-            return Context.ApiCaller.PutAsObjectAsync(new Uri(apiPath, UriKind.Relative), payload.ToJson(), payloadType, Encoding.UTF8);
+            return Context.ApiCaller.PutAsObjectAsync(apiPath, payload, payloadType);
         }
 
         #endregion
