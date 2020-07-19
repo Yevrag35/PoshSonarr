@@ -9,8 +9,8 @@ namespace MG.Sonarr.Functionality
         int Count { get; }
         long[] Ids { get; }
 
-        void AddResult(CommandResult newEntry);
-        void AddResults(IEnumerable<CommandResult> newEntries);
+        void AddResult(ICommandOutput newEntry);
+        void AddResults(IEnumerable<ICommandOutput> newEntries);
 
         IEnumerable<IPastJob> FindById(IEnumerable<long> ids);
 

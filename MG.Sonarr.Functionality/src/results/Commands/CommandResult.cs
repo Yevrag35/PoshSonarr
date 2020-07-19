@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Functionality.Converters;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -10,7 +11,7 @@ using System.Runtime.Serialization;
 namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class CommandResult : CommandOutput, IAdditionalInfo
+    public class CommandResult : CommandOutput, IAdditionalInfo, ICommandResult
     {
         [JsonProperty("duration")]
         public TimeSpan? Duration { get; private set; }

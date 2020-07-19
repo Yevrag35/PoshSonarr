@@ -11,19 +11,19 @@ namespace MG.Sonarr.Results
     /// The class defining a response from the "/command" endpoint.
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
-    public class CommandOutput : BaseResult
+    public class CommandOutput : BaseResult, ICommandOutput
     {
         [JsonExtensionData]
         protected private IDictionary<string, JToken> _additionalData;
 
         [JsonProperty("name")]
-        public string CommandName { get; private set; }
+        public string Command { get; private set; }
 
         [JsonProperty("manual")]
         public bool IsManual { get; private set; }
 
         [JsonProperty("id")]
-        public long JobId { get; private set; }
+        public long Id { get; private set; }
 
         [JsonProperty("priority")]
         public CommandPriority Priority { get; private set; }

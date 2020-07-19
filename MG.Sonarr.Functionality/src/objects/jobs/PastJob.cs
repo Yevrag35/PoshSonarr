@@ -7,17 +7,28 @@ namespace MG.Sonarr.Functionality.Internal
     internal class PastJob : IPastJob, IComparable<IPastJob>, IComparable<PastJob>
     {
         public string Command { get; }
-        public DateTimeOffset Ended { get; }
+        public DateTimeOffset? Ended { get; private set; }
         public long Id { get; }
         public DateTimeOffset Started { get; }
 
-        internal PastJob(CommandResult output)
+        internal PastJob(ICommandOutput output)
         {
-            //this.Order = order;
-            this.Command = output.CommandName;
-            this.Id = output.JobId;
-            this.Ended = output.Ended.GetValueOrDefault();
+            this.Command = output.Command;
+            this.Id = output.Id;
             this.Started = output.Started.Value;
+
+            if (output is ICommandResult cr)
+            {
+                this.Ended = cr.Ended.GetValueOrDefault();
+            }
+        }
+
+        public void SetEndTime(DateTimeOffset ended)
+        {
+            if (!this.Ended.HasValue)
+            {
+                this.Ended = ended;
+            }
         }
 
         int IComparable<PastJob>.CompareTo(PastJob other) => this.CompareTo(other);
@@ -26,7 +37,7 @@ namespace MG.Sonarr.Functionality.Internal
             int start = this.Started.CompareTo(other.Started) * -1;
             if (start == 0)
             {
-                int ended = this.Ended.CompareTo(other.Ended) * -1;
+                int ended = this.Ended.GetValueOrDefault().CompareTo(other.Ended.GetValueOrDefault()) * -1;
                 if (ended == 0)
                 {
                     return this.Command.CompareTo(other.Command);
@@ -39,7 +50,7 @@ namespace MG.Sonarr.Functionality.Internal
         }
 
         [Obsolete]
-        internal static bool TryFromResult(CommandResult result, out IPastJob pastJob)
+        internal static bool TryFromResult(CommandOutput result, out IPastJob pastJob)
         {
             pastJob = null;
             if (result != null && result.Status == CommandStatus.Completed && result.Started.HasValue)

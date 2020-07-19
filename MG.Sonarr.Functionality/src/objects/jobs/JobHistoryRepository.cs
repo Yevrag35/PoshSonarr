@@ -32,21 +32,21 @@ namespace MG.Sonarr.Functionality.Internal
         //    );
         //}
 
-        private void AddResultInternal(CommandResult newEntry)
+        private void AddResultInternal(ICommandOutput newEntry)
         {
-            if (this.ResultIsValid(newEntry) && !_jobs.Exists(x => x.Id == newEntry.JobId))
+            if (this.ResultIsValid(newEntry) && !_jobs.Exists(x => x.Id == newEntry.Id))
             {
                 _jobs.Add(new PastJob(newEntry));
             }
         }
-        public void AddResult(CommandResult newEntry)
+        public void AddResult(ICommandOutput newEntry)
         {
             this.AddResultInternal(newEntry);
             this.Sort();
         }
-        public void AddResults(IEnumerable<CommandResult> entries)
+        public void AddResults(IEnumerable<ICommandOutput> entries)
         {
-            foreach (CommandResult cr in entries) {
+            foreach (ICommandOutput cr in entries) {
                 this.AddResultInternal(cr);
             }
             this.Sort();
@@ -72,6 +72,6 @@ namespace MG.Sonarr.Functionality.Internal
 
         public void Sort() => _jobs.Sort();
 
-        private bool ResultIsValid(CommandResult result) => result != null && result.Status == CommandStatus.Completed && result.Started.HasValue;
+        private bool ResultIsValid(ICommandOutput result) => result != null && result.Started.HasValue;
     }
 }

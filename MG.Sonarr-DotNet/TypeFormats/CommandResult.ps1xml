@@ -11,7 +11,7 @@
 					<ListEntry>
 						<ListItems>
 							<ListItem>
-								<PropertyName>CommandName</PropertyName>
+								<PropertyName>Command</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Duration</PropertyName>
@@ -23,7 +23,7 @@
 								<PropertyName>IsManual</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>JobId</PropertyName>
+								<PropertyName>Id</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Message</PropertyName>

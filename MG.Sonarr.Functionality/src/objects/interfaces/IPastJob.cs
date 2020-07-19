@@ -6,8 +6,10 @@ namespace MG.Sonarr.Functionality
     public interface IPastJob
     {
         string Command { get; }
-        DateTimeOffset Ended { get; }
+        DateTimeOffset? Ended { get; }
         long Id { get; }
         DateTimeOffset Started { get; }
+
+        void SetEndTime(DateTimeOffset ended);
     }
 }
