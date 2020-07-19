@@ -1,10 +1,10 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Sonarr.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MG.Sonarr.Results
+namespace MG.Sonarr.Functionality
 {
     public sealed class IndexerSchemaDictionary : IReadOnlyDictionary<string, IndexerSchema>
     {

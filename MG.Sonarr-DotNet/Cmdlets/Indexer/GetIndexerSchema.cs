@@ -19,7 +19,7 @@ namespace MG.Sonarr.Cmdlets
             if (Context.IndexerSchemas == null)
             {
                 List<IndexerSchema> schemas = base.SendSonarrListGet<IndexerSchema>(ApiEndpoint.IndexerSchema);
-                Context.IndexerSchemas = new IndexerSchemaDictionary(schemas);
+                Context.IndexerSchemas = IndexerSchemaCollection.FromSchemas(schemas);
             }
         }
         protected override void ProcessRecord()
