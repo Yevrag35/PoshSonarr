@@ -214,7 +214,7 @@ namespace MG.Sonarr.Cmdlets
             History.Initialize();
             List<QualityDefinition> definitions = base.SendSonarrListGet<QualityDefinition>("/qualitydefinition");
             Context.AllQualities = new QualityDictionary(definitions.Select(x => x.Quality));
-            Context.TagManager = new TagManager(Context.ApiCaller, !_noApiPrefix);
+            Context.TagManager = ClassFactory.NewTagManager(Context.ApiCaller, !_noApiPrefix);
 
             List<IndexerSchema> schemas = base.SendSonarrListGet<IndexerSchema>(ApiEndpoint.IndexerSchema);
             Context.IndexerSchemas = IndexerSchemaCollection.FromSchemas(schemas);

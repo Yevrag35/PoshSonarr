@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace MG.Sonarr
@@ -113,13 +114,37 @@ namespace MG.Sonarr
                 : false;
         }
 
-        public Task<IRestResponse<T>> GetAsJsonAsync<T>(string url) where T : class
+        Task<IRestResponse> ISonarrClient.DeleteAsJsonAsync(string url)
+        {
+            return this.DeleteAsJsonAsync(url);
+        }
+        Task<IRestResponse<T>> ISonarrClient.GetAsJsonAsync<T>(string url)
         {
             return this.GetAsJsonAsync<T>(url, UriKind.Relative);
         }
-        public Task<IRestListResponse<T>> GetAsJsonListAsync<T>(string url) where T : class
+        Task<IRestListResponse<T>> ISonarrClient.GetAsJsonListAsync<T>(string url)
         {
             return this.GetAsJsonListAsync<T>(url, UriKind.Relative);
+        }
+        Task<IRestResponse<string>> ISonarrClient.PostAsJsonAsync(string url)
+        {
+            return this.PostAsJsonAsync<string>(url);
+        }
+        Task<IRestResponse<T>> ISonarrClient.PostAsJsonAsync<T>(string url, IJsonResult payload)
+        {
+            return this.PostAsJsonAsync<T>(new Uri(url, UriKind.Relative), payload);
+        }
+        Task<IRestListResponse<T>> ISonarrClient.PostAsJsonListAsync<T>(string url, IJsonResult payload)
+        {
+            return this.PostAsJsonListAsync<T>(url, payload);
+        }
+        Task<IRestResponse<T>> ISonarrClient.PutAsJsonAsync<T>(string url, IJsonResult payload)
+        {
+            return this.PutAsJsonAsync<T>(new Uri(url, UriKind.Relative), payload);
+        }
+        Task<IRestResponse> ISonarrClient.PutAsObjectAsync(string url, IJsonResult payload, Type type)
+        {
+            return this.PutAsObjectAsync(url, payload, type, Encoding.UTF8);
         }
 
         #endregion

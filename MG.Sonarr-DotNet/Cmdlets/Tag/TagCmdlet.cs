@@ -60,7 +60,7 @@ namespace MG.Sonarr.Cmdlets
             return result;
         }
 
-        protected bool TryGetAllTags(out TagCollection outTags)
+        protected bool TryGetAllTags(out ITagCollection outTags)
         {
             outTags = Context.TagManager.AllTags;
             return outTags != null && outTags.Count > 0;

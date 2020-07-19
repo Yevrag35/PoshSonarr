@@ -69,5 +69,7 @@ namespace MG.Sonarr.Functionality
         public const string Series_LookupByStr = Series_LookupFormat + "term={0}";
         public const string Series_LookupById = Series_LookupFormat + "term=tvdb:{0}";
 
+        // Tags - Extra paths
+        public const string Tag_ById = Tag + BY_ID;
     }
 }

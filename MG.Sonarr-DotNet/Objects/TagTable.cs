@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,115 +20,98 @@ namespace MG.Sonarr
         #endregion
 
         #region PROPERTIES
-        public int[] AddTagIds { get; private set; }
-        public string[] AddTags { get; private set; }
-        public bool IsAdding => _isAdding;
-        public bool HasAddById => _isAdding && this.AddTagIds != null && this.AddTagIds.Length > 0;
-        public bool HasRemoveById => _isRemoving && this.RemoveTagIds != null && this.RemoveTagIds.Length > 0;
-        public bool IsRemoving => _isRemoving;
-        public bool HasSetById => _isSetting && this.SetTagIds != null && this.SetTagIds.Length > 0;
-        public bool IsSetting => _isSetting;
-        public int[] RemoveTagIds { get; private set; }
-        public string[] RemoveTags { get; private set; }
-        public int[] SetTagIds { get; private set; }
-        public string[] SetTags { get; private set; }
+        public HashSet<TagEntry> Entries { get; }
+
+        public IEnumerable<int> Add => this.Entries.Where(x => x.Action == TagAction.Add).Select(x => x.Id);
+        public IEnumerable<int> Remove => this.Entries.Where(x => x.Action == TagAction.Remove).Select(x => x.Id);
+        public IEnumerable<int> Set => this.Entries.Where(x => x.Action == TagAction.Set).Select(x => x.Id);
 
         #endregion
 
         #region CONSTRUCTORS
         public TagTable(params object[] input)
         {
-            if (this.TryInputAsDictionary(input, out IDictionary outDict))
-            {
-                this.SetTagActions(outDict);
-            }
-            else if (this.TryInputAsInts(input, out int[] outInts))
-            {
-                _isSetting = true;
-                this.SetTagIds = outInts;
-            }
-            else if (this.TryInputAsStrings(input, out string[] outStrs))
-            {
-                _isSetting = true;
-                this.SetTags = outStrs;
-            }
+            this.Entries = new HashSet<TagEntry>(new TagEntryEquality());
+            if (input != null && input.Length > 0)
+                this.ProcessInput(input);
         }
 
         #endregion
 
         #region PUBLIC METHODS
-
-
-        #endregion
-
-        #region BACKEND/PRIVATE METHODS
-        private IEnumerable<string> GetStringKeys(IDictionary dict)
+        public void ModifyObject(ISupportsTagUpdate input)
         {
-            foreach (object o in dict.Keys)
+            if (_isSetting)
             {
-                if (o is string oStr)
-                    yield return oStr;
-
-                else if (o is IConvertible icon)
-                    yield return Convert.ToString(icon);
+                input.Tags.Clear();
+                input.Tags.UnionWith(this.Set);
+            }
+            else
+            {
+                if (_isAdding)
+                {
+                    input.Tags.UnionWith(this.Add);
+                }
+                if (_isRemoving)
+                {
+                    input.Tags.ExceptWith(this.Remove);
+                }
             }
         }
-        private void SetTagActions(IDictionary dict)
-        {
-            var ints = new List<int>();
-            var strs = new List<string>();
-            IEnumerable<string> keys = this.GetStringKeys(dict);
-            var igc = ClassFactory.NewIgnoreCase();
-            if (keys.Contains(ADD, igc) && this.TryGetKey(keys, ADD, out string key))
-            {
-                _isAdding = true;
-                object val = dict[key];
-                if (!this.ValueFromEnumerable(val, ref strs, ref ints))
-                {
-                    if (val is string oneStr)
-                    {
-                        strs.Add(oneStr);
-                    }
-                    else if (val is int oneInt)
-                    {
-                        ints.Add(oneInt);
-                    }   
-                }
-                if (strs.Count > 0)
-                {
-                    this.AddTags = strs.ToArray();
-                    strs.Clear();
-                }
 
-                if (ints.Count > 0)
+        #endregion
+        private void ProcessInput(object[] input)
+        {
+            if (this.TryInputAsDictionary(input, out IDictionary outDict))
+            {
+                _isSetting = false;
+                IEnumerable<string> keys = this.GetStringKeys(outDict.Keys);
+
+                _isAdding = this.TryGetKey(keys, ADD, out string outAddKey);
+                string _addingKey = outAddKey;
+
+                _isRemoving = this.TryGetKey(keys, REMOVE, out string outRemKey);
+                string _removingKey = outRemKey;
+
+                if (_isAdding)
                 {
-                    this.AddTagIds = ints.ToArray();
-                    ints.Clear();
+                    object addO = outDict[_addingKey];
+                    this.AddToEntries(TagAction.Add, addO);
+                }
+                if (_isRemoving)
+                {
+                    object remO = outDict[_removingKey];
+                    this.AddToEntries(TagAction.Remove, remO);
                 }
             }
-            if (keys.Contains(REMOVE, igc) && this.TryGetKey(keys, REMOVE, out string remKey))
+            else
             {
-                _isRemoving = true;
-                object val = dict[remKey];
-                if (!this.ValueFromEnumerable(val, ref strs, ref ints))
-                {
-                    if (val is string oneStr)
-                    {
-                        strs.Add(oneStr);
-                    }
-                    else if (val is int oneInt)
-                    {
-                        ints.Add(oneInt);
-                    }
-                }
-                if (strs.Count > 0)
-                {
-                    this.RemoveTags = strs.ToArray();
-                }
+                _isSetting = true;
+                this.AddToEntries(TagAction.Set, input);
+            }
+        }
 
-                if (ints.Count > 0)
+        private void AddToEntries(TagAction action, object value)
+        {
+            if (value is ICollection icol)
+            {
+                foreach (object o in icol)
                 {
-                    this.RemoveTagIds = ints.ToArray();
+                    this.AddToEntries(action, o);
+                }
+            }
+            else if (Context.TagManager.TryGetTag(value, out Tag tag))
+            {
+                this.Entries.Add(new TagEntry(tag, action));
+            }
+        }
+        private IEnumerable<string> GetStringKeys(ICollection keys)
+        {
+            foreach (object o in keys)
+            {
+                if (o is string oStr)
+                {
+                    yield return oStr;
                 }
             }
         }
@@ -144,77 +128,5 @@ namespace MG.Sonarr
 
             return outDict != null;
         }
-        private bool TryInputAsInts(object[] input, out int[] outInts)
-        {
-            outInts = null;
-            if (input != null)
-            {
-                var list = new List<int>(input.Length);
-                try
-                {
-                    foreach (IConvertible icon in input)
-                    {
-                        if (int.TryParse(Convert.ToString(icon), out int conInt))
-                        {
-                            list.Add(conInt);
-                        }
-                    }
-                    outInts = list.ToArray();
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-            return outInts != null && outInts.Length == input.Length;
-        }
-        private bool TryInputAsStrings(object[] input, out string[] outStrs)
-        {
-            outStrs = null;
-            if (input != null)
-            {
-                try
-                {
-                    outStrs = new string[input.Length];
-                    for (int i = 0; i < input.Length; i++)
-                    {
-                        if (input[i] is IConvertible icon)
-                        {
-                            outStrs[i] = Convert.ToString(icon);
-                        }
-                        else
-                            return false;
-                    }
-                }
-                catch (InvalidCastException)
-                {
-                    return false;
-                }
-            }
-            return outStrs != null && outStrs.Length == input.Length;
-        }
-
-        private bool ValueFromEnumerable(object value, ref List<string> strs, ref List<int> ints)
-        {
-            bool result = false;
-            if (value is IEnumerable ienum && !(value is string))
-            {
-                result = true;
-                foreach (object o in ienum)
-                {
-                    if (o is string oStr)
-                    {
-                        strs.Add(oStr);
-                    }
-                    else if (o is IConvertible icon && int.TryParse(Convert.ToString(icon), out int outInt))
-                    {
-                        ints.Add(outInt);
-                    }
-                }
-            }
-            return result;
-        }
-
-        #endregion
     }
 }

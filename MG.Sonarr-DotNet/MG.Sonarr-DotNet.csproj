@@ -201,6 +201,7 @@
     <None Include="GenerateManifest.ps1" />
     <Compile Include="Objects\NameOrId.cs" />
     <Compile Include="Objects\ProxyCredential.cs" />
+    <Compile Include="Objects\TagEntry.cs" />
     <Compile Include="Objects\TagTable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

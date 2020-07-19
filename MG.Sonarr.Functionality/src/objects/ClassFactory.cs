@@ -19,7 +19,7 @@ namespace MG.Sonarr.Functionality
             return new SonarrUrl(hostName, portNumber, useSsl, reverseProxyBase, includeApiPrefix);
         }
         public static IEqualityComparer<string> NewIgnoreCase() => new IgnoreCase();
-
         public static IJobHistory NewJobHistory() => new JobHistoryRepository();
+        public static ITagManager NewTagManager(ISonarrClient client, bool addApiToPath) => new TagManager(client, addApiToPath);
     }
 }
