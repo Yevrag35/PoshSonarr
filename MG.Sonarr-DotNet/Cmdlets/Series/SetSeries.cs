@@ -14,7 +14,7 @@ namespace MG.Sonarr.Cmdlets
     public class SetSeries : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private List<Tag> _allCurrentTags;
+        //private List<Tag> _allCurrentTags;
         private TagTable _tagTable;
 
         private bool _clearTags;
@@ -52,7 +52,7 @@ namespace MG.Sonarr.Cmdlets
         public int QualityProfileId { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "EditingTags")]
-        public object[] Tags { get; set; }
+        public object[] Tag { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "ClearTags")]
         public SwitchParameter ClearTags
@@ -74,10 +74,10 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (this.ContainsParameter(x => x.Tags))
+            if (this.ContainsParameter(x => x.Tag))
             {
-                _allCurrentTags = base.SendSonarrListGet<Tag>(TAG);
-                _tagTable = new TagTable(this.Tags);
+                //_allCurrentTags = base.SendSonarrListGet<Tag>(TAG);
+                _tagTable = new TagTable(this.Tag);
             }
         }
         protected override void ProcessRecord()
@@ -85,7 +85,9 @@ namespace MG.Sonarr.Cmdlets
             this.MakeChangesBasedOnParameters();
 
             if (_tagTable != null)
-                this.FormatTags(_tagTable);
+            {
+                _tagTable.ModifyObject(this.InputObject);
+            }
 
             else if (_clearTags)
                 this.InputObject.Tags.Clear();
@@ -105,111 +107,111 @@ namespace MG.Sonarr.Cmdlets
         #region METHODS
 
         #region TAGS
-        [Obsolete]
-        private Tag CreateNewTag(string label)
-        {
-            var pbp = new SonarrBodyParameters
-            {
-                { "label", label }
-            };
-            return base.SendSonarrPost<Tag>(TAG, pbp);
-        }
-        [Obsolete]
-        private void FormatTags(TagTable tt)
-        {
-            if (tt.IsSetting)
-                this.SettingTags(tt);
+        //[Obsolete]
+        //private Tag CreateNewTag(string label)
+        //{
+        //    var pbp = new SonarrBodyParameters
+        //    {
+        //        { "label", label }
+        //    };
+        //    return base.SendSonarrPost<Tag>(TAG, pbp);
+        //}
+        //[Obsolete]
+        //private void FormatTags(TagTable tt)
+        //{
+        //    if (tt.IsSetting)
+        //        this.SettingTags(tt);
 
-            else
-            {
-                if (tt.IsAdding)
-                {
-                    this.AddingTags(tt);
-                }
-                if (tt.IsRemoving)
-                    this.RemovingTags(tt);
-            }
-        }
-        [Obsolete]
-        private void AddingTags(TagTable tt)
-        {
-            if (tt.HasAddById)
-            {
-                this.InputObject.Tags.UnionWith(tt.AddTagIds);
-            }
-            if (tt.AddTags != null && tt.AddTags.Length > 0)
-            {
-                foreach (string s in tt.AddTags)
-                {
-                    if (this.TryGetTagId(s, out int tagId))
-                    {
-                        this.InputObject.Tags.Add(tagId);
-                    }
-                    else
-                    {
-                        Tag newTag = this.CreateNewTag(s);
-                        if (newTag != null)
-                        {
-                            _allCurrentTags.Add(newTag);
-                            this.InputObject.Tags.Add(newTag.Id);
-                        }
-                    }
-                }
-            }
-        }
-        [Obsolete]
-        private void RemovingTags(TagTable tt)
-        {
-            if (tt.HasRemoveById)
-            {
-                this.InputObject.Tags.ExceptWith(tt.RemoveTagIds);
-            }
-            if (tt.RemoveTags != null && tt.RemoveTags.Length > 0)
-            {
-                foreach (string s in tt.RemoveTags)
-                {
-                    if (this.TryGetTagId(s, out int tagId))
-                        this.InputObject.Tags.Remove(tagId);
-                }
-            }
-        }
-        [Obsolete]
-        private void SettingTags(TagTable tt)
-        {
-            this.InputObject.Tags.Clear();
-            if (tt.HasSetById)
-            {
-                this.InputObject.Tags.UnionWith(tt.SetTagIds);
-            }
-            if (tt.SetTags != null && tt.SetTags.Length > 0)
-            {
-                foreach (string s in tt.SetTags)
-                {
-                    if (this.TryGetTagId(s, out int tagId))
-                        this.InputObject.Tags.Add(tagId);
+        //    else
+        //    {
+        //        if (tt.IsAdding)
+        //        {
+        //            this.AddingTags(tt);
+        //        }
+        //        if (tt.IsRemoving)
+        //            this.RemovingTags(tt);
+        //    }
+        //}
+        //[Obsolete]
+        //private void AddingTags(TagTable tt)
+        //{
+        //    if (tt.HasAddById)
+        //    {
+        //        this.InputObject.Tags.UnionWith(tt.AddTagIds);
+        //    }
+        //    if (tt.AddTags != null && tt.AddTags.Length > 0)
+        //    {
+        //        foreach (string s in tt.AddTags)
+        //        {
+        //            if (this.TryGetTagId(s, out int tagId))
+        //            {
+        //                this.InputObject.Tags.Add(tagId);
+        //            }
+        //            else
+        //            {
+        //                Tag newTag = this.CreateNewTag(s);
+        //                if (newTag != null)
+        //                {
+        //                    _allCurrentTags.Add(newTag);
+        //                    this.InputObject.Tags.Add(newTag.Id);
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
+        //[Obsolete]
+        //private void RemovingTags(TagTable tt)
+        //{
+        //    if (tt.HasRemoveById)
+        //    {
+        //        this.InputObject.Tags.ExceptWith(tt.RemoveTagIds);
+        //    }
+        //    if (tt.RemoveTags != null && tt.RemoveTags.Length > 0)
+        //    {
+        //        foreach (string s in tt.RemoveTags)
+        //        {
+        //            if (this.TryGetTagId(s, out int tagId))
+        //                this.InputObject.Tags.Remove(tagId);
+        //        }
+        //    }
+        //}
+        //[Obsolete]
+        //private void SettingTags(TagTable tt)
+        //{
+        //    this.InputObject.Tags.Clear();
+        //    if (tt.HasSetById)
+        //    {
+        //        this.InputObject.Tags.UnionWith(tt.SetTagIds);
+        //    }
+        //    if (tt.SetTags != null && tt.SetTags.Length > 0)
+        //    {
+        //        foreach (string s in tt.SetTags)
+        //        {
+        //            if (this.TryGetTagId(s, out int tagId))
+        //                this.InputObject.Tags.Add(tagId);
 
-                    else
-                    {
-                        Tag newTag = this.CreateNewTag(s);
-                        if (newTag != null)
-                        {
-                            _allCurrentTags.Add(newTag);
-                            this.InputObject.Tags.Add(newTag.Id);
-                        }
-                    }
-                }
-            }
-        }
-        [Obsolete]
-        private bool TryGetTagId(string tagLabel, out int tagId)
-        {
-            tagId = 0;
-            int? maybe = _allCurrentTags.Find(x => x.Label.Equals(tagLabel, StringComparison.InvariantCultureIgnoreCase))?.Id;
-            if (maybe.HasValue)
-                tagId = maybe.Value;
+        //            else
+        //            {
+        //                Tag newTag = this.CreateNewTag(s);
+        //                if (newTag != null)
+        //                {
+        //                    _allCurrentTags.Add(newTag);
+        //                    this.InputObject.Tags.Add(newTag.Id);
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
+        //[Obsolete]
+        //private bool TryGetTagId(string tagLabel, out int tagId)
+        //{
+        //    tagId = 0;
+        //    int? maybe = _allCurrentTags.Find(x => x.Label.Equals(tagLabel, StringComparison.InvariantCultureIgnoreCase))?.Id;
+        //    if (maybe.HasValue)
+        //        tagId = maybe.Value;
 
-            return maybe.HasValue;
-        }
+        //    return maybe.HasValue;
+        //}
 
         #endregion
 
