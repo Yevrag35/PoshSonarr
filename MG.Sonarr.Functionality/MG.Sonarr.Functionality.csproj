@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="src\objects\converters\CollectionConverter.cs" />
     <Compile Remove="src\objects\dateFormats\DateFormatAttribute.cs" />
     <Compile Remove="src\objects\dateFormats\ShortDateFormat.cs" />
     <Compile Remove="src\objects\dateFormats\WeekColumnHeader.cs" />
@@ -31,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="src\objects\converters\CollectionConverter.cs" />
     <None Include="src\objects\dateFormats\DateFormatAttribute.cs" />
     <None Include="src\objects\dateFormats\ShortDateFormat.cs" />
     <None Include="src\objects\dateFormats\WeekColumnHeader.cs" />

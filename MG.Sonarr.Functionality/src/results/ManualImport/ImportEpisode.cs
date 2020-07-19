@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MG.Sonarr.Functionality;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Runtime.Serialization;
 namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public class ImportEpisode : BaseResult
+    public class ImportEpisode : BaseResult, IEpisode
     {
         [JsonExtensionData]
         private IDictionary<string, JToken> _extData;
@@ -17,6 +18,9 @@ namespace MG.Sonarr.Results
 
         [JsonIgnore]
         public DateTimeOffset? AirDate { get; private set; }
+
+        [JsonIgnore]
+        DateTime? IEpisode.AirDate => this.AirDate.GetValueOrDefault().LocalDateTime;
 
         [JsonProperty("episodeNumber")]
         public int? EpisodeNumber { get; private set; }
@@ -43,6 +47,18 @@ namespace MG.Sonarr.Results
             {
                 this.AirDate = _extData["airDateUtc"].ToObject<DateTimeOffset>().ToLocalTime();
             }
+        }
+
+        public void ApplyDataFromEpisode(IEpisode episode)
+        {
+            this.AbsoluteEpisodeNumber = episode.AbsoluteEpisodeNumber;
+            this.AirDate = episode.AirDate;
+            this.EpisodeNumber = episode.EpisodeNumber;
+            this.Id = episode.Id;
+            this.IsMonitored = episode.IsMonitored;
+            this.Name = episode.Name;
+            this.SeasonNumber = episode.SeasonNumber;
+            this.SeriesId = episode.SeriesId;
         }
     }
 }

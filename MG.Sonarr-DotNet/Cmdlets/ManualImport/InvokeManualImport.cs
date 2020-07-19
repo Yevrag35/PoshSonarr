@@ -9,7 +9,7 @@ using System.Management.Automation;
 namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsLifecycle.Invoke, "ManualImport", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
-    [OutputType(typeof(CommandResult))]
+    [OutputType(typeof(CommandOutput))]
     public class InvokeManualImport : BaseManualImportCmdlet
     {
         #region FIELDS/CONSTANTS
@@ -45,11 +45,18 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void EndProcessing()
         {
-            if (_force || base.FormatShouldProcess("Import", "{0} manual import(s)", _toDo.Count))
+            if (_toDo.Count > 0)
             {
-                SonarrBodyParameters sbp = ManualImportPost.NewManualImportObject(_toDo);
-                CommandResult cr = base.SendSonarrPost<CommandResult>(ApiEndpoint.Command, sbp);
-                base.SendToPipeline(cr);
+                if (_force || base.FormatShouldProcess("Import", "{0} manual import(s)", _toDo.Count))
+                {
+                    SonarrBodyParameters sbp = ManualImportPost.NewManualImportObject(_toDo);
+                    CommandOutput cr = base.SendSonarrPost<CommandOutput>(ApiEndpoint.Command, sbp);
+                    if (cr != null)
+                    {
+                        base.WriteObject(cr);
+                        History.Jobs.AddResult(cr);
+                    }
+                }
             }
         }
 
@@ -60,9 +67,9 @@ namespace MG.Sonarr.Cmdlets
         {
             foreach (ManualImport mi in each)
             {
-                if (mi.Rejections.Length > 0)
+                if (mi.Rejections.Length > 0 && !mi.IsReadyToPost())
                 {
-                    base.WriteWarning(string.Format("{0} has rejections.  Skipping...", mi.Id));
+                    base.WriteWarning(string.Format("{0} has not been properly identified.  Skipping...", mi.Id));
                 }
                 else
                 {

@@ -11,7 +11,7 @@ namespace MG.Sonarr.Results
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [Serializable]
-    public sealed class SeriesResult : SearchSeries, ICanCalculate, ISupportsTagUpdate
+    public sealed class SeriesResult : SearchSeries, ICanCalculate, ISeries, ISupportsTagUpdate
     {
         private const string EP = "/series";
 
