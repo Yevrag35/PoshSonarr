@@ -1,6 +1,9 @@
 ﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Converters;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace MG.Sonarr.Results
@@ -9,31 +12,37 @@ namespace MG.Sonarr.Results
     /// The class defining a response from the "/command" endpoint.
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
-    public class CommandOutput : BaseResult
+    public class CommandOutput : BaseResult, IAdditionalInfo, ICommandOutput
     {
+        [JsonExtensionData]
+        protected private IDictionary<string, JToken> _additionalData;
+
         [JsonProperty("name")]
-        public string CommandName { get; private set; }
+        public string Command { get; private set; }
 
         [JsonProperty("manual")]
         public bool IsManual { get; private set; }
 
         [JsonProperty("id")]
-        public long JobId { get; private set; }
+        public long Id { get; private set; }
 
         [JsonProperty("priority")]
         public CommandPriority Priority { get; private set; }
 
         [JsonProperty("queued")]
-        public DateTime Queued { get; private set; }
+        [JsonConverter(typeof(UtcOffsetConverter))]
+        public DateTimeOffset? Queued { get; private set; }
 
         [JsonProperty("sendUpdatesToClient")]
         public bool SendUpdatesToClient { get; private set; }
 
         [JsonProperty("startedOn")]
-        public DateTime Started { get; private set; }
+        [JsonConverter(typeof(UtcOffsetConverter))]
+        public DateTimeOffset? Started { get; private set; }
 
         [JsonProperty("stateChangeTime")]
-        public DateTime StateChangeTime { get; private set; }
+        [JsonConverter(typeof(UtcOffsetConverter))]
+        public DateTimeOffset? StateChangeTime { get; private set; }
 
         [JsonProperty("status")]
         public CommandStatus Status { get; private set; }
@@ -46,5 +55,7 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("updateScheduledTask")]
         public bool UpdateScheduledTask { get; private set; }
+
+        public IDictionary GetAdditionalInfo() => _additionalData as IDictionary;
     }
 }

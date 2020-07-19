@@ -20,6 +20,7 @@
     <Compile Remove="src\objects\interfaces\IRestResponse.cs" />
     <Compile Remove="src\objects\rest\SonarrRestResponse.cs" />
     <Compile Remove="src\objects\TotalSize.cs" />
+    <Compile Remove="src\objects\UrlParameters\OrderParameter.cs" />
     <Compile Remove="src\results\Config\UIConfig.cs" />
     <Compile Remove="src\results\Quality\QualityDefinitionCollection.cs" />
     <Compile Remove="src\results\Quality\QualityItemCollection.cs" />
@@ -36,6 +37,7 @@
     <None Include="src\objects\interfaces\IRestResponse.cs" />
     <None Include="src\objects\rest\SonarrRestResponse.cs" />
     <None Include="src\objects\TotalSize.cs" />
+    <None Include="src\objects\UrlParameters\OrderParameter.cs" />
     <None Include="src\results\Config\UIConfig.cs" />
     <None Include="src\results\Quality\QualityDefinitionCollection.cs" />
   </ItemGroup>

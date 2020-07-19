@@ -179,9 +179,7 @@ namespace MG.Sonarr.Cmdlets
 
             if (statusResult != null)
             {
-                List<QualityDefinition> definitions = base.SendSonarrListGet<QualityDefinition>("/qualitydefinition");
-                Context.AllQualities = new QualityDictionary(definitions.Select(x => x.Quality));
-                Context.TagManager = new TagManager(Context.ApiCaller, !_noApiPrefix);
+                this.InitializeContext();
 
                 if (_passThru)
                     base.WriteObject(statusResult);
@@ -210,6 +208,15 @@ namespace MG.Sonarr.Cmdlets
             };
             Context.ApiCaller.AddApiKey(this.ApiKey);
         }
+
+        private void InitializeContext()
+        {
+            History.Initialize();
+            List<QualityDefinition> definitions = base.SendSonarrListGet<QualityDefinition>("/qualitydefinition");
+            Context.AllQualities = new QualityDictionary(definitions.Select(x => x.Quality));
+            Context.TagManager = new TagManager(Context.ApiCaller, !_noApiPrefix);
+        }
+
         private void SetSonarrUrl() => Context.SonarrUrl = !this.ContainsParameter(x => x.SonarrUrl)
                 ? ClassFactory.GenerateSonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
                 : ClassFactory.GenerateSonarrUrl(this.SonarrUrl, !_noApiPrefix);

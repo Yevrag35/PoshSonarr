@@ -17,8 +17,6 @@ namespace MG.Sonarr.Results
         #endregion
 
         #region CONSTRUCTORS
-        //public AllowedQualityCollection() : this(14) { }
-        //public AllowedQualityCollection(int capacity) : base(capacity) { }
         [JsonConstructor]
         internal AllowedQualityCollection(IEnumerable<AllowedQuality> qualityItems) : base(qualityItems) { }
 
@@ -70,7 +68,6 @@ namespace MG.Sonarr.Results
         public void Sort() => base.InnerList.Sort();
         public void Sort(IComparer<AllowedQuality> comparer) => base.InnerList.Sort(comparer);
         public AllowedQuality[] ToArray() => base.InnerList.ToArray();
-        internal bool TrueForAll(Predicate<AllowedQuality> match) => base.InnerList.TrueForAll(match);
 
         #endregion
 

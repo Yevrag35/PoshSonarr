@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using MG.Sonarr.Functionality;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace MG.Sonarr.Results
 {
@@ -50,7 +50,7 @@ namespace MG.Sonarr.Results
         public string Name { get; internal set; }
 
         [JsonProperty("seriesId")]
-        public int SeriesId { get; internal set; }
+        public long? SeriesId { get; internal set; }
 
         [JsonProperty("unverifiedSceneNumbering")]
         public bool UnverifiedSceneNumbering { get; internal set; }

@@ -1,4 +1,5 @@
 ﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections;
@@ -35,7 +36,8 @@ namespace MG.Sonarr.Cmdlets.Commands
         /// <para type="description">The job id(s) of the command(s) to retrieves their statuses.</para>
         /// </summary>
         [Parameter(Mandatory = false, Position = 0, ValueFromPipelineByPropertyName = true)]
-        public long[] JobId { get; set; }
+        [Alias("jobId")]
+        public long[] Id { get; set; }
 
         #endregion
 
@@ -44,20 +46,33 @@ namespace MG.Sonarr.Cmdlets.Commands
 
         protected override void ProcessRecord()
         {
-            if (this.ContainsParameter(x => x.JobId))
+            if (this.ContainsParameter(x => x.Id))
             {
-                for (int i = 0; i < this.JobId.Length; i++)
+                for (int i = 0; i < this.Id.Length; i++)
                 {
-                    string ep = string.Format(EP_ID, this.JobId[i]);
-                    base.SendToPipeline(base.SendSonarrGet<CommandResult>(ep));
+                    string ep = string.Format(EP_ID, this.Id[i]);
+                    CommandResult result = base.SendSonarrGet<CommandResult>(ep);
+                    if (result != null)
+                    {
+                        base.WriteObject(result);
+                        this.AddToHistory(result);
+                    }
                 }
             }
             else
             {
-                base.SendToPipeline(base.SendSonarrListGet<CommandResult>(EP));
+                List<CommandResult> list = base.SendSonarrListGet<CommandResult>(EP);
+                if (list != null && list.Count > 0)
+                {
+                    base.WriteObject(list, true);
+                    this.AddToHistory(list);
+                }
             }
         }
 
         #endregion
+
+        private void AddToHistory(CommandResult result) => History.Jobs.AddResult(result);
+        private void AddToHistory(IEnumerable<CommandResult> results) => History.Jobs.AddResults(results);
     }
 }

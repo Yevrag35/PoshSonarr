@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+	<ViewDefinitions>
+		<View>
+			<Name>PastJob TableView</Name>
+			<ViewSelectedBy>
+				<TypeName>MG.Sonarr.Functionality.Internal.PastJob</TypeName>
+			</ViewSelectedBy>
+			<TableControl>
+				<TableHeaders>
+					<TableColumnHeader>
+						<!-- Id -->
+						<Alignment>Right</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<!-- Command -->
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<!-- Status -->
+						<Alignment>Center</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<!-- Started -->
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<!-- Ended -->
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+				</TableHeaders>
+				<TableRowEntries>
+					<TableRowEntry>
+						<TableColumnItems>
+							<TableColumnItem>
+								<PropertyName>Id</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Command</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Status</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Started</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Ended</PropertyName>
+							</TableColumnItem>
+						</TableColumnItems>
+					</TableRowEntry>
+				</TableRowEntries>
+			</TableControl>
+		</View>
+	</ViewDefinitions>
+</Configuration>

@@ -4,12 +4,12 @@ using System.Text;
 
 namespace MG.Sonarr.Functionality
 {
-    public class FilterParameter : IUrlParameter
+    public class FilterLogParameter : IUrlParameter
     {
         public IConvertible Key { get; set; }
         public IConvertible Value { get; set; }
 
-        public FilterParameter(IConvertible key, IConvertible value)
+        public FilterLogParameter(IConvertible key, IConvertible value)
         {
             this.Key = key;
             this.Value = value;

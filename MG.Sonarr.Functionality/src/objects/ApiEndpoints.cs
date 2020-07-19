@@ -27,6 +27,7 @@ namespace MG.Sonarr.Functionality
         public const string IndexerSchema = Indexer + "/schema";
         public const string Log = "/log";
         public const string LogFile = Log + "/file";
+        public const string ManualImport = "/manualimport";
         public const string Mapping = "/remotepathmapping";
         public const string MediaManagement = CONFIG + "/mediamanagement";
         public const string Metadata = "/metadata";
@@ -47,6 +48,9 @@ namespace MG.Sonarr.Functionality
         // Calendar - Extra paths
         public const string Calendar_DTFormat = "yyyy-MM-ddTHH:mm:ss";
         public const string Calendar_WithDate = Calendar + "?start={0}&end={1}";
+
+        // Command - Extra paths
+        public const string Command_ById = Command + BY_ID;
 
         // Episode - Extra paths
         public const string Episode_SeriesId = Episode + "?seriesId={0}";
