@@ -36,7 +36,8 @@ namespace MG.Sonarr.Cmdlets.Commands
         /// <para type="description">The job id(s) of the command(s) to retrieves their statuses.</para>
         /// </summary>
         [Parameter(Mandatory = false, Position = 0, ValueFromPipelineByPropertyName = true)]
-        public long[] JobId { get; set; }
+        [Alias("jobId")]
+        public long[] Id { get; set; }
 
         #endregion
 
@@ -45,11 +46,11 @@ namespace MG.Sonarr.Cmdlets.Commands
 
         protected override void ProcessRecord()
         {
-            if (this.ContainsParameter(x => x.JobId))
+            if (this.ContainsParameter(x => x.Id))
             {
-                for (int i = 0; i < this.JobId.Length; i++)
+                for (int i = 0; i < this.Id.Length; i++)
                 {
-                    string ep = string.Format(EP_ID, this.JobId[i]);
+                    string ep = string.Format(EP_ID, this.Id[i]);
                     CommandResult result = base.SendSonarrGet<CommandResult>(ep);
                     if (result != null)
                     {
