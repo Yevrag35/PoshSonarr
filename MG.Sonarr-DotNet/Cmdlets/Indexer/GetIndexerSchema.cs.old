@@ -11,8 +11,6 @@ namespace MG.Sonarr.Cmdlets
     [Cmdlet(VerbsCommon.Get, "IndexerSchema", ConfirmImpact = ConfirmImpact.None)]
     public class GetIndexerSchema : IndexerCmdlet
     {
-
-
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
