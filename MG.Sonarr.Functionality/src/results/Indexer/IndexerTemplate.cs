@@ -72,7 +72,7 @@ namespace MG.Sonarr.Functionality
             this.Implementation = schema.Implementation;
             this.ImplementationName = schema.ImplementationName;
             this.InfoLink = schema.InfoLink;
-            this.Name = schema.Name;
+            //this.Name = schema.Name;
             this.Protocol = schema.Protocol;
             _rss = schema.RssEnabled;
             this.RssSupported = schema.RssSupported;

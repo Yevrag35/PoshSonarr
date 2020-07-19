@@ -23,7 +23,7 @@ namespace MG.Sonarr.Cmdlets
 
         #region PARAMETERS
 
-        [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 1)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0)]
         public IndexerTemplate InputObject { get; set; }
 
         #endregion
@@ -56,7 +56,13 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
+            if (string.IsNullOrWhiteSpace(this.InputObject.Name))
+            {
+                this.WriteError("A new indexer must have a name.", typeof(ArgumentNullException), ErrorCategory.InvalidArgument, this.InputObject);
+            }
 
+            Indexer posted = base.SendSonarrPost<Indexer>(ApiEndpoint.Indexer, this.InputObject);
+            base.SendToPipeline(posted);
         }
 
         protected override void EndProcessing()
@@ -67,22 +73,6 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region BACKEND METHODS
-        //private IndexerSchema GetChosenSchema(string schemaName) => Context.IndexerSchemas[schemaName];
-
-        //private RuntimeDefinedParameter NewParameter(Field field)
-        //{
-        //    var col = new Collection<Attribute>()
-        //    {
-        //        new ParameterAttribute { Mandatory = true }
-        //    };
-
-        //    if (field.Type == FieldType.Select)
-        //    {
-        //        col.Add(new ValidateSetAttribute(field.SelectOptions.Select(x => x.Name).ToArray()));
-        //    }
-
-        //    return new RuntimeDefinedParameter(field.GetLabelNoSpaces(), field.GetDotNetTypeFromFieldType(), col);
-        //}
 
         #endregion
     }
