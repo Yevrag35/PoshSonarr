@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Security;
 
 namespace MG.Sonarr.Results
 {
@@ -18,7 +19,7 @@ namespace MG.Sonarr.Results
     /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization.OptIn, MissingMemberHandling = MissingMemberHandling.Ignore, ItemNullValueHandling = NullValueHandling.Ignore)]
-    public class Field : BaseResult
+    public class Field : BaseResult, IField
     {
         #region PROPERTIES
         [JsonProperty("value")]
@@ -41,6 +42,7 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("selectionOptions")]
         public SelectOptions[] SelectOptions { get; private set; }
+        IEnumerable<ISelectOption> IField.SelectOptions => this.SelectOptions;
 
         [JsonProperty("type")]
         [JsonConverter(typeof(SonarrStringEnumConverter))]
@@ -87,6 +89,23 @@ namespace MG.Sonarr.Results
         }
 
         #endregion
+
+        public Type GetDotNetTypeFromFieldType()
+        {
+            switch (this.Type)
+            {
+                case FieldType.CheckBox:
+                    return typeof(bool);
+
+                case FieldType.Password:
+                    return typeof(SecureString);
+
+                default:
+                    return typeof(string);
+            }
+        }
+
+        public string GetLabelNoSpaces() => this.Label.Replace(" ", string.Empty);
     }
 
     #endregion
@@ -95,7 +114,7 @@ namespace MG.Sonarr.Results
 
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
-    public class SelectOptions : BaseResult
+    public class SelectOptions : BaseResult, ISelectOption
     {
         [JsonProperty("name")]
         public string Name { get; private set; }

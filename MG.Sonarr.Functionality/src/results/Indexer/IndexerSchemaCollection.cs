@@ -15,6 +15,8 @@ namespace MG.Sonarr.Functionality
         private List<IndexerSchema> _list;
 
         public IndexerSchema this[int index] => _list[index];
+        public IndexerSchema this[string schemaName] => _list.Find(x => x.Name.Equals(schemaName, StringComparison.CurrentCultureIgnoreCase));
+
         public int Count => _list.Count;
         public string[] Names => _list.Select(x => x.Name).ToArray();
 
