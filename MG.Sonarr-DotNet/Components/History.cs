@@ -13,7 +13,5 @@ namespace MG.Sonarr
 
         public static void Initialize() => Jobs = ClassFactory.NewJobHistory();
         public static bool IsInitialized() => Jobs != null;
-
-        public Refresh()
     }
 }

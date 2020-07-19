@@ -51,7 +51,16 @@ namespace MG.Sonarr.Cmdlets.Commands
         #endregion
 
         #region CMDLET PROCESSING
-        protected override void BeginProcessing() => base.BeginProcessing();
+        protected override void BeginProcessing()
+        {
+            base.BeginProcessing();
+            if (!History.IsInitialized())
+            {
+                return;
+            }
+
+            this.Refresh();
+        }
 
         protected override void ProcessRecord()
         {
@@ -71,8 +80,24 @@ namespace MG.Sonarr.Cmdlets.Commands
         #endregion
 
         #region BACKEND METHODS
-
-
+        
+        private IEnumerable<CommandResult> GetRefreshableJobs()
+        {
+            foreach (IPastJob ipj in History.Jobs.Where(x => !x.Ended.HasValue))
+            {
+                string endpoint = string.Format(ApiEndpoint.Command_ById, ipj.Id);
+                CommandResult cr = base.SendSonarrGet<CommandResult>(endpoint);
+                if (cr != null)
+                    yield return cr;
+            }
+        }
+        private void Refresh()
+        {
+            foreach (CommandResult cr in this.GetRefreshableJobs())
+            {
+                History.Jobs.UpdateRecord(cr);
+            }
+        }
         #endregion
     }
 }

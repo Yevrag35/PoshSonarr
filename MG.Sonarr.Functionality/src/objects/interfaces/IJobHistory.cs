@@ -14,6 +14,7 @@ namespace MG.Sonarr.Functionality
 
         IEnumerable<IPastJob> FindById(IEnumerable<long> ids);
 
+        void UpdateRecord(ICommandResult result);
         void Sort();
     }
 }

@@ -10,24 +10,18 @@ namespace MG.Sonarr.Functionality.Internal
         public DateTimeOffset? Ended { get; private set; }
         public long Id { get; }
         public DateTimeOffset Started { get; }
+        public CommandStatus Status { get; private set; }
 
         internal PastJob(ICommandOutput output)
         {
             this.Command = output.Command;
             this.Id = output.Id;
             this.Started = output.Started.Value;
+            this.Status = output.Status;
 
             if (output is ICommandResult cr)
             {
                 this.Ended = cr.Ended.GetValueOrDefault();
-            }
-        }
-
-        public void SetEndTime(DateTimeOffset ended)
-        {
-            if (!this.Ended.HasValue)
-            {
-                this.Ended = ended;
             }
         }
 
@@ -59,6 +53,21 @@ namespace MG.Sonarr.Functionality.Internal
             }
 
             return pastJob != null;
+        }
+
+        internal void Update(ICommandResult icr)
+        {
+            if (this.Id == icr.Id)
+            {
+                if (!this.Ended.HasValue && icr.Ended.HasValue)
+                {
+                    this.Ended = icr.Ended;
+                }
+                if (this.Status != icr.Status)
+                {
+                    this.Status = icr.Status;
+                }
+            }
         }
     }
 }

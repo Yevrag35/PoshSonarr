@@ -49,6 +49,9 @@ namespace MG.Sonarr.Functionality
         public const string Calendar_DTFormat = "yyyy-MM-ddTHH:mm:ss";
         public const string Calendar_WithDate = Calendar + "?start={0}&end={1}";
 
+        // Command - Extra paths
+        public const string Command_ById = Command + BY_ID;
+
         // Episode - Extra paths
         public const string Episode_SeriesId = Episode + "?seriesId={0}";
         public const string Episode_ById = Episode + BY_ID;

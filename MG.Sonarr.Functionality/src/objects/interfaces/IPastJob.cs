@@ -9,7 +9,6 @@ namespace MG.Sonarr.Functionality
         DateTimeOffset? Ended { get; }
         long Id { get; }
         DateTimeOffset Started { get; }
-
-        void SetEndTime(DateTimeOffset ended);
+        CommandStatus Status { get; }
     }
 }

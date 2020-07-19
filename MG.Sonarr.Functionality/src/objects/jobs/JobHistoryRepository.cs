@@ -73,5 +73,6 @@ namespace MG.Sonarr.Functionality.Internal
         public void Sort() => _jobs.Sort();
 
         private bool ResultIsValid(ICommandOutput result) => result != null && result.Started.HasValue;
+        public void UpdateRecord(ICommandResult result) => _jobs.Find(x => x.Id == result.Id)?.Update(result);
     }
 }

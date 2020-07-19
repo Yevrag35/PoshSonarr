@@ -17,6 +17,10 @@
 						<Alignment>Left</Alignment>
 					</TableColumnHeader>
 					<TableColumnHeader>
+						<!-- Status -->
+						<Alignment>Center</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
 						<!-- Started -->
 						<Alignment>Left</Alignment>
 					</TableColumnHeader>
@@ -33,6 +37,9 @@
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>Command</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Status</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>Started</PropertyName>
