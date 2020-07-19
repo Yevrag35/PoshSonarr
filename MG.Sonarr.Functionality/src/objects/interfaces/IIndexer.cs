@@ -8,7 +8,6 @@ namespace MG.Sonarr.Functionality
     {
         string ConfigContract { get; }
         IEnumerable<IField> Fields { get; }
-        int Id { get; }
         string Implementation { get; }
         string ImplementationName { get; }
         Uri InfoLink { get; }

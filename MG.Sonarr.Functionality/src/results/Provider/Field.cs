@@ -52,6 +52,18 @@ namespace MG.Sonarr.Results
 
         [JsonConstructor]
         public Field() { }
+        internal Field(IField field)
+        {
+            this.Name = field.Name;
+            this.BackendValue = field.BackendValue;
+            this.HelpText = field.HelpText;
+            this.IsAdvanced = field.IsAdvanced;
+            this.Label = field.Label;
+            this.Order = field.Order;
+            this.SelectOptions = field.SelectOptions.Select(x => new SelectOptions(x.Name, x.Value)).ToArray();
+            this.Type = field.Type;
+            this.Value = field.Value;
+        }
 
         internal Field(int order, string name, string label, object value, FieldType type, bool isAdvanced, params SelectOptions[] selectOptions)
         {

@@ -11,13 +11,13 @@ using System.Runtime.Serialization;
 namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
-    public sealed class IndexerSchema : IndexerBase, IIndexSchema
+    public sealed class IndexerSchema : IndexerBase, IIndexerSchema
     {
         [JsonProperty("name")]
         private string _name;
 
         [JsonIgnore]
-        IEnumerable<IField> IIndexSchema.Fields => base.Fields;
+        IEnumerable<IField> IIndexer.Fields => base.Fields;
 
         [JsonIgnore]
         public override string Name
@@ -30,6 +30,6 @@ namespace MG.Sonarr.Results
         public PresetIndexerCollection Presets { get; private set; }
 
         [JsonIgnore]
-        IReadOnlyList<IIndexer> IIndexSchema.Presets => this.Presets;
+        IReadOnlyList<IIndexer> IIndexerSchema.Presets => this.Presets;
     }
 }

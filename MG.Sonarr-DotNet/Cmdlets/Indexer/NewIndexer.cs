@@ -22,15 +22,9 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
-        [Parameter(Mandatory = true, Position = 0, ValueFromPipelineByPropertyName = true)]
-        public string Name { get; set; }
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 1)]
-        public 
-
-        //[Parameter(Mandatory = true, Position = 1)]
-        //[ValidateSet("BitMeTv", "BroadcastheNet", "Fanzub", "HDBits", "IPTorrents", "Newznab", "Nyaa", "Omgwtfnzbs", "Rarbg", "TorrentRssIndexer", "Torrentleech", "Torznab")]
-        //public string Schema { get; set; }
+        public IndexerTemplate InputObject { get; set; }
 
         #endregion
 

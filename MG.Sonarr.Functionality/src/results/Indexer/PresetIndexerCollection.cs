@@ -12,8 +12,11 @@ namespace MG.Sonarr.Functionality
         IIndexer IReadOnlyList<IIndexer>.this[int index] => this[index];
 
         [JsonConstructor]
-        internal PresetIndexerCollection(IEnumerable<Indexer> indexers) : base(indexers) { }
+        public PresetIndexerCollection() : base() { }
 
+        public PresetIndexerCollection(IEnumerable<Indexer> indexers) : base(indexers) { }
+
+        internal void AddRange(IEnumerable<Indexer> indexers) => base.InnerList.AddRange(indexers);
         IEnumerator<IIndexer> IEnumerable<IIndexer>.GetEnumerator()
         {
             foreach (IIndexer indexer in base.InnerList)

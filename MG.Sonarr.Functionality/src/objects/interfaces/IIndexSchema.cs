@@ -4,10 +4,8 @@ using System.Collections.Generic;
 
 namespace MG.Sonarr.Functionality
 {
-    public interface IIndexSchema : IJsonResult
+    public interface IIndexerSchema : IIndexer
     {
-        string ConfigContract { get; }
-        IEnumerable<IField> Fields { get; }
         IReadOnlyList<IIndexer> Presets { get; }
     }
 }

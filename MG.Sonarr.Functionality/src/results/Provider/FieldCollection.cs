@@ -26,6 +26,8 @@ namespace MG.Sonarr.Results
         [JsonConstructor]
         internal FieldCollection(IEnumerable<Field> items) : base(items) { }
 
+        internal FieldCollection(IEnumerable<IField> items) : base(items.Select(x => new Field(x))) { }
+
         #endregion
 
         #region PUBLIC METHODS
