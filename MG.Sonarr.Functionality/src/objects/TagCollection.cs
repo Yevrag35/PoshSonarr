@@ -10,7 +10,7 @@ namespace MG.Sonarr.Functionality
     /// Provides a collection class for <see cref="Tag"/> instances while keeping most
     /// of the <see cref="ICollection"/> and <see cref="IList"/> methods hidden.
 	/// </summary>
-    public sealed class TagCollection : ResultCollectionBase<Tag> //IEnumerable<Tag>
+    public sealed class TagCollection : ResultCollectionBase<Tag>, ITagCollection //IEnumerable<Tag>
     {
         #region INDEXERS
         /// <summary>

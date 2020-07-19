@@ -11,19 +11,20 @@ using System.Threading.Tasks;
 
 namespace MG.Sonarr
 {
-    public class TagManager : IDisposable
+    internal class TagManager : ITagManager
     {
         #region FIELDS/CONSTANTS
         private bool _disposed;
 
-        public string Endpoint { get; set; } = "/tag";
+        public string Endpoint { get; }
         private string ID_END;
         private SonarrRestClient _client;
 
         #endregion
 
         #region PROPERTIES
-        public TagCollection AllTags { get; private set; }
+        internal TagCollection AllTags { get; private set; }
+        ITagCollection ITagManager.AllTags => this.AllTags;
 
         #endregion
 
@@ -34,9 +35,9 @@ namespace MG.Sonarr
             {
                 if (addApi)
                 {
-                    this.Endpoint = "/api" + this.Endpoint;
+                    this.Endpoint = "/api" + ApiEndpoint.Tag;
                 }
-                ID_END = this.Endpoint + "/{0}";
+                ID_END = this.Endpoint + ApiEndpoint.BY_ID;
 
                 _client = restClient;
                 this.LoadTags();
@@ -106,14 +107,6 @@ namespace MG.Sonarr
             nonMatchingIds = new HashSet<int>();
             nonMatchingStrs = new HashSet<string>();
             var found = new List<Tag>();
-            //Type hType = typeof(IEnumerable<int>);
-            //HashSet<object> combined = null;
-            //if (possibles.Any(x => x is IEnumerable<int> || (x is PSObject ))
-            //{
-            //    IEnumerable<int> innerInts = possibles.OfType<IEnumerable<int>>().SelectMany(x => x);
-            //    possibles = possibles.Where(x => !x.GetType().Equals(hType)).Concat(innerInts.Cast<object>());
-            //    combined = new HashSet<object>(possibles);
-            //}
 
             foreach (object possible in possibles)
             {
@@ -137,10 +130,6 @@ namespace MG.Sonarr
             }
             return found;
         }
-        //private void _GetTagWithId(IEnumerable<int> checkIds)
-        //{
-
-        //}
 
         public bool TryGetId(string tagLabel, out int tagId)
         {

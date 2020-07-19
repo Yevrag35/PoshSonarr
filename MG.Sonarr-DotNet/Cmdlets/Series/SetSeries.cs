@@ -105,6 +105,7 @@ namespace MG.Sonarr.Cmdlets
         #region METHODS
 
         #region TAGS
+        [Obsolete]
         private Tag CreateNewTag(string label)
         {
             var pbp = new SonarrBodyParameters
@@ -113,6 +114,7 @@ namespace MG.Sonarr.Cmdlets
             };
             return base.SendSonarrPost<Tag>(TAG, pbp);
         }
+        [Obsolete]
         private void FormatTags(TagTable tt)
         {
             if (tt.IsSetting)
@@ -128,6 +130,7 @@ namespace MG.Sonarr.Cmdlets
                     this.RemovingTags(tt);
             }
         }
+        [Obsolete]
         private void AddingTags(TagTable tt)
         {
             if (tt.HasAddById)
@@ -154,6 +157,7 @@ namespace MG.Sonarr.Cmdlets
                 }
             }
         }
+        [Obsolete]
         private void RemovingTags(TagTable tt)
         {
             if (tt.HasRemoveById)
@@ -169,6 +173,7 @@ namespace MG.Sonarr.Cmdlets
                 }
             }
         }
+        [Obsolete]
         private void SettingTags(TagTable tt)
         {
             this.InputObject.Tags.Clear();
@@ -195,6 +200,7 @@ namespace MG.Sonarr.Cmdlets
                 }
             }
         }
+        [Obsolete]
         private bool TryGetTagId(string tagLabel, out int tagId)
         {
             tagId = 0;
