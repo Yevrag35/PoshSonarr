@@ -21,51 +21,7 @@ namespace MG.Sonarr.Functionality.Converters
         }
         public override void WriteJson(JsonWriter writer, LogRecord value, JsonSerializer serializer)
         {
-
-        }
-    }
-
-    public class UtcOffsetConverter : JsonConverter<DateTimeOffset>
-    {
-        public override DateTimeOffset ReadJson(JsonReader reader, Type objectType, DateTimeOffset existingValue, bool hasExistingValue, JsonSerializer serializer)
-        {
-            JToken jtok = JToken.ReadFrom(reader);
-            if (jtok != null && jtok.Type == JTokenType.Date)
-            {
-                return jtok.ToObject<DateTimeOffset>().ToLocalTime();
-            }
-            else
-            {
-                return existingValue;
-            }
-        }
-        public override void WriteJson(JsonWriter writer, DateTimeOffset value, JsonSerializer serializer)
-        {
-            writer.WriteValue(value.UtcDateTime);
-        }
-    }
-
-    public class UtcTimeConverter : DateTimeConverterBase
-    {
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            JToken jtok = JToken.ReadFrom(reader);
-            if (jtok.Type == JTokenType.Date)
-            {
-                return jtok.ToObject<DateTime>().ToLocalTime();
-            }
-            else
-                return jtok.ToObject<object>();
-        }
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-        {
-            if (value is DateTime dt)
-            {
-                writer.WriteValue(JsonConvert.SerializeObject(dt, new JsonSerializerSettings
-                {
-                    DateTimeZoneHandling = DateTimeZoneHandling.Utc
-                }));
-            }
+            serializer.Serialize(writer, value, value.GetType());
         }
     }
 }

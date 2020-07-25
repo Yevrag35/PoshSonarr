@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Http;
 
-namespace MG.Sonarr.Functionality
+namespace MG.Sonarr.Functionality.Exceptions
 {
     /// <summary>
     /// An exception that is thrown when a <see cref="HttpRequestException"/> is triggered with a specific <see cref="HttpStatusCode"/>

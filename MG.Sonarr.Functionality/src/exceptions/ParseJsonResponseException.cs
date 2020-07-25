@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace MG.Sonarr
+namespace MG.Sonarr.Functionality.Exceptions
 {
     /// <summary>
     /// An exception thrown when parsing a JSON response body that contains malformed data or is blank or null.
