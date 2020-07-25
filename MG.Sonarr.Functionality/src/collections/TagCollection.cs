@@ -4,13 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MG.Sonarr.Functionality
+namespace MG.Sonarr.Functionality.Collections
 {
     /// <summary>
     /// Provides a collection class for <see cref="Tag"/> instances while keeping most
     /// of the <see cref="ICollection"/> and <see cref="IList"/> methods hidden.
 	/// </summary>
-    public sealed class TagCollection : ResultCollectionBase<Tag>, ITagCollection //IEnumerable<Tag>
+    internal sealed class TagCollection : ResultCollectionBase<Tag>, ITagCollection
     {
         #region INDEXERS
         /// <summary>

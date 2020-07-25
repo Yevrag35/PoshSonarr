@@ -27,7 +27,7 @@ namespace MG.Sonarr.Functionality
 
         public QualityDictionary(IEnumerable<Quality> qualities)
         {
-            _comparer = ClassFactory.NewIgnoreCase();
+            _comparer = SonarrFactory.NewIgnoreCase();
             _dict = new Dictionary<string, Quality>(14);
             foreach (Quality qal in qualities.OrderBy(x => x.Id))
             {

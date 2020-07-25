@@ -11,7 +11,7 @@ namespace MG.Sonarr
     {
         internal static IJobHistory Jobs { get; private set; }
 
-        internal static void Initialize() => Jobs = ClassFactory.NewJobHistory();
+        internal static void Initialize() => Jobs = SonarrFactory.NewJobHistory();
         internal static bool IsInitialized() => Jobs != null;
     }
 }

@@ -18,7 +18,7 @@ namespace MG.Sonarr
         private AddRemoveHashtable(IDictionary dict)
         {
             string[] keys = dict.Keys.Cast<string>().ToArray();
-            var igc = ClassFactory.NewIgnoreCase();
+            var igc = SonarrFactory.NewIgnoreCase();
             if (keys.Contains(ADD, igc))
             {
                 string addKey = keys.Single(x => x.Equals(ADD, StringComparison.CurrentCultureIgnoreCase));

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace MG.Sonarr.Functionality
+namespace MG.Sonarr.Functionality.Collections
 {
     [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
     public class JsonStringCollection : BaseResult, IEnumerable<string>

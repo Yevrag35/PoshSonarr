@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MG.Sonarr.Functionality
+namespace MG.Sonarr.Functionality.Collections
 {
     public class UrlParameterCollection :  IUrlParameterCollection
     {

@@ -23,7 +23,7 @@ namespace MG.Sonarr.Functionality
 
         public ReadOnlyKeySet(IEnumerable<string> keys)
         {
-            _keys = new HashSet<string>(keys, ClassFactory.NewIgnoreCase());
+            _keys = new HashSet<string>(keys, SonarrFactory.NewIgnoreCase());
         }
 
         public bool ContainsKey(string key) => _keys.Any(x => x.Equals(key, _comparison));

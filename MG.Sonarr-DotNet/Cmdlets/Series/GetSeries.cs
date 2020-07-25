@@ -101,7 +101,7 @@ namespace MG.Sonarr.Cmdlets
                     _func = x => x.CleanTitle;
             }
 
-            _names = new HashSet<string>(ClassFactory.NewIgnoreCase());
+            _names = new HashSet<string>(SonarrFactory.NewIgnoreCase());
             //_ids = new HashSet<int>();
             if (this.ContainsParameter(x => x.Name))
                 this.ProcessNamesParameter(this.Name);

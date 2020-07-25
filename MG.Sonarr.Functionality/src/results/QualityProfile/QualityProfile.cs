@@ -32,7 +32,7 @@ namespace MG.Sonarr.Results
 
         public QualityProfileNew()
         {
-            _comparer = ClassFactory.NewIgnoreCase();
+            _comparer = SonarrFactory.NewIgnoreCase();
         }
 
         public string GetEndpoint() => EP;

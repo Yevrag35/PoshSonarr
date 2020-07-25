@@ -178,7 +178,7 @@ namespace MG.Sonarr.Cmdlets
             if (_skipCert)
                 Validation.CheckCertificateValidity(ref handler);
 
-            ISonarrClient client = ClassFactory.GenerateClient(handler, Context.SonarrUrl, this.ApiKey, _allowRedirect, this.Proxy, this.ProxyCredential, _proxyBypass);
+            ISonarrClient client = SonarrFactory.GenerateClient(handler, Context.SonarrUrl, this.ApiKey, _allowRedirect, this.Proxy, this.ProxyCredential, _proxyBypass);
 
             //if (this.ContainsParameter(x => x.Proxy))
             //    this.BoundCallerWithProxy(handler);
@@ -234,8 +234,8 @@ namespace MG.Sonarr.Cmdlets
         }
 
         private void SetSonarrUrl() => Context.SonarrUrl = !this.ContainsParameter(x => x.SonarrUrl)
-                ? ClassFactory.GenerateSonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
-                : ClassFactory.GenerateSonarrUrl(this.SonarrUrl, !_noApiPrefix);
+                ? SonarrFactory.GenerateSonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
+                : SonarrFactory.GenerateSonarrUrl(this.SonarrUrl, !_noApiPrefix);
         private Status TryConnect(ISonarrClient client)
         {
             base.WriteApiDebug(CONNECT_EP, HttpMethod.Get, out string apiPath);

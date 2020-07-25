@@ -4,6 +4,9 @@ using System.Text;
 
 namespace MG.Sonarr.Functionality
 {
+    /// <summary>
+    /// A static class of <see cref="string"/> constants that denote the various Sonarr endpoint paths used by this assembly.
+    /// </summary>
     public static class ApiEndpoint
     {
         internal const string CONFIG = "/config";

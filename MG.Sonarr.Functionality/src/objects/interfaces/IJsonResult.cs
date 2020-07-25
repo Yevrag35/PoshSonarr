@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections;
 
-namespace MG.Sonarr
+namespace MG.Sonarr.Functionality
 {
     /// <summary>
     /// Provides JSON-serialization methods for the implementing class.

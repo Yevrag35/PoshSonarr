@@ -115,7 +115,7 @@ namespace MG.Sonarr
             {
                 Task<IndexerSchemaCollection> schemaTask = GetIndexerSchemasAsync(client);
                 Task<QualityDictionary> defTask = GetQualityDictionaryAsync(client);
-                Task<ITagManager> tagTask = ClassFactory.GenerateTagManagerAsync(client, useApiPrefix);
+                Task<ITagManager> tagTask = SonarrFactory.GenerateTagManagerAsync(client, useApiPrefix);
 
                 if (!History.IsInitialized())
                     History.Initialize();
