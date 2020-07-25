@@ -23,7 +23,14 @@
 								<PropertyName>PercentOfEpisodes</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>PreviousAiring</PropertyName>
+								<Label>PreviousAiring</Label>
+								<ScriptBlock>
+									if ($null -ne $_.PreviousAiring) {
+										$local = $_.PreviousAiring.ToLocalTime()
+										$offset = [System.TimeZone]::CurrentTimeZone.GetUtcOffset($local)
+										New-Object System.DateTimeOffset($local, $offset)
+									}
+								</ScriptBlock>
 							</ListItem>
 							<ListItem>
 								<PropertyName>SeasonNumber</PropertyName>

@@ -21,7 +21,7 @@ namespace MG.Sonarr.Cmdlets
         internal AnyAllIntSet _anyall;
         private Func<SeriesResult, string> _func;
         internal AnyAllStringSet _genres;
-        internal HashSet<int> _ids;
+        internal HashSet<int> _ids { get; } = new HashSet<int>();
         internal bool _isDebugging;
         internal bool _isMon;
         //private List<string> _names;
@@ -38,7 +38,11 @@ namespace MG.Sonarr.Cmdlets
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId", ValueFromPipelineByPropertyName = true)]
         [Alias("SeriesId")]
-        public int[] Id { get; set; }
+        public int[] Id
+        {
+            get => _ids.ToArray();
+            set => _ids.UnionWith(value);
+        }
 
         // EXTRA FILTERS
         [Parameter(Mandatory = false)]
@@ -97,14 +101,13 @@ namespace MG.Sonarr.Cmdlets
                     _func = x => x.CleanTitle;
             }
 
-            //_names = new List<string>();
             _names = new HashSet<string>(ClassFactory.NewIgnoreCase());
-            _ids = new HashSet<int>();
+            //_ids = new HashSet<int>();
             if (this.ContainsParameter(x => x.Name))
                 this.ProcessNamesParameter(this.Name);
 
-            else if (this.ContainsParameter(x => x.Id))
-                _ids.UnionWith(this.Id);
+            //else if (this.ContainsParameter(x => x.Id))
+            //    _ids.UnionWith(this.Id);
 
             if (this.ContainsParameter(x => x.Tag))
             {
@@ -124,11 +127,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (_ids.Count > 0)
-            {
-                base.SendToPipeline(base.GetSeriesById(_ids, _isDebugging));
-            }
-            else
+            if (_ids.Count <= 0)
             {
                 IEnumerable<SeriesResult> filtered = base.GetAllSeries(_isDebugging);
 
@@ -200,6 +199,13 @@ namespace MG.Sonarr.Cmdlets
                             this.Path);
 
                 base.SendToPipeline(filtered);
+            }
+        }
+        protected override void EndProcessing()
+        {
+            if (_ids.Count > 0)
+            {
+                base.SendToPipeline(base.GetSeriesById(_ids, _isDebugging));
             }
         }
 

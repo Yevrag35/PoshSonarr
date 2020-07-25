@@ -39,7 +39,7 @@
 								<ScriptBlock>
 									if ($null -ne $_.FirstAired) {
 										$pat = "{0}, yyyy" -f [System.Globalization.CultureInfo]::CurrentUICulture.DateTimeFormat.MonthDayPattern;
-										$_.FirstAired.ToString($pat);
+										$_.FirstAired.ToLocalTime().ToString($pat);
 									}
 								</ScriptBlock>
 								<!--<ItemSelectionCondition>

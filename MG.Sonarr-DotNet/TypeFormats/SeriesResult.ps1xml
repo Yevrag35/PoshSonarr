@@ -15,7 +15,7 @@
 								<ScriptBlock>
 									$dtFormat = [System.Globalization.CultureInfo]::CurrentUICulture.DateTimeFormat;
 									$pat = "{0}, yyyy {1}" -f $dtFormat.MonthDayPattern, $dtFormat.ShortTimePattern;
-									$_.Added.ToString($pat);
+									$_.Added.ToLocalTime().ToString($pat);
 								</ScriptBlock>
 								<ItemSelectionCondition>
 									<ScriptBlock>
@@ -48,8 +48,10 @@
 							<ListItem>
 								<Label>FirstAired</Label>
 								<ScriptBlock>
-									$pat = "{0}, yyyy" -f [System.Globalization.CultureInfo]::CurrentUICulture.DateTimeFormat.MonthDayPattern;
-									$_.FirstAired.ToString($pat);
+									if ($null -ne $_.FirstAired) {
+										$pat = "{0}, yyyy" -f [System.Globalization.CultureInfo]::CurrentUICulture.DateTimeFormat.MonthDayPattern;
+										$_.FirstAired.ToLocalTime().ToString($pat);
+									}
 								</ScriptBlock>
 								<ItemSelectionCondition>
 									<ScriptBlock>
