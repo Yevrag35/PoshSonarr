@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace MG.Sonarr.Functionality
 {
-    public class ReadOnlyKeySet : IReadOnlyCollection<string>, IReadOnlyList<string>
+    internal class ReadOnlyKeySet : IReadOnlyCollection<string>, IReadOnlyList<string>
     {
         private StringComparison _comparison = StringComparison.CurrentCultureIgnoreCase;
         private HashSet<string> _keys;
