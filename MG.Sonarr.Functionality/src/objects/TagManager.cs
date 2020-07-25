@@ -29,7 +29,7 @@ namespace MG.Sonarr
         #endregion
 
         #region CONSTRUCTORS
-        public TagManager(ISonarrClient restClient, bool addApi)
+        private TagManager(ISonarrClient restClient, bool addApi)
         {
             if (restClient.IsAuthenticated)
             {
@@ -40,7 +40,7 @@ namespace MG.Sonarr
                 ID_END = this.Endpoint + ApiEndpoint.BY_ID;
 
                 _client = restClient;
-                this.LoadTags();
+                //this.LoadTags();
             }
             else
                 throw new ArgumentException("The specified rest client is not properly authenticated.");
@@ -53,6 +53,14 @@ namespace MG.Sonarr
         {
             this.Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        public async static Task<ITagManager> GenerateAsync(ISonarrClient client, bool addApiToPath)
+        {
+            TagManager manager = new TagManager(client, addApiToPath);
+            TagCollection tagCol = await manager.LoadTagsAsync().ConfigureAwait(false);
+            manager.AllTags = tagCol;
+            return manager;
         }
 
         #region TAG LOCATION METHODS
@@ -236,6 +244,7 @@ namespace MG.Sonarr
             }
             _disposed = true;
         }
+        [Obsolete]
         private void LoadTags() => this.AllTags = this.LoadTagsAsync().GetAwaiter().GetResult();
         private async Task<TagCollection> LoadTagsAsync()
         {

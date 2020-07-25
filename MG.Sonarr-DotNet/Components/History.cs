@@ -7,11 +7,11 @@ using System.Linq;
 
 namespace MG.Sonarr
 {
-    public static class History
+    internal static class History
     {
-        public static IJobHistory Jobs { get; private set; }
+        internal static IJobHistory Jobs { get; private set; }
 
-        public static void Initialize() => Jobs = ClassFactory.NewJobHistory();
-        public static bool IsInitialized() => Jobs != null;
+        internal static void Initialize() => Jobs = ClassFactory.NewJobHistory();
+        internal static bool IsInitialized() => Jobs != null;
     }
 }

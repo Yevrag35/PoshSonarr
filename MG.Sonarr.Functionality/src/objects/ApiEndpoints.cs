@@ -33,6 +33,7 @@ namespace MG.Sonarr.Functionality
         public const string Metadata = "/metadata";
         public const string Notification = "/notification";
         public const string Profile = "/profile";
+        public const string QualityDefinitions = "/qualitydefinition";
         public const string Queue = "/queue";
         public const string Release = "/release";
         public const string Restart = System + "/restart";

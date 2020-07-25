@@ -12,6 +12,10 @@
     <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="src\objects\dateFormats\DateFormatAttribute.cs" />
     <Compile Remove="src\objects\dateFormats\ShortDateFormat.cs" />
