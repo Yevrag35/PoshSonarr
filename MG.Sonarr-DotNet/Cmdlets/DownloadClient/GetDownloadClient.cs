@@ -67,7 +67,7 @@ namespace MG.Sonarr.Cmdlets
             {
                 for (int i = 0; i < this.Id.Length; i++)
                 {
-                    DownloadClient dlc = base.SendSonarrGet<DownloadClient>(string.Format(ApiEndpoint.DownloadClient_ById, this.Id[i]));
+                    DownloadClient dlc = base.SendSonarrGet<DownloadClient>(string.Format(ApiEndpoints.DownloadClient_ById, this.Id[i]));
                     base.SendToPipeline(dlc);
                 }
             }
@@ -78,7 +78,7 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         private List<DownloadClient> GetAllDownloadClients()
         {
-            return base.SendSonarrListGet<DownloadClient>(ApiEndpoint.DownloadClient);
+            return base.SendSonarrListGet<DownloadClient>(ApiEndpoints.DownloadClient);
         }
 
         private List<DownloadClient> FindByProtocol(List<DownloadClient> list) => 

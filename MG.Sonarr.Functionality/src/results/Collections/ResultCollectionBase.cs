@@ -20,7 +20,7 @@ namespace MG.Sonarr.Results.Collections
     ///     This collection model is also inherently serializable and deserializable into JSON.
     /// </remarks>
     /// <typeparam name="T">The .NET type of each element in the collection.</typeparam>
-    public abstract class ResultCollectionBase<T> : IEnumerable<T>, IJsonResult
+    public abstract class ResultCollectionBase<T> : IEnumerable<T>, IJsonObject
     {
         #region FIELDS/CONSTANTS
         /// <summary>

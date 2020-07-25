@@ -1,6 +1,8 @@
-﻿using MG.Api.Json;
-using MG.Api.Rest.Generic;
-using MG.Sonarr.Functionality.Internal;
+﻿using MG.Sonarr.Functionality.Client;
+using MG.Sonarr.Functionality.Jobs;
+using MG.Sonarr.Functionality.Strings;
+using MG.Sonarr.Functionality.Tags;
+using MG.Sonarr.Functionality.Url;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;

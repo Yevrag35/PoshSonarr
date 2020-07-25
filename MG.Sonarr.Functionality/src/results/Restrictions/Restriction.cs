@@ -1,10 +1,10 @@
 ﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Client;
+using MG.Sonarr.Functionality.Collections;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results

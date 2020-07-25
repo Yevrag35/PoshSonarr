@@ -62,7 +62,7 @@ namespace MG.Sonarr.Cmdlets
             {
                 if (_force || base.FormatShouldProcess("Remove", "Download Client Id: {0}", id))
                 {
-                    base.SendSonarrDelete(string.Format(ApiEndpoint.DownloadClient_ById, id));
+                    base.SendSonarrDelete(string.Format(ApiEndpoints.DownloadClient_ById, id));
                 }
             }
         }

@@ -1,11 +1,9 @@
-﻿using MG.Posh.Extensions.Bound;
-using MG.Sonarr.Functionality;
-using MG.Sonarr.Results;
+﻿using MG.Api.Json;
+using MG.Posh.Extensions.Bound;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -15,7 +13,7 @@ namespace MG.Sonarr.Cmdlets
             T1 cmdlet,
             Expression<Func<T1, object>> parameter,
             Expression<Func<T2, T3>> member,
-            IEnumerable<T3> values) where T1 : BaseSonarrCmdlet where T2 : IJsonResult
+            IEnumerable<T3> values) where T1 : BaseSonarrCmdlet where T2 : IJsonObject
         {
             if (cmdlet.ContainsParameter(parameter) && filterThis != null && values != null)
             {
@@ -31,7 +29,7 @@ namespace MG.Sonarr.Cmdlets
             T1 cmdlet,
             Expression<Func<T1, object>> parameter,
             Expression<Func<T2, string>> member,
-            IEnumerable<string> wildcardStrings) where T1 : BaseSonarrCmdlet where T2 : IJsonResult
+            IEnumerable<string> wildcardStrings) where T1 : BaseSonarrCmdlet where T2 : IJsonObject
         {
             if (cmdlet.ContainsParameter(parameter))
             {
@@ -44,7 +42,7 @@ namespace MG.Sonarr.Cmdlets
             T1 cmdlet, 
             Expression<Func<T1, object>> parameter,
             Expression<Func<T1, bool>> condition,
-            Expression<Func<T2, bool>> whereClause) where T1 : BaseSonarrCmdlet where T2 : IJsonResult
+            Expression<Func<T2, bool>> whereClause) where T1 : BaseSonarrCmdlet where T2 : IJsonObject
         {
             if (cmdlet.ContainsParameter(parameter))
             {

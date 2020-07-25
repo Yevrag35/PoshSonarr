@@ -4,16 +4,12 @@ using MG.Api.Rest;
 using MG.Api.Rest.Generic;
 using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using MG.Sonarr.Results.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Management.Automation;
-using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MG.Sonarr.Cmdlets
@@ -216,14 +212,14 @@ namespace MG.Sonarr.Cmdlets
         /// <typeparam name="T">The class type to process the result content as.</typeparam>
         /// <param name="endpoint">The API endpoint that the request is sent to.</param>
         /// <param name="payload">A <see langword="class"/> object that is sent in the payload of the request.</param>
-        protected T SendSonarrPost<T>(string endpoint, IJsonResult payload) where T : class
+        protected T SendSonarrPost<T>(string endpoint, IJsonObject payload) where T : class
         {
             this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
             IRestResponse<T> response = this.SendSonarrPostAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
             return this.ProcessSingularResponse(response);
         }
         
-        private Task<IRestResponse<T>> SendSonarrPostAsTask<T>(string apiPath, IJsonResult payload) where T : class
+        private Task<IRestResponse<T>> SendSonarrPostAsTask<T>(string apiPath, IJsonObject payload) where T : class
         {
             return Context.ApiCaller.PostAsJsonAsync<T>(apiPath, payload);
         }
@@ -240,14 +236,14 @@ namespace MG.Sonarr.Cmdlets
             return Context.ApiCaller.PostAsJsonAsync(apiPath);
         }
 
-        protected List<T> SendSonarrListPost<T>(string endpoint, IJsonResult payload) where T : class
+        protected List<T> SendSonarrListPost<T>(string endpoint, IJsonObject payload) where T : class
         {
             this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
             IRestListResponse<T> response = this.SendSonarrListPostAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
             return this.ProcessMultiResponse(response);
 
         }
-        private Task<IRestListResponse<T>> SendSonarrListPostAsTask<T>(string apiPath, IJsonResult payload) where T : class
+        private Task<IRestListResponse<T>> SendSonarrListPostAsTask<T>(string apiPath, IJsonObject payload) where T : class
         {
             return Context.ApiCaller.PostAsJsonListAsync<T>(apiPath, payload);
         }
@@ -261,13 +257,13 @@ namespace MG.Sonarr.Cmdlets
         /// <typeparam name="T">The class type to process the result content as.</typeparam>
         /// <param name="endpoint">The API endpoint that the request is sent to.</param>
         /// <param name="payload">A <see langword="class"/> object that is sent in the payload of the request.</param>
-        protected T SendSonarrPut<T>(string endpoint, IJsonResult payload) where T : class
+        protected T SendSonarrPut<T>(string endpoint, IJsonObject payload) where T : class
         {
             this.WriteApiDebug(endpoint, HttpMethod.Put, out string apiPath);
             IRestResponse<T> response = this.SendSonarrPutAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
             return this.ProcessSingularResponse(response);
         }
-        protected object SendSonarrPut(string endpoint, IJsonResult payload, Type objectType)
+        protected object SendSonarrPut(string endpoint, IJsonObject payload, Type objectType)
         {
             this.WriteApiDebug(endpoint, HttpMethod.Put, out string apiPath);
             IRestResponse response = this.SendSonarrPutAsTask(apiPath, payload, objectType).GetAwaiter().GetResult();
@@ -275,11 +271,11 @@ namespace MG.Sonarr.Cmdlets
 
         }
 
-        private Task<IRestResponse<T>> SendSonarrPutAsTask<T>(string apiPath, IJsonResult payload) where T : class
+        private Task<IRestResponse<T>> SendSonarrPutAsTask<T>(string apiPath, IJsonObject payload) where T : class
         {
             return Context.ApiCaller.PutAsJsonAsync<T>(apiPath, payload);
         }
-        private Task<IRestResponse> SendSonarrPutAsTask(string apiPath, IJsonResult payload, Type payloadType)
+        private Task<IRestResponse> SendSonarrPutAsTask(string apiPath, IJsonObject payload, Type payloadType)
         {
             return Context.ApiCaller.PutAsObjectAsync(apiPath, payload, payloadType);
         }

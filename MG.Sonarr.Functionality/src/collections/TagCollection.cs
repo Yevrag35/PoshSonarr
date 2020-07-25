@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Results;
+using MG.Sonarr.Results.Collections;
 using System;
 using System.Collections;
 using System.Collections.Generic;

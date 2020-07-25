@@ -56,7 +56,7 @@ namespace MG.Sonarr.Cmdlets
         {
             if (!this.ContainsParameter(x => x.InputObject))
             {
-                this.InputObject = base.SendSonarrGet<IndexerOptions>(ApiEndpoint.IndexerOptions);
+                this.InputObject = base.SendSonarrGet<IndexerOptions>(ApiEndpoints.IndexerOptions);
             }
 
             if (this.ContainsParameter(x => x.MaximumSize))
@@ -82,7 +82,7 @@ namespace MG.Sonarr.Cmdlets
 
             if (_changed && base.ShouldProcess("Indexer Options", "Set"))
             {
-                IndexerOptions changed = base.SendSonarrPut<IndexerOptions>(ApiEndpoint.IndexerOptions, this.InputObject);
+                IndexerOptions changed = base.SendSonarrPut<IndexerOptions>(ApiEndpoints.IndexerOptions, this.InputObject);
                 if (_passThru)
                     base.SendToPipeline(changed);
             }

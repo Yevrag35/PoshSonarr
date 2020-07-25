@@ -131,13 +131,13 @@ namespace MG.Sonarr
         #region INITIALIZATION ASYNC METHODS
         private async static Task<QualityDictionary> GetQualityDictionaryAsync(ISonarrClient client)
         {
-            IRestListResponse<QualityDefinition> defResponse = await client.GetAsJsonListAsync<QualityDefinition>(GetEndpoint(ApiEndpoint.QualityDefinitions));
+            IRestListResponse<QualityDefinition> defResponse = await client.GetAsJsonListAsync<QualityDefinition>(GetEndpoint(ApiEndpoints.QualityDefinitions));
             return !defResponse.IsFaulted ? new QualityDictionary(defResponse.Content.Select(x => x.Quality)) : null;
         }
 
         private async static Task<IndexerSchemaCollection> GetIndexerSchemasAsync(ISonarrClient client)
         {
-            IRestListResponse<IndexerSchema> schResponse = await client.GetAsJsonListAsync<IndexerSchema>(GetEndpoint(ApiEndpoint.IndexerSchema));
+            IRestListResponse<IndexerSchema> schResponse = await client.GetAsJsonListAsync<IndexerSchema>(GetEndpoint(ApiEndpoints.IndexerSchema));
             return !schResponse.IsFaulted ? IndexerSchemaCollection.FromSchemas(schResponse.Content) : null;
         }
 

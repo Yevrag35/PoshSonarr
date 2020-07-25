@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Strings;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -49,7 +50,7 @@ namespace MG.Sonarr.Results
         public HashSet<int> Tags { get; set; }
 
         #endregion
-        public string GetEndpoint() => ApiEndpoint.Notification;
+        public string GetEndpoint() => ApiEndpoints.Notification;
         public void SetName(string name) => base.Name = name;
     }
 }

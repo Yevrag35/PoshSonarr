@@ -110,7 +110,7 @@ namespace MG.Sonarr.Cmdlets
             string start = this.DateToString(this.StartDate);
             string end = this.DateToString(this.EndDate);
 
-            string full = string.Format(ApiEndpoint.Calendar_WithDate, start, end);
+            string full = string.Format(ApiEndpoints.Calendar_WithDate, start, end);
 
             List<CalendarEntry> entries = this.GetCalendarEntries(full);
 
@@ -129,7 +129,7 @@ namespace MG.Sonarr.Cmdlets
         #region METHODS
         private List<CalendarEntry> GetCalendarEntries(string uri) => base.SendSonarrListGet<CalendarEntry>(uri);
 
-        private string DateToString(DateTime dt) => dt.ToString(ApiEndpoint.Calendar_DTFormat);
+        private string DateToString(DateTime dt) => dt.ToString(ApiEndpoints.Calendar_DTFormat);
 
         private void SetOneDayRange(DateTime beginning)
         {

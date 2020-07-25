@@ -50,7 +50,7 @@ namespace MG.Sonarr.Cmdlets
                 if (_force || base.FormatShouldProcess("Import", "{0} manual import(s)", _toDo.Count))
                 {
                     SonarrBodyParameters sbp = ManualImportPost.NewManualImportObject(_toDo);
-                    CommandOutput cr = base.SendSonarrPost<CommandOutput>(ApiEndpoint.Command, sbp);
+                    CommandOutput cr = base.SendSonarrPost<CommandOutput>(ApiEndpoints.Command, sbp);
                     if (cr != null)
                     {
                         base.WriteObject(cr);

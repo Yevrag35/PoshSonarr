@@ -1,10 +1,9 @@
-﻿using MG.Posh.Extensions.Bound;
+﻿using MG.Api.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -101,7 +100,7 @@ namespace MG.Sonarr.Cmdlets
 
         #region WILDCARD FILTERING
         protected List<T> FilterByMultipleStrings<T>(List<T> listOfItems, IEnumerable<string> wildcardContainingStrings,
-            params Expression<Func<T, string>>[] expressions) where T : IJsonResult
+            params Expression<Func<T, string>>[] expressions) where T : IJsonObject
         {
             if (listOfItems != null && listOfItems.Count > 0)
             {
@@ -131,7 +130,7 @@ namespace MG.Sonarr.Cmdlets
         }
 
         protected List<T> FilterByStrings<T>(List<T> listOfItems, Expression<Func<T, string>> propertyExpressionOfItem, 
-            IEnumerable<string> wildcardContainingStrings) where T : IJsonResult
+            IEnumerable<string> wildcardContainingStrings) where T : IJsonObject
         {
             if (listOfItems != null && wildcardContainingStrings != null && listOfItems.Count > 0 && propertyExpressionOfItem.Body is MemberExpression)
             {
@@ -155,7 +154,7 @@ namespace MG.Sonarr.Cmdlets
         }
 
         protected internal IEnumerable<T> FilterByStrings<T>(IEnumerable<T> listOfItems, Expression<Func<T, string>> propertyExpressionOfItem,
-            IEnumerable<string> wildcardContainingStrings) where T : IJsonResult
+            IEnumerable<string> wildcardContainingStrings) where T : IJsonObject
         {
             if (listOfItems != null && wildcardContainingStrings != null && propertyExpressionOfItem.Body is MemberExpression)
             {
@@ -179,7 +178,7 @@ namespace MG.Sonarr.Cmdlets
         }
 
         protected List<T> FilterByStrings<T>(List<T> listOfItems, Expression<Func<T, IEnumerable<string>>> propertyExpressionOfItem,
-            IEnumerable<string> wildcardContainingStrings) where T : IJsonResult
+            IEnumerable<string> wildcardContainingStrings) where T : IJsonObject
         {
             if (listOfItems != null && listOfItems.Count > 0 && propertyExpressionOfItem.Body is MemberExpression)
             {
@@ -209,7 +208,7 @@ namespace MG.Sonarr.Cmdlets
         /// against the specified <see cref="BaseSonarrCmdlet"/>'s parameter which accepts wildcard input.  If the parameter is found not to 
         /// have been specified, the entire list is returned.
         /// </summary>
-        /// <typeparam name="T">The <see cref="IJsonResult"/>-implementing class that the <see cref="List{T}"/> is comprised of.</typeparam>
+        /// <typeparam name="T">The <see cref="IJsonObject"/>-implementing class that the <see cref="List{T}"/> is comprised of.</typeparam>
         /// <typeparam name="U">The <see cref="BaseSonarrCmdlet"/> that the parameter is a property of.</typeparam>
         /// <param name="listOfItems">The source list of items that will be filtered based on matching criteria.</param>
         /// <param name="propertyExpressionOfItem">
@@ -226,7 +225,7 @@ namespace MG.Sonarr.Cmdlets
         /// <returns>A <see cref="List{T}"/> of the filtered objects that matched through wildcards.</returns>
         protected List<T> FilterByStringParameter<T, U>(List<T> listOfItems, Expression<Func<T, string>> propertyExpressionOfItem,
             U cmdlet, Expression<Func<U, IEnumerable<string>>> parameterExpression)
-            where T : class, IJsonResult where U : BaseSonarrCmdlet
+            where T : class, IJsonObject where U : BaseSonarrCmdlet
         {
             if (listOfItems != null && listOfItems.Count > 0
                 && this.HasParameterSpecified(cmdlet, parameterExpression)
@@ -256,7 +255,7 @@ namespace MG.Sonarr.Cmdlets
         /// against the specified <see cref="BaseSonarrCmdlet"/>'s parameter which accepts wildcard input.  If the parameter is found not to 
         /// have been specified, the entire list is returned.
         /// </summary>
-        /// <typeparam name="T">The <see cref="IJsonResult"/>-implementing class that the <see cref="List{T}"/> is comprised of.</typeparam>
+        /// <typeparam name="T">The <see cref="IJsonObject"/>-implementing class that the <see cref="List{T}"/> is comprised of.</typeparam>
         /// <typeparam name="U">The <see cref="BaseSonarrCmdlet"/> that the parameter is a property of.</typeparam>
         /// <param name="listOfItems">The source list of items that will be filtered based on matching criteria.</param>
         /// <param name="propertyExpressionOfItem">
@@ -273,7 +272,7 @@ namespace MG.Sonarr.Cmdlets
         /// <returns>A <see cref="List{T}"/> of the filtered objects that matched through wildcards.</returns>
         protected IEnumerable<T> FilterByStringParameter<T, U>(IEnumerable<T> listOfItems, Expression<Func<T, string>> propertyExpressionOfItem,
             U cmdlet, Expression<Func<U, IEnumerable<string>>> parameterExpression)
-            where T : class, IJsonResult where U : BaseSonarrCmdlet
+            where T : class, IJsonObject where U : BaseSonarrCmdlet
         {
             if (listOfItems != null
                 && propertyExpressionOfItem.Body is MemberExpression)
@@ -307,7 +306,7 @@ namespace MG.Sonarr.Cmdlets
         /// against the specified <see cref="BaseSonarrCmdlet"/>'s parameter which accepts wildcard input.  If the parameter is found not to have
         /// been specified, the entire list is returned.
         /// </summary>
-        /// <typeparam name="T">The <see cref="IJsonResult"/>-implementing class that the <see cref="List{T}"/> is comprised of.</typeparam>
+        /// <typeparam name="T">The <see cref="IJsonObject"/>-implementing class that the <see cref="List{T}"/> is comprised of.</typeparam>
         /// <typeparam name="U">The <see cref="BaseSonarrCmdlet"/> that the parameter is a property of.</typeparam>
         /// <param name="listOfItems">The source collection of items that will be filtered based on matching criteria.</param>
         /// <param name="propertyExpressionOfListItem">
@@ -324,7 +323,7 @@ namespace MG.Sonarr.Cmdlets
         /// <returns>A <see cref="List{T}"/> of the filtered objects that matched through wildcards.</returns>
         protected IEnumerable<T> FilterByStringParameter<T, U>(IEnumerable<T> listOfItems, 
             Expression<Func<T, IEnumerable<string>>> propertyExpressionOfListItem,
-            U cmdlet, Expression<Func<U, IEnumerable<string>>> parameterExpression) where T : IJsonResult where U : BaseSonarrCmdlet
+            U cmdlet, Expression<Func<U, IEnumerable<string>>> parameterExpression) where T : IJsonObject where U : BaseSonarrCmdlet
         {
             if (listOfItems != null && this.HasParameterSpecified(cmdlet, parameterExpression))
             {

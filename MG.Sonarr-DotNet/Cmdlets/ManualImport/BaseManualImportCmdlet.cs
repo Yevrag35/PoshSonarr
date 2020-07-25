@@ -24,7 +24,7 @@ namespace MG.Sonarr.Cmdlets
         protected List<ManualImport> GetPossibleImports(string path)
         {
             IUrlParameterCollection parameters = this.FormUrl(path);
-            string url = string.Format("{0}{1}", ApiEndpoint.ManualImport, parameters.ToQueryString());
+            string url = string.Format("{0}{1}", ApiEndpoints.ManualImport, parameters.ToQueryString());
 
             return base.SendSonarrListGet<ManualImport>(url);
         }

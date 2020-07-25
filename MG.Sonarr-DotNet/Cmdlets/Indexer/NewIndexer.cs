@@ -61,7 +61,7 @@ namespace MG.Sonarr.Cmdlets
                 this.WriteError("A new indexer must have a name.", typeof(ArgumentNullException), ErrorCategory.InvalidArgument, this.InputObject);
             }
 
-            Indexer posted = base.SendSonarrPost<Indexer>(ApiEndpoint.Indexer, this.InputObject);
+            Indexer posted = base.SendSonarrPost<Indexer>(ApiEndpoints.Indexer, this.InputObject);
             base.SendToPipeline(posted);
         }
 

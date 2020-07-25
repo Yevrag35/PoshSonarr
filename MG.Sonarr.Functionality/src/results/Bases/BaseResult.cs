@@ -1,20 +1,18 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Api.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Results
 {
     /// <summary>
     /// The base class for all PoshSonarr RESTful API responses and payloads.
     /// </summary>
-    public abstract class BaseResult : IJsonResult
+    public abstract class BaseResult : IJsonObject
     {
         /// <summary>
         /// Converts the inheriting class to a JSON-formatted string using programmed serializers.

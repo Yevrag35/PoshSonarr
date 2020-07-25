@@ -1,8 +1,7 @@
-﻿using MG.Sonarr.Functionality;
-using System;
+﻿using System;
 using System.Net.Http;
 
-namespace MG.Sonarr
+namespace MG.Sonarr.Functionality
 {
     /// <summary>
     /// The <see cref="Exception"/> base class for all Sonarr exceptions.
