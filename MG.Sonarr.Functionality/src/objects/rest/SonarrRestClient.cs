@@ -18,7 +18,7 @@ namespace MG.Sonarr
     /// <summary>
     /// A Sonarr-specific implementation of the <see cref="HttpClient"/> class used to issue RESTful API requests.
     /// </summary>
-    public class SonarrRestClient : HttpClient, ISonarrClient
+    internal class SonarrRestClient : HttpClient, ISonarrClient
     {
         public bool IsAuthenticated => base.DefaultRequestHeaders.Contains("X-Api-Key") && base.BaseAddress != null;
 
@@ -106,6 +106,7 @@ namespace MG.Sonarr
             base.DefaultRequestHeaders.Add(kvp.Item1, kvp.Item2);
         }
 
+        [Obsolete]
         public bool IsJsonArray(string jsonString)
         {
             var jtok = JToken.Parse(jsonString);

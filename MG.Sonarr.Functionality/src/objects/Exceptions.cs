@@ -1,7 +1,5 @@
-﻿//using MG.Sonarr.Cmdlets;
+﻿using MG.Sonarr.Functionality;
 using System;
-//using System.Management.Automation;
-using System.Net;
 using System.Net.Http;
 
 namespace MG.Sonarr
@@ -16,10 +14,10 @@ namespace MG.Sonarr
         public const string HOW_CAUTION = "can cause editing Sonarr objects (POST/PUT requests) to not perform correctly.  Use caution!";
         public const string CON_MSG = "Connect-SonarrInstance received a redirect request.  You can have PoshSonarr follow redirects with the '-AllowRedirects' parameter, however this " + HOW_CAUTION;
 
-        /// <summary>
-        /// A copy of the current context's <see cref="HttpClient"/>.
-        /// </summary>
-        public SonarrRestClient Caller { get; }
+        ///// <summary>
+        ///// A copy of the current context's <see cref="HttpClient"/>.
+        ///// </summary>
+        //public ISonarrClient Caller { get; protected set; }
 
         /// <summary>
         /// The request method that caused this exception to be thrown.
