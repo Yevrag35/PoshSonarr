@@ -82,6 +82,15 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
+            if (this.ContainsParameter(x => x.DayOfWeek) && !this.ContainsParameter(x => x.StartDate))
+            {
+                this.StartDate = DateTime.Today;
+                if (!this.ContainsParameter(x => x.EndDate))
+                {
+                    this.EndDate = this.StartDate.AddDays(8).AddSeconds(-1);
+                }
+            }
+
             if (this.ContainsParameter(x => x.StartDate) && ! this.ContainsParameter(x => x.EndDate))
             {
                 this.EndDate = this.StartDate.AddDays(7);
