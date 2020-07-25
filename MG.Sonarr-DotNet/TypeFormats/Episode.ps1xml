@@ -15,7 +15,14 @@
 							</ListItem>
 							<ListItem>
 								<Label>AirDate</Label>
-								<ScriptBlock>$_.AirDateUtc.ToLocalTime()</ScriptBlock>
+								<ScriptBlock>
+									if ($null -ne $_.AirDateUtc) {
+										$local = $_.AirDateUtc.ToLocalTime()
+										$timeSpan = [System.TimeZone]::CurrentTimeZone.GetUtcOffset($local)
+										New-Object System.DateTimeOffset($local, $timeSpan)
+									}
+								</ScriptBlock>
+								<!--<ScriptBlock>$_.AirDateUtc.ToLocalTime()</ScriptBlock>-->
 							</ListItem>
 							<ListItem>
 								<Label>EpisodeFile</Label>

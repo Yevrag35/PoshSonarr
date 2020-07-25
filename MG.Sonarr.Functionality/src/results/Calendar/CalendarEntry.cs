@@ -23,8 +23,8 @@ namespace MG.Sonarr.Results
         public DateTime? AirDate => this.AirDateUtc.HasValue ? (DateTime?)this.AirDateUtc.Value.ToLocalTime() : null;
 
         [JsonIgnore]
-        public DayOfWeek? DayOfWeek => this.AirDateUtc.HasValue
-            ? this.AirDateUtc.Value.DayOfWeek
+        public DayOfWeek? DayOfWeek => this.AirDate.HasValue
+            ? this.AirDate.Value.DayOfWeek
             : (DayOfWeek?)null;
 
         [JsonProperty("id")]

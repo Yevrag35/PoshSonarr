@@ -14,7 +14,13 @@
 								<PropertyName>AbsoluteEpisodeNumber</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>AirDate</PropertyName>
+								<Label>AirDate</Label>
+								<ScriptBlock>
+									if ($null -ne $_.AirDateUtc) {
+										$timeSpan = [System.TimeZone]::CurrentTimeZone.GetUtcOffset($_.AirDate)
+										New-Object System.DateTimeOffset($_.AirDate, $timeSpan)
+									}
+								</ScriptBlock>
 							</ListItem>
 							<ListItem>
 								<PropertyName>DayOfWeek</PropertyName>

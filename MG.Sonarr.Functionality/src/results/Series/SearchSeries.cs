@@ -48,7 +48,7 @@ namespace MG.Sonarr.Results
         /// The localized date of when the series first aired.
         /// </summary>
         [JsonProperty("firstAired")]
-        public DateTime FirstAired { get; private protected set; }
+        public DateTime? FirstAired { get; private protected set; }
 
         /// <summary>
         /// An array of genres that apply to the series.
