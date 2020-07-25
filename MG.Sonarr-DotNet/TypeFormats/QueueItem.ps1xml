@@ -22,7 +22,13 @@
 								}</ScriptBlock>
 							</ListItem>
 							<ListItem>
-								<PropertyName>EstimatedCompletionTime</PropertyName>
+								<Label>EstimatedCompletionTime</Label>
+								<ScriptBlock>
+									if ($null -ne $_.EstimatedCompletionTime) {
+										$timeSpan = [System.TimeZone]::CurrentTimeZone.GetUtcOffset($_.EstimatedCompletionTime)
+										New-Object System.DateTimeOffset($_.EstimatedCompletionTime, $timeSpan)
+									}
+								</ScriptBlock>
 							</ListItem>
 							<ListItem>
 								<Label>Quality</Label>

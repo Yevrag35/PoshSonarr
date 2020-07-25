@@ -37,14 +37,16 @@
 							<ListItem>
 								<Label>FirstAired</Label>
 								<ScriptBlock>
-									$pat = "{0}, yyyy" -f [System.Globalization.CultureInfo]::CurrentUICulture.DateTimeFormat.MonthDayPattern;
-									$_.FirstAired.ToString($pat);
+									if ($null -ne $_.FirstAired) {
+										$pat = "{0}, yyyy" -f [System.Globalization.CultureInfo]::CurrentUICulture.DateTimeFormat.MonthDayPattern;
+										$_.FirstAired.ToString($pat);
+									}
 								</ScriptBlock>
-								<ItemSelectionCondition>
+								<!--<ItemSelectionCondition>
 									<ScriptBlock>
 										$_.FirstAired -ne $null
 									</ScriptBlock>
-								</ItemSelectionCondition>
+								</ItemSelectionCondition>-->
 							</ListItem>
 							<ListItem>
 								<Label>Genres</Label>
