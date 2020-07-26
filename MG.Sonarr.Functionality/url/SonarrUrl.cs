@@ -14,13 +14,14 @@ namespace MG.Sonarr.Functionality.Url
 
         private const string SLASH_STR = "/";
         private const char SLASH = (char)47;
-        private const string SLASH_API = SLASH_STR + "api";
+        //private const string SLASH_API = SLASH_STR + "api";
+        private const string SLASH_API = "api";
 
         #endregion
 
         #region PROPERTIES
-        string ISonarrUrl.BaseUrl => _base;
-        bool ISonarrUrl.IncludeApiPrefix
+        public string BaseUrl => _base;
+        public bool IncludeApiPrefix
         {
             get => _includeApiPrefix;
             set
@@ -34,7 +35,7 @@ namespace MG.Sonarr.Functionality.Url
                 _includeApiPrefix = value;
             }
         }
-        string ISonarrUrl.Path
+        public string Path
         {
             get => _builder.Path != SLASH_STR
                 ? _builder.Path.TrimEnd(SLASH)
@@ -45,12 +46,16 @@ namespace MG.Sonarr.Functionality.Url
                 _builder.Path = value;
             }
         }
-        Uri ISonarrUrl.Url => _builder.Uri;
+        public Uri Url => _builder.Uri;
 
         #endregion
 
         #region CONSTRUCTORS
-        public SonarrUrl(Uri url, bool includeApiPrefix) => this.FormatNew(url, includeApiPrefix);
+        public SonarrUrl(Uri url, bool includeApiPrefix)
+        {
+            this.FormatNew(url.OriginalString, includeApiPrefix);
+
+        }
 
         public SonarrUrl(string hostName, int portNumber, bool useSsl, string reverseProxyUriBase, bool includeApiPrefix)
         {
@@ -66,11 +71,11 @@ namespace MG.Sonarr.Functionality.Url
                 ? _builder.Path = _builder.Path + SLASH_API
                 : _builder.Path = _builder.Path + SLASH_API;
         }
-        private void FormatNew(Uri url, bool includeApiPrefix)
+        private void FormatNew(string url, bool includeApiPrefix)
         {
             _builder = new UriBuilder(url);
             _base = _builder.Uri.GetLeftPart(UriPartial.Scheme | UriPartial.Authority).TrimEnd(SLASH);
-            ((ISonarrUrl)this).IncludeApiPrefix = includeApiPrefix;
+            this.IncludeApiPrefix = includeApiPrefix;
         }
         private void FormatNew(string hostName, int portNumber, bool useSsl, string reverseProxyUriBase, bool includeApiPrefix)
         {

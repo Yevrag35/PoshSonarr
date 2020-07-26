@@ -18,14 +18,6 @@ namespace MG.Sonarr.Cmdlets
     public partial class ConnectInstance : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string CONNECT_EP = "/system/status";
-        private const string SLASH_STR = "/";
-        private static readonly char SLASH = char.Parse(SLASH_STR);
-        private static readonly char[] SLASH_API = new char[4]
-        {
-            SLASH, char.Parse("a"), char.Parse("p"), char.Parse("i")
-        };
-
         private bool _allowRedirect;
         private bool _noApiPrefix;
         private bool _noCache;
@@ -33,7 +25,6 @@ namespace MG.Sonarr.Cmdlets
         private bool _proxyBypass;
         private bool _skipCert;
         private bool _useSsl;
-        private const string URL_FORMAT = "{0}://{1}:{2}";
 
         #endregion
 
@@ -174,12 +165,6 @@ namespace MG.Sonarr.Cmdlets
 
             ISonarrClient client = SonarrFactory.GenerateClient(handler, Context.SonarrUrl, this.ApiKey, _allowRedirect, this.Proxy, this.ProxyCredential, _proxyBypass);
 
-            //if (this.ContainsParameter(x => x.Proxy))
-            //    this.BoundCallerWithProxy(handler);
-            
-            //else
-            //    this.BoundCallerWithoutProxy(handler);
-
             Status statusResult = this.TryConnect(client);
 
             if (statusResult != null)
@@ -194,45 +179,15 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PRIVATE/BACKEND METHODS
-        //private void BoundCallerWithProxy(HttpClientHandler handler)
-        //{
-        //    handler.Proxy = new WebProxy(this.Proxy, _proxyBypass, null, this.ProxyCredential);
-        //    handler.AllowAutoRedirect = _allowRedirect;
-        //    Context.ApiCaller = new SonarrRestClient(handler)
-        //    {
-        //        BaseAddress = Context.SonarrUrl.Url
-        //    };
-        //    Context.ApiCaller.AddApiKey(this.ApiKey);
-        //}
-        //private void BoundCallerWithoutProxy(HttpClientHandler handler)
-        //{
-        //    handler.AllowAutoRedirect = _allowRedirect;
-        //    Context.ApiCaller = new SonarrRestClient(handler)
-        //    {
-        //        BaseAddress = Context.SonarrUrl.Url
-        //    };
-        //    Context.ApiCaller.AddApiKey(this.ApiKey);
-        //}
 
-        private void InitializeContext(ISonarrClient client)
-        {
-            Context.Initialize(client, !_noApiPrefix, !_noCache);
-            //History.Initialize();
-            //List<QualityDefinition> definitions = base.SendSonarrListGet<QualityDefinition>("/qualitydefinition");
-            //Context.AllQualities = new QualityDictionary(definitions.Select(x => x.Quality));
-            //Context.TagManager = ClassFactory.NewTagManager(Context.ApiCaller, !_noApiPrefix);
-
-            //List<IndexerSchema> schemas = base.SendSonarrListGet<IndexerSchema>(ApiEndpoint.IndexerSchema);
-            //Context.IndexerSchemas = IndexerSchemaCollection.FromSchemas(schemas);
-            //Context.NoCache = _noCache;
-        }
+        private void InitializeContext(ISonarrClient client) => Context.Initialize(client, !_noApiPrefix, !_noCache);
 
         private void SetSonarrUrl() => Context.SonarrUrl = !this.ContainsParameter(x => x.SonarrUrl)
                 ? SonarrFactory.GenerateSonarrUrl(this.SonarrServerName, this.PortNumber, _useSsl, this.ReverseProxyUriBase, !_noApiPrefix)
                 : SonarrFactory.GenerateSonarrUrl(this.SonarrUrl, !_noApiPrefix);
         private Status TryConnect(ISonarrClient client)
         {
-            base.WriteApiDebug(CONNECT_EP, HttpMethod.Get, out string apiPath);
+            base.WriteApiDebug(ApiEndpoints.Status, HttpMethod.Get, out string apiPath);
             IRestResponse<Status> response = client.GetAsJsonAsync<Status>(apiPath).GetAwaiter().GetResult();
             if (response.IsFaulted)
             {
