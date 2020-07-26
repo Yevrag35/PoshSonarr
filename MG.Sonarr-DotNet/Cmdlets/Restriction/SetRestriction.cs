@@ -10,16 +10,14 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Set, "Restriction", ConfirmImpact = ConfirmImpact.None, SupportsShouldProcess = true,
+    [Cmdlet(VerbsCommon.Set, "Restriction", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
         DefaultParameterSetName = "ByInputRestrictionAddRemove")]
     [OutputType(typeof(Restriction))]
+    [Alias("Update-Restriction")]
     [CmdletBinding(PositionalBinding = false)]
     public class SetRestriction : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        //private AddRemoveHashtable _ignoreTerms;
-        //private AddRemoveHashtable _requiredTerms;
-        //private ReplaceHashtable _replaceTerms;
         private TermTable _ignoredTerms;
         private TermTable _requiredTerms;
         private bool _passThru;
