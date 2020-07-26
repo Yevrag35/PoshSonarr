@@ -33,61 +33,33 @@ namespace MG.Sonarr
 
         #region PROPERTIES
 
-#if DEBUG
-        public static QualityDictionary AllQualities { get; private set; }
-#else
         internal static QualityDictionary AllQualities { get; private set; }
-#endif
 
         /// <summary>
         /// The main <see cref="HttpClient"/> from which all PoshSonarr cmdlets issue their REST requests.
         /// </summary>
-#if DEBUG
-        public static ISonarrClient ApiCaller { get; private set; }
-#else
-        internal static SonarrRestClient ApiCaller { get; private set; }
-#endif
+        internal static ISonarrClient ApiCaller { get; private set; }
 
-#if DEBUG
-        public static IndexerSchemaCollection IndexerSchemas { get; private set; }
-#else
         internal static IndexerSchemaCollection IndexerSchemas { get; private set; }
-#endif
 
         /// <summary>
         /// Returns true when <see cref="Context.ApiCaller"/> is not null, has a base address, and contains a valid API key header.
         /// </summary>
-#if DEBUG
-        public static bool IsConnected => ApiCaller != null && ApiCaller.BaseAddress != null && ApiCaller.DefaultRequestHeaders.Contains("X-Api-Key");
-#else
         internal static bool IsConnected => ApiCaller != null && ApiCaller.BaseAddress != null && ApiCaller.DefaultRequestHeaders.Contains("X-Api-Key");
-#endif
 
         public static bool NoCache { get; private set; }
 
         /// <summary>
         /// The <see cref="SonarrUrl"/> representation of the base URL for all subsequent REST calls.
         /// </summary>
-#if DEBUG
-        public static ISonarrUrl SonarrUrl { get; internal set; }
-#else
         internal static ISonarrUrl SonarrUrl { get; set; }
-#endif
 
-#if DEBUG
-        public static ITagManager TagManager { get; private set; }
-#else
-        internal static TagManager TagManager { get; private set; }
-#endif
+        internal static ITagManager TagManager { get; private set; }
 
         #endregion
 
         #region METHODS
-#if DEBUG
-        public static PSObject GetConnectionStatus()
-#else
         internal static PSObject GetConnectionStatus()
-#endif
         {
             var pso = new PSObject();
             pso.Properties.Add(new PSNoteProperty("IsConnected", IsConnected));
