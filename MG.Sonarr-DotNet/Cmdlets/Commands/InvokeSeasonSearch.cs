@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Sonarr.Functionality.Collections;
+using MG.Sonarr.Results;
 using System;
 using System.Management.Automation;
 

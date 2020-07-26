@@ -1,13 +1,8 @@
-﻿using MG.Posh.Extensions.Bound;
-using MG.Posh.Extensions.Shoulds;
-using MG.Posh.Extensions.Writes;
+﻿using MG.Posh.Extensions.Writes;
 using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Results;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
@@ -61,7 +56,7 @@ namespace MG.Sonarr.Cmdlets
                 this.WriteError("A new indexer must have a name.", typeof(ArgumentNullException), ErrorCategory.InvalidArgument, this.InputObject);
             }
 
-            Indexer posted = base.SendSonarrPost<Indexer>(ApiEndpoint.Indexer, this.InputObject);
+            Indexer posted = base.SendSonarrPost<Indexer>(ApiEndpoints.Indexer, this.InputObject);
             base.SendToPipeline(posted);
         }
 

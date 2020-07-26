@@ -1,10 +1,9 @@
 ﻿using MG.Posh.Extensions.Bound;
 using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Management.Automation;
 
@@ -67,7 +66,7 @@ namespace MG.Sonarr.Cmdlets
             {
                 for (int i = 0; i < this.Id.Length; i++)
                 {
-                    DownloadClient dlc = base.SendSonarrGet<DownloadClient>(string.Format(ApiEndpoint.DownloadClient_ById, this.Id[i]));
+                    DownloadClient dlc = base.SendSonarrGet<DownloadClient>(string.Format(ApiEndpoints.DownloadClient_ById, this.Id[i]));
                     base.SendToPipeline(dlc);
                 }
             }
@@ -78,7 +77,7 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         private List<DownloadClient> GetAllDownloadClients()
         {
-            return base.SendSonarrListGet<DownloadClient>(ApiEndpoint.DownloadClient);
+            return base.SendSonarrListGet<DownloadClient>(ApiEndpoints.DownloadClient);
         }
 
         private List<DownloadClient> FindByProtocol(List<DownloadClient> list) => 

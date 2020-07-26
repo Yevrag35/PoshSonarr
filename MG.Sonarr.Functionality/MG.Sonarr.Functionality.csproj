@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyVersion>1.3.1</AssemblyVersion>
-    <FileVersion>1.3.1.0</FileVersion>
-    <Version>1.3.1</Version>
+    <AssemblyVersion>1.4.0</AssemblyVersion>
+    <FileVersion>1.4.0</FileVersion>
+    <Version>1.4.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -12,34 +12,29 @@
     <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
-    <Compile Remove="src\objects\dateFormats\DateFormatAttribute.cs" />
-    <Compile Remove="src\objects\dateFormats\ShortDateFormat.cs" />
-    <Compile Remove="src\objects\dateFormats\WeekColumnHeader.cs" />
-    <Compile Remove="src\objects\interfaces\IRestResponse-Generic.cs" />
-    <Compile Remove="src\objects\interfaces\IRestResponse.cs" />
-    <Compile Remove="src\objects\rest\SonarrRestResponse.cs" />
-    <Compile Remove="src\objects\TotalSize.cs" />
-    <Compile Remove="src\objects\UrlParameters\OrderParameter.cs" />
-    <Compile Remove="src\results\Config\UIConfig.cs" />
-    <Compile Remove="src\results\Quality\QualityDefinitionCollection.cs" />
-    <Compile Remove="src\results\Quality\QualityItemCollection.cs" />
+    <Compile Remove="dateFormats\DateFormatAttribute.cs" />
+    <Compile Remove="dateFormats\ShortDateFormat.cs" />
+    <Compile Remove="dateFormats\WeekColumnHeader.cs" />
+    <Compile Remove="exceptions\SonarrResponseException.cs" />
+    <Compile Remove="url\OrderParameter.cs" />
+    <Compile Remove="results\Config\UIConfig.cs" />
+    <Compile Remove="results\Quality\QualityDefinitionCollection.cs" />
+    <Compile Remove="results\Quality\QualityItemCollection.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <CodeAnalysisDictionary Include="src\objects\interfaces\IRestResponse-Generic.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="src\objects\dateFormats\DateFormatAttribute.cs" />
-    <None Include="src\objects\dateFormats\ShortDateFormat.cs" />
-    <None Include="src\objects\dateFormats\WeekColumnHeader.cs" />
-    <None Include="src\objects\interfaces\IRestResponse.cs" />
-    <None Include="src\objects\rest\SonarrRestResponse.cs" />
-    <None Include="src\objects\TotalSize.cs" />
-    <None Include="src\objects\UrlParameters\OrderParameter.cs" />
-    <None Include="src\results\Config\UIConfig.cs" />
-    <None Include="src\results\Quality\QualityDefinitionCollection.cs" />
+    <None Include="dateFormats\DateFormatAttribute.cs" />
+    <None Include="dateFormats\ShortDateFormat.cs" />
+    <None Include="dateFormats\WeekColumnHeader.cs" />
+    <None Include="exceptions\SonarrResponseException.cs" />
+    <None Include="url\OrderParameter.cs" />
+    <None Include="results\Config\UIConfig.cs" />
+    <None Include="results\Quality\QualityDefinitionCollection.cs" />
   </ItemGroup>
 
   <ItemGroup>

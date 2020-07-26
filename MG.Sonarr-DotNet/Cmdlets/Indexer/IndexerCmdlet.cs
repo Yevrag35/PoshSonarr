@@ -1,10 +1,7 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Management.Automation;
-using System.Threading.Tasks;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -18,11 +15,11 @@ namespace MG.Sonarr.Cmdlets
 
         protected List<Indexer> GetAllIndexers()
         {
-            return base.SendSonarrListGet<Indexer>(ApiEndpoint.Indexer);
+            return base.SendSonarrListGet<Indexer>(ApiEndpoints.Indexer);
         }
         private Indexer GetIndexer(int id)
         {
-            return base.SendSonarrGet<Indexer>(string.Format(ApiEndpoint.Indexer_ById, id));
+            return base.SendSonarrGet<Indexer>(string.Format(ApiEndpoints.Indexer_ById, id));
         }
         protected IEnumerable<Indexer> GetIndexers(params int[] ids)
         {
@@ -36,7 +33,7 @@ namespace MG.Sonarr.Cmdlets
         }
         protected List<IndexerSchema> GetAllSchemas()
         {
-            return base.SendSonarrListGet<IndexerSchema>(ApiEndpoint.IndexerSchema);
+            return base.SendSonarrListGet<IndexerSchema>(ApiEndpoints.IndexerSchema);
         }
     }
 }

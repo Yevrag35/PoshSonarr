@@ -1,9 +1,8 @@
-﻿using MG.Posh.Extensions.Writes;
-using MG.Sonarr.Functionality;
+﻿using MG.Sonarr.Functionality.Collections;
+using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
@@ -50,7 +49,7 @@ namespace MG.Sonarr.Cmdlets
                 if (_force || base.FormatShouldProcess("Import", "{0} manual import(s)", _toDo.Count))
                 {
                     SonarrBodyParameters sbp = ManualImportPost.NewManualImportObject(_toDo);
-                    CommandOutput cr = base.SendSonarrPost<CommandOutput>(ApiEndpoint.Command, sbp);
+                    CommandOutput cr = base.SendSonarrPost<CommandOutput>(ApiEndpoints.Command, sbp);
                     if (cr != null)
                     {
                         base.WriteObject(cr);

@@ -9,14 +9,13 @@ using System.Net.Security;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace MG.Sonarr.Cmdlets
+namespace MG.Sonarr
 {
-    public partial class ConnectInstance
+    internal static partial class Validation
     {
-        private void CheckCertificateValidity(ref HttpClientHandler handler)
+        internal static void CheckCertificateValidity(ref HttpClientHandler handler)
         {
-            if (_skipCert)
-                handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
         }
     }
 }

@@ -51,7 +51,7 @@ namespace MG.Sonarr.Cmdlets.QualityProfiles
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            _comparer = ClassFactory.NewIgnoreCase();
+            _comparer = SonarrFactory.NewIgnoreCase();
         }
 
         protected override void ProcessRecord()

@@ -1,17 +1,14 @@
 ﻿using MG.Sonarr.Functionality;
-using MG.Sonarr.Results;
+using MG.Sonarr.Functionality.Jobs;
 using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
 
 namespace MG.Sonarr
 {
-    public static class History
+    internal static class History
     {
-        public static IJobHistory Jobs { get; private set; }
+        internal static IJobHistory Jobs { get; private set; }
 
-        public static void Initialize() => Jobs = ClassFactory.NewJobHistory();
-        public static bool IsInitialized() => Jobs != null;
+        internal static void Initialize() => Jobs = SonarrFactory.NewJobHistory();
+        internal static bool IsInitialized() => Jobs != null;
     }
 }

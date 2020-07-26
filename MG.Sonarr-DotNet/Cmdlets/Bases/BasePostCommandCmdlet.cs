@@ -1,13 +1,7 @@
-﻿using MG.Posh.Extensions.Writes;
+﻿using MG.Sonarr.Functionality.Collections;
 using MG.Sonarr.Results;
-using Newtonsoft.Json;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {

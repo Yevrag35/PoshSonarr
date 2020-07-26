@@ -10,15 +10,13 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 
-namespace MG.Sonarr.Cmdlets
+namespace MG.Sonarr
 {
-    public partial class ConnectInstance
+    internal static partial class Validation
     {
-        private void CheckCertificateValidity(ref HttpClientHandler handler)
+        internal static void CheckCertificateValidity(ref HttpClientHandler handler)
         {
-            if (_skipCert)
-                handler.ServerCertificateCustomValidationCallback = delegate { return true; };
-            
+            handler.ServerCertificateCustomValidationCallback = delegate { return true; };
         }
     }
 }

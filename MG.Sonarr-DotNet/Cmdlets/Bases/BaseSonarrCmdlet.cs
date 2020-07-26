@@ -1,4 +1,4 @@
-﻿using MG.Posh.Extensions.Writes;
+﻿using MG.Sonarr.Functionality.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

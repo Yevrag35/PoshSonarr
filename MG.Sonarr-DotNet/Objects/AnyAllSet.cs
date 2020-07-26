@@ -18,7 +18,7 @@ namespace MG.Sonarr
 
         //public bool IsAll { get; protected set; }
         public AnyAllNoneSet Type { get; protected set; }
-        protected IEqualityComparer<string> StringComparer { get; } = ClassFactory.NewIgnoreCase();
+        protected IEqualityComparer<string> StringComparer { get; } = SonarrFactory.NewIgnoreCase();
 
         protected AnyAllSet() : base(new StringIgnoreCase())
         {
