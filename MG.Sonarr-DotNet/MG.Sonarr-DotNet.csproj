@@ -148,7 +148,6 @@
     <Compile Include="Cmdlets\Restriction\NewRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\RemoveRestriction.cs" />
     <Compile Include="Cmdlets\Restriction\SetRestriction.cs" />
-    <Compile Include="Cmdlets\Restriction\UpdateRestriction.cs" />
     <Compile Include="Cmdlets\RootFolder\RegisterRootFolder.cs" />
     <Compile Include="Cmdlets\RootFolder\RemoveRootFolder.cs" />
     <Compile Include="Cmdlets\Series\SeriesCmdlet.cs" />
