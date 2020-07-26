@@ -9,6 +9,15 @@ namespace MG.Sonarr.Cmdlets
     [Alias("Disconnect-")]
     public class DisconnectInstance : BaseSonarrCmdlet
     {
+        private bool _passThru;
+
+        [Parameter(Mandatory = false)]
+        public SwitchParameter PassThru
+        {
+            get => _passThru;
+            set => _passThru = value;
+        }
+
         protected override void BeginProcessing() { }
         protected override void ProcessRecord()
         {
@@ -18,14 +27,7 @@ namespace MG.Sonarr.Cmdlets
                 return;
             }
 
-            //Context.NoCache = false;
-            //Context.IndexerSchemas = null;
-            //Context.TagManager.Dispose();
-            //Context.TagManager = null;
-            //Context.SonarrUrl = null;
-            //Context.ApiCaller.Dispose();
-            //Context.ApiCaller = null;
-            //Context.AllQualities = null;
+            base.WriteObject(Context.Disinitialize(_passThru));
 
             GC.Collect();
         }

@@ -16,11 +16,7 @@ namespace MG.Sonarr
     /// <summary>
     /// The static context used by the PoshSonarr module.  The 'Context' is set with the <see cref="ConnectInstance"/> cmdlet.
     /// </summary>
-#if DEBUG
-    public static class Context
-#else
     internal static partial class Context
-#endif
     {
         #region FIELDS/CONSTANTS
         //internal const string SLASH_STR = "/";
@@ -66,7 +62,24 @@ namespace MG.Sonarr
             pso.Properties.Add(new PSNoteProperty("SonarrUrl", SonarrUrl?.Url));
             return pso;
         }
+        internal static object Disinitialize(bool passThru)
+        {
+            ApiCaller?.Dispose();
+            ApiCaller = null;
+            Prefix = null;
+            IndexerSchemas = null;
+            NoCache = false;
+            AllQualities = null;
+            TagManager?.Dispose();
+            TagManager = null;
+            SonarrUrl = null;
 
+            object o = null;
+            if (passThru)
+                o = GetConnectionStatus();
+
+            return o;
+        }
         private static string GetEndpoint(string endpoint) => !string.IsNullOrEmpty(Prefix) ? Prefix + endpoint : endpoint;
 
         internal static void Initialize(ISonarrClient client, bool useApiPrefix, bool useCache)
