@@ -29,7 +29,7 @@ namespace MG.Sonarr
                 anyall = new AnyAllIntSet();
 
             IEnumerable<string> keys = ht.Keys.Cast<string>();
-            if (keys.Contains(ALL, anyall.StringComparer))
+            if (keys.Contains(AnyAllNoneSet.All.ToString(), anyall.StringComparer))
             {
                 string key = anyall.GetAllKey(keys);
                 if (ht[key] is IEnumerable moreThanOne1)
@@ -41,9 +41,9 @@ namespace MG.Sonarr
                     anyall.Add(foundYou.Id);
                 }
 
-                anyall.IsAll = true;
+                anyall.Type = AnyAllNoneSet.All;
             }
-            else if (keys.Contains(ANY, anyall.StringComparer))
+            else if (keys.Contains(AnyAllNoneSet.Any.ToString(), anyall.StringComparer))
             {
                 string key = anyall.GetAnyKey(keys);
                 if (ht[key] is IEnumerable moreThanOne2)
@@ -54,7 +54,20 @@ namespace MG.Sonarr
                 {
                     anyall.Add(foundYou2.Id);
                 }
-                anyall.IsAll = false;
+                anyall.Type = AnyAllNoneSet.Any;
+            }
+            else if (keys.Contains(AnyAllNoneSet.None.ToString(), anyall.StringComparer))
+            {
+                string key = anyall.GetNoneKey(keys);
+                if (ht[key] is IEnumerable moreThanOne2)
+                {
+                    anyall.AddAllTags(moreThanOne2);
+                }
+                else if (Context.TagManager.TryGetTag(ht[key], out Tag foundYou2))
+                {
+                    anyall.Add(foundYou2.Id);
+                }
+                anyall.Type = AnyAllNoneSet.None;
             }
 
             return anyall;

@@ -9,22 +9,25 @@ namespace MG.Sonarr.Cmdlets
     [Alias("Disconnect-")]
     public class DisconnectInstance : BaseSonarrCmdlet
     {
+        private bool _passThru;
+
+        [Parameter(Mandatory = false)]
+        public SwitchParameter PassThru
+        {
+            get => _passThru;
+            set => _passThru = value;
+        }
+
         protected override void BeginProcessing() { }
         protected override void ProcessRecord()
         {
             if (!Context.IsConnected)
             {
-                base.WriteWarning("Not currently connected to any Sonarr instance.");
+                base.WriteWarning("Nothing to do; not connected to any Sonarr instance.");
                 return;
             }
 
-            Context.TagManager.Dispose();
-            Context.TagManager = null;
-            Context.SonarrUrl = null;
-            Context.ApiCaller.Dispose();
-            Context.ApiCaller = null;
-            //Context.AllQualities.Clear();
-            Context.AllQualities = null;
+            base.WriteObject(Context.Disinitialize(_passThru));
 
             GC.Collect();
         }

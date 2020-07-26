@@ -7,13 +7,18 @@ using System.Linq;
 
 namespace MG.Sonarr
 {
+    public enum AnyAllNoneSet
+    {
+        All,
+        Any,
+        None
+    }
     public abstract class AnyAllSet<T> : HashSet<T>
     {
-        protected const string ALL = "All";
-        protected const string ANY = "Any";
 
-        public bool IsAll { get; protected set; }
-        protected IEqualityComparer<string> StringComparer { get; } = ClassFactory.NewIgnoreCase();
+        //public bool IsAll { get; protected set; }
+        public AnyAllNoneSet Type { get; protected set; }
+        protected IEqualityComparer<string> StringComparer { get; } = SonarrFactory.NewIgnoreCase();
 
         protected AnyAllSet() : base(new StringIgnoreCase())
         {
@@ -23,8 +28,9 @@ namespace MG.Sonarr
         {
         }
 
-        protected string GetAllKey(IEnumerable<string> keys) => keys.Single(x => x.Equals(ALL, StringComparison.CurrentCultureIgnoreCase));
-        protected string GetAnyKey(IEnumerable<string> keys) => keys.Single(x => x.Equals(ANY, StringComparison.CurrentCultureIgnoreCase));
+        protected string GetAllKey(IEnumerable<string> keys) => keys.FirstOrDefault(x => x.Equals(AnyAllNoneSet.All.ToString(), StringComparison.CurrentCultureIgnoreCase));
+        protected string GetAnyKey(IEnumerable<string> keys) => keys.FirstOrDefault(x => x.Equals(AnyAllNoneSet.Any.ToString(), StringComparison.CurrentCultureIgnoreCase));
+        protected string GetNoneKey(IEnumerable<string> keys) => keys.FirstOrDefault(x => x.Equals(AnyAllNoneSet.None.ToString(), StringComparison.CurrentCultureIgnoreCase));
 
         private class StringIgnoreCase : IEqualityComparer<T>
         {

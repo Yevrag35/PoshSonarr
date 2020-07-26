@@ -1,12 +1,7 @@
-﻿using MG.Sonarr.Results;
-using Newtonsoft.Json;
+﻿using MG.Sonarr.Functionality.Collections;
+using MG.Sonarr.Results;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -55,6 +50,9 @@ namespace MG.Sonarr.Cmdlets
             CommandOutput output = base.SendSonarrPost<CommandOutput>(BASE_EP, parameterDict);
             if (output != null)
             {
+                History.Jobs.AddResult(output);
+                base.WriteFormatVerbose("Added Job to History: {0}", output.Id);
+
                 base.WriteObject(output);
             }
         }

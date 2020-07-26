@@ -2,8 +2,8 @@
   "profiles": {
     "MG.Sonarr-Core": {
       "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\PowerShell\\7-preview\\pwsh.exe",
-      "commandLineArgs": "-NoExit -NoLogo -File \"DebugScript.ps1\""
+      "executablePath": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "commandLineArgs": "-NoExit -NoLogo -File \"..\\netcoreapp3.1\\DebugScript.ps1\""
     }
   }
 }

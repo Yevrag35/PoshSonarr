@@ -1,5 +1,7 @@
 ﻿using MG.Posh.Extensions.Bound;
 using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Collections;
+using MG.Sonarr.Functionality.Url;
 using MG.Sonarr.Results;
 using System;
 using System.Collections;
@@ -37,7 +39,7 @@ namespace MG.Sonarr.Cmdlets
         public LogSortKey SortBy = LogSortKey.Time;
 
         [Parameter(Mandatory = false, Position = 2)]
-        public SortDirection SortDirection = SortDirection.Ascending;
+        public SortDirection SortDirection = SortDirection.Descending;
 
         [Parameter(Mandatory = true, ParameterSetName = "ByPagingIncludeFiltering")]
         [Parameter(Mandatory = true, ParameterSetName = "ByTopIncludeFiltering")]
@@ -107,7 +109,7 @@ namespace MG.Sonarr.Cmdlets
         {
             if (!string.IsNullOrEmpty(this.FilterBy))
             {
-                this.UrlParameters.Add(new FilterParameter(this.FilterBy, this.FilterValue));
+                this.UrlParameters.Add(new FilterLogParameter(this.FilterBy, this.FilterValue));
             }
         }
         private void SetPagingParameters()

@@ -11,7 +11,12 @@
 					<ListEntry>
 						<ListItems>
 							<ListItem>
-								<PropertyName>DateAdded</PropertyName>
+								<Label>DateAdded</Label>
+								<ScriptBlock>
+									if ($null -ne $_.DateAdded) {
+										$_.DateAdded.ToShortDateString()
+									}
+								</ScriptBlock>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Id</PropertyName>
@@ -40,7 +45,7 @@
 								<PropertyName>SeriesId</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>Size</PropertyName>
+								<PropertyName>SizeOnDisk</PropertyName>
 							</ListItem>
 						</ListItems>
 					</ListEntry>

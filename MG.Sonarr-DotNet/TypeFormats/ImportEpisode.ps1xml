@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+	<ViewDefinitions>
+		<View>
+			<Name>Import Episode ListView</Name>
+			<ViewSelectedBy>
+				<TypeName>MG.Sonarr.Results.ImportEpisode</TypeName>
+			</ViewSelectedBy>
+			<ListControl>
+				<ListEntries>
+					<ListEntry>
+						<ListItems>
+							<ListItem>
+								<PropertyName>AbsoluteEpisodeNumber</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>AirDate</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>EpisodeNumber</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Id</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>IsMonitored</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Name</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>SeasonNumber</PropertyName>
+							</ListItem>
+						</ListItems>
+					</ListEntry>
+				</ListEntries>
+			</ListControl>
+		</View>
+	</ViewDefinitions>
+</Configuration>

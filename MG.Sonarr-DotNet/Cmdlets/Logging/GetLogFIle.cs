@@ -54,7 +54,7 @@ namespace MG.Sonarr.Cmdlets.Logging
             }
             if (this.ContainsParameter(x => x.Name))
             {
-                IEqualityComparer<string> ig = ClassFactory.NewIgnoreCase();
+                IEqualityComparer<string> ig = SonarrFactory.NewIgnoreCase();
                 return logFiles.Where(x => this.Name.Contains(x.FileName, ig));
             }
             else

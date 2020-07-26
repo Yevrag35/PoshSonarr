@@ -1,9 +1,6 @@
-﻿using MG.Posh.Extensions.Bound;
-using MG.Sonarr.Functionality;
+﻿using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Results;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
@@ -17,7 +14,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            IndexerOptions options = base.SendSonarrGet<IndexerOptions>(ApiEndpoint.IndexerOptions);
+            IndexerOptions options = base.SendSonarrGet<IndexerOptions>(ApiEndpoints.IndexerOptions);
             base.SendToPipeline(options);
         }
 

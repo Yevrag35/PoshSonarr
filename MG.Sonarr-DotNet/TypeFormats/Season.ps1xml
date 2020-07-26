@@ -23,15 +23,20 @@
 								<PropertyName>PercentOfEpisodes</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>PreviousAiring</PropertyName>
+								<Label>PreviousAiring</Label>
+								<ScriptBlock>
+									if ($null -ne $_.PreviousAiring) {
+										$local = $_.PreviousAiring.ToLocalTime()
+										$offset = [System.TimeZone]::CurrentTimeZone.GetUtcOffset($local)
+										New-Object System.DateTimeOffset($local, $offset)
+									}
+								</ScriptBlock>
 							</ListItem>
 							<ListItem>
 								<PropertyName>SeasonNumber</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>SizeOnDisk</PropertyName>
-								<!--<Label>SizeOnDisk</Label>
-								<ScriptBlock>"{0} GB" -f $([math]::Round(($_.Statistics.SizeOnDisk / 1GB), 2))</ScriptBlock>-->
 							</ListItem>
 							<ListItem>
 								<PropertyName>TotalEpisodeCount</PropertyName>

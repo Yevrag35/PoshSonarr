@@ -21,7 +21,7 @@ namespace MG.Sonarr.Cmdlets
         internal AnyAllIntSet _anyall;
         private Func<SeriesResult, string> _func;
         internal AnyAllStringSet _genres;
-        internal HashSet<int> _ids;
+        internal HashSet<int> _ids { get; } = new HashSet<int>();
         internal bool _isDebugging;
         internal bool _isMon;
         //private List<string> _names;
@@ -38,7 +38,11 @@ namespace MG.Sonarr.Cmdlets
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId", ValueFromPipelineByPropertyName = true)]
         [Alias("SeriesId")]
-        public int[] Id { get; set; }
+        public int[] Id
+        {
+            get => _ids.ToArray();
+            set => _ids.UnionWith(value);
+        }
 
         // EXTRA FILTERS
         [Parameter(Mandatory = false)]
@@ -90,21 +94,20 @@ namespace MG.Sonarr.Cmdlets
         {
             base.BeginProcessing();
 
-            if (this.ContainsAllParameters("Debug"))
+            if (this.ContainsBuiltinParameter(BuiltInParameter.Debug))
             {
                 _isDebugging = ((SwitchParameter)this.MyInvocation.BoundParameters["Debug"]).ToBool();
                 if (_isDebugging)
                     _func = x => x.CleanTitle;
             }
 
-            //_names = new List<string>();
-            _names = new HashSet<string>(ClassFactory.NewIgnoreCase());
-            _ids = new HashSet<int>();
+            _names = new HashSet<string>(SonarrFactory.NewIgnoreCase());
+            //_ids = new HashSet<int>();
             if (this.ContainsParameter(x => x.Name))
                 this.ProcessNamesParameter(this.Name);
 
-            else if (this.ContainsParameter(x => x.Id))
-                _ids.UnionWith(this.Id);
+            //else if (this.ContainsParameter(x => x.Id))
+            //    _ids.UnionWith(this.Id);
 
             if (this.ContainsParameter(x => x.Tag))
             {
@@ -124,11 +127,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            if (_ids.Count > 0)
-            {
-                base.SendToPipeline(base.GetSeriesById(_ids, _isDebugging));
-            }
-            else
+            if (_ids.Count <= 0)
             {
                 IEnumerable<SeriesResult> filtered = base.GetAllSeries(_isDebugging);
 
@@ -140,12 +139,16 @@ namespace MG.Sonarr.Cmdlets
                             w => w.Tags.Count > 0)
                         .ThenFilterBy(this,
                             p => p.Tag,
-                            c => _anyall.IsAll,
+                            c => _anyall.Type == AnyAllNoneSet.All,
                             w => _anyall.IsSubsetOf(w.Tags))
                         .ThenFilterBy(this,
                             p => p.Tag,
-                            c => !_anyall.IsAll,
+                            c => _anyall.Type == AnyAllNoneSet.Any,
                             w => _anyall.Overlaps(w.Tags))
+                        .ThenFilterBy(this,
+                            p => p.Tag,
+                            c => _anyall.Type == AnyAllNoneSet.None,
+                            w => !_anyall.Overlaps(w.Tags))
                         .ThenFilterBy(this,
                             p => p.HasNoTags,
                             c => _noTags,
@@ -156,12 +159,16 @@ namespace MG.Sonarr.Cmdlets
                             w => this.Type.Contains(w.SeriesType))
                         .ThenFilterBy(this,
                             p => p.Genres,
-                            c => _genres.IsAll,
+                            c => _genres.Type == AnyAllNoneSet.All,
+                            w => _genres.Overlaps(w.Genres))
+                        .ThenFilterBy(this,
+                            p => p.Genres,
+                            c => _genres.Type == AnyAllNoneSet.Any,
                             w => _genres.IsSubsetOf(w.Genres))
                         .ThenFilterBy(this,
                             p => p.Genres,
-                            c => !_genres.IsAll,
-                            w => _genres.Overlaps(w.Genres))
+                            c => _genres.Type == AnyAllNoneSet.None,
+                            w => !_genres.Overlaps(w.Genres))
                         .ThenFilterBy(this,
                             p => p.IsMonitored,
                             null,
@@ -194,6 +201,13 @@ namespace MG.Sonarr.Cmdlets
                 base.SendToPipeline(filtered);
             }
         }
+        protected override void EndProcessing()
+        {
+            if (_ids.Count > 0)
+            {
+                base.SendToPipeline(base.GetSeriesById(_ids, _isDebugging));
+            }
+        }
 
         #endregion
 
@@ -223,9 +237,10 @@ namespace MG.Sonarr.Cmdlets
         }
         private AnyAllStringSet AnyAllFromGenres(object[] genres)
         {
-            if (this.Genres.OfType<Hashtable>().Any())
+            Hashtable ht = this.Genres.OfType<Hashtable>().FirstOrDefault();
+            if (ht != null)
             {
-                return this.Genres.OfType<Hashtable>().First();
+                return ht;
             }
             else
             {

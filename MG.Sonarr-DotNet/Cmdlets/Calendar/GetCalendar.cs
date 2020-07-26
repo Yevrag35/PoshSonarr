@@ -1,10 +1,9 @@
 ﻿using MG.Posh.Extensions.Bound;
-using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
@@ -30,10 +29,6 @@ namespace MG.Sonarr.Cmdlets
     public class GetCalendar : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        //private const string DT_FORMAT = "yyyy-MM-ddTHH:mm:ss";
-        //private const string EP = "/calendar";
-        //private const string EP_WITH_DATE = EP + "?start={0}&end={1}";
-
         private bool _today;
         private bool _tomorrow;
 
@@ -86,6 +81,15 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
+            if (this.ContainsParameter(x => x.DayOfWeek) && !this.ContainsParameter(x => x.StartDate))
+            {
+                this.StartDate = DateTime.Today;
+                if (!this.ContainsParameter(x => x.EndDate))
+                {
+                    this.EndDate = this.StartDate.AddDays(8).AddSeconds(-1);
+                }
+            }
+
             if (this.ContainsParameter(x => x.StartDate) && ! this.ContainsParameter(x => x.EndDate))
             {
                 this.EndDate = this.StartDate.AddDays(7);
@@ -104,8 +108,8 @@ namespace MG.Sonarr.Cmdlets
         {
             string start = this.DateToString(this.StartDate);
             string end = this.DateToString(this.EndDate);
-            //string full = string.Format(EP_WITH_DATE, start, end);
-            string full = string.Format(ApiEndpoint.Calendar_WithDate, start, end);
+
+            string full = string.Format(ApiEndpoints.Calendar_WithDate, start, end);
 
             List<CalendarEntry> entries = this.GetCalendarEntries(full);
 
@@ -124,7 +128,7 @@ namespace MG.Sonarr.Cmdlets
         #region METHODS
         private List<CalendarEntry> GetCalendarEntries(string uri) => base.SendSonarrListGet<CalendarEntry>(uri);
 
-        private string DateToString(DateTime dt) => dt.ToString(ApiEndpoint.Calendar_DTFormat); //dt.ToString(DT_FORMAT);
+        private string DateToString(DateTime dt) => dt.ToString(ApiEndpoints.Calendar_DTFormat);
 
         private void SetOneDayRange(DateTime beginning)
         {

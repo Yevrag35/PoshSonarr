@@ -14,17 +14,17 @@
 								<PropertyName>AbsoluteEpisodeNumber</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>AirDate</PropertyName>
+								<Label>AirDate</Label>
+								<ScriptBlock>
+									if ($null -ne $_.AirDateUtc) {
+										$timeSpan = [System.TimeZone]::CurrentTimeZone.GetUtcOffset($_.AirDate)
+										New-Object System.DateTimeOffset($_.AirDate, $timeSpan)
+									}
+								</ScriptBlock>
 							</ListItem>
 							<ListItem>
 								<PropertyName>DayOfWeek</PropertyName>
 							</ListItem>
-							<!--<ListItem>
-								<PropertyName>EpisodeFileId</PropertyName>
-								<ItemSelectionCondition>
-									<ScriptBlock>$_.EpisodeFileId -ne $null -and $_.EpisodeFileId -ne 0</ScriptBlock>
-								</ItemSelectionCondition>
-							</ListItem>-->
 							<ListItem>
 								<PropertyName>EpisodeId</PropertyName>
 							</ListItem>
@@ -43,9 +43,6 @@
 							<ListItem>
 								<PropertyName>Series</PropertyName>
 							</ListItem>
-							<!--<ListItem>
-								<PropertyName>UnverifiedSceneNumbering</PropertyName>
-							</ListItem>-->
 						</ListItems>
 					</ListEntry>
 				</ListEntries>
