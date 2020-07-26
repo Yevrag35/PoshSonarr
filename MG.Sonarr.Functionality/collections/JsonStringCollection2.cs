@@ -11,7 +11,7 @@ using System.Linq;
 namespace MG.Sonarr.Functionality.Collections
 {
     [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
-    public class JsonStringCollection : BaseResult, IEnumerable<string>
+    public class JsonStringCollection2 : BaseResult, IEnumerable<string>
     {
         #region FIELDS/CONSTANTS
         private List<string> _list;
@@ -29,9 +29,9 @@ namespace MG.Sonarr.Functionality.Collections
         #endregion
 
         #region CONSTRUCTORS
-        public JsonStringCollection() => _list = new List<string>();
-        public JsonStringCollection(int capacity) => _list = new List<string>(capacity);
-        internal JsonStringCollection(IEnumerable<string> ignoredTerms) => _list = new List<string>(ignoredTerms);
+        public JsonStringCollection2() => _list = new List<string>();
+        public JsonStringCollection2(int capacity) => _list = new List<string>(capacity);
+        internal JsonStringCollection2(IEnumerable<string> ignoredTerms) => _list = new List<string>(ignoredTerms);
 
         #endregion
 
@@ -67,7 +67,7 @@ namespace MG.Sonarr.Functionality.Collections
         public IEnumerator<string> GetEnumerator() => _list.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
 
-        public void MergeCollections(JsonStringCollection jsonCol)
+        public void MergeCollections(JsonStringCollection2 jsonCol)
         {
             if (!jsonCol.ToJson().Equals(this.ToJson()))
             {
@@ -97,9 +97,9 @@ namespace MG.Sonarr.Functionality.Collections
         #endregion
 
         #region CASTS/OPERATORS
-        public static implicit operator JsonStringCollection(string[] ignoredTerms) => new JsonStringCollection(ignoredTerms);
-        public static implicit operator JsonStringCollection(List<string> listOfStrings) => new JsonStringCollection(listOfStrings);
-        public static implicit operator JsonStringCollection(Collection<string> colStrs) => new JsonStringCollection(colStrs);
+        public static implicit operator JsonStringCollection2(string[] ignoredTerms) => new JsonStringCollection2(ignoredTerms);
+        public static implicit operator JsonStringCollection2(List<string> listOfStrings) => new JsonStringCollection2(listOfStrings);
+        public static implicit operator JsonStringCollection2(Collection<string> colStrs) => new JsonStringCollection2(colStrs);
 
         #endregion
     }

@@ -1,10 +1,8 @@
 ﻿using MG.Api.Json;
-using MG.Api.Json.Extensions;
 using MG.Api.Rest;
 using MG.Api.Rest.Generic;
-using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Exceptions;
 using MG.Sonarr.Results;
-using MG.Sonarr.Results.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;

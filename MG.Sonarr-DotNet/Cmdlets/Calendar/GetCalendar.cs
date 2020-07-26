@@ -1,10 +1,9 @@
 ﻿using MG.Posh.Extensions.Bound;
-using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets

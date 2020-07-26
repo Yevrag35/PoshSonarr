@@ -1,19 +1,13 @@
-using MG.Api.Json;
-using MG.Api.Json.Extensions;
-using MG.Api.Rest.Extensions;
 using MG.Api.Rest.Generic;
 using MG.Posh.Extensions.Bound;
 using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Client;
+using MG.Sonarr.Functionality.Exceptions;
+using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Results;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Management.Automation;
-using System.Net;
 using System.Net.Http;
-using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {

@@ -1,9 +1,9 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Sonarr.Functionality.Collections;
+using MG.Sonarr.Functionality.Strings;
+using MG.Sonarr.Functionality.Url;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
 {

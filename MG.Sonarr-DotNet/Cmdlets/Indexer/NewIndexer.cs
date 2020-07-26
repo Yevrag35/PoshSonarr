@@ -1,13 +1,8 @@
-﻿using MG.Posh.Extensions.Bound;
-using MG.Posh.Extensions.Shoulds;
-using MG.Posh.Extensions.Writes;
+﻿using MG.Posh.Extensions.Writes;
 using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Results;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MG.Sonarr.Functionality.Exceptions;
+using MG.Sonarr.Functionality.Strings;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Runtime.InteropServices;

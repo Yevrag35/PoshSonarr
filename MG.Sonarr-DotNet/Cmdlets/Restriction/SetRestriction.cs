@@ -17,6 +17,11 @@ namespace MG.Sonarr.Cmdlets
     public class SetRestriction : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
+        //private AddRemoveHashtable _ignoreTerms;
+        //private AddRemoveHashtable _requiredTerms;
+        //private ReplaceHashtable _replaceTerms;
+        private TermTable _ignoredTerms;
+        private TermTable _requiredTerms;
         private bool _passThru;
 
         #endregion
@@ -32,18 +37,39 @@ namespace MG.Sonarr.Cmdlets
 
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByInputRestrictionAddRemove")]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByRestrictionIdAddRemove")]
+        [AllowNull()]
         [Alias("Ignored")]
-        public AddRemoveHashtable IgnoredTerms { get; set; }
+        public object IgnoredTerms
+        {
+            get => _ignoredTerms;
+            set
+            {
+                _ignoredTerms = new TermTable();
+                if (value == null)
+                    _ignoredTerms.Set.Add(string.Empty);
+
+                else
+                    _ignoredTerms.Process(value);
+            }
+        }
 
         [Parameter(Mandatory = false, Position = 1, ParameterSetName = "ByInputRestrictionAddRemove")]
         [Parameter(Mandatory = false, Position = 1, ParameterSetName = "ByRestrictionIdAddRemove")]
+        [AllowNull()]
         [Alias("Required")]
-        public AddRemoveHashtable RequiredTerms { get; set; }
+        public object RequiredTerms
+        {
+            get => _requiredTerms;
+            set
+            {
+                _requiredTerms = new TermTable();
+                if (value == null)
+                    _requiredTerms.Set.Add(string.Empty);
 
-        [Parameter(Mandatory = true, Position = 2, ParameterSetName = "ByInputRestrictionReplace")]
-        [Parameter(Mandatory = true, Position = 2, ParameterSetName = "ByRestrictionIdReplace")]
-        [Alias("Replace")]
-        public ReplaceHashtable ReplaceTerms { get; set; }
+                else
+                    _requiredTerms.Process(value);
+            }
+        }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter PassThru
@@ -64,43 +90,20 @@ namespace MG.Sonarr.Cmdlets
                 this.InputObject = base.SendSonarrGet<Restriction>(string.Format(GetRestriction.EP_ID, this.Id));
             }
 
-            if (this.ContainsParameter(x => x.IgnoredTerms))
+            if (base.FormatShouldProcess("Set", "Restriction Id: {0}", this.InputObject.Id))
             {
-                if (this.IgnoredTerms.AddTerms != null && this.IgnoredTerms.AddTerms.Length > 0)
-                    this.InputObject.Ignored.Add(this.IgnoredTerms.AddTerms);
-
-                if (this.IgnoredTerms.RemoveTerms != null && this.IgnoredTerms.RemoveTerms.Length > 0)
-                    this.InputObject.Ignored.Remove(this.IgnoredTerms.RemoveTerms);
-            }
-
-            if (this.ContainsParameter(x => x.RequiredTerms))
-            {
-                if (this.RequiredTerms.AddTerms != null && this.RequiredTerms.AddTerms.Length > 0)
-                    this.InputObject.Required.Add(this.RequiredTerms.AddTerms);
-
-                if (this.RequiredTerms.RemoveTerms != null && this.RequiredTerms.RemoveTerms.Length > 0)
-                    this.InputObject.Required.Remove(this.RequiredTerms.RemoveTerms);
-            }
-
-            if (this.ContainsParameter(x => x.ReplaceTerms))
-                this.MergeChanges(this.ReplaceTerms);
-
-            if (base.ShouldProcess(string.Format(NewRestriction.SHOULD_MSG, this.InputObject.Ignored.ToJson(), 
-                this.InputObject.Required.ToJson()), "Set"))
-            {
+                if (this.ContainsParameter(x => x.IgnoredTerms))
+                {
+                    _ignoredTerms.ModifyObject(this.InputObject.Ignored);
+                }
+                if (this.ContainsParameter(x => x.RequiredTerms))
+                {
+                    _requiredTerms.ModifyObject(this.InputObject.Required);
+                }
                 Restriction restriction = base.SendSonarrPut<Restriction>(GetRestriction.EP, this.InputObject);
                 if (_passThru)
                     base.SendToPipeline(restriction);
             }
-        }
-
-        #endregion
-
-        #region BACKEND METHODS
-        private void MergeChanges(ReplaceHashtable addRemove)
-        {
-            this.InputObject.Ignored.MergeCollections(addRemove.Ignored);
-            this.InputObject.Required.MergeCollections(addRemove.Required);
         }
 
         #endregion

@@ -1,5 +1,7 @@
 ﻿using MG.Api.Rest.Generic;
 using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Client;
+using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Cmdlets;
 using MG.Sonarr.Results;
 using System;

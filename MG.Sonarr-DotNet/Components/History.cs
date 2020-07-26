@@ -1,9 +1,6 @@
 ﻿using MG.Sonarr.Functionality;
-using MG.Sonarr.Results;
+using MG.Sonarr.Functionality.Jobs;
 using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
 
 namespace MG.Sonarr
 {

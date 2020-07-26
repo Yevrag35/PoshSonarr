@@ -1,6 +1,7 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality.Extensions;
+using MG.Sonarr.Results;
 using System;
-using System.Collections.Generic;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
@@ -30,18 +31,19 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            Restriction newRestrict = this.ParametersToRestriction(this.MyInvocation.BoundParameters);
+            var newRestrict = new Restriction();
+            if (this.ContainsParameter(x => x.IgnoredTerms))
+                newRestrict.Ignored.AddRange(this.IgnoredTerms);
+
+            if (this.ContainsParameter(x => x.RequiredTerms))
+                newRestrict.Required.AddRange(this.RequiredTerms);
+
             if (base.ShouldProcess(string.Format(SHOULD_MSG, newRestrict.Ignored.ToJson(), newRestrict.Required.ToJson()), "New"))
             {
                 Restriction restriction = base.SendSonarrPost<Restriction>(GetRestriction.EP, newRestrict);
                 base.SendToPipeline(restriction);
             }
         }
-
-        #endregion
-
-        #region BACKEND METHODS
-        private Restriction ParametersToRestriction(Dictionary<string, object> parameters) => new Restriction(parameters);
 
         #endregion
     }
