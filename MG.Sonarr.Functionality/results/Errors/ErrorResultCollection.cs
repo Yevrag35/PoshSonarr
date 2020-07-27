@@ -17,7 +17,6 @@ namespace MG.Sonarr.Results
         public bool IsReadOnly => ((ICollection<ErrorResultException>)base.InnerList).IsReadOnly;
 
         public ErrorResultCollection() : base() { }
-        public ErrorResultCollection(int capacity) : base(capacity) { }
         public ErrorResultCollection(IEnumerable<ErrorResultException> errorResults) : base(errorResults) { }
 
         public void Add(ErrorResultException item) => base.InnerList.Add(item);

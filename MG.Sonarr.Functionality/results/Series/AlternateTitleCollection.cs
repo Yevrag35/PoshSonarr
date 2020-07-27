@@ -13,7 +13,6 @@ namespace MG.Sonarr.Results
     public class AlternateTitleCollection : ResultCollectionBase<AlternateTitle>
     {
         public AlternateTitleCollection() : base() { }
-        internal AlternateTitleCollection(int capacity) : base(capacity) { }
         [JsonConstructor]
         internal AlternateTitleCollection(IEnumerable<AlternateTitle> ats) : base(ats) { }
 

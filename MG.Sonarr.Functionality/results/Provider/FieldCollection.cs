@@ -11,7 +11,7 @@ namespace MG.Sonarr.Results
     public class FieldCollection : ResultCollectionBase<Field>, IEnumerable<IField>
     {
         #region FIELDS/CONSTANTS
-        private const int DEFAULT_SETTING_COUNT = 8;
+        //private const int DEFAULT_SETTING_COUNT = 8;
 
         #endregion
 
@@ -22,8 +22,6 @@ namespace MG.Sonarr.Results
         #endregion
 
         #region CONSTRUCTORS
-        public FieldCollection() : base(DEFAULT_SETTING_COUNT) { }
-        internal FieldCollection(int capacity) : base(capacity) { }
         [JsonConstructor]
         internal FieldCollection(IEnumerable<Field> items) : base(items) { }
 
