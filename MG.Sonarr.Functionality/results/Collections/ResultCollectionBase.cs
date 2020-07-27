@@ -1,5 +1,5 @@
 ﻿using MG.Api.Json;
-using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Collections;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -20,64 +20,19 @@ namespace MG.Sonarr.Results.Collections
     ///     This collection model is also inherently serializable and deserializable into JSON.
     /// </remarks>
     /// <typeparam name="T">The .NET type of each element in the collection.</typeparam>
-    public abstract class ResultCollectionBase<T> : IEnumerable<T>, IJsonObject
+    public abstract class ResultCollectionBase<T> : CollectionBase<T>, IJsonObject
     {
-        #region FIELDS/CONSTANTS
-        /// <summary>
-        /// The internal backing <see cref="List{T}"/> collection that all methods of <see cref="ResultCollectionBase{T}"/> invoke against.
-        /// </summary>
-        protected List<T> InnerList { get; }
-
-        #endregion
-
-        #region INDEXERS
-        //public virtual T this[int index] => this.InnerList[index];
-
-        #endregion
-
-        #region PROPERTIES
-        /// <summary>
-        /// The number of elements contained in the <see cref="ResultCollectionBase{T}"/>.
-        /// </summary>
-        public int Count => this.InnerList.Count;
-
-        #endregion
-
         #region CONSTRUCTORS
         /// <summary>
         /// The default constructor which initializes a new instance which is empty.
         /// </summary>
-        public ResultCollectionBase() => this.InnerList = new List<T>();
-        /// <summary>
-        /// Initializes a new instance of <see cref="ResultCollectionBase{T}"/> with the specified capacity.
-        /// </summary>
-        /// <param name="capacity">The number of elements the collection can initially store.</param>
-        public ResultCollectionBase(int capacity) => this.InnerList = new List<T>(capacity);
+        public ResultCollectionBase() : base() { }
         /// <summary>
         /// Initializes a new instance of <see cref="ResultCollectionBase{T}"/> that contains elements copied from the specified
         /// collection and has sufficient capacity to accommodate the number of elements copied.
         /// </summary>
         /// <param name="items">The collection whose items are copied into the <see cref="ResultCollectionBase{T}"/>.</param>
-        public ResultCollectionBase(IEnumerable<T> items)
-        {
-            if (items == null)
-                this.InnerList = new List<T>();
-
-            else
-                this.InnerList = new List<T>(items);
-        }
-
-        #endregion
-
-        #region ENUMERATORS
-        /// <summary>
-        /// Returns an enumerator that iterates through the <see cref="ResultCollectionBase{T}"/>.
-        /// </summary>
-        /// <returns>
-        ///      A <see cref="IEnumerator{T}"/> for the <see cref="ResultCollectionBase{T}"/>.
-        /// </returns>
-        public IEnumerator<T> GetEnumerator() => this.InnerList.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => this.InnerList.GetEnumerator();
+        public ResultCollectionBase(IEnumerable<T> items) : base(items) { }
 
         #endregion
 

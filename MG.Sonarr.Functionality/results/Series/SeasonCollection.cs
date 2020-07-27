@@ -11,11 +11,6 @@ namespace MG.Sonarr.Results
 {
     public class SeasonCollection : ResultCollectionBase<Season> //BaseResult, IEnumerable<Season>
     {
-        #region FIELDS/CONSTANTS
-        //private List<Season> base.InnerList;
-
-        #endregion
-
         #region INDEXERS
         /// <summary>
         /// Gets the <see cref="Season"/> element at the specified index.
@@ -26,15 +21,11 @@ namespace MG.Sonarr.Results
         ///     index is less than 0 -or- 
         ///     index is equal to or greater than <see cref="SeasonCollection.Count"/>
         /// </exception>
-        //public Season this[int index] => base.InnerList[index];
+        public Season this[int index] => base.InnerList[index];
 
         #endregion
 
         #region PROPERTIES
-        /// <summary>
-        /// Gets the number of <see cref="Season"/> elements contained within the collection.
-        /// </summary>
-        //public int Count => base.InnerList.Count;
 
         #endregion
 
@@ -42,10 +33,9 @@ namespace MG.Sonarr.Results
         /// <summary>
         /// Initializes a new instance of <see cref="SeasonCollection"/> that is empty and has the default initial capacity.
         /// </summary>
-        public SeasonCollection() : base() { }//=> base.InnerList = new List<Season>();
-        internal SeasonCollection(int capacity) : base(capacity) { }//=> base.InnerList = new List<Season>(capacity);
+        public SeasonCollection() : base() { }
         [JsonConstructor]
-        internal SeasonCollection(IEnumerable<Season> seasons) : base(seasons) { }//=> base.InnerList = new List<Season>(seasons);
+        internal SeasonCollection(IEnumerable<Season> seasons) : base(seasons) { }
 
         #endregion
 
@@ -58,12 +48,9 @@ namespace MG.Sonarr.Results
         ///     An array of matching <see cref="Season"/> instances from the collection.
         ///     If no season numbers are provided, then <see langword="null"/> is returned.
         /// </returns>
-        public List<Season> GetBySeasonNumber(params int[] seasonNumbers)
+        public IList<Season> GetBySeasonNumber(params int[] seasonNumbers)
         {
-            if (seasonNumbers == null)
-                return null;
-
-            return base.InnerList.FindAll(x => seasonNumbers.Contains(x.SeasonNumber));
+            return seasonNumbers == null ? null : base.InnerList.FindAll(x => seasonNumbers.Contains(x.SeasonNumber));
         }
         /// <summary>
         /// Creates a single-dimensional array of a range of <see cref="Season"/> elements in the source collection.
@@ -75,7 +62,11 @@ namespace MG.Sonarr.Results
         /// <summary>
         /// Enumerates and yields all seasons where <see cref="Season.IsMonitored"/> is <see langword="true"/>.
         /// </summary>
-        public IEnumerable<Season> GetMonitoredSeasons() => base.InnerList.FindAll(x => x.IsMonitored);
+        public IList<Season> GetMonitoredSeasons()
+        {
+            return base.InnerList.FindAll(x => x.IsMonitored);
+            //int number = base.InnerList.Count(x => x.IsMonitored);
+        }
 
         /// <summary>
         /// Calculates the total file size (in Bytes) of each <see cref="Season"/> that 
@@ -106,7 +97,7 @@ namespace MG.Sonarr.Results
         /// <summary>
         /// Enumerates and yields all seasons where <see cref="Season.IsMonitored"/> is <see langword="false"/>.
         /// </summary>
-        public IEnumerable<Season> GetUnmonitoredSeasons() => base.InnerList.FindAll(x => !x.IsMonitored);
+        public IList<Season> GetUnmonitoredSeasons() => base.InnerList.FindAll(x => !x.IsMonitored);
         /// <summary>
         /// Copies the elements of the <see cref="SeasonCollection"/> to a single-dimensional array.
         /// </summary>

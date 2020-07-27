@@ -29,17 +29,6 @@ namespace MG.Sonarr.Functionality.Collections
         /// </summary>
         internal TagCollection() : base()
         {
-            //this.InnerList = new List<Tag>();
-        }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TagCollection{T}"/> class that is empty
-        /// and has the specified initial capacity.
-        /// </summary>
-        /// <param name="capacity">The number of elements that the new collection can initially store.</param>
-        /// <exception cref="ArgumentOutOfRangeException"/>
-        internal TagCollection(int capacity) : base(capacity)
-        {
-            //this.InnerList = new List<Tag>(capacity);
         }
         /// <summary>
         /// Initializes a new instance of the <see cref="TagCollection{T}"/> class that
@@ -50,7 +39,6 @@ namespace MG.Sonarr.Functionality.Collections
         /// <exception cref="ArgumentNullException"/>
         internal TagCollection(IEnumerable<Tag> tags) : base(tags)
         {
-            //this.InnerList = new List<Tag>(tags);
         }
 
         #endregion
