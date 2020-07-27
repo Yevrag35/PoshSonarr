@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -64,7 +65,9 @@ namespace MG.Sonarr.Results
         /// The size (in Bytes) of all downloaded episodes for the season.
         /// </summary>
         [JsonIgnore]
-        public override long SizeOnDisk => _stats.SizeOnDisk;
+        [JsonConverter(typeof(SizeConverter))]
+        public override Size SizeOnDisk { get; protected set; }
+        //public override long SizeOnDisk => _stats.SizeOnDisk;
 
         /// <summary>
         /// The total number of episodes available in the season.
