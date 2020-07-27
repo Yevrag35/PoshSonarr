@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -11,7 +12,7 @@ namespace MG.Sonarr.Results
     /// </summary>
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     [Serializable]
-    public sealed class SeriesResult : SearchSeries, ICanCalculate, ISeries, ISupportsTagUpdate
+    public sealed class SeriesResult : SearchSeries, ISeries, ISupportsTagUpdate
     {
         private const string EP = "/series";
 
@@ -67,7 +68,9 @@ namespace MG.Sonarr.Results
         /// The size (in bytes) of all downloaded episode files from all seasons.
         /// </summary>
         [JsonProperty("sizeOnDisk")]
-        public long SizeOnDisk { get; private set; }
+        [JsonConverter(typeof(SizeConverter))]
+        public Size SizeOnDisk { get; private set; }
+        //public long SizeOnDisk { get; private set; }
 
         /// <summary>
         /// A unique collection of tag ID's applied to the series.
@@ -83,34 +86,34 @@ namespace MG.Sonarr.Results
 
         public bool HasAlternateTitles() => this.AlternateTitles != null && this.AlternateTitles.Count > 0;
 
-        public decimal ToSize(ByteUnit inUnit) => this.ToSize(inUnit, -1);
-        public decimal ToSize(ByteUnit inUnit, int numberOfDecimalPlaces)
-        {
-            long? byteSize = this.Seasons?.GetSeasonFileSize();
-            if (byteSize.GetValueOrDefault() > 0)
-            {
-                return this.ToDecimalSize(byteSize.Value, inUnit, numberOfDecimalPlaces);
-            }
-            else
-                return 0M;
-        }
+        //public decimal ToSize(ByteUnit inUnit) => this.ToSize(inUnit, -1);
+        //public decimal ToSize(ByteUnit inUnit, int numberOfDecimalPlaces)
+        //{
+        //    long? byteSize = this.Seasons?.GetSeasonFileSize();
+        //    if (byteSize.GetValueOrDefault() > 0)
+        //    {
+        //        return this.ToDecimalSize(byteSize.Value, inUnit, numberOfDecimalPlaces);
+        //    }
+        //    else
+        //        return 0M;
+        //}
 
-        private decimal ToDecimalSize(long size, ByteUnit inUnit, int numberOfDecimalPlaces)
-        {
-            switch (inUnit)
-            {
-                case ByteUnit.MB:
-                    return SizedResult.Calculate(this.SizeOnDisk, SizedResult.MB, numberOfDecimalPlaces);
+        //private decimal ToDecimalSize(long size, ByteUnit inUnit, int numberOfDecimalPlaces)
+        //{
+        //    switch (inUnit)
+        //    {
+        //        case ByteUnit.MB:
+        //            return SizedResult.Calculate(this.SizeOnDisk, SizedResult.MB, numberOfDecimalPlaces);
 
-                case ByteUnit.KB:
-                    return SizedResult.Calculate(this.SizeOnDisk, SizedResult.KB, numberOfDecimalPlaces);
+        //        case ByteUnit.KB:
+        //            return SizedResult.Calculate(this.SizeOnDisk, SizedResult.KB, numberOfDecimalPlaces);
 
-                case ByteUnit.TB:
-                    return SizedResult.Calculate(this.SizeOnDisk, SizedResult.TB, numberOfDecimalPlaces);
+        //        case ByteUnit.TB:
+        //            return SizedResult.Calculate(this.SizeOnDisk, SizedResult.TB, numberOfDecimalPlaces);
 
-                default:
-                    return SizedResult.Calculate(this.SizeOnDisk, SizedResult.GB, numberOfDecimalPlaces);
-            }
-        }
+        //        default:
+        //            return SizedResult.Calculate(this.SizeOnDisk, SizedResult.GB, numberOfDecimalPlaces);
+        //    }
+        //}
     }
 }

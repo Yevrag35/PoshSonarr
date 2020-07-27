@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -56,7 +57,9 @@ namespace MG.Sonarr.Results
         public string Series => _series.Name;
 
         [JsonProperty("size", Order = 4)]
-        public override sealed long SizeOnDisk { get; protected set; }
+        [JsonConverter(typeof(SizeConverter))]
+        public override Size SizeOnDisk { get; protected set; }
+        //public override sealed long SizeOnDisk { get; protected set; }*/
 
         #endregion
 
