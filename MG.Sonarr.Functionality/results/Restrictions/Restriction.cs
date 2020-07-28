@@ -29,7 +29,11 @@ namespace MG.Sonarr.Results
         public HashSet<int> Tags { get; set; } = new HashSet<int>();
 
         [JsonConstructor]
-        public Restriction() { }
+        public Restriction()
+        {
+            this.Ignored = new JsonStringSet();
+            this.Required = new JsonStringSet();
+        }
 
         public string GetEndpoint() => ApiEndpoints.Restriction;
 
