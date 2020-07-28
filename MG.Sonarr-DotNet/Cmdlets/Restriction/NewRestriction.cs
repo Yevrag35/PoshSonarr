@@ -6,6 +6,7 @@ using MG.Sonarr.Results;
 using System;
 using System.Management.Automation;
 using System.Linq;
+using MG.Sonarr.Functionality.Strings;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -65,7 +66,7 @@ namespace MG.Sonarr.Cmdlets
 
             if (base.ShouldProcess(string.Format(SHOULD_MSG, newRestrict.Ignored.ToJson(), newRestrict.Required.ToJson()), "New"))
             {
-                Restriction restriction = base.SendSonarrPost<Restriction>(GetRestriction.EP, newRestrict);
+                Restriction restriction = base.SendSonarrPost<Restriction>(ApiEndpoints.Restriction, newRestrict);
                 base.SendToPipeline(restriction);
             }
         }
