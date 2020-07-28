@@ -8,15 +8,14 @@ using System.Linq;
 namespace MG.Sonarr.Results
 {
     [Serializable]
-    public class FieldCollection : ResultCollectionBase<Field>, IEnumerable<IField>
+    public class FieldCollection : ResultListBase<Field>, IEnumerable<IField>
     {
-        #region FIELDS/CONSTANTS
-        //private const int DEFAULT_SETTING_COUNT = 8;
-
-        #endregion
-
         #region INDEXERS
-        public Field this[int index] => index != -1 ? base.InnerList[index] : base.InnerList.LastOrDefault();
+        /// <summary>
+        /// Gets the <see cref="Field"/> whose name matches the specified string.
+        /// </summary>
+        /// <param name="settingName">The case-insensitive name of the field's name to retrieve.</param>
+        /// <returns>The <see cref="Field"/> whose name matches <paramref name="settingName"/>.</returns>
         public Field this[string settingName] => base.InnerList.Find(x => x.Name.Equals(settingName, StringComparison.CurrentCultureIgnoreCase));
 
         #endregion
@@ -37,9 +36,32 @@ namespace MG.Sonarr.Results
                 yield return field;
             }
         }
+        /// <summary>
+        /// Retrieves a list of fields by the specified types.
+        /// </summary>
+        /// <param name="types">The types of fields to retrieve from the collection.</param>
+        /// <returns>
+        ///     A list of fields where the type matches one of the values in <paramref name="types"/>.
+        ///     If <paramref name="types"/> is empty or <see langword="null"/>, then an empty list is returned.
+        /// </returns>
+        public IList<IField> GetSettingByType(params FieldType[] types)
+        {
+            if (types == null || types.Length <= 0)
+                return new List<IField>();
 
-        public FieldCollection GetSettingByType(params FieldType[] types) => new FieldCollection(base.InnerList.FindAll(x => types.Contains(x.Type)));
-        public Field[] ToArray() => base.InnerList.ToArray();
+            var list = new List<IField>(this.Count);
+            foreach (IField field in this)
+            {
+                if (types.Contains(field.Type))
+                    list.Add(field);
+            }
+            return list;
+        }
+        /// <summary>
+        /// Copies the fields of the <see cref="FieldCollection"/> to a new single-dimensional array.
+        /// </summary>
+        /// <returns>An array containing copies of the <see cref="IField"/> of the <see cref="FieldCollection"/>.</returns>
+        public IField[] ToArray() => base.InnerList.ToArray();
 
         #endregion
     }

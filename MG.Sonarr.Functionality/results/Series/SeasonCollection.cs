@@ -9,7 +9,7 @@ using System.Linq.Expressions;
 
 namespace MG.Sonarr.Results
 {
-    public class SeasonCollection : ResultCollectionBase<Season> //BaseResult, IEnumerable<Season>
+    public class SeasonCollection : ResultListBase<Season> //BaseResult, IEnumerable<Season>
     {
         #region INDEXERS
         /// <summary>
@@ -21,7 +21,20 @@ namespace MG.Sonarr.Results
         ///     index is less than 0 -or- 
         ///     index is equal to or greater than <see cref="SeasonCollection.Count"/>
         /// </exception>
-        public Season this[int index] => base.InnerList[index];
+        public Season this[int index]
+        {
+            get
+            {
+                if (index >= 0)
+                    return base.InnerList[index];
+
+                else
+                {
+                    int goHere = base.InnerList.Count + index;
+                    return goHere >= 0 ? base.InnerList[goHere] : null;
+                }
+            }
+        }
 
         #endregion
 

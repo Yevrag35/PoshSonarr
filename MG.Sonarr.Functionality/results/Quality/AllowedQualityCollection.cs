@@ -8,10 +8,9 @@ using System.Linq;
 namespace MG.Sonarr.Results
 {
     [Serializable]
-    public class AllowedQualityCollection : ResultCollectionBase<AllowedQuality>
+    public class AllowedQualityCollection : ResultListBase<AllowedQuality>
     {
         #region INDEXERS
-        public AllowedQuality this[int index] => base.InnerList[index];
 
         public AllowedQuality this[string qualityName] => this.Find(x => x.Quality.Name.Equals(qualityName, StringComparison.CurrentCultureIgnoreCase));
 

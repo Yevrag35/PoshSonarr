@@ -10,8 +10,11 @@ using System.Text.RegularExpressions;
 
 namespace MG.Sonarr.Results
 {
-    public class AlternateTitleCollection : ResultCollectionBase<AlternateTitle>
+    public class AlternateTitleCollection : ResultListBase<AlternateTitle>
     {
+        /// <summary>
+        /// The default constructor which initializes a new instance which is empty.
+        /// </summary>
         public AlternateTitleCollection() : base() { }
         [JsonConstructor]
         internal AlternateTitleCollection(IEnumerable<AlternateTitle> ats) : base(ats) { }
@@ -31,13 +34,14 @@ namespace MG.Sonarr.Results
             string pattern = base.WildcardStringToRegex(wildcardTitle);
             return base.Contains(at => Regex.IsMatch(at.Title, pattern, isCaseSensitive ? RegexOptions.None : RegexOptions.IgnoreCase));
         }
-        public IEnumerable<string> GetTitleFromSeasonNumber(params int[] seasonNumbers)
+        public string[] GetTitleFromSeasonNumber(params int[] seasonNumbers)
         {
             if (seasonNumbers == null || seasonNumbers.Length <= 0)
                 return null;
 
-            return base.FindAll(at => at.SeasonNumber.HasValue && seasonNumbers.Contains(at.SeasonNumber.Value))
-                .Select(t => t.Title);
+            return base.FindAll(at => 
+                at.SeasonNumber.HasValue && seasonNumbers.Contains(at.SeasonNumber.Value))
+                    .Select(t => t.Title)?.ToArray();
         }
 
         #endregion

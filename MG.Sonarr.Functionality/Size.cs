@@ -14,7 +14,6 @@ namespace MG.Sonarr.Functionality
         private const int DEFAULT_PLACES = 2;
         private const MidpointRounding ROUND = MidpointRounding.AwayFromZero;
 
-        private bool _biggerThanInt;
         /// <summary>
         /// The number of bytes the size is.
         /// </summary>
@@ -24,9 +23,8 @@ namespace MG.Sonarr.Functionality
         public decimal GB;
         public decimal TB;
 
-        public Size(long bytes)
+        public Size(long bytes) : this()
         {
-            _biggerThanInt = bytes > int.MaxValue;
             this.Bytes = bytes;
             this.KB = ToSize(bytes, ByteUnit.KB);
             this.MB = ToSize(bytes, ByteUnit.MB);
@@ -105,6 +103,11 @@ namespace MG.Sonarr.Functionality
         public static implicit operator Size(byte b) => new Size(Convert.ToInt64(b));
 
         public static implicit operator long(Size size) => size.Bytes;
+
+        public static long operator *(Size x, Size y) => x.Bytes * y.Bytes;
+        public static long operator +(Size x, Size y) => x.Bytes + y.Bytes;
+        public static long operator -(Size x, Size y) => x.Bytes - y.Bytes;
+        public static long operator /(Size x, Size y) => x.Bytes / y.Bytes;
 
         //public override string ToString() => this.Bytes.ToString();
     }

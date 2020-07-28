@@ -66,7 +66,7 @@ namespace MG.Sonarr.Results
         /// </summary>
         [JsonIgnore]
         [JsonConverter(typeof(SizeConverter))]
-        public override Size SizeOnDisk { get; protected set; }
+        public override Size SizeOnDisk => _stats.SizeOnDisk;
         //public override long SizeOnDisk => _stats.SizeOnDisk;
 
         /// <summary>
@@ -109,7 +109,8 @@ namespace MG.Sonarr.Results
         internal DateTime? PreviousAiring { get; private set; }
 
         [JsonProperty("sizeOnDisk")]
-        internal long SizeOnDisk { get; private set; }
+        internal Size SizeOnDisk { get; private set; }
+        //internal long SizeOnDisk { get; private set; }
 
         [JsonProperty("totalEpisodeCount")]
         internal int TotalEpisodeCount { get; private set; }
