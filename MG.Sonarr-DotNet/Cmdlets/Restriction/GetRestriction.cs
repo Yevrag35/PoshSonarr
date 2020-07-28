@@ -1,4 +1,6 @@
-﻿using MG.Posh.Extensions.Bound;
+﻿using MG.Dynamic;
+using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Results;
 using System;
 using System.Collections;
@@ -10,26 +12,46 @@ using System.Reflection;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsCommon.Get, "Restriction", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByIgnoredTags")]
+    [Cmdlet(VerbsCommon.Get, "Restriction", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "None")]
     [OutputType(typeof(Restriction))]
     [CmdletBinding(PositionalBinding = false)]
-    public class GetRestriction : BaseSonarrCmdlet
+    public class GetRestriction : BaseSonarrCmdlet, IDynamicParameters
     {
         #region FIELDS/CONSTANTS
-        internal const string EP = "/restriction";
-        internal const string EP_ID = EP + "/{0}";
+        private const string PARAM = "Tag";
+        private DynamicLibrary _lib;
 
         #endregion
 
         #region PARAMETERS
-        [Parameter(Mandatory = true, ParameterSetName = "ByRestrictionId")]
+        [Parameter(Mandatory = true, ParameterSetName = "ById")]
         public int[] Id { get; set; }
 
-        [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByIgnoredTags")]
+        [Parameter(Mandatory = false)]
+        [Alias("Ignored")]
         [SupportsWildcards]
-        public string[] IgnoredTags { get; set; }
+        public string[] IgnoredTerms { get; set; }
+
+        [Parameter(Mandatory = false)]
+        [Alias("Required")]
+        [SupportsWildcards]
+        public string[] RequiredTerms { get; set; }
 
         #endregion
+
+        public object GetDynamicParameters()
+        {
+            _lib = new DynamicLibrary();
+            if (Context.IsConnected)
+            {
+                var idp = new DynamicParameter<Tag>(PARAM, true, Context.TagManager.AllTags, x => x.Label)
+                {
+                    Mandatory = false
+                };
+                _lib.Add(idp);
+            }
+            return _lib;
+        }
 
         #region CMDLET PROCESSING
         protected override void BeginProcessing() => base.BeginProcessing();
@@ -38,8 +60,16 @@ namespace MG.Sonarr.Cmdlets
         {
             if ( ! this.ContainsParameter(x => x.Id))
             {
-                List<Restriction> restrictions = this.GetAllRestrictions();
-                base.SendToPipeline(base.FilterByStringParameter(restrictions, r => r.Ignored, this, cmd => cmd.IgnoredTags));
+                IEnumerable<Restriction> restrictions = this.GetAllRestrictions();
+                restrictions = base.FilterByStringParameter(restrictions, r => r.Ignored, this, cmd => cmd.IgnoredTerms);
+                restrictions = base.FilterByStringParameter(restrictions, r => r.Required, this, cmd => cmd.RequiredTerms);
+                if (_lib.ParameterHasValue(PARAM))
+                {
+                    IEnumerable<Tag> tags = _lib.GetUnderlyingValues<Tag>(PARAM);
+                    restrictions = restrictions
+                        .Where(x => x.Tags.Overlaps(tags.Select(t => t.Id)));
+                }
+                base.SendToPipeline(restrictions);
             }
             else
             {
@@ -61,11 +91,11 @@ namespace MG.Sonarr.Cmdlets
             return restrictions.FindAll(r => patterns.Any(w => r.Ignored.Any(inner => w.IsMatch(inner))));
         }
 
-        private List<Restriction> GetAllRestrictions() => base.SendSonarrListGet<Restriction>(EP);
+        private List<Restriction> GetAllRestrictions() => base.SendSonarrListGet<Restriction>(ApiEndpoints.Restriction);
 
         private Restriction GetRestrictionById(int id)
         {
-            string endpoint = string.Format(EP_ID, id);
+            string endpoint = string.Format(ApiEndpoints.Restriction_ById, id);
             return base.SendSonarrGet<Restriction>(endpoint);
         }
 

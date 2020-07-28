@@ -67,6 +67,9 @@ namespace MG.Sonarr.Functionality.Strings
         public const string FileSystem_Path = FileSystem + "?path={0}";
         public const string FileSystem_PathWithFiles = FileSystem_Path + "&includeFiles=true";
 
+        // Restriction - Extra paths
+        public const string Restriction_ById = Restriction + BY_ID;
+
         // Series - Extra paths
         public const string Series_ById = Series + BY_ID;
         internal const string Series_LookupFormat = Series + "/lookup?";
