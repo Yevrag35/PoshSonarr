@@ -6,13 +6,10 @@ using System.Collections.Generic;
 
 namespace MG.Sonarr.Results
 {
-    public sealed class SeriesImageCollection : ResultCollectionBase<SeriesImage>
+    public sealed class SeriesImageCollection : ResultListBase<SeriesImage>
     {
-        public SeriesImage this[int index] => base.InnerList[index];
-        public SeriesImage this[string imageType]
-        {
-            get => base.Find(x => Enum.TryParse<CoverType>(imageType, true, out CoverType ct) && x.CoverType.Equals(ct));
-        }
+        public SeriesImage this[string coverType] => Enum.TryParse(coverType, true, out CoverType result) ? this[result] : null;
+        public SeriesImage this[CoverType type] => base.Find(x => x.CoverType == type);
 
         [JsonConstructor]
         internal SeriesImageCollection(IEnumerable<SeriesImage> images) : base(images) { }

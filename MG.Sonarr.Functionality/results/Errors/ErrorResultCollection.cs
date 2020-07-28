@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Results.Collections;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,14 +11,25 @@ namespace MG.Sonarr.Results
     {
         public ErrorResultException this[int index]
         {
-            get => base.InnerList[index];
-            set => base.InnerList[index] = value;
+            get
+            {
+                if (index >= 0)
+                    return base.InnerList[index];
+
+                else
+                {
+                    int goHere = base.InnerList.Count + index;
+                    return goHere >= 0 ? base.InnerList[goHere] : default;
+                }
+            }
+            set => this[index] = value;
         }
 
         public bool IsReadOnly => ((ICollection<ErrorResultException>)base.InnerList).IsReadOnly;
 
-        public ErrorResultCollection() : base() { }
-        public ErrorResultCollection(IEnumerable<ErrorResultException> errorResults) : base(errorResults) { }
+        internal ErrorResultCollection() : base() { }
+        [JsonConstructor]
+        internal ErrorResultCollection(IEnumerable<ErrorResultException> errorResults) : base(errorResults) { }
 
         public void Add(ErrorResultException item) => base.InnerList.Add(item);
         public void Clear() => ((IList<ErrorResultException>)base.InnerList).Clear();

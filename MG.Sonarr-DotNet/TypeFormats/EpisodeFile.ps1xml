@@ -45,7 +45,8 @@
 								<PropertyName>SeriesId</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>SizeOnDisk</PropertyName>
+								<Label>SizeOnDisk</Label>
+								<ScriptBlock>$_.SizeOnDisk.Bytes</ScriptBlock>
 							</ListItem>
 						</ListItems>
 					</ListEntry>

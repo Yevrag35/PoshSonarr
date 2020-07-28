@@ -6,20 +6,18 @@ using System.Linq;
 
 namespace MG.Sonarr.Results
 {
-    public class RecordCollection : ResultCollectionBase<LogRecord>
+    public class RecordCollection : ResultListBase<LogRecord>
     {
-        public LogRecord this[int index] => base.InnerList[index];
-
         [JsonConstructor]
         internal RecordCollection(IEnumerable<LogRecord> records) : base(records) { }
 
-        public IEnumerable<ExceptionLogRecord> GetExceptionRecords()
+        public IList<ExceptionLogRecord> GetExceptionRecords()
         {
-            return base.InnerList.OfType<ExceptionLogRecord>();
+            return base.InnerList.OfType<ExceptionLogRecord>().ToList();
         }
-        public IEnumerable<LogRecord> GetNonExceptionRecords()
+        public IList<LogRecord> GetNonExceptionRecords()
         {
-            return base.InnerList.Where(x => !(x is ExceptionLogRecord));
+            return base.InnerList.Where(x => !(x is ExceptionLogRecord)).ToList();
         }
     }
 }

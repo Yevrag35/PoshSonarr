@@ -11,17 +11,8 @@ namespace MG.Sonarr.Functionality.Collections
     /// Provides a collection class for <see cref="Tag"/> instances while keeping most
     /// of the <see cref="ICollection"/> and <see cref="IList"/> methods hidden.
 	/// </summary>
-    internal sealed class TagCollection : ResultCollectionBase<Tag>, ITagCollection
+    internal sealed class TagCollection : ResultListBase<Tag>, ITagCollection
     {
-        #region INDEXERS
-        /// <summary>
-        /// Gets the element at the specified index.
-        /// </summary>
-        /// <param name="index">The zero-bsaed index of the element to get.</param>
-        public Tag this[int index] => this.InnerList[index];
-
-        #endregion
-
         #region CONSTRUCTORS
         /// <summary>
         /// Initializes a new instance of the <see cref="TagCollection{T}"/> class that is empty

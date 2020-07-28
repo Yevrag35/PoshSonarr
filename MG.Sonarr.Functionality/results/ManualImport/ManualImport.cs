@@ -59,7 +59,6 @@ namespace MG.Sonarr.Results
         [JsonProperty("size", Order = 4)]
         [JsonConverter(typeof(SizeConverter))]
         public override Size SizeOnDisk { get; protected set; }
-        //public override sealed long SizeOnDisk { get; protected set; }*/
 
         #endregion
 

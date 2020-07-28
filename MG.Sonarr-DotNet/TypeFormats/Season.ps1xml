@@ -36,7 +36,8 @@
 								<PropertyName>SeasonNumber</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>SizeOnDisk</PropertyName>
+								<Label>SizeOnDisk</Label>
+								<ScriptBlock>$_.SizeOnDisk.Bytes</ScriptBlock>
 							</ListItem>
 							<ListItem>
 								<PropertyName>TotalEpisodeCount</PropertyName>

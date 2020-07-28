@@ -83,8 +83,6 @@ namespace MG.Sonarr.Results
         [JsonProperty("size")]
         [JsonConverter(typeof(SizeConverter))]
         public override Size SizeOnDisk { get; protected set; }
-        //public override long SizeOnDisk { get; protected set; }
-
 
         public int CompareTo(EpisodeFile other) => this.Id.CompareTo(other.Id);
         public bool Equals(EpisodeFile other) => this.Id.Equals(other.Id);

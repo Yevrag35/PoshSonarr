@@ -117,7 +117,8 @@
 								<PropertyName>SeriesType</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>SizeOnDisk</PropertyName>
+								<Label>SizeOnDisk</Label>
+								<ScriptBlock>$_.SizeOnDisk.Bytes</ScriptBlock>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Status</PropertyName>
