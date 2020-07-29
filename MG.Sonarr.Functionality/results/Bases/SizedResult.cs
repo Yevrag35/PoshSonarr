@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Converters;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -7,8 +8,12 @@ using System.Linq;
 namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public abstract class SizedResult : BaseResult, ICanCalculate
+    public abstract class SizedResult : BaseResult//, ICanCalculate
     {
+        [JsonProperty("sizeOnDisk")]
+        [JsonConverter(typeof(SizeConverter))]
+        public virtual Size SizeOnDisk { get; protected set; }
+        /*
         internal const decimal KB = 1024M;
         internal const decimal MB = 1048576M;           //1,048,576
         internal const decimal GB = 1073741824M;        //‭1,073,741,824‬
@@ -57,5 +62,6 @@ namespace MG.Sonarr.Results
                 return sizeInBytes / divideBy;
             }
         }
+        */
     }
 }
