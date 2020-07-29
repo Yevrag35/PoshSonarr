@@ -13,6 +13,7 @@ namespace MG.Sonarr
         public EpisodeIdentifier this[int index] => _list[index];
         public int Count => _list.Count;
 
+        [Obsolete]
         private EpisodeIdentifierCollection() => _list = new List<EpisodeIdentifier>();
         public EpisodeIdentifierCollection(IEnumerable<EpisodeIdentifier> identifiers)
         {
@@ -51,6 +52,7 @@ namespace MG.Sonarr
         public IEnumerator<EpisodeIdentifier> GetEnumerator() => _list.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
 
+        [Obsolete]
         public static explicit operator EpisodeIdentifierCollection(string possibleIdentifier)
         {
             if (string.IsNullOrEmpty(possibleIdentifier))
@@ -63,6 +65,7 @@ namespace MG.Sonarr
             };
             return col;
         }
+        [Obsolete]
         public static implicit operator EpisodeIdentifierCollection(string[] possibleIdentifiers)
         {
             if (possibleIdentifiers == null)
@@ -77,19 +80,5 @@ namespace MG.Sonarr
             }
             return col;
         }
-        //public static implicit operator EpisodeIdentifierCollection(object[] possibleIdentifiers)
-        //{
-        //    if (possibleIdentifiers == null)
-        //        return null;
-
-        //    var col = new EpisodeIdentifierCollection();
-
-        //    foreach (string str in possibleIdentifiers)
-        //    {
-        //        EpisodeIdentifier epId = str;
-        //        col.Add(epId);
-        //    }
-        //    return col;
-        //}
     }
 }
