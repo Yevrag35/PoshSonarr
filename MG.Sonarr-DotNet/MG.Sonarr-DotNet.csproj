@@ -244,6 +244,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Components\BETA\" />
+    <Folder Include="Objects\Bases\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MG.Sonarr.Functionality\MG.Sonarr.Functionality.csproj">

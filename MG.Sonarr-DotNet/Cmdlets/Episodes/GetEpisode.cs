@@ -43,7 +43,7 @@ namespace MG.Sonarr.Cmdlets
 
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesIdSeasonEp")]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByInputSeasonEp")]
-        public string[] EpisodeIdentifier { get; set; }
+        public object[] EpisodeIdentifier { get; set; }
 
         [Parameter(Mandatory = false, ParameterSetName = "ByInputAbsoluteEp")]
         [Parameter(Mandatory = false, ParameterSetName = "ByInputSeasonEp")]
@@ -71,7 +71,9 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             if (this.ContainsParameter(x => x.EpisodeIdentifier))
-                _epIdCol = this.EpisodeIdentifier;
+            {
+                _epIdCol = new EpisodeIdentifierCollection(Sonarr.EpisodeIdentifier.GetEpisodeIdentifiers(this.EpisodeIdentifier));
+            }
 
             base.BeginProcessing();
         }
