@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -44,35 +45,32 @@ namespace MG.Sonarr
         {
             if (helper.ContainsKey("episode"))
             {
-                int[] epInts = this.GetIntsFromObjs(helper["episode"]);
-                this.Episodes.UnionWith(epInts);
+                this.GetIntsFromObjs(helper["episode"], x => x.Episodes);
             }
             else if (helper.ContainsKey("episodes"))
             {
-                int[] epsInts = this.GetIntsFromObjs(helper["episodes"]);
-                this.Episodes.UnionWith(epsInts);
+                this.GetIntsFromObjs(helper["episodes"], x => x.Episodes);
             }
 
             if (helper.ContainsKey("season"))
             {
-                int[] season = this.GetIntsFromObjs(helper["season"]);
-                this.Season.UnionWith(season);
+                this.GetIntsFromObjs(helper["season"], x => x.Season);
             }
             else if (helper.ContainsKey("seasons"))
             {
-                int[] seasons = this.GetIntsFromObjs(helper["seasons"]);
-                this.Season.UnionWith(seasons);
+                this.GetIntsFromObjs(helper["seasons"], x => x.Season);
             }
         }
 
-        private int[] GetIntsFromObjs(List<object> list)
+        private void GetIntsFromObjs(List<object> list, Expression<Func<EpisodeIdentifier, HashSet<int>>> expression)
         {
-            int[] ints = new int[list.Count];
+            Func<EpisodeIdentifier, HashSet<int>> func = expression.Compile();
+            HashSet<int> set = func(this);
+
             for (int i = 0; i < list.Count; i++)
             {
-                ints[i] = Convert.ToInt32(list[i]);
+                set.Add(Convert.ToInt32(list[i]));
             }
-            return ints;
         }
 
         public static IEnumerable<EpisodeIdentifier> GetEpisodeIdentifiers(object[] objs)
@@ -93,14 +91,7 @@ namespace MG.Sonarr
         /// An implicit cast operator converting a <see cref="string"/> to an <see cref="EpisodeIdentifier"/>.
         /// </summary>
         /// <param name="str">The <see cref="string"/> which will be parsed by Regex to discern season and episode numbers.</param>
+        [Obsolete]
         public static implicit operator EpisodeIdentifier(string str) => new EpisodeIdentifier(str);
-        //public static implicit operator EpisodeIdentifier(object o)
-        //{
-        //    //HelperTable table = HelperTable.NewTable(new object[1] { hashtable });
-        //    HelperTable table = HelperTable.NewTable(new object[1] { o });
-        //    return new EpisodeIdentifier(table);
-        //}
-
-        //public static implicit operator EpisodeIdentifier(Hashtable hashtable)
     }
 }

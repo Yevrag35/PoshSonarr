@@ -96,7 +96,9 @@ namespace MG.Sonarr.Functionality.Helpers
             HashSet<string> set = new HashSet<string>(tables.SelectMany(x => x.Keys), SonarrFactory.NewIgnoreCase());
             foreach (string s in set)
             {
-                table.Add(s, new List<object>(tables.SelectMany(x => x[s])));
+                //table.Add(s, new List<object>(tables.SelectMany(x => x[s])));
+                IEnumerable<object> getThese = tables.Where(x => x.ContainsKey(s)).SelectMany(x => x[s]);
+                table.Add(s, new List<object>(getThese));
             }
             return table;
         }

@@ -21,6 +21,7 @@
     <Compile Remove="dateFormats\ShortDateFormat.cs" />
     <Compile Remove="dateFormats\WeekColumnHeader.cs" />
     <Compile Remove="exceptions\SonarrResponseException.cs" />
+    <Compile Remove="helpers\TableStringHelper.cs" />
     <Compile Remove="url\OrderParameter.cs" />
     <Compile Remove="results\Config\UIConfig.cs" />
     <Compile Remove="results\Quality\QualityDefinitionCollection.cs" />
@@ -32,6 +33,7 @@
     <None Include="dateFormats\ShortDateFormat.cs" />
     <None Include="dateFormats\WeekColumnHeader.cs" />
     <None Include="exceptions\SonarrResponseException.cs" />
+    <None Include="helpers\TableStringHelper.cs" />
     <None Include="url\OrderParameter.cs" />
     <None Include="results\Config\UIConfig.cs" />
     <None Include="results\Quality\QualityDefinitionCollection.cs" />
