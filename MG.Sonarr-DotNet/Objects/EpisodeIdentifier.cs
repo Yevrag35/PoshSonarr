@@ -113,9 +113,9 @@ namespace MG.Sonarr
 
             if (table.HasNoKey)
                 IdFromStrings(table.GetUniqueNoKeyValues().OfType<string>(), ref identifier);
-            
 
-            if (table.Keys.Count > 0 && (table.Keys.Count > 1 && table.HasNoKey))
+
+            if ((table.Keys.Count > 0 && !table.HasNoKey) || (table.Keys.Count > 1 && table.HasNoKey))
                 IdsFromTable(table, ref identifier);
 
             return identifier;

@@ -24,13 +24,9 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
-        //[Parameter(Mandatory = true, DontShow = true, ValueFromPipeline = true, ParameterSetName = "ByInputAbsoluteEp")]
-        //[Parameter(Mandatory = true, DontShow = true, ValueFromPipeline = true, ParameterSetName = "ByInputSeasonEp")]
         [Parameter(Mandatory = false, ValueFromPipeline = true, ParameterSetName = "NotId")]
         public SeriesResult[] InputObject { get; set; }
 
-        //[Parameter(Mandatory = true, ParameterSetName = "BySeriesIdAbsoluteEp")]
-        //[Parameter(Mandatory = true, ParameterSetName = "BySeriesIdSeasonEp")]
         [Parameter(Mandatory = false, ParameterSetName = "NotId")]
         public int[] SeriesId { get; set; }
 
@@ -42,20 +38,12 @@ namespace MG.Sonarr.Cmdlets
             set => _ids = new HashSet<long>(value);
         }
 
-        //[Parameter(Mandatory = true, ParameterSetName = "BySeriesIdAbsoluteEp")]
-        //[Parameter(Mandatory = false, ParameterSetName = "ByInputAbsoluteEp")]
         [Parameter(Mandatory = false, ParameterSetName = "NotId")]
         public int[] AbsoluteEpisodeNumber { get; set; }
 
-        //[Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesIdSeasonEp")]
-        //[Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByInputSeasonEp")]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "NotId")]
         public object[] EpisodeIdentifier { get; set; }
 
-        //[Parameter(Mandatory = false, ParameterSetName = "ByInputAbsoluteEp")]
-        //[Parameter(Mandatory = false, ParameterSetName = "ByInputSeasonEp")]
-        //[Parameter(Mandatory = false, ParameterSetName = "BySeriesIdAbsoluteEp")]
-        //[Parameter(Mandatory = false, ParameterSetName = "BySeriesIdSeasonEp")]
         [Parameter(Mandatory = false, ParameterSetName = "NotId")]
         public SwitchParameter Downloaded
         {
@@ -63,10 +51,6 @@ namespace MG.Sonarr.Cmdlets
             set => _dled = value;
         }
 
-        //[Parameter(Mandatory = false, ParameterSetName = "ByInputAbsoluteEp")]
-        //[Parameter(Mandatory = false, ParameterSetName = "ByInputSeasonEp")]
-        //[Parameter(Mandatory = false, ParameterSetName = "BySeriesIdAbsoluteEp")]
-        //[Parameter(Mandatory = false, ParameterSetName = "BySeriesIdSeasonEp")]
         [Parameter(Mandatory = false, ParameterSetName = "NotId")]
         public SwitchParameter HasAired
         {
@@ -140,7 +124,7 @@ namespace MG.Sonarr.Cmdlets
                 }
             }
             IComparer<EpisodeResult> comparer = EpisodeResult.GetComparer();
-            IEnumerable<EpisodeResult> ers = epList.Distinct().OrderBy(x => x, comparer);
+            IEnumerable<EpisodeResult> ers = epList.OrderBy(x => x, comparer);
             if (this.ContainsParameter(x => x.Downloaded))
             {
                 ers = ers.Where(x => x.IsDownloaded == _dled);
