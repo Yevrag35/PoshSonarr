@@ -70,7 +70,6 @@ namespace MG.Sonarr.Results
         [JsonProperty("sizeOnDisk")]
         [JsonConverter(typeof(SizeConverter))]
         public Size SizeOnDisk { get; private set; }
-        //public long SizeOnDisk { get; private set; }
 
         /// <summary>
         /// A unique collection of tag ID's applied to the series.

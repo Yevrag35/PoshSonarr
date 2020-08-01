@@ -65,9 +65,7 @@ namespace MG.Sonarr.Results
         /// The size (in Bytes) of all downloaded episodes for the season.
         /// </summary>
         [JsonIgnore]
-        [JsonConverter(typeof(SizeConverter))]
         public override Size SizeOnDisk => _stats.SizeOnDisk;
-        //public override long SizeOnDisk => _stats.SizeOnDisk;
 
         /// <summary>
         /// The total number of episodes available in the season.
@@ -109,6 +107,7 @@ namespace MG.Sonarr.Results
         internal DateTime? PreviousAiring { get; private set; }
 
         [JsonProperty("sizeOnDisk")]
+        [JsonConverter(typeof(SizeConverter))]
         internal Size SizeOnDisk { get; private set; }
         //internal long SizeOnDisk { get; private set; }
 
