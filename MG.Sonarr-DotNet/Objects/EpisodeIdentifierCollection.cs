@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace MG.Sonarr
 {
+    [Obsolete]
     public class EpisodeIdentifierCollection : IEnumerable<EpisodeIdentifier>
     {
         private List<EpisodeIdentifier> _list;
@@ -25,7 +26,7 @@ namespace MG.Sonarr
         {
             bool result = false;
             return _list.Exists(x =>
-                x.Season.Contains(episodeResult.SeasonNumber.GetValueOrDefault())
+                x.Seasons.Contains(episodeResult.SeasonNumber.GetValueOrDefault())
                 &&
                 (
                     x.Episodes.Count <= 0
@@ -51,34 +52,5 @@ namespace MG.Sonarr
         }
         public IEnumerator<EpisodeIdentifier> GetEnumerator() => _list.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
-
-        [Obsolete]
-        public static explicit operator EpisodeIdentifierCollection(string possibleIdentifier)
-        {
-            if (string.IsNullOrEmpty(possibleIdentifier))
-                return null;
-
-            EpisodeIdentifier epId = possibleIdentifier;
-            var col = new EpisodeIdentifierCollection
-            {
-                epId
-            };
-            return col;
-        }
-        [Obsolete]
-        public static implicit operator EpisodeIdentifierCollection(string[] possibleIdentifiers)
-        {
-            if (possibleIdentifiers == null)
-                return null;
-
-            var col = new EpisodeIdentifierCollection();
-
-            foreach (string str in possibleIdentifiers)
-            {
-                EpisodeIdentifier epId = str;
-                col.Add(epId);
-            }
-            return col;
-        }
     }
 }

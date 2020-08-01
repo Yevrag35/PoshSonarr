@@ -9,7 +9,7 @@ namespace MG.Sonarr.Functionality.Helpers
 {
     public class HelperTable : IDictionary<string, List<object>>
     {
-        //private IEqualityComparer<string> _ignoreCase;
+        private const string NO_KEY = "nokey";
         private Dictionary<string, List<object>> _dict;
 
         public List<object> this[string key]
@@ -18,11 +18,19 @@ namespace MG.Sonarr.Functionality.Helpers
             set => _dict[key] = value;
         }
 
+        public IEqualityComparer<string> KeyComparer { get; }
+        public IEqualityComparer<object> ValueComparer { get; }
         public int Count => _dict.Count;
+        /// <summary>
+        /// Indicates whether the <see cref="HelperTable"/> currently contains a key called "nokey" which is used for uncategorized values.
+        /// </summary>
+        public bool HasNoKey => _dict.ContainsKey(NO_KEY);
         public ICollection<string> Keys => _dict.Keys;
 
         protected HelperTable(int capacity)
         {
+            this.KeyComparer = SonarrFactory.NewIgnoreCase();
+            this.ValueComparer = SonarrFactory.NewObjectIgnoreCase();
             _dict = new Dictionary<string, List<object>>(capacity);
         }
 
@@ -30,9 +38,10 @@ namespace MG.Sonarr.Functionality.Helpers
         public void Clear() => _dict.Clear();
         public bool ContainsKey(string key) => _dict.ContainsKey(key.ToLower());
         public IEnumerator<KeyValuePair<string, List<object>>> GetEnumerator() => _dict.GetEnumerator();
-        public IReadOnlyList<string> GetKeys() => _dict.Keys.ToList();
-        public IReadOnlyList<object> GetValues() => _dict.Values.ToList();
-        public bool Remove(string key) => _dict.Remove(key);
+        public IList<object> GetValues() => _dict.Values.SelectMany(x => x).ToList();
+        public IList<object> GetNoKeyValues() => _dict[NO_KEY];
+        public IEnumerable<object> GetUniqueNoKeyValues() => _dict[NO_KEY].Distinct(this.ValueComparer);
+        public bool Remove(string key) => _dict.Remove(key.ToLower());
         public bool TryGetValue(string key, out List<object> value) => _dict.TryGetValue(key, out value);
 
         #region PROCESSING
@@ -47,16 +56,19 @@ namespace MG.Sonarr.Functionality.Helpers
             }
             return table;
         }
-        private static IEnumerable<object> EnumerableObjects(object[] objs)
+        private static IEnumerable<object> EnumerateObjects(object[] objs)
         {
             foreach (object o in objs)
             {
-                yield return EnumerateObject(o);
+                foreach (object innerO in EnumerateObject(o))
+                {
+                    yield return innerO;
+                }
             }
         }
         private static IEnumerable<object> EnumerateObject(object o)
         {
-            if (o is IEnumerable enumerable && !(o is string))
+            if (!(o is string) && o is IEnumerable enumerable)
             {
                 foreach (object io in enumerable)
                 {
@@ -77,9 +89,11 @@ namespace MG.Sonarr.Functionality.Helpers
                 }
                 else
                 {
+                    IEnumerable<object> flatten = EnumerateObjects(objs);
+
                     HelperTable table = new HelperTable(1)
                     {
-                        { "NoKey", new List<object>(EnumerableObjects(objs)) }
+                        { NO_KEY, new List<object>(flatten) }
                     };
                     yield return table;
                 }
@@ -93,10 +107,9 @@ namespace MG.Sonarr.Functionality.Helpers
 
             var table = new HelperTable(objs.Length);
             IEnumerable<HelperTable> tables = ProcessObjects(objs);
-            HashSet<string> set = new HashSet<string>(tables.SelectMany(x => x.Keys), SonarrFactory.NewIgnoreCase());
+            HashSet<string> set = new HashSet<string>(tables.SelectMany(x => x.Keys), table.KeyComparer);
             foreach (string s in set)
             {
-                //table.Add(s, new List<object>(tables.SelectMany(x => x[s])));
                 IEnumerable<object> getThese = tables.Where(x => x.ContainsKey(s)).SelectMany(x => x[s]);
                 table.Add(s, new List<object>(getThese));
             }

@@ -35,8 +35,40 @@ namespace MG.Sonarr.Results
 
         public int CompareTo(EpisodeResult other)
         {
-            return this.AbsoluteEpisodeNumber.GetValueOrDefault().CompareTo(other.AbsoluteEpisodeNumber.GetValueOrDefault());
+            if (other == null)
+                return 1;
+
+            int compare = this.SeasonNumber.GetValueOrDefault().CompareTo(other.SeasonNumber.GetValueOrDefault());
+            if (compare == 0)
+            {
+                compare = this.EpisodeNumber.CompareTo(other.EpisodeNumber);
+            }
+            return compare;
         }
         public bool Equals(EpisodeResult other) => this.EpisodeId.Equals(other.EpisodeId);
+
+        public class EpisodeComparer : IComparer<EpisodeResult>
+        {
+            public int Compare(EpisodeResult x, EpisodeResult y)
+            {
+                if (x != null && y != null)
+                {
+                    int compare = x.SeasonNumber.GetValueOrDefault().CompareTo(y.SeasonNumber.GetValueOrDefault());
+                    if (compare == 0)
+                    {
+                        compare = x.EpisodeNumber.CompareTo(y.EpisodeNumber);
+                    }
+                    return compare;
+                }
+                else if (x != null && y == null)
+                    return -1;
+
+                else if (x == null && y != null)
+                    return 1;
+
+                else
+                    return 0;
+            }
+        }
     }
 }
