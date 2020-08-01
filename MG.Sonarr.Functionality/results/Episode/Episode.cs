@@ -46,8 +46,9 @@ namespace MG.Sonarr.Results
             return compare;
         }
         public bool Equals(EpisodeResult other) => this.EpisodeId.Equals(other.EpisodeId);
+        public static IComparer<EpisodeResult> GetComparer() => new EpisodeComparer();
 
-        public class EpisodeComparer : IComparer<EpisodeResult>
+        private class EpisodeComparer : IComparer<EpisodeResult>
         {
             public int Compare(EpisodeResult x, EpisodeResult y)
             {

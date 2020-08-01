@@ -165,7 +165,7 @@
     <Compile Include="Objects\AnyAllIntSet.cs" />
     <Compile Include="Objects\AnyAllSet.cs" />
     <Compile Include="Objects\AnyAllStringSet.cs" />
-    <Compile Include="Objects\EpisodeIdentifierCollection.cs" />
+    <None Include="Objects\EpisodeIdentifierCollection.cs" />
     <Compile Include="Objects\ReplaceHashTable.cs" />
     <Compile Include="Objects\EpisodeIdentifier.cs" />
     <Compile Include="Cmdlets\Connection\ConnectInstance.cs" />

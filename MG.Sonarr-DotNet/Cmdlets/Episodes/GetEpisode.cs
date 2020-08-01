@@ -75,7 +75,7 @@ namespace MG.Sonarr.Cmdlets
             if (this.ContainsParameter(x => x.EpisodeIdentifier))
             {
                 _identifier = Sonarr.EpisodeIdentifier.Parse(this.EpisodeIdentifier);
-                if (_identifier.Seasons.Count <= 0 && _identifier.Episodes.Count <= 0)
+                if (_identifier.AbsoluteSeasons.Count <= 0 && _identifier.AbsoluteEpisodes.Count <= 0 && _identifier.SeasonEpisodePairs.Count <= 0)
                 {
                     base.ThrowTerminatingError(new ErrorRecord(new ArgumentException(
                         "An invalid episode identifier was supplied, so no seasons or episodes were parsed."),
@@ -87,7 +87,7 @@ namespace MG.Sonarr.Cmdlets
             else if (this.ContainsParameter(x => x.AbsoluteEpisodeNumber))
             {
                 _identifier = new Sonarr.EpisodeIdentifier();
-                _identifier.Episodes.UnionWith(this.AbsoluteEpisodeNumber);
+                _identifier.AbsoluteEpisodes.UnionWith(this.AbsoluteEpisodeNumber);
             }
 
 
@@ -119,7 +119,7 @@ namespace MG.Sonarr.Cmdlets
                     epList.UnionWith(allEps);
                 }
             }
-            IComparer<EpisodeResult> comparer = new EpisodeResult.EpisodeComparer();
+            IComparer<EpisodeResult> comparer = EpisodeResult.GetComparer();
             IEnumerable<EpisodeResult> ers = epList.Distinct().OrderBy(x => x, comparer);
             if (this.ContainsParameter(x => x.Downloaded))
             {
@@ -137,15 +137,6 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region METHODS
-        [Obsolete]
-        private void GetEpisodeByAbsoluteNumber(int[] absoluteIds, List<EpisodeResult> allEpisodes, ref List<EpisodeResult> addToList)
-        {
-            addToList
-                .AddRange(allEpisodes
-                    .FindAll(x => this.AbsoluteEpisodeNumber
-                        .Contains(x.AbsoluteEpisodeNumber
-                            .GetValueOrDefault())));
-        }
         private void GetEpisodeById(long epId, ISet<EpisodeResult> addToSet)
         {
             string uri = string.Format(EP_BY_EP, epId);
