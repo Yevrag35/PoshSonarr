@@ -104,6 +104,7 @@ namespace MG.Sonarr.Functionality
         /// </summary>
         /// <returns>An <see cref="IEqualityComparer{T}"/> of <see cref="string"/>s that ignores case when determining equality.</returns>
         public static IEqualityComparer<string> NewIgnoreCase() => new IgnoreCase();
+        public static IEqualityComparer<object> NewObjectIgnoreCase() => new IgnoreCase();
         /// <summary>
         /// Initializes a new <see cref="IJobHistory"/> class that manages command results sent to Sonarr.
         /// </summary>
