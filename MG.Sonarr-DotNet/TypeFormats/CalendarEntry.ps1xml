@@ -16,9 +16,8 @@
 							<ListItem>
 								<Label>AirDate</Label>
 								<ScriptBlock>
-									if ($null -ne $_.AirDateUtc) {
-										$timeSpan = [System.TimeZone]::CurrentTimeZone.GetUtcOffset($_.AirDate)
-										New-Object System.DateTimeOffset($_.AirDate, $timeSpan)
+									if ($_.AirDate -ne $null) {
+										$_.AirDate.LocalDateTime
 									}
 								</ScriptBlock>
 							</ListItem>
