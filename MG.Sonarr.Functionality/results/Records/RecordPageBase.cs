@@ -1,12 +1,11 @@
-﻿using MG.Sonarr.Functionality.Converters;
-using MG.Sonarr.Results;
+﻿using MG.Sonarr.Functionality;
 using MG.Sonarr.Results.Collections;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MG.Sonarr.Functionality.Results
+namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization.OptIn)]
     public abstract class RecordPageBase : BaseResult

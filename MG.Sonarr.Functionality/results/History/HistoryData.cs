@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace MG.Sonarr.Functionality.Results
+namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization.OptIn)]
     public class HistoryData

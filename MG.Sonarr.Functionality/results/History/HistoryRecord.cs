@@ -1,10 +1,11 @@
-﻿using MG.Sonarr.Functionality.Converters;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Converters;
 using MG.Sonarr.Results;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
-namespace MG.Sonarr.Functionality.Results
+namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization.OptIn)]
     public class HistoryRecord : BaseResult, IComparable<HistoryRecord>, IEquatable<HistoryRecord>, IRecord
