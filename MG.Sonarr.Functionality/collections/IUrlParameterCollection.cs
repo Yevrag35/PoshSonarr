@@ -18,6 +18,6 @@ namespace MG.Sonarr.Functionality.Collections
         /// <summary>
         /// Returns all of the <see cref="IUrlParameter"/> joined together into a single query <see cref="string"/> for a <see cref="Uri"/>.
         /// </summary>
-        string ToQueryString();
+        string ToQueryString(params IUrlParameter[] oneOffs);
     }
 }
