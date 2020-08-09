@@ -1,7 +1,6 @@
 ﻿using MG.Posh.Extensions.Bound;
 using MG.Sonarr.Functionality;
 using MG.Sonarr.Functionality.Collections;
-using MG.Sonarr.Functionality.Results;
 using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Functionality.Url;
 using MG.Sonarr.Results;
