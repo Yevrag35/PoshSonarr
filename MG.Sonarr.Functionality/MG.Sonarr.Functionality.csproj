@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <Compile Remove="collections\TagSet.cs" />
+    <Compile Remove="converters\HistoryDataConverter.cs" />
     <Compile Remove="dateFormats\DateFormatAttribute.cs" />
     <Compile Remove="dateFormats\ShortDateFormat.cs" />
     <Compile Remove="dateFormats\WeekColumnHeader.cs" />
@@ -31,6 +32,7 @@
 
   <ItemGroup>
     <None Include="collections\TagSet.cs" />
+    <None Include="converters\HistoryDataConverter.cs" />
     <None Include="dateFormats\DateFormatAttribute.cs" />
     <None Include="dateFormats\ShortDateFormat.cs" />
     <None Include="dateFormats\WeekColumnHeader.cs" />

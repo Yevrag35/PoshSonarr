@@ -271,6 +271,12 @@ namespace MG.Sonarr.Functionality
         EpisodeFileRenamed
     }
 
+    public enum HistorySortKey
+    {
+        Date,
+        SeriesTitle
+    }
+
     /// <summary>
     /// The severity of a given log entry to filter by.
     /// </summary>

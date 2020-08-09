@@ -35,15 +35,39 @@ namespace MG.Sonarr.Functionality.Collections
         public bool Remove(IUrlParameter item) => _list.Remove(item);
         public void RemoveAt(int index) => _list.RemoveAt(index);
 
-        public string ToQueryString()
+        public string ToQueryString(params IUrlParameter[] oneOffs)
         {
-            var strs = new List<string>(_list.Count);
-            _list.ForEach((x) =>
+            var builder = new StringBuilder(20);
+            for (int i = 0; i < this.Count; i++)
             {
-                strs.Add(x.AsString());
-            });
+                builder.Append(this[i].AsString());
+                if (i < this.Count - 1)
+                    builder.Append("&");
+            }
 
-            return "?" + string.Join(SEPARATOR, strs);
+            if (oneOffs != null && oneOffs.Length > 0)
+            {
+                if (builder.Length > 0)
+                    builder.Append("&");
+
+                for (int n = 0; n < oneOffs.Length; n++)
+                {
+                    builder.Append(oneOffs[n].AsString());
+                    if (n < oneOffs.Length - 1)
+                        builder.Append("&");
+                }
+            }
+
+            builder.Insert(0, "?");
+            return builder.ToString();
+
+            //var strs = new List<string>(_list.Count);
+            //_list.ForEach((x) =>
+            //{
+            //    strs.Add(x.AsString());
+            //});
+
+            //return "?" + string.Join(SEPARATOR, strs);
         }
     }
 }

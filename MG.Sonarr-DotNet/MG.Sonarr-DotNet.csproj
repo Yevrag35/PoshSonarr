@@ -108,6 +108,7 @@
     <Compile Include="Cmdlets\DownloadClient\RemoveDownloadClient.cs" />
     <Compile Include="Cmdlets\DownloadClient\UpdateDownloadClient.cs" />
     <Compile Include="Cmdlets\FileSystem\SearchDirectory.cs" />
+    <Compile Include="Cmdlets\History\GetEpisodeHistory.cs" />
     <Compile Include="Cmdlets\Indexer\GetIndexer.cs" />
     <Compile Include="Cmdlets\Indexer\GetIndexerOptions.cs" />
     <None Include="Cmdlets\Indexer\GetIndexerSchema.cs.old" />
@@ -172,7 +173,7 @@
     <Compile Include="Cmdlets\Episodes\GetEpisodeFile.cs" />
     <Compile Include="Cmdlets\Episodes\RemoveEpisodeFile.cs" />
     <Compile Include="Cmdlets\Episodes\SetEpisode.cs" />
-    <Compile Include="Cmdlets\History\GetHistory.cs" />
+    <None Include="Cmdlets\History\GetHistory.cs.old" />
     <Compile Include="Cmdlets\QualityProfiles\GetQualityProfile.cs" />
     <Compile Include="Cmdlets\Queue\GetQueue.cs" />
     <Compile Include="Cmdlets\Releases\AddRelease.cs" />
