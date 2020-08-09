@@ -187,8 +187,10 @@ namespace MG.Sonarr.Cmdlets
                 : SonarrFactory.GenerateSonarrUrl(this.SonarrUrl, !_noApiPrefix);
         private Status TryConnect(ISonarrClient client)
         {
-            base.WriteApiDebug(ApiEndpoints.Status, HttpMethod.Get, out string apiPath);
-            IRestResponse<Status> response = client.GetAsJsonAsync<Status>(apiPath).GetAwaiter().GetResult();
+            //base.WriteApiDebug(ApiEndpoints.Status, HttpMethod.Get, out string apiPath);
+            Endpoint ep = Endpoint.Status;
+            base.WriteApiDebug(ref ep, HttpMethod.Get);
+            IRestResponse<Status> response = client.GetAsJsonAsync<Status>(ep).GetAwaiter().GetResult();
             if (response.IsFaulted)
             {
                 if (response.HasException)

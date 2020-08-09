@@ -6,7 +6,7 @@ namespace MG.Sonarr.Cmdlets
     public abstract class BaseIdEndpointCmdlet : BaseEndpointCmdlet
     {
         #region FIELDS/CONSTANTS
-        protected string IdEndpoint => this.Endpoint + "/{0}";
+        //protected string IdEndpoint => this.Endpoint + "/{0}";
 
         #endregion
 

@@ -9,8 +9,8 @@ namespace MG.Sonarr.Functionality
 {
     public struct Endpoint
     {
-        private const string SLASH_ID = "{0}/{1}";
         private static readonly string SPACE = ((char)32).ToString();
+        private StringBuilder _builder;
 
         internal string ApiEndpoint;
         internal string Id;
@@ -19,6 +19,8 @@ namespace MG.Sonarr.Functionality
 
         private Endpoint(string apiEndpoint)
         {
+            _builder = null;
+
             this.ApiEndpoint = apiEndpoint;
             this.Id = null;
             this.Prefix = null;
@@ -42,22 +44,62 @@ namespace MG.Sonarr.Functionality
             if (string.IsNullOrWhiteSpace(this.ApiEndpoint))
                 return this.ToString();
 
-            StringBuilder builder = new StringBuilder(this.GetTotalLength());
+            if (_builder == null)
+                _builder = new StringBuilder(this.GetTotalLength());
 
-            builder.Append(this.Prefix);
-            builder.Append(this.ApiEndpoint);
-            builder.Append(this.Id);
-            builder.Append(this.Query);
+            else
+                _builder.EnsureCapacity(this.GetTotalLength());
 
-            builder.Replace(SPACE, string.Empty);
-            return builder.ToString();
+            _builder.Append(this.Prefix);
+            _builder.Append(this.ApiEndpoint);
+            _builder.Append(this.Id);
+            _builder.Append(this.Query);
+
+            _builder.Replace(SPACE, string.Empty);
+            string built = _builder.ToString();
+
+            _builder.Clear();
+            return built;
         }
 
         public static implicit operator string(Endpoint endpoint) => endpoint.AsString();
         public static implicit operator Endpoint(string str) => new Endpoint(str);
 
+        #region CONSTRUCTS
         public static Endpoint Backup => new Endpoint(ApiEndpoints.Backup);
-        
+        public static Endpoint Calendar => new Endpoint(ApiEndpoints.Calendar);
+        public static Endpoint Command => new Endpoint(ApiEndpoints.Command);
+        public static Endpoint DelayProfile => new Endpoint(ApiEndpoints.DelayProfile);
+        public static Endpoint Diskspace => new Endpoint(ApiEndpoints.Diskspace);
+        public static Endpoint DownloadClient => new Endpoint(ApiEndpoints.DownloadClient);
+        public static Endpoint Episode => new Endpoint(ApiEndpoints.Episode);
+        public static Endpoint EpisodeFile => new Endpoint(ApiEndpoints.EpisodeFile);
+        public static Endpoint FileSystem => new Endpoint(ApiEndpoints.FileSystem);
+        public static Endpoint History => new Endpoint(ApiEndpoints.History);
+        public static Endpoint HostConfig => new Endpoint(ApiEndpoints.HostConfig);
+        public static Endpoint Indexer => new Endpoint(ApiEndpoints.Indexer);
+        public static Endpoint IndexerOptions => new Endpoint(ApiEndpoints.IndexerOptions);
+        public static Endpoint IndexerSchema => new Endpoint(ApiEndpoints.IndexerSchema);
+        public static Endpoint LogFile => new Endpoint(ApiEndpoints.LogFile);
+        public static Endpoint ManualImport => new Endpoint(ApiEndpoints.ManualImport);
+        public static Endpoint MediaManagement => new Endpoint(ApiEndpoints.MediaManagement);
+        public static Endpoint Metadata => new Endpoint(ApiEndpoints.Metadata);
+        public static Endpoint Notification => new Endpoint(ApiEndpoints.Notification);
+        public static Endpoint Profile => new Endpoint(ApiEndpoints.Profile);
+        public static Endpoint QualityDefinition => new Endpoint(ApiEndpoints.QualityDefinitions);
+        public static Endpoint Queue => new Endpoint(ApiEndpoints.Queue);
+        public static Endpoint Release => new Endpoint(ApiEndpoints.Release);
+        public static Endpoint RemotePathMapping => new Endpoint(ApiEndpoints.Mapping);
+        public static Endpoint Restart => new Endpoint(ApiEndpoints.Restart);
+        public static Endpoint Restriction => new Endpoint(ApiEndpoints.Restriction);
+        public static Endpoint RootFolder => new Endpoint(ApiEndpoints.RootFolder);
+        public static Endpoint Series => new Endpoint(ApiEndpoints.Series);
+        public static Endpoint Status => new Endpoint(ApiEndpoints.Status);
+        public static Endpoint Tag => new Endpoint(ApiEndpoints.Tag);
+        public static Endpoint Update => new Endpoint(ApiEndpoints.Update);
+        public static Endpoint WantedMissing => new Endpoint(ApiEndpoints.WantedMissing);
+
+        #endregion
     }
 
     public static class EndpointExtensions

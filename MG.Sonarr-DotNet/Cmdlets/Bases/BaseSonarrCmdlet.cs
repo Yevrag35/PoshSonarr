@@ -16,9 +16,6 @@ namespace MG.Sonarr.Cmdlets
     public abstract partial class BaseSonarrCmdlet : PSCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string CONNECT_EP = "/system/status";
-        [Obsolete]
-        private const string CONTENT_TYPE = "application/json";
         private const string DEBUG_API_MSG = "Sending {0} request to: {1}{2}";
         private const string DEBUG_API_AND_BODY_MSG = DEBUG_API_MSG + "{3}{3}REQUEST BODY:{4}";
         private const string DEBUG_API_RESPONSE_MSG = "RESPONSE ({0} {1}): {2}{2}{3}";

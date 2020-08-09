@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace MG.Sonarr.Cmdlets
 {
-    public abstract class TagCmdlet : BaseIdEndpointCmdlet
+    public abstract class TagCmdlet : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
         protected override string Endpoint => "/tag";

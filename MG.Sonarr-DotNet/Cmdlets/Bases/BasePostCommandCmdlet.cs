@@ -1,4 +1,6 @@
-﻿using MG.Sonarr.Functionality.Collections;
+﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Collections;
 using MG.Sonarr.Results;
 using System;
 using System.Management.Automation;
@@ -12,10 +14,11 @@ namespace MG.Sonarr.Cmdlets
     public abstract class BasePostCommandCmdlet : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        protected private const string BASE_EP = "/command";
+        //protected private const string BASE_EP = "/command";
         protected private SonarrBodyParameters parameters;
 
-        protected abstract string Command { get; }
+        //protected abstract string Command { get; }
+        protected abstract Endpoint Command { get; }
 
         #endregion
 
@@ -44,10 +47,14 @@ namespace MG.Sonarr.Cmdlets
         protected private void ProcessRequest(SonarrBodyParameters parameterDict)
         {
             object cmdName = parameterDict["name"];
-            string verbMsg = string.Format("Issuing command - {0} at {1}", cmdName, BASE_EP);
-            base.WriteVerbose(verbMsg);
+            
+            if (this.ContainsBuiltinParameter(BuiltInParameter.Verbose))
+            {
+                string verbMsg = string.Format("Issuing command - to {0}", this.Command.AsString());
+                base.WriteVerbose(verbMsg);
+            }
 
-            CommandOutput output = base.SendSonarrPost<CommandOutput>(BASE_EP, parameterDict);
+            CommandOutput output = base.SendSonarrPost<CommandOutput>(this.Command, parameterDict);
             if (output != null)
             {
                 History.Jobs.AddResult(output);
