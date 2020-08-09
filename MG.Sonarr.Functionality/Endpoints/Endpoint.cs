@@ -37,22 +37,23 @@ namespace MG.Sonarr.Functionality
                 +
                 (this.Query?.Length).GetValueOrDefault();
         }
-
-        public static implicit operator string(Endpoint endpoint)
+        public string AsString()
         {
-            if (string.IsNullOrWhiteSpace(endpoint.ApiEndpoint))
-                throw new InvalidOperationException("To form a string, the \"ApiEndpoint\" field must be populated with non-whitespace text.");
+            if (string.IsNullOrWhiteSpace(this.ApiEndpoint))
+                return this.ToString();
 
-            StringBuilder builder = new StringBuilder(endpoint.GetTotalLength());
+            StringBuilder builder = new StringBuilder(this.GetTotalLength());
 
-            builder.Append(endpoint.Prefix);
-            builder.Append(endpoint.ApiEndpoint);
-            builder.Append(endpoint.Id);
-            builder.Append(endpoint.Query);
+            builder.Append(this.Prefix);
+            builder.Append(this.ApiEndpoint);
+            builder.Append(this.Id);
+            builder.Append(this.Query);
 
             builder.Replace(SPACE, string.Empty);
             return builder.ToString();
         }
+
+        public static implicit operator string(Endpoint endpoint) => endpoint.AsString();
         public static implicit operator Endpoint(string str) => new Endpoint(str);
 
         public static Endpoint Backup => new Endpoint(ApiEndpoints.Backup);

@@ -1,6 +1,7 @@
 ﻿using MG.Api.Json;
 using MG.Api.Rest;
 using MG.Api.Rest.Generic;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Functionality.Exceptions;
 using MG.Sonarr.Results;
 using System;
@@ -186,10 +187,11 @@ namespace MG.Sonarr.Cmdlets
         /// </summary>
         /// <typeparam name="T">The class type to process each result content as.</typeparam>
         /// <param name="endpoint">The API endpoint that the request is sent to.</param>
-        protected List<T> SendSonarrListGet<T>(string endpoint) where T : class
+        protected List<T> SendSonarrListGet<T>(Endpoint endpoint) where T : class
         {
-            this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
-            IRestListResponse<T> response = this.SendSonarrListGetAsTask<T>(apiPath).GetAwaiter().GetResult();
+            //this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
+            this.WriteApiDebug(ref endpoint, HttpMethod.Get);
+            IRestListResponse<T> response = this.SendSonarrListGetAsTask<T>(endpoint).GetAwaiter().GetResult();
             return this.ProcessMultiResponse(response);
         }
         private Task<IRestResponse<T>> SendSonarrGetAsTask<T>(string apiPath) where T : class

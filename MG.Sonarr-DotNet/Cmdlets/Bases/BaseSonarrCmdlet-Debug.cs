@@ -27,6 +27,7 @@ namespace MG.Sonarr.Cmdlets
         /// <param name="jsonResult">The JSON string from the response payload.</param>
         /// <param name="code">The status code from the <see cref="HttpResponseMessage"/>.</param>
         /// <param name="showAllDebug">Indicates whether to show the entire JSON response or to only show the status code.</param>
+        [Obsolete]
         protected void WriteApiDebug(string jsonResult, HttpStatusCode code, bool showAllDebug)
         {
             if (this.MyInvocation.BoundParameters.ContainsKey("Debug"))
@@ -60,6 +61,19 @@ namespace MG.Sonarr.Cmdlets
                 method.Method,
                 Context.SonarrUrl.BaseUrl,
                 apiPath
+            );
+
+            base.WriteDebug(msg);
+        }
+
+        protected void WriteApiDebug(ref Endpoint endpoint, HttpMethod method)
+        {
+            endpoint = endpoint.WithPrefix(Context.SonarrUrl.IncludeApiPrefix);
+            string msg = string.Format(
+                DEBUG_API_MSG,
+                method.Method,
+                Context.SonarrUrl.BaseUrl,
+                endpoint.AsString()
             );
 
             base.WriteDebug(msg);
