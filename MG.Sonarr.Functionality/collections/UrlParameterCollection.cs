@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace MG.Sonarr.Functionality.Collections
@@ -21,23 +22,32 @@ namespace MG.Sonarr.Functionality.Collections
 
         public UrlParameterCollection() => _list = new List<IUrlParameter>();
         public UrlParameterCollection(int capacity) => _list = new List<IUrlParameter>(capacity);
-        public UrlParameterCollection(IEnumerable<IUrlParameter> items) => _list = new List<IUrlParameter>(items);
+        public UrlParameterCollection(IEnumerable<IUrlParameter> items) => _list = new List<IUrlParameter>(items.Where(x => x != null));
 
         public void Add(IUrlParameter item) => _list.Add(item);
-        public void AddRange(IEnumerable<IUrlParameter> items) => _list.AddRange(items);
+        public void AddRange(IEnumerable<IUrlParameter> items)
+        {
+            if (items != null)
+                _list.AddRange(items.Where(x => x != null));
+        }
         public void Clear() => _list.Clear();
         public bool Contains(IUrlParameter item) => _list.Contains(item);
         void ICollection<IUrlParameter>.CopyTo(IUrlParameter[] array, int arrayIndex) => _list.CopyTo(array, arrayIndex);
         public IEnumerator<IUrlParameter> GetEnumerator() => _list.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
         public int IndexOf(IUrlParameter item) => _list.IndexOf(item);
-        public void Insert(int index, IUrlParameter item) => _list.Insert(index, item);
+        public void Insert(int index, IUrlParameter item)
+        {
+            if (item != null)
+            {
+                _list.Insert(index, item);
+            }
+        }
         public bool Remove(IUrlParameter item) => _list.Remove(item);
         public void RemoveAt(int index) => _list.RemoveAt(index);
 
-        public string ToQueryString(params IUrlParameter[] oneOffs)
+        public void ToQueryString(ref StringBuilder builder, params IUrlParameter[] oneOffs)
         {
-            var builder = new StringBuilder(20);
             for (int i = 0; i < this.Count; i++)
             {
                 builder.Append(this[i].AsString());
@@ -59,15 +69,12 @@ namespace MG.Sonarr.Functionality.Collections
             }
 
             builder.Insert(0, "?");
+        }
+        public string ToQueryString(params IUrlParameter[] oneOffs)
+        {
+            var builder = new StringBuilder(20);
+            this.ToQueryString(ref builder, oneOffs);
             return builder.ToString();
-
-            //var strs = new List<string>(_list.Count);
-            //_list.ForEach((x) =>
-            //{
-            //    strs.Add(x.AsString());
-            //});
-
-            //return "?" + string.Join(SEPARATOR, strs);
         }
     }
 }

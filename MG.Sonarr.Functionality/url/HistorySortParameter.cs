@@ -4,23 +4,22 @@ using System.Text;
 
 namespace MG.Sonarr.Functionality.Url
 {
-    public class HistorySortParameter : IUrlParameter
+    public class HistorySortParameter : SortParameter, IUrlParameter
     {
         IConvertible IUrlParameter.Key => this.Key;
         public HistorySortKey Key { get; set; }
 
-        IConvertible IUrlParameter.Value => this.Value;
-        public SortDirection Value { get; set; } = SortDirection.Descending;
+        IConvertible IUrlParameter.Value => base.Value;
 
         public HistorySortParameter(HistorySortKey sortKey, SortDirection direction)
+            : base(direction)
         {
             this.Key = sortKey;
-            this.Value = direction;
         }
 
         public string AsString()
         {
-            return string.Format("sortKey={0}&sortDir={1}", this.GetKeyEnumAsString(), this.Value.ToString().ToLower());
+            return string.Format("sortKey={0}&sortDir={1}", this.GetKeyEnumAsString(), this.GetSortString());
         }
 
         private string GetKeyEnumAsString()

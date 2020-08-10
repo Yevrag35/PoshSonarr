@@ -138,5 +138,17 @@ namespace MG.Sonarr.Functionality
             endpoint.Query = queryParameters.ToQueryString();
             return endpoint;
         }
+        public static Endpoint WithQuery(this Endpoint endpoint, IUrlParameterCollection queryParameters, params IUrlParameter[] oneOffs)
+        {
+            int extra = 0;
+            if (oneOffs != null && oneOffs.Length > 0)
+                extra = oneOffs.Length;
+
+            var col = new UrlParameterCollection(queryParameters.Count + extra);
+            col.AddRange(queryParameters);
+            col.AddRange(oneOffs);
+
+            return WithQuery(endpoint, col);
+        }
     }
 }

@@ -17,7 +17,8 @@ namespace MG.Sonarr.Cmdlets
     {
         #region FIELDS/CONSTANTS
         IUrlParameterCollection paramCol;
-        List<string> _allQueries;
+        List<Endpoint> _allQueries;
+        private Endpoint History => Endpoint.History;
 
         #endregion
 
@@ -30,6 +31,7 @@ namespace MG.Sonarr.Cmdlets
         public int PageNumber { get; set; } = 1;
 
         [Parameter(Mandatory = false)]
+        [Alias("Top")]
         [ValidateRange(1, int.MaxValue)]
         public int PageSize { get; set; } = 10;
 
@@ -38,7 +40,7 @@ namespace MG.Sonarr.Cmdlets
         public string SortKey { get; set; } = "Date";
 
         [Parameter(Mandatory = false)]
-        public SortDirection SortDirection { get; set; } = SortDirection.Descending;
+        public SortDirection SortDirection { get; set; } = SortDirection.Ascending;
 
         #endregion
 
@@ -51,23 +53,22 @@ namespace MG.Sonarr.Cmdlets
                 new PagingParameter(this.PageNumber, this.PageSize),
                 new HistorySortParameter(this.GetKeyFromString(this.SortKey), this.SortDirection)
             };
-            _allQueries = new List<string>(1);
+            _allQueries = new List<Endpoint>(1);
         }
 
         protected override void ProcessRecord()
         {
             if (! this.ContainsParameter(x => x.EpisodeId))
             {
-                string oneQuery = paramCol.ToQueryString();
-                _allQueries.Add(oneQuery);
+                _allQueries.Add(History.WithQuery(paramCol));
             }
             else
             {
                 _allQueries.Capacity = this.EpisodeId.Length;
                 for (int i = 0; i < this.EpisodeId.Length; i++)
                 {
-                    string query = paramCol.ToQueryString(new EpisodeIdParameter(this.EpisodeId[i]));
-                    _allQueries.Add(query);
+                    Endpoint ep = History.WithQuery(paramCol, new EpisodeIdParameter(this.EpisodeId[i]));
+                    _allQueries.Add(ep);
                 }
             }
         }
@@ -76,8 +77,7 @@ namespace MG.Sonarr.Cmdlets
         {
             for (int i = 0; i < _allQueries.Count; i++)
             {
-                string url = this.ToUrl(_allQueries[i]);
-                HistoryRecordPage page = base.SendSonarrGet<HistoryRecordPage>(url);
+                HistoryRecordPage page = base.SendSonarrGet<HistoryRecordPage>(_allQueries[i]);
                 if (page != null && page.Records.Count > 0)
                     base.WriteObject(page.Records, true);
             }
@@ -99,8 +99,6 @@ namespace MG.Sonarr.Cmdlets
                     return HistorySortKey.Date;
             }
         }
-
-        private string ToUrl(string query) => string.Format("{0}{1}", ApiEndpoints.History, query);
 
         #endregion
     }
