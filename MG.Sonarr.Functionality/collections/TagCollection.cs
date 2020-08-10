@@ -11,8 +11,9 @@ namespace MG.Sonarr.Functionality.Collections
     /// Provides a collection class for <see cref="Tag"/> instances while keeping most
     /// of the <see cref="ICollection"/> and <see cref="IList"/> methods hidden.
 	/// </summary>
-    internal sealed class TagCollection : ResultListBase<Tag>, ITagCollection
+    internal sealed class TagCollection : HashSet<Tag>, ITagCollection
     {
+
         #region CONSTRUCTORS
         /// <summary>
         /// Initializes a new instance of the <see cref="TagCollection{T}"/> class that is empty
@@ -34,30 +35,17 @@ namespace MG.Sonarr.Functionality.Collections
 
         #endregion
 
-        #region BASE METHODS
-        public void Sort() => this.InnerList.Sort();
-        public void Sort(IComparer<Tag> comparer) => this.InnerList.Sort(comparer);
-
-        #endregion
-
         #region BACKEND/PRIVATE METHODS
-        internal int Add(Tag tag)
-        {
-            this.InnerList.Add(tag);
-            return tag.Id;
-        }
-        internal void Clear() => this.InnerList.Clear();
-        public bool Contains(int tagId) => this.InnerList.Exists(x => x.Id == tagId);
-        internal int FindIndex(Predicate<Tag> match) => this.InnerList.FindIndex(match);
-        internal bool Remove(Tag tag) => this.InnerList.Remove(tag);
-        internal void RemoveAll(Predicate<Tag> match) => this.InnerList.RemoveAll(match);
+        //internal void Clear() => this.InnerList.Clear();
+        public bool Contains(int tagId) => this.Any(x => x.Id.Equals(tagId));
+        //internal int FindIndex(Predicate<Tag> match) => this.InnerList.FindIndex(match);
+        //internal bool Remove(Tag tag) => this.InnerList.Remove(tag);
+        //internal void RemoveAll(Predicate<Tag> match) => this.InnerList.RemoveAll(match);
         internal void SetTag(int tagId, string newLabel)
         {
-            if (this.Contains(tagId))
-            {
-                int index = this.InnerList.FindIndex(x => x.Id == tagId);
-                this.InnerList[index].Label = newLabel;
-            }
+            Tag tag = this.SingleOrDefault(x => x.Id.Equals(tagId));
+            if (tag != null)
+                tag.Label = newLabel;
         }
 
         #endregion

@@ -1,5 +1,5 @@
 ﻿using MG.Posh.Extensions.Bound;
-using MG.Sonarr.Functionality.Strings;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections;
@@ -84,9 +84,10 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
+            Endpoint ep = Endpoint.Restriction;
             if (!this.ParameterSetName.Contains("ByInputRestriction"))
             {
-                this.InputObject = base.SendSonarrGet<Restriction>(string.Format(ApiEndpoints.Restriction_ById, this.Id));
+                this.InputObject = base.SendSonarrGet<Restriction>(ep.WithId(this.Id));
             }
 
             if (base.FormatShouldProcess("Set", "Restriction Id: {0}", this.InputObject.Id))
@@ -99,7 +100,7 @@ namespace MG.Sonarr.Cmdlets
                 {
                     _requiredTerms.ModifyObject(this.InputObject.Required);
                 }
-                Restriction restriction = base.SendSonarrPut<Restriction>(ApiEndpoints.Restriction, this.InputObject);
+                Restriction restriction = base.SendSonarrPut<Restriction>(ep, this.InputObject);
                 if (_passThru)
                     base.SendToPipeline(restriction);
             }

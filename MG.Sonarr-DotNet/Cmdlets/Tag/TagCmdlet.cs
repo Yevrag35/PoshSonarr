@@ -29,9 +29,6 @@ namespace MG.Sonarr.Cmdlets
                 Tag oneTag = base.SendSonarrGet<Tag>(ep.WithId(id));
                 if (oneTag != null)
                 {
-                    if (!Context.TagManager.Exists(oneTag.Id))
-                        //Context.TagManager.
-
                     yield return oneTag;
                 }
             }

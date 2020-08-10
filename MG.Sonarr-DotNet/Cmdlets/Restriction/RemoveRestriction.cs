@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Functionality.Strings;
+﻿using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Management.Automation;
@@ -31,8 +31,7 @@ namespace MG.Sonarr.Cmdlets
         {
             if (_force || base.ShouldProcess(string.Format("Restriction Id: {0}", this.RestrictionId), "Remove"))
             {
-                string endpoint = string.Format(ApiEndpoints.Restriction_ById, this.RestrictionId);
-                base.SendSonarrDelete(endpoint);
+                base.SendSonarrDelete(Endpoint.Restriction.WithId(this.RestrictionId));
             }
         }
 

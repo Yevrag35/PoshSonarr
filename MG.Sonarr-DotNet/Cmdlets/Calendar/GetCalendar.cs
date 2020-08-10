@@ -1,4 +1,5 @@
 ﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Results;
 using System;
@@ -109,9 +110,10 @@ namespace MG.Sonarr.Cmdlets
             string start = this.DateToString(this.StartDate);
             string end = this.DateToString(this.EndDate);
 
-            string full = string.Format(ApiEndpoints.Calendar_WithDate, start, end);
+            IUrlParameter[] parameters = CalendarEntry.GetStartEndParameters(start, end);
+            //string full = string.Format(ApiEndpoints.Calendar_WithDate, start, end);
 
-            List<CalendarEntry> entries = this.GetCalendarEntries(full);
+            List<CalendarEntry> entries = this.GetCalendarEntries(Endpoint.Calendar.WithQuery(parameters));
 
             if (this.ContainsParameter(x => x.DayOfWeek))
             {
@@ -128,7 +130,7 @@ namespace MG.Sonarr.Cmdlets
         #region METHODS
         private List<CalendarEntry> GetCalendarEntries(string uri) => base.SendSonarrListGet<CalendarEntry>(uri);
 
-        private string DateToString(DateTime dt) => dt.ToString(ApiEndpoints.Calendar_DTFormat);
+        private string DateToString(DateTime dt) => dt.ToString(CalendarEntry.Calendar_DTFormat);
 
         private void SetOneDayRange(DateTime beginning)
         {

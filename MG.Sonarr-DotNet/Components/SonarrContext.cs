@@ -80,7 +80,6 @@ namespace MG.Sonarr
 
             return o;
         }
-        private static string GetEndpoint(string endpoint) => !string.IsNullOrEmpty(Prefix) ? Prefix + endpoint : endpoint;
 
         internal static void Initialize(ISonarrClient client, bool useApiPrefix, bool useCache)
         {
@@ -118,13 +117,13 @@ namespace MG.Sonarr
         #region INITIALIZATION ASYNC METHODS
         private async static Task<QualityDictionary> GetQualityDictionaryAsync(ISonarrClient client)
         {
-            IRestListResponse<QualityDefinition> defResponse = await client.GetAsJsonListAsync<QualityDefinition>(GetEndpoint(ApiEndpoints.QualityDefinitions));
+            IRestListResponse<QualityDefinition> defResponse = await client.GetAsJsonListAsync<QualityDefinition>(Endpoint.QualityDefinition.WithPrefix(SonarrUrl.IncludeApiPrefix));
             return !defResponse.IsFaulted ? new QualityDictionary(defResponse.Content.Select(x => x.Quality)) : null;
         }
 
         private async static Task<IndexerSchemaCollection> GetIndexerSchemasAsync(ISonarrClient client)
         {
-            IRestListResponse<IndexerSchema> schResponse = await client.GetAsJsonListAsync<IndexerSchema>(GetEndpoint(ApiEndpoints.IndexerSchema));
+            IRestListResponse<IndexerSchema> schResponse = await client.GetAsJsonListAsync<IndexerSchema>(Endpoint.IndexerSchema.WithPrefix(SonarrUrl.IncludeApiPrefix));
             return !schResponse.IsFaulted ? IndexerSchemaCollection.FromSchemas(schResponse.Content) : null;
         }
 

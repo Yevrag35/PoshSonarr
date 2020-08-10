@@ -10,7 +10,6 @@ namespace MG.Sonarr.Functionality.Collections
     /// </summary>
     public interface ITagCollection : IReadOnlyCollection<Tag>
     {
-        Tag this[int index] { get; }
 
         /// <summary>
         /// Returns whether or not the current collection contains a <see cref="Tag"/> whose

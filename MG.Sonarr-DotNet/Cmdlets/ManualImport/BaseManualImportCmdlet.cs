@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Functionality.Collections;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Collections;
 using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Functionality.Url;
 using MG.Sonarr.Results;
@@ -24,9 +25,9 @@ namespace MG.Sonarr.Cmdlets
         protected List<ManualImport> GetPossibleImports(string path)
         {
             IUrlParameterCollection parameters = this.FormUrl(path);
-            string url = string.Format("{0}{1}", ApiEndpoints.ManualImport, parameters.ToQueryString());
+            //string url = string.Format("{0}{1}", ApiEndpoints.ManualImport, parameters.ToQueryString());
 
-            return base.SendSonarrListGet<ManualImport>(url);
+            return base.SendSonarrListGet<ManualImport>(Endpoint.ManualImport.WithQuery(parameters));
         }
     }
 }

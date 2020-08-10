@@ -1,6 +1,5 @@
 ﻿using MG.Posh.Extensions.Bound;
 using MG.Sonarr.Functionality;
-using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
@@ -78,7 +77,7 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         private List<DownloadClient> GetAllDownloadClients()
         {
-            return base.SendSonarrListGet<DownloadClient>(ApiEndpoints.DownloadClient);
+            return base.SendSonarrListGet<DownloadClient>(Endpoint.DownloadClient);
         }
 
         private List<DownloadClient> FindByProtocol(List<DownloadClient> list) => 

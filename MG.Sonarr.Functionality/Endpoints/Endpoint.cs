@@ -9,6 +9,7 @@ namespace MG.Sonarr.Functionality
 {
     public struct Endpoint
     {
+        private const char SLASH = (char)47;
         private static readonly string SPACE = ((char)32).ToString();
         private StringBuilder _builder;
 
@@ -33,7 +34,7 @@ namespace MG.Sonarr.Functionality
             return
                 this.ApiEndpoint.Length
                 +
-                (this.Id?.Length).GetValueOrDefault()
+                (this.Id?.Length + 1).GetValueOrDefault()
                 +
                 (this.Prefix?.Length).GetValueOrDefault()
                 +
@@ -52,7 +53,12 @@ namespace MG.Sonarr.Functionality
 
             _builder.Append(this.Prefix);
             _builder.Append(this.ApiEndpoint);
-            _builder.Append(this.Id);
+
+            if (!string.IsNullOrEmpty(this.Id))
+            {
+                _builder.Append(SLASH);
+                _builder.Append(this.Id);
+            }
             _builder.Append(this.Query);
 
             _builder.Replace(SPACE, string.Empty);
