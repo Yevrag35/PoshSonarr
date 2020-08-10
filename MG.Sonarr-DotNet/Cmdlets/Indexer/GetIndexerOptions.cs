@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Functionality.Strings;
+﻿using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Management.Automation;
@@ -14,7 +14,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            IndexerOptions options = base.SendSonarrGet<IndexerOptions>(ApiEndpoints.IndexerOptions);
+            IndexerOptions options = base.SendSonarrGet<IndexerOptions>(Endpoint.IndexerOptions);
             base.SendToPipeline(options);
         }
 

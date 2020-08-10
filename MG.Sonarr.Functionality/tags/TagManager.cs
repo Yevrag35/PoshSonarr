@@ -6,6 +6,7 @@ using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MG.Sonarr.Functionality.Tags
@@ -15,8 +16,8 @@ namespace MG.Sonarr.Functionality.Tags
         #region FIELDS/CONSTANTS
         private bool _disposed;
 
-        public string Endpoint { get; } = ApiEndpoints.Tag;
-        private string ID_END;
+        internal Endpoint Endpoint { get; }
+        string ITagManager.Endpoint => this.Endpoint.AsString();
         private ISonarrClient _client;
 
         #endregion
@@ -30,16 +31,11 @@ namespace MG.Sonarr.Functionality.Tags
         #region CONSTRUCTORS
         private TagManager(ISonarrClient restClient, bool addApi)
         {
+            Endpoint ep = Endpoint.Tag;
             if (restClient.IsAuthenticated)
             {
-                if (addApi)
-                {
-                    this.Endpoint = "/api" + ApiEndpoints.Tag;
-                }
-                ID_END = this.Endpoint + ApiEndpoints.BY_ID;
-
+                this.Endpoint = ep.WithPrefix(addApi);
                 _client = restClient;
-                //this.LoadTags();
             }
             else
                 throw new ArgumentException("The specified rest client is not properly authenticated.");
@@ -62,17 +58,29 @@ namespace MG.Sonarr.Functionality.Tags
             return manager;
         }
 
+        public async Task ReloadAsync()
+        {
+            HashSet<Tag> newSet = await this.LoadTagsAsync().ConfigureAwait(false);
+            if (! newSet.SetEquals(this.AllTags))
+            {
+                this.AllTags.UnionWith(newSet);
+                this.AllTags.RemoveWhere(x => !newSet.Contains(x));
+                this.AllTags.TrimExcess();
+            }
+            newSet.Clear();
+        }
+
         #region TAG LOCATION METHODS
 
         public bool Exists(int tagId) => this.AllTags.Contains(tagId);
         public bool Exists(string tagLabel, StringComparison comparison = StringComparison.CurrentCulture) =>
-            this.AllTags.Contains(x => x.Label.Equals(tagLabel, comparison));
+            this.AllTags.Any(x => x.Label.Equals(tagLabel, comparison));
 
         public int GetId(string tagLabel, StringComparison comparison = StringComparison.CurrentCulture) =>
             this.GetTag(tagLabel, comparison).Id;
         public string GetLabel(int tagId) => this.GetTag(tagId)?.Label;
 
-        public Tag GetTag(int id) => this.AllTags.Find(x => x.Id == id);
+        public Tag GetTag(int id) => this.AllTags.FirstOrDefault<Tag>(x => x.Id.Equals(id));
         public Tag GetTag(object idOrLabel)
         {
             Tag result = null;
@@ -90,8 +98,8 @@ namespace MG.Sonarr.Functionality.Tags
             }
             return result;
         }
-        public Tag GetTag(string label, StringComparison comparison = StringComparison.CurrentCulture) => 
-            this.AllTags.Find(x => x.Label.Equals(label, comparison));
+        public Tag GetTag(string label, StringComparison comparison = StringComparison.CurrentCulture) =>
+            this.AllTags.FirstOrDefault<Tag>(x => x.Label.Equals(label, comparison));
 
         public IEnumerable<Tag> GetTags(IEnumerable<int> ids)
         {
@@ -188,7 +196,9 @@ namespace MG.Sonarr.Functionality.Tags
             
             else
             {
-                return this.AllTags.Add(this.CreateTag(label));
+                Tag newTag = this.CreateTag(label);
+                this.AllTags.Add(newTag);
+                return newTag.Id;
             }
         }
         public Tag Edit(int id, string newLabel)
@@ -227,7 +237,7 @@ namespace MG.Sonarr.Functionality.Tags
         }
         private bool RemoveTag(Tag tag)
         {
-            IRestResponse response = _client.DeleteAsJsonAsync(string.Format(ID_END, tag.Id)).GetAwaiter().GetResult();
+            IRestResponse response = _client.DeleteAsJsonAsync(this.Endpoint.WithId(tag.Id)).GetAwaiter().GetResult();
             this.ProcessResponse(response);
             return true;
         }
@@ -243,8 +253,6 @@ namespace MG.Sonarr.Functionality.Tags
             }
             _disposed = true;
         }
-        [Obsolete]
-        private void LoadTags() => this.AllTags = this.LoadTagsAsync().GetAwaiter().GetResult();
         private async Task<TagCollection> LoadTagsAsync()
         {
             IRestListResponse<Tag> response = await _client.GetAsJsonListAsync<Tag>(this.Endpoint).ConfigureAwait(false);

@@ -1,6 +1,7 @@
 ﻿using MG.Api.Json;
 using MG.Api.Rest;
 using MG.Api.Rest.Generic;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Functionality.Exceptions;
 using MG.Sonarr.Results;
 using System;
@@ -123,10 +124,11 @@ namespace MG.Sonarr.Cmdlets
         /// </summary>
         /// <typeparam name="T">The class type to process the result content as.</typeparam>
         /// <param name="endpoint">The API endpoint that the request is sent to.</param>
-        protected T SendSonarrGet<T>(string endpoint) where T : class
+        protected T SendSonarrGet<T>(Endpoint endpoint) where T : class
         {
-            this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
-            IRestResponse<T> response = this.SendSonarrGetAsTask<T>(apiPath).GetAwaiter().GetResult();
+            //this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
+            this.WriteApiDebug(ref endpoint, HttpMethod.Get);
+            IRestResponse<T> response = this.SendSonarrGetAsTask<T>(endpoint).GetAwaiter().GetResult();
             return this.ProcessSingularResponse(response);
         }
 
@@ -136,13 +138,14 @@ namespace MG.Sonarr.Cmdlets
         /// <param name="endpoint">The API endpoint that the request is sent to.</param>
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="HttpRequestException"/>
-        protected string SendSonarrRawGet(string endpoint)
+        protected string SendSonarrRawGet(Endpoint endpoint)
         {
-            this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
-            if (string.IsNullOrWhiteSpace(apiPath))
-                throw new ArgumentNullException("endpoint");
+            this.WriteApiDebug(ref endpoint, HttpMethod.Get);
+            //this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
+            //if (string.IsNullOrWhiteSpace(apiPath))
+            //    throw new ArgumentNullException("endpoint");
 
-            IRestResponse response = this.SendSonarrRawGetAsync(apiPath).GetAwaiter().GetResult();
+            IRestResponse response = this.SendSonarrRawGetAsync(endpoint).GetAwaiter().GetResult();
             if (!response.IsFaulted)
                 return response.Content as string;
 
@@ -186,10 +189,11 @@ namespace MG.Sonarr.Cmdlets
         /// </summary>
         /// <typeparam name="T">The class type to process each result content as.</typeparam>
         /// <param name="endpoint">The API endpoint that the request is sent to.</param>
-        protected List<T> SendSonarrListGet<T>(string endpoint) where T : class
+        protected List<T> SendSonarrListGet<T>(Endpoint endpoint) where T : class
         {
-            this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
-            IRestListResponse<T> response = this.SendSonarrListGetAsTask<T>(apiPath).GetAwaiter().GetResult();
+            //this.WriteApiDebug(endpoint, HttpMethod.Get, out string apiPath);
+            this.WriteApiDebug(ref endpoint, HttpMethod.Get);
+            IRestListResponse<T> response = this.SendSonarrListGetAsTask<T>(endpoint).GetAwaiter().GetResult();
             return this.ProcessMultiResponse(response);
         }
         private Task<IRestResponse<T>> SendSonarrGetAsTask<T>(string apiPath) where T : class
@@ -210,10 +214,11 @@ namespace MG.Sonarr.Cmdlets
         /// <typeparam name="T">The class type to process the result content as.</typeparam>
         /// <param name="endpoint">The API endpoint that the request is sent to.</param>
         /// <param name="payload">A <see langword="class"/> object that is sent in the payload of the request.</param>
-        protected T SendSonarrPost<T>(string endpoint, IJsonObject payload) where T : class
+        protected T SendSonarrPost<T>(Endpoint endpoint, IJsonObject payload) where T : class
         {
-            this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
-            IRestResponse<T> response = this.SendSonarrPostAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
+            //this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
+            this.WriteApiDebug(ref endpoint, HttpMethod.Post, payload);
+            IRestResponse<T> response = this.SendSonarrPostAsTask<T>(endpoint, payload).GetAwaiter().GetResult();
             return this.ProcessSingularResponse(response);
         }
         
@@ -222,10 +227,11 @@ namespace MG.Sonarr.Cmdlets
             return Context.ApiCaller.PostAsJsonAsync<T>(apiPath, payload);
         }
         
-        protected void SendSonarrPostNoData(string endpoint)
+        protected void SendSonarrPostNoData(Endpoint endpoint)
         {
-            this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
-            IRestResponse<string> response = this.SendSonarrPostNoDataAsTask(apiPath).GetAwaiter().GetResult();
+            //this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
+            this.WriteApiDebug(ref endpoint, HttpMethod.Post);
+            IRestResponse<string> response = this.SendSonarrPostNoDataAsTask(endpoint).GetAwaiter().GetResult();
             this.ProcessVoidResponse(response);
 
         }
@@ -234,10 +240,11 @@ namespace MG.Sonarr.Cmdlets
             return Context.ApiCaller.PostAsJsonAsync(apiPath);
         }
 
-        protected List<T> SendSonarrListPost<T>(string endpoint, IJsonObject payload) where T : class
+        protected List<T> SendSonarrListPost<T>(Endpoint endpoint, IJsonObject payload) where T : class
         {
-            this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
-            IRestListResponse<T> response = this.SendSonarrListPostAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
+            //this.WriteApiDebug(endpoint, HttpMethod.Post, out string apiPath);
+            this.WriteApiDebug(ref endpoint, HttpMethod.Post);
+            IRestListResponse<T> response = this.SendSonarrListPostAsTask<T>(endpoint, payload).GetAwaiter().GetResult();
             return this.ProcessMultiResponse(response);
 
         }
@@ -255,16 +262,18 @@ namespace MG.Sonarr.Cmdlets
         /// <typeparam name="T">The class type to process the result content as.</typeparam>
         /// <param name="endpoint">The API endpoint that the request is sent to.</param>
         /// <param name="payload">A <see langword="class"/> object that is sent in the payload of the request.</param>
-        protected T SendSonarrPut<T>(string endpoint, IJsonObject payload) where T : class
+        protected T SendSonarrPut<T>(Endpoint endpoint, IJsonObject payload) where T : class
         {
-            this.WriteApiDebug(endpoint, HttpMethod.Put, out string apiPath);
-            IRestResponse<T> response = this.SendSonarrPutAsTask<T>(apiPath, payload).GetAwaiter().GetResult();
+            //this.WriteApiDebug(endpoint, HttpMethod.Put, out string apiPath);
+            this.WriteApiDebug(ref endpoint, HttpMethod.Put);
+            IRestResponse<T> response = this.SendSonarrPutAsTask<T>(endpoint, payload).GetAwaiter().GetResult();
             return this.ProcessSingularResponse(response);
         }
-        protected object SendSonarrPut(string endpoint, IJsonObject payload, Type objectType)
+        protected object SendSonarrPut(Endpoint endpoint, IJsonObject payload, Type objectType)
         {
-            this.WriteApiDebug(endpoint, HttpMethod.Put, out string apiPath);
-            IRestResponse response = this.SendSonarrPutAsTask(apiPath, payload, objectType).GetAwaiter().GetResult();
+            //this.WriteApiDebug(endpoint, HttpMethod.Put, out string apiPath);
+            this.WriteApiDebug(ref endpoint, HttpMethod.Put);
+            IRestResponse response = this.SendSonarrPutAsTask(endpoint, payload, objectType).GetAwaiter().GetResult();
             return this.ProcessSingularRepsonse(response);
 
         }
@@ -285,10 +294,11 @@ namespace MG.Sonarr.Cmdlets
         /// Sends a DELETE request to the specified Sonarr endpoint.
         /// </summary>
         /// <param name="endpoint">The API endpoint that the request is sent to.</param>
-        protected void SendSonarrDelete(string endpoint)
+        protected void SendSonarrDelete(Endpoint endpoint)
         {
-            this.WriteApiDebug(endpoint, HttpMethod.Delete, out string apiPath);
-            this.ProcessVoidResponse(this.SendSonarrDeleteAsTask(apiPath).GetAwaiter().GetResult());
+            //this.WriteApiDebug(endpoint, HttpMethod.Delete, out string apiPath);
+            this.WriteApiDebug(ref endpoint, HttpMethod.Delete);
+            this.ProcessVoidResponse(this.SendSonarrDeleteAsTask(endpoint).GetAwaiter().GetResult());
         }
         private Task<IRestResponse> SendSonarrDeleteAsTask(string apiPath)
         {

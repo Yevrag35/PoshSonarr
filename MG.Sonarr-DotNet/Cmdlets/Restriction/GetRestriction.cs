@@ -1,6 +1,6 @@
 ﻿using MG.Dynamic;
 using MG.Posh.Extensions.Bound;
-using MG.Sonarr.Functionality.Strings;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections;
@@ -91,12 +91,11 @@ namespace MG.Sonarr.Cmdlets
             return restrictions.FindAll(r => patterns.Any(w => r.Ignored.Any(inner => w.IsMatch(inner))));
         }
 
-        private List<Restriction> GetAllRestrictions() => base.SendSonarrListGet<Restriction>(ApiEndpoints.Restriction);
+        private List<Restriction> GetAllRestrictions() => base.SendSonarrListGet<Restriction>(Endpoint.Restriction);
 
         private Restriction GetRestrictionById(int id)
         {
-            string endpoint = string.Format(ApiEndpoints.Restriction_ById, id);
-            return base.SendSonarrGet<Restriction>(endpoint);
+            return base.SendSonarrGet<Restriction>(Endpoint.Restriction.WithId(id));
         }
 
         #endregion

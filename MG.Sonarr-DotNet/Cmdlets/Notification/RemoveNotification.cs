@@ -1,4 +1,5 @@
 ﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Management.Automation;
@@ -28,7 +29,7 @@ namespace MG.Sonarr.Cmdlets
                 this.Id = this.InputObject.Id;
 
             if (base.FormatShouldProcess("Remove", "Notification Connection Id: {0}", this.Id))
-                base.SendSonarrDelete(base.FormatWithId(this.Id));
+                base.SendSonarrDelete(Endpoint.Notification.WithId(this.Id));
         }
 
         #endregion

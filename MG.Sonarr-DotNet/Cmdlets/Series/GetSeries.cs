@@ -8,6 +8,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Management.Automation;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -21,6 +22,8 @@ namespace MG.Sonarr.Cmdlets
         internal AnyAllIntSet _anyall;
         private Func<SeriesResult, string> _func;
         internal AnyAllStringSet _genres;
+        private SeriesResult[] _validate;
+
         internal HashSet<int> _ids { get; } = new HashSet<int>();
         internal bool _isDebugging;
         internal bool _isMon;
@@ -129,10 +132,10 @@ namespace MG.Sonarr.Cmdlets
         {
             if (_ids.Count <= 0)
             {
-                IEnumerable<SeriesResult> filtered = base.GetAllSeries(_isDebugging);
+                IEnumerable<SeriesResult> _results = base.GetAllSeries(_isDebugging);
 
-                filtered = this
-                    .FilterByName(filtered)
+                _results = this
+                    .FilterByName(_results)
                         .ThenFilterBy(this,
                             p => p.Tag,
                             c => _anyall.Count > 0,
@@ -198,15 +201,19 @@ namespace MG.Sonarr.Cmdlets
                             m => m.Path,
                             this.Path);
 
-                base.SendToPipeline(filtered);
+                _validate = _results.ToArray();
+                base.SendToPipeline(_validate);
             }
         }
         protected override void EndProcessing()
         {
             if (_ids.Count > 0)
             {
-                base.SendToPipeline(base.GetSeriesById(_ids, _isDebugging));
+                IEnumerable<SeriesResult> _results = base.GetSeriesById(_ids, _isDebugging);
+                _validate = _results.ToArray();
+                base.SendToPipeline(_validate);
             }
+            this.ValidateTags(_validate);
         }
 
         #endregion
@@ -277,6 +284,20 @@ namespace MG.Sonarr.Cmdlets
                         _names.Add(oStr);
                 }
             }
+        }
+
+        private async Task ValidateTags(SeriesResult[] results)
+        {
+            if (results == null || results.Length <= 0)
+                return;
+
+            IEnumerable<int> tags = results.SelectMany(x => x.Tags).Distinct();
+            IEnumerable<Tag> found = Context.TagManager.GetTags(tags);
+            if (!Context.TagManager.AllTags.IsSupersetOf(found))
+            {
+                await Context.TagManager.ReloadAsync();
+            }
+            Array.Clear(results, 0, results.Length);
         }
 
         #endregion

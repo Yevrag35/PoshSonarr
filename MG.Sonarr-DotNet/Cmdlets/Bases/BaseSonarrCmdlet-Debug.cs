@@ -2,6 +2,7 @@
 using MG.Api.Json.Extensions;
 using MG.Api.Rest;
 using MG.Api.Rest.Generic;
+using MG.Posh.Extensions.Bound;
 using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using Newtonsoft.Json;
@@ -27,6 +28,7 @@ namespace MG.Sonarr.Cmdlets
         /// <param name="jsonResult">The JSON string from the response payload.</param>
         /// <param name="code">The status code from the <see cref="HttpResponseMessage"/>.</param>
         /// <param name="showAllDebug">Indicates whether to show the entire JSON response or to only show the status code.</param>
+        [Obsolete]
         protected void WriteApiDebug(string jsonResult, HttpStatusCode code, bool showAllDebug)
         {
             if (this.MyInvocation.BoundParameters.ContainsKey("Debug"))
@@ -51,6 +53,7 @@ namespace MG.Sonarr.Cmdlets
         /// <param name="endpoint">The endpoint Uri string that the <see cref="SonarrRestClient"/> will execute on.</param>
         /// <param name="method">The method that will be used in the API call.</param>
         /// <param name="apiPath">The parsed API uri to be executed on.</param>
+        [Obsolete]
         protected virtual void WriteApiDebug(string endpoint, HttpMethod method, out string apiPath)
         {
             apiPath = Context.SonarrUrl.Path + endpoint;
@@ -65,6 +68,18 @@ namespace MG.Sonarr.Cmdlets
             base.WriteDebug(msg);
         }
 
+        protected void WriteApiDebug(ref Endpoint endpoint, HttpMethod method)
+        {
+            endpoint = endpoint.WithPrefix(Context.SonarrUrl.IncludeApiPrefix);
+            if (this.ContainsBuiltinParameter(BuiltInParameter.Debug))
+            {
+                this.WriteFormatDebug(DEBUG_API_MSG,
+                    method.Method,
+                    Context.SonarrUrl.BaseUrl,
+                    endpoint.AsString());
+            }
+        }
+
         /// <summary>
         /// Displays a bodied API-specific debug message if the DebugPreference is set to show Debug-level messages.
         /// It returns the "to-be-used" API uri string no matter what.
@@ -73,6 +88,7 @@ namespace MG.Sonarr.Cmdlets
         /// <param name="method"></param>
         /// <param name="body"></param>
         /// <param name="apiPath"></param>
+        [Obsolete]
         protected virtual void WriteApiDebug(string endpoint, HttpMethod method, string body, out string apiPath)
         {
             apiPath = Context.SonarrUrl.Path + endpoint;
@@ -89,15 +105,29 @@ namespace MG.Sonarr.Cmdlets
             base.WriteDebug(msg);
         }
 
+        protected void WriteApiDebug(ref Endpoint endpoint, HttpMethod method, IJsonObject payload)
+        {
+            endpoint = endpoint.WithPrefix(Context.SonarrUrl.IncludeApiPrefix);
+            if (this.ContainsBuiltinParameter(BuiltInParameter.Debug))
+            {
+                this.WriteFormatDebug(DEBUG_API_AND_BODY_MSG,
+                    method.Method,
+                    Context.SonarrUrl.BaseUrl,
+                    endpoint.AsString(),
+                    Environment.NewLine,
+                    payload.ToJson());
+            }
+        }
+
         #endregion
 
         #region FORMAT DEBUG/VERBOSE METHODS
-        protected internal void WriteFormatDebug(string format, params object[] arguments)
+        protected void WriteFormatDebug(string format, params object[] arguments)
         {
             base.WriteDebug(string.Format(format, arguments));
         }
 
-        protected internal void WriteFormatVerbose(string format, params object[] arguments)
+        protected void WriteFormatVerbose(string format, params object[] arguments)
         {
             base.WriteVerbose(string.Format(format, arguments));
         }

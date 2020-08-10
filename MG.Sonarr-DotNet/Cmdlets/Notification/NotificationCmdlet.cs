@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,10 +7,9 @@ using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
 {
-    public abstract class NotificationCmdlet : BaseIdEndpointCmdlet
+    public abstract class NotificationCmdlet : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        protected override string Endpoint => "/notification";
 
         #endregion
 
@@ -26,15 +26,15 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         protected private bool TryGetAllNotifications(out List<Notification> allNotifs)
         {
-            allNotifs = base.SendSonarrListGet<Notification>(this.Endpoint);
+            allNotifs = base.SendSonarrListGet<Notification>(Endpoint.Notification);
             return allNotifs != null && allNotifs.Count > 0;
         }
         protected private IEnumerable<Notification> GetNotificationsById(int[] ids)
         {
+            Endpoint ep = Endpoint.Notification;
             foreach (int oneId in ids)
             {
-                string endpoint = base.FormatWithId(oneId);
-                Notification oneNotif = base.SendSonarrGet<Notification>(endpoint);
+                Notification oneNotif = base.SendSonarrGet<Notification>(ep.WithId(oneId));
                 if (oneNotif != null)
                     yield return oneNotif;
             }

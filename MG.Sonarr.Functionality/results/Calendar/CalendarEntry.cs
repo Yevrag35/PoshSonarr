@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Url;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
@@ -10,6 +12,8 @@ namespace MG.Sonarr.Results
     [JsonObject(MemberSerialization.OptIn)]
     public class CalendarEntry : BaseResult, IAdditionalInfo, IComparable<CalendarEntry>, IEquatable<CalendarEntry>
     {
+        public const string Calendar_DTFormat = "yyyy-MM-ddTHH:mm:ss";
+
         [JsonExtensionData]
         private IDictionary<string, JToken> _additionalData;
 
@@ -118,6 +122,14 @@ namespace MG.Sonarr.Results
                 ht.Add("Series", series);
             }
             return ht;
+        }
+        public static IUrlParameter[] GetStartEndParameters(string start, string end)
+        {
+            return new IUrlParameter[2]
+            {
+                new UrlParameter("start", start),
+                new UrlParameter("end", end)
+            };
         }
         public SeriesResult GetSeries()
         {

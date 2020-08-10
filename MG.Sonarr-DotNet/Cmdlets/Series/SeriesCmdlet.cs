@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,10 +7,9 @@ using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
 {
-    public abstract class SeriesCmdlet : BaseIdEndpointCmdlet
+    public abstract class SeriesCmdlet : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        protected override string Endpoint => "/series";
 
         #endregion
 
@@ -21,10 +21,11 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         protected private List<SeriesResult> GetAllSeries(bool debugging)
         {
+            Endpoint ep = Endpoint.Series;
             if (!debugging)
-                base.WriteFormatVerbose("Retrieving all series from {0}.", this.Endpoint);
+                base.WriteFormatVerbose("Retrieving all series from {0}.", ep.AsString());
 
-            List<SeriesResult> allSeries = base.SendSonarrListGet<SeriesResult>(this.Endpoint);
+            List<SeriesResult> allSeries = base.SendSonarrListGet<SeriesResult>(ep);
 
             if (debugging)
                 base.WriteFormatVerbose("Found {0} series.", allSeries.Count);
@@ -34,9 +35,10 @@ namespace MG.Sonarr.Cmdlets
 
         protected private IEnumerable<SeriesResult> GetSeriesById(IEnumerable<int> ids, bool debugging)
         {
+            Endpoint ep = Endpoint.Series;
             foreach (int id in ids)
             {
-                SeriesResult sr = base.SendSonarrGet<SeriesResult>(base.FormatWithId(id));
+                SeriesResult sr = base.SendSonarrGet<SeriesResult>(ep.WithId(id));
                 if (sr != null)
                 {
                     if (debugging)

@@ -76,7 +76,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cmdlets\Bases\BaseEndpointCmdlet.cs" />
-    <Compile Include="Cmdlets\Bases\BaseIdEndpointCmdlet.cs" />
     <Compile Include="Cmdlets\Bases\BasePostCommandCmdlet.cs" />
     <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet-API.cs" />
     <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet-Debug.cs" />

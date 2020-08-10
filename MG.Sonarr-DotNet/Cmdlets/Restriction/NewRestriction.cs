@@ -1,12 +1,10 @@
 ﻿using MG.Dynamic;
 using MG.Posh.Extensions.Bound;
-using MG.Sonarr.Functionality.Tags;
-using MG.Sonarr.Functionality.Extensions;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Management.Automation;
 using System.Linq;
-using MG.Sonarr.Functionality.Strings;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -66,7 +64,7 @@ namespace MG.Sonarr.Cmdlets
 
             if (base.ShouldProcess(string.Format(SHOULD_MSG, newRestrict.Ignored.ToJson(), newRestrict.Required.ToJson()), "New"))
             {
-                Restriction restriction = base.SendSonarrPost<Restriction>(ApiEndpoints.Restriction, newRestrict);
+                Restriction restriction = base.SendSonarrPost<Restriction>(Endpoint.Restriction, newRestrict);
                 base.SendToPipeline(restriction);
             }
         }

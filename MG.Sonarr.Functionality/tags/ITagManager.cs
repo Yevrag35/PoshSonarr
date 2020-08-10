@@ -2,6 +2,7 @@
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MG.Sonarr.Functionality
 {
@@ -9,6 +10,8 @@ namespace MG.Sonarr.Functionality
     {
         ITagCollection AllTags { get; }
         string Endpoint { get; }
+
+        Task ReloadAsync();
 
         int AddNew(string label);
         Tag Edit(int id, string newLabel);

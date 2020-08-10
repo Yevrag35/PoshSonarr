@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MG.Sonarr.Functionality;
+using System;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
@@ -6,7 +7,7 @@ namespace MG.Sonarr.Cmdlets
     public abstract class BaseEndpointCmdlet : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        protected abstract string Endpoint { get; }
+        protected abstract Endpoint Endpoint { get; }
 
         #endregion
 

@@ -15,7 +15,7 @@ namespace MG.Sonarr.Cmdlets
     public class GetBackup : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string EP = "/system/backup";
+
 
         #endregion
 
@@ -30,7 +30,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            List<Backup> allBackups = base.SendSonarrListGet<Backup>(EP);
+            List<Backup> allBackups = base.SendSonarrListGet<Backup>(Endpoint.Backup);
             base.SendToPipeline(this.Filter(allBackups));
         }
 

@@ -1,14 +1,15 @@
-﻿using MG.Sonarr.Functionality.Collections;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Collections;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MG.Sonarr.Cmdlets
 {
-    public abstract class TagCmdlet : BaseIdEndpointCmdlet
+    public abstract class TagCmdlet : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        protected override string Endpoint => "/tag";
 
         private const string PARAM_ID = "id";
         private const string PARAM_LBL = "label";
@@ -23,12 +24,7 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         protected IEnumerable<Tag> GetTagById(IEnumerable<int> ids)
         {
-            foreach (int id in ids)
-            {
-                Tag oneTag = base.SendSonarrGet<Tag>(base.FormatWithId(id));
-                if (oneTag != null)
-                    yield return oneTag;
-            }
+            return Context.TagManager.GetTags(ids);
         }
 
         private SonarrBodyParameters GetBody(int tagId, string tagLabel)

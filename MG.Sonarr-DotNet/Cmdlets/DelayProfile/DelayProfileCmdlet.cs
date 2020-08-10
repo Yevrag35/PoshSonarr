@@ -7,10 +7,9 @@ using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
 {
-    public abstract class DelayProfileCmdlet : BaseIdEndpointCmdlet
+    public abstract class DelayProfileCmdlet : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        protected override string Endpoint => "/delayprofile";
 
         #endregion
 
@@ -20,19 +19,20 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region BACKEND METHODS
-        protected private List<DelayProfile> GetAllDelayProfiles() => base.SendSonarrListGet<DelayProfile>(this.Endpoint);
+        protected private List<DelayProfile> GetAllDelayProfiles() => base.SendSonarrListGet<DelayProfile>(Endpoint.DelayProfile);
         protected private IEnumerable<DelayProfile> GetDelayProfileByIds(IEnumerable<int> ids)
         {
+            Endpoint ep = Endpoint.DelayProfile;
             foreach (int id in ids)
             {
-                DelayProfile oneProf = base.SendSonarrGet<DelayProfile>(base.FormatWithId(id));
+                DelayProfile oneProf = base.SendSonarrGet<DelayProfile>(ep.WithId(id));
                 if (oneProf != null)
                     yield return oneProf;
             }
         }
         protected private bool TryGetDelayProfileById(int id, out DelayProfile foundProfile)
         {
-            foundProfile = base.SendSonarrGet<DelayProfile>(base.FormatWithId(id));
+            foundProfile = base.SendSonarrGet<DelayProfile>(Endpoint.DelayProfile.WithId(id));
             return foundProfile != null;
         }
 

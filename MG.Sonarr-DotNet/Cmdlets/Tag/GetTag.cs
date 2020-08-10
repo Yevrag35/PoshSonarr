@@ -5,6 +5,7 @@ using MG.Sonarr.Functionality.Collections;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
@@ -60,13 +61,13 @@ namespace MG.Sonarr.Cmdlets
         {
             if (_ids.Count <= 0 && base.TryGetAllTags(out ITagCollection allTags))
             {
-                allTags.Sort();
-                base.SendToPipeline(base.FilterByStringParameter(allTags, t => t.Label, this, cmd => cmd._labels));
+                base.SendToPipeline(base.FilterByStringParameter(allTags, t => t.Label, this, cmd => cmd._labels).OrderBy(x => x.Id));
             }
             else if (_ids.Count > 0)
             {
-                base.SendToPipeline(base.GetTagById(_ids));
+                base.SendToPipeline(base.GetTagById(_ids).OrderBy(x => x.Id));
             }
+            Context.TagManager.ReloadAsync();
         }
 
         #endregion

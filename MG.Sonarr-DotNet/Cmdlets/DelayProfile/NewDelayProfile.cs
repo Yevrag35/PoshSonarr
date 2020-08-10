@@ -67,7 +67,7 @@ namespace MG.Sonarr.Cmdlets
             base.WriteDebug(post.ToJson());
             if (base.ShouldProcess("DelayProfile", "New"))
             {
-                DelayProfile dp = base.SendSonarrPost<DelayProfile>(base.Endpoint, post);
+                DelayProfile dp = base.SendSonarrPost<DelayProfile>(Endpoint.DelayProfile, post);
                 base.SendToPipeline(dp);
             }
         }

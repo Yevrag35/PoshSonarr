@@ -7,9 +7,9 @@ namespace MG.Sonarr.Functionality.Strings
     /// <summary>
     /// A static class of <see cref="string"/> constants that denote the various Sonarr endpoint paths used by this assembly.
     /// </summary>
-    public static class ApiEndpoints
+    internal static class ApiEndpoints
     {
-        internal const string CONFIG = "/config";
+        private const string CONFIG = "/config";
         internal const string BY_ID = "/{0}";
 
         public const string Backup = System + "/backup";
@@ -50,7 +50,7 @@ namespace MG.Sonarr.Functionality.Strings
         public const string WantedMissing = "/wanted/missing";
 
         // Calendar - Extra paths
-        public const string Calendar_DTFormat = "yyyy-MM-ddTHH:mm:ss";
+        
         public const string Calendar_WithDate = Calendar + "?start={0}&end={1}";
 
         // Command - Extra paths
