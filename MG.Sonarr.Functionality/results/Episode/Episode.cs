@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Url;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -47,6 +48,8 @@ namespace MG.Sonarr.Results
         }
         public bool Equals(EpisodeResult other) => this.EpisodeId.Equals(other.EpisodeId);
         public static IComparer<EpisodeResult> GetComparer() => new EpisodeComparer();
+
+        public static IUrlParameter GetSeriesIdParameter(int seriesId) => new UrlParameter("seriesId", seriesId);
 
         private class EpisodeComparer : IComparer<EpisodeResult>
         {

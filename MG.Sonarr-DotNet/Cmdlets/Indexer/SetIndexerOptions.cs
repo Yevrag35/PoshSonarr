@@ -1,5 +1,5 @@
 ﻿using MG.Posh.Extensions.Bound;
-using MG.Sonarr.Functionality.Strings;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Management.Automation;
@@ -53,7 +53,7 @@ namespace MG.Sonarr.Cmdlets
         {
             if (!this.ContainsParameter(x => x.InputObject))
             {
-                this.InputObject = base.SendSonarrGet<IndexerOptions>(ApiEndpoints.IndexerOptions);
+                this.InputObject = base.SendSonarrGet<IndexerOptions>(Endpoint.IndexerOptions);
             }
 
             if (this.ContainsParameter(x => x.MaximumSize))
@@ -79,7 +79,7 @@ namespace MG.Sonarr.Cmdlets
 
             if (_changed && base.ShouldProcess("Indexer Options", "Set"))
             {
-                IndexerOptions changed = base.SendSonarrPut<IndexerOptions>(ApiEndpoints.IndexerOptions, this.InputObject);
+                IndexerOptions changed = base.SendSonarrPut<IndexerOptions>(Endpoint.IndexerOptions, this.InputObject);
                 if (_passThru)
                     base.SendToPipeline(changed);
             }

@@ -1,6 +1,6 @@
 ﻿using MG.Posh.Extensions.Bound;
 using MG.Sonarr.Functionality;
-using MG.Sonarr.Functionality.Strings;
+using MG.Sonarr.Functionality.Collections;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
@@ -96,6 +96,7 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
+            Endpoint ep = Endpoint.Episode;
             var epList = new HashSet<EpisodeResult>();
             if (this.ContainsParameter(x => x.Id))
             {
@@ -109,9 +110,7 @@ namespace MG.Sonarr.Cmdlets
                 List<EpisodeResult> allEps = new List<EpisodeResult>(24);
                 foreach (int sid in this.SeriesId)
                 {
-                    allEps.AddRange(base.SendSonarrListGet<EpisodeResult>(
-                        string.Format(ApiEndpoints.Episode_SeriesId, sid)
-                    ));
+                    allEps.AddRange(base.SendSonarrListGet<EpisodeResult>(ep.WithQuery(EpisodeResult.GetSeriesIdParameter(sid))));
                 }
 
                 if (_identifier != null)
@@ -152,8 +151,7 @@ namespace MG.Sonarr.Cmdlets
         {
             foreach (long id in epIds)
             {
-                string uri = string.Format(ApiEndpoints.Episode_ById, id);
-                EpisodeResult epRes = base.SendSonarrGet<EpisodeResult>(uri);
+                EpisodeResult epRes = base.SendSonarrGet<EpisodeResult>(Endpoint.Episode.WithId(id));
                 if (epRes != null)
                     addToSet.Add(epRes);
             }

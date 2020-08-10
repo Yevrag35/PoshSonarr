@@ -1,4 +1,5 @@
 ﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Results;
 using System;
@@ -57,11 +58,12 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void EndProcessing()
         {
+            Endpoint ep = Endpoint.DownloadClient;
             foreach (int id in _ids)
             {
                 if (_force || base.FormatShouldProcess("Remove", "Download Client Id: {0}", id))
                 {
-                    base.SendSonarrDelete(string.Format(ApiEndpoints.DownloadClient_ById, id));
+                    base.SendSonarrDelete(ep.WithId(id));
                 }
             }
         }

@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Functionality.Jobs;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Jobs;
 using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Results;
 using System;
@@ -84,8 +85,7 @@ namespace MG.Sonarr.Cmdlets.Commands
         {
             foreach (IPastJob ipj in History.Jobs.Where(x => !x.Ended.HasValue))
             {
-                string endpoint = string.Format(ApiEndpoints.Command_ById, ipj.Id);
-                CommandResult cr = base.SendSonarrGet<CommandResult>(endpoint);
+                CommandResult cr = base.SendSonarrGet<CommandResult>(Endpoint.Command.WithId(ipj.Id));
                 if (cr != null)
                     yield return cr;
             }

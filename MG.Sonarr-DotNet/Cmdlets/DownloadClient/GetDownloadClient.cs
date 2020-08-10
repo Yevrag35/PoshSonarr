@@ -64,9 +64,10 @@ namespace MG.Sonarr.Cmdlets
             }
             else
             {
+                Endpoint ep = Endpoint.DownloadClient;
                 for (int i = 0; i < this.Id.Length; i++)
                 {
-                    DownloadClient dlc = base.SendSonarrGet<DownloadClient>(string.Format(ApiEndpoints.DownloadClient_ById, this.Id[i]));
+                    DownloadClient dlc = base.SendSonarrGet<DownloadClient>(ep.WithId(this.Id[i]));
                     base.SendToPipeline(dlc);
                 }
             }

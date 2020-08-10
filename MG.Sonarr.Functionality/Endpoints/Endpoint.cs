@@ -122,6 +122,11 @@ namespace MG.Sonarr.Functionality
 
             return endpoint;
         }
+        public static Endpoint WithQuery(this Endpoint endpoint, params IUrlParameter[] parameters)
+        {
+            var col = new UrlParameterCollection(parameters);
+            return WithQuery(endpoint, col);
+        }
         public static Endpoint WithQuery(this Endpoint endpoint, IUrlParameterCollection queryParameters)
         {
             endpoint.Query = queryParameters.ToQueryString();

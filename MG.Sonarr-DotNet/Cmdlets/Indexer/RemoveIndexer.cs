@@ -1,5 +1,5 @@
 ﻿using MG.Posh.Extensions.Bound;
-using MG.Sonarr.Functionality.Strings;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
@@ -53,7 +53,7 @@ namespace MG.Sonarr.Cmdlets
             {
                 if (_force || base.FormatShouldProcess("Remove", "Indexer Id: {0}", id))
                 {
-                    base.SendSonarrDelete(string.Format(ApiEndpoints.Indexer_ById, id));
+                    base.SendSonarrDelete(Endpoint.Indexer.WithId(id));
                 }
             }
         }
