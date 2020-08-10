@@ -102,50 +102,6 @@ namespace MG.Sonarr.Results
                 return null;
         }
 
-        //public IDictionary GetAdditionalInfo()
-        //{
-        //    var ht = new Hashtable();
-
-        //    if (this.TryGetValue("episodeFile", out EpisodeResult sonarrEp))
-        //    {
-        //        ht.Add("EpisodeFile", sonarrEp);
-        //    }
-        //    if (this.TryGetValue("episodeFileId", out long id))
-        //    {
-        //        ht.Add("EpisodeFileId", id);
-        //    }
-        //    if (this.TryGetValue("seasonNumber", out long sn))
-        //    {
-        //        ht.Add("SeasonNumber", sn);
-        //    }
-        //    if (this.TryGetValue("series", out SeriesResult series))
-        //    {
-        //        ht.Add("Series", series);
-        //    }
-        //    return ht;
-        //}
-
-        //private bool TryGetValue<T>(string key, out T value)
-        //{
-        //    value = default;
-        //    bool result = false;
-        //    if (_additionalData.ContainsKey(key))
-        //    {
-        //        JToken jtok = _additionalData[key];
-        //        if (jtok != null)
-        //        {
-        //            try
-        //            {
-        //                value = jtok.ToObject<T>();
-        //                result = true;
-        //            }
-        //            catch { }
-        //        }
-        //    }
-
-        //    return result;
-        //}
-
         #endregion
     }
 }
