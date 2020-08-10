@@ -58,6 +58,12 @@ namespace MG.Sonarr.Functionality.Tags
             return manager;
         }
 
+        public async Task ReloadAsync()
+        {
+            this.AllTags.Clear();
+            this.AllTags = await this.LoadTagsAsync().ConfigureAwait(false);
+        }
+
         #region TAG LOCATION METHODS
 
         public bool Exists(int tagId) => this.AllTags.Contains(tagId);

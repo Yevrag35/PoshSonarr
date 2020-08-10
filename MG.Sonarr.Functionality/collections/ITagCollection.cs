@@ -7,14 +7,9 @@ namespace MG.Sonarr.Functionality.Collections
     /// <summary>
     /// An interface exposing <see cref="IEnumerable{T}"/> methods, indexing, and a count of <see cref="Tag"/> instances.
     /// </summary>
-    public interface ITagCollection : IEnumerable<Tag>
+    public interface ITagCollection : IReadOnlyCollection<Tag>
     {
         Tag this[int index] { get; }
-
-        /// <summary>
-        /// The number of <see cref="Tag"/> elements the current collection holds.
-        /// </summary>
-        int Count { get; }
 
         /// <summary>
         /// Returns whether or not the current collection contains a <see cref="Tag"/> whose

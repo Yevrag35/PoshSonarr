@@ -33,4 +33,25 @@ namespace MG.Sonarr.Results
         public bool Equals(Tag other) => this.Id.Equals(other.Id);
         public override int GetHashCode() => this.Id.GetHashCode();
     }
+
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
+    public struct TagItem : IComparable<TagItem>, IEquatable<TagItem>
+    {
+        [JsonProperty("id")]
+        private int _id;
+        [JsonProperty("label")]
+        private string _label;
+
+        public int Id => _id;
+        public string Label => _label;
+
+        internal TagItem(int id, string label)
+        {
+            _id = id;
+            _label = label;
+        }
+
+        public int CompareTo(TagItem other) => this.Id.CompareTo(other.Id);
+        public bool Equals(TagItem other) => this.Id.Equals(other.Id);
+    }
 }
