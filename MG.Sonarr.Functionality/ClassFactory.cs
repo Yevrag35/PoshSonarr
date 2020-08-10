@@ -110,6 +110,18 @@ namespace MG.Sonarr.Functionality
         /// </summary>
         public static IJobHistory NewJobHistory() => new JobHistoryRepository();
 
+        public static string GetSortDirectionValue(SortDirection direction)
+        {
+            switch (direction)
+            {
+                case SortDirection.Ascending:
+                    return "asc";
+
+                default:
+                    return "desc";
+            }
+        }
+
         #endregion
     }
 }

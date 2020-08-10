@@ -5,7 +5,7 @@ namespace MG.Sonarr.Functionality.Url
     /// <summary>
     /// A URL query parameter for paging log results.
     /// </summary>
-    public class PagingParameter : IUrlParameter
+    public struct PagingParameter : IUrlParameter
     {
         public const int DefaultPage = 1;
         public const int DefaultPageSize = 10;
@@ -58,8 +58,8 @@ namespace MG.Sonarr.Functionality.Url
         /// <param name="pageSize">The number of results returned on 1 page.</param>
         public PagingParameter(int pageNumber = DefaultPage, int pageSize = DefaultPageSize)
         {
-            this.Key = pageNumber;
-            this.Value = pageSize;
+            _key = pageNumber;
+            _val = pageSize;
         }
 
         public string AsString()

@@ -5,27 +5,39 @@ namespace MG.Sonarr.Functionality.Url
     /// <summary>
     /// A filter parameter used in a <see cref="Uri"/> query path.
     /// </summary>
-    public class FilterLogParameter : IUrlParameter
+    public struct FilterLogParameter : IUrlParameter
     {
+        private string _key;
+        private IConvertible _value;
+
         /// <summary>
         /// The 'filterKey' of the query parameter.
         /// </summary>
-        public IConvertible Key { get; set; }
+        public string Key
+        {
+            get => _key;
+            set => _key = value;
+        }
+        IConvertible IUrlParameter.Key => this.Key;
 
         /// <summary>
         /// The 'filterValue' of the query parameter.
         /// </summary>
-        public IConvertible Value { get; set; }
+        public IConvertible Value
+        {
+            get => _value;
+            set => _value = value;
+        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="FilterLogParameter"/> with the given key and value.
         /// </summary>
         /// <param name="key">The 'filterKey' used in the query parameter.</param>
         /// <param name="value">The 'filterValue' used in the query parameter.</param>
-        public FilterLogParameter(IConvertible key, IConvertible value)
+        public FilterLogParameter(string key, IConvertible value)
         {
-            this.Key = key;
-            this.Value = value;
+            _key = key;
+            _value = value;
         }
 
         public string AsString()
