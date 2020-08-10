@@ -24,15 +24,10 @@ namespace MG.Sonarr.Functionality.Collections
         /// <param name="tag">The tag to search for.</param>
         bool Contains(Tag tag);
 
-        ///// <summary>
-        ///// Sorts the elements of this collection using the default sort comparer of <see cref="Tag"/>.
-        ///// </summary>
-        //void Sort();
+        bool IsSubsetOf(IEnumerable<Tag> other);
+        bool IsSupersetOf(IEnumerable<Tag> other);
+        bool Overlaps(IEnumerable<Tag> other);
+        bool SetEquals(IEnumerable<Tag> other);
 
-        ///// <summary>
-        ///// Sorts the elements of this collection using the specified comparer.
-        ///// </summary>
-        ///// <param name="comparer">The comparer used to sort the collection by.</param>
-        //void Sort(IComparer<Tag> comparer);
     }
 }

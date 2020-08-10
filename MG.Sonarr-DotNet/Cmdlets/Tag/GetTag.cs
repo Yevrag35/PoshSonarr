@@ -59,7 +59,6 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void EndProcessing()
         {
-            Context.TagManager.ReloadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
             if (_ids.Count <= 0 && base.TryGetAllTags(out ITagCollection allTags))
             {
                 base.SendToPipeline(base.FilterByStringParameter(allTags, t => t.Label, this, cmd => cmd._labels).OrderBy(x => x.Id));
@@ -68,6 +67,7 @@ namespace MG.Sonarr.Cmdlets
             {
                 base.SendToPipeline(base.GetTagById(_ids).OrderBy(x => x.Id));
             }
+            Context.TagManager.ReloadAsync();
         }
 
         #endregion

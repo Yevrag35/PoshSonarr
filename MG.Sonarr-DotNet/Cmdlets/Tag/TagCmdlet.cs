@@ -3,6 +3,7 @@ using MG.Sonarr.Functionality.Collections;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MG.Sonarr.Cmdlets
 {
@@ -23,15 +24,7 @@ namespace MG.Sonarr.Cmdlets
         #region BACKEND METHODS
         protected IEnumerable<Tag> GetTagById(IEnumerable<int> ids)
         {
-            Endpoint ep = Endpoint.Tag;
-            foreach (int id in ids)
-            {
-                Tag oneTag = base.SendSonarrGet<Tag>(ep.WithId(id));
-                if (oneTag != null)
-                {
-                    yield return oneTag;
-                }
-            }
+            return Context.TagManager.GetTags(ids);
         }
 
         private SonarrBodyParameters GetBody(int tagId, string tagLabel)

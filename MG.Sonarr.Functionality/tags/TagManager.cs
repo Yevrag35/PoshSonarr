@@ -67,6 +67,7 @@ namespace MG.Sonarr.Functionality.Tags
                 this.AllTags.RemoveWhere(x => !newSet.Contains(x));
                 this.AllTags.TrimExcess();
             }
+            newSet.Clear();
         }
 
         #region TAG LOCATION METHODS
@@ -79,7 +80,7 @@ namespace MG.Sonarr.Functionality.Tags
             this.GetTag(tagLabel, comparison).Id;
         public string GetLabel(int tagId) => this.GetTag(tagId)?.Label;
 
-        public Tag GetTag(int id) => this.AllTags.SingleOrDefault(x => x.Id.Equals(id));
+        public Tag GetTag(int id) => this.AllTags.FirstOrDefault<Tag>(x => x.Id.Equals(id));
         public Tag GetTag(object idOrLabel)
         {
             Tag result = null;
@@ -97,8 +98,8 @@ namespace MG.Sonarr.Functionality.Tags
             }
             return result;
         }
-        public Tag GetTag(string label, StringComparison comparison = StringComparison.CurrentCulture) => 
-            this.AllTags.SingleOrDefault(x => x.Label.Equals(label, comparison));
+        public Tag GetTag(string label, StringComparison comparison = StringComparison.CurrentCulture) =>
+            this.AllTags.FirstOrDefault<Tag>(x => x.Label.Equals(label, comparison));
 
         public IEnumerable<Tag> GetTags(IEnumerable<int> ids)
         {

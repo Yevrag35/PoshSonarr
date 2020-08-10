@@ -43,7 +43,7 @@ namespace MG.Sonarr.Functionality.Collections
         //internal void RemoveAll(Predicate<Tag> match) => this.InnerList.RemoveAll(match);
         internal void SetTag(int tagId, string newLabel)
         {
-            Tag tag = this.SingleOrDefault(x => x.Id.Equals(tagId));
+            Tag tag = this.FirstOrDefault<Tag>(x => x.Id.Equals(tagId));
             if (tag != null)
                 tag.Label = newLabel;
         }
