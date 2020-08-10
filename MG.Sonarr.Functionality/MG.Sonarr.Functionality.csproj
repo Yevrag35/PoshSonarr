@@ -17,6 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="converters\HistoryDataConverter.cs" />
     <Compile Remove="collections\TagSet.cs" />
     <Compile Remove="converters\HistoryDataConverter.cs" />
     <Compile Remove="dateFormats\DateFormatAttribute.cs" />
