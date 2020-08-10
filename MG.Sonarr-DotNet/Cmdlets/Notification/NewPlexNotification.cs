@@ -1,4 +1,5 @@
 ﻿using MG.Posh.Extensions.Bound;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Management.Automation;
@@ -107,7 +108,7 @@ namespace MG.Sonarr.Cmdlets
                 }
                 this.SetNotificationOptions(notif);
                 base.WriteDebug(notif.ToJson());
-                Notification createdNotif = base.SendSonarrPost<Notification>(base.Endpoint, notif);
+                Notification createdNotif = base.SendSonarrPost<Notification>(Endpoint.Notification, notif);
                 base.SendToPipeline(createdNotif);
             }
         }

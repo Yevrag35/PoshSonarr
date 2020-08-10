@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Results;
 using System;
 using System.Management.Automation;
 
@@ -35,7 +36,7 @@ namespace MG.Sonarr.Cmdlets
         {
             if (base.FormatShouldProcess("Update", "Notification Id: {0}", this.InputObject.Id))
             {
-                Notification updated = base.SendSonarrPut<Notification>(this.Endpoint, this.InputObject);
+                Notification updated = base.SendSonarrPut<Notification>(Endpoint.Notification, this.InputObject);
                 if (_passThru)
                     base.SendToPipeline(updated);
             }

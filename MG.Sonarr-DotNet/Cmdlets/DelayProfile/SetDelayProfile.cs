@@ -77,7 +77,7 @@ namespace MG.Sonarr.Cmdlets
                 else
                 {
                     base.ThrowTerminatingError(new ErrorRecord(new ArgumentException(string.Format("No DelayProfile with an ID of {0} exists.", this.Id)),
-                        "DelayProfileNotFound", ErrorCategory.ObjectNotFound, base.FormatWithId(this.Id)));
+                        "DelayProfileNotFound", ErrorCategory.ObjectNotFound, null));
                 }
             }
         }
@@ -88,7 +88,7 @@ namespace MG.Sonarr.Cmdlets
             base.WriteDebug(this.InputObject.ToJson());
             if (base.FormatShouldProcess("Set", "DelayProfile Id: {0}", this.InputObject.Id))
             {
-                DelayProfile modified = base.SendSonarrPut<DelayProfile>(base.Endpoint, this.InputObject);
+                DelayProfile modified = base.SendSonarrPut<DelayProfile>(Endpoint.DelayProfile.WithId(this.InputObject.Id), this.InputObject);
                 if (_passThru)
                     base.SendToPipeline(modified);
             }

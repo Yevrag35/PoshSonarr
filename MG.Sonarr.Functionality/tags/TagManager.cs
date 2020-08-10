@@ -17,7 +17,6 @@ namespace MG.Sonarr.Functionality.Tags
 
         internal Endpoint Endpoint { get; }
         string ITagManager.Endpoint => this.Endpoint.AsString();
-        private string ID_END;
         private ISonarrClient _client;
 
         #endregion
@@ -60,8 +59,16 @@ namespace MG.Sonarr.Functionality.Tags
 
         public async Task ReloadAsync()
         {
-            this.AllTags.Clear();
-            this.AllTags = await this.LoadTagsAsync().ConfigureAwait(false);
+            TagCollection newCol = await this.LoadTagsAsync().ConfigureAwait(false);
+            for (int i = 0; i < newCol.Count; i++)
+            {
+                Tag possible = newCol[i];
+                if (!this.AllTags.Contains(possible))
+                {
+                    this.AllTags.Add(possible);
+                }
+            }
+            this.AllTags.RemoveAll(x => !newCol.Contains(x));
         }
 
         #region TAG LOCATION METHODS
@@ -229,7 +236,7 @@ namespace MG.Sonarr.Functionality.Tags
         }
         private bool RemoveTag(Tag tag)
         {
-            IRestResponse response = _client.DeleteAsJsonAsync(string.Format(ID_END, tag.Id)).GetAwaiter().GetResult();
+            IRestResponse response = _client.DeleteAsJsonAsync(this.Endpoint.WithId(tag.Id)).GetAwaiter().GetResult();
             this.ProcessResponse(response);
             return true;
         }

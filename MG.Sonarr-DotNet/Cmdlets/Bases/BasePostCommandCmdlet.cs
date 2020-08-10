@@ -17,8 +17,8 @@ namespace MG.Sonarr.Cmdlets
         //protected private const string BASE_EP = "/command";
         protected private SonarrBodyParameters parameters;
 
-        //protected abstract string Command { get; }
-        protected abstract Endpoint Command { get; }
+        protected abstract string Command { get; }
+        protected Endpoint Endpoint { get; } = Endpoint.Command;
 
         #endregion
 
@@ -50,7 +50,7 @@ namespace MG.Sonarr.Cmdlets
             
             if (this.ContainsBuiltinParameter(BuiltInParameter.Verbose))
             {
-                string verbMsg = string.Format("Issuing command - to {0}", this.Command.AsString());
+                string verbMsg = string.Format("Issuing command - {0} to {1}", this.Command, this.Endpoint.AsString());
                 base.WriteVerbose(verbMsg);
             }
 

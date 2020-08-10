@@ -40,12 +40,6 @@ namespace MG.Sonarr.Functionality.Collections
 
         #endregion
 
-        #region ENUMERATOR
-        //public IEnumerator<Tag> GetEnumerator() => this.InnerList.GetEnumerator();
-        //IEnumerator IEnumerable.GetEnumerator() => this.InnerList.GetEnumerator();
-
-        #endregion
-
         #region BACKEND/PRIVATE METHODS
         internal int Add(Tag tag)
         {
@@ -54,12 +48,7 @@ namespace MG.Sonarr.Functionality.Collections
         }
         internal void Clear() => this.InnerList.Clear();
         public bool Contains(int tagId) => this.InnerList.Exists(x => x.Id == tagId);
-        //internal bool Contains(Tag tag) => this.InnerList.Contains(tag);
-        //internal bool Contains(Predicate<Tag> match) => this.InnerList.Exists(match);
-        //internal Tag Find(Predicate<Tag> match) => this.InnerList.Find(match);
-        //internal List<Tag> FindAll(Predicate<Tag> match) => this.InnerList.FindAll(match);
         internal int FindIndex(Predicate<Tag> match) => this.InnerList.FindIndex(match);
-        //internal int IndexOf(Tag tag) => this.InnerList.IndexOf(tag);
         internal bool Remove(Tag tag) => this.InnerList.Remove(tag);
         internal void RemoveAll(Predicate<Tag> match) => this.InnerList.RemoveAll(match);
         internal void SetTag(int tagId, string newLabel)
@@ -70,7 +59,6 @@ namespace MG.Sonarr.Functionality.Collections
                 this.InnerList[index].Label = newLabel;
             }
         }
-        //internal void TrueForAll(Predicate<Tag> match) => this.InnerList.TrueForAll(match);
 
         #endregion
     }
