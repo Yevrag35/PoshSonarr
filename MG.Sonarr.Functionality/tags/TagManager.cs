@@ -15,7 +15,8 @@ namespace MG.Sonarr.Functionality.Tags
         #region FIELDS/CONSTANTS
         private bool _disposed;
 
-        public string Endpoint { get; } = ApiEndpoints.Tag;
+        internal Endpoint Endpoint { get; }
+        string ITagManager.Endpoint => this.Endpoint.AsString();
         private string ID_END;
         private ISonarrClient _client;
 
@@ -30,16 +31,11 @@ namespace MG.Sonarr.Functionality.Tags
         #region CONSTRUCTORS
         private TagManager(ISonarrClient restClient, bool addApi)
         {
+            Endpoint ep = Endpoint.Tag;
             if (restClient.IsAuthenticated)
             {
-                if (addApi)
-                {
-                    this.Endpoint = "/api" + ApiEndpoints.Tag;
-                }
-                ID_END = this.Endpoint + ApiEndpoints.BY_ID;
-
+                this.Endpoint = ep.WithPrefix(addApi);
                 _client = restClient;
-                //this.LoadTags();
             }
             else
                 throw new ArgumentException("The specified rest client is not properly authenticated.");
