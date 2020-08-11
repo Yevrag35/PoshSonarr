@@ -1,4 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Converters;
+using MG.Sonarr.Functionality.Extensions;
+using MG.Sonarr.Functionality.Url;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
@@ -99,15 +103,6 @@ namespace MG.Sonarr.Results
                 new UrlParameter("start", start),
                 new UrlParameter("end", end)
             };
-        }
-        public SeriesResult GetSeries()
-        {
-            SeriesResult result = null;
-            if (this.TryGetValue("series", out SeriesResult outSer))
-            {
-                result = outSer;
-            }
-            return result;
         }
         
         public DateTimeOffset? GetTokyoTime()
