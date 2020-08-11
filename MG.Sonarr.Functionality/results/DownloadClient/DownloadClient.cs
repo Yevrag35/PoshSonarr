@@ -28,9 +28,20 @@ namespace MG.Sonarr.Results
         public int CompareTo(DownloadClient other) => this.Id.CompareTo(other.Id);
         public string GetEndpoint() => "/downloadclient";
 
-        public static void Rename(string newName, ref DownloadClient downloadClient)
+        public static DownloadClient Rename(string newName, DownloadClient downloadClient)
         {
-            downloadClient.Name = newName;
+            return new DownloadClient
+            {
+                ConfigContract = downloadClient.ConfigContract,
+                Fields = downloadClient.Fields,
+                Id = downloadClient.Id,
+                Implementation = downloadClient.Implementation,
+                ImplementationName = downloadClient.ImplementationName,
+                InfoLink = downloadClient.InfoLink,
+                IsEnabled = downloadClient.IsEnabled,
+                Protocol = downloadClient.Protocol,
+                Name = newName
+            };
         }
     }
 }

@@ -18,9 +18,23 @@ namespace MG.Sonarr.Results
 
         public int CompareTo(Indexer other) => this.Id.CompareTo(other.Id);
 
-        public static void Rename(string newName, ref Indexer indexer)
+        public static Indexer Rename(string newName, Indexer indexer)
         {
-            indexer.Name = newName;
+            return new Indexer
+            {
+                ConfigContract = indexer.ConfigContract,
+                Fields = indexer.Fields,
+                Id = indexer.Id,
+                Implementation = indexer.Implementation,
+                ImplementationName = indexer.ImplementationName,
+                InfoLink = indexer.InfoLink,
+                Protocol = indexer.Protocol,
+                RssEnabled = indexer.RssEnabled,
+                RssSupported = indexer.RssSupported,
+                SearchEnabled = indexer.SearchEnabled,
+                SearchSupported = indexer.SearchSupported,
+                Name = newName
+            };
         }
     }
 }
