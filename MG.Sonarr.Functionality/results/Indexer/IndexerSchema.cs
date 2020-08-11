@@ -34,14 +34,5 @@ namespace MG.Sonarr.Results
 
         [JsonIgnore]
         IReadOnlyList<IIndexer> IIndexerSchema.Presets => this.Presets;
-
-        //[OnDeserialized]
-        //private void OnDeserialized(StreamingContext context)
-        //{
-        //    if (_presets != null && _presets.Count > 0)
-        //    {
-        //        this.Presets = new PresetIndexerCollection(_presets);
-        //    }
-        //}
     }
 }
