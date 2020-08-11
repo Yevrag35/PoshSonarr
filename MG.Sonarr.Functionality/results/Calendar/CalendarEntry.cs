@@ -1,6 +1,4 @@
-﻿using MG.Sonarr.Functionality;
-using MG.Sonarr.Functionality.Url;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
@@ -10,21 +8,23 @@ using System.Runtime.Serialization;
 namespace MG.Sonarr.Results
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class CalendarEntry : BaseResult, IAdditionalInfo, IComparable<CalendarEntry>, IEquatable<CalendarEntry>
+    public class CalendarEntry : BaseResult, IComparable<CalendarEntry>, IEquatable<CalendarEntry>
     {
         public const string Calendar_DTFormat = "yyyy-MM-ddTHH:mm:ss";
 
-        [JsonExtensionData]
-        private IDictionary<string, JToken> _additionalData;
+        [JsonProperty("airDateUtc")]
+        [JsonConverter(typeof(OffsetConverter))]
+        private DateTimeOffset? _airDateUtcOffset;
+
+        [JsonProperty("series")]
+        [JsonConverter(typeof(CalendarSeriesConverter))]
+        private Dictionary<string, object> _fullSeries;
 
         [JsonProperty("absoluteEpisodeNumber")]
         public int? AbsoluteEpisodeNumber { get; private set; }
 
-        [JsonProperty("airDateUtc")]
-        public DateTime? AirDateUtc { get; private set; }
-
         [JsonIgnore]
-        public DateTime? AirDate => this.AirDateUtc.HasValue ? (DateTime?)this.AirDateUtc.Value.ToLocalTime() : null;
+        public DateTimeOffset? AirDate => _airDateUtcOffset.HasValue ? _airDateUtcOffset.Value.LocalDateTime : (DateTimeOffset?)null;
 
         [JsonIgnore]
         public DayOfWeek? DayOfWeek => this.AirDate.HasValue
@@ -33,6 +33,10 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("id")]
         public long EpisodeId { get; private set; }
+
+        [JsonProperty("episodeFileId")]
+        [JsonConverter(typeof(NullableLongConverter))]
+        public long? EpisodeFileId { get; private set; }
 
         [JsonProperty("episodeNumber")]
         public int EpisodeNumber { get; private set; }
@@ -46,17 +50,11 @@ namespace MG.Sonarr.Results
         [JsonProperty("title")]
         public string Name { get; private set; }
 
-        [JsonProperty("sceneAbsoluteEpisodeNumber")]
-        public int SceneAbsoluteEpisodeNumber { get; private set; }
-
-        [JsonProperty("sceneEpisodeNumber")]
-        public int SceneEpisodeNumber { get; private set; }
-
-        [JsonProperty("sceneSeasonNumber")]
-        public int SceneSeasonNumber { get; private set; }
+        [JsonProperty("seasonNumber")]
+        public int? SeasonNumber { get; private set; }
 
         [JsonIgnore]
-        public string Series { get; private set; }
+        public string Series => _fullSeries["title"] as string;
 
         [JsonProperty("seriesId")]
         public int SeriesId { get; private set; }     // For backwards compatibility
@@ -67,7 +65,7 @@ namespace MG.Sonarr.Results
         #region ICOMPARABLE METHODS
         public int CompareTo(CalendarEntry other)
         {
-            int dateCompare = this.AirDateUtc.GetValueOrDefault().CompareTo(other.AirDateUtc.GetValueOrDefault());
+            int dateCompare = _airDateUtcOffset.GetValueOrDefault().CompareTo(other._airDateUtcOffset.GetValueOrDefault());
             if (dateCompare != 0)
                 return dateCompare;
             
@@ -88,42 +86,13 @@ namespace MG.Sonarr.Results
         public bool Equals(CalendarEntry other)
         {
             return this.EpisodeId == other.EpisodeId &&
-                   this.AirDateUtc.GetValueOrDefault().Equals(other.AirDateUtc.GetValueOrDefault());
+                   _airDateUtcOffset.GetValueOrDefault().Equals(other._airDateUtcOffset.GetValueOrDefault());
         }
 
         #endregion
 
         #region OTHER METHODS
-        public IDictionary GetAdditionalInfo()
-        {
-            var ht = new Hashtable();
-            //if (this.TryGetValue("airDate", out string ad))
-            //{
-            //    ht.Add("AirDate", ad);
-            //}
-            //if (this.TryGetValue("airDateUtc", out string adutc))
-            //{
-            //    ht.Add("AirDateUtc", adutc);
-            //}
-            if (this.TryGetValue("episodeFile", out EpisodeResult sonarrEp))
-            {
-                ht.Add("EpisodeFile", sonarrEp);
-            }
-            if (this.TryGetValue("episodeFileId", out long id))
-            {
-                ht.Add("EpisodeFileId", id);
-            }
-            if (this.TryGetValue("seasonNumber", out long sn))
-            {
-                ht.Add("SeasonNumber", sn);
-            }
-            if (this.TryGetValue("series", out SeriesResult series))
-            {
-                ht.Add("Series", series);
-            }
-            return ht;
-        }
-        public static IUrlParameter[] GetStartEndParameters(string start, string end)
+         public static IUrlParameter[] GetStartEndParameters(string start, string end)
         {
             return new IUrlParameter[2]
             {
@@ -140,45 +109,14 @@ namespace MG.Sonarr.Results
             }
             return result;
         }
-
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
+        
+        public DateTimeOffset? GetTokyoTime()
         {
-            //JToken adutc = _additionalData["airDateUtc"];
-            //if (adutc != null)
-            //{
-            //    this.AirDate = adutc.ToObject<DateTime>().ToLocalTime();
-            //}
+            if (_airDateUtcOffset.HasValue && _fullSeries != null && _fullSeries["seriesType"].Equals("anime"))
+                return _airDateUtcOffset.Value.ToAnimeTime();
 
-            JToken tokSer = _additionalData["series"];
-            if (tokSer != null)
-            {
-                JToken serTit = tokSer.SelectToken("$.title");
-                if (serTit != null)
-                {
-                    this.Series = serTit.ToObject<string>();
-                }
-            }
-        }
-        private bool TryGetValue<T>(string key, out T value)
-        {
-            value = default;
-            bool result = false;
-            if (_additionalData.ContainsKey(key))
-            {
-                JToken jtok = _additionalData[key];
-                if (jtok != null)
-                {
-                    try
-                    {
-                        value = jtok.ToObject<T>();
-                        result = true;
-                    }
-                    catch { }
-                }
-            }
-
-            return result;
+            else
+                return null;
         }
 
         #endregion
