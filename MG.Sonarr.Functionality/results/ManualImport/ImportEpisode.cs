@@ -41,6 +41,8 @@ namespace MG.Sonarr.Results
         [JsonProperty("seriesId")]
         public long? SeriesId { get; private set; }
 
+        int IComparable<IRecord>.CompareTo(IRecord other) => this.Id.CompareTo(other.Id);
+        bool IEquatable<IRecord>.Equals(IRecord other) => this.Id.Equals(other.Id);
         public IDictionary GetAdditionalInfo() => _extData as IDictionary;
 
         [OnDeserialized]

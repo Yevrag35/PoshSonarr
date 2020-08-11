@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Functionality;
 using MG.Sonarr.Functionality.Url;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 
@@ -11,7 +12,7 @@ namespace MG.Sonarr.Results
     /// </summary>
     [Serializable]
     [JsonObject(MemberSerialization.OptIn)]
-    public class EpisodeResult : BaseEpisodeResult, IComparable<EpisodeResult>, IEquatable<EpisodeResult>, IEpisode
+    public class EpisodeResult : BaseEpisodeResult, IComparable<EpisodeResult>, IEquatable<EpisodeResult>, IEpisode, IRecord
     {
         [JsonIgnore]
         DateTime? IEpisode.AirDate => base.AirDateUtc;
@@ -23,7 +24,7 @@ namespace MG.Sonarr.Results
         int? IEpisode.EpisodeNumber => base.EpisodeNumber;
 
         [JsonIgnore]
-        long IEpisode.Id => base.EpisodeId;
+        long IRecord.Id => base.EpisodeId;
 
         [JsonIgnore]
         public bool HasAired => this.AirDateUtc.HasValue && DateTime.UtcNow.CompareTo(this.AirDateUtc.Value) >= 0 ? true : false;
@@ -46,7 +47,9 @@ namespace MG.Sonarr.Results
             }
             return compare;
         }
+        int IComparable<IRecord>.CompareTo(IRecord other) => base.EpisodeId.CompareTo(other.Id);
         public bool Equals(EpisodeResult other) => this.EpisodeId.Equals(other.EpisodeId);
+        bool IEquatable<IRecord>.Equals(IRecord other) => this.EpisodeId.Equals(other.Id);
         public static IComparer<EpisodeResult> GetComparer() => new EpisodeComparer();
 
         public static IUrlParameter GetSeriesIdParameter(int seriesId) => new UrlParameter("seriesId", seriesId);

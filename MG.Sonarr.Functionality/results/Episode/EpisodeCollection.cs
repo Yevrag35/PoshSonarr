@@ -7,14 +7,14 @@ using System.Collections.Generic;
 
 namespace MG.Sonarr.Results.Collections
 {
-    public class HistoryRecordCollection : ResultListBase<HistoryRecord>, IReadOnlyList<IRecord>
+    public class EpisodeCollection : ResultListBase<EpisodeResult>, IReadOnlyList<IRecord>
     {
         IRecord IReadOnlyList<IRecord>.this[int index] => this[index];
 
         [JsonConstructor]
-        internal HistoryRecordCollection(IEnumerable<HistoryRecord> records)
-            : base(records) { }
+        internal EpisodeCollection(IEnumerable<EpisodeResult> episodes)
+            : base(episodes) { }
 
-        IEnumerator<IRecord> IEnumerable<IRecord>.GetEnumerator() => base.InnerList.GetEnumerator();
+        IEnumerator<IRecord> IEnumerable<IRecord>.GetEnumerator() => this.GetEnumerator();
     }
 }

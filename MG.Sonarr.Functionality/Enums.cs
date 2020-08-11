@@ -430,4 +430,10 @@ namespace MG.Sonarr.Functionality
         Apt = 11,
         Docker = 12
     }
+
+    public enum WantedMissingSortKey
+    {
+        AirDateUtc,
+        SeriesTitle
+    }
 }
