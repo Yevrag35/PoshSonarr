@@ -82,7 +82,6 @@
     <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet-Error.cs" />
     <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet-Linq.cs" />
     <Compile Include="Cmdlets\Bases\BaseSonarrCmdlet.cs" />
-    <Compile Include="Cmdlets\Bases\LazySonarrCmdlet.cs" />
     <Compile Include="Cmdlets\Calendar\GetCalendar.cs" />
     <Compile Include="Cmdlets\Commands\GetCommand.cs" />
     <Compile Include="Cmdlets\Commands\GetCommandHistory.cs" />
