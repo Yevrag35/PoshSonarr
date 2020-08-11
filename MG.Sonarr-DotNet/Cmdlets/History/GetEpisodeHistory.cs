@@ -37,7 +37,7 @@ namespace MG.Sonarr.Cmdlets
         public string SortKey { get; set; } = "Date";
 
         [Parameter(Mandatory = false)]
-        public SortDirection SortDirection { get; set; } = SortDirection.Ascending;
+        public SortDirection SortDirection { get; set; } = SortDirection.Descending;
 
         #endregion
 

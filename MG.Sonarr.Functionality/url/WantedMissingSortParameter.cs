@@ -2,14 +2,14 @@
 
 namespace MG.Sonarr.Functionality.Url
 {
-    public class HistorySortParameter : SortParameter, IUrlParameter
+    public class WantedMissingSortParameter : SortParameter, IUrlParameter
     {
         IConvertible IUrlParameter.Key => this.Key;
-        public HistorySortKey Key { get; set; }
+        public WantedMissingSortKey Key { get; set; }
 
         IConvertible IUrlParameter.Value => base.Value;
 
-        public HistorySortParameter(HistorySortKey sortKey, SortDirection direction)
+        public WantedMissingSortParameter(WantedMissingSortKey sortKey, SortDirection direction)
             : base(direction)
         {
             this.Key = sortKey;
@@ -17,14 +17,14 @@ namespace MG.Sonarr.Functionality.Url
 
         public string AsString()
         {
-            return string.Format("sortKey={0}&sortDir={1}", this.GetKeyEnumAsString(), this.GetSortString());
+            return string.Format("sortKey={0}&sortDir={1}", this.GetKeyEnumAsString(), base.GetSortString());
         }
 
         private string GetKeyEnumAsString()
         {
             switch (this.Key)
             {
-                case HistorySortKey.SeriesTitle:
+                case WantedMissingSortKey.SeriesTitle:
                     return "series.title";
 
                 default:
