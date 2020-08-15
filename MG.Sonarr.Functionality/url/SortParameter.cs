@@ -6,6 +6,7 @@ namespace MG.Sonarr.Functionality.Url
 {
     public abstract class SortParameter : IUrlParameter
     {
+        private const string SORT_KEY_FORMAT = "sortKey={0}";
         private const string SORT_DIR_FORMAT = "sortDir={0}";
 
         protected StringBuilder Builder;
@@ -16,6 +17,10 @@ namespace MG.Sonarr.Functionality.Url
             Builder = new StringBuilder(string.Format(SORT_DIR_FORMAT, this.GetSortString(direction)));
         }
 
+        protected void AddSortKey(string key)
+        {
+            Builder.Insert(0, string.Format(SORT_KEY_FORMAT, key));
+        }
         string IUrlParameter.AsString() => this.FormatAsString();
         protected virtual string FormatAsString()
         {
