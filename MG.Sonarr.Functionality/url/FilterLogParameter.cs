@@ -16,19 +16,19 @@ namespace MG.Sonarr.Functionality.Url
         public string Key
         {
             get => _key;
-            set => _key = value;
+            set => _key = value.ToLower();
         }
-        IConvertible IUrlParameter.Key => this.Key;
+        //IConvertible IUrlParameter.Key => this.Key;
 
         public int Length => 23 + _key.Length + _value.Length;
         /// <summary>
         /// The 'filterValue' of the query parameter.
         /// </summary>
-        public IConvertible Value
-        {
-            get => _value;
-            set => _value = Convert.ToString(value);
-        }
+        //public IConvertible Value
+        //{
+        //    get => _value;
+        //    set => _value = Convert.ToString(value);
+        //}
 
         /// <summary>
         /// Initializes a new instance of <see cref="FilterLogParameter"/> with the given key and value.
@@ -37,13 +37,13 @@ namespace MG.Sonarr.Functionality.Url
         /// <param name="value">The 'filterValue' used in the query parameter.</param>
         public FilterLogParameter(string key, IConvertible value)
         {
-            _key = key;
+            _key = key.ToLower();
             _value = Convert.ToString(value);
         }
 
         public string AsString()
         {
-            return string.Format("filterKey={0}&filterValue={1}", Convert.ToString(this.Key).ToLower(), Convert.ToString(this.Value));
+            return string.Format("filterKey={0}&filterValue={1}", _key, _value);
         }
     }
 }

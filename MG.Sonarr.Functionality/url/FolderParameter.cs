@@ -12,11 +12,11 @@ namespace MG.Sonarr.Functionality.Url
         /// <summary>
         /// The key of the query parameter which is statically set to 'folder'.
         /// </summary>
-        IConvertible IUrlParameter.Key => Key;
+        //IConvertible IUrlParameter.Key => Key;
 
         private const string Key = "folder";
         public int Length => 1 + Key.Length + _value.Length;
-        IConvertible IUrlParameter.Value => this.Value;
+        //IConvertible IUrlParameter.Value => this.Value;
         /// <summary>
         /// The value of the query parameter indicating the folder path to query.
         /// </summary>

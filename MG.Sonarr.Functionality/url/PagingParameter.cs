@@ -14,7 +14,7 @@ namespace MG.Sonarr.Functionality.Url
         private string _key;
         private string _val;
 
-        IConvertible IUrlParameter.Key => this.Key;
+        //IConvertible IUrlParameter.Key => this.Key;
         /// <summary>
         /// The page number to start the query at.
         /// </summary>
@@ -34,7 +34,7 @@ namespace MG.Sonarr.Functionality.Url
             }
         }
         public int Length => 15 + _key.Length + _val.Length;
-        IConvertible IUrlParameter.Value => this.Value;
+        //IConvertible IUrlParameter.Value => this.Value;
         /// <summary>
         /// The number of results returned on 1 page.
         /// </summary>

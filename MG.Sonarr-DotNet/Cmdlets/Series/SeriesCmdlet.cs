@@ -23,7 +23,7 @@ namespace MG.Sonarr.Cmdlets
         {
             Endpoint ep = Endpoint.Series;
             if (!debugging)
-                base.WriteFormatVerbose("Retrieving all series from {0}.", ep.AsString());
+                base.WriteFormatVerbose("Retrieving all series from {0}.", ep.Build());
 
             List<SeriesResult> allSeries = base.SendSonarrListGet<SeriesResult>(ep);
 

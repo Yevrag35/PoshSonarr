@@ -8,10 +8,10 @@ namespace MG.Sonarr.Functionality.Url
     {
         private string _value;
 
-        IConvertible IUrlParameter.Key => Key;
+        //IConvertible IUrlParameter.Key => Key;
         public const string Key = "episodeId";
         public int Length => 1 + Key.Length + _value.Length;
-        IConvertible IUrlParameter.Value => this.Value;
+        //IConvertible IUrlParameter.Value => this.Value;
         public long Value
         {
             get => Convert.ToInt64(_value);

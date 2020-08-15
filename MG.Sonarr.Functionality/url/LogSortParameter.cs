@@ -8,7 +8,7 @@ namespace MG.Sonarr.Functionality.Url
     public class LogSortParameter : SortParameter, IUrlParameter
     {
         private string _key;
-        IConvertible IUrlParameter.Key => _key;
+        //IConvertible IUrlParameter.Key => _key;
         /// <summary>
         /// The log property key that is sorted.
         /// </summary>
@@ -18,7 +18,7 @@ namespace MG.Sonarr.Functionality.Url
             set => _key = value.ToString();
         }
         public int Length => 17 + _key.Length + base.SortDirectionString.Length;
-        IConvertible IUrlParameter.Value => this.Value;
+        //IConvertible IUrlParameter.Value => this.Value;
 
         /// <summary>
         /// Initializes a new <see cref="LogSortParameter"/> indicating to sort the logs by the specified

@@ -76,7 +76,7 @@ namespace MG.Sonarr.Cmdlets
                 this.WriteFormatDebug(DEBUG_API_MSG,
                     method.Method,
                     Context.SonarrUrl.BaseUrl,
-                    endpoint.AsString());
+                    endpoint.Build());
             }
         }
 
@@ -113,7 +113,7 @@ namespace MG.Sonarr.Cmdlets
                 this.WriteFormatDebug(DEBUG_API_AND_BODY_MSG,
                     method.Method,
                     Context.SonarrUrl.BaseUrl,
-                    endpoint.AsString(),
+                    endpoint.Build(),
                     Environment.NewLine,
                     payload.ToJson());
             }

@@ -21,7 +21,7 @@ namespace MG.Sonarr.Cmdlets
         #region FIELDS/CONSTANTS
         private bool _all;
         private const int DEFAULT_PAGE_SIZE = 10;
-        private const string ENDPOINT = "/log";
+        //private const string ENDPOINT = "/log";
         private const int MAX_TOP_SIZE = 1000000;
         private const int START_ALL = 1;
         private const string URI_FORMAT = "{0}{1}";

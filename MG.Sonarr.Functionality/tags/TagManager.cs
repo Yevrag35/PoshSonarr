@@ -17,7 +17,7 @@ namespace MG.Sonarr.Functionality.Tags
         private bool _disposed;
 
         internal Endpoint Endpoint { get; }
-        string ITagManager.Endpoint => this.Endpoint.AsString();
+        string ITagManager.Endpoint => this.Endpoint.Build();
         private ISonarrClient _client;
 
         #endregion

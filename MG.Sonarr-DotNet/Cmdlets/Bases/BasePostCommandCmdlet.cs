@@ -47,14 +47,13 @@ namespace MG.Sonarr.Cmdlets
         protected private void ProcessRequest(SonarrBodyParameters parameterDict)
         {
             object cmdName = parameterDict["name"];
-            
-            if (this.ContainsBuiltinParameter(BuiltInParameter.Verbose))
-            {
-                string verbMsg = string.Format("Issuing command - {0} to {1}", this.Command, this.Endpoint.AsString());
-                base.WriteVerbose(verbMsg);
-            }
 
-            CommandOutput output = base.SendSonarrPost<CommandOutput>(this.Command, parameterDict);
+            //if (this.ContainsBuiltinParameter(BuiltInParameter.Verbose))
+            //{
+            //    string verbMsg = string.Format("Issuing command - {0} to {1}", this.Command, this.Endpoint.Build());
+            //    base.WriteVerbose(verbMsg);
+            //}
+            CommandOutput output = base.SendSonarrPost<CommandOutput>(this.Endpoint, parameterDict);
             if (output != null)
             {
                 History.Jobs.AddResult(output);

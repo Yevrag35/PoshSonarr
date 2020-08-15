@@ -128,7 +128,7 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region METHODS
-        private List<CalendarEntry> GetCalendarEntries(string uri) => base.SendSonarrListGet<CalendarEntry>(uri);
+        private List<CalendarEntry> GetCalendarEntries(Endpoint endpoint) => base.SendSonarrListGet<CalendarEntry>(endpoint);
 
         private string DateToString(DateTime dt) => dt.ToString(CalendarEntry.Calendar_DTFormat);
 

@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Results;
 using System;
 using System.Management.Automation;
 
@@ -11,7 +12,6 @@ namespace MG.Sonarr.Cmdlets.Episodes
     public class SetEpisode : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string EP = "/episode";
         private bool _passThru;
 
         #endregion
@@ -47,7 +47,7 @@ namespace MG.Sonarr.Cmdlets.Episodes
                     this.InputObject.SeriesId),
                     "Set"))
             {
-                EpisodeResult er = base.SendSonarrPut<EpisodeResult>(EP, this.InputObject);
+                EpisodeResult er = base.SendSonarrPut<EpisodeResult>(Endpoint.Episode, this.InputObject);
                 if (_passThru)
                     base.SendToPipeline(er);
             }

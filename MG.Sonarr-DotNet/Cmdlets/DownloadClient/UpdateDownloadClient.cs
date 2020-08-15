@@ -39,7 +39,7 @@ namespace MG.Sonarr.Cmdlets
             base.WriteDebug(this.InputObject.ToJson());
             if (_force || base.FormatShouldProcess("Update", "Download Client Id: {0}", this.InputObject.Id))
             {
-                DownloadClient modified = base.SendSonarrPut<DownloadClient>(this.InputObject.GetEndpoint(), this.InputObject);
+                DownloadClient modified = base.SendSonarrPut<DownloadClient>(Endpoint.DownloadClient.WithId(this.InputObject.Id), this.InputObject);
                 if (_passThru)
                     base.SendToPipeline(modified);
             }

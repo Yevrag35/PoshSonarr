@@ -1,4 +1,6 @@
 ﻿using MG.Posh.Extensions.Bound;
+using MG.Posh.Extensions.Shoulds;
+using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections;
@@ -15,7 +17,6 @@ namespace MG.Sonarr.Cmdlets.Episodes
     public class RemoveEpisodeFile : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string EP = "/episodefile/{0}";
         private bool _force;
 
         #endregion
@@ -54,10 +55,10 @@ namespace MG.Sonarr.Cmdlets.Episodes
                 throw new ArgumentNullException("EpisodeFileId");
             }
 
-            string ep = string.Format(EP, this.Id);
-            if (_force || base.ShouldProcess(ep, "Delete"))
+            Endpoint endpoint = Endpoint.EpisodeFile.WithId(this.Id);
+            if (_force || this.ShouldProcessFormat("Delete", "EpisodeFile Id: {0}", this.Id))
             {
-                base.SendSonarrDelete(ep);
+                base.SendSonarrDelete(endpoint);
             }
         }
 

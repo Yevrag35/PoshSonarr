@@ -20,6 +20,7 @@
     <Compile Remove="dateFormats\DateFormatAttribute.cs" />
     <Compile Remove="dateFormats\ShortDateFormat.cs" />
     <Compile Remove="dateFormats\WeekColumnHeader.cs" />
+    <Compile Remove="endpoints\Endpoint.cs" />
     <Compile Remove="exceptions\SonarrResponseException.cs" />
     <Compile Remove="helpers\TableStringHelper.cs" />
     <Compile Remove="url\OrderParameter.cs" />
@@ -32,6 +33,7 @@
     <None Include="dateFormats\DateFormatAttribute.cs" />
     <None Include="dateFormats\ShortDateFormat.cs" />
     <None Include="dateFormats\WeekColumnHeader.cs" />
+    <None Include="endpoints\Endpoint.cs" />
     <None Include="exceptions\SonarrResponseException.cs" />
     <None Include="helpers\TableStringHelper.cs" />
     <None Include="url\OrderParameter.cs" />

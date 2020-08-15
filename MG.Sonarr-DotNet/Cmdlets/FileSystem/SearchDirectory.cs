@@ -1,4 +1,6 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Url;
+using MG.Sonarr.Results;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,9 +16,7 @@ namespace MG.Sonarr.Cmdlets
     public class SearchDirectory : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
-        private const string EP = "/filesystem?path={0}";
-        private const string EP_WITH_FILES = EP + "&includeFiles=true";
-
+        private Endpoint Endpoint { get; } = Endpoint.FileSystem;
         private bool _excludeFiles;
 
         #endregion
@@ -48,15 +48,11 @@ namespace MG.Sonarr.Cmdlets
                 this.Path = this.Path + @"\";
             }
 
-            string ep = EP_WITH_FILES;
-            if (_excludeFiles)
-            {
-                ep = EP;
-            }
+            Endpoint ep = this.Endpoint.WithQuery(new FileSystemParameter(this.Path, !_excludeFiles));
 
-            string fullEp = string.Format(ep, this.Path);
+            
 
-            FileSystem fs = base.SendSonarrGet<FileSystem>(fullEp);
+            FileSystem fs = base.SendSonarrGet<FileSystem>(ep);
             if (fs != null)
             {
                 List<FileSystemEntry> list = fs.ToAllList();

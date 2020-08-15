@@ -29,7 +29,7 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region BACKEND METHODS
-        protected private UIHost GetUIHost() => base.SendSonarrGet<UIHost>(EP);
+        protected private UIHost GetUIHost() => base.SendSonarrGet<UIHost>(Endpoint.HostConfig);
 
         #endregion
     }

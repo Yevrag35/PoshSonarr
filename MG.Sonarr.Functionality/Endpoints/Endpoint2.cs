@@ -6,7 +6,7 @@ using System.Text;
 
 namespace MG.Sonarr.Functionality
 {
-    public class Endpoint2
+    public class Endpoint
     {
         private const string SLASH = "/";
         private string _builtString;
@@ -17,17 +17,19 @@ namespace MG.Sonarr.Functionality
 
         public bool IsBuilt => _isBuilt;
 
-        private Endpoint2(string endpoint)
+        private Endpoint(string endpoint)
         {
             _builder = new StringBuilder(endpoint);
         }
-        private Endpoint2(Endpoint2 existing, IUrlParameterCollection urlParameters)
+        private Endpoint(Endpoint existing, IUrlParameterCollection urlParameters)
         {
             _builder = new StringBuilder(existing._builder.ToString());
             _id = existing._id;
 
             _query = urlParameters;
         }
+
+        public static implicit operator string(Endpoint endpoint) => endpoint.Build();
 
         private void AddPrefix()
         {
@@ -59,7 +61,7 @@ namespace MG.Sonarr.Functionality
             return _builtString;
         }
 
-        public Endpoint2 WithId(IConvertible icon)
+        public Endpoint WithId(IConvertible icon)
         {
             string str = Convert.ToString(icon);
             _id = new char[str.Length];
@@ -69,64 +71,64 @@ namespace MG.Sonarr.Functionality
             }
             return this;
         }
-        public Endpoint2 WithPrefix(bool addPrefix)
+        public Endpoint WithPrefix(bool addPrefix)
         {
             if (addPrefix)
                 this.AddPrefix();
 
             return this;
         }
-        public Endpoint2 WithQuery(params IUrlParameter[] oneOffs)
+        public Endpoint WithQuery(params IUrlParameter[] oneOffs)
         {
             if (oneOffs == null || oneOffs.Length <= 0)
                 return this;
 
             var col = new UrlParameterCollection(oneOffs);
-            return new Endpoint2(this, col);
+            return new Endpoint(this, col);
         }
-        public Endpoint2 WithQuery(IUrlParameterCollection queryParameters, params IUrlParameter[] oneOffs)
+        public Endpoint WithQuery(IUrlParameterCollection queryParameters, params IUrlParameter[] oneOffs)
         {
             var newCol = new UrlParameterCollection(queryParameters.Count + (oneOffs?.Length).GetValueOrDefault());
             newCol.AddRange(queryParameters);
             newCol.AddRange(oneOffs);
 
             _builder.EnsureCapacity(newCol.Length);
-            return new Endpoint2(this, newCol);
+            return new Endpoint(this, newCol);
         }
 
         #region STATIC CONSTRUCTORS
-        public static Endpoint2 Backup => new Endpoint2(ApiEndpoints.Backup);
-        public static Endpoint2 Calendar => new Endpoint2(ApiEndpoints.Calendar);
-        public static Endpoint2 Command => new Endpoint2(ApiEndpoints.Command);
-        public static Endpoint2 DelayProfile => new Endpoint2(ApiEndpoints.DelayProfile);
-        public static Endpoint2 Diskspace => new Endpoint2(ApiEndpoints.Diskspace);
-        public static Endpoint2 DownloadClient => new Endpoint2(ApiEndpoints.DownloadClient);
-        public static Endpoint2 Episode => new Endpoint2(ApiEndpoints.Episode);
-        public static Endpoint2 EpisodeFile => new Endpoint2(ApiEndpoints.EpisodeFile);
-        public static Endpoint2 FileSystem => new Endpoint2(ApiEndpoints.FileSystem);
-        public static Endpoint2 History => new Endpoint2(ApiEndpoints.History);
-        public static Endpoint2 HostConfig => new Endpoint2(ApiEndpoints.HostConfig);
-        public static Endpoint2 Indexer => new Endpoint2(ApiEndpoints.Indexer);
-        public static Endpoint2 IndexerOptions => new Endpoint2(ApiEndpoints.IndexerOptions);
-        public static Endpoint2 IndexerSchema => new Endpoint2(ApiEndpoints.IndexerSchema);
-        public static Endpoint2 LogFile => new Endpoint2(ApiEndpoints.LogFile);
-        public static Endpoint2 ManualImport => new Endpoint2(ApiEndpoints.ManualImport);
-        public static Endpoint2 MediaManagement => new Endpoint2(ApiEndpoints.MediaManagement);
-        public static Endpoint2 Metadata => new Endpoint2(ApiEndpoints.Metadata);
-        public static Endpoint2 Notification => new Endpoint2(ApiEndpoints.Notification);
-        public static Endpoint2 Profile => new Endpoint2(ApiEndpoints.Profile);
-        public static Endpoint2 QualityDefinition => new Endpoint2(ApiEndpoints.QualityDefinitions);
-        public static Endpoint2 Queue => new Endpoint2(ApiEndpoints.Queue);
-        public static Endpoint2 Release => new Endpoint2(ApiEndpoints.Release);
-        public static Endpoint2 RemotePathMapping => new Endpoint2(ApiEndpoints.Mapping);
-        public static Endpoint2 Restart => new Endpoint2(ApiEndpoints.Restart);
-        public static Endpoint2 Restriction => new Endpoint2(ApiEndpoints.Restriction);
-        public static Endpoint2 RootFolder => new Endpoint2(ApiEndpoints.RootFolder);
-        public static Endpoint2 Series => new Endpoint2(ApiEndpoints.Series);
-        public static Endpoint2 Status => new Endpoint2(ApiEndpoints.Status);
-        public static Endpoint2 Tag => new Endpoint2(ApiEndpoints.Tag);
-        public static Endpoint2 Update => new Endpoint2(ApiEndpoints.Update);
-        public static Endpoint2 WantedMissing => new Endpoint2(ApiEndpoints.WantedMissing);
+        public static Endpoint Backup => new Endpoint(ApiEndpoints.Backup);
+        public static Endpoint Calendar => new Endpoint(ApiEndpoints.Calendar);
+        public static Endpoint Command => new Endpoint(ApiEndpoints.Command);
+        public static Endpoint DelayProfile => new Endpoint(ApiEndpoints.DelayProfile);
+        public static Endpoint Diskspace => new Endpoint(ApiEndpoints.Diskspace);
+        public static Endpoint DownloadClient => new Endpoint(ApiEndpoints.DownloadClient);
+        public static Endpoint Episode => new Endpoint(ApiEndpoints.Episode);
+        public static Endpoint EpisodeFile => new Endpoint(ApiEndpoints.EpisodeFile);
+        public static Endpoint FileSystem => new Endpoint(ApiEndpoints.FileSystem);
+        public static Endpoint History => new Endpoint(ApiEndpoints.History);
+        public static Endpoint HostConfig => new Endpoint(ApiEndpoints.HostConfig);
+        public static Endpoint Indexer => new Endpoint(ApiEndpoints.Indexer);
+        public static Endpoint IndexerOptions => new Endpoint(ApiEndpoints.IndexerOptions);
+        public static Endpoint IndexerSchema => new Endpoint(ApiEndpoints.IndexerSchema);
+        public static Endpoint LogFile => new Endpoint(ApiEndpoints.LogFile);
+        public static Endpoint ManualImport => new Endpoint(ApiEndpoints.ManualImport);
+        public static Endpoint MediaManagement => new Endpoint(ApiEndpoints.MediaManagement);
+        public static Endpoint Metadata => new Endpoint(ApiEndpoints.Metadata);
+        public static Endpoint Notification => new Endpoint(ApiEndpoints.Notification);
+        public static Endpoint Profile => new Endpoint(ApiEndpoints.Profile);
+        public static Endpoint QualityDefinition => new Endpoint(ApiEndpoints.QualityDefinitions);
+        public static Endpoint Queue => new Endpoint(ApiEndpoints.Queue);
+        public static Endpoint Release => new Endpoint(ApiEndpoints.Release);
+        public static Endpoint RemotePathMapping => new Endpoint(ApiEndpoints.Mapping);
+        public static Endpoint Restart => new Endpoint(ApiEndpoints.Restart);
+        public static Endpoint Restriction => new Endpoint(ApiEndpoints.Restriction);
+        public static Endpoint RootFolder => new Endpoint(ApiEndpoints.RootFolder);
+        public static Endpoint Series => new Endpoint(ApiEndpoints.Series);
+        public static Endpoint Status => new Endpoint(ApiEndpoints.Status);
+        public static Endpoint Tag => new Endpoint(ApiEndpoints.Tag);
+        public static Endpoint Update => new Endpoint(ApiEndpoints.Update);
+        public static Endpoint WantedMissing => new Endpoint(ApiEndpoints.WantedMissing);
 
 
         #endregion

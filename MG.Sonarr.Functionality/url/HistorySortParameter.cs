@@ -6,14 +6,14 @@ namespace MG.Sonarr.Functionality.Url
     {
         private string _sortKey;
 
-        IConvertible IUrlParameter.Key => this.Key;
+        //IConvertible IUrlParameter.Key => this.Key;
         public HistorySortKey Key
         {
             get => (HistorySortKey)Enum.Parse(typeof(HistorySortKey), _sortKey);
             set => _sortKey = value.ToString();
         }
         public int Length => 17 + _sortKey.Length + base.SortDirectionString.Length;
-        IConvertible IUrlParameter.Value => base.SortDirectionString;
+        //IConvertible IUrlParameter.Value => base.SortDirectionString;
 
         public HistorySortParameter(HistorySortKey sortKey, SortDirection direction)
             : base(direction)
