@@ -2,7 +2,7 @@
 
 namespace MG.Sonarr.Functionality.Url
 {
-    public class WantedMissingSortParameter : SortParameter, IUrlParameter
+    public sealed class WantedMissingSortParameter : SortParameter, IUrlParameter
     {
         public WantedMissingSortParameter(WantedMissingSortKey sortKey, SortDirection direction)
             : base(direction)

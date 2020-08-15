@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MG.Sonarr.Functionality.Url
 {
-    public abstract class SortParameter : IUrlParameter
+    public abstract class SortParameter : IEquatable<IUrlParameter>, IUrlParameter
     {
         private const string SORT_KEY_FORMAT = "sortKey={0}";
         private const string SORT_DIR_FORMAT = "sortDir={0}";
@@ -22,6 +22,10 @@ namespace MG.Sonarr.Functionality.Url
             Builder.Insert(0, string.Format(SORT_KEY_FORMAT, key));
         }
         string IUrlParameter.AsString() => this.FormatAsString();
+        public bool Equals(IUrlParameter other)
+        {
+            return this.GetLength().Equals(other.Length) && this.FormatAsString().Equals(other.AsString());
+        }
         protected virtual string FormatAsString()
         {
             return Builder.ToString();

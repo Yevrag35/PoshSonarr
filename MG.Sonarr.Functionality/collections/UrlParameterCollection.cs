@@ -80,6 +80,20 @@ namespace MG.Sonarr.Functionality.Collections
 
             _list.Add(newParam);
         }
+        public void AddSortParameter(SortParameter parameter)
+        {
+            IUrlParameter existing = _list.Find(x => x is SortParameter);
+            if (existing != null)
+            {
+                if (!parameter.Equals(existing))
+                    _list.Remove(existing);
+
+                else
+                    return;
+            }
+
+            _list.Add(parameter);
+        }
         public void ToQueryString(ref StringBuilder builder, params IUrlParameter[] oneOffs)
         {
             for (int i = 0; i < this.Count; i++)

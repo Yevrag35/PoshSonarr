@@ -2,7 +2,7 @@
 
 namespace MG.Sonarr.Functionality.Url
 {
-    public class HistorySortParameter : SortParameter, IUrlParameter
+    public sealed class HistorySortParameter : SortParameter, IUrlParameter
     {
         public HistorySortParameter(HistorySortKey sortKey, SortDirection direction)
             : base(direction)
