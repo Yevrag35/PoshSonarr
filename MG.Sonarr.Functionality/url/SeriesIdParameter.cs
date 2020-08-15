@@ -6,16 +6,21 @@ namespace MG.Sonarr.Functionality.Url
 {
     public class SeriesIdParameter : IUrlParameter
     {
-        //IConvertible IUrlParameter.Key => Key;
         public const string Key = "seriesId";
+        private string _value;
 
-        public int Length => 1 + Key.Length + this.Value.Length;
+        public int Length => 1 + Key.Length + _value.Length;
 
-        //IConvertible IUrlParameter.Value => this.Value;
-        public string Value { get; }
+        public SeriesIdParameter(int seriesId) => _value = Convert.ToString(seriesId);
 
-        public SeriesIdParameter(int seriesId) => this.Value = Convert.ToString(seriesId);
+        public string AsString() => string.Format("{0}={1}", Key, _value);
+        public bool Equals(IUrlParameter other)
+        {
+            if (other is SeriesIdParameter sip)
+                return _value.Equals(sip._value);
 
-        public string AsString() => string.Format("{0}={1}", Key, this.Value);
+            else
+                return false;
+        }
     }
 }

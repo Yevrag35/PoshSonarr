@@ -16,5 +16,13 @@ namespace MG.Sonarr.Functionality.Url
         }
 
         public string AsString() => full;
+        public bool Equals(IUrlParameter other)
+        {
+            if (other is FileSystemParameter fsp)
+                return full.Equals(fsp.full);
+
+            else
+                return false;
+        }
     }
 }

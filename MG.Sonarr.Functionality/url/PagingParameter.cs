@@ -36,7 +36,14 @@ namespace MG.Sonarr.Functionality.Url
             return new PagingParameter(pageNumber.ToString(), pageSize.ToString());
         }
 
-        public bool Equals(IUrlParameter other) => this.Length.Equals(other.Length) && this.AsString().Equals(other.AsString());
+        public bool Equals(IUrlParameter other)
+        {
+            if (other is PagingParameter pp)
+                return _key.Equals(pp._key) && _val.Equals(pp._val);
+
+            else
+                return false;
+        }
         public bool Equals(PagingParameter other)
         {
             return this.Length.Equals(other.Length) &&

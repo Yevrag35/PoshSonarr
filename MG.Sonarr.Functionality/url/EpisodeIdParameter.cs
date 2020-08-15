@@ -28,5 +28,10 @@ namespace MG.Sonarr.Functionality.Url
         {
             return string.Format("{0}={1}", Key, _value);
         }
+
+        public bool Equals(IUrlParameter other)
+        {
+            return other is EpisodeIdParameter epParam && _value.Equals(epParam._value) ? true : false;
+        }
     }
 }

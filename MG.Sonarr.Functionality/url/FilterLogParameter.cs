@@ -30,5 +30,14 @@ namespace MG.Sonarr.Functionality.Url
         {
             return new FilterLogParameter(key.ToString().ToLower(), Convert.ToString(value));
         }
+
+        public bool Equals(IUrlParameter other)
+        {
+            if (other is FilterLogParameter flp)
+                return _key.Equals(flp._key) && _value.Equals(flp._value);
+
+            else
+                return false;
+        }
     }
 }

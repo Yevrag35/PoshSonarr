@@ -7,7 +7,7 @@ namespace MG.Sonarr.Functionality
     /// <summary>
     /// An interface exposing functionality around URL parameters in a given query construct.
     /// </summary>
-    public interface IUrlParameter
+    public interface IUrlParameter : IEquatable<IUrlParameter>
     {
         /// <summary>
         /// The total character length of the <see cref="string"/> result when calling <see cref="IUrlParameter.AsString()"/>.
