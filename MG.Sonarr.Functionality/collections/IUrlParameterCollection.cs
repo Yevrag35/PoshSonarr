@@ -9,6 +9,9 @@ namespace MG.Sonarr.Functionality.Collections
     /// </summary>
     public interface IUrlParameterCollection : IList<IUrlParameter>
     {
+        /// <summary>
+        /// The total <see cref="string"/> length of all of the contained elements in the <see cref="IUrlParameterCollection"/>.
+        /// </summary>
         int Length { get; }
 
         /// <summary>
@@ -16,6 +19,16 @@ namespace MG.Sonarr.Functionality.Collections
         /// </summary>
         /// <param name="items">The collection whose <see cref="IUrlParameter"/> are copied from.</param>
         void AddRange(IEnumerable<IUrlParameter> items);
+
+        /// <summary>
+        /// Returns whether the <see cref="IUrlParameterCollection"/> contains any elements of the specific type.
+        /// </summary>
+        /// <typeparam name="T">The .NET type to search for that implements <see cref="IUrlParameter"/>.</typeparam>
+        /// <returns>
+        ///     <see langword="true"/>: if the collection contains a <see cref="IUrlParameter"/> of type <typeparamref name="T"/>;
+        ///     otherwise, <see langword="false"/>.
+        /// </returns>
+        bool ContainsType<T>() where T : IUrlParameter;
 
         /// <summary>
         /// Returns all of the <see cref="IUrlParameter"/> joined together into a single query <see cref="string"/> for a <see cref="Uri"/>.

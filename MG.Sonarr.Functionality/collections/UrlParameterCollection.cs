@@ -40,14 +40,21 @@ namespace MG.Sonarr.Functionality.Collections
         #endregion
 
         #region COLLECTION METHODS
-        public void Add(IUrlParameter item) => _list.Add(item);
+        public void Add(IUrlParameter item)
+        {
+            if (item == null)
+                return;
+
+            if (!_list.Exists(x => x.Equals(item)))
+                _list.Add(item);
+        }
         public void AddRange(IEnumerable<IUrlParameter> items)
         {
             if (items != null)
-                _list.AddRange(items.Where(x => x != null));
+                _list.AddRange(items.Where(x => x != null && !this.Contains(x)));
         }
         public void Clear() => _list.Clear();
-        public bool Contains(IUrlParameter item) => _list.Contains(item);
+        public bool Contains(IUrlParameter item) => _list.Exists(x => x.Equals(item));
         void ICollection<IUrlParameter>.CopyTo(IUrlParameter[] array, int arrayIndex) => _list.CopyTo(array, arrayIndex);
         public IEnumerator<IUrlParameter> GetEnumerator() => _list.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
@@ -93,6 +100,18 @@ namespace MG.Sonarr.Functionality.Collections
             }
 
             _list.Add(parameter);
+        }
+        /// <summary>
+        /// Returns whether the <see cref="UrlParameterCollection"/> contains any elements of the specific type.
+        /// </summary>
+        /// <typeparam name="T">The .NET type to search for that implements <see cref="IUrlParameter"/>.</typeparam>
+        /// <returns>
+        ///     <see langword="true"/>: if the collection contains a <see cref="IUrlParameter"/> of type <typeparamref name="T"/>;
+        ///     otherwise, <see langword="false"/>.
+        /// </returns>
+        public bool ContainsType<T>() where T : IUrlParameter
+        {
+            return _list.Exists(x => x is T);
         }
         public void ToQueryString(ref StringBuilder builder, params IUrlParameter[] oneOffs)
         {
