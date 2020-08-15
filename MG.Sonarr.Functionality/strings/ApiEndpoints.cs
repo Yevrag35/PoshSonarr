@@ -11,6 +11,7 @@ namespace MG.Sonarr.Functionality.Strings
     {
         private const string CONFIG = "/config";
         internal const string BY_ID = "/{0}";
+        internal const string API_PREFIX = "/api";
 
         public const string Backup = System + "/backup";
         public const string Calendar = "/calendar";

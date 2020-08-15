@@ -9,6 +9,8 @@ namespace MG.Sonarr.Functionality.Collections
     /// </summary>
     public interface IUrlParameterCollection : IList<IUrlParameter>
     {
+        int Length { get; }
+
         /// <summary>
         /// Copies the <see cref="IUrlParameter"/> element of the specified collection to this collection.
         /// </summary>

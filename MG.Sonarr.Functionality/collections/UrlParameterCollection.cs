@@ -8,6 +8,7 @@ namespace MG.Sonarr.Functionality.Collections
 {
     public class UrlParameterCollection :  IUrlParameterCollection
     {
+        private int _length;
         private List<IUrlParameter> _list;
         private const string SEPARATOR = "&";
 
@@ -19,6 +20,7 @@ namespace MG.Sonarr.Functionality.Collections
 
         public int Count => _list.Count;
         bool ICollection<IUrlParameter>.IsReadOnly => ((ICollection<IUrlParameter>)_list).IsReadOnly;
+        public int Length => _length;
 
         public UrlParameterCollection() => _list = new List<IUrlParameter>();
         public UrlParameterCollection(int capacity) => _list = new List<IUrlParameter>(capacity);
