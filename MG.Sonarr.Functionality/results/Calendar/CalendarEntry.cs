@@ -100,8 +100,8 @@ namespace MG.Sonarr.Results
         {
             return new IUrlParameter[2]
             {
-                new UrlParameter("start", start),
-                new UrlParameter("end", end)
+                UrlParameter.Create("start", start),
+                UrlParameter.Create("end", end)
             };
         }
         

@@ -33,6 +33,9 @@ namespace MG.Sonarr.Functionality
 
         private void AddPrefix()
         {
+            if (_isBuilt)
+                return;
+
             _builder.EnsureCapacity(ApiEndpoints.API_PREFIX.Length);
             _builder.Insert(0, ApiEndpoints.API_PREFIX);
         }
@@ -63,17 +66,20 @@ namespace MG.Sonarr.Functionality
 
         public Endpoint WithId(IConvertible icon)
         {
-            string str = Convert.ToString(icon);
-            _id = new char[str.Length];
-            for (int i = 0; i < str.Length; i++)
+            if (!_isBuilt)
             {
-                _id[i] = str[i];
+                string str = Convert.ToString(icon);
+                _id = new char[str.Length];
+                for (int i = 0; i < str.Length; i++)
+                {
+                    _id[i] = str[i];
+                }
             }
             return this;
         }
         public Endpoint WithPrefix(bool addPrefix)
         {
-            if (addPrefix & !this.IsBuilt)
+            if (addPrefix)
                 this.AddPrefix();
 
             return this;

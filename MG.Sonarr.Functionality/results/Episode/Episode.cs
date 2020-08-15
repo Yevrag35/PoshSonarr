@@ -52,7 +52,7 @@ namespace MG.Sonarr.Results
         bool IEquatable<IRecord>.Equals(IRecord other) => this.EpisodeId.Equals(other.Id);
         public static IComparer<EpisodeResult> GetComparer() => new EpisodeComparer();
 
-        public static IUrlParameter GetSeriesIdParameter(int seriesId) => new UrlParameter("seriesId", seriesId);
+        public static IUrlParameter GetSeriesIdParameter(int seriesId) => UrlParameter.Create("seriesId", seriesId);
 
         private class EpisodeComparer : IComparer<EpisodeResult>
         {

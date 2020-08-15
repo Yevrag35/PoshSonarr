@@ -6,16 +6,11 @@ namespace MG.Sonarr.Functionality.Url
 {
     internal struct UrlParameter : IUrlParameter
     {
+        internal const string KEY_VALUE_FORMAT = "{0}={1}";
         private string _val;
 
-        //IConvertible IUrlParameter.Key => this.Key;
         public string Key;
         public int Length => 1 + this.Key.Length + _val.Length;
-        //public IConvertible Value
-        //{
-        //    get => _val;
-        //    set => _val = Convert.ToString(value);
-        //}
 
         private UrlParameter(string key, IConvertible value)
         {
@@ -25,6 +20,6 @@ namespace MG.Sonarr.Functionality.Url
 
         internal static IUrlParameter Create(string key, IConvertible value) => new UrlParameter(key, value);
 
-        public string AsString() => string.Format("{0}={1}", this.Key, _val);
+        public string AsString() => string.Format(KEY_VALUE_FORMAT, this.Key, _val);
     }
 }
