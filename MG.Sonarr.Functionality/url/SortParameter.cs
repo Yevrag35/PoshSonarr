@@ -4,21 +4,24 @@ using System.Text;
 
 namespace MG.Sonarr.Functionality.Url
 {
-    public abstract class SortParameter
+    public abstract class SortParameter : IUrlParameter
     {
-        protected string SortDirectionString { get; private set; }
+        private const string SORT_DIR_FORMAT = "sortDir={0}";
 
-        /// <summary>
-        /// The direction the key is sorted.
-        /// </summary>
-        public SortDirection Value
+        protected StringBuilder Builder;
+        int IUrlParameter.Length => this.GetLength();
+
+        protected SortParameter(SortDirection direction)
         {
-            get => (SortDirection)Enum.Parse(typeof(SortDirection), this.SortDirectionString);
-            set => this.SortDirectionString = this.GetSortString(value);
+            Builder = new StringBuilder(string.Format(SORT_DIR_FORMAT, this.GetSortString(direction)));
         }
 
-        public SortParameter(SortDirection direction) => this.Value = direction;
-
+        string IUrlParameter.AsString() => this.FormatAsString();
+        protected virtual string FormatAsString()
+        {
+            return Builder.ToString();
+        }
+        public virtual int GetLength() => Builder.Length;
         private string GetSortString(SortDirection direction)
         {
             switch (direction)

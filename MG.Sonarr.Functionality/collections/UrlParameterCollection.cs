@@ -68,13 +68,12 @@ namespace MG.Sonarr.Functionality.Collections
         public void AddPagingParameter(int pageNumber, int pageSize)
         {
             var newParam = PagingParameter.Create(pageNumber, pageSize);
-            if (_list.Exists(x => x is PagingParameter))
+            IUrlParameter existing = _list.Find(x => x is PagingParameter);
+            if (existing != null)
             {
-                IUrlParameter existing = _list.Find(x => x is PagingParameter);
-
                 if (!newParam.Equals(existing))
                     _list.Remove(existing);
-                
+
                 else
                     return;
             }
