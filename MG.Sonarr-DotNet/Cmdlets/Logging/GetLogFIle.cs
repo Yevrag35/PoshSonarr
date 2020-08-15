@@ -16,11 +16,6 @@ namespace MG.Sonarr.Cmdlets.Logging
     [CmdletBinding(PositionalBinding = false)]
     public class GetLogFile : BaseSonarrCmdlet
     {
-        #region FIELDS/CONSTANTS
-        private const string EP = "/log/file";
-
-        #endregion
-
         #region PARAMETERS
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByLogFileId")]
         public int[] LogFileId { get; set; }
@@ -35,7 +30,7 @@ namespace MG.Sonarr.Cmdlets.Logging
 
         protected override void ProcessRecord()
         {
-            List<LogFile> logFiles = base.SendSonarrListGet<LogFile>(EP);
+            List<LogFile> logFiles = base.SendSonarrListGet<LogFile>(Endpoint.LogFile);
             if (logFiles != null && logFiles.Count > 0)
             {
                 base.WriteObject(this.FilterResults(logFiles), true);

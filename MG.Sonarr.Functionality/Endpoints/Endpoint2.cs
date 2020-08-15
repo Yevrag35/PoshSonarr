@@ -73,7 +73,7 @@ namespace MG.Sonarr.Functionality
         }
         public Endpoint WithPrefix(bool addPrefix)
         {
-            if (addPrefix)
+            if (addPrefix & !this.IsBuilt)
                 this.AddPrefix();
 
             return this;
@@ -97,37 +97,137 @@ namespace MG.Sonarr.Functionality
         }
 
         #region STATIC CONSTRUCTORS
+        /// <summary>
+        /// Points to the endpoint "/backup".
+        /// </summary>
         public static Endpoint Backup => new Endpoint(ApiEndpoints.Backup);
+        /// <summary>
+        /// Points to the endpoint "/calendar".
+        /// </summary>
         public static Endpoint Calendar => new Endpoint(ApiEndpoints.Calendar);
+        /// <summary>
+        /// Points to the endpoint "/command".
+        /// </summary>
         public static Endpoint Command => new Endpoint(ApiEndpoints.Command);
+        /// <summary>
+        /// Points to the endpoint "/delayprofile".
+        /// </summary>
         public static Endpoint DelayProfile => new Endpoint(ApiEndpoints.DelayProfile);
+        /// <summary>
+        /// Points to the endpoint "/diskspace".
+        /// </summary>
         public static Endpoint Diskspace => new Endpoint(ApiEndpoints.Diskspace);
+        /// <summary>
+        /// Points to the endpoint "/downloadclient".
+        /// </summary>
         public static Endpoint DownloadClient => new Endpoint(ApiEndpoints.DownloadClient);
+        /// <summary>
+        /// Points to the endpoint "/episode".
+        /// </summary>
         public static Endpoint Episode => new Endpoint(ApiEndpoints.Episode);
+        /// <summary>
+        /// Points to the endpoint "/episodefile".
+        /// </summary>
         public static Endpoint EpisodeFile => new Endpoint(ApiEndpoints.EpisodeFile);
+        /// <summary>
+        /// Points to the endpoint "/filesystem".
+        /// </summary>
         public static Endpoint FileSystem => new Endpoint(ApiEndpoints.FileSystem);
+        /// <summary>
+        /// Points to the endpoint "/history".
+        /// </summary>
         public static Endpoint History => new Endpoint(ApiEndpoints.History);
+        /// <summary>
+        /// Points to the endpoint "/config/host".
+        /// </summary>
         public static Endpoint HostConfig => new Endpoint(ApiEndpoints.HostConfig);
+        /// <summary>
+        /// Points to the endpoint "/indexer".
+        /// </summary>
         public static Endpoint Indexer => new Endpoint(ApiEndpoints.Indexer);
+        /// <summary>
+        /// Points to the endpoint "/config/indexer".
+        /// </summary>
         public static Endpoint IndexerOptions => new Endpoint(ApiEndpoints.IndexerOptions);
+        /// <summary>
+        /// Points to the endpoint "/indexer/schema".
+        /// </summary>
         public static Endpoint IndexerSchema => new Endpoint(ApiEndpoints.IndexerSchema);
+        /// <summary>
+        /// Points to the endpoint "/log".
+        /// </summary>
+        public static Endpoint Log => new Endpoint(ApiEndpoints.Log);
+        /// <summary>
+        /// Points to the endpoint "/log/file".
+        /// </summary>
         public static Endpoint LogFile => new Endpoint(ApiEndpoints.LogFile);
+        /// <summary>
+        /// Points to the endpoint "/manualimport".
+        /// </summary>
         public static Endpoint ManualImport => new Endpoint(ApiEndpoints.ManualImport);
+        /// <summary>
+        /// Points to the endpoint "/mediamanagement".
+        /// </summary>
         public static Endpoint MediaManagement => new Endpoint(ApiEndpoints.MediaManagement);
+        /// <summary>
+        /// Points to the endpoint "/metadata".
+        /// </summary>
         public static Endpoint Metadata => new Endpoint(ApiEndpoints.Metadata);
+        /// <summary>
+        /// Points to the endpoint "/notification".
+        /// </summary>
         public static Endpoint Notification => new Endpoint(ApiEndpoints.Notification);
+        /// <summary>
+        /// Points to the endpoint "/profile".
+        /// </summary>
         public static Endpoint Profile => new Endpoint(ApiEndpoints.Profile);
+        /// <summary>
+        /// Points to the endpoint "/qualitydefinition".
+        /// </summary>
         public static Endpoint QualityDefinition => new Endpoint(ApiEndpoints.QualityDefinitions);
+        /// <summary>
+        /// Points to the endpoint "/queue".
+        /// </summary>
         public static Endpoint Queue => new Endpoint(ApiEndpoints.Queue);
+        /// <summary>
+        /// Points to the endpoint "/release".
+        /// </summary>
         public static Endpoint Release => new Endpoint(ApiEndpoints.Release);
+        /// <summary>
+        /// Points to the endpoint "/remotepathmapping".
+        /// </summary>
         public static Endpoint RemotePathMapping => new Endpoint(ApiEndpoints.Mapping);
+        /// <summary>
+        /// Points to the endpoint "/system/restart".
+        /// </summary>
         public static Endpoint Restart => new Endpoint(ApiEndpoints.Restart);
+        /// <summary>
+        /// Points to the endpoint "/restriction".
+        /// </summary>
         public static Endpoint Restriction => new Endpoint(ApiEndpoints.Restriction);
+        /// <summary>
+        /// Points to the endpoint "/rootfolder".
+        /// </summary>
         public static Endpoint RootFolder => new Endpoint(ApiEndpoints.RootFolder);
+        /// <summary>
+        /// Points to the endpoint "/series".
+        /// </summary>
         public static Endpoint Series => new Endpoint(ApiEndpoints.Series);
+        /// <summary>
+        /// Points to the endpoint "/system/status".
+        /// </summary>
         public static Endpoint Status => new Endpoint(ApiEndpoints.Status);
+        /// <summary>
+        /// Points to the endpoint "/tag".
+        /// </summary>
         public static Endpoint Tag => new Endpoint(ApiEndpoints.Tag);
+        /// <summary>
+        /// Points to the endpoint "/update".
+        /// </summary>
         public static Endpoint Update => new Endpoint(ApiEndpoints.Update);
+        /// <summary>
+        /// Points to the endpoint "/wanted/missing".
+        /// </summary>
         public static Endpoint WantedMissing => new Endpoint(ApiEndpoints.WantedMissing);
 
 
