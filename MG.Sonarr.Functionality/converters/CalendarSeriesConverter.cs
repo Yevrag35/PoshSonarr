@@ -33,7 +33,7 @@ namespace MG.Sonarr.Functionality.Converters
         }
         public override void WriteJson(JsonWriter writer, Dictionary<string, object> value, JsonSerializer serializer)
         {
-            
+            serializer.Serialize(writer, value);
         }
     }
 }
