@@ -4,25 +4,31 @@ namespace MG.Sonarr.Functionality.Url
 {
     public class WantedMissingSortParameter : SortParameter, IUrlParameter
     {
-        IConvertible IUrlParameter.Key => this.Key;
-        public WantedMissingSortKey Key { get; set; }
+        private string _key;
 
+        IConvertible IUrlParameter.Key => this.Key;
+        public WantedMissingSortKey Key
+        {
+            get => (WantedMissingSortKey)Enum.Parse(typeof(WantedMissingSortKey), _key);
+            set => _key = value.ToString();
+        }
+        public int Length => 17 + _key.Length + base.SortDirectionString.Length;
         IConvertible IUrlParameter.Value => base.Value;
 
         public WantedMissingSortParameter(WantedMissingSortKey sortKey, SortDirection direction)
             : base(direction)
         {
-            this.Key = sortKey;
+            _key = this.GetKeyEnumAsString(sortKey);
         }
 
         public string AsString()
         {
-            return string.Format("sortKey={0}&sortDir={1}", this.GetKeyEnumAsString(), base.GetSortString());
+            return string.Format("sortKey={0}&sortDir={1}", _key, base.SortDirectionString);
         }
 
-        private string GetKeyEnumAsString()
+        private string GetKeyEnumAsString(WantedMissingSortKey sortKey)
         {
-            switch (this.Key)
+            switch (sortKey)
             {
                 case WantedMissingSortKey.SeriesTitle:
                     return "series.title";

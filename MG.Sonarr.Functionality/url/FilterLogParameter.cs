@@ -8,7 +8,7 @@ namespace MG.Sonarr.Functionality.Url
     public struct FilterLogParameter : IUrlParameter
     {
         private string _key;
-        private IConvertible _value;
+        private string _value;
 
         /// <summary>
         /// The 'filterKey' of the query parameter.
@@ -20,13 +20,14 @@ namespace MG.Sonarr.Functionality.Url
         }
         IConvertible IUrlParameter.Key => this.Key;
 
+        public int Length => 23 + _key.Length + _value.Length;
         /// <summary>
         /// The 'filterValue' of the query parameter.
         /// </summary>
         public IConvertible Value
         {
             get => _value;
-            set => _value = value;
+            set => _value = Convert.ToString(value);
         }
 
         /// <summary>
@@ -37,7 +38,7 @@ namespace MG.Sonarr.Functionality.Url
         public FilterLogParameter(string key, IConvertible value)
         {
             _key = key;
-            _value = value;
+            _value = Convert.ToString(value);
         }
 
         public string AsString()

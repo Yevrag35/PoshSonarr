@@ -7,12 +7,17 @@ namespace MG.Sonarr.Functionality.Url
     /// </summary>
     public class LogSortParameter : SortParameter, IUrlParameter
     {
-        IConvertible IUrlParameter.Key => this.Key;
+        private string _key;
+        IConvertible IUrlParameter.Key => _key;
         /// <summary>
         /// The log property key that is sorted.
         /// </summary>
-        public LogSortKey Key { get; set; }
-
+        public LogSortKey Key
+        {
+            get => (LogSortKey)Enum.Parse(typeof(LogSortKey), _key);
+            set => _key = value.ToString();
+        }
+        public int Length => 17 + _key.Length + base.SortDirectionString.Length;
         IConvertible IUrlParameter.Value => this.Value;
 
         /// <summary>

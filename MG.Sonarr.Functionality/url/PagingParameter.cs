@@ -7,10 +7,12 @@ namespace MG.Sonarr.Functionality.Url
     /// </summary>
     public struct PagingParameter : IUrlParameter
     {
+        private const string DEFAULT_PAGE = "1";
+        private const string DEFAULT_PAGE_SIZE = "10";
         public const int DefaultPage = 1;
         public const int DefaultPageSize = 10;
-        private int _key;
-        private int _val;
+        private string _key;
+        private string _val;
 
         IConvertible IUrlParameter.Key => this.Key;
         /// <summary>
@@ -21,16 +23,17 @@ namespace MG.Sonarr.Functionality.Url
         /// </remarks>
         public int Key
         {
-            get => _key;
+            get => Convert.ToInt32(_key);
             set
             {
                 if (value <= 0)
-                    _key = DefaultPage;
+                    _key = DEFAULT_PAGE;
 
                 else
-                    _key = value;
+                    _key = Convert.ToString(value);
             }
         }
+        public int Length => 15 + _key.Length + _val.Length;
         IConvertible IUrlParameter.Value => this.Value;
         /// <summary>
         /// The number of results returned on 1 page.
@@ -40,14 +43,14 @@ namespace MG.Sonarr.Functionality.Url
         /// </remarks>
         public int Value
         {
-            get => _val;
+            get => Convert.ToInt32(_val);
             set
             {
                 if (value <= 0)
-                    _val = DefaultPageSize;
+                    _val = DEFAULT_PAGE_SIZE;
 
                 else
-                    _val = value;
+                    _val = Convert.ToString(value);
             }
         }
 
@@ -58,8 +61,8 @@ namespace MG.Sonarr.Functionality.Url
         /// <param name="pageSize">The number of results returned on 1 page.</param>
         public PagingParameter(int pageNumber = DefaultPage, int pageSize = DefaultPageSize)
         {
-            _key = pageNumber;
-            _val = pageSize;
+            _key = Convert.ToString(pageNumber);
+            _val = Convert.ToString(pageSize);
         }
 
         public string AsString()

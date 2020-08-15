@@ -4,10 +4,16 @@ namespace MG.Sonarr.Functionality.Url
 {
     public class HistorySortParameter : SortParameter, IUrlParameter
     {
-        IConvertible IUrlParameter.Key => this.Key;
-        public HistorySortKey Key { get; set; }
+        private string _sortKey;
 
-        IConvertible IUrlParameter.Value => base.Value;
+        IConvertible IUrlParameter.Key => this.Key;
+        public HistorySortKey Key
+        {
+            get => (HistorySortKey)Enum.Parse(typeof(HistorySortKey), _sortKey);
+            set => _sortKey = value.ToString();
+        }
+        public int Length => 17 + _sortKey.Length + base.SortDirectionString.Length;
+        IConvertible IUrlParameter.Value => base.SortDirectionString;
 
         public HistorySortParameter(HistorySortKey sortKey, SortDirection direction)
             : base(direction)
@@ -17,7 +23,7 @@ namespace MG.Sonarr.Functionality.Url
 
         public string AsString()
         {
-            return string.Format("sortKey={0}&sortDir={1}", this.GetKeyEnumAsString(), this.GetSortString());
+            return string.Format("sortKey={0}&sortDir={1}", this.GetKeyEnumAsString(), base.SortDirectionString);
         }
 
         private string GetKeyEnumAsString()

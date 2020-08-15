@@ -8,9 +8,9 @@ namespace MG.Sonarr.Functionality.Collections
 {
     public class UrlParameterCollection :  IUrlParameterCollection
     {
-        private int _length;
         private List<IUrlParameter> _list;
         private const string SEPARATOR = "&";
+        private const string START_FILTER = "?";
 
         public IUrlParameter this[int index] 
         {
@@ -20,7 +20,7 @@ namespace MG.Sonarr.Functionality.Collections
 
         public int Count => _list.Count;
         bool ICollection<IUrlParameter>.IsReadOnly => ((ICollection<IUrlParameter>)_list).IsReadOnly;
-        public int Length => _length;
+        public int Length => 1 + _list.Sum(x => x.Length);
 
         public UrlParameterCollection() => _list = new List<IUrlParameter>();
         public UrlParameterCollection(int capacity) => _list = new List<IUrlParameter>(capacity);
@@ -54,27 +54,28 @@ namespace MG.Sonarr.Functionality.Collections
             {
                 builder.Append(this[i].AsString());
                 if (i < this.Count - 1)
-                    builder.Append("&");
+                    builder.Append(SEPARATOR);
             }
 
             if (oneOffs != null && oneOffs.Length > 0)
             {
                 if (builder.Length > 0)
-                    builder.Append("&");
+                    builder.Append(SEPARATOR);
 
                 for (int n = 0; n < oneOffs.Length; n++)
                 {
                     builder.Append(oneOffs[n].AsString());
                     if (n < oneOffs.Length - 1)
-                        builder.Append("&");
+                        builder.Append(SEPARATOR);
                 }
             }
 
-            builder.Insert(0, "?");
+            builder.Insert(0, START_FILTER);
         }
         public string ToQueryString(params IUrlParameter[] oneOffs)
         {
-            var builder = new StringBuilder(20);
+            int length = this.Length + (oneOffs?.Sum(x => x.Length)).GetValueOrDefault();
+            var builder = new StringBuilder(length);
             this.ToQueryString(ref builder, oneOffs);
             return builder.ToString();
         }

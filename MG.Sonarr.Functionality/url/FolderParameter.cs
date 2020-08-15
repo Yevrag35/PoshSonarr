@@ -15,7 +15,7 @@ namespace MG.Sonarr.Functionality.Url
         IConvertible IUrlParameter.Key => Key;
 
         private const string Key = "folder";
-
+        public int Length => 1 + Key.Length + _value.Length;
         IConvertible IUrlParameter.Value => this.Value;
         /// <summary>
         /// The value of the query parameter indicating the folder path to query.

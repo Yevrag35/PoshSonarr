@@ -10,7 +10,7 @@ namespace MG.Sonarr.Functionality.Url
 
         IConvertible IUrlParameter.Key => Key;
         public const string Key = "episodeId";
-
+        public int Length => 1 + Key.Length + _value.Length;
         IConvertible IUrlParameter.Value => this.Value;
         public long Value
         {

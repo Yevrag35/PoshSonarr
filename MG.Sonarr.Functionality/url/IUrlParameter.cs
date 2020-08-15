@@ -13,6 +13,8 @@ namespace MG.Sonarr.Functionality
         /// The key in the URL query parameter (the value on the left side of '=').
         /// </summary>
         IConvertible Key { get; }
+
+        int Length { get; }
         /// <summary>
         /// The value in the URL query parameter (the value on the right side of '=').
         /// </summary>
