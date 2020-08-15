@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "MG.Sonarr.Functionality": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "commandLineArgs": "-NoLogo -NoExit -Command \"Import-Module .\\MG.Sonarr.Functionality.dll\""
+    }
+  }
+}
