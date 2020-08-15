@@ -8,24 +8,37 @@ namespace MG.Sonarr.Functionality.Collections
 {
     public class UrlParameterCollection :  IUrlParameterCollection
     {
+        #region PRIVATE FIELDS/CONSTANTS
         private List<IUrlParameter> _list;
         private const string SEPARATOR = "&";
         private const string START_FILTER = "?";
 
+        #endregion
+
+        #region INDEXER
         public IUrlParameter this[int index] 
         {
             get => _list[index]; 
             set => _list[index] = value; 
         }
 
+        #endregion
+
+        #region PROPERTIES
         public int Count => _list.Count;
         bool ICollection<IUrlParameter>.IsReadOnly => ((ICollection<IUrlParameter>)_list).IsReadOnly;
         public int Length => 1 + _list.Sum(x => x.Length);
 
+        #endregion
+
+        #region CONSTRUCTORS
         public UrlParameterCollection() => _list = new List<IUrlParameter>();
         public UrlParameterCollection(int capacity) => _list = new List<IUrlParameter>(capacity);
         public UrlParameterCollection(IEnumerable<IUrlParameter> items) => _list = new List<IUrlParameter>(items.Where(x => x != null));
 
+        #endregion
+
+        #region COLLECTION METHODS
         public void Add(IUrlParameter item) => _list.Add(item);
         public void AddRange(IEnumerable<IUrlParameter> items)
         {
@@ -48,11 +61,16 @@ namespace MG.Sonarr.Functionality.Collections
         public bool Remove(IUrlParameter item) => _list.Remove(item);
         public void RemoveAt(int index) => _list.RemoveAt(index);
 
+        #endregion
+
+        #region SPECIAL METHODS
+
         public void ToQueryString(ref StringBuilder builder, params IUrlParameter[] oneOffs)
         {
             for (int i = 0; i < this.Count; i++)
             {
                 builder.Append(this[i].AsString());
+
                 if (i < this.Count - 1)
                     builder.Append(SEPARATOR);
             }
@@ -65,6 +83,7 @@ namespace MG.Sonarr.Functionality.Collections
                 for (int n = 0; n < oneOffs.Length; n++)
                 {
                     builder.Append(oneOffs[n].AsString());
+
                     if (n < oneOffs.Length - 1)
                         builder.Append(SEPARATOR);
                 }
@@ -79,5 +98,7 @@ namespace MG.Sonarr.Functionality.Collections
             this.ToQueryString(ref builder, oneOffs);
             return builder.ToString();
         }
+
+        #endregion
     }
 }
