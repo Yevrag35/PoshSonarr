@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MG.Sonarr.Functionality.Url;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,7 +65,22 @@ namespace MG.Sonarr.Functionality.Collections
         #endregion
 
         #region SPECIAL METHODS
+        public void AddPagingParameter(int pageNumber, int pageSize)
+        {
+            var newParam = PagingParameter.Create(pageNumber, pageSize);
+            if (_list.Exists(x => x is PagingParameter))
+            {
+                IUrlParameter existing = _list.Find(x => x is PagingParameter);
 
+                if (!newParam.Equals(existing))
+                    _list.Remove(existing);
+                
+                else
+                    return;
+            }
+
+            _list.Add(newParam);
+        }
         public void ToQueryString(ref StringBuilder builder, params IUrlParameter[] oneOffs)
         {
             for (int i = 0; i < this.Count; i++)

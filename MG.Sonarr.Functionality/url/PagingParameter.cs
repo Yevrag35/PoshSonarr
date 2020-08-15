@@ -5,53 +5,25 @@ namespace MG.Sonarr.Functionality.Url
     /// <summary>
     /// A URL query parameter for paging log results.
     /// </summary>
-    public struct PagingParameter : IUrlParameter
+    public struct PagingParameter : IEquatable<IUrlParameter>, IEquatable<PagingParameter>, IUrlParameter
     {
-        private const string DEFAULT_PAGE = "1";
-        private const string DEFAULT_PAGE_SIZE = "10";
+        private const string FORMAT = "page={0}&pageSize={1}";
         public const int DefaultPage = 1;
         public const int DefaultPageSize = 10;
         private string _key;
         private string _val;
 
-        //IConvertible IUrlParameter.Key => this.Key;
-        /// <summary>
-        /// The page number to start the query at.
-        /// </summary>
-        /// <remarks>
-        ///     If the page number is set to 0 or lower, the default page number will be used (1).
-        /// </remarks>
-        public int Key
-        {
-            get => Convert.ToInt32(_key);
-            set
-            {
-                if (value <= 0)
-                    _key = DEFAULT_PAGE;
-
-                else
-                    _key = Convert.ToString(value);
-            }
-        }
         public int Length => 15 + _key.Length + _val.Length;
-        //IConvertible IUrlParameter.Value => this.Value;
-        /// <summary>
-        /// The number of results returned on 1 page.
-        /// </summary>
-        /// <remarks>
-        ///     If the value is set to 0 or lower, the default page size will be used (10).
-        /// </remarks>
-        public int Value
-        {
-            get => Convert.ToInt32(_val);
-            set
-            {
-                if (value <= 0)
-                    _val = DEFAULT_PAGE_SIZE;
 
-                else
-                    _val = Convert.ToString(value);
-            }
+        private PagingParameter(string pageNumber, string pageSize)
+        {
+            _key = pageNumber;
+            _val = pageSize;
+        }
+
+        public string AsString()
+        {
+            return string.Format(FORMAT, _key, _val);
         }
 
         /// <summary>
@@ -59,15 +31,18 @@ namespace MG.Sonarr.Functionality.Url
         /// </summary>
         /// <param name="pageNumber">The page number to start the query at.</param>
         /// <param name="pageSize">The number of results returned on 1 page.</param>
-        public PagingParameter(int pageNumber = DefaultPage, int pageSize = DefaultPageSize)
+        public static PagingParameter Create(int pageNumber = DefaultPage, int pageSize = DefaultPageSize)
         {
-            _key = Convert.ToString(pageNumber);
-            _val = Convert.ToString(pageSize);
+            return new PagingParameter(pageNumber.ToString(), pageSize.ToString());
         }
 
-        public string AsString()
+        public bool Equals(IUrlParameter other) => this.Length.Equals(other.Length) && this.AsString().Equals(other.AsString());
+        public bool Equals(PagingParameter other)
         {
-            return string.Format("page={0}&pageSize={1}", this.Key, this.Value);
+            return this.Length.Equals(other.Length) &&
+                _key.Equals(other._key)
+                &&
+                _val.Equals(other._val);
         }
     }
 }

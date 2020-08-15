@@ -9,16 +9,10 @@ namespace MG.Sonarr.Functionality
     /// </summary>
     public interface IUrlParameter
     {
-        ///// <summary>
-        ///// The key in the URL query parameter (the value on the left side of '=').
-        ///// </summary>
-        //IConvertible Key { get; }
-
+        /// <summary>
+        /// The total character length of the <see cref="string"/> result when calling <see cref="IUrlParameter.AsString()"/>.
+        /// </summary>
         int Length { get; }
-        ///// <summary>
-        ///// The value in the URL query parameter (the value on the right side of '=').
-        ///// </summary>
-        //IConvertible Value { get; }
 
         /// <summary>
         /// Returns the query parameter in its <see cref="Uri"/> query form.
