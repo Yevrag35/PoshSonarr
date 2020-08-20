@@ -40,6 +40,7 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
+            Context.TagManager.ReloadAsync().GetAwaiter().GetResult();
             _ids = new HashSet<int>();
             _labels = new HashSet<string>();
             this.ProcessStringOrIdParameter(this.Label, _labels, _ids);
@@ -67,7 +68,7 @@ namespace MG.Sonarr.Cmdlets
             {
                 base.SendToPipeline(base.GetTagById(_ids).OrderBy(x => x.Id));
             }
-            Context.TagManager.ReloadAsync();
+
         }
 
         #endregion

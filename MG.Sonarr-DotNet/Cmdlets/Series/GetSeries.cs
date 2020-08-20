@@ -213,7 +213,7 @@ namespace MG.Sonarr.Cmdlets
                 _validate = _results.ToArray();
                 base.SendToPipeline(_validate);
             }
-            this.ValidateTags(_validate);
+            //this.ValidateTags(_validate);
         }
 
         #endregion
@@ -286,19 +286,19 @@ namespace MG.Sonarr.Cmdlets
             }
         }
 
-        private async Task ValidateTags(SeriesResult[] results)
-        {
-            if (results == null || results.Length <= 0)
-                return;
+        //private async Task ValidateTags(SeriesResult[] results)
+        //{
+        //    if (results == null || results.Length <= 0)
+        //        return;
 
-            IEnumerable<int> tags = results.SelectMany(x => x.Tags).Distinct();
-            IEnumerable<Tag> found = Context.TagManager.GetTags(tags);
-            if (!Context.TagManager.AllTags.IsSupersetOf(found))
-            {
-                await Context.TagManager.ReloadAsync();
-            }
-            Array.Clear(results, 0, results.Length);
-        }
+        //    IEnumerable<int> tags = results.SelectMany(x => x.Tags).Distinct();
+        //    IEnumerable<Tag> found = Context.TagManager.GetTags(tags);
+        //    if (!Context.TagManager.AllTags.IsSupersetOf(found))
+        //    {
+        //        await Context.TagManager.ReloadAsync();
+        //    }
+        //    Array.Clear(results, 0, results.Length);
+        //}
 
         #endregion
     }

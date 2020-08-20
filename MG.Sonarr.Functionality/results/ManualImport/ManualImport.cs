@@ -112,6 +112,10 @@ namespace MG.Sonarr.Results
                 new JProperty("seriesId", _series.Id)
             };
         }
+
+        public EpisodeComparison ShowComparison(bool showName = false) => 
+            new EpisodeComparison(this.Name, this.Episodes, showName);
+
         public override string ToJson() => JsonConvert.SerializeObject(this.PostThis(), Formatting.Indented);
         public override string ToJson(IDictionary parameters)
         {
