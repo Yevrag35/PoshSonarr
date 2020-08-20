@@ -60,11 +60,12 @@ namespace MG.Sonarr.Functionality.Tags
 
         public async Task ReloadAsync()
         {
-            HashSet<Tag> newSet = await this.LoadTagsAsync().ConfigureAwait(false);
+            HashSet<Tag> newSet = await this.LoadTagsIntoSetAsync().ConfigureAwait(false);
             if (! newSet.SetEquals(this.AllTags))
             {
+                newSet.ExceptWith(this.AllTags);
                 this.AllTags.UnionWith(newSet);
-                this.AllTags.RemoveWhere(x => !newSet.Contains(x));
+                this.AllTags.RemoveMissing(newSet);
                 this.AllTags.TrimExcess();
             }
             newSet.Clear();
@@ -257,6 +258,11 @@ namespace MG.Sonarr.Functionality.Tags
         {
             IRestListResponse<Tag> response = await _client.GetAsJsonListAsync<Tag>(this.Endpoint).ConfigureAwait(false);
             return new TagCollection(this.ProcessResponse(response));
+        }
+        private async Task<HashSet<Tag>> LoadTagsIntoSetAsync()
+        {
+            IRestListResponse<Tag> response = await _client.GetAsJsonListAsync<Tag>(this.Endpoint).ConfigureAwait(false);
+            return new HashSet<Tag>(this.ProcessResponse(response));
         }
 
         private void ProcessResponse(IRestResponse response)

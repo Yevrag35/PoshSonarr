@@ -24,10 +24,11 @@ namespace MG.Sonarr.Functionality.Collections
         /// <param name="tag">The tag to search for.</param>
         bool Contains(Tag tag);
 
-        bool IsSubsetOf(IEnumerable<Tag> other);
-        bool IsSupersetOf(IEnumerable<Tag> other);
-        bool Overlaps(IEnumerable<Tag> other);
-        bool SetEquals(IEnumerable<Tag> other);
+        //bool IsSubsetOf(IEnumerable<Tag> other);
+        //bool IsSupersetOf(IEnumerable<Tag> other);
+        //bool Overlaps(IEnumerable<Tag> other);
+        //bool SetEquals(IEnumerable<Tag> other);
+
 
     }
 }

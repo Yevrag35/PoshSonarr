@@ -16,18 +16,22 @@ namespace MG.Sonarr
     /// <summary>
     /// The static context used by the PoshSonarr module.  The 'Context' is set with the <see cref="ConnectInstance"/> cmdlet.
     /// </summary>
+#if DEBUG
+    public static partial class Context
+#else
     internal static partial class Context
+#endif
     {
-        #region FIELDS/CONSTANTS
+#region FIELDS/CONSTANTS
         //internal const string SLASH_STR = "/";
         internal const char SLASH = (char)47;
         internal const string ZERO_ONE = "{0}{1}";
 
         private static string Prefix = string.Empty;
 
-        #endregion
+#endregion
 
-        #region PROPERTIES
+#region PROPERTIES
 
         internal static QualityDictionary AllQualities { get; private set; }
 
@@ -36,8 +40,11 @@ namespace MG.Sonarr
         /// </summary>
         internal static ISonarrClient ApiCaller { get; private set; }
 
+#if DEBUG
+        public static IndexerSchemaCollection IndexerSchemas { get; private set; }
+#else
         internal static IndexerSchemaCollection IndexerSchemas { get; private set; }
-
+#endif
         /// <summary>
         /// Returns true when <see cref="Context.ApiCaller"/> is not null, has a base address, and contains a valid API key header.
         /// </summary>
@@ -52,9 +59,9 @@ namespace MG.Sonarr
 
         internal static ITagManager TagManager { get; private set; }
 
-        #endregion
+#endregion
 
-        #region METHODS
+#region METHODS
         internal static PSObject GetConnectionStatus()
         {
             var pso = new PSObject();
@@ -114,7 +121,7 @@ namespace MG.Sonarr
             }
         }
 
-        #region INITIALIZATION ASYNC METHODS
+#region INITIALIZATION ASYNC METHODS
         private async static Task<QualityDictionary> GetQualityDictionaryAsync(ISonarrClient client)
         {
             IRestListResponse<QualityDefinition> defResponse = await client.GetAsJsonListAsync<QualityDefinition>(Endpoint.QualityDefinition.WithPrefix(SonarrUrl.IncludeApiPrefix));
@@ -127,8 +134,8 @@ namespace MG.Sonarr
             return !schResponse.IsFaulted ? IndexerSchemaCollection.FromSchemas(schResponse.Content) : null;
         }
 
-        #endregion
+#endregion
 
-        #endregion
+#endregion
     }
 }

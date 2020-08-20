@@ -5,6 +5,7 @@ using MG.Sonarr.Functionality.Tags;
 using MG.Sonarr.Functionality.Url;
 using MG.Sonarr.Results;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -104,6 +105,9 @@ namespace MG.Sonarr.Functionality
         /// </summary>
         /// <returns>An <see cref="IEqualityComparer{T}"/> of <see cref="string"/>s that ignores case when determining equality.</returns>
         public static IEqualityComparer<string> NewIgnoreCase() => new IgnoreCase();
+        public static IComparer<string> NewIgnoreCaseComparer() => new IgnoreCaseComparer();
+        public static IComparer<string> NewIgnoreCaseComparer(bool cultureInvariant) =>
+            new IgnoreCaseComparer(cultureInvariant);
         public static IEqualityComparer<object> NewObjectIgnoreCase() => new IgnoreCase();
         /// <summary>
         /// Initializes a new <see cref="IJobHistory"/> class that manages command results sent to Sonarr.
@@ -123,5 +127,19 @@ namespace MG.Sonarr.Functionality
         }
 
         #endregion
+
+        private class IgnoreCaseComparer : IComparer<string>
+        {
+            private CaseInsensitiveComparer Comparer;
+            internal IgnoreCaseComparer() : this(false) { }
+            internal IgnoreCaseComparer(bool cultureInvariant)
+            {
+                Comparer = !cultureInvariant 
+                    ? CaseInsensitiveComparer.Default 
+                    : CaseInsensitiveComparer.DefaultInvariant;
+            }
+
+            public int Compare(string x, string y) => Comparer.Compare(x, y);
+        }
     }
 }
