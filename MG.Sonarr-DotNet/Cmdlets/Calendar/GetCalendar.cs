@@ -32,6 +32,7 @@ namespace MG.Sonarr.Cmdlets
         #region FIELDS/CONSTANTS
         private bool _today;
         private bool _tomorrow;
+        private bool _yesterday;
 
         #endregion
 
@@ -66,6 +67,13 @@ namespace MG.Sonarr.Cmdlets
         {
             get => _tomorrow;
             set => _tomorrow = value;
+        }
+
+        [Parameter(Mandatory = true, ParameterSetName = "ShowYesterday")]
+        public SwitchParameter Yesterday
+        {
+            get => _yesterday;
+            set => _yesterday = value;
         }
 
         /// <summary>
@@ -103,6 +111,10 @@ namespace MG.Sonarr.Cmdlets
             {
                 this.SetOneDayRange(DateTime.Today.AddDays(1));
             }
+            else if (_yesterday)
+            {
+                this.SetOneDayRange(DateTime.Today.AddDays(-1));
+            }
         }
 
         protected override void ProcessRecord()
@@ -111,7 +123,6 @@ namespace MG.Sonarr.Cmdlets
             string end = this.DateToString(this.EndDate);
 
             IUrlParameter[] parameters = CalendarEntry.GetStartEndParameters(start, end);
-            //string full = string.Format(ApiEndpoints.Calendar_WithDate, start, end);
 
             List<CalendarEntry> entries = this.GetCalendarEntries(Endpoint.Calendar.WithQuery(parameters));
 
