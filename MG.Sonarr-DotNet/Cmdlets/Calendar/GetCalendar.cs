@@ -30,9 +30,13 @@ namespace MG.Sonarr.Cmdlets
     public class GetCalendar : BaseSonarrCmdlet
     {
         #region FIELDS/CONSTANTS
+        private bool _nextWeek;
+        private bool _thisWeek;
         private bool _today;
         private bool _tomorrow;
         private bool _yesterday;
+
+        private const string SHORT_FORMAT = "{0} {1}";
 
         #endregion
 
@@ -54,6 +58,20 @@ namespace MG.Sonarr.Cmdlets
         /// </summary>
         [Parameter(Mandatory = false)]
         public DayOfWeek[] DayOfWeek { get; set; }
+
+        [Parameter(Mandatory = true, ParameterSetName = "ShowThisWeek")]
+        public SwitchParameter ThisWeek
+        {
+            get => _thisWeek;
+            set => _thisWeek = value;
+        }
+
+        [Parameter(Mandatory = true, ParameterSetName = "ShowNextWeek")]
+        public SwitchParameter NextWeek
+        {
+            get => _nextWeek;
+            set => _nextWeek = value;
+        }
 
         [Parameter(Mandatory = true, ParameterSetName = "ShowToday")]
         public SwitchParameter Today
@@ -89,10 +107,11 @@ namespace MG.Sonarr.Cmdlets
         #region CMDLET PROCESSING
         protected override void BeginProcessing()
         {
+            DateTime today = DateTime.Today;
             base.BeginProcessing();
             if (this.ContainsParameter(x => x.DayOfWeek) && !this.ContainsParameter(x => x.StartDate))
             {
-                this.StartDate = DateTime.Today;
+                this.StartDate = today;
                 if (!this.ContainsParameter(x => x.EndDate))
                 {
                     this.EndDate = this.StartDate.AddDays(8).AddSeconds(-1);
@@ -103,18 +122,28 @@ namespace MG.Sonarr.Cmdlets
             {
                 this.EndDate = this.StartDate.AddDays(7);
             }
+            else if (_thisWeek)
+            {
+                this.SetThisWeekRange(today);
+            }
+            else if (_nextWeek)
+            {
+                this.SetNextWeekRange(today);
+            }
             else if (_today)
             {
-                this.SetOneDayRange(DateTime.Today);
+                this.SetOneDayRange(today);
             }
             else if (_tomorrow)
             {
-                this.SetOneDayRange(DateTime.Today.AddDays(1));
+                this.SetOneDayRange(today.AddDays(1));
             }
             else if (_yesterday)
             {
-                this.SetOneDayRange(DateTime.Today.AddDays(-1));
+                this.SetOneDayRange(today.AddDays(-1));
             }
+
+            this.WriteVerboseDates();
         }
 
         protected override void ProcessRecord()
@@ -142,11 +171,30 @@ namespace MG.Sonarr.Cmdlets
         private List<CalendarEntry> GetCalendarEntries(string uri) => base.SendSonarrListGet<CalendarEntry>(uri);
 
         private string DateToString(DateTime dt) => dt.ToString(CalendarEntry.Calendar_DTFormat);
-
+        private void WriteVerboseDates()
+        {
+            string startForm = string.Format(SHORT_FORMAT, this.StartDate.ToShortDateString(), this.StartDate.ToShortTimeString());
+            string endForm = string.Format(SHORT_FORMAT, this.EndDate.ToShortDateString(), this.EndDate.ToShortTimeString());
+            //base.WriteFormatVerbose("START: {0}\r\nEND: {1}", startForm, endForm);
+            base.WriteFormatVerbose("Start - {0}", startForm);
+            base.WriteFormatVerbose("End   - {0}", endForm);
+        }
         private void SetOneDayRange(DateTime beginning)
         {
             this.StartDate = beginning;
             this.EndDate = beginning.AddDays(1).AddSeconds(-1);
+        }
+        private void SetThisWeekRange(DateTime today)
+        {
+            int begin = ((int)today.DayOfWeek - 1) * -1;
+            this.StartDate = today.AddDays(begin);
+            this.EndDate = this.StartDate.AddDays(7).AddSeconds(-1);
+        }
+        private void SetNextWeekRange(DateTime today)
+        {
+            this.SetThisWeekRange(today);
+            this.StartDate = this.StartDate.AddDays(7);
+            this.EndDate = this.EndDate.AddDays(7);
         }
 
         #endregion
