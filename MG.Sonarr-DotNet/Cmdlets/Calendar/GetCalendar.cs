@@ -1,5 +1,6 @@
 ﻿using MG.Posh.Extensions.Bound;
 using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Helpers;
 using MG.Sonarr.Functionality.Strings;
 using MG.Sonarr.Results;
 using System;
@@ -35,6 +36,7 @@ namespace MG.Sonarr.Cmdlets
         private bool _today;
         private bool _tomorrow;
         private bool _yesterday;
+        private DateRange _dateRange;
 
         private const string SHORT_FORMAT = "{0} {1}";
 
@@ -148,10 +150,10 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            string start = this.DateToString(this.StartDate);
-            string end = this.DateToString(this.EndDate);
+            //string start = this.DateToString(this.StartDate);
+            //string end = this.DateToString(this.EndDate);
 
-            IUrlParameter[] parameters = CalendarEntry.GetStartEndParameters(start, end);
+            IUrlParameter[] parameters = _dateRange.AsUrlParameters();
 
             List<CalendarEntry> entries = this.GetCalendarEntries(Endpoint.Calendar.WithQuery(parameters));
 
@@ -170,7 +172,7 @@ namespace MG.Sonarr.Cmdlets
         #region METHODS
         private List<CalendarEntry> GetCalendarEntries(string uri) => base.SendSonarrListGet<CalendarEntry>(uri);
 
-        private string DateToString(DateTime dt) => dt.ToString(CalendarEntry.Calendar_DTFormat);
+        //private string DateToString(DateTime dt) => dt.ToString(CalendarEntry.Calendar_DTFormat);
         private void WriteVerboseDates()
         {
             string startForm = string.Format(SHORT_FORMAT, this.StartDate.ToShortDateString(), this.StartDate.ToShortTimeString());
