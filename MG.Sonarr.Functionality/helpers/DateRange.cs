@@ -13,13 +13,18 @@ namespace MG.Sonarr.Functionality.Helpers
         private const string START = "start";
         private const string END = "end";
 
+        private bool _isSet;
+
         private DateTime _start;
         private DateTime _end;
+
+        public bool IsSet => _isSet;
 
         public DateRange()
         {
             _start = DateTime.Now;
             _end = _start.AddDays(7);
+            _isSet = true;
         }
         public DateRange(DateTime start)
         {
@@ -30,6 +35,7 @@ namespace MG.Sonarr.Functionality.Helpers
         {
             _start = start;
             _end = end;
+            _isSet = true;
         }
 
         public IUrlParameter[] AsUrlParameters()
@@ -53,14 +59,31 @@ namespace MG.Sonarr.Functionality.Helpers
             return outMsg;
         }
 
-        public static DateRange NextWeek => SetNextWeekRange();
-        public static DateRange ThisWeek => SetThisWeekRange();
-        public static DateRange Today => SetOneDayRange(DateTime.Today);
-        public static DateRange Tomorrow => SetOneDayRange(DateTime.Today.AddDays(1));
-        public static DateRange Yesterday => SetOneDayRange(DateTime.Today.AddDays(-1));
+        public void AddEndTime(DateTime end)
+        {
+            if (!this.IsSet)
+            {
+                _end = end;
+                _isSet = true;
+            }
+        }
+
+        public static DateRange NextWeek() => SetNextWeekRange();
+        public static DateRange ThisWeek() => SetThisWeekRange();
+        public static DateRange Special()
+        {
+            var dr = new DateRange(DateTime.Today, DateTime.Today.AddDays(8).AddSeconds(-1));
+            dr._isSet = true;
+            return dr;
+        }
+        public static DateRange Today() => SetOneDayRange(DateTime.Today);
+        public static DateRange Tomorrow() => SetOneDayRange(DateTime.Today.AddDays(1));
+        public static DateRange Yesterday() => SetOneDayRange(DateTime.Today.AddDays(-1));
         private static DateRange SetOneDayRange(DateTime beginning)
         {
-            return new DateRange(beginning, beginning.AddDays(1).AddSeconds(-1));
+            var dr = new DateRange(beginning, beginning.AddDays(1).AddSeconds(-1));
+            dr._isSet = true;
+            return dr;
         }
         private static DateRange SetThisWeekRange()
         {
@@ -72,8 +95,8 @@ namespace MG.Sonarr.Functionality.Helpers
         private static DateRange SetNextWeekRange()
         {
             DateRange range = SetThisWeekRange();
-            range._start.AddDays(7);
-            range._end.AddDays(7);
+            range._start = range._start.AddDays(7);
+            range._end = range._end.AddDays(7);
             return range;
         }
     }
