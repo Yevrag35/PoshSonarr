@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Functionality;
 using MG.Sonarr.Functionality.Converters;
 using MG.Sonarr.Functionality.Extensions;
+using MG.Sonarr.Functionality.Helpers;
 using MG.Sonarr.Functionality.Url;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -14,8 +15,6 @@ namespace MG.Sonarr.Results
     [JsonObject(MemberSerialization.OptIn)]
     public class CalendarEntry : BaseResult, IComparable<CalendarEntry>, IEquatable<CalendarEntry>
     {
-        public const string Calendar_DTFormat = "yyyy-MM-ddTHH:mm:ss";
-
         [JsonProperty("airDateUtc")]
         [JsonConverter(typeof(OffsetConverter))]
         private DateTimeOffset? _airDateUtcOffset;
@@ -96,14 +95,14 @@ namespace MG.Sonarr.Results
         #endregion
 
         #region OTHER METHODS
-         public static IUrlParameter[] GetStartEndParameters(string start, string end)
-        {
-            return new IUrlParameter[2]
-            {
-                new UrlParameter("start", start),
-                new UrlParameter("end", end)
-            };
-        }
+        // public static IUrlParameter[] GetStartEndParameters(DateRange dateRange)
+        //{
+        //    return new IUrlParameter[2]
+        //    {
+        //        new UrlParameter("start", start),
+        //        new UrlParameter("end", end)
+        //    };
+        //}
         
         public DateTimeOffset? GetTokyoTime()
         {
