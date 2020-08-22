@@ -19,6 +19,9 @@ namespace MG.Sonarr.Cmdlets
         #endregion
 
         #region PARAMETERS
+        [Parameter(Mandatory = false)]
+        public string[] Name { get; set; }
+
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
         [Alias("FullName")]
         public string[] Path { get; set; }
@@ -49,7 +52,8 @@ namespace MG.Sonarr.Cmdlets
             {
                 List<ManualImport> mis = base.GetPossibleImports(importPath);
                 if (mis != null && mis.Count > 0)
-                    _list.AddRange(base.FilterByStrings(mis, x => x.Series, this.SeriesName));
+                    _list.AddRange(base.FilterByStrings(mis, x => x.Series, this.SeriesName)
+                        .ThenFilterByStrings(this, x => x.Name, x => x.Name, this.Name));
             }
         }
 

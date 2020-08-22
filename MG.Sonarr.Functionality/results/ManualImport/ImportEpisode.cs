@@ -54,6 +54,20 @@ namespace MG.Sonarr.Results
             }
         }
 
+        public static ImportEpisode FromOther(IEpisode episode)
+        {
+            return new ImportEpisode
+            {
+                AbsoluteEpisodeNumber = episode.AbsoluteEpisodeNumber,
+                AirDate = episode.AirDate,
+                EpisodeNumber = episode.EpisodeNumber,
+                Id = episode.Id,
+                IsMonitored = episode.IsMonitored,
+                Name = episode.Name,
+                SeasonNumber = episode.SeasonNumber,
+                SeriesId = episode.SeriesId
+            };
+        }
         public void ApplyDataFromEpisode(IEpisode episode)
         {
             this.AbsoluteEpisodeNumber = episode.AbsoluteEpisodeNumber;
