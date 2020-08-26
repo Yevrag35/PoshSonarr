@@ -26,11 +26,9 @@ namespace MG.Sonarr.Results
         private NameId _series;
 
         #region JSON PROPERTIES
-        [JsonProperty("episodes")]
-        private List<ImportEpisode> _matchedEpisodes;
 
-        [JsonIgnore]
-        public List<IEpisode> Episodes { get; } = new List<IEpisode>();
+        [JsonProperty("episodes")]
+        public EpisodeList Episodes { get; private set; } = new EpisodeList();
 
         [JsonProperty("path", Order = 1)]
         public string FullPath { get; private set; }
@@ -84,10 +82,6 @@ namespace MG.Sonarr.Results
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
-            if (_matchedEpisodes != null && _matchedEpisodes.Count > 0)
-            {
-                this.Episodes.AddRange(_matchedEpisodes);
-            }
             if (_series == null)
             {
                 _series = new NameId

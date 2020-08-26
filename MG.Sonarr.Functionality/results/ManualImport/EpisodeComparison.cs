@@ -11,9 +11,11 @@ namespace MG.Sonarr.Results
         private const string EP_PROP_NAME = EP_PROP + "Name";
         private Dictionary<string, object> _dict;
 
-        internal EpisodeComparison(string fileName, List<IEpisode> episodes, bool showName)
+        internal EpisodeComparison(string fileName, IEnumerable<ImportEpisode> list, bool showName)
             : base()
         {
+            var episodes = new List<IEpisode>(list);
+
             _dict = new Dictionary<string, object>(2)
             {
                 { "Name", fileName }
