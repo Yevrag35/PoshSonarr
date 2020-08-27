@@ -9,35 +9,8 @@ using System.Linq.Expressions;
 
 namespace MG.Sonarr.Results
 {
-    public class SeasonCollection : ResultListBase<Season> //BaseResult, IEnumerable<Season>
+    public class SeasonCollection : ResultListBase<Season>
     {
-        #region INDEXERS
-        /// <summary>
-        /// Gets the <see cref="Season"/> element at the specified index.
-        /// </summary>
-        /// <param name="index">The zero-based index of the element to get.</param>
-        /// <returns>The <see cref="Season"/> element of the specified index.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">
-        ///     index is less than 0 -or- 
-        ///     index is equal to or greater than <see cref="SeasonCollection.Count"/>
-        /// </exception>
-        public Season this[int index]
-        {
-            get
-            {
-                if (index >= 0)
-                    return base.InnerList[index];
-
-                else
-                {
-                    int goHere = base.InnerList.Count + index;
-                    return goHere >= 0 ? base.InnerList[goHere] : null;
-                }
-            }
-        }
-
-        #endregion
-
         #region PROPERTIES
 
         #endregion
