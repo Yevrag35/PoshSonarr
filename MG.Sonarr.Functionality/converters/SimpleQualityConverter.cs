@@ -24,6 +24,12 @@ namespace MG.Sonarr.Functionality.Converters
         }
         public override void WriteJson(JsonWriter writer, (int, string) value, JsonSerializer serializer)
         {
+            writer.WriteStartObject();
+            writer.WritePropertyName("id");
+            writer.WriteValue(value.Item1);
+            writer.WritePropertyName("name");
+            writer.WriteValue(value.Item2);
+            writer.WriteEndObject();
         }
     }
 }
