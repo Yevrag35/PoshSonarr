@@ -51,7 +51,7 @@ namespace MG.Sonarr.Results
         public DateTime? FirstAired { get; private protected set; }
 
         /// <summary>
-        /// An array of genres that apply to the series.
+        /// An set of strings which are the genres that apply to the series.
         /// </summary>
         [JsonProperty("genres")]
         [JsonConverter(typeof(ReadOnlySetConverter<string>))]

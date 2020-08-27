@@ -23,7 +23,7 @@ namespace MG.Sonarr.Results
     {
         #region PROPERTIES
         [JsonProperty("value")]
-        public object BackendValue { get; private set; }
+        private object _backendValue;
 
         [JsonProperty("helpText")]
         public string HelpText { get; private set; }
@@ -48,14 +48,21 @@ namespace MG.Sonarr.Results
         [JsonConverter(typeof(SonarrStringEnumConverter))]
         public FieldType Type { get; private set; }
 
-        public object Value { get; set; }
+        public object Value
+        {
+            get => _backendValue;
+            set => _backendValue = value;
+        }
 
         [JsonConstructor]
-        public Field() { }
+        private Field() { }
+        private Field(object initialValue)
+        {
+            this.Value = initialValue;
+        }
         internal Field(IField field)
         {
             this.Name = field.Name;
-            this.BackendValue = field.BackendValue;
             this.HelpText = field.HelpText;
             this.IsAdvanced = field.IsAdvanced;
             this.Label = field.Label;
@@ -70,7 +77,7 @@ namespace MG.Sonarr.Results
             Order = order;
             Name = name;
             Label = label;
-            BackendValue = value;
+            _backendValue = value;
             Type = type;
             IsAdvanced = isAdvanced;
             this.SelectOptions = selectOptions;
@@ -83,7 +90,7 @@ namespace MG.Sonarr.Results
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
-            if (this.SelectOptions != null && this.BackendValue is long longVal)
+            if (this.SelectOptions != null && this._backendValue is long longVal)
             {
                 int intVal = Convert.ToInt32(longVal);
                 for (int i = 0; i < this.SelectOptions.Length; i++)
@@ -97,7 +104,7 @@ namespace MG.Sonarr.Results
                 }
             }
             else
-                this.Value = this.BackendValue;
+                this.Value = this._backendValue;
         }
 
         #endregion
@@ -118,6 +125,10 @@ namespace MG.Sonarr.Results
         }
 
         public string GetLabelNoSpaces() => this.Label.Replace(" ", string.Empty);
+
+        public static implicit operator Field(string fieldValue) => new Field(fieldValue);
+        public static implicit operator Field(int fieldValue) => new Field(fieldValue);
+        public static implicit operator Field(bool fieldValue) => new Field(fieldValue);
     }
 
     #endregion

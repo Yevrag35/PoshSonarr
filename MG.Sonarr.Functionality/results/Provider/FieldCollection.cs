@@ -21,6 +21,18 @@ namespace MG.Sonarr.Results
             }
         }
         IField IReadOnlyList<IField>.this[int index] => this[index];
+        public new Field this[string key]
+        {
+            get => base[key];
+            set
+            {
+                object val = value.Value;
+                if (base.InnerList.ContainsKey(key))
+                {
+                    base.InnerList[key].Value = val;
+                }
+            }
+        }
 
         #endregion
 

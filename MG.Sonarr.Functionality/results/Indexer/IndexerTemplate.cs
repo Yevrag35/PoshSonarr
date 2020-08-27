@@ -18,6 +18,7 @@ namespace MG.Sonarr.Functionality
         [JsonProperty("configContract")]
         public string ConfigContract { get; }
         [JsonProperty("fields")]
+        [JsonConverter(typeof(SortedListConverter<FieldCollection, string, Field>))]
         public FieldCollection Fields { get; }
         IEnumerable<IField> IIndexer.Fields => this.Fields;
         [JsonIgnore]

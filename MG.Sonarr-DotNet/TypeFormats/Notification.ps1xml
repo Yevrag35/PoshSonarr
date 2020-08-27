@@ -14,7 +14,11 @@
 								<PropertyName>ConfigContract</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>Fields</PropertyName>
+								<!--<PropertyName>Fields</PropertyName>-->
+								<Label>Fields</Label>
+								<ScriptBlock>
+									"{{Host = {0}; Port = {1}; UserName = {2}; UpdateLibrary = {3};}}" -f $_.Fields["Host"].Value, $_.Fields["Port"].Value, $_.Fields["UserName"].Value, $_.Fields["UpdateLibrary"].Value
+								</ScriptBlock>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Id</PropertyName>
@@ -53,9 +57,6 @@
 								<PropertyName>OnGrab</PropertyName>
 							</ListItem>
 							<ListItem>
-								<PropertyName>OnHealthIssue</PropertyName>
-							</ListItem>
-							<ListItem>
 								<PropertyName>OnRename</PropertyName>
 							</ListItem>
 							<ListItem>
@@ -66,9 +67,6 @@
 							</ListItem>
 							<ListItem>
 								<PropertyName>SupportsOnGrab</PropertyName>
-							</ListItem>
-							<ListItem>
-								<PropertyName>SupportsOnHealthWarnings</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>SupportsOnRename</PropertyName>

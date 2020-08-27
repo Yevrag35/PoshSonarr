@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Functionality;
+﻿using MG.Sonarr.Functionality.Converters;
 using Newtonsoft.Json;
 using System;
 
@@ -10,6 +10,7 @@ namespace MG.Sonarr.Results
         public string ConfigContract { get; protected private set; }
 
         [JsonProperty("fields", Order = 3)]
+        [JsonConverter(typeof(SortedListConverter<FieldCollection, string, Field>))]
         public FieldCollection Fields { get; protected private set; }
 
         [JsonProperty("implementationName", Order = 3)]

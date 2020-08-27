@@ -6,7 +6,7 @@ namespace MG.Sonarr.Functionality
 {
     public interface IField : IJsonObject
     {
-        object BackendValue { get; }
+        //object BackendValue { get; }
         string HelpText { get; }
         bool IsAdvanced { get; }
         string Label { get; }

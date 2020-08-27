@@ -12,7 +12,7 @@ namespace MG.Sonarr.Results
     [JsonObject(MemberSerialization.OptIn)]
     public class Notification : MessageProvider, ISupportsTagUpdate
     {
-        object ISupportsTagUpdate.Id => this.Name;
+        object ISupportsTagUpdate.Id => this.Id;
 
         #region JSON PROPERTIES
 
