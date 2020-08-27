@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results.Collections;
+﻿using MG.Sonarr.Functionality.Collections;
+using MG.Sonarr.Functionality.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
@@ -8,66 +9,132 @@ using System.Linq;
 namespace MG.Sonarr.Results
 {
     [Serializable]
-    public class AllowedQualityCollection : ResultListBase<AllowedQuality>
+    public class AllowedQualityCollection : SortedListBase<AllowedQuality>, IReadOnlyList<AllowedQuality>
     {
-        #region INDEXERS
+        [JsonIgnore]
+        private Dictionary<int, string> _map;
 
-        public AllowedQuality this[string qualityName] => this.Find(x => x.Quality.Name.Equals(qualityName, StringComparison.CurrentCultureIgnoreCase));
+        #region INDEXERS
+        public AllowedQuality this[int index]
+        {
+            get
+            {
+                int posIndex = this.GetPositiveIndex(index);
+                return posIndex > -1 ? base.InnerList.Values[posIndex] : null;
+            }
+        }
 
         #endregion
 
         #region CONSTRUCTORS
         [JsonConstructor]
-        internal AllowedQualityCollection(IEnumerable<AllowedQuality> qualityItems) : base(qualityItems) { }
+        internal AllowedQualityCollection(IEnumerable<AllowedQuality> qualityItems)
+            : base(qualityItems, q => q.Quality.Name)
+        {
+            _map = base.InnerList.ToDictionary(x => x.Value.Quality.Id, x => x.Key);
+        }
 
         #endregion
 
         #region METHODS
         internal void Allow(IEnumerable<Quality> allowables)
         {
-            base.InnerList.ForEach((x) =>
+            foreach (Quality q in allowables)
             {
-                if (allowables.Contains(x.Quality))
+                if (_map.ContainsKey(q.Id))
                 {
-                    x.Allowed = true;
+                    base.InnerList[_map[q.Id]].Allowed = true;
                 }
-            });
+            }
         }
-        public bool ContainsQualityById(int qualityId) => base.InnerList.Exists(x => x.Quality.Id.Equals(qualityId));
-        public bool ContainsQualityByName(string qualityName)
+        internal void Allow(params string[] names)
         {
-            StringComparison comparison = StringComparison.CurrentCultureIgnoreCase;
-            return base.InnerList.Exists(x => x.Quality.Name.Equals(qualityName, comparison));
+            if (names == null || names.Length <= 0)
+                return;
+
+            for (int i = 0; i < names.Length; i++)
+            {
+                string name = names[i];
+                if (base.InnerList.ContainsKey(name))
+                    base.InnerList[name].Allowed = true;
+            }
+        }
+        internal void Allow(params int[] ids)
+        {
+            if (ids == null || ids.Length <= 0)
+                return;
+
+            for (int i = 0; i < ids.Length; i++)
+            {
+                int id = ids[i];
+                if (_map.ContainsKey(id))
+                {
+                    base.InnerList[_map[id]].Allowed = true;
+                }
+            }
+        }
+        public bool ContainsId(int id)
+        {
+            return _map.ContainsKey(id);
+        }
+        public bool Contains(string qualityName)
+        {
+            return base.InnerList.ContainsKey(qualityName);
         }
         internal void Disallow(IEnumerable<Quality> disallowables)
         {
-            base.InnerList.ForEach((x) =>
+            foreach (Quality q in disallowables)
             {
-                if (disallowables.Contains(x.Quality))
+                if (_map.ContainsKey(q.Id))
                 {
-                    x.Allowed = false;
+                    base.InnerList[_map[q.Id]].Allowed = false;
                 }
-            });
+            }
         }
-        internal int FindIndex(Predicate<AllowedQuality> match) => base.InnerList.FindIndex(match);
-        internal void ForEach(Action<AllowedQuality> action) => base.InnerList.ForEach(action);
-        public AllowedQuality GetAllowedQualityByName(string qualityName)
+        internal void Disallow(params string[] names)
         {
-            StringComparison comparison = StringComparison.CurrentCultureIgnoreCase;
-            return base.InnerList.Find(x => x.Quality.Name.Equals(qualityName, comparison));
-        }
-        public AllowedQuality GetAllowedQualityById(int qualityId) => base.InnerList.Find(x => x.Quality.Id.Equals(qualityId));
-        public bool HasQualityAllowed(int qualityId)
-        {
-            bool? result = base.InnerList.Find(x => x.Quality.Id.Equals(qualityId))?.Allowed;
-            if (!result.HasValue)
-                result = false;
+            if (names == null || names.Length <= 0)
+                return;
 
-            return result.Value;
+            for (int i = 0; i < names.Length; i++)
+            {
+                string name = names[i];
+                if (base.InnerList.ContainsKey(name))
+                    base.InnerList[name].Allowed = false;
+            }
         }
-        public void Sort() => base.InnerList.Sort();
-        public void Sort(IComparer<AllowedQuality> comparer) => base.InnerList.Sort(comparer);
-        public AllowedQuality[] ToArray() => base.InnerList.ToArray();
+        internal void Disallow(params int[] ids)
+        {
+            if (ids == null || ids.Length <= 0)
+                return;
+
+            for (int i = 0; i < ids.Length; i++)
+            {
+                int id = ids[i];
+                if (_map.ContainsKey(id))
+                {
+                    base.InnerList[_map[id]].Allowed = false;
+                }
+            }
+        }
+        public AllowedQuality GetById(int id)
+        {
+            AllowedQuality aq = null;
+            if (_map.ContainsKey(id))
+            {
+                aq = base.InnerList[_map[id]];
+            }
+            return aq;
+        }
+        public bool IsAllowed(int qualityId)
+        {
+            bool result = false;
+            if (_map.ContainsKey(qualityId))
+            {
+                result = base.InnerList[_map[qualityId]].Allowed;
+            }
+            return result;
+        }
 
         #endregion
 
