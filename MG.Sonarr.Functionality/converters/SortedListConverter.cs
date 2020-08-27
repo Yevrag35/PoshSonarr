@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace MG.Sonarr.Functionality.Converters
 {
-    public class SortedListConverter<TCol, TVal> : JsonConverter<TCol> where TCol : SortedStringList<TVal>
+    public class SortedListConverter<TCol, TKey, TVal> : JsonConverter<TCol> where TCol : SortedListBase<TKey, TVal>
     {
         public override TCol ReadJson(JsonReader reader, Type objectType, TCol existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
