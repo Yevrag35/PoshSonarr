@@ -212,7 +212,8 @@
     <None Include="TypeFormats\DownloadClient.ps1xml" />
     <None Include="TypeFormats\Episode.ps1xml" />
     <None Include="TypeFormats\EpisodeFile.ps1xml" />
-    <None Include="TypeFormats\Field.ps1xml" />
+    <None Include="TypeFormats\Field.ps1xml.old" />
+    <None Include="TypeFormats\Field_Table.ps1xml" />
     <None Include="TypeFormats\Indexer.ps1xml" />
     <None Include="TypeFormats\ImportEpisode.ps1xml" />
     <None Include="TypeFormats\ManualImport.ps1xml" />

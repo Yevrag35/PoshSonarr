@@ -62,10 +62,10 @@ namespace MG.Sonarr.Cmdlets
             Quality cutoff = _dynLib.GetUnderlyingValue<Quality>(CUTOFF_QUALITY);
             var newProfile = new QualityProfileNew
             {
-                Cutoff = cutoff,
                 Language = this.Language,
                 Name = this.Name
             };
+            newProfile.SetCutoff(cutoff);
             newProfile.PopulateQualities(Context.AllQualities);
             IEnumerable<Quality> allowables = _dynLib.GetUnderlyingValues<Quality>(ALLOWED_QUALITIES);
             newProfile.ApplyAllowables(allowables);

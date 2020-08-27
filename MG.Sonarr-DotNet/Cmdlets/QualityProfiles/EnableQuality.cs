@@ -1,14 +1,17 @@
 ﻿using MG.Dynamic;
+using MG.Posh.Extensions.Bound;
 using MG.Sonarr.Functionality;
 using MG.Sonarr.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Cmdlets
 {
-    [Cmdlet(VerbsLifecycle.Enable, "Quality", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsLifecycle.Enable, "Quality", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
+        DefaultParameterSetName = "ByName")]
     [OutputType(typeof(QualityProfile))]
     [CmdletBinding(PositionalBinding = false)]
     public class SetAllowedQuality : BaseSonarrCmdlet, IDynamicParameters
@@ -17,6 +20,7 @@ namespace MG.Sonarr.Cmdlets
         private DynamicLibrary _dynLib;
 
         private const string QUALITY = "Name";
+        private const string ID = "Id";
 
         #endregion
 
@@ -37,7 +41,13 @@ namespace MG.Sonarr.Cmdlets
                     new DynamicParameter<Quality>(QUALITY, true, Context.AllQualities, x => x.Name, "Quality")
                     {
                         Mandatory = true,
+                        ParameterSetName = "ByName",
                         Position = 0
+                    },
+                    new DynamicParameter<Quality>(ID, true, Context.AllQualities, x => x.Id)
+                    {
+                        Mandatory = true,
+                        ParameterSetName = "ById"
                     }
                 };
             }
@@ -51,14 +61,37 @@ namespace MG.Sonarr.Cmdlets
 
         protected override void ProcessRecord()
         {
-            IEnumerable<string> names = _dynLib.GetParameterValues<string>(QUALITY);
-            if (base.FormatShouldProcess(string.Format("Enabling '{0}'", string.Join("', '", names)), "Profile Id: {0}",
+            IEnumerable<object> objs = null;
+            Action<QualityProfile, IEnumerable<object>> exp = null;
+            if (this.ContainsAnyParameterNames(ID))
+            {
+                objs = _dynLib.GetParameterValues(ID).ToArray();
+                exp = (a, o) => ApplyIds(a, o);
+            }
+            else if (this.ContainsAnyParameterNames(QUALITY))
+            {
+                objs = _dynLib.GetParameterValues(QUALITY);
+                exp = (a, o) => ApplyNames(a, o);
+            }
+            if (base.FormatShouldProcess(this.GetMessage(objs), "Profile Id: {0}",
                 this.InputObject.Id))
             {
-                IEnumerable<Quality> _chosen = _dynLib.GetUnderlyingValues<Quality>(QUALITY);
-                this.InputObject.ApplyAllowables(_chosen);
+                exp.Invoke(this.InputObject, objs);
                 base.WriteObject(this.InputObject);
             }
+        }
+
+        private string GetMessage(IEnumerable<object> objs)
+        {
+            return string.Format("Enabling '{0}'", string.Join("', '", objs));
+        }
+        private void ApplyIds(QualityProfile qp, IEnumerable<object> ids)
+        {
+            qp.ApplyAllowablesById(ids.Cast<int>().ToArray());
+        }
+        private void ApplyNames(QualityProfile qp, IEnumerable<object> names)
+        {
+            qp.ApplyAllowablesByName(names.Cast<string>().ToArray());
         }
 
         #endregion

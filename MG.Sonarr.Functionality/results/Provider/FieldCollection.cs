@@ -51,9 +51,16 @@ namespace MG.Sonarr.Results
         #endregion
 
         #region PUBLIC METHODS
+        public override IEnumerator<Field> GetEnumerator()
+        {
+            foreach (Field field in base.InnerList.Values.OrderBy(x => x.Order))
+            {
+                yield return field;
+            }
+        }
         IEnumerator<IField> IEnumerable<IField>.GetEnumerator()
         {
-            foreach (IField field in base.InnerList.Values)
+            foreach (IField field in base.InnerList.Values.OrderBy(x => x.Order))
             {
                 yield return field;
             }

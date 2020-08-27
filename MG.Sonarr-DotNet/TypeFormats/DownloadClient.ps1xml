@@ -25,7 +25,8 @@
 						<Alignment>Left</Alignment>
 					</TableColumnHeader>
 					<TableColumnHeader>
-						<!-- Config -->
+						<!-- Fields -->
+						<Label>Fields</Label>
 						<Alignment>Left</Alignment>
 					</TableColumnHeader>
 				</TableHeaders>
@@ -45,7 +46,9 @@
 								<PropertyName>Protocol</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
-								<PropertyName>Fields</PropertyName>
+								<ScriptBlock>
+									"{{Host = {0}; Port = {1}; UserName = {2}}}" -f $_.Fields["Host"].Value, $_.Fields["Port"].Value, $_.Fields["UserName"].Value
+								</ScriptBlock>
 							</TableColumnItem>
 						</TableColumnItems>
 					</TableRowEntry>

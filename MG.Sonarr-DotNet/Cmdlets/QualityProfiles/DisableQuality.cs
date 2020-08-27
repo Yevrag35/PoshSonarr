@@ -57,10 +57,10 @@ namespace MG.Sonarr.Cmdlets.QualityProfiles
         protected override void ProcessRecord()
         {
             _names = _dynLib.GetParameterValues<string>(QUALITY);
-            if (_names.Contains(this.InputObject.Cutoff.Name, _comparer))
+            if (_names.Contains(this.InputObject.Cutoff, _comparer))
             {
-                base.WriteWarning(string.Format("You cannot disable the cutoff resolution \"{0}\".  Skipping...", this.InputObject.Cutoff.Name));
-                _names = _names.Where(x => !x.Equals(this.InputObject.Cutoff.Name, StringComparison.CurrentCultureIgnoreCase));
+                base.WriteWarning(string.Format("You cannot disable the cutoff resolution \"{0}\".  Skipping...", this.InputObject.Name));
+                _names = _names.Where(x => !x.Equals(this.InputObject.Name, StringComparison.CurrentCultureIgnoreCase));
             }
             if (base.FormatShouldProcess(string.Format("Disabling '{0}'", string.Join("', '", _names)), "Profile Id: {0}",
                 this.InputObject.Id))

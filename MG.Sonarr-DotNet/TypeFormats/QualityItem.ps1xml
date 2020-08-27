@@ -32,19 +32,19 @@
 					<TableRowEntry>
 						<TableColumnItems>
 							<TableColumnItem>
-								<ScriptBlock>$_.Quality.Id</ScriptBlock>
+								<PropertyName>Id</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
-								<ScriptBlock>$_.Quality.Name</ScriptBlock>
+								<PropertyName>Name</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
 								<PropertyName>Allowed</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
-								<ScriptBlock>$_.Quality.Resolution</ScriptBlock>
+								<PropertyName>Resolution</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
-								<ScriptBlock>$_.Quality.Source</ScriptBlock>
+								<PropertyName>Source</PropertyName>
 							</TableColumnItem>
 						</TableColumnItems>
 					</TableRowEntry>

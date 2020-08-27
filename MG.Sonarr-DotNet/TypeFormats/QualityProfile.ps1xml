@@ -11,11 +11,16 @@
 					<ListEntry>
 						<ListItems>
 							<ListItem>
-								<Label>Cutoff</Label>
-								<ScriptBlock>"{{{0}}}" -f $_.Cutoff.Name</ScriptBlock>
+								<PropertyName>Cutoff</PropertyName>
 							</ListItem>
 							<ListItem>
 								<PropertyName>Id</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Language</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Name</PropertyName>
 							</ListItem>
 							<ListItem>
 								<Label>AllowedQualities</Label>
@@ -24,19 +29,13 @@
 									$allowed,$notAllowed = $_.AllowedQualities.Where({$_.Allowed},"Split")
 									$list = New-Object -TypeName "System.Collections.Generic.List[string]" -ArgumentList $_.AllowedQualities.Count
 									foreach ($a in $allowed) {
-										$list.Add(($str -f $a.Quality.Name, $a.Allowed))
+									$list.Add(($str -f $a.Name, $a.Allowed))
 									}
 									foreach ($n in $notAllowed) {
-										$list.Add(($str -f $n.Quality.Name, $n.Allowed))
+									$list.Add(($str -f $n.Name, $n.Allowed))
 									}
 									$list
 								</ScriptBlock>
-							</ListItem>
-							<ListItem>
-								<PropertyName>Language</PropertyName>
-							</ListItem>
-							<ListItem>
-								<PropertyName>Name</PropertyName>
 							</ListItem>
 						</ListItems>
 					</ListEntry>

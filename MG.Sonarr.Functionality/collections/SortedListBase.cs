@@ -83,7 +83,7 @@ namespace MG.Sonarr.Functionality.Collections
         /// <returns>
         ///      A <see cref="IEnumerator{TValue}"/> for the <see cref="SortedStringList{TValue}"/>.
         /// </returns>
-        public IEnumerator<TValue> GetEnumerator() => this.InnerList.Values.GetEnumerator();
+        public virtual IEnumerator<TValue> GetEnumerator() => this.InnerList.Values.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => this.InnerList.GetEnumerator();
 
         #endregion

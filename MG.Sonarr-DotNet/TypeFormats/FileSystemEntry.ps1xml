@@ -2,7 +2,7 @@
 <Configuration>
     <ViewDefinitions>
         <View>
-            <Name>Tag</Name>
+            <Name>FileSystemEntry Table View</Name>
             <ViewSelectedBy>
                 <TypeName>MG.Sonarr.Results.FileSystemEntry</TypeName>
             </ViewSelectedBy>

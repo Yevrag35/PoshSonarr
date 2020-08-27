@@ -15,13 +15,20 @@ namespace MG.Sonarr.Results
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public class QualityProfileNew : BaseResult, IGetEndpoint
     {
-        private IEqualityComparer<string> _comparer;
-
-        [JsonProperty("cutoff", Order = 2)]
-        public Quality Cutoff { get; set; }
+        //private IEqualityComparer<string> _comparer;
 
         [JsonProperty("items", Order = 3)]
         public AllowedQualityCollection AllowedQualities { get; private set; }
+
+        [JsonProperty("cutoff", Order = 2)]
+        [JsonConverter(typeof(QualityConverter))]
+        private IQuality _cutoff;
+
+        [JsonIgnore]
+        public string Cutoff => _cutoff?.Name;
+
+        [JsonIgnore]
+        public int? CutOffId => _cutoff?.Id;
 
         [JsonProperty("language", Order = 4)]
         [JsonConverter(typeof(SonarrStringEnumConverter))]
@@ -32,37 +39,52 @@ namespace MG.Sonarr.Results
 
         public QualityProfileNew()
         {
-            _comparer = SonarrFactory.NewIgnoreCase();
         }
 
         public string GetEndpoint() => ApiEndpoints.Profile;
 
-        public bool IsQualityAllowed(string name)
-        {
-            return (this.AllowedQualities[name]?.Allowed).GetValueOrDefault();
-        }
-        public bool IsQualityAllowed(int qualityId)
-        {
-            return this.AllowedQualities.IsAllowed(qualityId);
-        }
-
-        public void ApplyAllowables(IEnumerable<Quality> allowables)
+        public void ApplyAllowables(IEnumerable<IQuality> allowables)
         {
             this.AllowedQualities.Allow(allowables);
         }
-        public void ApplyDisallowables(IEnumerable<Quality> disallowables)
+        public void ApplyAllowablesByName(params string[] names)
         {
-            this.AllowedQualities.Disallow(disallowables.Where(x => this.Cutoff?.Id != x.Id));
+            this.AllowedQualities.Allow(names);
         }
-
-        public void PopulateQualities(IEnumerable<Quality> qualities)
+        public void ApplyAllowablesById(params int[] ids)
         {
-            this.AllowedQualities = new AllowedQualityCollection(qualities.Select(x => AllowedQuality.FromQuality(x, false)));
-            if (this.Cutoff != null)
+            this.AllowedQualities.Allow(ids);
+        }
+        public void ApplyDisallowables(IEnumerable<IQuality> disallowables)
+        {
+            if (_cutoff != null)
+                disallowables = disallowables.Where(x => !x.Id.Equals(_cutoff.Id));
+
+            this.AllowedQualities.Disallow(disallowables);
+        }
+        public void ApplyDisallowables(IEnumerable<string> names)
+        {
+            bool cutOffNull = _cutoff == null;
+
+            foreach (string name in names)
             {
-                this.AllowedQualities[this.Cutoff.Name].Allowed = true;
+                if (cutOffNull || _cutoff.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase))
+                    continue;
+
+                this.AllowedQualities.Disallow(name);
             }
         }
+
+        public void PopulateQualities(IEnumerable<IQuality> qualities)
+        {
+            this.AllowedQualities = new AllowedQualityCollection(qualities.Select(x => AllowedQuality.FromQuality(x, false)));
+            if (this._cutoff != null)
+            {
+                this.AllowedQualities[this._cutoff.Name].Allowed = true;
+            }
+        }
+
+        public void SetCutoff(IQuality quality) => _cutoff = quality;
     }
 
     /// <summary>
@@ -74,7 +96,8 @@ namespace MG.Sonarr.Results
         [JsonProperty("id", Order = 5)]
         public int Id { get; internal set; }
 
-        public QualityProfile() : base() { }
+        [JsonConstructor]
+        private QualityProfile() : base() { }
 
         public int CompareTo(QualityProfile other) => this.Id.CompareTo(other.Id);
         public bool Equals(QualityProfile other) => this.Id.Equals(other.Id);
