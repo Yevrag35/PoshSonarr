@@ -1,45 +1,27 @@
-﻿using MG.Api.Rest;
-using MG.Api.Rest.Generic;
-using MG.Sonarr.Results;
+﻿using MG.Sonarr.Results;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Threading.Tasks;
 using MG.Sonarr.Functionality.Extensions;
+using MG.Sonarr.Functionality.Collections;
 
 namespace MG.Sonarr.Functionality
 {
-    public class IndexerSchemaCollection : IReadOnlyList<IndexerSchema>
+    public class IndexerSchemaCollection : SortedListBase<IndexerSchema>, IReadOnlyList<IndexerSchema>
     {
-        private SortedList<string, IndexerSchema> _list;
-
         public IndexerSchema this[int index]
         {
             get
             {
                 int posIndex = this.GetPositiveIndex(index);
-                return posIndex > -1 ? _list.Values[posIndex] : null;
+                return posIndex > -1 ? base.InnerList.Values[posIndex] : null;
             }
         }
-        public IndexerSchema this[string schemaName] => _list[schemaName];
-
-        public int Count => _list.Count;
-        public IList<string> Names => _list.Keys;
+        public IList<string> Names => base.InnerList.Keys;
 
         private IndexerSchemaCollection(IEnumerable<IndexerSchema> schemas)
+            : base(schemas, x => x.Name)
         {
-            _list = new SortedList<string, IndexerSchema>(12, SonarrFactory.NewIgnoreCaseComparer());
-            foreach (IndexerSchema schema in schemas)
-            {
-                _list.Add(schema.Name, schema);
-            }
         }
-
-        public IEnumerator<IndexerSchema> GetEnumerator() => _list.Values.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => _list.Values.GetEnumerator();
 
         public static IndexerSchemaCollection FromSchemas(IEnumerable<IndexerSchema> schemas) => new IndexerSchemaCollection(schemas);
     }
