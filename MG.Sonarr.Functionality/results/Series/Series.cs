@@ -84,35 +84,5 @@ namespace MG.Sonarr.Results
         public bool UsingSeasonFolders { get; set; }
 
         public bool HasAlternateTitles() => this.AlternateTitles != null && this.AlternateTitles.Count > 0;
-
-        //public decimal ToSize(ByteUnit inUnit) => this.ToSize(inUnit, -1);
-        //public decimal ToSize(ByteUnit inUnit, int numberOfDecimalPlaces)
-        //{
-        //    long? byteSize = this.Seasons?.GetSeasonFileSize();
-        //    if (byteSize.GetValueOrDefault() > 0)
-        //    {
-        //        return this.ToDecimalSize(byteSize.Value, inUnit, numberOfDecimalPlaces);
-        //    }
-        //    else
-        //        return 0M;
-        //}
-
-        //private decimal ToDecimalSize(long size, ByteUnit inUnit, int numberOfDecimalPlaces)
-        //{
-        //    switch (inUnit)
-        //    {
-        //        case ByteUnit.MB:
-        //            return SizedResult.Calculate(this.SizeOnDisk, SizedResult.MB, numberOfDecimalPlaces);
-
-        //        case ByteUnit.KB:
-        //            return SizedResult.Calculate(this.SizeOnDisk, SizedResult.KB, numberOfDecimalPlaces);
-
-        //        case ByteUnit.TB:
-        //            return SizedResult.Calculate(this.SizeOnDisk, SizedResult.TB, numberOfDecimalPlaces);
-
-        //        default:
-        //            return SizedResult.Calculate(this.SizeOnDisk, SizedResult.GB, numberOfDecimalPlaces);
-        //    }
-        //}
     }
 }

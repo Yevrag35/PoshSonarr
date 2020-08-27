@@ -60,6 +60,7 @@ namespace MG.Sonarr.Results
         /// An array of images for the series.
         /// </summary>
         [JsonProperty("images")]
+        [JsonConverter(typeof(SortedListConverter<SeriesImageCollection, SeriesImage>))]
         public SeriesImageCollection Images { get; private protected set; }
 
         /// <summary>

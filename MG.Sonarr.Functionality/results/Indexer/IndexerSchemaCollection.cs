@@ -6,7 +6,7 @@ using MG.Sonarr.Functionality.Collections;
 
 namespace MG.Sonarr.Functionality
 {
-    public class IndexerSchemaCollection : SortedListBase<IndexerSchema>, IReadOnlyList<IndexerSchema>
+    public class IndexerSchemaCollection : SortedStringList<IndexerSchema>, IReadOnlyList<IndexerSchema>
     {
         public IndexerSchema this[int index]
         {

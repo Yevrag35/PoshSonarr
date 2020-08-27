@@ -9,7 +9,7 @@ using System.Linq;
 namespace MG.Sonarr.Results
 {
     [Serializable]
-    public class FieldCollection : SortedListBase<Field>, IReadOnlyList<Field>, IReadOnlyList<IField>
+    public class FieldCollection : SortedStringList<Field>, IReadOnlyList<Field>, IReadOnlyList<IField>
     {
         #region INDEXERS
         public Field this[int index]

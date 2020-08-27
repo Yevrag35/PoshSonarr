@@ -9,7 +9,7 @@ using System.Linq;
 namespace MG.Sonarr.Results
 {
     [Serializable]
-    public class QualityDictionary : SortedListBase<Quality>, IReadOnlyDictionary<string, Quality>, IReadOnlyList<Quality>
+    public class QualityDictionary : SortedStringList<Quality>, IReadOnlyDictionary<string, Quality>, IReadOnlyList<Quality>
     {
         private Dictionary<int, string> _map;
 
