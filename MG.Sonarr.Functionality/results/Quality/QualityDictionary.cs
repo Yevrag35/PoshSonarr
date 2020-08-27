@@ -46,6 +46,11 @@ namespace MG.Sonarr.Results
             return base.InnerList.ContainsKey(name);
         }
 
+        public static QualityDictionary FromDefinitions(IEnumerable<QualityDefinition> definitions)
+        {
+            return new QualityDictionary(definitions.Select(x => x.Quality));
+        }
+
         public bool TryGetValue(string name, out Quality value)
         {
             value = null;

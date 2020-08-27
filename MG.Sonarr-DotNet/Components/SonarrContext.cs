@@ -22,16 +22,16 @@ namespace MG.Sonarr
     internal static partial class Context
 #endif
     {
-#region FIELDS/CONSTANTS
+        #region FIELDS/CONSTANTS
         //internal const string SLASH_STR = "/";
         internal const char SLASH = (char)47;
         internal const string ZERO_ONE = "{0}{1}";
 
         private static string Prefix = string.Empty;
 
-#endregion
+        #endregion
 
-#region PROPERTIES
+        #region PROPERTIES
 
         internal static QualityDictionary AllQualities { get; private set; }
 
@@ -59,9 +59,9 @@ namespace MG.Sonarr
 
         internal static ITagManager TagManager { get; private set; }
 
-#endregion
+        #endregion
 
-#region METHODS
+        #region METHODS
         internal static PSObject GetConnectionStatus()
         {
             var pso = new PSObject();
@@ -121,11 +121,11 @@ namespace MG.Sonarr
             }
         }
 
-#region INITIALIZATION ASYNC METHODS
+        #region INITIALIZATION ASYNC METHODS
         private async static Task<QualityDictionary> GetQualityDictionaryAsync(ISonarrClient client)
         {
             IRestListResponse<QualityDefinition> defResponse = await client.GetAsJsonListAsync<QualityDefinition>(Endpoint.QualityDefinition.WithPrefix(SonarrUrl.IncludeApiPrefix));
-            return !defResponse.IsFaulted ? new QualityDictionary(defResponse.Content.Select(x => x.Quality)) : null;
+            return !defResponse.IsFaulted ? QualityDictionary.FromDefinitions(defResponse.Content) : null;
         }
 
         private async static Task<IndexerSchemaCollection> GetIndexerSchemasAsync(ISonarrClient client)
@@ -134,8 +134,8 @@ namespace MG.Sonarr
             return !schResponse.IsFaulted ? IndexerSchemaCollection.FromSchemas(schResponse.Content) : null;
         }
 
-#endregion
+        #endregion
 
-#endregion
+        #endregion
     }
 }
