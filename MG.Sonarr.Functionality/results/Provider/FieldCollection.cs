@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Functionality;
-using MG.Sonarr.Results.Collections;
+using MG.Sonarr.Functionality.Collections;
+using MG.Sonarr.Functionality.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -8,30 +9,39 @@ using System.Linq;
 namespace MG.Sonarr.Results
 {
     [Serializable]
-    public class FieldCollection : ResultListBase<Field>, IEnumerable<IField>
+    public class FieldCollection : SortedListBase<Field>, IReadOnlyList<Field>, IReadOnlyList<IField>
     {
         #region INDEXERS
-        /// <summary>
-        /// Gets the <see cref="Field"/> whose name matches the specified string.
-        /// </summary>
-        /// <param name="settingName">The case-insensitive name of the field's name to retrieve.</param>
-        /// <returns>The <see cref="Field"/> whose name matches <paramref name="settingName"/>.</returns>
-        public Field this[string settingName] => base.InnerList.Find(x => x.Name.Equals(settingName, StringComparison.CurrentCultureIgnoreCase));
+        public Field this[int index]
+        {
+            get
+            {
+                int posIndex = this.GetPositiveIndex<Field>(index);
+                return posIndex > -1 ? base.InnerList.Values[posIndex] : null;
+            }
+        }
+        IField IReadOnlyList<IField>.this[int index] => this[index];
 
         #endregion
 
         #region CONSTRUCTORS
         [JsonConstructor]
-        internal FieldCollection(IEnumerable<Field> items) : base(items) { }
+        internal FieldCollection(IEnumerable<Field> items)
+            : base(items, x => x.Name)
+        {
+        }
 
-        internal FieldCollection(IEnumerable<IField> items) : base(items.Select(x => new Field(x))) { }
+        internal FieldCollection(IEnumerable<IField> items)
+            : base(items.Select(f => new Field(f)), x => x.Name)
+        {
+        }
 
         #endregion
 
         #region PUBLIC METHODS
         IEnumerator<IField> IEnumerable<IField>.GetEnumerator()
         {
-            foreach (IField field in base.InnerList)
+            foreach (IField field in base.InnerList.Values)
             {
                 yield return field;
             }
@@ -57,11 +67,6 @@ namespace MG.Sonarr.Results
             }
             return list;
         }
-        /// <summary>
-        /// Copies the fields of the <see cref="FieldCollection"/> to a new single-dimensional array.
-        /// </summary>
-        /// <returns>An array containing copies of the <see cref="IField"/> of the <see cref="FieldCollection"/>.</returns>
-        public IField[] ToArray() => base.InnerList.ToArray();
 
         #endregion
     }
