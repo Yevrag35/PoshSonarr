@@ -1,4 +1,6 @@
 ﻿using MG.Sonarr.Functionality;
+using MG.Sonarr.Functionality.Collections;
+using MG.Sonarr.Functionality.Extensions;
 using MG.Sonarr.Results.Collections;
 using Newtonsoft.Json;
 using System;
@@ -9,67 +11,47 @@ using System.Linq;
 namespace MG.Sonarr.Results
 {
     [Serializable]
-    public class EpisodeList : IEnumerable<ImportEpisode>
+    public class EpisodeList : SortedListBase<long, ImportEpisode>, IReadOnlyCollection<ImportEpisode>, IReadOnlyList<IEpisode>
     {
-        private SortedList<long, ImportEpisode> _list;
-
-        public IEpisode this[int index] => _list.Values[index];
-
-        public EpisodeList()
+        public IEpisode this[int index]
         {
-            _list = new SortedList<long, ImportEpisode>();
-        }
-        public EpisodeList(IEnumerable<ImportEpisode> episodes)
-        {
-            if (episodes is ICollection<ImportEpisode> icol)
-                _list = new SortedList<long, ImportEpisode>(icol.Count);
-
-            else
-                _list = new SortedList<long, ImportEpisode>();
-
-            foreach (ImportEpisode iep in episodes)
+            get
             {
-                _list.Add(iep.Id, iep);
+                int posIndex = this.GetPositiveIndex<IEpisode>(index);
+                return posIndex > -1 ? base.InnerList[posIndex] : default;
             }
+        }
+
+        public IList<long> Ids => base.InnerList.Keys;
+
+        public EpisodeList() : base() { }
+        public EpisodeList(IEnumerable<ImportEpisode> episodes)
+            : base(episodes, k => k.Id)
+        {
         }
 
         public void Add(IEpisode ep)
         {
             var imep = ImportEpisode.FromOther(ep);
-            _list.Add(ep.Id, imep);
+            base.InnerList.Add(ep.Id, imep);
         }
         public void AddRange(IEnumerable<IEpisode> episodes)
         {
-            foreach (IEpisode iep in episodes)
-            {
-                var imEp = ImportEpisode.FromOther(iep);
-                _list.Add(iep.Id, imEp);
-            }
+            base.AddMultiple(episodes.Select(x => ImportEpisode.FromOther(x)), k => k.Id);
         }
-        public void Clear() => _list.Clear();
-        public IEpisode GetByID(long id)
+        public void Clear() => base.InnerList.Clear();
+        public IEpisode GetById(long id)
         {
-            if (_list.ContainsKey(id))
-                return _list[id];
-
-            else
-                return null;
+            return base.InnerList.ContainsKey(id) ? base.InnerList[id] : null;
         }
-        public bool Remove(ImportEpisode ep) => _list.Remove(ep.Id);
-
-        public IEnumerator<ImportEpisode> GetEnumerator()
+        public bool Remove(IEpisode ep)
         {
-            foreach (ImportEpisode imep in _list.Values.OfType<ImportEpisode>())
-            {
-                yield return imep;
-            }
+            return base.InnerList.Remove(ep.Id);
         }
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
-
-        public bool TrueForAll(Func<IEpisode, bool> predicate)
+        internal bool TrueForAll(Func<IEpisode, bool> predicate)
         {
             bool result = true;
-            foreach (IEpisode iep in _list.Values)
+            foreach (IEpisode iep in base.InnerList.Values)
             {
                 if (!predicate(iep))
                 {
@@ -79,5 +61,16 @@ namespace MG.Sonarr.Results
             }
             return result;
         }
+
+        #region ENUMERATORS
+        IEnumerator<IEpisode> IEnumerable<IEpisode>.GetEnumerator()
+        {
+            foreach (IEpisode iep in base.InnerList.Values)
+            {
+                yield return iep;
+            }
+        }
+
+        #endregion
     }
 }

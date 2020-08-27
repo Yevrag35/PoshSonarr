@@ -54,7 +54,8 @@ namespace MG.Sonarr.Results
         /// An array of genres that apply to the series.
         /// </summary>
         [JsonProperty("genres")]
-        public string[] Genres { get; private protected set; }
+        [JsonConverter(typeof(ReadOnlySetConverter<string>))]
+        public IReadOnlySet<string> Genres { get; private protected set; }
 
         /// <summary>
         /// An array of images for the series.

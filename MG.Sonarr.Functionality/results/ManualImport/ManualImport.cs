@@ -100,7 +100,7 @@ namespace MG.Sonarr.Results
 
             return new JObject
             {
-                new JProperty("episodeIds", this.Episodes.Select(x => x.Id).ToArray()),
+                new JProperty("episodeIds", this.Episodes.Ids),
                 new JProperty("path", this.FullPath),
                 new JProperty("quality", JObject.FromObject(_quality)),
                 new JProperty("seriesId", _series.Id)
