@@ -32,9 +32,11 @@ namespace MG.Sonarr
         #endregion
 
         #region PROPERTIES
-
+#if DEBUG
+        public static QualityDictionary AllQualities { get; private set; }
+#else
         internal static QualityDictionary AllQualities { get; private set; }
-
+#endif
         /// <summary>
         /// The main <see cref="HttpClient"/> from which all PoshSonarr cmdlets issue their REST requests.
         /// </summary>
