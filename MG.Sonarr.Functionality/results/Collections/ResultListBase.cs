@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using MG.Sonarr.Functionality.Extensions;
 
 namespace MG.Sonarr.Results.Collections
 {
@@ -23,14 +24,8 @@ namespace MG.Sonarr.Results.Collections
         {
             get
             {
-                if (index >= 0)
-                    return base.InnerList[index];
-
-                else
-                {
-                    int goHere = base.InnerList.Count + index;
-                    return goHere >= 0 ? base.InnerList[goHere] : default;
-                }
+                int posIndex = this.GetPositiveIndex(index);
+                return posIndex > -1 ? base.InnerList[posIndex] : default;
             }
         }
 

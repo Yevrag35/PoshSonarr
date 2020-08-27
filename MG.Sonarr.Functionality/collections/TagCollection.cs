@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Sonarr.Functionality.Extensions;
+using MG.Sonarr.Results;
 using MG.Sonarr.Results.Collections;
 using System;
 using System.Collections;
@@ -17,7 +18,14 @@ namespace MG.Sonarr.Functionality.Collections
 
         public int Count => _list.Count;
 
-        public Tag this[int index] => _list.Values[index];
+        public Tag this[int index]
+        {
+            get
+            {
+                int posIndex = this.GetPositiveIndex(index);
+                return posIndex > -1 ? _list.Values[posIndex] : null;
+            }
+        }
 
         #region CONSTRUCTORS
         /// <summary>

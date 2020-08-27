@@ -8,15 +8,22 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
+using MG.Sonarr.Functionality.Extensions;
 
 namespace MG.Sonarr.Functionality
 {
     public class IndexerSchemaCollection : IReadOnlyList<IndexerSchema>
     {
-        //private List<IndexerSchema> _list;
         private SortedList<string, IndexerSchema> _list;
 
-        public IndexerSchema this[int index] => _list.Values[index];
+        public IndexerSchema this[int index]
+        {
+            get
+            {
+                int posIndex = this.GetPositiveIndex(index);
+                return posIndex > -1 ? _list.Values[posIndex] : null;
+            }
+        }
         public IndexerSchema this[string schemaName] => _list[schemaName];
 
         public int Count => _list.Count;
