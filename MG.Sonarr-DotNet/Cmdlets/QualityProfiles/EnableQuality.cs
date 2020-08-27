@@ -22,12 +22,21 @@ namespace MG.Sonarr.Cmdlets
         private const string QUALITY = "Name";
         private const string ID = "Id";
 
+        private bool _passThru;
+
         #endregion
 
         #region PARAMETERS
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
         [Alias("Profile")]
         public QualityProfile InputObject { get; set; }
+
+        [Parameter(Mandatory = false)]
+        public SwitchParameter PassThru
+        {
+            get => _passThru;
+            set => _passThru = value;
+        }
 
         #endregion
 
@@ -77,7 +86,9 @@ namespace MG.Sonarr.Cmdlets
                 this.InputObject.Id))
             {
                 exp.Invoke(this.InputObject, objs);
-                base.WriteObject(this.InputObject);
+                
+                if (_passThru)
+                    base.WriteObject(this.InputObject);
             }
         }
 
@@ -87,7 +98,7 @@ namespace MG.Sonarr.Cmdlets
         }
         private void ApplyIds(QualityProfile qp, IEnumerable<object> ids)
         {
-            qp.ApplyAllowablesById(ids.Cast<int>().ToArray());
+            qp.ApplyAllowablesById(ids.Select(x => Convert.ToInt32(x)).ToArray());
         }
         private void ApplyNames(QualityProfile qp, IEnumerable<object> names)
         {
