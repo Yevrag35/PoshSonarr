@@ -24,7 +24,6 @@
     <Compile Remove="helpers\TableStringHelper.cs" />
     <Compile Remove="url\OrderParameter.cs" />
     <Compile Remove="results\Config\UIConfig.cs" />
-    <Compile Remove="results\Quality\QualityDefinitionCollection.cs" />
     <Compile Remove="results\Quality\QualityItemCollection.cs" />
   </ItemGroup>
 
@@ -36,7 +35,6 @@
     <None Include="helpers\TableStringHelper.cs" />
     <None Include="url\OrderParameter.cs" />
     <None Include="results\Config\UIConfig.cs" />
-    <None Include="results\Quality\QualityDefinitionCollection.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,62 +1,68 @@
-﻿using MG.Sonarr.Results;
+﻿using MG.Sonarr.Functionality.Collections;
+using MG.Sonarr.Functionality.Extensions;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 
-namespace MG.Sonarr.Functionality
+namespace MG.Sonarr.Results
 {
-    public class QualityDictionary : IReadOnlyDictionary<string, Quality>, IEnumerable<Quality>
+    [Serializable]
+    public class QualityDictionary : SortedListBase<Quality>, IReadOnlyDictionary<string, Quality>, IReadOnlyList<Quality>
     {
-        private IEqualityComparer<string> _comparer;
-        private Dictionary<string, Quality> _dict;
-
-        public Quality this[string name] => _dict[name.ToLower()];
-        public Quality this[int id]
+        #region INDEXERS
+        public Quality this[int index]
         {
             get
             {
-                return _dict.SingleOrDefault(x => x.Value.Id.Equals(id)).Value;
+                int posIndex = this.GetPositiveIndex<Quality>(index);
+                return posIndex > -1 ? base.InnerList.Values[posIndex] : null;
             }
         }
 
-        public int Count => _dict.Count;
-        public IEnumerable<string> Keys => _dict.Keys;
-        IEnumerable<Quality> IReadOnlyDictionary<string, Quality>.Values => _dict.Values;
+        #endregion
 
-        public QualityDictionary(IEnumerable<Quality> qualities)
+        #region PROPERTIES
+        IEnumerable<string> IReadOnlyDictionary<string, Quality>.Keys => base.InnerList.Keys;
+        IEnumerable<Quality> IReadOnlyDictionary<string, Quality>.Values => base.InnerList.Values;
+
+        #endregion
+
+        #region CONSTRUCTORS
+        public QualityDictionary() : this(14) { }
+        public QualityDictionary(int capacity) : base(capacity) { }
+        [JsonConstructor]
+        internal QualityDictionary(IEnumerable<Quality> qualityItems)
+            : base(qualityItems, x => x.Name)
         {
-            _comparer = SonarrFactory.NewIgnoreCase();
-            _dict = new Dictionary<string, Quality>(14);
-            foreach (Quality qal in qualities.OrderBy(x => x.Id))
-            {
-                _dict.Add(qal.Name.ToLower(), qal);
-            }
         }
 
-        public bool ContainsKey(string key)
-        {
-            if (string.IsNullOrEmpty(key))
-                return false;
+        #endregion
 
-            return _dict.ContainsKey(key.ToLower());
+        #region METHODS
+        public bool ContainsKey(string name)
+        {
+            return base.InnerList.ContainsKey(name);
         }
-        public bool TryGetValue(string key, out Quality value)
+
+        public bool TryGetValue(string name, out Quality value)
         {
             value = null;
-            bool result = false;
-            if (!string.IsNullOrEmpty(key) && _dict.TryGetValue(key.ToLower(), out Quality qal))
-            {
-                value = qal;
-                result = true;
-            }
+            if (base.InnerList.TryGetValue(name, out Quality found))
+                value = found;
 
-            return result;
+            return value != null;
         }
 
-        IEnumerator<Quality> IEnumerable<Quality>.GetEnumerator() => _dict.Values.GetEnumerator();
-        IEnumerator<KeyValuePair<string, Quality>> IEnumerable<KeyValuePair<string, Quality>>.GetEnumerator() => _dict.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => _dict.GetEnumerator();
+        #endregion
+
+        #region ENUMERATORS
+        IEnumerator<KeyValuePair<string, Quality>> IEnumerable<KeyValuePair<string, Quality>>.GetEnumerator()
+        {
+            return base.InnerList.GetEnumerator();
+        }
+
+        #endregion
     }
 }

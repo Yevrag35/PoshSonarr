@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Functionality;
 using MG.Sonarr.Functionality.Converters;
+using MG.Sonarr.Functionality.Strings;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -14,7 +15,6 @@ namespace MG.Sonarr.Results
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public class QualityProfileNew : BaseResult, IGetEndpoint
     {
-        private const string EP = "/profile";
         private IEqualityComparer<string> _comparer;
 
         [JsonProperty("cutoff", Order = 2)]
@@ -35,27 +35,16 @@ namespace MG.Sonarr.Results
             _comparer = SonarrFactory.NewIgnoreCase();
         }
 
-        public string GetEndpoint() => EP;
+        public string GetEndpoint() => ApiEndpoints.Profile;
 
         public bool IsQualityAllowed(string name)
         {
-            bool? result = this.AllowedQualities.GetAllowedQualityByName(name)?.Allowed;
-            if (!result.HasValue)
-                result = false;
-
-            return result.Value;
+            return (this.AllowedQualities[name]?.Allowed).GetValueOrDefault();
         }
         public bool IsQualityAllowed(int qualityId)
         {
-            bool? result = this.AllowedQualities.GetAllowedQualityById(qualityId)?.Allowed;
-            if (!result.HasValue)
-                result = false;
-
-            return result.Value;
+            return this.AllowedQualities.IsAllowed(qualityId);
         }
-
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext ctx) => this.AllowedQualities.Sort();
 
         public void ApplyAllowables(IEnumerable<Quality> allowables)
         {
