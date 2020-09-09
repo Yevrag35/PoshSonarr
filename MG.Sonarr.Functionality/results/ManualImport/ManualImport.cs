@@ -73,7 +73,7 @@ namespace MG.Sonarr.Results
         public bool IsReadyToPost()
         {
             bool hasSeries = !string.IsNullOrWhiteSpace(_series.Name) && _series.Id > 0;
-            if (hasSeries)
+            if (hasSeries && this.QualityWeight > 0 && _quality != null && _quality.Quality != null)
             {
                 return this.Episodes.TrueForAll(x => x.Id > 0 && Convert.ToInt32(x.SeriesId.GetValueOrDefault()) == _series.Id);
             }
@@ -101,7 +101,7 @@ namespace MG.Sonarr.Results
         {
             if (!this.IsReadyToPost())
             {
-                throw new InvalidOperationException("Cannot post a manual import object without an identified series.");
+                throw new InvalidOperationException("Cannot post a manual import object without an identified series or set quality.");
             }
 
             return new JObject
@@ -111,6 +111,11 @@ namespace MG.Sonarr.Results
                 new JProperty("quality", JObject.FromObject(_quality)),
                 new JProperty("seriesId", _series.Id)
             };
+        }
+        public void SetQuality(QualityDefinition quality)
+        {
+            _quality = new ItemQuality(quality);
+            this.QualityWeight = quality.Weight;
         }
         public override string ToJson() => JsonConvert.SerializeObject(this.PostThis(), Formatting.Indented);
         public override string ToJson(IDictionary parameters)
