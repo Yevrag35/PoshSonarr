@@ -12,5 +12,14 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("revision")]
         public Revision Revision { get; private set; }
+
+        [JsonConstructor]
+        private ItemQuality() { }
+
+        public ItemQuality(QualityDefinition definition)
+        {
+            this.Quality = definition.Quality;
+            this.Revision = new Revision();
+        }
     }
 }

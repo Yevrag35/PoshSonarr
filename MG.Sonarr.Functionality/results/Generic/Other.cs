@@ -33,6 +33,17 @@ namespace MG.Sonarr.Results
         public int Resolution { get; set; }
 
         public int CompareTo(QualityDetails other) => this.Id.CompareTo(other.Id);
+
+        public static implicit operator QualityDetails(Quality quality)
+        {
+            return new QualityDetails
+            {
+                Id = quality.Id,
+                Name = quality.Name,
+                Resolution = quality.Resolution,
+                Source = quality.Source.ToString()
+            };
+        }
     }
 
     [JsonObject(MemberSerialization.OptIn)]
@@ -52,6 +63,6 @@ namespace MG.Sonarr.Results
         public int Real { get; set; }
 
         [JsonProperty("version")]
-        public int Version { get; set; }
+        public int Version { get; set; } = 1;
     }
 }

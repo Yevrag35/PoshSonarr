@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Management.Automation;
 
-namespace MG.Sonarr.Cmdlets.Profiles
+namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "QualityProfile", ConfirmImpact = ConfirmImpact.None, DefaultParameterSetName = "ByProfileName")]
     [CmdletBinding(PositionalBinding = false)]
