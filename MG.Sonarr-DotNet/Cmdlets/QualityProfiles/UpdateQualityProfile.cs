@@ -2,7 +2,7 @@
 using System;
 using System.Management.Automation;
 
-namespace MG.Sonarr.Cmdlets.QualityProfiles
+namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsData.Update, "QualityProfile", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
     [Alias("Set-QualityProfile", "Update-Profile", "Set-Profile")]

@@ -282,7 +282,7 @@ namespace MG.Sonarr.Cmdlets
 
                 IEnumerable<string> propVal = cmdletFunc(cmdlet);
 
-                if (propVal.Any())
+                if (propVal != null && propVal.Any())
                 {
                     IEnumerable<WildcardPattern> patterns = propVal
                         .Select(s => new WildcardPattern(s, WildcardOptions.IgnoreCase));
