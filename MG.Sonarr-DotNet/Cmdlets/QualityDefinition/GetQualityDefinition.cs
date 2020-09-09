@@ -32,8 +32,7 @@ namespace MG.Sonarr.Cmdlets
             else
                 _func = GetFromNames;
 
-            QualityDefinition[] defs = _func().ToArray();
-            base.SendToPipeline(defs);
+            base.SendToPipeline(_func());
         }
 
         private IEnumerable<QualityDefinition> GetFromIds()
