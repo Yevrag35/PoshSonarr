@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
 
-namespace MG.Sonarr.Cmdlets.QualityProfiles
+namespace MG.Sonarr.Cmdlets
 {
     [Cmdlet(VerbsLifecycle.Disable, "Quality", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
     [OutputType(typeof(QualityProfile))]

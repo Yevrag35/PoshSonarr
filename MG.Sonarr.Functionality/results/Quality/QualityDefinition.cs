@@ -10,6 +10,9 @@ namespace MG.Sonarr.Results
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public class QualityDefinition : BaseResult, IComparable<QualityDefinition>
     {
+        [JsonProperty("id", Order = 6)]
+        public int Id { get; private set; }
+
         [JsonProperty("maxSize", Order = 5)]
         public double MaxSize { get; set; } = 100.0d;
 
@@ -19,9 +22,6 @@ namespace MG.Sonarr.Results
         [JsonProperty("quality", Order = 1)]
         public Quality Quality { get; private set; }
 
-        [JsonProperty("id", Order = 6)]
-        public int QualityDefinitionId { get; private set; }
-
         [JsonProperty("title", Order = 2)]
         public string Title { get; set; }
 
@@ -30,7 +30,7 @@ namespace MG.Sonarr.Results
 
         public QualityDefinition() { }
 
-        public int CompareTo(QualityDefinition other) => this.QualityDefinitionId.CompareTo(other.QualityDefinitionId);
-        public void SetQuality(Quality quality) => this.Quality = quality;
+        public int CompareTo(QualityDefinition other) => this.Id.CompareTo(other.Id);
+        //public void SetQuality(Quality quality) => this.Quality = quality;
     }
 }

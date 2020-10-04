@@ -109,6 +109,7 @@
     <Compile Include="Cmdlets\DownloadClient\RemoveDownloadClient.cs" />
     <Compile Include="Cmdlets\DownloadClient\UpdateDownloadClient.cs" />
     <Compile Include="Cmdlets\FileSystem\SearchDirectory.cs" />
+    <Compile Include="Cmdlets\QualityDefinition\GetQualityDefinition.cs" />
     <Compile Include="Cmdlets\Indexer\GetIndexer.cs" />
     <Compile Include="Cmdlets\Indexer\GetIndexerOptions.cs" />
     <None Include="Cmdlets\Indexer\GetIndexerSchema.cs.old" />
