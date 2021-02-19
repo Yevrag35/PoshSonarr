@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 
 namespace MG.Sonarr.Results
@@ -10,6 +11,9 @@ namespace MG.Sonarr.Results
     [Serializable]
     public class AllowedQualityCollection : ResultListBase<AllowedQuality>
     {
+        internal SortedSet<string> Allowed { get; }
+        internal SortedSet<string> Disallowed { get; }
+
         #region INDEXERS
 
         public AllowedQuality this[string qualityName] => this.Find(x => x.Quality.Name.Equals(qualityName, StringComparison.CurrentCultureIgnoreCase));
@@ -18,7 +22,11 @@ namespace MG.Sonarr.Results
 
         #region CONSTRUCTORS
         [JsonConstructor]
-        internal AllowedQualityCollection(IEnumerable<AllowedQuality> qualityItems) : base(qualityItems) { }
+        internal AllowedQualityCollection(IEnumerable<AllowedQuality> qualityItems) : base(qualityItems)
+        {
+            this.Allowed = new SortedSet<string>(qualityItems.Where(x => x.Allowed).Select(x => x.Quality.Name), StringComparer.CurrentCultureIgnoreCase);
+            this.Disallowed = new SortedSet<string>(qualityItems.Where(x => !x.Allowed).Select(x => x.Quality.Name), StringComparer.CurrentCultureIgnoreCase);
+        }
 
         #endregion
 
