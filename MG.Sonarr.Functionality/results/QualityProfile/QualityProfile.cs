@@ -14,14 +14,32 @@ namespace MG.Sonarr.Results
     [JsonObject(MemberSerialization = MemberSerialization.OptIn)]
     public class QualityProfileNew : BaseResult, IGetEndpoint
     {
-        private const string EP = "/profile";
         private IEqualityComparer<string> _comparer;
+        private const string EP = "/profile";
+
+        [JsonProperty("items", Order = 3)]
+        private AllowedQualityCollection _allowedQualities;
+
+        [JsonIgnore]
+        public string[] Allowed
+        {
+            get
+            {
+                return _allowedQualities != null ? _allowedQualities.Allowed.ToArray() : null;
+            }
+        }
 
         [JsonProperty("cutoff", Order = 2)]
         public Quality Cutoff { get; set; }
 
-        [JsonProperty("items", Order = 3)]
-        public AllowedQualityCollection AllowedQualities { get; private set; }
+        [JsonIgnore]
+        public string[] Disallowed
+        {
+            get
+            {
+                return _allowedQualities != null ? _allowedQualities.Disallowed.ToArray() : null;
+            }
+        }
 
         [JsonProperty("language", Order = 4)]
         [JsonConverter(typeof(SonarrStringEnumConverter))]
@@ -39,7 +57,7 @@ namespace MG.Sonarr.Results
 
         public bool IsQualityAllowed(string name)
         {
-            bool? result = this.AllowedQualities.GetAllowedQualityByName(name)?.Allowed;
+            bool? result = this._allowedQualities.GetAllowedQualityByName(name)?.Allowed;
             if (!result.HasValue)
                 result = false;
 
@@ -47,7 +65,7 @@ namespace MG.Sonarr.Results
         }
         public bool IsQualityAllowed(int qualityId)
         {
-            bool? result = this.AllowedQualities.GetAllowedQualityById(qualityId)?.Allowed;
+            bool? result = this._allowedQualities.GetAllowedQualityById(qualityId)?.Allowed;
             if (!result.HasValue)
                 result = false;
 
@@ -55,23 +73,29 @@ namespace MG.Sonarr.Results
         }
 
         [OnDeserialized]
-        private void OnDeserialized(StreamingContext ctx) => this.AllowedQualities.Sort();
+        private void OnDeserialized(StreamingContext ctx)
+        {
+            if (_allowedQualities != null && _allowedQualities.Count > 0)
+            {
+
+            }
+        }
 
         public void ApplyAllowables(IEnumerable<Quality> allowables)
         {
-            this.AllowedQualities.Allow(allowables);
+            this._allowedQualities.Allow(allowables);
         }
         public void ApplyDisallowables(IEnumerable<Quality> disallowables)
         {
-            this.AllowedQualities.Disallow(disallowables.Where(x => this.Cutoff?.Id != x.Id));
+            this._allowedQualities.Disallow(disallowables.Where(x => this.Cutoff?.Id != x.Id));
         }
 
         public void PopulateQualities(IEnumerable<Quality> qualities)
         {
-            this.AllowedQualities = new AllowedQualityCollection(qualities.Select(x => AllowedQuality.FromQuality(x, false)));
+            this._allowedQualities = new AllowedQualityCollection(qualities.Select(x => AllowedQuality.FromQuality(x, false)));
             if (this.Cutoff != null)
             {
-                this.AllowedQualities[this.Cutoff.Name].Allowed = true;
+                this._allowedQualities[this.Cutoff.Name].Allowed = true;
             }
         }
     }

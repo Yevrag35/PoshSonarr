@@ -72,7 +72,8 @@ namespace MG.Sonarr.Cmdlets
 
             base.WriteDebug(newProfile.ToJson());
 
-            if (base.FormatShouldProcess("New", WHAT_IF_FORMAT, this.Language.ToString(), this.Name, newProfile.AllowedQualities.Count, cutoff.Name))
+            int totalQualityCount = newProfile.Allowed.Length + newProfile.Disallowed.Length;
+            if (base.FormatShouldProcess("New", WHAT_IF_FORMAT, this.Language.ToString(), this.Name, totalQualityCount, cutoff.Name))
             {
                 QualityProfile createdProfile = base.SendSonarrPost<QualityProfile>(EP, newProfile);
                 base.SendToPipeline(createdProfile);
