@@ -386,7 +386,9 @@ namespace MG.Sonarr.Functionality
         /// <summary>
         /// The series has concluded with no new episodes debuting.
         /// </summary>
-        Ended
+        Ended,
+
+        Upcoming
     }
 
     /// <summary>
