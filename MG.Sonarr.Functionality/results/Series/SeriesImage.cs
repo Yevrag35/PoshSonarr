@@ -14,7 +14,7 @@ namespace MG.Sonarr.Results
         /// The type of image used for the cover.
         /// </summary>
         [JsonProperty("coverType")]
-        public CoverType CoverType { get; private set; }
+        public string CoverType { get; private set; } = string.Empty;
 
         /// <summary>
         /// The relative Uri of the <see cref="SeriesImage"/>.
@@ -29,13 +29,16 @@ namespace MG.Sonarr.Results
         /// <param name="other">The other <see cref="SeriesImage"/> to compare this instance against.</param>
         public int CompareTo(SeriesImage other)
         {
-            int cct = this.CompareCoverType(other.CoverType);
+            int cct = StringComparer.InvariantCultureIgnoreCase.Compare(this.CoverType, other?.CoverType);
             if (cct == 0)
-                return this.Url.ToString().CompareTo(other.Url.ToString());
-
+            {
+                return StringComparer.InvariantCultureIgnoreCase.Compare(
+                    this.Url?.ToString(),
+                    other?.Url?.ToString());
+            }
             else
                 return cct;
         }
-        private int CompareCoverType(CoverType type) => this.CoverType.ToString().CompareTo(type.ToString());
+        //private int CompareCoverType(CoverType type) => this.CoverType.ToString().CompareTo(type.ToString());
     }
 }

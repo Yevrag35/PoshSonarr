@@ -5,17 +5,17 @@
     <RootNamespace>MG.Sonarr</RootNamespace>
     <LangVersion>7.3</LangVersion>
     <Description>A library consisting of PowerShell cmdlets for querying/managing Sonarr PVR.</Description>
-    <Copyright>Copyright © 2019-2020 Yevrag35, LLC.</Copyright>
+    <Copyright>Copyright © 2019-2023 Yevrag35, LLC.</Copyright>
     <PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/Yevrag35/PoshSonarr</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Yevrag35/PoshSonarr</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <Authors>Mike Garvey</Authors>
     <Company>Yevrag35, LLC.</Company>
-    <Version>1.4.3</Version>
+    <Version>1.4.6</Version>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-    <AssemblyVersion>1.4.3</AssemblyVersion>
-    <FileVersion>1.4.3</FileVersion>
+    <AssemblyVersion>1.4.6</AssemblyVersion>
+    <FileVersion>1.4.6</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
