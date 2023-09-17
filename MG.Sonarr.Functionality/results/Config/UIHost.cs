@@ -24,8 +24,8 @@ namespace MG.Sonarr.Results
         public string ApiKey { get; private set; }
 
         [JsonProperty("authenticationMethod", Order = 6)]
-        [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public AuthenticationType AuthenticationMethod { get; set; }
+        //[JsonConverter(typeof(SonarrStringEnumConverter))]
+        public string AuthenticationMethod { get; set; }
 
         [JsonProperty("bindAddress", Order = 1)]
         public string BindAddress { get; set; }
@@ -40,8 +40,7 @@ namespace MG.Sonarr.Results
         public bool LaunchBrowser { get; set; }
 
         [JsonProperty("logLevel", Order = 10)]
-        [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public LogLevel LogLevel { get; set; }
+        public string LogLevel { get; set; } = string.Empty;
 
         [JsonProperty("password", Order = 9)]
         public string Password { get; set; }
@@ -68,8 +67,8 @@ namespace MG.Sonarr.Results
         public int ProxyPort { get; set; }
 
         [JsonProperty("proxyType")]
-        [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public ProxyType ProxyType { get; set; }
+        //[JsonConverter(typeof(SonarrStringEnumConverter))]
+        public string ProxyType { get; set; } = string.Empty;
 
         [JsonProperty("proxyUserName")]
         public string ProxyUsername { get; set; }
@@ -84,8 +83,7 @@ namespace MG.Sonarr.Results
         public bool UpdateAutomatically { get; set; }
 
         [JsonProperty("updateMechanism", Order = 16)]
-        [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public UpdateMechanism UpdateMechanism { get; set; }
+        public string UpdateMechanism { get; set; } = string.Empty;
 
         [JsonProperty("updateScriptPath", Order = 17)]
         public string UpdateScriptPath { get; set; }
@@ -95,15 +93,6 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("username", Order = 8)]
         public string Username { get; set; }
-
-        //[JsonProperty("backupFolder")]
-        //public string BackupFolder { get; set; }
-
-        //[JsonProperty("backupInterval")]
-        //public int BackupInterval { get; set; }
-
-        //[JsonProperty("backupRetention")]
-        //public int BackupRetention { get; set; }
 
         #endregion
 

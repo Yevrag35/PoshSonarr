@@ -13,7 +13,7 @@ namespace MG.Sonarr.Results
         [JsonIgnore]
         public sealed override int Id { get; protected private set; }
 
-        public static DelayProfilePost NewPost(bool enableTor, bool enableUse, int order, DownloadProtocol protocol, 
+        public static DelayProfilePost NewPost(bool enableTor, bool enableUse, int order, string protocol, 
             int torrentDelay, int usenetDelay, IEnumerable<int> tags)
         {
             if (order <= 0)
@@ -32,7 +32,7 @@ namespace MG.Sonarr.Results
             return dp;
         }
 
-        public static DelayProfilePost NewPost(bool enableTor, bool enableUse, int order, DownloadProtocol protocol,
+        public static DelayProfilePost NewPost(bool enableTor, bool enableUse, int order, string protocol,
             int torrentDelay, int usenetDelay, HashSet<int> tags)
         {
             if (order <= 0)

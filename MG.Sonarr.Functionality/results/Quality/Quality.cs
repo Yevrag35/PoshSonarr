@@ -22,8 +22,7 @@ namespace MG.Sonarr.Results
         public int Resolution { get; private set; }
 
         [JsonProperty("source", Order = 3)]
-        [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public QualitySource Source { get; private set; }
+        public string Source { get; private set; } = string.Empty;
 
         public int CompareTo(Quality x) => this.Id.CompareTo(x.Id);
 

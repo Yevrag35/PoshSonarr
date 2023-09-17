@@ -15,8 +15,7 @@ namespace MG.Sonarr.Results
         public string Reason { get; private set; }
 
         [JsonProperty("type", Order = 2)]
-        [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public RejectionType Type { get; private set; }
+        public string Type { get; private set; } = string.Empty;
 
         #endregion
     }

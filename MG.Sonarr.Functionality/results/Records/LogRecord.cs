@@ -16,7 +16,7 @@ namespace MG.Sonarr.Results
         public long Id { get; private set; }
 
         [JsonProperty("level")]
-        public LogLevel Level { get; private set; }
+        public string Level { get; private set; } = string.Empty;
 
         [JsonProperty("logger")]
         public string LogSource { get; private set; }

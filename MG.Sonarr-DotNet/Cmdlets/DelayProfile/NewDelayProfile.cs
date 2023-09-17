@@ -41,7 +41,8 @@ namespace MG.Sonarr.Cmdlets
         public int Order { get; set; }
 
         [Parameter(Mandatory = false)]
-        public DownloadProtocol PreferredProtocol { get; set; }
+        [ValidateSet("Unknown", "Torrent", "Usenet")]
+        public string PreferredProtocol { get; set; }
 
         [Parameter(Mandatory = false)]
         public int TorrentDelay { get; set; }

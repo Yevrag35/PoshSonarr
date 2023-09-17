@@ -27,7 +27,7 @@ namespace MG.Sonarr.Results
         public long Id { get; private set; }
 
         [JsonProperty("priority")]
-        public CommandPriority Priority { get; private set; }
+        public string Priority { get; private set; } = string.Empty;
 
         [JsonProperty("queued")]
         [JsonConverter(typeof(UtcOffsetConverter))]
@@ -45,13 +45,13 @@ namespace MG.Sonarr.Results
         public DateTimeOffset? StateChangeTime { get; private set; }
 
         [JsonProperty("status")]
-        public CommandStatus Status { get; private set; }
+        public string Status { get; private set; } = string.Empty;
 
         [JsonProperty("state")]
         public string State { get; private set; }
 
         [JsonProperty("trigger")]
-        public CommandTrigger Trigger { get; private set; }
+        public string Trigger { get; private set; } = string.Empty;
 
         [JsonProperty("updateScheduledTask")]
         public bool UpdateScheduledTask { get; private set; }

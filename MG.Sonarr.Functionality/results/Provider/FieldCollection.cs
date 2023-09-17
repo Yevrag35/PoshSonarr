@@ -44,7 +44,7 @@ namespace MG.Sonarr.Results
         ///     A list of fields where the type matches one of the values in <paramref name="types"/>.
         ///     If <paramref name="types"/> is empty or <see langword="null"/>, then an empty list is returned.
         /// </returns>
-        public IList<IField> GetSettingByType(params FieldType[] types)
+        public IList<IField> GetSettingByType(params string[] types)
         {
             if (types == null || types.Length <= 0)
                 return new List<IField>();
@@ -55,6 +55,7 @@ namespace MG.Sonarr.Results
                 if (types.Contains(field.Type))
                     list.Add(field);
             }
+
             return list;
         }
         /// <summary>
