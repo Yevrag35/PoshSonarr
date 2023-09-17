@@ -73,7 +73,8 @@ namespace MG.Sonarr.Cmdlets
         public int[] Tags { get; set; } = new int[] { };
 
         [Parameter(Mandatory = false)]
-        public SeriesType Type { get; set; }
+        [ValidateSet("Standard", "Daily", "Anime")]
+        public string Type { get; set; }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter NotMonitored

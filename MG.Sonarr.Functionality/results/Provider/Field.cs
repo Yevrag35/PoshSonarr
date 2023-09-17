@@ -45,8 +45,8 @@ namespace MG.Sonarr.Results
         IEnumerable<ISelectOption> IField.SelectOptions => this.SelectOptions;
 
         [JsonProperty("type")]
-        [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public FieldType Type { get; private set; }
+        //[JsonConverter(typeof(SonarrStringEnumConverter))]
+        public string Type { get; private set; } = string.Empty;
 
         public object Value { get; set; }
 
@@ -65,14 +65,14 @@ namespace MG.Sonarr.Results
             this.Value = field.Value;
         }
 
-        internal Field(int order, string name, string label, object value, FieldType type, bool isAdvanced, params SelectOptions[] selectOptions)
+        internal Field(int order, string name, string label, object value, string type, bool isAdvanced, params SelectOptions[] selectOptions)
         {
-            Order = order;
-            Name = name;
-            Label = label;
-            BackendValue = value;
-            Type = type;
-            IsAdvanced = isAdvanced;
+            this.Order = order;
+            this.Name = name;
+            this.Label = label;
+            this.BackendValue = value;
+            this.Type = type;
+            this.IsAdvanced = isAdvanced;
             this.SelectOptions = selectOptions;
         }
 
@@ -104,12 +104,12 @@ namespace MG.Sonarr.Results
 
         public Type GetDotNetTypeFromFieldType()
         {
-            switch (this.Type)
+            switch (this.Type.ToLower())
             {
-                case FieldType.CheckBox:
+                case "checkbox":
                     return typeof(bool);
 
-                case FieldType.Password:
+                case "password":
                     return typeof(SecureString);
 
                 default:

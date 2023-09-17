@@ -73,7 +73,7 @@ namespace MG.Sonarr.Cmdlets
         public string[] Path { get; set; }
 
         [Parameter(Mandatory = false)]
-        public SeriesStatusType Status { get; set; }
+        public string Status { get; set; }
 
         [Parameter(Mandatory = false)]
         public object[] Tag { get; set; }
@@ -82,7 +82,8 @@ namespace MG.Sonarr.Cmdlets
         public long[] TVDBId { get; set; }
 
         [Parameter(Mandatory = false)]
-        public SeriesType[] Type { get; set; }
+        [ValidateSet("Standard", "Daily", "Anime")]
+        public string[] Type { get; set; }
 
         [Parameter(Mandatory = false)]
         public int[] Year { get; set; }

@@ -14,7 +14,7 @@ namespace MG.Sonarr.Results
         public string Message { get; private set; }
 
         [JsonProperty("type")]
-        public ProviderMessageType Type { get; private set; }
+        public string Type { get; private set; } = string.Empty;
 
         #endregion
     }

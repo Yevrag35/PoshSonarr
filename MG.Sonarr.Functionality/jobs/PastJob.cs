@@ -5,11 +5,11 @@ namespace MG.Sonarr.Functionality.Jobs
 {
     internal class PastJob : IPastJob, IComparable<IPastJob>, IComparable<PastJob>
     {
-        public string Command { get; }
+        public string Command { get; } = string.Empty;
         public DateTimeOffset? Ended { get; private set; }
         public long Id { get; }
         public DateTimeOffset Started { get; }
-        public CommandStatus Status { get; private set; }
+        public string Status { get; private set; } = string.Empty;
 
         internal PastJob(ICommandOutput output)
         {
@@ -46,7 +46,7 @@ namespace MG.Sonarr.Functionality.Jobs
         internal static bool TryFromResult(CommandOutput result, out IPastJob pastJob)
         {
             pastJob = null;
-            if (result != null && result.Status == CommandStatus.Completed && result.Started.HasValue)
+            if (result != null && result.Status.Equals("Completed", StringComparison.InvariantCultureIgnoreCase) && result.Started.HasValue)
             {
                 pastJob = new PastJob(result);
             }

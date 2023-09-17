@@ -22,8 +22,8 @@ namespace MG.Sonarr.Results
         public bool IsEnabled { get; set; }
 
         [JsonProperty("protocol")]
-        [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public DownloadProtocol Protocol { get; private set; }
+        //[JsonConverter(typeof(SonarrStringEnumConverter))]
+        public string Protocol { get; private set; }
 
         public int CompareTo(DownloadClient other) => this.Id.CompareTo(other.Id);
         public string GetEndpoint() => "/downloadclient";

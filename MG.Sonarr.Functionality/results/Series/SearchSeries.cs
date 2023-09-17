@@ -135,8 +135,7 @@ namespace MG.Sonarr.Results
         /// Indicates the type of series.
         /// </summary>
         [JsonProperty("seriesType")]
-        [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public SeriesType SeriesType { get; set; }
+        public string SeriesType { get; set; } = string.Empty;
 
         /// <summary>
         /// The title of the series used when sorting or filtering.
@@ -148,8 +147,7 @@ namespace MG.Sonarr.Results
         /// Indicates the current status of the series.
         /// </summary>
         [JsonProperty("status")]
-        [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public SeriesStatusType Status { get; private protected set; }
+        public string Status { get; private protected set; } = string.Empty;
 
         /// <summary>
         /// The slug title of the series.

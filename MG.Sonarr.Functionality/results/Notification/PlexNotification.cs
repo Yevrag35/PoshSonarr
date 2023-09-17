@@ -31,12 +31,12 @@ namespace MG.Sonarr.Results
         {
             return new Field[6]
             {
-                new Field(0, "Host", "Host", host, FieldType.TextBox, false),
-                new Field(1, "Port", "Port", port, FieldType.TextBox, false),
-                new Field(2, "Username", "Username", username, FieldType.TextBox, false),
-                new Field(3, "Password", "Password", password, FieldType.Password, false),
-                new Field(4, "UpdateLibrary", "Update Library", updateLibrary, FieldType.CheckBox, false),
-                new Field(5, "UseSsl", "Use SSL", useSsl, FieldType.CheckBox, false)
+                new Field(0, "Host", "Host", host, "TextBox", false),
+                new Field(1, "Port", "Port", port, "TextBox", false),
+                new Field(2, "Username", "Username", username, "TextBox", false),
+                new Field(3, "Password", "Password", password, "Password", false),
+                new Field(4, "UpdateLibrary", "Update Library", updateLibrary, "CheckBox", false),
+                new Field(5, "UseSsl", "Use SSL", useSsl, "Checkbox", false)
             };
         }
     }

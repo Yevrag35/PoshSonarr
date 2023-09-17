@@ -61,7 +61,7 @@ namespace MG.Sonarr.Results
         public SeasonCollection Seasons { get; set; }
 
         [JsonProperty("seriesType")]
-        public SeriesType SeriesType { get; set; }
+        public string SeriesType { get; set; } = string.Empty;
 
         [JsonProperty("tags")]
         public HashSet<int> Tags { get; set; }
