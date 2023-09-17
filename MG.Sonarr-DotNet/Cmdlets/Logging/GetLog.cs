@@ -26,14 +26,14 @@ namespace MG.Sonarr.Cmdlets
         private const int START_ALL = 1;
         private const string URI_FORMAT = "{0}{1}";
         private IUrlParameterCollection UrlParameters { get; } = new UrlParameterCollection();
-        
+
 
         #endregion
 
         #region PARAMETERS
 
         [Parameter(Mandatory = false, Position = 0)]
-        public LogLevel Severity = LogLevel.All;
+        public string Severity = "All";
 
         [Parameter(Mandatory = false, Position = 1)]
         public LogSortKey SortBy = LogSortKey.Time;
@@ -76,7 +76,7 @@ namespace MG.Sonarr.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (this.ContainsParameter(x => x.Severity) && this.Severity != LogLevel.All)
+            if (this.ContainsParameter(x => x.Severity) && "All".Equals(Severity, StringComparison.InvariantCultureIgnoreCase))
             {
                 this.FilterBy = LogSortKey.Level.ToString();
                 this.FilterValue = this.Severity;
@@ -134,14 +134,6 @@ namespace MG.Sonarr.Cmdlets
                 this.UrlParameters.Add(new PagingParameter(PagingParameter.DefaultPage, this.Top));
             }
         }
-        //private void SetSeverityParameter()
-        //{
-        //    if (!base.HasNoneOfTheParametersSpecified(this, x => x.FilterBy) && 
-        //        base.HasParameterSpecified(this, x => x.Severity) && this.Severity != LogLevel.All)
-        //    {
-        //        this.UrlParameters.Add(new FilterParameter("level", this.Severity));
-        //    }
-        //}
 
         #endregion
     }

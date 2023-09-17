@@ -8,6 +8,6 @@ namespace MG.Sonarr.Functionality.Jobs
         DateTimeOffset? Ended { get; }
         long Id { get; }
         DateTimeOffset Started { get; }
-        CommandStatus Status { get; }
+        string Status { get; }
     }
 }

@@ -37,7 +37,8 @@ namespace MG.Sonarr.Cmdlets
         /// <para type="description">Specifies to only retrive download clients whose download protocol match the given value(s).</para>
         /// </summary>
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByProtocol")]
-        public DownloadProtocol[] Protocol { get; set; }
+        [ValidateSet("Unknown", "Torrent", "Usenet")]
+        public string[] Protocol { get; set; }
 
         /// <summary>
         /// <para type="description">Retrieve the download client by their IDs.</para>

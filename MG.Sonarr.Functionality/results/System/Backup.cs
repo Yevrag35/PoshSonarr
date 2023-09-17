@@ -24,7 +24,7 @@ namespace MG.Sonarr.Results
         public DateTime? Time { get; private set; }
 
         [JsonProperty("type")]
-        public BackupType Type { get; private set; }
+        public string Type { get; private set; } = string.Empty;
 
         public int CompareTo(Backup other) => this.Time.GetValueOrDefault().CompareTo(other.Time.GetValueOrDefault());
     }

@@ -21,7 +21,8 @@ namespace MG.Sonarr.Cmdlets
         public string[] Name { get; set; }
 
         [Parameter(Mandatory = false)]
-        public DownloadProtocol Protocol { get; set; }
+        [ValidateSet("Unknown", "Torrent", "Usenet")]
+        public string Protocol { get; set; }
 
         protected override void BeginProcessing() => base.BeginProcessing();
 

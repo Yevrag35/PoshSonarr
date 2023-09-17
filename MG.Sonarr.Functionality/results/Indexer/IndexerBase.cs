@@ -11,8 +11,8 @@ namespace MG.Sonarr.Results
     public abstract class IndexerBase : ProviderBase
     {
         [JsonProperty("protocol")]
-        [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public DownloadProtocol Protocol { get; protected private set; }
+        //[JsonConverter(typeof(SonarrStringEnumConverter))]
+        public string Protocol { get; protected private set; } = string.Empty;
 
         [JsonProperty("enableRss")]
         public virtual bool RssEnabled { get; set; }

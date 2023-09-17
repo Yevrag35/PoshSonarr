@@ -53,7 +53,7 @@ namespace MG.Sonarr.Cmdlets
         }
 
         [Parameter(Mandatory = false)]
-        public AuthenticationType AuthenticationMethod { get; set; }
+        public string AuthenticationMethod { get; set; } = string.Empty;
 
         [Parameter(Mandatory = false)]
         public SwitchParameter AnalyticsEnabled
@@ -66,7 +66,8 @@ namespace MG.Sonarr.Cmdlets
         public PSCredential NewCredential { get; set; }
 
         [Parameter(Mandatory = false)]
-        public LogLevel LogLevel { get; set; }
+        [ValidateSet("All", "Fatal", "Error", "Warn", "Info", "Debug", "Trace")]
+        public string LogLevel { get; set; }
 
         [Parameter(Mandatory = false, DontShow = true)]
         public string Branch { get; set; }
@@ -82,7 +83,8 @@ namespace MG.Sonarr.Cmdlets
         }
 
         [Parameter(Mandatory = false)]
-        public UpdateMechanism UpdateMechanism { get; set; }
+        [ValidateSet("BuiltIn", "Script", "External", "Apt", "Docker")]
+        public string UpdateMechanism { get; set; }
 
         [Parameter(Mandatory = false)]
         public string UpdateScriptPath { get; set; }
@@ -95,7 +97,8 @@ namespace MG.Sonarr.Cmdlets
         }
 
         [Parameter(Mandatory = false)]
-        public ProxyType ProxyType { get; set; }
+        [ValidateSet("Http", "Socks4", "Socks5")]
+        public string ProxyType { get; set; }
 
         [Parameter(Mandatory = false)]
         public string ProxyHostName { get; set; }
@@ -182,6 +185,7 @@ namespace MG.Sonarr.Cmdlets
                     if (this.NewCredential.Password != null)
                         this.InputObject.Password = this.NewCredential.GetNetworkCredential().Password;
                 }
+
                 if (this.ContainsParameter(x => x.Port))
                     this.InputObject.Port = this.Port;
 
@@ -197,6 +201,7 @@ namespace MG.Sonarr.Cmdlets
                     if (this.ProxyCredential.Password != null)
                         this.InputObject.ProxyPassword = this.ProxyCredential.GetNetworkCredential().Password;
                 }
+
                 if (this.ContainsParameter(x => x.ProxyEnabled))
                     this.InputObject.ProxyEnabled = _proxyEnabled;
 

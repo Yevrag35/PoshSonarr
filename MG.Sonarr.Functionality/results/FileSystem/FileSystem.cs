@@ -75,7 +75,7 @@ namespace MG.Sonarr.Results
         public string Path { get; private protected set; }
 
         [JsonIgnore]
-        public abstract FileSystemType Type { get; }
+        public abstract string Type { get; }
 
         public int CompareTo(FileSystemEntry other) => this.Path.CompareTo(other.Path);
     }
@@ -88,7 +88,7 @@ namespace MG.Sonarr.Results
     {
         [JsonProperty("type")]
         [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public override FileSystemType Type => FileSystemType.Folder;
+        public override string Type => "Folder";
     }
 
     public class SonarrFile : FileSystemEntry, IComparable<SonarrFile>
@@ -111,7 +111,7 @@ namespace MG.Sonarr.Results
 
         [JsonProperty("type")]
         [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public override FileSystemType Type => FileSystemType.File;
+        public override string Type => "File";
 
         public int CompareTo(SonarrFile other) => this.Path.CompareTo(other.Path);
 

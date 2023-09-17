@@ -21,8 +21,7 @@ namespace MG.Sonarr.Results
         public string SortKey { get; private set; }
 
         [JsonProperty("sortDirection")]
-        [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public SortDirection SortDirection { get; private set; }
+        public string SortDirection { get; private set; } = string.Empty;
 
         [JsonProperty("totalRecords")]
         public int TotalRecords { get; private set; }

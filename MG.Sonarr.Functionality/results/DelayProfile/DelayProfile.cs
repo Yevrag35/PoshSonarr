@@ -38,7 +38,7 @@ namespace MG.Sonarr.Results
         public int Order { get; protected private set; }
 
         [JsonProperty("preferredProtocol", Order = 3)]
-        public DownloadProtocol PreferredProtocol { get; set; }
+        public string PreferredProtocol { get; set; } = string.Empty;
 
         [JsonProperty("tags", Order = 9)]
         public HashSet<int> Tags { get; set; }

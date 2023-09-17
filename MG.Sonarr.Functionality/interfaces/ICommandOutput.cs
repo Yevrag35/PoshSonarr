@@ -19,7 +19,7 @@ namespace MG.Sonarr.Functionality
         /// <summary>
         /// The overall status of the command.
         /// </summary>
-        CommandStatus Status { get; }
+        string Status { get; }
         /// <summary>
         /// The time that the command had begun.
         /// </summary>

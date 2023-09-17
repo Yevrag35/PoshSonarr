@@ -13,7 +13,7 @@ namespace MG.Sonarr.Functionality
         string Name { get; }
         int Order { get; }
         IEnumerable<ISelectOption> SelectOptions { get; }
-        FieldType Type { get; }
+        string Type { get; }
         object Value { get; }
 
         Type GetDotNetTypeFromFieldType();

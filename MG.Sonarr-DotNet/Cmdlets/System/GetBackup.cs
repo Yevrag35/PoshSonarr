@@ -21,7 +21,8 @@ namespace MG.Sonarr.Cmdlets
 
         #region PARAMETERS
         [Parameter(Mandatory = false, Position = 0)]
-        public BackupType[] Type { get; set; }
+        [ValidateSet("Scheduled", "Manual", "Update")]
+        public string[] Type { get; set; }
 
         #endregion
 

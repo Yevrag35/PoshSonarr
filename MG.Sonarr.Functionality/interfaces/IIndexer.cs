@@ -12,7 +12,7 @@ namespace MG.Sonarr.Functionality
         string ImplementationName { get; }
         Uri InfoLink { get; }
         string Name { get; }
-        DownloadProtocol Protocol { get; }
+        string Protocol { get; }
         bool RssEnabled { get; set; }
         bool RssSupported { get; }
         bool SearchEnabled { get; set; }

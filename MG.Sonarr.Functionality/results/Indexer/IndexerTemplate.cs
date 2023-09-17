@@ -31,8 +31,8 @@ namespace MG.Sonarr.Functionality
         [JsonProperty("name")]
         public string Name { get; set; }
         [JsonProperty("protocol")]
-        [JsonConverter(typeof(SonarrStringEnumConverter))]
-        public DownloadProtocol Protocol { get; }
+        //[JsonConverter(typeof(SonarrStringEnumConverter))]
+        public string Protocol { get; } = string.Empty;
         [JsonProperty("rssEnabled")]
         public bool RssEnabled
         {
