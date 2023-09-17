@@ -36,10 +36,9 @@ namespace MG.Sonarr.Next.Services.Http
     {
         static readonly ProductInfoHeaderValue _userAgent = new("PoshSonarr-Next", "2.0.0");
 
-        public static IServiceCollection AddSonarrClient(this IServiceCollection services, IConnectionSettings settings, Func<HttpResponseMessage, Task> writeVerboseCallback)
+        public static IServiceCollection AddSonarrClient(this IServiceCollection services, IConnectionSettings settings)
         {
             services.AddSingleton(settings)
-                    .AddSingleton(writeVerboseCallback)
                     .AddTransient<OhHandler>()
                     .AddTransient<SonarrClientHandler>()
                     .AddHttpClient<ISonarrClient, SonarrHttpClient>((provider, client) =>

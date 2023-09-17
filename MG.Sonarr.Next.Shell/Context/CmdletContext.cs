@@ -51,11 +51,7 @@ namespace MG.Sonarr.Next.Shell.Context
             services
                 .AddMemoryCache()
                 .AddSingleton(jsonOptions)
-                .AddSonarrClient(cmdlet.Settings, async msg =>
-                {
-                    string json = await msg.Content.ReadAsStringAsync();
-                    cmdlet.WriteVerbose(json);
-                });
+                .AddSonarrClient(cmdlet.Settings);
 
             _provider = services.BuildServiceProvider(new ServiceProviderOptions
             {
