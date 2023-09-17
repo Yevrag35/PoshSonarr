@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<Version>2.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Debug.ps1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Debug.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+	<ItemGroup>
+		<Using Include="System.Diagnostics" />
+		<Using Include="System.Diagnostics.CodeAnalysis" />
+		<Using Include="System.Globalization" />
+		<Using Include="System.Management.Automation" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Context\Http\" />
+    <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.3.6" />
+    <PackageReference Include="System.Management.Automation" Version="7.3.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MG.Sonarr.Next.Services\MG.Sonarr.Next.Services.csproj" />
+  </ItemGroup>
+
+</Project>
