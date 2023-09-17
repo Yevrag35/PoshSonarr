@@ -49,6 +49,7 @@ namespace MG.Sonarr.Cmdlets
                     }
                 };
             }
+
             return _dynLib;
         }
 

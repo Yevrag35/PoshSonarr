@@ -8,24 +8,28 @@ using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Json.Converters
 {
-    public sealed class PSObjectConverter : JsonConverter<PSObject>
+    public sealed class PSObjectConverter : JsonConverter<object>
     {
-        public override PSObject? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             return reader.TokenType switch
             {
-                JsonTokenType.StartArray => PSObject.AsPSObject(ConvertToListOfObjects(ref reader, options)),
+                JsonTokenType.StartArray => ConvertToListOfObjects(ref reader, options),
                 JsonTokenType.StartObject => this.ConvertToObject(ref reader, options),
-                _ => throw new JsonException("Unable to deserialize into PSObject.")
+                JsonTokenType.String => PSObject.AsPSObject(ReadString(ref reader, options)),
+                JsonTokenType.Number => PSObject.AsPSObject(ReadNumber(ref reader, options)),
+                JsonTokenType.True or JsonTokenType.False => ReadBoolean(ref reader, options),
+                JsonTokenType.None or JsonTokenType.Null => null,
+                _ => throw new JsonException($"Unable to process object with token type '{reader.TokenType}"),
             };
         }
 
-        private static List<PSObject> ConvertToListOfObjects(ref Utf8JsonReader reader, JsonSerializerOptions options)
+        private static object[] ConvertToListOfObjects(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
-            return JsonSerializer.Deserialize<List<PSObject>>(ref reader, options) ?? throw new JsonException("Unable to deserialize into a List of PSObject instances.");
+            return JsonSerializer.Deserialize<object[]>(ref reader, options) ?? throw new JsonException("Unable to deserialize into an array of PSObject instances.");
         }
 
-        private PSObject ConvertToObject(ref Utf8JsonReader reader, JsonSerializerOptions options)
+        private object ConvertToObject(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
             var pso = new PSObject(2);
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
@@ -95,23 +99,36 @@ namespace MG.Sonarr.Next.Services.Json.Converters
         {
             if (reader.ValueSpan.Length > 400)
             {
-                char[] array = ArrayPool<char>.Shared.Rent(reader.ValueSpan.Length);
-                Span<char> chars = array;
-                int writtenCount = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
-
-                chars = chars.Slice(0, writtenCount);
-                object read = ReadString(ref chars);
-                ArrayPool<char>.Shared.Return(array);
-
-                return read;
+                return ReadStringSlow(reader);
             }
 
             Span<char> span = stackalloc char[reader.ValueSpan.Length];
             int written = Encoding.UTF8.GetChars(reader.ValueSpan, span);
 
             span = span.Slice(0, written);
-            return ReadString(ref span);
+
+            foreach ()
+
+            //span.
+            //return ReadString(ref span);
         }
+
+        private static object ReadStringSlow(Utf8JsonReader reader)
+        {
+            char[] array = ArrayPool<char>.Shared.Rent(reader.ValueSpan.Length);
+            Span<char> chars = array;
+            int writtenCount = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
+
+            chars = chars.Slice(0, writtenCount);
+            
+
+
+            object read = ReadString(ref chars);
+            ArrayPool<char>.Shared.Return(array);
+
+            return read;
+        }
+
         private static object ReadString(ref Span<char> chars)
         {
             if (Guid.TryParse(chars, null, out Guid guidStr))
@@ -125,6 +142,10 @@ namespace MG.Sonarr.Next.Services.Json.Converters
             else if (DateTime.TryParse(chars, null, out DateTime dt))
             {
                 return dt;
+            }
+            else if (Version.TryParse(chars, out Version? version))
+            {
+                return version;
             }
             else
             {
@@ -174,7 +195,7 @@ namespace MG.Sonarr.Next.Services.Json.Converters
             return new string(chars);
         }
 
-        public override void Write(Utf8JsonWriter writer, PSObject value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
         {
             throw new NotSupportedException();
         }

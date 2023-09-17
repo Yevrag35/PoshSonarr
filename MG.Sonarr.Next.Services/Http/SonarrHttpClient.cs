@@ -9,7 +9,7 @@ namespace MG.Sonarr.Next.Services.Http
 {
     public interface ISonarrClient
     {
-        Task<PSObject?> SendGet(string path, CancellationToken token = default);
+        Task<SonarrResponse<T>> SendGet<T>(string path, CancellationToken token = default);
     }
 
     file sealed class SonarrHttpClient : ISonarrClient
@@ -25,10 +25,27 @@ namespace MG.Sonarr.Next.Services.Http
             this.Options = options.GetOptions();
         }
 
-        public async Task<PSObject?> SendGet(string path, CancellationToken token = default)
+        public async Task<SonarrResponse<T>> SendGet<T>(string path, CancellationToken token = default)
         {
-            using var response = await this.Client.GetAsync(path, token).ConfigureAwait(false);
-            return await response.Content.ReadFromJsonAsync<PSObject>(this.Options, token);
+            HttpResponseMessage response;
+            try
+            {
+                response = await this.Client.GetAsync(path, token).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                return SonarrResponse.FromException<T>(path, e, ErrorCategory.ConnectionError);
+            }
+
+            try
+            {
+                T? result = await response.Content.ReadFromJsonAsync<T>(this.Options, token);
+                return response.ToResult(path, result);
+            }
+            catch (Exception e)
+            {
+                return SonarrResponse.FromException<T>(response.RequestMessage?.RequestUri?.OriginalString ?? path, e, ErrorCategory.ParserError);
+            }
         }
     }
 
@@ -39,7 +56,7 @@ namespace MG.Sonarr.Next.Services.Http
         public static IServiceCollection AddSonarrClient(this IServiceCollection services, IConnectionSettings settings)
         {
             services.AddSingleton(settings)
-                    .AddTransient<OhHandler>()
+                    .AddTransient<PathHandler>()
                     .AddTransient<SonarrClientHandler>()
                     .AddHttpClient<ISonarrClient, SonarrHttpClient>((provider, client) =>
                     {
@@ -53,7 +70,7 @@ namespace MG.Sonarr.Next.Services.Http
 
                     })
                     .ConfigurePrimaryHttpMessageHandler<SonarrClientHandler>()
-                    .AddHttpMessageHandler<OhHandler>();
+                    .AddHttpMessageHandler<PathHandler>();
 
             return services;
         }

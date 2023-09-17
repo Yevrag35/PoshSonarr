@@ -21,6 +21,7 @@
 		<Using Include="System.Diagnostics" />
 		<Using Include="System.Diagnostics.CodeAnalysis" />
 		<Using Include="System.Globalization" />
+		<Using Include="System.Linq.Expressions" />
 		<Using Include="System.Management.Automation" />
 	</ItemGroup>
 

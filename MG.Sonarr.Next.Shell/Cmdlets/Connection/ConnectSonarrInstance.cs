@@ -2,12 +2,6 @@
 using MG.Sonarr.Next.Shell.Context;
 using MG.Sonarr.Next.Shell.Settings;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.PowerShell.Commands;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 {
@@ -37,6 +31,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
         }
 
         [Parameter(Mandatory = false)]
+        [Alias("NoApiPrefix")]
+        public SwitchParameter NoApiInPath
+        {
+            get => this.Settings.NoApiInPath;
+            set => this.Settings.NoApiInPath = value;
+        }
+
+        [Parameter(Mandatory = false)]
         public SwitchParameter SkipCertificateCheck
         {
             get => this.Settings.SkipCertValidation;
@@ -54,10 +56,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             using var scope = provider.CreateScope();
 
             var client = scope.ServiceProvider.GetRequiredService<ISonarrClient>();
-            PSObject? obj = client.SendGet("api/system/status", _token.Token)
-                .GetAwaiter().GetResult();
+            var result = client.SendGet<PSObject>("api/system/status", _token.Token).GetAwaiter().GetResult();
 
-            this.WriteObject(obj);
+            if (result.IsError)
+            {
+                this.WriteError(result.Error);
+            }
+            else
+            {
+                this.WriteObject(result.Data);
+            } 
         }
 
         protected override void EndProcessing()

@@ -3,22 +3,23 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
 {
-    public abstract class SonarrCmdletBase : Cmdlet
+    public abstract class SonarrCmdletBase : PSCmdlet
     {
-        IServiceScope Services { get; }
+        IServiceScope Scope { get; }
+        protected IServiceProvider Services => this.Scope.ServiceProvider;
 
         protected SonarrCmdletBase()
         {
-            this.Services = this.CreateScope();
+            this.Scope = this.CreateScope();
         }
 
         protected override void EndProcessing()
         {
-            this.Services.Dispose();
+            this.Scope.Dispose();
         }
         protected override void StopProcessing()
         {
-            this.Services.Dispose();
+            this.Scope.Dispose();
         }
     }
 }

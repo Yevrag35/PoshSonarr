@@ -11,6 +11,7 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
+    <PackageReference Include="OneOf" Version="3.0.263" />
     <PackageReference Include="System.Management.Automation" Version="7.3.6" />
     <PackageReference Include="System.Text.Json" Version="7.0.3" />
   </ItemGroup>
@@ -19,6 +20,7 @@
 		<Using Include="System.Diagnostics" />
 		<Using Include="System.Diagnostics.CodeAnalysis" />
 		<Using Include="System.Globalization" />
+		<Using Include="System.Linq.Expressions" />
 		<Using Include="System.Text.Json" />
 	</ItemGroup>
 

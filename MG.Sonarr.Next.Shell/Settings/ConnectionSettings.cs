@@ -8,6 +8,7 @@ namespace MG.Sonarr.Next.Shell.Settings
     {
         internal ApiKey Key { get; set; } = null!;
         IApiKey IConnectionSettings.ApiKey => this.Key;
+        public bool NoApiInPath { get; internal set; }
         public Uri ServiceUri { get; internal set; } = null!;
         public bool SkipCertValidation { get; internal set; }
         internal string? ProxyUri { get; set; }
