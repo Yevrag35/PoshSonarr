@@ -39,13 +39,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
         }
 
-        protected override void EndProcessing()
+        protected override ErrorRecord? End()
         {
             if (_list.Count <= 0)
             {
                 this.WriteWarning("No series were passed via the pipeline. Make sure to pass the correct object type.");
-                base.EndProcessing();
-                return;
+                return null;
             }
 
             foreach (PSObject item in _list)
@@ -62,7 +61,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 }
             }
 
-            base.EndProcessing();
+            return null;
         }
     }
 }

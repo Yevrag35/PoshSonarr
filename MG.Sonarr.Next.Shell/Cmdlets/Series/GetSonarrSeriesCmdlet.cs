@@ -39,11 +39,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             set => _ids.UnionWith(value);
         }
 
-        protected override void BeginProcessing()
-        {
-            base.BeginProcessing();
-        }
-        protected override void ProcessRecord()
+        protected override ErrorRecord? Process()
         {
             bool hadIds = false;
             if (_ids.Count > 0)
@@ -65,6 +61,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 var response = this.GetAllSeries();
                 this.WriteSonarrResult(response);
             }
+
+            return null;
         }
 
         private SonarrResponse<List<object>> GetSeriesByName(IReadOnlySet<WildcardString> names)

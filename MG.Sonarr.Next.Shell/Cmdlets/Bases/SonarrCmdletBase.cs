@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Http;
+﻿using MG.Sonarr.Next.Services.Extensions;
+using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Shell.Context;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -7,43 +8,156 @@ using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
 {
-    public abstract class SonarrCmdletBase : PSCmdlet
+    public abstract class SonarrCmdletBase : PSCmdlet, IDisposable
     {
+        bool _disposed;
+        ErrorRecord? _error;
+        IServiceScope _scope;
+
         protected ActionPreference DebugPreference { get; private set; }
-        IServiceScope Scope { get; }
-        protected internal IServiceProvider Services => this.Scope.ServiceProvider;
+        ErrorRecord? Error
+        {
+            get => _error;
+            set
+            {
+                if (value is not null)
+                {
+                    if (this.HasError)
+                    {
+                        value = new(_error, value.Exception);
+                    }
+
+                    _error = value;
+                    this.HasError = true;
+                }
+            }
+        }
+        [MemberNotNullWhen(true, nameof(Error), nameof(_error))]
+        bool HasError { get; set; }
+
+        protected internal IServiceProvider Services => _scope.ServiceProvider;
         protected ActionPreference VerbosePreference { get; private set; }
 
         protected SonarrCmdletBase()
         {
-            this.Scope = this.CreateScope();
+            _scope = this.CreateScope();
         }
 
-        protected override void BeginProcessing()
+        protected sealed override void BeginProcessing()
         {
-            base.BeginProcessing();
-            this.StoreVerbosePreference();
-            this.StoreDebugPreference();
+            try
+            {
+                this.StoreVerbosePreference();
+                this.StoreDebugPreference();
+            } 
+            catch (Exception e)
+            {
+                this.Error = e.ToRecord();
+                this.Dispose();
+                return;
+            }
+
+            try
+            {
+                this.Error = this.Begin();
+            }
+            catch (Exception e)
+            {
+                this.Error = e.ToRecord();
+                this.Dispose();
+                return;
+            }
         }
 
-        protected override void EndProcessing()
+        protected virtual ErrorRecord? Begin()
         {
-            this.Scope.Dispose();
+            return null;
         }
-        protected override void StopProcessing()
+
+        protected sealed override void ProcessRecord()
         {
-            this.Scope.Dispose();
+            if (this.HasError)
+            {
+                return;
+            }
+
+            try
+            {
+                this.Error = this.Process();
+            }
+            catch (Exception e)
+            {
+                this.Error = e.ToRecord();
+                this.Dispose();
+                return;
+            }
+        }
+
+        protected virtual ErrorRecord? Process()
+        {
+            return null;
+        }
+
+        protected sealed override void EndProcessing()
+        {
+            Queue<IApiCmdlet>? queue = null;
+            try
+            {
+                if (!this.HasError)
+                {
+                    this.Error = this.End();
+                }
+
+                queue = _scope?.ServiceProvider.GetService<Queue<IApiCmdlet>>();
+                queue?.Clear();
+            }
+            catch (Exception e)
+            {
+                this.Error = e.ToRecord();
+            }
+            finally
+            {
+                queue?.Clear();
+                this.Dispose();
+            }
+
+            if (this.HasError)
+            {
+                this.WriteError(this.Error);
+            }
+        }
+        protected virtual ErrorRecord? End()
+        {
+            return null;
+        }
+
+        protected sealed override void StopProcessing()
+        {
+            try
+            {
+                Queue<IApiCmdlet> queue = _scope.ServiceProvider.GetRequiredService<Queue<IApiCmdlet>>();
+                queue.Clear();
+                this.Stop();
+                this.ThrowTerminatingError(this.Error);
+            }
+            finally
+            {
+                this.Dispose();
+            }
+        }
+        protected virtual void Stop()
+        {
         }
 
         private void StoreDebugPreference()
         {
             if (this.MyInvocation.BoundParameters.TryGetValue(Constants.DEBUG, out object? oVal)
                             &&
-                            ((oVal is SwitchParameter sw && sw.ToBool()) || (oVal is bool justBool && justBool)))
+              ((oVal is SwitchParameter sw && sw.ToBool()) || (oVal is bool justBool && justBool)))
             {
                 this.DebugPreference = ActionPreference.Continue;
             }
-            else if (this.SessionState.PSVariable.TryGetVariableValue(Constants.VERBOSE_PREFERENCE, out ActionPreference pref))
+            else if (this.SessionState.PSVariable.TryGetVariableValue(Constants.DEBUG_PREFERENCE, out ActionPreference pref))
             {
                 this.DebugPreference = pref;
             }
@@ -52,7 +166,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         {
             if (this.MyInvocation.BoundParameters.TryGetValue(Constants.VERBOSE, out object? oVal)
                             &&
-                            ((oVal is SwitchParameter sw && sw.ToBool()) || (oVal is bool justBool && justBool)))
+              ((oVal is SwitchParameter sw && sw.ToBool()) || (oVal is bool justBool && justBool)))
             {
                 this.VerbosePreference = ActionPreference.Continue;
             }
@@ -85,6 +199,29 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 options ??= this.Services.GetService<SonarrJsonOptions>()?.GetForSerializing();
                 this.WriteVerbose(JsonSerializer.Serialize(response, options));
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                _scope?.Dispose();
+                _scope = null!;
+                _disposed = true;
+            }
+        }
+
+        ~SonarrCmdletBase()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            this.Dispose();
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            this.Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

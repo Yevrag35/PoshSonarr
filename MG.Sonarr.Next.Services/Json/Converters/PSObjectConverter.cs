@@ -47,7 +47,7 @@ namespace MG.Sonarr.Next.Services.Json.Converters
                 JsonTokenType.Number => ReadNumber(ref reader, options),
                 JsonTokenType.True or JsonTokenType.False => ReadBoolean(ref reader, options),
                 JsonTokenType.None or JsonTokenType.Null => null,
-                _ => throw new JsonException($"Unable to process object with token type '{reader.TokenType}"),
+                _ => throw new JsonException($"Unable to process object with token type '{reader.TokenType}'."),
             };
         }
 

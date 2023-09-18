@@ -20,35 +20,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
 
         protected virtual SonarrResponse<T> SendGetRequest<T>(string path, CancellationToken token = default)
         {
-            try
-            {
-                this.Queue.Enqueue(this);
-                SonarrResponse<T> response = this.Client.SendGet<T>(path, token);
-
-                return response;
-            }
-            finally
-            {
-                while (this.Queue.TryDequeue(out _))
-                {
-                }
-            }
+            this.Queue.Enqueue(this);
+            SonarrResponse<T> response = this.Client.SendGet<T>(path, token);
+            return response;
         }
 
         protected virtual SonarrResponse SendPutRequest(string path, PSObject body , CancellationToken token = default)
         {
-            try
-            {
-                this.Queue.Enqueue(this);
-                SonarrResponse response = this.Client.SendPutAsync(path, body, token).GetAwaiter().GetResult();
-                return response;
-            }
-            finally
-            {
-                while (this.Queue.TryDequeue(out _))
-                {
-                }
-            }
+            this.Queue.Enqueue(this);
+            SonarrResponse response = this.Client.SendPutAsync(path, body, token).GetAwaiter().GetResult();
+            return response;
         }
 
         public virtual void WriteVerbose(HttpRequestMessage request)
