@@ -15,7 +15,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         IServiceScope _scope;
 
         protected ActionPreference DebugPreference { get; private set; }
-        ErrorRecord? Error
+        protected ErrorRecord? Error
         {
             get => _error;
             set

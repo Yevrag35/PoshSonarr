@@ -22,6 +22,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             _names = new SortedSet<WildcardString>();
         }
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesName")]
         [SupportsWildcards]
         public IntOrString[] Name
@@ -30,6 +31,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             set => value.SplitToSets(_ids, _names);
         }
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId",
             ValueFromPipelineByPropertyName = true)]
         [Alias("SeriesId")]

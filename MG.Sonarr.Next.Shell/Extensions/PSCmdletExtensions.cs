@@ -24,7 +24,7 @@ namespace MG.Sonarr.Next.Shell.Extensions
             }
             else if (!result.IsEmpty)
             {
-                cmdlet.WriteObject(result.Data);
+                cmdlet.WriteObject(result.Data, enumerateCollection: true);
             }
         }
     }
