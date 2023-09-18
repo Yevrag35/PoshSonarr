@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Services.Http
     {
         SonarrResponse<T> SendGet<T>(string path, CancellationToken token = default);
         Task<SonarrResponse<T>> SendGetAsync<T>(string path, CancellationToken token = default);
-        Task<SonarrResponse> SendPutAsync(string path, PSObject body, CancellationToken token = default);
+        SonarrResponse SendPut(string path, PSObject body, CancellationToken token = default);
     }
 
     file sealed class SonarrHttpClient : ISonarrClient
@@ -85,7 +85,7 @@ namespace MG.Sonarr.Next.Services.Http
                 }
             }
         }
-        public async Task<SonarrResponse> SendPutAsync(string path, PSObject body, CancellationToken token = default)
+        public SonarrResponse SendPut(string path, PSObject body, CancellationToken token = default)
         {
             using var request = new HttpRequestMessage(HttpMethod.Put, path);
             request.Content = JsonContent.Create(body, options: this.SerializingOptions);
@@ -93,7 +93,7 @@ namespace MG.Sonarr.Next.Services.Http
             HttpResponseMessage? response = null;
             try
             {
-                response = await this.Client.SendAsync(request, token).ConfigureAwait(false);
+                response = this.Client.Send(request, token);
                 return SonarrResponse.Create(response, path);
             }
             catch (Exception e)

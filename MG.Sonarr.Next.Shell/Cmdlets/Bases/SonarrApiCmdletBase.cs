@@ -28,7 +28,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         protected virtual SonarrResponse SendPutRequest(string path, PSObject body , CancellationToken token = default)
         {
             this.Queue.Enqueue(this);
-            SonarrResponse response = this.Client.SendPutAsync(path, body, token).GetAwaiter().GetResult();
+            SonarrResponse response = this.Client.SendPut(path, body, token);
             return response;
         }
 

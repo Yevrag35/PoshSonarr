@@ -26,9 +26,6 @@ namespace MG.Sonarr.Next.Services.Http
             var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
             Debug.Assert(response.IsSuccessStatusCode);
 
-            string json = await response.Content.ReadAsStringAsync(cancellationToken);
-            Debug.WriteLine(json);
-
             return response;
         }
 
