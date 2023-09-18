@@ -98,4 +98,4 @@ if ($PSCmdlet.ShouldProcess($dllPath, "Importing Module")) {
 }
 
 Connect-SonarrInstance -ApiKey $skey -Url $surl
-$s = Get-SonarrSeries 607
+$s = Get-SonarrSeries 607 -Verbose

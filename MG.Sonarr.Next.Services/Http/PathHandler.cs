@@ -13,20 +13,32 @@ namespace MG.Sonarr.Next.Services.Http
             this.NoApiInPath = settings.NoApiInPath;
         }
 
+        protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var response = this.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
+            return response;
+        }
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            if (request.RequestUri is not null && request.RequestUri.IsAbsoluteUri && !this.NoApiInPath)
-            {
-                request.RequestUri = this.AddApiToPath(request.RequestUri);
-            }
+            this.SetPath(request);
 
             var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            Debug.Assert(response.IsSuccessStatusCode);
+
             string json = await response.Content.ReadAsStringAsync(cancellationToken);
             Debug.WriteLine(json);
 
             return response;
         }
 
+        private void SetPath(HttpRequestMessage request)
+        {
+            if (request.RequestUri is not null && request.RequestUri.IsAbsoluteUri && !this.NoApiInPath)
+            {
+                request.RequestUri = this.AddApiToPath(request.RequestUri);
+            }
+        }
         private Uri AddApiToPath(Uri requestUri)
         {
             string path = requestUri.AbsolutePath;

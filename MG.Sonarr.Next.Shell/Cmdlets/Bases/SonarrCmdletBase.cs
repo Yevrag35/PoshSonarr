@@ -78,7 +78,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 this.WriteDebug(JsonSerializer.Serialize(value, type, options));
             }
         }
-        protected void WriteVerboseSonarrResult(ISonarrResponse response, JsonSerializerOptions? options = null)
+        public void WriteVerboseSonarrResult(ISonarrResponse response, JsonSerializerOptions? options = null)
         {
             if (this.VerbosePreference != ActionPreference.SilentlyContinue)
             {

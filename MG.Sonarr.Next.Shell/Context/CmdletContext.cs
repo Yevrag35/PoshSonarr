@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Json.Converters;
 using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Shell.Cmdlets.Connection;
+using MG.Sonarr.Next.Shell.Components;
 using Microsoft.Extensions.DependencyInjection;
 using System.Buffers;
 
@@ -57,7 +58,8 @@ namespace MG.Sonarr.Next.Shell.Context
             services
                 .AddMemoryCache()
                 .AddSingleton(jsonOptions)
-                .AddSonarrClient(cmdlet.Settings);
+                .AddSingleton<Queue<IApiCmdlet>>()
+                .AddSonarrClient(cmdlet.Settings, (msg) => cmdlet.WriteVerbose(msg.StatusCode.ToString()));
 
             _provider = services.BuildServiceProvider(new ServiceProviderOptions
             {

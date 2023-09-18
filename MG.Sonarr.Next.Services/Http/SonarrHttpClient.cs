@@ -9,6 +9,7 @@ namespace MG.Sonarr.Next.Services.Http
 {
     public interface ISonarrClient
     {
+        SonarrResponse<T> SendGet<T>(string path, CancellationToken token = default);
         Task<SonarrResponse<T>> SendGetAsync<T>(string path, CancellationToken token = default);
         Task<SonarrResponse> SendPutAsync(string path, PSObject body, CancellationToken token = default);
     }
@@ -28,6 +29,35 @@ namespace MG.Sonarr.Next.Services.Http
             this.SerializingOptions = options.GetForSerializing();
         }
 
+        public SonarrResponse<T> SendGet<T>(string path, CancellationToken token = default)
+        {
+            HttpResponseMessage response = null!;
+            try
+            {
+                using HttpRequestMessage request = new(HttpMethod.Get, path);
+                response = this.Client.Send(request, token);
+                //response = await this.Client.Get(path, token).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                var result = SonarrResponse.FromException<T>(path, e, ErrorCategory.ConnectionError, response?.StatusCode ?? System.Net.HttpStatusCode.Unused);
+                response?.Dispose();
+                return result;
+            }
+
+            using (response)
+            {
+                try
+                {
+                    T? result = response.Content.ReadFromJsonAsync<T>(this.DeserializingOptions, token).GetAwaiter().GetResult();
+                    return response.ToResult(path, result);
+                }
+                catch (Exception e)
+                {
+                    return SonarrResponse.FromException<T>(response.RequestMessage?.RequestUri?.OriginalString ?? path, e, ErrorCategory.ParserError, response.StatusCode);
+                }
+            }
+        }
         public async Task<SonarrResponse<T>> SendGetAsync<T>(string path, CancellationToken token = default)
         {
             HttpResponseMessage response = null!;
@@ -82,11 +112,13 @@ namespace MG.Sonarr.Next.Services.Http
     {
         static readonly ProductInfoHeaderValue _userAgent = new("PoshSonarr-Next", "2.0.0");
 
-        public static IServiceCollection AddSonarrClient(this IServiceCollection services, IConnectionSettings settings)
+        public static IServiceCollection AddSonarrClient(this IServiceCollection services, IConnectionSettings settings, Action<HttpResponseMessage>? callback = null)
         {
             services.AddSingleton(settings)
                     .AddTransient<PathHandler>()
+                    .AddTransient<VerboseHandler>()
                     .AddTransient<SonarrClientHandler>()
+                    .AddSingleton(callback ?? ((HttpResponseMessage x) => { }))
                     .AddHttpClient<ISonarrClient, SonarrHttpClient>((provider, client) =>
                     {
                         var settings = provider.GetRequiredService<IConnectionSettings>();
@@ -99,6 +131,7 @@ namespace MG.Sonarr.Next.Services.Http
 
                     })
                     .ConfigurePrimaryHttpMessageHandler<SonarrClientHandler>()
+                    .AddHttpMessageHandler<VerboseHandler>()
                     .AddHttpMessageHandler<PathHandler>();
 
             return services;
