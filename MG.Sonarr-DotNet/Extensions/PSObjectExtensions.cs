@@ -57,6 +57,7 @@ namespace MG.Sonarr.Extensions
             {
                 pso.Properties.Add(Convert.ToString(kvp.Key), kvp.Value);
             }
+
             return pso;
         }
     }

@@ -1,5 +1,9 @@
 ﻿using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
+using MG.Sonarr.Next.Services.Json;
+using MG.Sonarr.Next.Shell.Cmdlets;
+using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Extensions
 {
@@ -11,6 +15,7 @@ namespace MG.Sonarr.Next.Shell.Extensions
                 && cmdlet.MyInvocation.BoundParameters.ContainsKey(memEx.Member.Name);
         }
 
+        
         public static void WriteSonarrResult<T>(this Cmdlet cmdlet, SonarrResponse<T> result)
         {
             if (result.IsError)

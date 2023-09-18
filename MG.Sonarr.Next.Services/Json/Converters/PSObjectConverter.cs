@@ -1,23 +1,50 @@
-﻿using System;
+﻿using MG.Sonarr.Next.Services.Extensions;
+using Microsoft.PowerShell.Commands;
+using NJsonSchema;
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Json.Converters
 {
     public sealed class PSObjectConverter : JsonConverter<object>
     {
+        static readonly Type _objType = typeof(object);
+        static readonly Type _psObjType = typeof(PSObject);
+        static readonly Type _psCusType = typeof(PSCustomObject);
+        readonly HashSet<string> _ignore;
+
+        public PSObjectConverter(string[] ignoreProperties)
+        {
+            _ignore = new HashSet<string>(ignoreProperties, StringComparer.InvariantCultureIgnoreCase);
+        }
+        public PSObjectConverter(ReadOnlySpan<string> span)
+        {
+            _ignore = new HashSet<string>(span.Length, StringComparer.InvariantCultureIgnoreCase);
+            foreach (string s in span)
+            {
+                _ = _ignore.Add(s);
+            }
+        }
+
+        public override bool CanConvert(Type typeToConvert)
+        {
+            return _objType.Equals(typeToConvert) || _psObjType.Equals(typeToConvert) || _psCusType.Equals(typeToConvert);
+        }
+
         public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             return reader.TokenType switch
             {
                 JsonTokenType.StartArray => ConvertToListOfObjects(ref reader, options),
                 JsonTokenType.StartObject => this.ConvertToObject(ref reader, options),
-                JsonTokenType.String => PSObject.AsPSObject(ReadString(ref reader, options)),
-                JsonTokenType.Number => PSObject.AsPSObject(ReadNumber(ref reader, options)),
+                JsonTokenType.String => ReadString(ref reader, options),
+                JsonTokenType.Number => ReadNumber(ref reader, options),
                 JsonTokenType.True or JsonTokenType.False => ReadBoolean(ref reader, options),
                 JsonTokenType.None or JsonTokenType.Null => null,
                 _ => throw new JsonException($"Unable to process object with token type '{reader.TokenType}"),
@@ -97,39 +124,32 @@ namespace MG.Sonarr.Next.Services.Json.Converters
         }
         private static object ReadString(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
-            if (reader.ValueSpan.Length > 400)
-            {
-                return ReadStringSlow(reader);
-            }
+            bool isRented = false;
+            char[]? array = null;
 
-            Span<char> span = stackalloc char[reader.ValueSpan.Length];
+            Span<char> span = reader.ValueSpan.Length < 1001
+                ? stackalloc char[reader.ValueSpan.Length]
+                : RentArray(reader.ValueSpan.Length, ref isRented, ref array);
+
             int written = Encoding.UTF8.GetChars(reader.ValueSpan, span);
 
-            span = span.Slice(0, written);
+            object result = ReadString(span.Slice(0, written));
+            if (isRented)
+            {
+                ArrayPool<char>.Shared.Return(array!);
+            }
 
-            foreach ()
-
-            //span.
-            //return ReadString(ref span);
+            return result;
         }
 
-        private static object ReadStringSlow(Utf8JsonReader reader)
+        private static Span<T> RentArray<T>(in int length, ref bool isRented, ref T[]? array)
         {
-            char[] array = ArrayPool<char>.Shared.Rent(reader.ValueSpan.Length);
-            Span<char> chars = array;
-            int writtenCount = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
-
-            chars = chars.Slice(0, writtenCount);
-            
-
-
-            object read = ReadString(ref chars);
-            ArrayPool<char>.Shared.Return(array);
-
-            return read;
+            array = ArrayPool<T>.Shared.Rent(length);
+            isRented = true;
+            return array.AsSpan(0, length);
         }
 
-        private static object ReadString(ref Span<char> chars)
+        private static object ReadString(Span<char> chars)
         {
             if (Guid.TryParse(chars, null, out Guid guidStr))
             {
@@ -149,9 +169,31 @@ namespace MG.Sonarr.Next.Services.Json.Converters
             }
             else
             {
-                return new string(chars);
+                return ProcessQuotes(chars);
             }
         }
+
+        private static string ProcessQuotes(ReadOnlySpan<char> chars)
+        {
+            int position = 0;
+            ReadOnlySpan<char> quotes = stackalloc char[] { '\\', '"' };
+            ReadOnlySpan<char> backs = stackalloc char[] { '\\', '\\' };
+            Span<char> scratch = stackalloc char[chars.Length];
+
+            foreach (SplitEntry section in chars.SpanSplit(quotes, backs))
+            {
+                section.Chars.CopyTo(scratch.Slice(position));
+                position += section.Chars.Length;
+                
+                if (!section.Separator.IsEmpty)
+                {
+                    scratch[position++] = section.Separator[1];
+                }
+            }
+
+            return new string(scratch.Slice(0, position));
+        }
+
         private static ValueType ReadNumber(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
             Span<char> chars = stackalloc char[reader.ValueSpan.Length];
@@ -197,7 +239,55 @@ namespace MG.Sonarr.Next.Services.Json.Converters
 
         public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
         {
-            throw new NotSupportedException();
+            if (value is null)
+            {
+                writer.WriteNullValue();
+                return;
+            }
+
+            if (value is PSObject pso)
+            {
+                this.WritePSObject(writer, options, pso);
+            }
+            else if (value is PSCustomObject)
+            {
+                writer.WriteStartObject();
+                writer.WriteEndObject();
+            }
+            else
+            {
+                writer.WriteRawValue(JsonSerializer.Serialize(value, value.GetType(), options));
+            }
+        }
+
+        private void WritePSObject(Utf8JsonWriter writer, JsonSerializerOptions options, PSObject pso)
+        {
+            writer.WriteStartObject();
+
+            foreach (var prop in pso.Properties
+                .Where(x => x.MemberType == PSMemberTypes.NoteProperty
+                            &&
+                            x.IsGettable))
+            {
+                if (_ignore.Contains(prop.Name))
+                {
+                    continue;
+                }
+
+                writer.WritePropertyName(options.ConvertName(prop.Name));
+
+                if (prop.Value is null)
+                {
+                    writer.WriteNullValue();
+                    continue;
+                }
+
+                writer.WriteRawValue(JsonSerializer.Serialize(prop.Value, prop.Value.GetType(), options));
+            }
+
+            writer.WriteEndObject();
+
+            return;
         }
     }
 }

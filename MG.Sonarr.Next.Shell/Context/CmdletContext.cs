@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Services.Json.Converters;
 using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Shell.Cmdlets.Connection;
 using Microsoft.Extensions.DependencyInjection;
+using System.Buffers;
 
 namespace MG.Sonarr.Next.Shell.Context
 {
@@ -43,7 +44,12 @@ namespace MG.Sonarr.Next.Shell.Context
 
             var jsonOptions = new SonarrJsonOptions(options =>
             {
-                options.Converters.Add(new PSObjectConverter());
+                string[] ignore = ArrayPool<string>.Shared.Rent(1);
+                ignore[0] = Constants.META_PROPERTY_NAME;
+                ArrayPool<string>.Shared.Return(ignore);
+
+                options.Converters.Add(new PSObjectConverter(ignore.AsSpan(0, 1)));
+                options.Converters.Add(new SonarrResponseConverter());
                 options.PropertyNamingPolicy = null;
             });
 

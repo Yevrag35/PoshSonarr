@@ -96,3 +96,6 @@ if ($PSCmdlet.ShouldProcess($dllPath, "Importing Module")) {
 	Import-Module $dllPath -ErrorAction Stop
 	Push-Location $myDesktop
 }
+
+Connect-SonarrInstance -ApiKey $skey -Url $surl
+$s = Get-SonarrSeries 607

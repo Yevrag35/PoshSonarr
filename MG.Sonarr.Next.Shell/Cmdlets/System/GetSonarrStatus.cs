@@ -5,7 +5,7 @@
     {
         protected override void ProcessRecord()
         {
-            var result = this.Client.SendGet<PSObject>("/system/status").GetAwaiter().GetResult();
+            var result = this.SendGetRequest<PSObject>("/system/status");
             if (result.IsError)
             {
                 this.WriteError(result.Error);

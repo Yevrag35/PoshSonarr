@@ -1,11 +1,15 @@
 ﻿using MG.Sonarr.Next.Services.Http;
+using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Namotion.Reflection;
+using OneOf.Types;
+using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
-    [Cmdlet(VerbsCommon.Get, "SonarrSeries")]
+    [Cmdlet(VerbsCommon.Get, "SonarrSeries", DefaultParameterSetName = "BySeriesName")]
     public sealed class GetSonarrSeriesCmdlet : SonarrApiCmdletBase
     {
         readonly SortedSet<int> _ids;
@@ -35,6 +39,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             set => _ids.UnionWith(value);
         }
 
+        protected override void BeginProcessing()
+        {
+            base.BeginProcessing();
+        }
         protected override void ProcessRecord()
         {
             bool hadIds = false;
@@ -69,11 +77,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
             for (int i = result.Data.Count - 1; i >= 0; i--)
             {
-                if (!result.Data[i].TryGetProperty("Title", out string? title)
+                object item = result.Data[i];
+                if (!item.TryGetProperty(Constants.TITLE, out string? title)
                     ||
                     !names.ValueLike(title))
                 {
                     result.Data.RemoveAt(i);
+                }
+                else
+                {
+                    item.AddNameAlias();
+                    item.AddMetadataTag(Constants.SERIES);
                 }
             }
 
@@ -81,13 +95,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         }
         private SonarrResponse<List<object>> GetAllSeries()
         {
-            return this.Client.SendGet<List<object>>("/series").GetAwaiter().GetResult();
+            //return this.Client.SendGetAsync<List<object>>("/series").GetAwaiter().GetResult();
+            return this.SendGetRequest<List<object>>(Constants.SERIES);
         }
         private IEnumerable<SonarrResponse<object>> GetSeriesById(IEnumerable<int> ids)
         {
             foreach (int id in ids)
             {
-                yield return this.Client.SendGet<object>($"/series/{id}").GetAwaiter().GetResult();
+                var result = this.SendGetRequest<object>($"/series/{id}");
+                //var result = this.Client.SendGetAsync<object>($"/series/{id}").GetAwaiter().GetResult();
+                result.Data?.AddNameAlias();
+                result.Data?.AddMetadataTag(Constants.SERIES);
+
+                yield return result;
             }
         }
     }

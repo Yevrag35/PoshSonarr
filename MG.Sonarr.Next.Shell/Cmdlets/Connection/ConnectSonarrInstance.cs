@@ -56,7 +56,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             using var scope = provider.CreateScope();
 
             var client = scope.ServiceProvider.GetRequiredService<ISonarrClient>();
-            var result = client.SendGet<PSObject>("api/system/status", _token.Token).GetAwaiter().GetResult();
+            var result = client.SendGetAsync<PSObject>("api/system/status", _token.Token).GetAwaiter().GetResult();
 
             if (result.IsError)
             {
