@@ -1,15 +1,22 @@
 ﻿using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Json;
+using System.Buffers;
+using System.Net.Http.Json;
+using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Services.Http
 {
     public sealed class PathHandler : DelegatingHandler
     {
         const string API = "/api/";
+        const string TEST = "system/status";
+        readonly JsonSerializerOptions _options;
         bool NoApiInPath { get; }
 
-        public PathHandler(IConnectionSettings settings)
+        public PathHandler(IConnectionSettings settings, SonarrJsonOptions options)
             : base()
         {
+            _options = options.GetForSerializing();
             this.NoApiInPath = settings.NoApiInPath;
         }
 
@@ -21,25 +28,61 @@ namespace MG.Sonarr.Next.Services.Http
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            this.SetPath(request);
+            this.SetPath(request, out bool isStatusEndpoint);
 
             var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            Debug.Assert(response.IsSuccessStatusCode);
+            if (response.IsSuccessStatusCode && isStatusEndpoint)
+            {
+                var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+                if (IsHtml(stream))
+                {
+                    await stream.DisposeAsync();
+                    response.Content = JsonContent.Create(new
+                    {
+                        Message = "The response returned something that looks like a HTML page. You sure the URL is correct?"
+                    }, options: _options);
+
+                    response.StatusCode = System.Net.HttpStatusCode.ServiceUnavailable;
+                    response.ReasonPhrase = response.StatusCode.ToString();
+                }
+            }
 
             return response;
         }
 
-        private void SetPath(HttpRequestMessage request)
+        private static bool IsHtml(Stream stream)
         {
-            if (request.RequestUri is not null && request.RequestUri.IsAbsoluteUri && !this.NoApiInPath)
+            ReadOnlySpan<byte> badHtml = "<!doctype"u8;
+            Span<byte> span = stackalloc byte[badHtml.Length];
+            try
             {
-                request.RequestUri = this.AddApiToPath(request.RequestUri);
+                stream.ReadExactly(span);
+                return badHtml.SequenceEqual(span);
+            }
+            catch
+            {
+                return false;
             }
         }
-        private Uri AddApiToPath(Uri requestUri)
+
+        private void SetPath(HttpRequestMessage request, out bool isStatusEndpoint)
+        {
+            isStatusEndpoint = false;
+            if (request.RequestUri is not null && request.RequestUri.IsAbsoluteUri && !this.NoApiInPath)
+            {
+                request.RequestUri = this.AddApiToPath(request.RequestUri, ref isStatusEndpoint);
+            }
+            else if (request.RequestUri is not null)
+            {
+                isStatusEndpoint = request.RequestUri.ToString()
+                    .Contains(TEST, StringComparison.InvariantCultureIgnoreCase);
+            }
+        }
+        private Uri AddApiToPath(Uri requestUri, ref bool isStatusEndpoint)
         {
             string path = requestUri.AbsolutePath;
             ReadOnlySpan<char> chars = path.AsSpan();
+            isStatusEndpoint = chars.Contains(TEST, StringComparison.InvariantCultureIgnoreCase);
 
             if (chars.StartsWith(new ReadOnlySpan<char>('/'), StringComparison.InvariantCultureIgnoreCase))
             {

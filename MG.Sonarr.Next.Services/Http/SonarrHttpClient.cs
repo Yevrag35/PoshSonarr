@@ -1,16 +1,17 @@
 ﻿using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.PowerShell.Commands;
 using System.Management.Automation;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json.Nodes;
 
 namespace MG.Sonarr.Next.Services.Http
 {
     public interface ISonarrClient
     {
         SonarrResponse<T> SendGet<T>(string path, CancellationToken token = default);
-        Task<SonarrResponse<T>> SendGetAsync<T>(string path, CancellationToken token = default);
         SonarrResponse SendPut(string path, PSObject body, CancellationToken token = default);
     }
 
@@ -49,8 +50,17 @@ namespace MG.Sonarr.Next.Services.Http
             {
                 try
                 {
-                    T? result = response.Content.ReadFromJsonAsync<T>(this.DeserializingOptions, token).GetAwaiter().GetResult();
-                    return response.ToResult(path, result);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        T? result = response.Content.ReadFromJsonAsync<T>(this.DeserializingOptions, token).GetAwaiter().GetResult();
+                        return response.ToResult(path, result);
+                    }
+                    else
+                    {
+                        JsonNode? node = JsonNode.Parse(response.Content.ReadAsStream(token));
+                        return
+                            SonarrResponse.FromException<T>(path, new HttpResponseException(node?.AsObject()["message"]?.ToJsonString(), response), ErrorCategory.ResourceUnavailable, response.StatusCode);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -58,33 +68,7 @@ namespace MG.Sonarr.Next.Services.Http
                 }
             }
         }
-        public async Task<SonarrResponse<T>> SendGetAsync<T>(string path, CancellationToken token = default)
-        {
-            HttpResponseMessage response = null!;
-            try
-            {
-                response = await this.Client.GetAsync(path, token).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                var result = SonarrResponse.FromException<T>(path, e, ErrorCategory.ConnectionError, response?.StatusCode ?? System.Net.HttpStatusCode.Unused);
-                response?.Dispose();
-                return result;
-            }
-
-            using (response)
-            {
-                try
-                {
-                    T? result = await response.Content.ReadFromJsonAsync<T>(this.DeserializingOptions, token);
-                    return response.ToResult(path, result);
-                }
-                catch (Exception e)
-                {
-                    return SonarrResponse.FromException<T>(response.RequestMessage?.RequestUri?.OriginalString ?? path, e, ErrorCategory.ParserError, response.StatusCode);
-                }
-            }
-        }
+        
         public SonarrResponse SendPut(string path, PSObject body, CancellationToken token = default)
         {
             using var request = new HttpRequestMessage(HttpMethod.Put, path);

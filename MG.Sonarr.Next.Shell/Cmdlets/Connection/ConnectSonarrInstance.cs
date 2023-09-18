@@ -8,7 +8,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
     [Cmdlet(VerbsCommunications.Connect, "SonarrInstance")]
     public sealed class ConnectSonarrInstance : Cmdlet
     {
-        CancellationTokenSource _token = null!;
         internal ConnectionSettings Settings { get; }
 
         public ConnectSonarrInstance()
@@ -45,10 +44,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             set => this.Settings.SkipCertValidation = value;
         }
 
-        protected override void BeginProcessing()
-        {
-            _token = new CancellationTokenSource();
-        }
         protected override void ProcessRecord()
         {
             this.SetContext();
@@ -56,7 +51,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             using var scope = provider.CreateScope();
 
             var client = scope.ServiceProvider.GetRequiredService<ISonarrClient>();
-            var result = client.SendGetAsync<PSObject>("api/system/status", _token.Token).GetAwaiter().GetResult();
+            var result = client.SendGet<object>("/system/status");
 
             if (result.IsError)
             {
@@ -66,17 +61,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             {
                 this.WriteObject(result.Data);
             } 
-        }
-
-        protected override void EndProcessing()
-        {
-            _token.Dispose();
-        }
-        protected override void StopProcessing()
-        {
-            _token.Cancel();
-            base.StopProcessing();
-            _token.Dispose();
         }
     }
 }
