@@ -132,6 +132,7 @@ namespace MG.Sonarr.Next.Services.Http
             services.AddSingleton(settings)
                     .AddTransient<PathHandler>()
                     .AddTransient<VerboseHandler>()
+                    .AddTransient<TestingHandler>()
                     .AddTransient<SonarrClientHandler>()
                     .AddSingleton(callback ?? ((HttpResponseMessage x) => { }))
                     .AddHttpClient<ISonarrClient, SonarrHttpClient>((provider, client) =>
@@ -146,8 +147,9 @@ namespace MG.Sonarr.Next.Services.Http
 
                     })
                     .ConfigurePrimaryHttpMessageHandler<SonarrClientHandler>()
+                    .AddHttpMessageHandler<PathHandler>()
                     .AddHttpMessageHandler<VerboseHandler>()
-                    .AddHttpMessageHandler<PathHandler>();
+                    .AddHttpMessageHandler<TestingHandler>();
 
             return services;
         }

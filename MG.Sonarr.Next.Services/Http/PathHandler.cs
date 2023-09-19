@@ -10,79 +10,24 @@ namespace MG.Sonarr.Next.Services.Http
     public sealed class PathHandler : DelegatingHandler
     {
         const string API = "/api/";
-        readonly JsonSerializerOptions _options;
         bool NoApiInPath { get; }
 
-        public PathHandler(IConnectionSettings settings, SonarrJsonOptions options)
-            : base()
+        public PathHandler(IConnectionSettings settings)
         {
-            _options = options.GetForSerializing();
             this.NoApiInPath = settings.NoApiInPath;
         }
 
         protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var response = this.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
-            return response;
+            this.SetPath(request);
+            return base.Send(request, cancellationToken);
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
 
             this.SetPath(request);
-            var respTask = base.SendAsync(request, cancellationToken);
-            bool testing = request.Options.TryGetValue(SonarrClientDependencyInjection.KEY, out bool isTest)
-                           &&
-                           isTest;
-
-            var response = await respTask.ConfigureAwait(false);
-            HttpStatusCode originalCode = response.StatusCode;
-            string? reason = response.ReasonPhrase;
-            if (response.IsSuccessStatusCode && testing)
-            {
-                var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-                bool isHtml = IsHtml(stream);
-                await stream.DisposeAsync();
-
-                if (isHtml)
-                {
-                    response = new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
-                    {
-                        Content = JsonContent.Create(new
-                        {
-                            Message = "The response returned something that looks like a HTML page. You sure the URL is correct?"
-                        }, options: _options),
-                        RequestMessage = request,
-                        ReasonPhrase = HttpStatusCode.ServiceUnavailable.ToString(),
-                    };
-                }
-                else
-                {
-                    response = new HttpResponseMessage(originalCode)
-                    {
-                        Content = new StringContent(string.Empty),
-                        RequestMessage = request,
-                        ReasonPhrase = reason,
-                    };
-                } 
-            }
-
-            return response;
-        }
-
-        private static bool IsHtml(Stream stream)
-        {
-            ReadOnlySpan<byte> badHtml = "<!doctype"u8;
-            Span<byte> span = stackalloc byte[badHtml.Length];
-            try
-            {
-                stream.ReadExactly(span);
-                return badHtml.SequenceEqual(span);
-            }
-            catch
-            {
-                return false;
-            }
+            return base.SendAsync(request, cancellationToken);
         }
 
         private void SetPath(HttpRequestMessage request)

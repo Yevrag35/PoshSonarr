@@ -22,7 +22,7 @@ namespace MG.Sonarr.Next.Services.Http
                 cmdlet.WriteVerbose(request);
             }
 
-            var response = base.Send(request, cancellationToken);
+            var response = base.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
             cmdlet?.WriteVerboseSonarrResult(
                 SonarrResponse.Create(response, request.RequestUri?.ToString() ?? string.Empty),
                 _options);
