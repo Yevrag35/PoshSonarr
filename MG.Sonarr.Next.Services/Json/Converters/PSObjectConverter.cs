@@ -228,10 +228,10 @@ namespace MG.Sonarr.Next.Services.Json.Converters
             int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
 
             chars = chars.Slice(0, written);
-
-            if (char.IsLower(chars[0]))
+            ref char first = ref chars[0];
+            if (char.IsLower(first))
             {
-                chars[0] = char.ToUpper(chars[0]);
+                first = char.ToUpper(first);
             }
 
             return new string(chars);

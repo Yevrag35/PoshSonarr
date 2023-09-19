@@ -9,8 +9,10 @@ namespace MG.Sonarr.Next.Shell.Context
 
         public const string EPISODE = "Episode";
         public const string EPISODE_FILE = "EpisodeFile";
+        public const string LABEL = "Label";
         public const string NAME = "Name";
         public const string SERIES = "Series";
+        public const string TAG = "Tag";
         public const string TITLE = "Title";
 
         public const string DEBUG = "Debug";

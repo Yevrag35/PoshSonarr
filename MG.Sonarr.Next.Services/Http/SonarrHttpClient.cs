@@ -2,6 +2,7 @@
 using MG.Sonarr.Next.Services.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerShell.Commands;
+using System.Collections;
 using System.IO;
 using System.Management.Automation;
 using System.Management.Automation.Language;
@@ -14,7 +15,7 @@ namespace MG.Sonarr.Next.Services.Http
     public interface ISonarrClient
     {
         SonarrResponse<T> SendGet<T>(string path, CancellationToken token = default);
-        SonarrResponse SendPut(string path, PSObject body, CancellationToken token = default);
+        SonarrResponse SendPut<T>(string path, T body, CancellationToken token = default);
         SonarrResponse SendTest(CancellationToken token = default);
     }
 
@@ -67,7 +68,7 @@ namespace MG.Sonarr.Next.Services.Http
             }
         }
 
-        public SonarrResponse SendPut(string path, PSObject body, CancellationToken token = default)
+        public SonarrResponse SendPut<T>(string path, T body, CancellationToken token = default)
         {
             using var request = new HttpRequestMessage(HttpMethod.Put, path);
             request.Options.Set(SonarrClientDependencyInjection.KEY, false);
@@ -90,7 +91,6 @@ namespace MG.Sonarr.Next.Services.Http
                 response?.Dispose();
             }
         }
-
         
         public SonarrResponse SendTest(CancellationToken token = default)
         {
