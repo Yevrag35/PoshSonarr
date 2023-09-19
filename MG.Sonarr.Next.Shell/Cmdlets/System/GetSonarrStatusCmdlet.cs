@@ -1,7 +1,7 @@
 ﻿namespace MG.Sonarr.Next.Shell.Cmdlets.System
 {
     [Cmdlet(VerbsCommon.Get, "SonarrStatus")]
-    public sealed class GetSonarrStatus : SonarrApiCmdletBase
+    public sealed class GetSonarrStatusCmdlet : SonarrApiCmdletBase
     {
         protected override ErrorRecord? Process()
         {

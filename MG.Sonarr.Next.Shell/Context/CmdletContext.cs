@@ -45,11 +45,18 @@ namespace MG.Sonarr.Next.Shell.Context
 
             var jsonOptions = new SonarrJsonOptions(options =>
             {
-                string[] ignore = ArrayPool<string>.Shared.Rent(1);
-                ignore[0] = Constants.META_PROPERTY_NAME;
-                ArrayPool<string>.Shared.Return(ignore);
-
-                options.Converters.Add(new PSObjectConverter(ignore.AsSpan(0, 1)));
+                options.Converters.Add(
+                    new PSObjectConverter(
+                        ignoreProps: new string[]
+                        {
+                            Constants.META_PROPERTY_NAME,
+                        },
+                        convertTypes: new KeyValuePair<string, Type>[]
+                        {
+                            new("Tags", typeof(SortedSet<int>)),
+                            new("Genres", typeof(string[])),
+                        }
+                    ));
                 options.Converters.Add(new SonarrResponseConverter());
                 options.PropertyNamingPolicy = null;
             });

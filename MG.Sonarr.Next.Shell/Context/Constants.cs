@@ -7,6 +7,7 @@ namespace MG.Sonarr.Next.Shell.Context
         public const string META_PROPERTY_NAME = "MetadataTag";
         public const char META_PREFIX = '#';
 
+        public const string CALENDAR = "Calendar";
         public const string EPISODE = "Episode";
         public const string EPISODE_FILE = "EpisodeFile";
         public const string LABEL = "Label";

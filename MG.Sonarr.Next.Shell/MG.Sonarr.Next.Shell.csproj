@@ -29,11 +29,12 @@
   <ItemGroup>
     <Folder Include="Context\Http\" />
     <Folder Include="Models\" />
+    <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.3.6" />
-    <PackageReference Include="System.Management.Automation" Version="7.3.6" />
+    <PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.3.7" />
+    <PackageReference Include="System.Management.Automation" Version="7.3.7" />
   </ItemGroup>
 
   <ItemGroup>
