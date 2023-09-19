@@ -2,7 +2,9 @@
 using MG.Sonarr.Next.Services.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerShell.Commands;
+using System.IO;
 using System.Management.Automation;
+using System.Management.Automation.Language;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
@@ -13,11 +15,13 @@ namespace MG.Sonarr.Next.Services.Http
     {
         SonarrResponse<T> SendGet<T>(string path, CancellationToken token = default);
         SonarrResponse SendPut(string path, PSObject body, CancellationToken token = default);
+        SonarrResponse SendTest(CancellationToken token = default);
     }
 
     file sealed class SonarrHttpClient : ISonarrClient
     {
         internal const string API_HEADER_KEY = "X-Api-Key";
+        const string TEST_API = "/system/status";
 
         HttpClient Client { get; }
         JsonSerializerOptions DeserializingOptions { get; }
@@ -33,11 +37,13 @@ namespace MG.Sonarr.Next.Services.Http
         public SonarrResponse<T> SendGet<T>(string path, CancellationToken token = default)
         {
             HttpResponseMessage response = null!;
+            using HttpRequestMessage request = new(HttpMethod.Get, path);
+            request.Options.Set(SonarrClientDependencyInjection.KEY, false);
+
             try
             {
-                using HttpRequestMessage request = new(HttpMethod.Get, path);
                 response = this.Client.Send(request, token);
-                //response = await this.Client.Get(path, token).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
             }
             catch (Exception e)
             {
@@ -50,17 +56,9 @@ namespace MG.Sonarr.Next.Services.Http
             {
                 try
                 {
-                    if (response.IsSuccessStatusCode)
-                    {
-                        T? result = response.Content.ReadFromJsonAsync<T>(this.DeserializingOptions, token).GetAwaiter().GetResult();
-                        return response.ToResult(path, result);
-                    }
-                    else
-                    {
-                        JsonNode? node = JsonNode.Parse(response.Content.ReadAsStream(token));
-                        return
-                            SonarrResponse.FromException<T>(path, new HttpResponseException(node?.AsObject()["message"]?.ToJsonString(), response), ErrorCategory.ResourceUnavailable, response.StatusCode);
-                    }
+                    T? result = response.Content.ReadFromJsonAsync<T>(this.DeserializingOptions, token).GetAwaiter().GetResult();
+
+                    return response.ToResult(path, result);
                 }
                 catch (Exception e)
                 {
@@ -68,16 +66,18 @@ namespace MG.Sonarr.Next.Services.Http
                 }
             }
         }
-        
+
         public SonarrResponse SendPut(string path, PSObject body, CancellationToken token = default)
         {
             using var request = new HttpRequestMessage(HttpMethod.Put, path);
+            request.Options.Set(SonarrClientDependencyInjection.KEY, false);
             request.Content = JsonContent.Create(body, options: this.SerializingOptions);
 
             HttpResponseMessage? response = null;
             try
             {
                 response = this.Client.Send(request, token);
+                response.EnsureSuccessStatusCode();
                 return SonarrResponse.Create(response, path);
             }
             catch (Exception e)
@@ -90,10 +90,41 @@ namespace MG.Sonarr.Next.Services.Http
                 response?.Dispose();
             }
         }
+
+        
+        public SonarrResponse SendTest(CancellationToken token = default)
+        {
+            HttpResponseMessage response = null!;
+            using HttpRequestMessage request = new(HttpMethod.Get, TEST_API);
+            request.Options.Set(SonarrClientDependencyInjection.KEY, true);
+
+            try
+            {
+                
+                response = this.Client.Send(request, token);
+                return response.IsSuccessStatusCode
+                    ? SonarrResponse.Create(response, TEST_API)
+                    : ParseMessage(TEST_API, response, token);
+            }
+            catch (Exception e)
+            {
+                var result = SonarrResponse.FromException(TEST_API, e, ErrorCategory.ConnectionError, response?.StatusCode ?? System.Net.HttpStatusCode.Unused);
+                response?.Dispose();
+                return result;
+            }
+        }
+
+        private static SonarrResponse ParseMessage(string url, HttpResponseMessage response, CancellationToken token)
+        {
+            JsonNode? node = JsonNode.Parse(response.Content.ReadAsStream(token));
+            return
+                SonarrResponse.FromException(url, new HttpResponseException(node?.AsObject()["message"]?.ToJsonString(), response), ErrorCategory.ResourceUnavailable, response.StatusCode);
+        }
     }
 
     public static class SonarrClientDependencyInjection
     {
+        internal static readonly HttpRequestOptionsKey<bool> KEY = new(nameof(ISonarrClient.SendTest));
         static readonly ProductInfoHeaderValue _userAgent = new("PoshSonarr-Next", "2.0.0");
 
         public static IServiceCollection AddSonarrClient(this IServiceCollection services, IConnectionSettings settings, Action<HttpResponseMessage>? callback = null)

@@ -51,16 +51,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             using var scope = provider.CreateScope();
 
             var client = scope.ServiceProvider.GetRequiredService<ISonarrClient>();
-            var result = client.SendGet<object>("/system/status");
+            var result = client.SendTest();
 
             if (result.IsError)
             {
                 this.WriteError(result.Error);
             }
-            else
-            {
-                this.WriteObject(result.Data);
-            } 
         }
     }
 }
