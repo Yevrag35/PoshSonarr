@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Json;
+﻿using MG.Sonarr.Next.Services.Extensions;
+using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
@@ -31,7 +32,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             {
                 foreach (object item in value)
                 {
-                    if (item.IsCorrectType(Constants.SERIES, out var pso))
+                    if (item.IsCorrectType(Meta.SERIES, out var pso))
                     {
                         _list.Add(pso);
                     }

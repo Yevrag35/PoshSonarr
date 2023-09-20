@@ -1,11 +1,13 @@
-﻿namespace MG.Sonarr.Next.Services.Metadata
+﻿using MG.Sonarr.Next.Services.Extensions;
+using System.Numerics;
+
+namespace MG.Sonarr.Next.Services.Metadata
 {
     public sealed record MetadataTag
     {
         readonly string _urlBase = null!;
         readonly string _value = null!;
 
-        public string PSValue { get; private set; } = null!;
         public bool SupportsId { get; init; }
         public required string UrlBase
         {
@@ -13,7 +15,7 @@
             init
             {
                 ArgumentException.ThrowIfNullOrEmpty(nameof(this.UrlBase));
-                _urlBase = value;
+                _urlBase = value.TrimEnd('/');
             }
         }
         public required string Value
@@ -23,23 +25,53 @@
             {
                 ArgumentException.ThrowIfNullOrEmpty(nameof(this.Value));
                 _value = value;
-                this.PSValue = GetPSValue(value);
             }
         }
 
-        private static string GetPSValue(string value)
+        /// <exception cref="InvalidOperationException"/>
+        public string GetUrlForId(string? id)
         {
-            ReadOnlySpan<char> v = value.AsSpan();
-            return !v.StartsWith(new ReadOnlySpan<char>('#'), StringComparison.InvariantCulture)
-                ? string.Create(value.Length + 1, value, (chars, state) =>
-                {
-                    Span<char> lower = stackalloc char[state.Length];
-                    _ = state.AsSpan().ToLower(lower, null);
+            this.ThrowIfNotSupportId();
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return this.UrlBase;
+            }
 
-                    chars[0] = '#';
-                    lower.CopyTo(chars.Slice(1));
-                })
-                : value;
+            int length = this.UrlBase.Length + 1 + id.Length;
+
+            return string.Create(length, (this.UrlBase, id), (chars, state) =>
+            {
+                state.UrlBase.CopyTo(chars);
+                int position = state.UrlBase.Length;
+                chars[position++] = '/';
+
+                state.id.CopyTo(chars.Slice(position));
+            });
+        }
+        /// <exception cref="InvalidOperationException"/>
+        public string GetUrlForId<T>(T id) where T : INumber<T>
+        {
+            this.ThrowIfNotSupportId();
+            int length = this.UrlBase.Length + 1 + id.GetLength();
+            return string.Create(
+                length: length,
+                state: (this.UrlBase, id),
+                action: (chars, state) =>
+                {
+                    state.UrlBase.CopyTo(chars);
+                    int position = state.UrlBase.Length;
+                    chars[position++] = '/';
+
+                    _ = state.id.TryFormat(
+                        chars.Slice(position), out int written, default, Statics.DefaultProvider);
+                });
+        }
+        private void ThrowIfNotSupportId()
+        {
+            if (!this.SupportsId)
+            {
+                throw new InvalidOperationException("This metadata tag does not support an ID in its path.");
+            }
         }
     }
 }

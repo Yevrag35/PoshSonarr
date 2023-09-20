@@ -14,13 +14,11 @@ namespace MG.Sonarr.Next.Shell.Context
         {
             MetadataResolver dict = new(10)
             {
-                { "calendar", "/calendar", false },
-                { Constants.EPISODE, "/episode", true },
-                { Constants.EPISODE_FILE, "/episodefile", true },
-                { Constants.SERIES, "/series", true },
-                { Constants.TAG, "/tag", true },
-
-            }
+                { Meta.EPISODE, "/episode", true },
+                { Meta.EPISODEFILE, "/episodefile", true },
+                { Meta.SERIES, "/series", true },
+                { Meta.TAG, "/tag", true },
+            };
             
             services.AddSingleton(dict);
         }

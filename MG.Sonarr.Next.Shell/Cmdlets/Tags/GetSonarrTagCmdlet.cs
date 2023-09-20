@@ -51,7 +51,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             {
                 foreach (object item in array)
                 {
-                    if (item.IsCorrectType("Tag", out var pso) && pso.TryGetProperty(nameof(this.Id), out int id))
+                    if (item.IsCorrectType(Meta.TAG, out var pso) && pso.TryGetProperty(nameof(this.Id), out int id))
                     {
                         _ = _ids.Add(id);
                     }
@@ -84,7 +84,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                     var result = this.SendGetRequest<object>($"/tag/{id}");
                     if (!result.IsError)
                     {
-                        result.Data.AddMetadataTag("Tag");
+                        result.Data.AddMetadataTag(Meta.TAG);
                     }
 
                     this.WriteSonarrResult(result);
@@ -102,7 +102,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                 for (int i = list.Data.Count - 1; i >= 0; i--)
                 {
                     object item = list.Data[i];
-                    if (!item.TryGetProperty("Label", out string? label)
+                    if (!item.TryGetProperty(Constants.LABEL, out string? label)
                         ||
                         !_names.ValueLike(label))
                     {
@@ -110,7 +110,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                     }
                     else
                     {
-                        item.AddMetadataTag("Tag");
+                        item.AddMetadataTag(Meta.TAG);
                     }
                 }
 
@@ -124,7 +124,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                     return tags.Error;
                 }
 
-                tags.Data.ForEach(x => x.AddMetadataTag("Tag"));
+                tags.Data.ForEach(x => x.AddMetadataTag(Meta.TAG));
 
                 this.WriteSonarrResult(tags);
             }
@@ -134,7 +134,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
         private SonarrResponse<List<object>> GetAllTags()
         {
-            return this.SendGetRequest<List<object>>("/tag");
+            return this.SendGetRequest<List<object>>(Constants.TAG);
         }
     }
 }

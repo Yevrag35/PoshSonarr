@@ -68,6 +68,8 @@ namespace MG.Sonarr.Next.Shell.Context
                 .AddSingleton<Queue<IApiCmdlet>>()
                 .AddSonarrClient(cmdlet.Settings, (msg) => cmdlet.WriteVerbose(msg.StatusCode.ToString()));
 
+            MetadataHandler.AddMetadata(services);
+
             _provider = services.BuildServiceProvider(new ServiceProviderOptions
             {
                 ValidateOnBuild = true,

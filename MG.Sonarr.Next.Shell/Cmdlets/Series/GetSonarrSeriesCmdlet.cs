@@ -1,5 +1,7 @@
-﻿using MG.Sonarr.Next.Services.Http;
+﻿using MG.Sonarr.Next.Services.Extensions;
+using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
+using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,12 +16,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     {
         readonly SortedSet<int> _ids;
         readonly SortedSet<WildcardString> _names;
+        MetadataResolver Resolver { get; }
 
         public GetSonarrSeriesCmdlet()
             : base()
         {
             _ids = new SortedSet<int>();
             _names = new SortedSet<WildcardString>();
+            this.Resolver = this.Services.GetRequiredService<MetadataResolver>();
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -87,7 +91,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 else
                 {
                     item.AddNameAlias();
-                    item.AddMetadataTag(Constants.SERIES);
+                    bool added = this.Resolver.AddToObject(Meta.SERIES, item);
+                    Debug.Assert(added);
                 }
             }
 
@@ -96,7 +101,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         private SonarrResponse<List<object>> GetAllSeries()
         {
             //return this.Client.SendGetAsync<List<object>>("/series").GetAwaiter().GetResult();
-            return this.SendGetRequest<List<object>>(Constants.SERIES);
+            return this.SendGetRequest<List<object>>(Meta.SERIES);
         }
         private IEnumerable<SonarrResponse<object>> GetSeriesById(IEnumerable<int> ids)
         {
@@ -105,7 +110,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 var result = this.SendGetRequest<object>($"/series/{id}");
                 //var result = this.Client.SendGetAsync<object>($"/series/{id}").GetAwaiter().GetResult();
                 result.Data?.AddNameAlias();
-                result.Data?.AddMetadataTag(Constants.SERIES);
+                bool added = this.Resolver.AddToObject(Meta.SERIES, result.Data);
+                Debug.Assert(added);
 
                 yield return result;
             }

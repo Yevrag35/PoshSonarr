@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Shell.Extensions;
+﻿using MG.Sonarr.Next.Services.Extensions;
+using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
@@ -25,7 +26,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             {
                 if (value is not null
                     &&
-                    value.IsCorrectType(Constants.TAG, out PSObject? pso)
+                    value.IsCorrectType(Meta.TAG, out PSObject? pso)
                     &&
                     pso.TryGetProperty(nameof(this.Id), out int id))
                 {
