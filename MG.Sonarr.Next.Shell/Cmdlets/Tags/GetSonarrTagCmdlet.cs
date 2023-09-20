@@ -51,86 +51,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             set => value.SplitToSets(_ids, _names);
         }
 
-        private void AddArrayToSet(object[]? array)
-        {
-            if (array is not null)
-            {
-                foreach (object item in array)
-                {
-                    if (item.IsCorrectType(Meta.TAG, out var pso) && pso.TryGetProperty(nameof(this.Id), out int id))
-                    {
-                        _ = _ids.Add(id);
-                    }
-                    else if (item.TryGetProperty("Tags", out Array? idArray))
-                    {
-                        foreach (int tagId in idArray)
-                        {
-                            _ = _ids.Add(tagId);
-                        }
-                    }
-                }
-
-                if (_ids.Count <= 0)
-                {
-                    this.Error =
-                        new ArgumentException("Unable to find any valid tag ID's in the pipeline input.")
-                            .ToRecord(ErrorCategory.InvalidArgument, array);
-                }
-            }
-        }
-
         protected override ErrorRecord? End()
         {
-            bool hasIds = false;
-            if (_ids.Count > 0)
+            bool hasIds = this.ProcessIds(_ids);
+
+            if (!this.TryProcessNames(_names) && !hasIds)
             {
-                hasIds = true;
-                foreach (int id in _ids)
-                {
-                    var result = this.SendGetRequest<object>($"/tag/{id}");
-                    if (!result.IsError)
-                    {
-                        result.Data.AddMetadata(_tag);
-                    }
-
-                    this.WriteSonarrResult(result);
-                }
-            }
-
-            if (_names.Count > 0)
-            {
-                var list = this.GetAllTags();
-                if (list.IsError)
-                {
-                    return list.Error;
-                }
-
-                for (int i = list.Data.Count - 1; i >= 0; i--)
-                {
-                    object item = list.Data[i];
-                    if (!item.TryGetProperty(Constants.LABEL, out string? label)
-                        ||
-                        !_names.ValueLike(label))
-                    {
-                        list.Data.RemoveAt(i);
-                    }
-                    else
-                    {
-                        item.AddMetadata(_tag);
-                    }
-                }
-
-                this.WriteSonarrResult(list);
-            }
-            else if (!hasIds)
-            {
-                var tags = this.GetAllTags();
+                SonarrResponse<List<PSObject>> tags = this.GetAllTags();
                 if (tags.IsError)
                 {
                     return tags.Error;
                 }
 
-                foreach (object? item in tags.Data)
+                foreach (PSObject item in tags.Data)
                 {
                     item.AddMetadata(_tag);
                 }
@@ -141,9 +74,102 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             return null;
         }
 
-        private SonarrResponse<List<object>> GetAllTags()
+        private void AddArrayToSet(object[]? array)
         {
-            return this.SendGetRequest<List<object>>(Constants.TAG);
+            if (array is null)
+            {
+                return;
+            }
+
+            this.GetNamesAndIdsFromAdd(array);
+
+            if (_ids.Count <= 0)
+            {
+                this.Error =
+                    new ArgumentException("Unable to find any valid tag ID's in the pipeline input.")
+                        .ToRecord(ErrorCategory.InvalidArgument, array);
+            }
+        }
+        private SonarrResponse<List<PSObject>> GetAllTags()
+        {
+            return this.SendGetRequest<List<PSObject>>(Constants.TAG);
+        }
+        private void GetNamesAndIdsFromAdd(object[] array)
+        {
+            foreach (object item in array)
+            {
+                if (item.IsCorrectType(Meta.TAG, out var pso)
+                    &&
+                    pso.TryGetProperty(nameof(this.Id), out int id))
+                {
+                    _ = _ids.Add(id);
+                }
+                else if (item.TryGetProperty("Tags", out IEnumerable<int>? idArray))
+                {
+                    _ids.UnionWith(idArray);
+                }
+            }
+        }
+        private static void ProcessAndFilterTags(List<PSObject> data, MetadataTag tagToAdd, IReadOnlySet<WildcardString> names)
+        {
+            for (int i = data.Count - 1; i >= 0; i--)
+            {
+                object item = data[i];
+                if (!item.TryGetProperty(Constants.LABEL, out string? label)
+                    ||
+                    !names.ValueLike(label))
+                {
+                    data.RemoveAt(i);
+                }
+                else
+                {
+                    item.AddMetadata(tagToAdd);
+                }
+            }
+        }
+        private bool ProcessIds(IReadOnlyCollection<int> ids)
+        {
+            bool hasIds = false;
+            if (ids.Count > 0)
+            {
+                hasIds = true;
+                foreach (int id in ids)
+                {
+                    var result = this.SendGetRequest<PSObject>($"/tag/{id}");
+                    if (!result.IsError)
+                    {
+                        result.Data.AddMetadata(_tag);
+                        this.WriteObject(result.Data, enumerateCollection: true);
+                    }
+                    else
+                    {
+                        this.WriteError(result.Error);
+                        this.Error = result.Error;
+                    }
+                }
+            }
+
+            return hasIds;
+        }
+        private bool TryProcessNames(IReadOnlySet<WildcardString> names)
+        {
+            if (names.Count <= 0)
+            {
+                return false;
+            }
+
+            SonarrResponse<List<PSObject>> list = this.GetAllTags();
+            if (list.IsError)
+            {
+                this.Error = list.Error;
+            }
+            else
+            {
+                ProcessAndFilterTags(list.Data, _tag, _names);
+                this.WriteSonarrResult(list);
+            }
+            
+            return true;
         }
     }
 }

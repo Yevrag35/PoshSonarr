@@ -23,7 +23,8 @@ param  (
 		'Microsoft.Extensions.Logging',
 		'Microsoft.Extensions.Logging.Abstractions',
 		'Microsoft.Extensions.Options',
-		'Microsoft.Extensions.Primitives'
+		'Microsoft.Extensions.Primitives',
+		'OneOf'
 	)
 )
 

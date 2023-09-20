@@ -1,7 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
-using System.Numerics;
-
-namespace MG.Sonarr.Next.Services.Metadata
+﻿namespace MG.Sonarr.Next.Services.Metadata
 {
     public sealed record MetadataTag
     {
@@ -48,6 +45,7 @@ namespace MG.Sonarr.Next.Services.Metadata
 
             if (!id.TryFormat(chars.Slice(position), out int written, default, Statics.DefaultProvider))
             {
+                Debug.Fail($"Unable to format '{id}' into the BaseUrl.");
                 return this.UrlBase + '/' + id.ToString();
             }
 

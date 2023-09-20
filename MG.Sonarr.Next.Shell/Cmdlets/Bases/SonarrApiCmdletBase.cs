@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
 using Microsoft.Extensions.DependencyInjection;
+using OneOf;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
 {
@@ -18,6 +19,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             this.Queue = this.Services.GetRequiredService<Queue<IApiCmdlet>>();
         }
 
+        protected virtual OneOf<T, ErrorRecord> SendGet<T>(string path, CancellationToken token = default)
+        {
+            var response = this.SendGetRequest<T>(path, token);
+            return !response.IsError
+                ? response.Data
+                : response.Error;
+        }
         protected virtual SonarrResponse<T> SendGetRequest<T>(string path, CancellationToken token = default)
         {
             this.Queue.Enqueue(this);
