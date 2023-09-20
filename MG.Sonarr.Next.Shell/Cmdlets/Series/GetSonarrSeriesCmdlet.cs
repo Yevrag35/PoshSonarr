@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Services;
+using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Metadata;
@@ -71,7 +72,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             return null;
         }
 
-        private SonarrResponse<List<object>> GetSeriesByName(IReadOnlySet<WildcardString> names)
+        private SonarrResponse<List<SonarrObject>> GetSeriesByName(IReadOnlySet<WildcardString> names)
         {
             var result = this.GetAllSeries();
             if (result.IsError)
@@ -98,20 +99,30 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
             return result;
         }
-        private SonarrResponse<List<object>> GetAllSeries()
+        private SonarrResponse<List<SonarrObject>> GetAllSeries()
         {
             //return this.Client.SendGetAsync<List<object>>("/series").GetAwaiter().GetResult();
-            return this.SendGetRequest<List<object>>(Meta.SERIES);
+            return this.SendGetRequest<List<SonarrObject>>(Meta.SERIES);
         }
-        private IEnumerable<SonarrResponse<object>> GetSeriesById(IEnumerable<int> ids)
+        private IEnumerable<SonarrResponse<SonarrObject>> GetSeriesById(IEnumerable<int> ids)
         {
+            MetadataTag tag = this.Resolver[Meta.SERIES];
             foreach (int id in ids)
             {
-                var result = this.SendGetRequest<object>($"/series/{id}");
+                var result = this.SendGetRequest<SonarrObject>($"/series/{id}");
+                if (result.IsError)
+                {
+                    this.WriteError(result.Error);
+                    continue;
+                }
                 //var result = this.Client.SendGetAsync<object>($"/series/{id}").GetAwaiter().GetResult();
                 result.Data?.AddNameAlias();
-                bool added = this.Resolver.AddToObject(Meta.SERIES, result.Data);
-                Debug.Assert(added);
+                if (result.Data is not null)
+                {
+                    result.Data.Metadata = tag;
+                }
+                //bool added = this.Resolver.AddToObject(Meta.SERIES, result.Data!);
+                //Debug.Assert(added);
 
                 yield return result;
             }

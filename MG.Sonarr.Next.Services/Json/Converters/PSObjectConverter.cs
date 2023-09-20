@@ -44,7 +44,7 @@ namespace MG.Sonarr.Next.Services.Json.Converters
 
         public override bool CanConvert(Type typeToConvert)
         {
-            return _objType.Equals(typeToConvert) || _psObjType.Equals(typeToConvert) || _psCusType.Equals(typeToConvert);
+            return _objType.Equals(typeToConvert) || _psObjType.IsAssignableFrom(typeToConvert) || _psCusType.Equals(typeToConvert);
         }
 
         public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -68,7 +68,7 @@ namespace MG.Sonarr.Next.Services.Json.Converters
 
         private object ConvertToObject(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
-            var pso = new PSObject(2);
+            var pso = new SonarrObject();
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)

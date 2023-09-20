@@ -58,5 +58,7 @@
                 throw new InvalidOperationException("This metadata tag does not support an ID in its path.");
             }
         }
+
+        public static readonly MetadataTag Empty = new(string.Empty, string.Empty, false);
     }
 }
