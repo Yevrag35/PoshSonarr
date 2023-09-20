@@ -1,7 +1,9 @@
 ﻿using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
+using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using OneOf.Types;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
@@ -11,12 +13,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     {
         readonly SortedSet<int> _ids;
         readonly SortedSet<WildcardString> _names;
+        readonly MetadataTag _tag;
+        MetadataResolver Resolver { get; }
 
         public GetSonarrTagCmdlet()
             : base()
         {
             _ids = new SortedSet<int>();
             _names = new SortedSet<WildcardString>();
+            this.Resolver = this.Services.GetRequiredService<MetadataResolver>();
+            _tag = this.Resolver[Meta.TAG];
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -84,7 +90,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                     var result = this.SendGetRequest<object>($"/tag/{id}");
                     if (!result.IsError)
                     {
-                        result.Data.AddMetadataTag(Meta.TAG);
+                        result.Data.AddMetadata(_tag);
                     }
 
                     this.WriteSonarrResult(result);
@@ -110,7 +116,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                     }
                     else
                     {
-                        item.AddMetadataTag(Meta.TAG);
+                        item.AddMetadata(_tag);
                     }
                 }
 
@@ -124,7 +130,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                     return tags.Error;
                 }
 
-                tags.Data.ForEach(x => x.AddMetadataTag(Meta.TAG));
+                foreach (object? item in tags.Data)
+                {
+                    item.AddMetadata(_tag);
+                }
 
                 this.WriteSonarrResult(tags);
             }

@@ -5,27 +5,15 @@ namespace MG.Sonarr.Next.Services.Metadata
 {
     public sealed record MetadataTag
     {
-        readonly string _urlBase = null!;
-        readonly string _value = null!;
+        public bool SupportsId { get; }
+        public string UrlBase { get; }
+        public string Value { get; }
 
-        public bool SupportsId { get; init; }
-        public required string UrlBase
+        internal MetadataTag(string urlBase, string value, bool supportsId)
         {
-            get => _urlBase;
-            init
-            {
-                ArgumentException.ThrowIfNullOrEmpty(nameof(this.UrlBase));
-                _urlBase = value.TrimEnd('/');
-            }
-        }
-        public required string Value
-        {
-            get => _value;
-            init
-            {
-                ArgumentException.ThrowIfNullOrEmpty(nameof(this.Value));
-                _value = value;
-            }
+            this.UrlBase = urlBase.TrimEnd('/');
+            this.Value = value;
+            this.SupportsId = supportsId;
         }
 
         /// <exception cref="InvalidOperationException"/>
@@ -49,22 +37,21 @@ namespace MG.Sonarr.Next.Services.Metadata
             });
         }
         /// <exception cref="InvalidOperationException"/>
-        public string GetUrlForId<T>(T id) where T : INumber<T>
+        public string GetUrlForId<T>(T id) where T : ISpanFormattable
         {
             this.ThrowIfNotSupportId();
-            int length = this.UrlBase.Length + 1 + id.GetLength();
-            return string.Create(
-                length: length,
-                state: (this.UrlBase, id),
-                action: (chars, state) =>
-                {
-                    state.UrlBase.CopyTo(chars);
-                    int position = state.UrlBase.Length;
-                    chars[position++] = '/';
+            Span<char> chars = stackalloc char[this.UrlBase.Length + 1 + LengthConstants.INT128_MAX];
+            this.UrlBase.CopyTo(chars);
 
-                    _ = state.id.TryFormat(
-                        chars.Slice(position), out int written, default, Statics.DefaultProvider);
-                });
+            int position = this.UrlBase.Length;
+            chars[position++] = '/';
+
+            if (!id.TryFormat(chars.Slice(position), out int written, default, Statics.DefaultProvider))
+            {
+                return this.UrlBase + '/' + id.ToString();
+            }
+
+            return new string(chars.Slice(0, position + written));
         }
         private void ThrowIfNotSupportId()
         {

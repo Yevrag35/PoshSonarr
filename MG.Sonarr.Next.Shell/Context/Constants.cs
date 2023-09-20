@@ -8,6 +8,7 @@ namespace MG.Sonarr.Next.Shell.Context
         public const string META_PROPERTY_NAME = MetadataResolver.META_PROPERTY_NAME;
         public const char META_PREFIX = MetadataResolver.META_PREFIX;
 
+        public const string ID = "Id";
         public const string LABEL = "Label";
         public const string NAME = "Name";
         public const string TITLE = "Title";

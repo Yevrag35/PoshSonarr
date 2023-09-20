@@ -23,7 +23,7 @@ namespace MG.Sonarr.Next.Services.Metadata
         {
             ArgumentException.ThrowIfNullOrEmpty(tag);
             ArgumentException.ThrowIfNullOrEmpty(baseUrl);
-            return _dict.TryAdd(tag, new MetadataTag { Value = tag, UrlBase = baseUrl, SupportsId = supportsId });
+            return _dict.TryAdd(tag, new MetadataTag(baseUrl, tag, supportsId));
         }
         public bool AddToObject([ConstantExpected] string tag, [NotNullWhen(true)] object? obj)
         {

@@ -39,7 +39,7 @@ namespace MG.Sonarr.Next.Services.Extensions
                         double.CreateChecked(n)));
 
             // Add the number of digits in the absolute value of the number.
-            length += flooredLogBase10 + 1;
+            length += flooredLogBase10;
 
             return length;
         }

@@ -1,4 +1,7 @@
-﻿using MG.Sonarr.Next.Services.Metadata;
+﻿using MG.Sonarr.Next.Services.Extensions;
+using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Shell.Components;
+using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -8,19 +11,46 @@ using System.Threading.Tasks;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
-    [Cmdlet(VerbsCommon.Add, "SonarrTag")]
+    [Cmdlet(VerbsCommon.Add, "SonarrTag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
     public sealed class AddSonarrTagCmdlet : SonarrApiCmdletBase
     {
         MetadataResolver Resolver { get; }
-        readonly HashSet<string> _urls;
+        readonly HashSet<int> _ids;
+        readonly HashSet<WildcardString> _resolveNames;
+        readonly Dictionary<string, PSObject> _updates;
 
         public AddSonarrTagCmdlet()
             : base()
         {
-            _urls = new(1, StringComparer.InvariantCultureIgnoreCase);
+            _ids = new(1);
+            _resolveNames = new(1);
+            _updates = new(1, StringComparer.InvariantCultureIgnoreCase);
             this.Resolver = this.Services.GetRequiredService<MetadataResolver>();
         }
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true)]
+        public object[] InputObject
+        {
+            get => Array.Empty<object>();
+            set => this.AddUrlsFromMetadata(value);
+        }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByName")]
+        public IntOrString[] Name
+        {
+            get => Array.Empty<IntOrString>();
+            set => value.SplitToSets(_ids, _resolveNames);
+        }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [Parameter(Mandatory = true, ParameterSetName = "ById")]
+        public int[] Id
+        {
+            get => Array.Empty<int>();
+            set => _ids.UnionWith(value);
+        }
 
         private void AddUrlsFromMetadata(object[]? array)
         {
@@ -31,11 +61,73 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
             foreach (PSObject pso in array.OfType<PSObject>())
             {
-                if (this.Resolver.TryGetValue(pso, out MetadataTag? tag) && tag.SupportsId)
+                if (pso.TryGetProperty(Constants.META_PROPERTY_NAME, out MetadataTag? tag)
+                    &&
+                    tag.SupportsId
+                    &&
+                    pso.TryGetProperty(Constants.ID, out int id))
                 {
-
+                    _updates.TryAdd(tag.GetUrlForId(id), pso);
                 }
             }
+        }
+
+        protected override ErrorRecord? Begin()
+        {
+            if (_resolveNames.Count > 0)
+            {
+                var tagResponse = this.SendGetRequest<List<PSObject>>(Constants.TAG);
+                if (tagResponse.IsError)
+                {
+                    return tagResponse.Error;
+                }
+
+                foreach (var pso in tagResponse.Data)
+                {
+                    if (pso.TryGetProperty(Constants.LABEL, out string? label)
+                        &&
+                        _resolveNames.ValueLike(label)
+                        &&
+                        pso.TryGetProperty(Constants.ID, out int tagId))
+                    {
+                        _ = _ids.Add(tagId);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        protected override ErrorRecord? End()
+        {
+            foreach (var kvp in _updates)
+            {
+                if (kvp.Value.TryGetProperty("Tags", out SortedSet<int>? set))
+                {
+                    if (set.IsSupersetOf(_ids))
+                    {
+                        this.WriteVerbose("No tags are being added that didn't already exist on the object.");
+                        continue;
+                    }
+
+                    set.UnionWith(_ids);
+                }
+
+                string msg = string.Format(
+                    "Adding tags: ({0})",
+                    string.Join(", ", _ids));
+
+                if (this.ShouldProcess(kvp.Key, msg))
+                {
+                    var response = this.SendPutRequest(kvp.Key, kvp.Value);
+                    if (response.IsError)
+                    {
+                        return response.Error;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

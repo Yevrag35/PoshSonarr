@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Shell.Components;
+﻿using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Shell.Components;
 using Namotion.Reflection;
 using PSO = MG.Sonarr.Next.Services.Extensions.PSOExtensions;
 
@@ -6,16 +7,16 @@ namespace MG.Sonarr.Next.Shell.Extensions
 {
     public static class PSObjectExtensions
     {
-        internal static void AddMetadataTag(this object? obj, [ConstantExpected] string tag)
+        internal static void AddMetadata(this object? obj, MetadataTag tag)
         {
             if (obj is PSObject pso)
             {
-                AddMetadataTag(pso: pso, tag);
+                AddMetadata(pso: pso, tag);
             }
         }
-        internal static void AddMetadataTag(this PSObject pso, [ConstantExpected] string tag)
+        internal static void AddMetadata(this PSObject pso, MetadataTag tag)
         {
-            PSO.AddProperty(pso, Constants.META_PROPERTY_NAME, tag);
+            PSO.AddProperty(pso: pso, Constants.META_PROPERTY_NAME, tag);
         }
         
         public static void AddNameAlias(this object? obj)
