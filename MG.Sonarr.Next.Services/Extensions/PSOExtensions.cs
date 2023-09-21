@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualBasic;
+﻿using MG.Sonarr.Next.Services.Metadata;
+using Microsoft.VisualBasic;
 using Namotion.Reflection;
 using System.Management.Automation;
 
@@ -28,7 +29,9 @@ namespace MG.Sonarr.Next.Services.Extensions
             }
 
             pso = isPso;
-            return TryGetProperty(pso, propName, out string? propVal) && tag.Equals(propVal, StringComparison.InvariantCultureIgnoreCase);
+            return TryGetNonNullProperty(pso, MetadataResolver.META_PROPERTY_NAME, out MetadataTag? mt)
+                   &&
+                   mt.Value == tag;
         }
 
         public static bool PropertyEquals<T>(this object? obj, string propertyName, T mustEqual) where T : IEquatable<T>
@@ -50,29 +53,69 @@ namespace MG.Sonarr.Next.Services.Extensions
             return false;
         }
 
-        public static bool TryGetProperty<T>([NotNullWhen(true)] this object? obj, string propertyName, [NotNullWhen(true)] out T? value)
+        public static bool TryGetNonNullProperty<T>([NotNullWhen(true)] this object? obj, string propertyName, [NotNullWhen(true)] out T? value)
         {
-            if (obj is PSObject pso)
+            return TryGetProperty(obj, propertyName, out value) && value is not null;
+        }
+        public static bool TryGetNonNullProperty<T>(this PSObject pso, string propertyName, [NotNullWhen(true)] out T? value)
+        {
+            return TryGetProperty(pso, propertyName, out value) && value is not null;
+        }
+        public static bool TryGetProperty<T>([NotNullWhen(true)] this object? obj, string propertyName, [MaybeNull] out T value)
+        {
+            value = default;
+            return obj is PSObject pso && TryGetProperty(pso, propertyName, out value);
+        }
+        public static bool TryGetProperty<T>(this PSObject pso, string propertyName, [MaybeNull] out T value)
+        {
+            PSMemberInfo? prop = pso.Properties[propertyName];
+            return TrySafeCast(prop?.Value, out value);
+        }
+
+        /// <exception cref="InvalidCastException"/>
+        [return: NotNullIfNotNull(nameof(obj))]
+        private static T? Cast<T>(object? obj)
+        {
+            return (T?)obj;
+        }
+        private static bool TrySafeCast<T>([NotNullWhen(true)] object? obj, [MaybeNull] out T tVal)
+        {
+            tVal = default;
+            if (obj is null)
             {
-                return TryGetProperty(pso, propertyName, out value);
+                return true;
             }
 
-            value = obj.TryGetPropertyValue<T>(propertyName);
-            return value is not null;
-        }
-        public static bool TryGetProperty<T>(this PSObject pso, string propertyName, [NotNullWhen(true)] out T? value)
-        {
-            var col = pso.Properties.Match(propertyName, PSMemberTypes.NoteProperty);
-            if (col.Count == 1 && col[0].Value is T tVal)
+            Type genType = typeof(T);
+            Type oType = obj.GetType();
+            if (oType.IsAssignableTo(genType))
             {
-                value = tVal;
+                tVal = Cast<T>(obj);
                 return true;
             }
             else
             {
-                value = default;
+                try
+                {
+                    tVal = Cast<T>(obj);
+                    return true;
+                }
+                catch (InvalidCastException)
+                {
+                    return false;
+                }
+            }
+        }
+        private static bool TryUnsafeCast<T>([NotNullWhen(true)] object? obj, [NotNullWhen(true)] out T? tVal)
+        {
+            if (obj is null)
+            {
+                tVal = default;
                 return false;
             }
+
+            tVal = Cast<T>(obj);
+            return true;
         }
     }
 }

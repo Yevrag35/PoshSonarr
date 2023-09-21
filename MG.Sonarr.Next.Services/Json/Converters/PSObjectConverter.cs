@@ -68,7 +68,7 @@ namespace MG.Sonarr.Next.Services.Json.Converters
 
         private object ConvertToObject(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
-            var pso = new SonarrObject();
+            var pso = new PSObject();
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)

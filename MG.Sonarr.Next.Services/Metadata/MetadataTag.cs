@@ -1,18 +1,26 @@
 ﻿namespace MG.Sonarr.Next.Services.Metadata
 {
-    public sealed record MetadataTag
+    public sealed record MetadataTag : ICloneable
     {
         public bool SupportsId { get; }
         public string UrlBase { get; }
         public string Value { get; }
 
-        internal MetadataTag(string urlBase, string value, bool supportsId)
+        public MetadataTag(string urlBase, string value, bool supportsId)
         {
             this.UrlBase = urlBase.TrimEnd('/');
             this.Value = value;
             this.SupportsId = supportsId;
         }
 
+        object ICloneable.Clone()
+        {
+            return new MetadataTag(this);
+        }
+        public static MetadataTag Copy(MetadataTag tag)
+        {
+            return new(tag);
+        }
         /// <exception cref="InvalidOperationException"/>
         public string GetUrlForId(string? id)
         {
@@ -50,6 +58,21 @@
             }
 
             return new string(chars.Slice(0, position + written));
+        }
+        public bool IsUrlForThis([NotNullWhen(true)] Uri? uri)
+        {
+            return this.IsUrlForThis(uri?.ToString());
+        }
+        public bool IsUrlForThis([NotNullWhen(true)] string? url)
+        {
+            ReadOnlySpan<char> path = url.AsSpan();
+            ReadOnlySpan<char> thisUrl = this.UrlBase.AsSpan();
+            if (!path.StartsWith(new ReadOnlySpan<char>('/'), StringComparison.InvariantCultureIgnoreCase))
+            {
+                thisUrl = thisUrl.TrimStart('/');
+            }
+
+            return path.StartsWith(thisUrl, StringComparison.InvariantCultureIgnoreCase);
         }
         private void ThrowIfNotSupportId()
         {

@@ -5,21 +5,37 @@ namespace MG.Sonarr.Next.Services
 {
     public sealed class SonarrObject : PSObject
     {
+        MetadataProperty? _meta;
+
         public object? this[string propertyName]
         {
             get => this.Properties[propertyName]?.Value;
-        } 
-        public MetadataTag Metadata { get; set; }
+        }
+        public MetadataTag Metadata
+        {
+            get
+            {
+                _meta ??= MetadataProperty.Empty();
+                return _meta.Tag;
+            }
+            set
+            {
+                _meta ??= MetadataProperty.Empty();
+                _meta.Tag = value;
+            }
+        }
 
         public SonarrObject()
             : base(2)
         {
-            this.Metadata = MetadataTag.Empty;
+            _meta = MetadataProperty.Empty();
+            this.Properties.Add(_meta);
         }
         public SonarrObject(object other)
             : base(other)
         {
-            this.Metadata = MetadataTag.Empty;
+            _meta = MetadataProperty.Empty();
+            this.Properties.Add(_meta);
         }
     }
 }

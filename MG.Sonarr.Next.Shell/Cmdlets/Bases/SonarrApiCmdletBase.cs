@@ -19,6 +19,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             this.Queue = this.Services.GetRequiredService<Queue<IApiCmdlet>>();
         }
 
+        protected virtual SonarrResponse SendDeleteRequest(string path, CancellationToken token = default)
+        {
+            this.Queue.Enqueue(this);
+            var response = this.Client.SendDelete(path, token);
+            return response;
+        }
+
         protected virtual OneOf<T, ErrorRecord> SendGet<T>(string path, CancellationToken token = default)
         {
             var response = this.SendGetRequest<T>(path, token);

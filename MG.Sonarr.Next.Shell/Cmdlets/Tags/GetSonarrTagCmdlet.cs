@@ -104,9 +104,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                 {
                     _ = _ids.Add(id);
                 }
-                else if (item.TryGetProperty("Tags", out IEnumerable<int>? idArray))
+                else if (item.TryGetProperty("Tags", out IEnumerable<int>? idCol)
+                         &&
+                         idCol is not null)
                 {
-                    _ids.UnionWith(idArray);
+                    _ids.UnionWith(idCol);
                 }
             }
         }

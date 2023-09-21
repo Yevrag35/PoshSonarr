@@ -17,14 +17,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     {
         readonly SortedSet<int> _ids;
         readonly SortedSet<WildcardString> _names;
-        MetadataResolver Resolver { get; }
+        MetadataTag Tag { get; }
 
         public GetSonarrSeriesCmdlet()
             : base()
         {
             _ids = new SortedSet<int>();
             _names = new SortedSet<WildcardString>();
-            this.Resolver = this.Services.GetRequiredService<MetadataResolver>();
+            this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.SERIES];
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -72,7 +72,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             return null;
         }
 
-        private SonarrResponse<List<SonarrObject>> GetSeriesByName(IReadOnlySet<WildcardString> names)
+        private SonarrResponse<List<PSObject>> GetSeriesByName(IReadOnlySet<WildcardString> names)
         {
             var result = this.GetAllSeries();
             if (result.IsError)
@@ -82,7 +82,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
             for (int i = result.Data.Count - 1; i >= 0; i--)
             {
-                object item = result.Data[i];
+                PSObject item = result.Data[i];
                 if (!item.TryGetProperty(Constants.TITLE, out string? title)
                     ||
                     !names.ValueLike(title))
@@ -92,37 +92,29 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 else
                 {
                     item.AddNameAlias();
-                    bool added = this.Resolver.AddToObject(Meta.SERIES, item);
-                    Debug.Assert(added);
+                    item.AddMetadata(this.Tag);
                 }
             }
 
             return result;
         }
-        private SonarrResponse<List<SonarrObject>> GetAllSeries()
+        private SonarrResponse<List<PSObject>> GetAllSeries()
         {
-            //return this.Client.SendGetAsync<List<object>>("/series").GetAwaiter().GetResult();
-            return this.SendGetRequest<List<SonarrObject>>(Meta.SERIES);
+            return this.SendGetRequest<List<PSObject>>(this.Tag.UrlBase);
         }
-        private IEnumerable<SonarrResponse<SonarrObject>> GetSeriesById(IEnumerable<int> ids)
+        private IEnumerable<SonarrResponse<PSObject>> GetSeriesById(IEnumerable<int> ids)
         {
-            MetadataTag tag = this.Resolver[Meta.SERIES];
             foreach (int id in ids)
             {
-                var result = this.SendGetRequest<SonarrObject>($"/series/{id}");
+                var result = this.SendGetRequest<PSObject>($"/series/{id}");
                 if (result.IsError)
                 {
                     this.WriteError(result.Error);
                     continue;
                 }
-                //var result = this.Client.SendGetAsync<object>($"/series/{id}").GetAwaiter().GetResult();
+
                 result.Data?.AddNameAlias();
-                if (result.Data is not null)
-                {
-                    result.Data.Metadata = tag;
-                }
-                //bool added = this.Resolver.AddToObject(Meta.SERIES, result.Data!);
-                //Debug.Assert(added);
+                result.Data?.AddMetadata(this.Tag);
 
                 yield return result;
             }

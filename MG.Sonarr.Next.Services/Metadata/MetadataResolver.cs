@@ -36,15 +36,18 @@ namespace MG.Sonarr.Next.Services.Metadata
         }
         public bool AddToObject([ConstantExpected] string tag, PSObject pso)
         {
-            if (this.TryGetValue(tag, out MetadataTag? meta))
+            bool added = false;
+            if (_dict.TryGetValue(tag, out MetadataTag? meta))
             {
-                pso.AddProperty(META_PROPERTY_NAME, meta);
-                return true;
+                pso.Properties.Add(new MetadataProperty(meta));
+                added = true;
             }
-            else
-            {
-                return false;
-            }
+
+            return added;
+        }
+        public bool ContainsKey([NotNullWhen(true)] string? key)
+        {
+            return !string.IsNullOrWhiteSpace(key) && _dict.ContainsKey(key);
         }
         public IEnumerator<MetadataTag> GetEnumerator()
         {
@@ -62,9 +65,10 @@ namespace MG.Sonarr.Next.Services.Metadata
             value = null;
             return false;
         }
-        public bool TryGetValue(string key, [NotNullWhen(true)] out MetadataTag? value)
+        public bool TryGetValue([NotNullWhen(true)] string? key, [NotNullWhen(true)] out MetadataTag? value)
         {
-            return _dict.TryGetValue(key, out value);
+            value = null;
+            return !string.IsNullOrWhiteSpace(key) && _dict.TryGetValue(key, out value);
         }
         
         IEnumerator IEnumerable.GetEnumerator()

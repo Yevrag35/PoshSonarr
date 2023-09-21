@@ -16,7 +16,7 @@ namespace MG.Sonarr.Next.Shell.Extensions
         }
         internal static void AddMetadata(this PSObject pso, MetadataTag tag)
         {
-            PSO.AddProperty(pso: pso, Constants.META_PROPERTY_NAME, tag);
+            pso.Properties.Add(new MetadataProperty(tag));
         }
         
         public static void AddNameAlias(this object? obj)

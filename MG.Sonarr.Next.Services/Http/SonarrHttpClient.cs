@@ -14,6 +14,7 @@ namespace MG.Sonarr.Next.Services.Http
 {
     public interface ISonarrClient
     {
+        SonarrResponse SendDelete(string path, CancellationToken token = default);
         SonarrResponse<T> SendGet<T>(string path, CancellationToken token = default);
         SonarrResponse SendPut<T>(string path, T body, CancellationToken token = default);
         SonarrResponse SendTest(CancellationToken token = default);
@@ -33,6 +34,32 @@ namespace MG.Sonarr.Next.Services.Http
             this.Client = client;
             this.DeserializingOptions = options.GetForDeserializing();
             this.SerializingOptions = options.GetForSerializing();
+        }
+
+        public SonarrResponse SendDelete(string path, CancellationToken token = default)
+        {
+            using HttpRequestMessage request = new(HttpMethod.Delete, path);
+            request.Options.Set(SonarrClientDependencyInjection.KEY, false);
+
+            HttpResponseMessage response = null!;
+
+            try
+            {
+                response = this.Client.Send(request, token);
+                response.EnsureSuccessStatusCode();
+
+                return SonarrResponse.Create(response, path);
+            }
+            catch (Exception e)
+            {
+                var result = SonarrResponse.FromException(path, e, ErrorCategory.ConnectionError, response?.StatusCode ?? System.Net.HttpStatusCode.Unused);
+                
+                return result;
+            }
+            finally
+            {
+                response?.Dispose();
+            }
         }
 
         public SonarrResponse<T> SendGet<T>(string path, CancellationToken token = default)

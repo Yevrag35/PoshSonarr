@@ -2,7 +2,6 @@
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,14 +10,14 @@ using System.Threading.Tasks;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
-    [Cmdlet(VerbsCommon.Add, "SonarrTag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
-    public sealed class AddSonarrTagCmdlet : SonarrApiCmdletBase
+    [Cmdlet(VerbsCommon.Clear, "SonarrTag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    public sealed class ClearSonarrTagCmdlet : SonarrApiCmdletBase
     {
         readonly HashSet<int> _ids;
         readonly HashSet<WildcardString> _resolveNames;
         readonly Dictionary<string, PSObject> _updates;
 
-        public AddSonarrTagCmdlet()
+        public ClearSonarrTagCmdlet()
             : base()
         {
             _ids = new(1);
@@ -102,22 +101,22 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             {
                 if (!kvp.Value.TryGetNonNullProperty("Tags", out SortedSet<int>? set))
                 {
-                    this.WriteWarning("Object does not have a 'Tags' property.");
+                    this.WriteWarning("Object does not have 'Tags' property.");
                     continue;
                 }
-                else if (set.IsSupersetOf(_ids))
+                else if (!_ids.Overlaps(set))
                 {
-                    this.WriteVerbose("No tags are being added that didn't already exist on the object.");
+                    this.WriteVerbose("No tags are being removed from the object.");
                     continue;
                 }
 
                 if (this.ShouldProcess(
-                    target: kvp.Key, 
+                    target: kvp.Key,
                     action: string.Format(
-                        "Adding tags: ({0})",
-                        string.Join(", ", _ids.Where(x => !set.Contains(x))))))
+                        "Removing tags: ({0})",
+                        string.Join(", ", _ids.Where(set.Contains)))))
                 {
-                    set.UnionWith(_ids);
+                    set.ExceptWith(_ids);
 
                     var response = this.SendPutRequest(path: kvp.Key, body: kvp.Value);
                     if (response.IsError)
