@@ -16,6 +16,8 @@ namespace MG.Sonarr.Next.Services.Http
     {
         SonarrResponse SendDelete(string path, CancellationToken token = default);
         SonarrResponse<T> SendGet<T>(string path, CancellationToken token = default);
+        SonarrResponse SendPost<T>(string path, T body, CancellationToken token = default);
+        SonarrResponse<TOutput> SendPost<TBody, TOutput>(string path, TBody body, CancellationToken token = default);
         SonarrResponse SendPut<T>(string path, T body, CancellationToken token = default);
         SonarrResponse SendTest(CancellationToken token = default);
     }
@@ -41,83 +43,41 @@ namespace MG.Sonarr.Next.Services.Http
             using HttpRequestMessage request = new(HttpMethod.Delete, path);
             request.Options.Set(SonarrClientDependencyInjection.KEY, false);
 
-            HttpResponseMessage response = null!;
-
-            try
-            {
-                response = this.Client.Send(request, token);
-                response.EnsureSuccessStatusCode();
-
-                return SonarrResponse.Create(response, path);
-            }
-            catch (Exception e)
-            {
-                var result = SonarrResponse.FromException(path, e, ErrorCategory.ConnectionError, response?.StatusCode ?? System.Net.HttpStatusCode.Unused);
-                
-                return result;
-            }
-            finally
-            {
-                response?.Dispose();
-            }
+            return this.SendNoResultRequest(request, path, token);
         }
 
         public SonarrResponse<T> SendGet<T>(string path, CancellationToken token = default)
         {
-            HttpResponseMessage response = null!;
             using HttpRequestMessage request = new(HttpMethod.Get, path);
             request.Options.Set(SonarrClientDependencyInjection.KEY, false);
 
-            try
-            {
-                response = this.Client.Send(request, token);
-                response.EnsureSuccessStatusCode();
-            }
-            catch (Exception e)
-            {
-                var result = SonarrResponse.FromException<T>(path, e, ErrorCategory.ConnectionError, response?.StatusCode ?? System.Net.HttpStatusCode.Unused);
-                response?.Dispose();
-                return result;
-            }
+            return this.SendResultRequest<T>(request, path, token);
+        }
 
-            using (response)
-            {
-                try
-                {
-                    T? result = response.Content.ReadFromJsonAsync<T>(this.DeserializingOptions, token)
-                        .GetAwaiter().GetResult();
+        public SonarrResponse SendPost<T>(string path, T body, CancellationToken token = default)
+        {
+            using HttpRequestMessage request = new(HttpMethod.Post, path);
+            request.Options.Set(SonarrClientDependencyInjection.KEY, false);
+            request.Content = JsonContent.Create(body, typeof(T), options: this.SerializingOptions);
 
-                    return response.ToResult(path, result);
-                }
-                catch (Exception e)
-                {
-                    return SonarrResponse.FromException<T>(response.RequestMessage?.RequestUri?.OriginalString ?? path, e, ErrorCategory.ParserError, response.StatusCode);
-                }
-            }
+            return this.SendNoResultRequest(request, path, token);
+        }
+        public SonarrResponse<TOutput> SendPost<TBody, TOutput>(string path, TBody body, CancellationToken token = default)
+        {
+            using HttpRequestMessage request = new(HttpMethod.Post, path);
+            request.Options.Set(SonarrClientDependencyInjection.KEY, false);
+            request.Content = JsonContent.Create(body, typeof(TBody), options: this.SerializingOptions);
+
+            return this.SendResultRequest<TOutput>(request, path, token);
         }
 
         public SonarrResponse SendPut<T>(string path, T body, CancellationToken token = default)
         {
             using var request = new HttpRequestMessage(HttpMethod.Put, path);
             request.Options.Set(SonarrClientDependencyInjection.KEY, false);
-            request.Content = JsonContent.Create(body, options: this.SerializingOptions);
+            request.Content = JsonContent.Create(body, typeof(T), options: this.SerializingOptions);
 
-            HttpResponseMessage? response = null;
-            try
-            {
-                response = this.Client.Send(request, token);
-                response.EnsureSuccessStatusCode();
-                return SonarrResponse.Create(response, path);
-            }
-            catch (Exception e)
-            {
-                return SonarrResponse.FromException(request.RequestUri?.ToString() ?? path,
-                    e, ErrorCategory.InvalidResult, response?.StatusCode ?? System.Net.HttpStatusCode.Unused);
-            }
-            finally
-            {
-                response?.Dispose();
-            }
+            return this.SendNoResultRequest(request, path, token);
         }
         
         public SonarrResponse SendTest(CancellationToken token = default)
@@ -136,9 +96,64 @@ namespace MG.Sonarr.Next.Services.Http
             }
             catch (Exception e)
             {
-                var result = SonarrResponse.FromException(TEST_API, e, ErrorCategory.ConnectionError, response?.StatusCode ?? System.Net.HttpStatusCode.Unused);
+                var result = SonarrResponse.FromException(TEST_API, e, ErrorCategory.ConnectionError, response?.StatusCode ?? System.Net.HttpStatusCode.Unused, response);
                 response?.Dispose();
                 return result;
+            }
+        }
+
+        private SonarrResponse SendNoResultRequest(HttpRequestMessage request, string path, CancellationToken token)
+        {
+            HttpResponseMessage? response = null;
+
+            try
+            {
+                response = this.Client.Send(request, token);
+                response.EnsureSuccessStatusCode();
+
+                return SonarrResponse.Create(response, path);
+            }
+            catch (Exception e)
+            {
+                var result = SonarrResponse.FromException(path, e, ErrorCategory.ConnectionError, response?.StatusCode ?? System.Net.HttpStatusCode.Unused);
+
+                return result;
+            }
+            finally
+            {
+                response?.Dispose();
+            }
+        }
+        private SonarrResponse<T> SendResultRequest<T>(HttpRequestMessage request, string path, CancellationToken token)
+        {
+            HttpResponseMessage? response = null;
+
+            try
+            {
+                response = this.Client.Send(request, token);
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception e)
+            {
+                var result = SonarrResponse.FromException<T>(path, e, ErrorCategory.ConnectionError, response?.StatusCode ?? System.Net.HttpStatusCode.Unused, response);
+                response?.Dispose();
+                return result;
+            }
+
+            try
+            {
+                T? result = response.Content.ReadFromJsonAsync<T>(this.DeserializingOptions, token)
+                    .GetAwaiter().GetResult();
+
+                return response.ToResult(path, result);
+            }
+            catch (Exception e)
+            {
+                return SonarrResponse.FromException<T>(response.RequestMessage?.RequestUri?.OriginalString ?? path, e, ErrorCategory.ParserError, response.StatusCode);
+            }
+            finally
+            {
+                response?.Dispose();
             }
         }
 

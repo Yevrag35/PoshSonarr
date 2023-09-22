@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Services.Exceptions;
+using MG.Sonarr.Next.Services.Extensions;
 using System.Management.Automation;
 using System.Net;
 
@@ -6,7 +7,7 @@ namespace MG.Sonarr.Next.Services.Http
 {
     public interface ISonarrResponse
     {
-        ErrorRecord? Error { get; }
+        SonarrErrorRecord? Error { get; }
         [MemberNotNullWhen(true, nameof(Error))]
         bool IsError { get; }
         HttpStatusCode StatusCode { get; }
@@ -15,12 +16,12 @@ namespace MG.Sonarr.Next.Services.Http
 
     public readonly struct SonarrResponse : ISonarrResponse
     {
-        readonly ErrorRecord? _error;
+        readonly SonarrErrorRecord? _error;
         readonly bool _isError;
         readonly HttpStatusCode _statusCode;
         readonly string? _url;
 
-        public ErrorRecord? Error => _error;
+        public SonarrErrorRecord? Error => _error;
         [MemberNotNullWhen(true, nameof(_error), nameof(Error))]
         public bool IsError => _isError;
         public HttpStatusCode StatusCode => _statusCode;
@@ -33,7 +34,7 @@ namespace MG.Sonarr.Next.Services.Http
             _isError = false;
             _url = url ?? string.Empty;
         }
-        private SonarrResponse(string url, ErrorRecord record, HttpStatusCode statusCode)
+        private SonarrResponse(string url, SonarrErrorRecord record, HttpStatusCode statusCode)
         {
             _statusCode = statusCode;
             _error = record;
@@ -41,18 +42,20 @@ namespace MG.Sonarr.Next.Services.Http
             _url = url ?? string.Empty;
         }
 
-        public static SonarrResponse<T> FromException<T>(string url, Exception exception, ErrorCategory category, HttpStatusCode statusCode)
+        public static SonarrResponse<T> FromException<T>(string url, Exception exception, ErrorCategory category, HttpStatusCode statusCode, HttpResponseMessage? response = null)
         {
-            Type eType = exception.GetType();
-            string name = eType.FullName ?? eType.Name;
-            ErrorRecord record = new(exception, name, category, url);
+            string name = exception.GetTypeName();
+            SonarrErrorRecord record = exception is HttpRequestException reqEx && response is not null
+                ? new SonarrErrorRecord(reqEx, response, url)
+                : new SonarrErrorRecord(exception, name, category, url);
             return new SonarrResponse<T>(url, default, record, statusCode);
         }
-        public static SonarrResponse FromException(string url, Exception exception, ErrorCategory category, HttpStatusCode statusCode)
+        public static SonarrResponse FromException(string url, Exception exception, ErrorCategory category, HttpStatusCode statusCode, HttpResponseMessage? response = null)
         {
-            Type eType = exception.GetType();
-            string name = eType.FullName ?? eType.Name;
-            ErrorRecord record = new(exception, name, category, url);
+            string name = exception.GetTypeName();
+            SonarrErrorRecord record = exception is HttpRequestException reqEx && response is not null
+                ? new SonarrErrorRecord(reqEx, response, url)
+                : new SonarrErrorRecord(exception, name, category, url);
             return new SonarrResponse(url, record, statusCode);
         }
 
@@ -66,13 +69,13 @@ namespace MG.Sonarr.Next.Services.Http
     {
         readonly T? _data;
         readonly string? _url;
-        readonly ErrorRecord? _error;
+        readonly SonarrErrorRecord? _error;
         readonly bool _isError;
         readonly bool _isNotEmpty;
         readonly HttpStatusCode _statusCode;
 
         public T? Data => _data;
-        public ErrorRecord? Error => _error;
+        public SonarrErrorRecord? Error => _error;
         public bool IsEmpty => !_isNotEmpty;
         [MemberNotNullWhen(true, nameof(Error))]
         [MemberNotNullWhen(false, nameof(Data))]
@@ -80,7 +83,7 @@ namespace MG.Sonarr.Next.Services.Http
         public string RequestUrl => _url ?? string.Empty;
         public HttpStatusCode StatusCode => _statusCode;
 
-        public SonarrResponse(string? url, T? data, ErrorRecord? error, HttpStatusCode statusCode)
+        public SonarrResponse(string? url, T? data, SonarrErrorRecord? error, HttpStatusCode statusCode)
         {
             _data = data;
             _statusCode = statusCode;

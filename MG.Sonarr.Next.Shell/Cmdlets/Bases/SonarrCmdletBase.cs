@@ -1,9 +1,11 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Services.Exceptions;
+using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Shell.Context;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using OneOf;
 using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
@@ -45,6 +47,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
 
         protected sealed override void BeginProcessing()
         {
+            if (this.HasError)
+            {
+                this.ThrowTerminatingError(this.Error);
+            }
+
             try
             {
                 this.StoreVerbosePreference();
@@ -121,7 +128,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 this.Dispose();
             }
 
-            if (this.HasError)
+            if (this.HasError
+                && 
+                (this.Error is not SonarrErrorRecord rec || !rec.IsIgnorable))
             {
                 this.WriteError(this.Error);
             }
@@ -192,6 +201,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 this.WriteDebug(JsonSerializer.Serialize(value, type, options));
             }
         }
+
+        protected ErrorRecord? WriteSonarrResult<T>(in OneOf<T, ErrorRecord> result)
+        {
+            if (result.TryPickT0(out T value, out ErrorRecord? error))
+            {
+                this.WriteObject(value, enumerateCollection: true);
+                return null;
+            }
+            else
+            {
+                return error;
+            }
+        }
         public void WriteVerboseSonarrResult(ISonarrResponse response, JsonSerializerOptions? options = null)
         {
             if (this.VerbosePreference != ActionPreference.SilentlyContinue)
@@ -201,6 +223,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             }
         }
 
+        #region DISPOSAL
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -223,5 +246,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             this.Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+
+        #endregion
     }
 }

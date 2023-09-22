@@ -54,7 +54,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 hadIds = true;
                 foreach (var result in this.GetSeriesById(_ids))
                 {
-                    this.WriteSonarrResult(result);
+                    if (result.IsError)
+                    {
+                        return result.Error;
+                    }
+
+                    this.WriteObject(result.Data);
                 }
             }
 
@@ -66,7 +71,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             else if (!hadIds)
             {
                 var response = this.GetAllSeries();
-                this.WriteSonarrResult(response);
+                if (response.IsError)
+                {
+                    return response.Error;
+                }
+
+                this.WriteCollection(response.Data);
             }
 
             return null;

@@ -3,18 +3,28 @@
     public sealed class SonarrJsonOptions
     {
         readonly JsonSerializerOptions _deserializer;
-        readonly JsonSerializerOptions _serializer;
+        readonly JsonSerializerOptions _debugSerializer;
+        readonly JsonSerializerOptions _requestSerializer;
 
         public SonarrJsonOptions(Action<JsonSerializerOptions> setupDeserializer)
         {
             _deserializer = new(JsonSerializerDefaults.Web);
-            _serializer = new(JsonSerializerDefaults.Web);
-            _serializer.WriteIndented = true;
+            _requestSerializer = new(JsonSerializerDefaults.Web)
+            {
+                WriteIndented = true,
+            };
+
+            _debugSerializer = new(JsonSerializerDefaults.Web)
+            {
+                WriteIndented = false,
+            };
+
             setupDeserializer(_deserializer);
 
             foreach (var conv in _deserializer.Converters)
             {
-                _serializer.Converters.Add(conv);
+                _requestSerializer.Converters.Add(conv);
+                _debugSerializer.Converters.Add(conv);
             }
         }
 
@@ -22,9 +32,13 @@
         {
             return _deserializer;
         }
+        public JsonSerializerOptions GetForDebugging()
+        {
+            return _debugSerializer;
+        }
         public JsonSerializerOptions GetForSerializing()
         {
-            return _serializer;
+            return _requestSerializer;
         }
     }
 }

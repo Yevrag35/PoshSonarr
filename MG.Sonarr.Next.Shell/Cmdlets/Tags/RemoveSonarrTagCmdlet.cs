@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
-    [Cmdlet(VerbsCommon.Remove, "SonarrTag", SupportsShouldProcess = true, DefaultParameterSetName = "ById")]
+    [Cmdlet(VerbsCommon.Remove, "SonarrTag", SupportsShouldProcess = true, DefaultParameterSetName = "ByPipelineInput")]
     public sealed class RemoveSonarrTagCmdlet : SonarrApiCmdletBase
     {
         MetadataTag Tag { get; }
@@ -35,7 +35,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                     return;
                 }
 
-                throw new ArgumentException("Object is not the correct metadata type. Was expecting #tag.");
+                this.Error = new ArgumentException("Object is not the correct metadata type. Was expecting #tag. Did you mean to use \"Clear-SonarrTag\"?", nameof(this.InputObject)).ToRecord(ErrorCategory.InvalidArgument, value);
             }
         }
 

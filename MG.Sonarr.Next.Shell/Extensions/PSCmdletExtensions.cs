@@ -2,6 +2,7 @@
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Shell.Cmdlets;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using OneOf;
 using System.Text.Json;
@@ -16,18 +17,11 @@ namespace MG.Sonarr.Next.Shell.Extensions
                 && cmdlet.MyInvocation.BoundParameters.ContainsKey(memEx.Member.Name);
         }
 
-        
-        public static void WriteSonarrResult<T>(this Cmdlet cmdlet, in OneOf<T, ErrorRecord> result)
+        public static void WriteCollection<T>(this Cmdlet cmdlet, IEnumerable<T> collection)
         {
-            if (result.TryPickT0(out T value, out ErrorRecord error))
-            {
-                cmdlet.WriteObject(value, enumerateCollection: true);
-            }
-            else
-            {
-                cmdlet.WriteError(error);
-            }
+            cmdlet.WriteObject(collection, enumerateCollection: true);
         }
+
         public static void WriteSonarrResult<T>(this Cmdlet cmdlet, SonarrResponse<T> result)
         {
             if (result.IsError)

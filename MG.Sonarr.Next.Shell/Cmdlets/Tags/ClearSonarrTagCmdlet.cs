@@ -68,6 +68,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                     _updates.TryAdd(tag.GetUrlForId(id), pso);
                 }
             }
+
+            if (_updates.Count <= 0)
+            {
+                throw new ArgumentException(
+                    "No tag ID's were provided from the pipeline. Did you mean to use \"Clear-SonarrTag\"?");
+            }
         }
 
         protected override ErrorRecord? Begin()

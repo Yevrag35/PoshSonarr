@@ -98,5 +98,6 @@ if ($PSCmdlet.ShouldProcess($dllPath, "Importing Module")) {
 	Push-Location $myDesktop
 }
 
+$VerbosePreference = "Continue"
 Connect-SonarrInstance -ApiKey $skey -Url $surl
-$s = Get-SonarrSeries 607 -Verbose
+$s = Get-SonarrSeries 607

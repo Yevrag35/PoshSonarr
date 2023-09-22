@@ -145,8 +145,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                     }
                     else
                     {
-                        this.WriteError(result.Error);
-                        this.Error = result.Error;
+                        if (result.Error.IsIgnorable)
+                        {
+                            this.WriteWarning(result.Error.Message);
+                        }
+                        else
+                        {
+                            this.WriteError(result.Error);
+                        } 
                     }
                 }
             }
