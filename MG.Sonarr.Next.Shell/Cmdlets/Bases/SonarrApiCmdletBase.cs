@@ -23,6 +23,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         protected virtual SonarrResponse SendDeleteRequest(string path, CancellationToken token = default)
         {
             this.Queue.Enqueue(this);
+
             var response = this.Client.SendDelete(path, token);
             return response;
         }

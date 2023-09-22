@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Cmdlets\Series\SeriesCmdletBase.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Debug.ps1" />
   </ItemGroup>
 
@@ -29,6 +33,10 @@
   <ItemGroup>
     <Folder Include="Context\Http\" />
     <Folder Include="Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Cmdlets\Series\SeriesCmdletBase.cs" />
   </ItemGroup>
 
   <ItemGroup>

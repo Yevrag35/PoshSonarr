@@ -105,7 +105,6 @@ namespace MG.Sonarr.Next.Services.Http
         private SonarrResponse SendNoResultRequest(HttpRequestMessage request, string path, CancellationToken token)
         {
             HttpResponseMessage? response = null;
-
             try
             {
                 response = this.Client.Send(request, token);
@@ -115,7 +114,7 @@ namespace MG.Sonarr.Next.Services.Http
             }
             catch (Exception e)
             {
-                var result = SonarrResponse.FromException(path, e, ErrorCategory.ConnectionError, response?.StatusCode ?? System.Net.HttpStatusCode.Unused);
+                var result = SonarrResponse.FromException(path, e, ErrorCategory.ConnectionError, response?.StatusCode ?? System.Net.HttpStatusCode.Unused, response);
 
                 return result;
             }

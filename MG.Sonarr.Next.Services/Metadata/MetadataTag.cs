@@ -1,4 +1,7 @@
-﻿namespace MG.Sonarr.Next.Services.Metadata
+﻿using MG.Sonarr.Next.Services.Http;
+using System.Runtime.InteropServices;
+
+namespace MG.Sonarr.Next.Services.Metadata
 {
     public sealed record MetadataTag : ICloneable
     {
@@ -41,6 +44,7 @@
                 state.id.CopyTo(chars.Slice(position));
             });
         }
+        
         /// <exception cref="InvalidOperationException"/>
         public string GetUrlForId<T>(T id) where T : ISpanFormattable
         {
@@ -59,6 +63,27 @@
 
             return new string(chars.Slice(0, position + written));
         }
+        public string GetUrlForId<T>(T id, QueryParameterCollection parameters) where T : ISpanFormattable
+        {
+            this.ThrowIfNotSupportId();
+            Span<char> span = stackalloc char[this.UrlBase.Length + 2 + parameters.MaxLength + LengthConstants.INT128_MAX];
+            this.UrlBase.CopyTo(span);
+            int position = this.UrlBase.Length;
+
+            span[position++] = '/';
+            _ = id.TryFormat(span.Slice(position), out int written, default, Statics.DefaultProvider);
+            position += written;
+
+            if (parameters.Count > 0)
+            {
+                span[position++] = '?';
+                parameters.TryFormat(span.Slice(position), out written, default, Statics.DefaultProvider);
+                position += written;
+            }
+
+            return new string(span.Slice(0, position));
+        }
+
         public bool IsUrlForThis([NotNullWhen(true)] Uri? uri)
         {
             return this.IsUrlForThis(uri?.ToString());

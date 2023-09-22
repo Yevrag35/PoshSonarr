@@ -70,7 +70,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
             else if (!hadIds)
             {
-                var response = this.GetAllSeries();
+                var response = this.GetAllSeries(addMetadata: true);
                 if (response.IsError)
                 {
                     return response.Error;
@@ -108,9 +108,18 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
             return result;
         }
-        private SonarrResponse<List<PSObject>> GetAllSeries()
+        private SonarrResponse<List<PSObject>> GetAllSeries(bool addMetadata = false)
         {
-            return this.SendGetRequest<List<PSObject>>(this.Tag.UrlBase);
+            var list = this.SendGetRequest<List<PSObject>>(this.Tag.UrlBase);
+            if (addMetadata && !list.IsError)
+            {
+                foreach (var item in list.Data)
+                {
+                    item.AddMetadata(this.Tag);
+                }
+            }
+
+            return list;
         }
         private IEnumerable<SonarrResponse<PSObject>> GetSeriesById(IEnumerable<int> ids)
         {
