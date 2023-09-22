@@ -11,11 +11,13 @@
             _deserializer = new(JsonSerializerDefaults.Web);
             _requestSerializer = new(JsonSerializerDefaults.Web)
             {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = true,
             };
 
             _debugSerializer = new(JsonSerializerDefaults.Web)
             {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = false,
             };
 

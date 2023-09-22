@@ -214,11 +214,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 return error;
             }
         }
-        public void WriteVerboseSonarrResult(ISonarrResponse response, JsonSerializerOptions? options = null)
+        public void WriteVerboseSonarrResult(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
         {
             if (this.VerbosePreference != ActionPreference.SilentlyContinue)
             {
-                options ??= this.Services.GetService<SonarrJsonOptions>()?.GetForSerializing();
+                options ??= provider.GetService<SonarrJsonOptions>()?.GetForSerializing();
                 this.WriteVerbose(JsonSerializer.Serialize(response, options));
             }
         }

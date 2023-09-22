@@ -99,5 +99,5 @@ if ($PSCmdlet.ShouldProcess($dllPath, "Importing Module")) {
 }
 
 $VerbosePreference = "Continue"
-Connect-SonarrInstance -ApiKey $skey -Url $surl
+Connect-Sonarr -ApiKey $skey -Url $surl
 $s = Get-SonarrSeries 607

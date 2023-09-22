@@ -169,14 +169,13 @@ namespace MG.Sonarr.Next.Services.Http
         internal static readonly HttpRequestOptionsKey<bool> KEY = new(nameof(ISonarrClient.SendTest));
         static readonly ProductInfoHeaderValue _userAgent = new("PoshSonarr-Next", "2.0.0");
 
-        public static IServiceCollection AddSonarrClient(this IServiceCollection services, IConnectionSettings settings, Action<HttpResponseMessage>? callback = null)
+        public static IServiceCollection AddSonarrClient(this IServiceCollection services, IConnectionSettings settings)
         {
             services.AddSingleton(settings)
                     .AddTransient<PathHandler>()
                     .AddTransient<VerboseHandler>()
                     .AddTransient<TestingHandler>()
                     .AddTransient<SonarrClientHandler>()
-                    .AddSingleton(callback ?? ((HttpResponseMessage x) => { }))
                     .AddHttpClient<ISonarrClient, SonarrHttpClient>((provider, client) =>
                     {
                         var settings = provider.GetRequiredService<IConnectionSettings>();

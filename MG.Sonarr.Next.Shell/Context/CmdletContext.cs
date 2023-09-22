@@ -4,8 +4,8 @@ using MG.Sonarr.Next.Services.Json.Converters;
 using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Shell.Cmdlets.Connection;
 using MG.Sonarr.Next.Shell.Components;
+using MG.Sonarr.Next.Shell.Settings;
 using Microsoft.Extensions.DependencyInjection;
-using System.Buffers;
 
 namespace MG.Sonarr.Next.Shell.Context
 {
@@ -21,9 +21,13 @@ namespace MG.Sonarr.Next.Shell.Context
             return SonarrContext.GetProvider();
         }
 
-        internal static void SetContext(this ConnectSonarrInstance cmdlet)
+        internal static void SetContext(this ConnectSonarrInstanceCmdlet cmdlet, ConnectionSettings settings)
         {
-            SonarrContext.Initialize(cmdlet);
+            SonarrContext.Initialize(settings);
+        }
+        internal static void UnsetContext(this DisconnectSonarrInstanceCmdlet cmdlet)
+        {
+            SonarrContext.Deinitialize();
         }
     }
 
@@ -31,19 +35,52 @@ namespace MG.Sonarr.Next.Shell.Context
     {
         static IServiceProvider _provider = null!;
 
+        /// <exception cref="InvalidOperationException"/>
         internal static IServiceProvider GetProvider()
         {
             return _provider ?? throw new InvalidOperationException("The Sonarr context is not set.");
         }
 
-        internal static void Initialize(ConnectSonarrInstance cmdlet)
+        internal static void Deinitialize()
+        {
+            _provider = null!;
+        }
+
+        internal static void Initialize(ConnectionSettings settings)
         {
             if (_provider is not null)
             {
                 return;
             }
 
-            var jsonOptions = new SonarrJsonOptions(options =>
+            SonarrJsonOptions jsonOptions = CreateSonarrJsonOptions();
+
+            ServiceCollection services = new();
+            services
+                //.AddMemoryCache()
+                .AddSingleton(jsonOptions)
+                .AddSingleton<Queue<IApiCmdlet>>()
+                .AddSonarrClient(settings);
+
+            MetadataHandler.AddMetadata(services);
+
+            ServiceProviderOptions providerOptions = new()
+            {
+#if !RELEASE
+                ValidateOnBuild = true,
+                ValidateScopes = true,
+#else
+                ValidateOnBuild = false,
+                ValidateScopes = false,
+#endif
+            };
+
+            _provider = services.BuildServiceProvider(providerOptions);
+        }
+
+        private static SonarrJsonOptions CreateSonarrJsonOptions()
+        {
+            return new SonarrJsonOptions(options =>
             {
                 options.Converters.Add(
                     new PSObjectConverter(
@@ -59,21 +96,6 @@ namespace MG.Sonarr.Next.Shell.Context
                     ));
                 options.Converters.Add(new SonarrResponseConverter());
                 options.PropertyNamingPolicy = null;
-            });
-
-            ServiceCollection services = new();
-            services
-                .AddMemoryCache()
-                .AddSingleton(jsonOptions)
-                .AddSingleton<Queue<IApiCmdlet>>()
-                .AddSonarrClient(cmdlet.Settings, (msg) => cmdlet.WriteVerbose(msg.StatusCode.ToString()));
-
-            MetadataHandler.AddMetadata(services);
-
-            _provider = services.BuildServiceProvider(new ServiceProviderOptions
-            {
-                ValidateOnBuild = true,
-                ValidateScopes = true,
             });
         }
     }
