@@ -84,7 +84,8 @@ namespace MG.Sonarr.Next.Services.Http
             {
                 try
                 {
-                    T? result = response.Content.ReadFromJsonAsync<T>(this.DeserializingOptions, token).GetAwaiter().GetResult();
+                    T? result = response.Content.ReadFromJsonAsync<T>(this.DeserializingOptions, token)
+                        .GetAwaiter().GetResult();
 
                     return response.ToResult(path, result);
                 }

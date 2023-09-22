@@ -2,6 +2,7 @@
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Shell.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -73,21 +74,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         {
             if (_resolveNames.Count > 0)
             {
-                var tagResponse = this.SendGetRequest<List<PSObject>>(Constants.TAG);
+                var tagResponse = this.SendGetRequest<List<SonarrTag>>(Constants.TAG);
                 if (tagResponse.IsError)
                 {
                     return tagResponse.Error;
                 }
 
-                foreach (var pso in tagResponse.Data)
+                foreach (var tag in tagResponse.Data)
                 {
-                    if (pso.TryGetProperty(Constants.LABEL, out string? label)
-                        &&
-                        _resolveNames.ValueLike(label)
-                        &&
-                        pso.TryGetProperty(Constants.ID, out int tagId))
+                    if (_resolveNames.ValueLike(tag.Label))
                     {
-                        _ = _ids.Add(tagId);
+                        _ = _ids.Add(tag.Id);
                     }
                 }
             }
