@@ -2,16 +2,19 @@
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Series;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Shell.Models.Series;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
     [Cmdlet(VerbsCommon.Add, "SonarrSeries", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
         DefaultParameterSetName = "RootFolderPath")]
-    public sealed class AddSonarrSeriesCmdlet : SonarrApiCmdletBase
+    [CmdletBinding(DefaultParameterSetName = "RootFolderPath")]
+    public sealed class AddSonarrSeriesCmdlet : SonarrApiCmdletBase, IDynamicParameters
     {
         readonly List<AddSeriesObject> _list;
         Range _range;
+        SeriesAddOptions AddOptions { get; }
 
         MetadataTag Tag { get; }
 
@@ -19,6 +22,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             : base()
         {
             _list = new(1);
+            this.AddOptions = new();
             this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.SERIES];
         }
 
@@ -38,31 +42,79 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
         }
 
-        [Parameter(Mandatory = false)]
-        [ValidateRange(ValidateRangeKind.Positive)]
-        public int ProfileId { get; set; }
-
         [Parameter(Mandatory = true, ParameterSetName = "AbsolutePath")]
+        [Parameter(Mandatory = true, ParameterSetName = "AbsolutePathAndSearch")]
         [ValidateNotNullOrEmpty]
         public string AbsolutePath { get; set; } = string.Empty;
-
-        [Parameter(Mandatory = true, ParameterSetName = "RootFolderPath")]
-        [ValidateNotNullOrEmpty]
-        public string RootFolderPath { get; set; } = string.Empty;
 
         [Parameter(Mandatory = false)]
         public SwitchParameter IsMonitored { get; set; }
 
         [Parameter(Mandatory = false)]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int QualityProfileId { get; set; }
+        public int ProfileId { get; set; }
 
         [Parameter(Mandatory = false)]
-        [ValidateSet("Anime", "Standard", "Daily")]
+        [ValidateRange(ValidateRangeKind.Positive)]
+        public int QualityProfileId { get; set; }
+
+        [Parameter(Mandatory = true, ParameterSetName = "RootFolderPath")]
+        [Parameter(Mandatory = true, ParameterSetName = "RootFolderPathAndSearch")]
+        [ValidateNotNullOrEmpty]
+        public string RootFolderPath { get; set; } = string.Empty;
+
+        [Parameter(Mandatory = true, ParameterSetName = "AbsolutePathAndSearch")]
+        [Parameter(Mandatory = true, ParameterSetName = "RootFolderPathAndSearch")]
+        public SwitchParameter SearchForMissingEpisodes
+        {
+            get => this.AddOptions.SearchForMissingEpisodes;
+            set => this.AddOptions.SearchForMissingEpisodes = value.ToBool();
+        }
+
+        [Parameter(Mandatory = false)]
         public string SeriesType { get; set; } = string.Empty;
 
         [Parameter(Mandatory = false)]
         public SwitchParameter UseSeasonFolders { get; set; }
+
+        const string WITH_FILES = "SearchEpisodesWithFiles";
+        const string WITHOUT_FILES = "SearchEpisodesWithoutFiles";
+        public object? GetDynamicParameters()
+        {
+            RuntimeDefinedParameterDictionary? dict = null;
+            if (this.SearchForMissingEpisodes)
+            {
+                dict = new RuntimeDefinedParameterDictionary
+                {
+                    {
+                        WITH_FILES,
+                        new RuntimeDefinedParameter()
+                        {
+                            Attributes =
+                            {
+                                new ParameterAttribute() { Mandatory = false },
+                            },
+                            Name = WITH_FILES,
+                            ParameterType = typeof(SwitchParameter),
+                        }
+                    },
+                    {
+                        WITHOUT_FILES,
+                        new RuntimeDefinedParameter()
+                        {
+                            Attributes =
+                            {
+                                new ParameterAttribute() { Mandatory = false },
+                            },
+                            Name = WITHOUT_FILES,
+                            ParameterType = typeof(SwitchParameter),
+                        }
+                    }
+                };
+            }
+
+            return dict;
+        }
 
         protected override ErrorRecord? Process()
         {
@@ -71,7 +123,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             foreach (var pso in range)
             {
                 this.SetPath(pso);
-                pso.AddOptions = new();
+                pso.AddOptions = this.AddOptions;
 
                 if (this.HasParameter(x => x.UseSeasonFolders))
                 {
@@ -120,6 +172,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
 
             return null;
+        }
+
+        private void SetAddOptions(SeriesAddOptions options)
+        {
+            if (this.SearchForMissingEpisodes)
+            {
+                if (this.MyInvocation.BoundParameters.TryGetValue(WITH_FILES, out object? wf) 
+                    &&
+                    )
+                {
+
+                }
+            }
         }
 
         private void SetPath(AddSeriesObject pso)
