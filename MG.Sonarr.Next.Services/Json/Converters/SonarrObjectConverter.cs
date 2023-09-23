@@ -40,6 +40,11 @@ namespace MG.Sonarr.Next.Services.Json.Converters
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
         {
+            if (value is IJsonOnSerializing serializing)
+            {
+                serializing.OnSerializing();
+            }
+
             if (value is null)
             {
                 writer.WriteNullValue();

@@ -1,6 +1,7 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models.Series;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,7 +47,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 ? GetSearchByNamePath(this.Name)
                 : string.Format(SEARCH_ID_QUERY, this.TVDbId);
 
-            var result = this.SendGetRequest<List<PSObject>>(path);
+            var result = this.SendGetRequest<List<AddSeriesObject>>(path);
             if (result.IsError)
             {
                 return result.Error;
@@ -64,15 +65,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             return null;
         }
 
-        private void ProcessStricly(IEnumerable<PSObject> values, in WildcardString wildcardString)
+        private void ProcessStricly(IEnumerable<AddSeriesObject> values, in WildcardString wildcardString)
         {
-            foreach (PSObject pso in values)
+            foreach (AddSeriesObject pso in values)
             {
-                if (pso.TryGetNonNullProperty(Constants.TITLE, out string? title)
-                    &&
-                    StrictlyMatches(title, in wildcardString))
+                if (StrictlyMatches(pso.Title, in wildcardString))
                 {
-                    this.WriteObject(this.Tag, pso);
+                    this.WriteObject(pso);
                 }
             }
         }

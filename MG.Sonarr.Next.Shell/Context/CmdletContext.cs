@@ -103,7 +103,8 @@ namespace MG.Sonarr.Next.Shell.Context
                 options.Converters.AddMany(
                     objCon,
                     new SonarrObjectConverter<TagObject>(objCon),
-                    new SeriesObjectConverter(objCon),
+                    new SeriesObjectConverter<SeriesObject>(objCon),
+                    new SeriesObjectConverter<AddSeriesObject>(objCon),
                     new SonarrResponseConverter());
 
                 options.PropertyNamingPolicy = null;

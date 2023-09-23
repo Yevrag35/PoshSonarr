@@ -1,16 +1,20 @@
 ﻿using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Shell.Models;
-using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Models.Series
 {
-    public sealed class SeriesObject : SonarrObject, IHasId
+    public class SeriesObject : SonarrObject, IHasId
     {
         public int Id { get; private set; }
 
         public SeriesObject()
-            : base(46)
+            : this(46)
+        {
+        }
+
+        protected SeriesObject(int capacity)
+            : base(capacity)
         {
         }
 

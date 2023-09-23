@@ -10,6 +10,7 @@ using System.Management.Automation.Language;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Http
 {
@@ -75,6 +76,11 @@ namespace MG.Sonarr.Next.Services.Http
         {
             using HttpRequestMessage request = new(HttpMethod.Post, path);
             request.Options.Set(SonarrClientDependencyInjection.KEY, false);
+            //if (body is IJsonOnSerializing onSerialize)
+            //{
+            //    onSerialize.OnSerializing();
+            //}
+
             request.Content = JsonContent.Create(body, typeof(TBody), options: this.SerializingOptions);
 
             var response = this.SendResultRequest<TOutput>(request, path, token);

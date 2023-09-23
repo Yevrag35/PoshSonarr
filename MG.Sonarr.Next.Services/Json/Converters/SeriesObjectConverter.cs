@@ -2,8 +2,20 @@
 
 namespace MG.Sonarr.Next.Services.Json.Converters
 {
-    public sealed class SeriesObjectConverter : SonarrObjectConverter<SeriesObject>
+    public sealed class SeriesObjectConverter<T> : SonarrObjectConverter<T> where T : SeriesObject, new()
     {
+        internal static readonly IReadOnlyDictionary<string, string> DeserializedNames =
+            new Dictionary<string, string>(2, StringComparer.InvariantCultureIgnoreCase)
+            {
+                { "Monitored", "IsMonitored" },
+                { "TvdbId", "TVDbId" },
+                { "ImdbId", "IMDbId" },
+                { "SeasonFolder", "UseSeasonFolders" },
+            };
+
+        internal static readonly IReadOnlyDictionary<string, string> SerializedNames =
+            DeserializedNames.ToDictionary(x => x.Value, x => x.Key, StringComparer.InvariantCultureIgnoreCase);
+
         public SeriesObjectConverter(ObjectConverter converter)
             : base(converter)
         {
@@ -11,28 +23,11 @@ namespace MG.Sonarr.Next.Services.Json.Converters
 
         protected override IReadOnlyDictionary<string, string> GetDeserializedNames()
         {
-            Dictionary<string, string> dict = new(1, StringComparer.InvariantCultureIgnoreCase);
-            foreach (var kvp in YieldReplacements())
-            {
-                dict.Add(kvp.Key, kvp.Value);
-            }
-
-            return dict;
+            return DeserializedNames;
         }
         protected override IReadOnlyDictionary<string, string> GetSerializedNames()
         {
-            Dictionary<string, string> dict = new(1, StringComparer.InvariantCultureIgnoreCase);
-            foreach (var kvp in YieldReplacements())
-            {
-                dict.Add(kvp.Value, kvp.Key);
-            }
-
-            return dict;
-        }
-
-        private static IEnumerable<KeyValuePair<string, string>> YieldReplacements()
-        {
-            yield return new("Monitored", "IsMonitored");
+            return SerializedNames;
         }
     }
 }

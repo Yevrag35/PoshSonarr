@@ -9,8 +9,15 @@ namespace MG.Sonarr.Next
 
         public const string ID = "Id";
         public const string LABEL = "Label";
+        public const string LANG_PROFILE_ID = "LanguageProfileId";
         public const string NAME = "Name";
+        public const string PROFILE_ID = "ProfileId";
+        public const string QUALITY_PROFILE_ID = "QualityProfileId";
+        public const string SEASONS = "Seasons";
+        public const string SERIES_TYPE = "SeriesType";
+        public const string TAGS = "Tags";
         public const string TITLE = "Title";
+        public const string USE_SEASON_FOLDER = "UseSeasonFolders";
 
         internal const string CONFIG = "/config";
         internal const string BY_ID = "/{0}";

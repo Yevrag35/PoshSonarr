@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Services.Extensions;
+using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Shell.Components;
