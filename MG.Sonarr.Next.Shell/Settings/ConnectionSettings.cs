@@ -6,7 +6,7 @@ namespace MG.Sonarr.Next.Shell.Settings
 {
     internal sealed class ConnectionSettings : IConnectionSettings
     {
-        internal ApiKey Key { get; set; } = null!;
+        internal ApiKey Key { get; set; }
         IApiKey IConnectionSettings.ApiKey => this.Key;
         public bool NoApiInPath { get; internal set; }
         public Uri ServiceUri { get; internal set; } = null!;
@@ -26,6 +26,8 @@ namespace MG.Sonarr.Next.Shell.Settings
 
             return false;
         }
+
+        /// <exception cref="ArgumentException"/>
         internal void Validate()
         {
             this.Key.Validate();

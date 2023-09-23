@@ -43,7 +43,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
         public SwitchParameter NoApiInPath
         {
             get => this.Settings.NoApiInPath;
-            set => this.Settings.NoApiInPath = value;
+            set => this.Settings.NoApiInPath = value.ToBool();
         }
 
         [Parameter(Mandatory = false)]

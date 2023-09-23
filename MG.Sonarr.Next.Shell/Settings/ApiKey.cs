@@ -1,17 +1,12 @@
 ﻿using MG.Sonarr.Next.Services.Auth;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MG.Sonarr.Next.Shell.Settings
 {
-    public sealed class ApiKey : IApiKey
+    public readonly struct ApiKey : IApiKey
     {
-        readonly string _key;
+        readonly string? _key;
 
         private ApiKey(string? key)
         {
@@ -34,10 +29,14 @@ namespace MG.Sonarr.Next.Shell.Settings
             Marshal.ZeroFreeBSTR(pp);
             return s ?? string.Empty;
         }
+        
+        /// <exception cref="InvalidOperationException"/>
         public string GetValue()
         {
-            return _key;
+            return _key ?? throw new InvalidOperationException("No API key is present.");
         }
+
+        /// <exception cref="ArgumentException"></exception>
         public void Validate()
         {
             if (string.IsNullOrWhiteSpace(_key))
