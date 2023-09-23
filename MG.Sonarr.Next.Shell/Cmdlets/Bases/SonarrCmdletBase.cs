@@ -2,8 +2,10 @@
 using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
+using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Shell.Context;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Shell.Models;
 using Microsoft.Extensions.DependencyInjection;
 using OneOf;
 using System.Text.Json;
@@ -202,11 +204,23 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             }
         }
 
-        protected ErrorRecord? WriteSonarrResult<T>(in OneOf<T, ErrorRecord> result)
+        protected ErrorRecord? WriteSonarrResult<T>(OneOf<T, ErrorRecord> result, MetadataTag? tag = null) where T : IEnumerable<PSObject>
         {
             if (result.TryPickT0(out T value, out ErrorRecord? error))
             {
                 this.WriteObject(value, enumerateCollection: true);
+                return null;
+            }
+            else
+            {
+                return error;
+            }
+        }
+        protected ErrorRecord? WriteSonarrResult<T>(OneOf<T, ErrorRecord> result) where T : IJsonSonarrMetadata
+        {
+            if (result.TryPickT0(out T value, out ErrorRecord? error))
+            {
+                this.WriteObject(value);
                 return null;
             }
             else

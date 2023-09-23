@@ -1,30 +1,44 @@
 ﻿using MG.Sonarr.Next.Services.Extensions;
-using Microsoft.PowerShell.Commands;
-using NJsonSchema;
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Management.Automation;
 using System.Text;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Json.Converters
 {
-    public sealed class PSObjectConverter : JsonConverter<object>
+    public sealed class ObjectConverter : JsonConverter<object>
     {
-        static readonly Type _objType = typeof(object);
-        static readonly Type _psObjType = typeof(PSObject);
-        static readonly Type _psCusType = typeof(PSCustomObject);
         readonly HashSet<string> _ignore;
         readonly ReadOnlyDictionary<string, Type> _convertProps;
 
-        public PSObjectConverter(IEnumerable<string> ignoreProps, IEnumerable<KeyValuePair<string, Type>> convertTypes)
+        public ObjectConverter(IEnumerable<string> ignoreProps, IEnumerable<KeyValuePair<string, Type>> convertTypes)
         {
             _ignore = new(ignoreProps, StringComparer.InvariantCultureIgnoreCase);
             _convertProps = BuildPropLookup(convertTypes);
+        }
+
+        public override bool CanConvert(Type typeToConvert)
+        {
+            return typeToConvert.Equals(typeof(PSObject))
+                   ||
+                   typeToConvert.Equals(typeof(object))
+                   ||
+                   typeToConvert.Equals(typeof(PSCustomObject));
+        }
+
+        public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return reader.TokenType switch
+            {
+                JsonTokenType.StartArray => ConvertToListOfObjects(ref reader, options),
+                JsonTokenType.StartObject => this.ConvertToObject<PSObject>(ref reader, options),
+                JsonTokenType.String => ReadString(ref reader, options),
+                JsonTokenType.Number => ReadNumber(ref reader, options),
+                JsonTokenType.True or JsonTokenType.False => ReadBoolean(ref reader, options),
+                JsonTokenType.None or JsonTokenType.Null => null,
+                _ => throw new JsonException($"Unable to process object with token type '{reader.TokenType}'."),
+            };
         }
 
         private static ReadOnlyDictionary<string, Type> BuildPropLookup(IEnumerable<KeyValuePair<string, Type>> pairs)
@@ -42,33 +56,14 @@ namespace MG.Sonarr.Next.Services.Json.Converters
             return new(dict);
         }
 
-        public override bool CanConvert(Type typeToConvert)
-        {
-            return _objType.Equals(typeToConvert) || _psObjType.IsAssignableFrom(typeToConvert) || _psCusType.Equals(typeToConvert);
-        }
-
-        public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            return reader.TokenType switch
-            {
-                JsonTokenType.StartArray => ConvertToListOfObjects(ref reader, options),
-                JsonTokenType.StartObject => this.ConvertToObject(ref reader, options),
-                JsonTokenType.String => ReadString(ref reader, options),
-                JsonTokenType.Number => ReadNumber(ref reader, options),
-                JsonTokenType.True or JsonTokenType.False => ReadBoolean(ref reader, options),
-                JsonTokenType.None or JsonTokenType.Null => null,
-                _ => throw new JsonException($"Unable to process object with token type '{reader.TokenType}'."),
-            };
-        }
-
         private static List<object> ConvertToListOfObjects(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
             return JsonSerializer.Deserialize<List<object>>(ref reader, options) ?? throw new JsonException("Unable to deserialize into an array of PSObject instances.");
         }
 
-        private object ConvertToObject(ref Utf8JsonReader reader, JsonSerializerOptions options)
+        internal T ConvertToObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options) where T : PSObject, new()
         {
-            var pso = new PSObject();
+            var pso = new T();
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
@@ -82,7 +77,7 @@ namespace MG.Sonarr.Next.Services.Json.Converters
                         switch (reader.TokenType)
                         {
                             case JsonTokenType.StartObject:
-                                o = this.ConvertToObject(ref reader, options);
+                                o = this.ConvertToObject<PSObject>(ref reader, options);
                                 break;
 
                             case JsonTokenType.StartArray:
@@ -200,7 +195,7 @@ namespace MG.Sonarr.Next.Services.Json.Converters
             {
                 section.Chars.CopyTo(scratch.Slice(position));
                 position += section.Chars.Length;
-                
+
                 if (!section.Separator.IsEmpty)
                 {
                     scratch[position++] = section.Separator[1];
@@ -282,7 +277,7 @@ namespace MG.Sonarr.Next.Services.Json.Converters
             }
         }
 
-        private void WritePSObject(Utf8JsonWriter writer, JsonSerializerOptions options, PSObject pso)
+        internal void WritePSObject(Utf8JsonWriter writer, JsonSerializerOptions options, PSObject pso)
         {
             writer.WriteStartObject();
 

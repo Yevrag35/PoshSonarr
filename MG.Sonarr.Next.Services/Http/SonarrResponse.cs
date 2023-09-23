@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Exceptions;
 using MG.Sonarr.Next.Services.Extensions;
+using MG.Sonarr.Next.Services.Json;
 using System.Management.Automation;
 using System.Net;
 
@@ -92,6 +93,18 @@ namespace MG.Sonarr.Next.Services.Http
             bool isError = error is not null;
             _isNotEmpty = isError || data is not null;
             _isError = isError;
+        }
+
+        internal bool IsDataTaggable([NotNullWhen(true)] out IJsonMetadataTaggable? taggable)
+        {
+            if (_data is IJsonSonarrMetadata metadata)
+            {
+                taggable = metadata;
+                return true;
+            }
+
+            taggable = default;
+            return false;
         }
 
         public static implicit operator SonarrResponse<T>(ValueTuple<string?, HttpStatusCode, T> success)

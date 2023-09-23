@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Services;
 using MG.Sonarr.Next.Shell.Extensions;
-using MG.Sonarr.Next.Shell.Models;
+using MG.Sonarr.Next.Shell.Models.Tags;
 using System;
 using System.Collections.Generic;
 using System.Linq;

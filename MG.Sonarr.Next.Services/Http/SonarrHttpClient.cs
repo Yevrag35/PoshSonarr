@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Json;
+using MG.Sonarr.Next.Services.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerShell.Commands;
 using System.Collections;
@@ -29,12 +30,14 @@ namespace MG.Sonarr.Next.Services.Http
 
         HttpClient Client { get; }
         JsonSerializerOptions DeserializingOptions { get; }
+        MetadataResolver Resolver { get; }
         JsonSerializerOptions SerializingOptions { get; }
 
-        public SonarrHttpClient(HttpClient client, SonarrJsonOptions options)
+        public SonarrHttpClient(HttpClient client, SonarrJsonOptions options, MetadataResolver resolver)
         {
             this.Client = client;
             this.DeserializingOptions = options.GetForDeserializing();
+            this.Resolver = resolver;
             this.SerializingOptions = options.GetForSerializing();
         }
 
@@ -51,7 +54,13 @@ namespace MG.Sonarr.Next.Services.Http
             using HttpRequestMessage request = new(HttpMethod.Get, path);
             request.Options.Set(SonarrClientDependencyInjection.KEY, false);
 
-            return this.SendResultRequest<T>(request, path, token);
+            var response = this.SendResultRequest<T>(request, path, token);
+            if (response.IsDataTaggable(out IJsonMetadataTaggable? taggable))
+            {
+                taggable.SetTag(this.Resolver);
+            }
+
+            return response;
         }
 
         public SonarrResponse SendPost<T>(string path, T body, CancellationToken token = default)
@@ -68,7 +77,13 @@ namespace MG.Sonarr.Next.Services.Http
             request.Options.Set(SonarrClientDependencyInjection.KEY, false);
             request.Content = JsonContent.Create(body, typeof(TBody), options: this.SerializingOptions);
 
-            return this.SendResultRequest<TOutput>(request, path, token);
+            var response = this.SendResultRequest<TOutput>(request, path, token);
+            if (response.IsDataTaggable(out IJsonMetadataTaggable? taggable))
+            {
+                taggable.SetTag(this.Resolver);
+            }
+
+            return response;
         }
 
         public SonarrResponse SendPut<T>(string path, T body, CancellationToken token = default)

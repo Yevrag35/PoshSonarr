@@ -1,7 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Metadata;
-using System.CodeDom;
 
-namespace MG.Sonarr.Next.Shell.Context
+namespace MG.Sonarr.Next
 {
     public static class Constants
     {
@@ -58,16 +57,15 @@ namespace MG.Sonarr.Next.Shell.Context
         public const string PREFERENCE = "Preference";
         public const string DEBUG_PREFERENCE = DEBUG + PREFERENCE;
         public const string VERBOSE_PREFERENCE = VERBOSE + PREFERENCE;
-
-        
     }
 
     public static class Meta
     {
-        public const string SERIES = "#series";
         public const string EPISODE = "#episode";
         public const string EPISODEFILE = "#episodefile";
         public const string INDEXER = "#indexer";
+        public const string SERIES = "#series";
+        public const string SERIES_ADD = "#add_series";
         public const string TAG = "#tag";
     }
 }

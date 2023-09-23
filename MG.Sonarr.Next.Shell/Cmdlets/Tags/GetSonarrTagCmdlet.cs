@@ -68,7 +68,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                     item.AddMetadata(_tag);
                 }
 
-                this.WriteSonarrResult(tags);
+                this.WriteSonarrResults(tags);
             }
 
             return null;
@@ -174,7 +174,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             else
             {
                 ProcessAndFilterTags(list.Data, _tag, _names);
-                this.WriteSonarrResult(list);
+                this.WriteSonarrResults(list);
             }
             
             return true;

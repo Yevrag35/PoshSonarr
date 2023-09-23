@@ -89,25 +89,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             foreach (var kvp in _dict)
             {
                 string url = GetUrl(this.Tag, kvp.Key, this.DeleteFiles);
+
                 if (this.ShouldProcess(url, "Deleting Series")
                     &&
                     (force
                     ||
                     this.ShouldContinue(in kvp, ref yesToAll, ref noToAll)))
                 {
-
-                    var result = this.SendDeleteRequest(url);
-                    if (result.IsError)
-                    {
-                        if (result.Error.IsIgnorable)
-                        {
-                            this.WriteWarning(result.Error.Message);
-                        }
-                        else
-                        {
-                            this.WriteError(result.Error);
-                        }
-                    }
+                    this.SendDeleteSeries(url);
                 }
             }
 
@@ -121,6 +110,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                     caption: $"Delete Series ID: {kvp.Key}",
                     yesToAll: ref yesToAll,
                     noToAll: ref noToAll);
+        }
+        private void SendDeleteSeries(string url)
+        {
+            var result = this.SendDeleteRequest(url);
+            if (result.IsError)
+            {
+                if (result.Error.IsIgnorable)
+                {
+                    this.WriteWarning(result.Error.Message);
+                }
+                else
+                {
+                    this.WriteError(result.Error);
+                }
+            }
         }
         private static string GetQueryMessage(in KeyValuePair<int, string?> kvp)
         {

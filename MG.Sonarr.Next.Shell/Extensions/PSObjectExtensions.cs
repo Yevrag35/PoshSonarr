@@ -7,16 +7,19 @@ namespace MG.Sonarr.Next.Shell.Extensions
 {
     public static class PSObjectExtensions
     {
-        internal static void AddMetadata(this object? obj, MetadataTag tag)
+        internal static void AddMetadata(this object? obj, MetadataTag? tag)
         {
             if (obj is PSObject pso)
             {
                 AddMetadata(pso: pso, tag);
             }
         }
-        internal static void AddMetadata(this PSObject pso, MetadataTag tag)
+        internal static void AddMetadata(this PSObject pso, MetadataTag? tag)
         {
-            pso.Properties.Add(new MetadataProperty(tag));
+            if (tag is not null)
+            {
+                pso.Properties.Add(new MetadataProperty(tag));
+            }
         }
         
         public static void AddNameAlias(this object? obj)

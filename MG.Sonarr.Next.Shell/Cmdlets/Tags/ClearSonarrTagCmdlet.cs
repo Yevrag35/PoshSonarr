@@ -2,12 +2,7 @@
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
-using MG.Sonarr.Next.Shell.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using MG.Sonarr.Next.Shell.Models.Tags;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {

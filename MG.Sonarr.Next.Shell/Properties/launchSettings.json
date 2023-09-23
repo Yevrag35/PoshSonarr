@@ -4,6 +4,11 @@
       "commandName": "Executable",
       "executablePath": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
       "commandLineArgs": "-NoExit -File \"Debug.ps1\""
+    },
+    "Terminal": {
+      "commandName": "Executable",
+      "executablePath": "wt.exe",
+      "commandLineArgs": "-d ."
     }
   }
 }

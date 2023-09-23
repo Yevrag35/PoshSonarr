@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Json;
 using System.Buffers;
 using System.Net;
@@ -39,7 +40,7 @@ namespace MG.Sonarr.Next.Services.Http
         }
         private Uri AddApiToPath(Uri requestUri)
         {
-            string path = requestUri.AbsolutePath;
+            string path = requestUri.GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
             ReadOnlySpan<char> chars = path.AsSpan();
 
             if (chars.StartsWith(new ReadOnlySpan<char>('/'), StringComparison.InvariantCultureIgnoreCase))
@@ -53,12 +54,11 @@ namespace MG.Sonarr.Next.Services.Http
                     UriComponents.SchemeAndServer, UriFormat.Unescaped);
 
                 Span<char> newPath = stackalloc char[chars.Length + API.Length + authority.Length];
-                authority.CopyTo(newPath);
-                int position = authority.Length;
-                API.CopyTo(newPath.Slice(position));
-                position += API.Length;
-                chars.CopyTo(newPath.Slice(position));
-                position += chars.Length;
+                
+                int position = 0;
+                authority.CopyToSlice(newPath, ref position);
+                API.CopyToSlice(newPath, ref position);
+                chars.CopyToSlice(newPath, ref position);
 
                 return new Uri(new string(newPath.Slice(0, position)), UriKind.Absolute);
             }

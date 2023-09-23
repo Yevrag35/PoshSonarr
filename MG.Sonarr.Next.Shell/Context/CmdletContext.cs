@@ -1,11 +1,17 @@
-﻿using MG.Sonarr.Next.Services.Http;
+﻿using MG.Sonarr.Next.Services.Extensions;
+using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Json.Converters;
+using MG.Sonarr.Next.Services.Json.Modifiers;
+using MG.Sonarr.Next.Services.Models.Series;
+using MG.Sonarr.Next.Services.Models.Tags;
 using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Shell.Cmdlets.Connection;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Settings;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace MG.Sonarr.Next.Shell.Context
 {
@@ -82,8 +88,7 @@ namespace MG.Sonarr.Next.Shell.Context
         {
             return new SonarrJsonOptions(options =>
             {
-                options.Converters.Add(
-                    new PSObjectConverter(
+                ObjectConverter objCon = new(
                         ignoreProps: new string[]
                         {
                             Constants.META_PROPERTY_NAME,
@@ -93,9 +98,22 @@ namespace MG.Sonarr.Next.Shell.Context
                             new("Tags", typeof(SortedSet<int>)),
                             new("Genres", typeof(string[])),
                         }
-                    ));
-                options.Converters.Add(new SonarrResponseConverter());
+                    );
+
+                options.Converters.AddMany(
+                    objCon,
+                    new SonarrObjectConverter<TagObject>(objCon),
+                    new SonarrObjectConverter<SeriesObject>(objCon),
+                    new SonarrResponseConverter());
+
                 options.PropertyNamingPolicy = null;
+                options.TypeInfoResolver = new DefaultJsonTypeInfoResolver
+                {
+                    Modifiers =
+                    {
+                        JsonModifiers.AddPrivateFieldsModifier,
+                    }
+                };
             });
         }
     }

@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models.Series;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,39 +53,39 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             if (_ids.Count > 0)
             {
                 hadIds = true;
-                foreach (var result in this.GetSeriesById(_ids))
+                foreach (var result in this.GetSeriesById<SeriesObject>(_ids))
                 {
                     if (result.IsError)
                     {
                         return result.Error;
                     }
 
-                    this.WriteObject(result.Data);
+                    this.WriteObject(this.Tag, result.Data);
                 }
             }
 
             if (_names.Count > 0)
             {
-                var response = this.GetSeriesByName(_names);
-                this.WriteSonarrResult(response);
+                var response = this.GetSeriesByName<SeriesObject>(_names);
+                this.WriteSonarrResults(response);
             }
             else if (!hadIds)
             {
-                var response = this.GetAllSeries(addMetadata: true);
+                var response = this.GetAllSeries<SeriesObject>();
                 if (response.IsError)
                 {
                     return response.Error;
                 }
 
-                this.WriteCollection(response.Data);
+                this.WriteCollection(this.Tag, response.Data);
             }
 
             return null;
         }
 
-        private SonarrResponse<List<PSObject>> GetSeriesByName(IReadOnlySet<WildcardString> names)
+        private SonarrResponse<List<T>> GetSeriesByName<T>(IReadOnlySet<WildcardString> names) where T : PSObject
         {
-            var result = this.GetAllSeries();
+            var result = this.GetAllSeries<T>();
             if (result.IsError)
             {
                 return result;
@@ -102,30 +103,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 else
                 {
                     item.AddNameAlias();
-                    item.AddMetadata(this.Tag);
                 }
             }
 
             return result;
         }
-        private SonarrResponse<List<PSObject>> GetAllSeries(bool addMetadata = false)
+        private SonarrResponse<List<T>> GetAllSeries<T>() where T : PSObject
         {
-            var list = this.SendGetRequest<List<PSObject>>(this.Tag.UrlBase);
-            if (addMetadata && !list.IsError)
-            {
-                foreach (var item in list.Data)
-                {
-                    item.AddMetadata(this.Tag);
-                }
-            }
-
-            return list;
+            return this.SendGetRequest<List<T>>(this.Tag.UrlBase);
         }
-        private IEnumerable<SonarrResponse<PSObject>> GetSeriesById(IEnumerable<int> ids)
+        private IEnumerable<SonarrResponse<T>> GetSeriesById<T>(IEnumerable<int> ids) where T : PSObject
         {
             foreach (int id in ids)
             {
-                var result = this.SendGetRequest<PSObject>($"/series/{id}");
+                var result = this.SendGetRequest<T>($"/series/{id}");
                 if (result.IsError)
                 {
                     this.WriteError(result.Error);
@@ -133,7 +124,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 }
 
                 result.Data?.AddNameAlias();
-                result.Data?.AddMetadata(this.Tag);
 
                 yield return result;
             }
