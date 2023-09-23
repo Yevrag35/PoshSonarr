@@ -2,13 +2,14 @@
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Metadata;
 using System.Management.Automation;
+using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Models
 {
     /// <summary>
     /// Dangerous object.
     /// </summary>
-    public abstract class SonarrObject : PSObject, IJsonSonarrMetadata
+    public abstract class SonarrObject : PSObject, IJsonSonarrMetadata, IJsonOnDeserialized
     {
         public MetadataTag MetadataTag { get; private set; }
 
@@ -24,6 +25,9 @@ namespace MG.Sonarr.Next.Services.Models
         }
 
         protected abstract MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing);
+        public virtual void OnDeserialized()
+        {
+        }
         public void SetTag(MetadataResolver resolver)
         {
             this.MetadataTag = this.GetTag(resolver, this.MetadataTag);

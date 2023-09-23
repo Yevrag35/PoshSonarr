@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Services.Collections;
+using MG.Sonarr.Next.Services.Extensions;
 using System.Buffers;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
@@ -11,11 +12,13 @@ namespace MG.Sonarr.Next.Services.Json.Converters
     {
         readonly HashSet<string> _ignore;
         readonly ReadOnlyDictionary<string, Type> _convertProps;
+        readonly IReadOnlyDictionary<string, string> _replaceNames;
 
         public ObjectConverter(IEnumerable<string> ignoreProps, IEnumerable<KeyValuePair<string, Type>> convertTypes)
         {
             _ignore = new(ignoreProps, StringComparer.InvariantCultureIgnoreCase);
             _convertProps = BuildPropLookup(convertTypes);
+            _replaceNames = EmptyNameDictionary.Default;
         }
 
         public override bool CanConvert(Type typeToConvert)
@@ -61,14 +64,16 @@ namespace MG.Sonarr.Next.Services.Json.Converters
             return JsonSerializer.Deserialize<List<object>>(ref reader, options) ?? throw new JsonException("Unable to deserialize into an array of PSObject instances.");
         }
 
-        internal T ConvertToObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options) where T : PSObject, new()
+        internal T ConvertToObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options, IReadOnlyDictionary<string, string>? replaceNames = null) where T : PSObject, new()
         {
             var pso = new T();
+            replaceNames ??= _replaceNames;
+
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    string pn = ReadPropertyName(ref reader, options);
+                    string pn = ReadPropertyName(ref reader, options, replaceNames);
                     reader.Read();
 
                     object? o = null;
@@ -233,7 +238,7 @@ namespace MG.Sonarr.Next.Services.Json.Converters
             }
         }
 
-        private static string ReadPropertyName(ref Utf8JsonReader reader, JsonSerializerOptions options)
+        private static string ReadPropertyName(ref Utf8JsonReader reader, JsonSerializerOptions options, IReadOnlyDictionary<string, string> replaceNames)
         {
             Span<char> chars = stackalloc char[reader.ValueSpan.Length];
             int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
@@ -245,7 +250,13 @@ namespace MG.Sonarr.Next.Services.Json.Converters
                 first = char.ToUpper(first);
             }
 
-            return new string(chars);
+            string propertyName = new(chars);
+            if (replaceNames.TryGetValue(propertyName, out string? replacement))
+            {
+                return replacement;
+            }
+
+            return propertyName;
         }
 
         [DoesNotReturn]
@@ -277,8 +288,9 @@ namespace MG.Sonarr.Next.Services.Json.Converters
             }
         }
 
-        internal void WritePSObject(Utf8JsonWriter writer, JsonSerializerOptions options, PSObject pso)
+        internal void WritePSObject(Utf8JsonWriter writer, JsonSerializerOptions options, PSObject pso, IReadOnlyDictionary<string, string>? replaceNames = null)
         {
+            replaceNames ??= _replaceNames;
             writer.WriteStartObject();
 
             foreach (var prop in pso.Properties
@@ -291,7 +303,11 @@ namespace MG.Sonarr.Next.Services.Json.Converters
                     continue;
                 }
 
-                writer.WritePropertyName(options.ConvertName(prop.Name));
+                string pn = replaceNames.TryGetValue(prop.Name, out string? newPn)
+                    ? newPn
+                    : prop.Name;
+
+                writer.WritePropertyName(options.ConvertName(pn));
 
                 if (prop.Value is null)
                 {

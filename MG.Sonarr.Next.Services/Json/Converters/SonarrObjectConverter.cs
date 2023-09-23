@@ -1,19 +1,29 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Services.Collections;
 using MG.Sonarr.Next.Services.Models;
-using System.Buffers;
-using System.Collections.ObjectModel;
-using System.Management.Automation;
-using System.Text;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Json.Converters
 {
-    public sealed class SonarrObjectConverter<T> : JsonConverter<T> where T : SonarrObject, new()
+    public class SonarrObjectConverter<T> : JsonConverter<T> where T : SonarrObject, new()
     {
         readonly ObjectConverter _converter;
+        readonly IReadOnlyDictionary<string, string> _deserializedNames;
+        readonly IReadOnlyDictionary<string, string> _serializedNames;
+
         public SonarrObjectConverter(ObjectConverter converter)
         {
             _converter = converter;
+            _deserializedNames = this.GetDeserializedNames();
+            _serializedNames = this.GetSerializedNames();
+        }
+
+        protected virtual IReadOnlyDictionary<string, string> GetDeserializedNames()
+        {
+            return EmptyNameDictionary.Default;
+        }
+        protected virtual IReadOnlyDictionary<string, string> GetSerializedNames()
+        {
+            return EmptyNameDictionary.Default;
         }
 
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -23,7 +33,9 @@ namespace MG.Sonarr.Next.Services.Json.Converters
                 throw new JsonException($"Converter expected a JSON object but got {reader.TokenType}.");
             }
 
-            return _converter.ConvertToObject<T>(ref reader, options);
+            T obj = _converter.ConvertToObject<T>(ref reader, options, _deserializedNames);
+            obj.OnDeserialized();
+            return obj;
         }
 
         public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
@@ -34,7 +46,7 @@ namespace MG.Sonarr.Next.Services.Json.Converters
                 return;
             }
 
-            _converter.WritePSObject(writer, options, value);
+            _converter.WritePSObject(writer, options, value, _serializedNames);
         }
     }
 }
