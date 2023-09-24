@@ -16,6 +16,8 @@ namespace MG.Sonarr.Next.Shell.Context
             {
                 { Meta.EPISODE, "/episode", true },
                 { Meta.EPISODEFILE, "/episodefile", true },
+                { Meta.INDEXER, "/indexer", true },
+                { Meta.ROOT_FOLDER, "/rootfolder", true },
                 { Meta.SERIES, "/series", true },
                 { Meta.SERIES_ADD, "/series/lookup", false },
                 { Meta.TAG, "/tag", true },

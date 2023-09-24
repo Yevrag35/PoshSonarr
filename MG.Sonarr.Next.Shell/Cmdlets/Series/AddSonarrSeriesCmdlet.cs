@@ -155,7 +155,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         }
         protected override ErrorRecord? End()
         {
+            this.SetAddOptions(this.AddOptions);
             string url = this.Tag.UrlBase;
+
             foreach (AddSeriesObject pso in _list)
             {
                 this.SerializeIfDebug(pso, options: this.Services.GetService<SonarrJsonOptions>()?.GetForDebugging());
@@ -180,13 +182,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             {
                 if (this.MyInvocation.BoundParameters.TryGetValue(WITH_FILES, out object? wf) 
                     &&
-                    )
+                    wf is SwitchParameter wfSwitch)
                 {
+                    options.IgnoreEpisodesWithFiles = !wfSwitch.ToBool();
+                }
 
+                if (this.MyInvocation.BoundParameters.TryGetValue(WITHOUT_FILES, out object? wof)
+                    &&
+                    wof is SwitchParameter wofSwitch)
+                {
+                    options.IgnoreEpisodesWithoutFiles = !wofSwitch.ToBool();
                 }
             }
         }
-
         private void SetPath(AddSeriesObject pso)
         {
             if (this.HasParameter(x => x.RootFolderPath))

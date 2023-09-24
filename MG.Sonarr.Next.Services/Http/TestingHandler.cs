@@ -48,7 +48,7 @@ namespace MG.Sonarr.Next.Services.Http
                 {
                     Content = JsonContent.Create(new
                     {
-                        Message = "The response returned something that looks like a HTML page. You sure the URL is correct?"
+                        Message = "The response returned something that looks like an HTML page. You sure the URL is correct?"
                     }, options: this.Options),
                     RequestMessage = request,
                     ReasonPhrase = HttpStatusCode.ServiceUnavailable.ToString(),

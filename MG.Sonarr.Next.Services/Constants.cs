@@ -71,6 +71,7 @@ namespace MG.Sonarr.Next
         public const string EPISODE = "#episode";
         public const string EPISODEFILE = "#episodefile";
         public const string INDEXER = "#indexer";
+        public const string ROOT_FOLDER = "#root_folder";
         public const string SERIES = "#series";
         public const string SERIES_ADD = "#add_series";
         public const string TAG = "#tag";
