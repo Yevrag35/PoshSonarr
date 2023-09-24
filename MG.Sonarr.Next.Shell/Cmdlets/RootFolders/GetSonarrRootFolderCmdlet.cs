@@ -2,7 +2,7 @@
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolder
+namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
 {
     [Cmdlet(VerbsCommon.Get, "SonarrRootFolder")]
     public sealed class GetSonarrRootFolderCmdlet : SonarrApiCmdletBase

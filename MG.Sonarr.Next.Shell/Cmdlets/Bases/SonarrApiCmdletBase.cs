@@ -36,12 +36,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         }
 
         protected virtual SonarrResponse SendPostRequest<T>(string path, T body, CancellationToken token = default)
+            where T : notnull
         {
             this.Queue.Enqueue(this);
             SonarrResponse response = this.Client.SendPost(path, body, token);
             return response;
         }
         protected virtual OneOf<TOutput, ErrorRecord> SendPostRequest<TBody, TOutput>(string path, TBody body, CancellationToken token = default)
+            where TBody : notnull
         {
             this.Queue.Enqueue(this);
             SonarrResponse<TOutput> response = this.Client.SendPost<TBody, TOutput>(path, body, token);
@@ -51,6 +53,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         }
 
         protected virtual SonarrResponse SendPutRequest<T>(string path, T body , CancellationToken token = default)
+            where T : notnull
         {
             this.Queue.Enqueue(this);
             SonarrResponse response = this.Client.SendPut(path, body, token);

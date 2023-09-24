@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models;
 using MG.Sonarr.Next.Services.Models.Series;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -38,13 +39,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId",
-            ValueFromPipelineByPropertyName = true)]
-        [Alias("SeriesId")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId")]
         public int[] Id
         {
             get => Array.Empty<int>();
             set => _ids.UnionWith(value);
+        }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput", DontShow = true,
+            ValueFromPipeline = true)]
+        public ISeriesPipeable[] InputObject
+        {
+            get => Array.Empty<ISeriesPipeable>();
+            set => _ids.UnionWith(value.Select(x => x.SeriesId));
         }
 
         protected override ErrorRecord? Process()
@@ -60,7 +68,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                         return result.Error;
                     }
 
-                    this.WriteObject(this.Tag, result.Data);
+                    this.WriteObject(result.Data);
                 }
             }
 
@@ -77,13 +85,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                     return response.Error;
                 }
 
-                this.WriteCollection(this.Tag, response.Data);
+                this.WriteCollection(response.Data);
             }
 
             return null;
         }
 
-        private SonarrResponse<List<T>> GetSeriesByName<T>(IReadOnlySet<WildcardString> names) where T : PSObject
+        private SonarrResponse<MetadataList<T>> GetSeriesByName<T>(IReadOnlySet<WildcardString> names) where T : PSObject, IJsonMetadataTaggable
         {
             var result = this.GetAllSeries<T>();
             if (result.IsError)
@@ -108,11 +116,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
             return result;
         }
-        private SonarrResponse<List<T>> GetAllSeries<T>() where T : PSObject
+        private SonarrResponse<MetadataList<T>> GetAllSeries<T>() where T : PSObject, IJsonMetadataTaggable
         {
-            return this.SendGetRequest<List<T>>(this.Tag.UrlBase);
+            return this.SendGetRequest<MetadataList<T>>(this.Tag.UrlBase);
         }
-        private IEnumerable<SonarrResponse<T>> GetSeriesById<T>(IEnumerable<int> ids) where T : PSObject
+        private IEnumerable<SonarrResponse<T>> GetSeriesById<T>(IEnumerable<int> ids) where T : PSObject, IJsonMetadataTaggable
         {
             foreach (int id in ids)
             {

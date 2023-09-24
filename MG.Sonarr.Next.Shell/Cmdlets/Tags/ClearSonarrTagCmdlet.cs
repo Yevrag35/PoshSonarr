@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models.Tags;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Models.Tags;
@@ -11,7 +12,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     {
         readonly HashSet<int> _ids;
         readonly HashSet<WildcardString> _resolveNames;
-        readonly Dictionary<string, PSObject> _updates;
+        readonly Dictionary<string, ITagPipeable> _updates;
 
         public ClearSonarrTagCmdlet()
             : base()
@@ -23,9 +24,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
-        public object[] InputObject
+        public ITagPipeable[] InputObject
         {
-            get => Array.Empty<object>();
+            get => Array.Empty<ITagPipeable>();
             set => this.AddUrlsFromMetadata(value);
         }
 
@@ -45,23 +46,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             set => value.SplitToSets(_ids, _resolveNames);
         }
 
-        private void AddUrlsFromMetadata(object[]? array)
+        private void AddUrlsFromMetadata(ITagPipeable[]? array)
         {
             if (array is null)
             {
                 return;
             }
 
-            foreach (PSObject pso in array.OfType<PSObject>())
+            foreach (ITagPipeable pipeable in array)
             {
-                if (pso.TryGetNonNullProperty(Constants.META_PROPERTY_NAME, out MetadataTag? tag)
-                    &&
-                    tag.SupportsId
-                    &&
-                    pso.TryGetProperty(Constants.ID, out int id))
-                {
-                    _updates.TryAdd(tag.GetUrlForId(id), pso);
-                }
+                _updates.TryAdd(pipeable.MetadataTag.GetUrlForId(pipeable.Id), pipeable);
             }
 
             if (_updates.Count <= 0)
@@ -75,7 +69,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         {
             if (_resolveNames.Count > 0)
             {
-                var tagResponse = this.SendGetRequest<List<SonarrTag>>(Constants.TAG);
+                var tagResponse = this.SendGetRequest<List<TagObject>>(Constants.TAG);
                 if (tagResponse.IsError)
                 {
                     return tagResponse.Error;
@@ -97,12 +91,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         {
             foreach (var kvp in _updates)
             {
-                if (!kvp.Value.TryGetNonNullProperty("Tags", out SortedSet<int>? set))
-                {
-                    this.WriteWarning("Object does not have 'Tags' property.");
-                    continue;
-                }
-                else if (!_ids.Overlaps(set))
+                if (!_ids.Overlaps(kvp.Value.Tags))
                 {
                     this.WriteVerbose("No tags are being removed from the object.");
                     continue;
@@ -112,9 +101,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                     target: kvp.Key,
                     action: string.Format(
                         "Removing tags: ({0})",
-                        string.Join(", ", _ids.Where(set.Contains)))))
+                        string.Join(", ", _ids.Where(kvp.Value.Tags.Contains)))))
                 {
-                    set.ExceptWith(_ids);
+                    kvp.Value.Tags.ExceptWith(_ids);
 
                     var response = this.SendPutRequest(path: kvp.Key, body: kvp.Value);
                     if (response.IsError)

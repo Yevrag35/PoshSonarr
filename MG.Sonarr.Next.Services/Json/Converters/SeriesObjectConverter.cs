@@ -7,8 +7,6 @@ namespace MG.Sonarr.Next.Services.Json.Converters
         internal static readonly IReadOnlyDictionary<string, string> DeserializedNames =
             new Dictionary<string, string>(2, StringComparer.InvariantCultureIgnoreCase)
             {
-                { "Monitored", "IsMonitored" },
-                { "TvdbId", "TVDbId" },
                 { "ImdbId", "IMDbId" },
                 { "SeasonFolder", "UseSeasonFolders" },
             };

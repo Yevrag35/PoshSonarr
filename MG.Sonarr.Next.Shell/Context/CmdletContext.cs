@@ -3,6 +3,8 @@ using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Json.Converters;
 using MG.Sonarr.Next.Services.Json.Modifiers;
+using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models.Episodes;
 using MG.Sonarr.Next.Services.Models.Series;
 using MG.Sonarr.Next.Services.Models.Tags;
 using MG.Sonarr.Next.Shell.Cmdlets;
@@ -15,12 +17,23 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace MG.Sonarr.Next.Shell.Context
 {
+#if DEBUG
+    public static class CmdletContextExtensions
+#else
     internal static class CmdletContextExtensions
+#endif
     {
         internal static IServiceScope CreateScope(this SonarrCmdletBase cmdlet)
         {
             return SonarrContext.GetProvider().CreateScope();
         }
+
+#if DEBUG
+        public static MetadataResolver GetResolver()
+        {
+            return SonarrContext.GetProvider().GetRequiredService<MetadataResolver>();
+        }
+#endif
 
         internal static IServiceProvider GetServiceProvider(this Cmdlet cmdlet)
         {
@@ -93,6 +106,11 @@ namespace MG.Sonarr.Next.Shell.Context
                         {
                             Constants.META_PROPERTY_NAME,
                         },
+                        replaceNames: new KeyValuePair<string, string>[]
+                        {
+                            new("Monitored", "IsMonitored"),
+                            new("TvdbId", "TVDbId"),
+                        },
                         convertTypes: new KeyValuePair<string, Type>[]
                         {
                             new("Tags", typeof(SortedSet<int>)),
@@ -103,6 +121,7 @@ namespace MG.Sonarr.Next.Shell.Context
                 options.Converters.AddMany(
                     objCon,
                     new SonarrObjectConverter<TagObject>(objCon),
+                    new SonarrObjectConverter<EpisodeObject>(objCon),
                     new SeriesObjectConverter<SeriesObject>(objCon),
                     new SeriesObjectConverter<AddSeriesObject>(objCon),
                     new SonarrResponseConverter());

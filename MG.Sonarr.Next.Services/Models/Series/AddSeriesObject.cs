@@ -24,7 +24,6 @@ namespace MG.Sonarr.Next.Services.Models.Series
             set => _path = value;
         }
         public string SeriesType { get; set; } = string.Empty;
-        public SortedSet<int> Tags { get; private set; } = null!;
         public string Title { get; set; } = string.Empty;
         public bool UseSeasonFolders { get; set; }
 
@@ -40,6 +39,7 @@ namespace MG.Sonarr.Next.Services.Models.Series
 
         public override void OnDeserialized()
         {
+            base.OnDeserialized();
             this.Properties.Add(new PSAliasProperty(Constants.NAME, Constants.TITLE));
             this.Properties.RemoveMany(Constants.ID, "Added", Constants.QUALITY_PROFILE_ID, Constants.PROFILE_ID, Constants.LANG_PROFILE_ID);
 
@@ -51,11 +51,6 @@ namespace MG.Sonarr.Next.Services.Models.Series
             if (this.TryGetNonNullProperty(Constants.SERIES_TYPE, out string? seriesType))
             {
                 this.SeriesType = seriesType;
-            }
-
-            if (this.TryGetNonNullProperty(Constants.TAGS, out SortedSet<int>? tags))
-            {
-                this.Tags = tags;
             }
 
             if (this.TryGetNonNullProperty(Constants.SEASONS, out object[]? array) && array.Length > 1)

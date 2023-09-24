@@ -69,7 +69,7 @@ namespace MG.Sonarr.Next
     public static class Meta
     {
         public const string EPISODE = "#episode";
-        public const string EPISODEFILE = "#episodefile";
+        public const string EPISODE_FILE = "#episode_file";
         public const string INDEXER = "#indexer";
         public const string ROOT_FOLDER = "#root_folder";
         public const string SERIES = "#series";

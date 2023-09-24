@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Collections;
 using MG.Sonarr.Next.Services.Extensions;
+using MG.Sonarr.Next.Services.Json.Collections;
 using System.Buffers;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
@@ -12,13 +13,13 @@ namespace MG.Sonarr.Next.Services.Json.Converters
     {
         readonly HashSet<string> _ignore;
         readonly ReadOnlyDictionary<string, Type> _convertProps;
-        readonly IReadOnlyDictionary<string, string> _replaceNames;
+        readonly JsonNameDictionary _globalReplaceNames;
 
-        public ObjectConverter(IEnumerable<string> ignoreProps, IEnumerable<KeyValuePair<string, Type>> convertTypes)
+        public ObjectConverter(IEnumerable<string> ignoreProps, IEnumerable<KeyValuePair<string, string>> replaceNames, IEnumerable<KeyValuePair<string, Type>> convertTypes)
         {
             _ignore = new(ignoreProps, StringComparer.InvariantCultureIgnoreCase);
-            _convertProps = BuildPropLookup(convertTypes);
-            _replaceNames = EmptyNameDictionary.Default;
+            _convertProps = BuildLookup(convertTypes);
+            _globalReplaceNames = new(replaceNames);
         }
 
         public override bool CanConvert(Type typeToConvert)
@@ -44,9 +45,9 @@ namespace MG.Sonarr.Next.Services.Json.Converters
             };
         }
 
-        private static ReadOnlyDictionary<string, Type> BuildPropLookup(IEnumerable<KeyValuePair<string, Type>> pairs)
+        private static ReadOnlyDictionary<string, T> BuildLookup<T>(IEnumerable<KeyValuePair<string, T>> pairs)
         {
-            var dict = new Dictionary<string, Type>(pairs.TryGetNonEnumeratedCount(out int count) ? count : 0,
+            var dict = new Dictionary<string, T>(pairs.TryGetNonEnumeratedCount(out int count) ? count : 0,
                 StringComparer.InvariantCultureIgnoreCase);
 
             foreach (var pair in pairs)
@@ -67,13 +68,15 @@ namespace MG.Sonarr.Next.Services.Json.Converters
         internal T ConvertToObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options, IReadOnlyDictionary<string, string>? replaceNames = null) where T : PSObject, new()
         {
             var pso = new T();
-            replaceNames ??= _replaceNames;
+            replaceNames ??= EmptyNameDictionary.Default;
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    string pn = ReadPropertyName(ref reader, options, replaceNames);
+                    string pn = ReadPropertyName(
+                        ref reader, options, replaceNames, _globalReplaceNames.ForDeserializing());
+
                     reader.Read();
 
                     object? o = null;
@@ -238,7 +241,7 @@ namespace MG.Sonarr.Next.Services.Json.Converters
             }
         }
 
-        private static string ReadPropertyName(ref Utf8JsonReader reader, JsonSerializerOptions options, IReadOnlyDictionary<string, string> replaceNames)
+        private static string ReadPropertyName(ref Utf8JsonReader reader, JsonSerializerOptions options, IReadOnlyDictionary<string, string> replaceNames, IReadOnlyDictionary<string, string> globalReplace)
         {
             Span<char> chars = stackalloc char[reader.ValueSpan.Length];
             int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
@@ -254,6 +257,10 @@ namespace MG.Sonarr.Next.Services.Json.Converters
             if (replaceNames.TryGetValue(propertyName, out string? replacement))
             {
                 return replacement;
+            }
+            else if (globalReplace.TryGetValue(propertyName, out string? gbReplacement))
+            {
+                return gbReplacement;
             }
 
             return propertyName;
@@ -290,7 +297,9 @@ namespace MG.Sonarr.Next.Services.Json.Converters
 
         internal void WritePSObject(Utf8JsonWriter writer, JsonSerializerOptions options, PSObject pso, IReadOnlyDictionary<string, string>? replaceNames = null)
         {
-            replaceNames ??= _replaceNames;
+            replaceNames ??= EmptyNameDictionary.Default;
+            var globalReplace = _globalReplaceNames.ForSerializing();
+
             writer.WriteStartObject();
 
             foreach (var prop in pso.Properties
@@ -305,7 +314,9 @@ namespace MG.Sonarr.Next.Services.Json.Converters
 
                 string pn = replaceNames.TryGetValue(prop.Name, out string? newPn)
                     ? newPn
-                    : prop.Name;
+                    : globalReplace.TryGetValue(prop.Name, out string? globalPn)
+                        ? globalPn
+                        : prop.Name;
 
                 writer.WritePropertyName(options.ConvertName(pn));
 

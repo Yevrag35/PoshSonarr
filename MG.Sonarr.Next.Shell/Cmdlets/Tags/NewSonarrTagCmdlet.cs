@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Services;
+using MG.Sonarr.Next.Services.Models.Tags;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Models.Tags;
 using System;
@@ -26,7 +27,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             string json = JsonSerializer.Serialize(tag, this.Options?.GetForDebugging());
             if (this.ShouldProcess(json, "Creating Tag"))
             {
-                var oneOf = this.SendPostRequest<SonarrTag, SonarrTag>(Constants.TAG, tag);
+                var oneOf = this.SendPostRequest<SonarrTag, TagObject>(Constants.TAG, tag);
                 return this.WriteSonarrResult(oneOf);
             }
 

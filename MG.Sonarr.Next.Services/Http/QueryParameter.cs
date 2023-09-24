@@ -18,6 +18,18 @@ namespace MG.Sonarr.Next.Services.Http
         public string Key => _key ?? string.Empty;
         public int MaxLength => _maxLength;
 
+        private QueryParameter(string key)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(key);
+            _key = key;
+
+            _value = null;
+            _formattable = null;
+            _isFormattable = false;
+            _maxLength = 0;
+            _isNotEmpty = true;
+        }
+
         public QueryParameter(string key, OneOf<string?, ISpanFormattable> oneOf, in int oneOfLength)
         {
             ArgumentException.ThrowIfNullOrEmpty(key);
@@ -97,7 +109,7 @@ namespace MG.Sonarr.Next.Services.Http
         public static implicit operator QueryParameter(string key)
         {
             ArgumentException.ThrowIfNullOrEmpty(key);
-            return Create(key, null);
+            return new(key);
         }
 
         public static bool operator ==(QueryParameter x, QueryParameter y)

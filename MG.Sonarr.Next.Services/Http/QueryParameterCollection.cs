@@ -54,6 +54,23 @@ namespace MG.Sonarr.Next.Services.Http
             }
         }
 
+        public void Clear()
+        {
+            _params.Clear();
+            _maxLength = 0;
+        }
+
+        public bool Remove(string key)
+        {
+            if (_params.TryGetValue(key, out var actual))
+            {
+                _maxLength -= actual.MaxLength;
+                return _params.Remove(actual);
+            }
+
+            return false;
+        }
+
         public string ToString(string? format, IFormatProvider? provider)
         {
             Span<char> chars = stackalloc char[this.MaxLength];

@@ -1,5 +1,8 @@
 ﻿using MG.Sonarr.Next.Services.Extensions.PSO;
+using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models.Tags;
 using MG.Sonarr.Next.Shell.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
@@ -8,6 +11,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     public sealed class RenameSonarrTagCmdlet : SonarrApiCmdletBase
     {
         readonly Dictionary<string, object> _dict = new(2, StringComparer.InvariantCultureIgnoreCase);
+
+        MetadataTag Tag { get; }
+
+        public RenameSonarrTagCmdlet()
+            : base()
+        {
+            this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.TAG];
+        }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ById")]
@@ -19,20 +30,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput", DontShow = true)]
-        public object InputObject
+        public TagObject InputObject
         {
             get => null!;
-            set
-            {
-                if (value is not null
-                    &&
-                    value.IsCorrectType(Meta.TAG, out PSObject? pso)
-                    &&
-                    pso.TryGetProperty(nameof(this.Id), out int id))
-                {
-                    _dict[nameof(this.Id)] = id;
-                }
-            }
+            set => _dict[nameof(this.Id)] = value.Id;
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -47,9 +48,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
         protected override ErrorRecord? Process()
         {
-            if (_dict.Count == 2 && _dict.TryGetValue(nameof(this.Id), out object? oid))
+            if (_dict.Count == 2)
             {
-                string url = $"/tag/{oid}";
+                string url = this.Tag.GetUrlForId((int)_dict[nameof(this.Id)]);
                 if (this.ShouldProcess(url, "Update tag label"))
                 {
                     var result = this.SendPutRequest(url, _dict);

@@ -204,6 +204,18 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             }
         }
 
+        protected void WriteSonarrResult<T>(SonarrResponse<T> response, MetadataTag? tag = null)
+        {
+            if (response.IsError)
+            {
+                this.WriteError(response.Error);
+            }
+            else
+            {
+                response.Data.AddMetadata(tag);
+                this.WriteObject(response.Data, enumerateCollection: true);
+            }
+        }
         protected ErrorRecord? WriteSonarrResult<T>(OneOf<T, ErrorRecord> result, MetadataTag? tag = null) where T : IEnumerable<PSObject>
         {
             if (result.TryPickT0(out T value, out ErrorRecord? error))

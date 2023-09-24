@@ -15,6 +15,7 @@ param  (
 
 	[Parameter(Mandatory=$false)]
 	[string[]] $CopyToOutput = @(
+		'MG.Collections',
 		'Microsoft.Extensions.Caching.Memory',
 		'Microsoft.Extensions.Caching.Abstractions',
 		'Microsoft.Extensions.DependencyInjection',
@@ -100,4 +101,6 @@ if ($PSCmdlet.ShouldProcess($dllPath, "Importing Module")) {
 
 $VerbosePreference = "Continue"
 Connect-Sonarr -ApiKey $skey -Url $surl
+
+$resolver = [MG.Sonarr.Next.Shell.Context.CmdletContextExtensions]::GetResolver()
 $s = Get-SonarrSeries 607

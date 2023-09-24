@@ -18,9 +18,10 @@ namespace MG.Sonarr.Next.Services.Http
     {
         SonarrResponse SendDelete(string path, CancellationToken token = default);
         SonarrResponse<T> SendGet<T>(string path, CancellationToken token = default);
-        SonarrResponse SendPost<T>(string path, T body, CancellationToken token = default);
-        SonarrResponse<TOutput> SendPost<TBody, TOutput>(string path, TBody body, CancellationToken token = default);
-        SonarrResponse SendPut<T>(string path, T body, CancellationToken token = default);
+        SonarrResponse SendPost<T>(string path, T body, CancellationToken token = default) where T : notnull;
+        SonarrResponse<TOutput> SendPost<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull;
+        SonarrResponse SendPut<T>(string path, T body, CancellationToken token = default)
+            where T : notnull;
         SonarrResponse SendTest(CancellationToken token = default);
     }
 
@@ -64,15 +65,15 @@ namespace MG.Sonarr.Next.Services.Http
             return response;
         }
 
-        public SonarrResponse SendPost<T>(string path, T body, CancellationToken token = default)
+        public SonarrResponse SendPost<T>(string path, T body, CancellationToken token = default) where T : notnull
         {
             using HttpRequestMessage request = new(HttpMethod.Post, path);
             request.Options.Set(SonarrClientDependencyInjection.KEY, false);
-            request.Content = JsonContent.Create(body, typeof(T), options: this.SerializingOptions);
+            request.Content = JsonContent.Create(body, body.GetType(), options: this.SerializingOptions);
 
             return this.SendNoResultRequest(request, path, token);
         }
-        public SonarrResponse<TOutput> SendPost<TBody, TOutput>(string path, TBody body, CancellationToken token = default)
+        public SonarrResponse<TOutput> SendPost<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull
         {
             using HttpRequestMessage request = new(HttpMethod.Post, path);
             request.Options.Set(SonarrClientDependencyInjection.KEY, false);
@@ -81,7 +82,7 @@ namespace MG.Sonarr.Next.Services.Http
             //    onSerialize.OnSerializing();
             //}
 
-            request.Content = JsonContent.Create(body, typeof(TBody), options: this.SerializingOptions);
+            request.Content = JsonContent.Create(body, body.GetType(), options: this.SerializingOptions);
 
             var response = this.SendResultRequest<TOutput>(request, path, token);
             if (response.IsDataTaggable(out IJsonMetadataTaggable? taggable))
@@ -93,10 +94,11 @@ namespace MG.Sonarr.Next.Services.Http
         }
 
         public SonarrResponse SendPut<T>(string path, T body, CancellationToken token = default)
+            where T : notnull
         {
             using var request = new HttpRequestMessage(HttpMethod.Put, path);
             request.Options.Set(SonarrClientDependencyInjection.KEY, false);
-            request.Content = JsonContent.Create(body, typeof(T), options: this.SerializingOptions);
+            request.Content = JsonContent.Create(body, body!.GetType(), options: this.SerializingOptions);
 
             return this.SendNoResultRequest(request, path, token);
         }

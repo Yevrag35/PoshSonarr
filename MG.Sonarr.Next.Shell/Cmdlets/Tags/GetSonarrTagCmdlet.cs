@@ -2,6 +2,7 @@
 using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models.Tags;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,24 +15,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     {
         readonly SortedSet<int> _ids;
         readonly SortedSet<WildcardString> _names;
-        readonly MetadataTag _tag;
-        MetadataResolver Resolver { get; }
 
         public GetSonarrTagCmdlet()
             : base()
         {
             _ids = new SortedSet<int>();
             _names = new SortedSet<WildcardString>();
-            this.Resolver = this.Services.GetRequiredService<MetadataResolver>();
-            _tag = this.Resolver[Meta.TAG];
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput")]
-        public object[] InputObject
+        public ITagPipeable[] InputObject
         {
-            get => Array.Empty<object>();
-            set => this.AddArrayToSet(value);
+            get => Array.Empty<ITagPipeable>();
+            set => _ids.UnionWith(value.SelectMany(x => x.Tags));
         }
 
 
@@ -58,15 +55,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
             if (!this.TryProcessNames(_names) && !hasIds)
             {
-                SonarrResponse<List<PSObject>> tags = this.GetAllTags();
+                SonarrResponse<MetadataList<TagObject>> tags = this.GetAllTags();
                 if (tags.IsError)
                 {
                     return tags.Error;
-                }
-
-                foreach (PSObject item in tags.Data)
-                {
-                    item.AddMetadata(_tag);
                 }
 
                 this.WriteSonarrResults(tags);
@@ -74,59 +66,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
             return null;
         }
-
-        private void AddArrayToSet(object[]? array)
+        private SonarrResponse<MetadataList<TagObject>> GetAllTags()
         {
-            if (array is null)
-            {
-                return;
-            }
-
-            this.GetNamesAndIdsFromAdd(array);
-
-            if (_ids.Count <= 0)
-            {
-                this.Error =
-                    new ArgumentException("Unable to find any valid tag ID's in the pipeline input.")
-                        .ToRecord(ErrorCategory.InvalidArgument, array);
-            }
+            return this.SendGetRequest<MetadataList<TagObject>>(Constants.TAG);
         }
-        private SonarrResponse<List<PSObject>> GetAllTags()
-        {
-            return this.SendGetRequest<List<PSObject>>(Constants.TAG);
-        }
-        private void GetNamesAndIdsFromAdd(object[] array)
-        {
-            foreach (object item in array)
-            {
-                if (item.IsCorrectType(Meta.TAG, out var pso)
-                    &&
-                    pso.TryGetProperty(nameof(this.Id), out int id))
-                {
-                    _ = _ids.Add(id);
-                }
-                else if (item.TryGetProperty("Tags", out IEnumerable<int>? idCol)
-                         &&
-                         idCol is not null)
-                {
-                    _ids.UnionWith(idCol);
-                }
-            }
-        }
-        private static void ProcessAndFilterTags(List<PSObject> data, MetadataTag tagToAdd, IReadOnlySet<WildcardString> names)
+        private static void ProcessAndFilterTags(IList<TagObject> data, IReadOnlySet<WildcardString> names)
         {
             for (int i = data.Count - 1; i >= 0; i--)
             {
-                object item = data[i];
-                if (!item.TryGetProperty(Constants.LABEL, out string? label)
-                    ||
-                    !names.ValueLike(label))
+                if (!names.ValueLike(data[i].Label))
                 {
                     data.RemoveAt(i);
-                }
-                else
-                {
-                    item.AddMetadata(tagToAdd);
                 }
             }
         }
@@ -138,10 +88,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                 hasIds = true;
                 foreach (int id in ids)
                 {
-                    var result = this.SendGetRequest<PSObject>($"/tag/{id}");
+                    var result = this.SendGetRequest<TagObject>($"/tag/{id}");
                     if (!result.IsError)
                     {
-                        result.Data.AddMetadata(_tag);
                         this.WriteObject(result.Data, enumerateCollection: true);
                     }
                     else
@@ -167,14 +116,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                 return false;
             }
 
-            SonarrResponse<List<PSObject>> list = this.GetAllTags();
+            SonarrResponse<MetadataList<TagObject>> list = this.GetAllTags();
             if (list.IsError)
             {
                 this.Error = list.Error;
             }
             else
             {
-                ProcessAndFilterTags(list.Data, _tag, _names);
+                ProcessAndFilterTags(list.Data, _names);
                 this.WriteSonarrResults(list);
             }
             

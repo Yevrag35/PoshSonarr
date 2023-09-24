@@ -97,7 +97,7 @@ namespace MG.Sonarr.Next.Services.Http
 
         internal bool IsDataTaggable([NotNullWhen(true)] out IJsonMetadataTaggable? taggable)
         {
-            if (_data is IJsonSonarrMetadata metadata)
+            if (_data is IJsonMetadataTaggable metadata)
             {
                 taggable = metadata;
                 return true;

@@ -16,6 +16,10 @@
             spanValue.CopyTo(span.Slice(position));
             position += spanValue.Length;
         }
+        public static void CopyToSlice(this Span<char> writtableSpan, Span<char> span, ref int position)
+        {
+            CopyToSlice(spanValue: writtableSpan, span, ref position);
+        }
 
         public static bool StartsWith(this ReadOnlySpan<char> span, in char value, StringComparison comparison = StringComparison.InvariantCultureIgnoreCase)
         {
