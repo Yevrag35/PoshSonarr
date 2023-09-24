@@ -13,6 +13,16 @@ namespace MG.Sonarr.Next.Services.Metadata
         int EpisodeId { get; }
     }
 
+    public interface IEpisodeFilePipeable : IJsonSonarrMetadata
+    {
+        int EpisodeFileId { get; }
+    }
+
+    public interface IEpisodeFileBySeriesPipeable : IJsonSonarrMetadata
+    {
+        int SeriesId { get; }
+    }
+
     public interface ISeriesPipeable : IJsonSonarrMetadata
     {
         int SeriesId { get; }

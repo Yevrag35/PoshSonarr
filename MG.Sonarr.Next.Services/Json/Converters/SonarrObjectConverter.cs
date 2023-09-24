@@ -10,14 +10,12 @@ namespace MG.Sonarr.Next.Services.Json.Converters
         readonly ObjectConverter _converter;
         readonly IReadOnlyDictionary<string, string> _deserializedNames;
         readonly IReadOnlyDictionary<string, string> _serializedNames;
-        readonly MetadataTag? _tag;
 
-        public SonarrObjectConverter(ObjectConverter converter, MetadataTag? tag = null)
+        public SonarrObjectConverter(ObjectConverter converter)
         {
             _converter = converter;
             _deserializedNames = this.GetDeserializedNames();
             _serializedNames = this.GetSerializedNames();
-            _tag = tag;
         }
 
         protected virtual IReadOnlyDictionary<string, string> GetDeserializedNames()

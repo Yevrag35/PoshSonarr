@@ -14,6 +14,7 @@ namespace MG.Sonarr.Next
         public const string PROFILE_ID = "ProfileId";
         public const string QUALITY_PROFILE_ID = "QualityProfileId";
         public const string SEASONS = "Seasons";
+        public const string SERIES_ID = "seriesId";
         public const string SERIES_TYPE = "SeriesType";
         public const string TAGS = "Tags";
         public const string TITLE = "Title";

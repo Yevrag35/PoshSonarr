@@ -1,14 +1,9 @@
 ﻿using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Metadata;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MG.Sonarr.Next.Services.Models.Episodes
 {
-    public sealed class EpisodeObject : SonarrObject, ISeriesPipeable
+    public sealed class EpisodeObject : SonarrObject, IEpisodeFilePipeable, ISeriesPipeable
     {
         public int AbsoluteEpisodeNumber { get; private set; }
         public int EpisodeFileId { get; private set; }

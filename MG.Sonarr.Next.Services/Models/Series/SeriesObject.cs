@@ -1,14 +1,14 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
-using MG.Sonarr.Next.Services.Extensions.PSO;
+﻿using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Shell.Models;
 
 namespace MG.Sonarr.Next.Services.Models.Series
 {
-    public class SeriesObject : SonarrObject, IHasId, IEpisodeBySeriesPipeable, ITagPipeable
+    public class SeriesObject : SonarrObject, IHasId, IEpisodeBySeriesPipeable, IEpisodeFileBySeriesPipeable, ITagPipeable
     {
         public int Id { get; private set; }
         int IEpisodeBySeriesPipeable.SeriesId => this.Id;
+        int IEpisodeFileBySeriesPipeable.SeriesId => this.Id;
         public SortedSet<int> Tags { get; private set; } = null!;
         ISet<int> ITagPipeable.Tags => this.Tags;
 

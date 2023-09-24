@@ -13,8 +13,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
     [Cmdlet(VerbsCommon.Get, "SonarrEpisode", DefaultParameterSetName = "ByEpisodeId")]
     public sealed class GetSonarrEpisodeCmdlet : SonarrApiCmdletBase
     {
-        const string SERIES_ID = "seriesId";
-
         SortedSet<int> EpIds { get; set; } = null!;
         SortedSet<int> SeriesIds { get; set; } = null!;
         MetadataTag Tag { get; }
@@ -91,8 +89,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 
         protected override ErrorRecord? End()
         {
-            IEnumerable<EpisodeObject> episodes = this.HasParameter(x => x.Id)
-                ? this.GetEpisodesById<EpisodeObject>(this.EpIds)
+            if (this.EpIds is null && this.SeriesIds is null)
+            {
+                return null;
+            }
+
+            IEnumerable<EpisodeObject> episodes = this.ParameterSetNameIsLike("ByEpisode*")
+                ? this.GetEpisodesById<EpisodeObject>(this.EpIds!)
                 : this.GetEpisodesBySeries<EpisodeObject>(this.SeriesIds);
 
             if (this.HasParameter(x => x.EpisodeIdentifier))
@@ -112,10 +115,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                                                        &&
                                                        x.SeasonNumber == this.EpisodeIdentifier.Season);
                     }
-                }
-                else
-                {
-                    this.WriteWarning($"The parameter {nameof(this.EpisodeIdentifier)} was malformed and will be disregarded.");
                 }
             }
 
@@ -146,7 +145,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             QueryParameterCollection queryCol = new();
             foreach (int id in seriesId)
             {
-                queryCol.Add(SERIES_ID, id);
+                queryCol.Add(Constants.SERIES_ID, id);
                 string url = this.Tag.GetUrl(queryCol);
                 var response = this.SendGetRequest<MetadataList<T>>(url);
                 if (response.IsError)
@@ -159,6 +158,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 {
                     yield return obj;
                 }
+
+                queryCol.Clear();
             }
         }
     }

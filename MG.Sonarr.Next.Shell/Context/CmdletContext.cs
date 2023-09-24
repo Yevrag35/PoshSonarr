@@ -122,6 +122,7 @@ namespace MG.Sonarr.Next.Shell.Context
                     objCon,
                     new SonarrObjectConverter<TagObject>(objCon),
                     new SonarrObjectConverter<EpisodeObject>(objCon),
+                    new SonarrObjectConverter<EpisodeFileObject>(objCon),
                     new SeriesObjectConverter<SeriesObject>(objCon),
                     new SeriesObjectConverter<AddSeriesObject>(objCon),
                     new SonarrResponseConverter());

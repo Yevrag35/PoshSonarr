@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Shell.Cmdlets;
+using MG.Sonarr.Next.Shell.Components;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using OneOf;
@@ -16,6 +17,11 @@ namespace MG.Sonarr.Next.Shell.Extensions
         {
             return parameter.TryGetAsMember(out MemberExpression? memEx)
                 && cmdlet.MyInvocation.BoundParameters.ContainsKey(memEx.Member.Name);
+        }
+
+        public static bool ParameterSetNameIsLike(this PSCmdlet cmdlet, WildcardString wildString)
+        {
+            return wildString.IsMatch(cmdlet.ParameterSetName);
         }
         
         public static void WriteCollection<T>(this Cmdlet cmdlet, IEnumerable<T> collection)
