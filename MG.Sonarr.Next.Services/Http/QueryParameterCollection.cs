@@ -24,7 +24,7 @@ namespace MG.Sonarr.Next.Services.Http
             var p = QueryParameter.Create(key, value);
             if (_params.Add(p))
             {
-                _maxLength = p.MaxLength;
+                _maxLength += p.MaxLength;
                 return true;
             }
             else
