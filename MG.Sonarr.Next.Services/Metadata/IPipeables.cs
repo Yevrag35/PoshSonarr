@@ -3,9 +3,14 @@ using MG.Sonarr.Next.Shell.Models;
 
 namespace MG.Sonarr.Next.Services.Metadata
 {
-    public interface IEpisodePipeable : IJsonSonarrMetadata
+    public interface IEpisodeBySeriesPipeable : IJsonSonarrMetadata
     {
         int SeriesId { get; }
+    }
+
+    public interface IEpisodePipeable : IJsonSonarrMetadata
+    {
+        int EpisodeId { get; }
     }
 
     public interface ISeriesPipeable : IJsonSonarrMetadata

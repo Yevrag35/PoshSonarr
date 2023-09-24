@@ -53,8 +53,9 @@ namespace MG.Sonarr.Next.Services.Extensions.PSO
         }
         public static bool TryGetProperty<T>(this PSObject pso, string propertyName, [MaybeNull] out T value)
         {
+            value = default;
             PSMemberInfo? prop = pso.Properties[propertyName];
-            return TrySafeCast(prop?.Value, out value);
+            return prop is not null && TrySafeCast(prop.Value, out value);
         }
 
         /// <exception cref="InvalidCastException"/>

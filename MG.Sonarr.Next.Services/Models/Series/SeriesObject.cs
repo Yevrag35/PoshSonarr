@@ -5,10 +5,10 @@ using MG.Sonarr.Next.Shell.Models;
 
 namespace MG.Sonarr.Next.Services.Models.Series
 {
-    public class SeriesObject : SonarrObject, IHasId, IEpisodePipeable, ITagPipeable
+    public class SeriesObject : SonarrObject, IHasId, IEpisodeBySeriesPipeable, ITagPipeable
     {
         public int Id { get; private set; }
-        int IEpisodePipeable.SeriesId => this.Id;
+        int IEpisodeBySeriesPipeable.SeriesId => this.Id;
         public SortedSet<int> Tags { get; private set; } = null!;
         ISet<int> ITagPipeable.Tags => this.Tags;
 
