@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Exceptions;
+﻿using MG.Sonarr.Next.Exceptions;
+using MG.Sonarr.Next.Services.Exceptions;
 using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Json;
 using System.Management.Automation;
@@ -43,10 +44,19 @@ namespace MG.Sonarr.Next.Services.Http
             _url = url ?? string.Empty;
         }
 
+        public static SonarrResponse FromException(SonarrErrorRecord error)
+        {
+            return new SonarrResponse(error.RequestUri ?? string.Empty, error, error.StatusCode.GetValueOrDefault());
+        }
+        public static SonarrResponse<T> FromException<T>(SonarrErrorRecord error)
+        {
+            return new SonarrResponse<T>(error.RequestUri ?? string.Empty, default, error, error.StatusCode.GetValueOrDefault());
+        }
+
         public static SonarrResponse<T> FromException<T>(string url, Exception exception, ErrorCategory category, HttpStatusCode statusCode, HttpResponseMessage? response = null)
         {
             string name = exception.GetTypeName();
-            SonarrErrorRecord record = exception is HttpRequestException reqEx && response is not null
+            SonarrErrorRecord record = exception is SonarrHttpException reqEx
                 ? new SonarrErrorRecord(reqEx, response, url)
                 : new SonarrErrorRecord(exception, name, category, url);
             return new SonarrResponse<T>(url, default, record, statusCode);
@@ -54,7 +64,7 @@ namespace MG.Sonarr.Next.Services.Http
         public static SonarrResponse FromException(string url, Exception exception, ErrorCategory category, HttpStatusCode statusCode, HttpResponseMessage? response = null)
         {
             string name = exception.GetTypeName();
-            SonarrErrorRecord record = exception is HttpRequestException reqEx && response is not null
+            SonarrErrorRecord record = exception is SonarrHttpException reqEx
                 ? new SonarrErrorRecord(reqEx, response, url)
                 : new SonarrErrorRecord(exception, name, category, url);
             return new SonarrResponse(url, record, statusCode);

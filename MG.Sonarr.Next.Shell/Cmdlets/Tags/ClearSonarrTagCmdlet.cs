@@ -65,14 +65,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             }
         }
 
-        protected override ErrorRecord? Begin()
+        protected override void Begin()
         {
             if (_resolveNames.Count > 0)
             {
                 var tagResponse = this.SendGetRequest<List<TagObject>>(Constants.TAG);
                 if (tagResponse.IsError)
                 {
-                    return tagResponse.Error;
+                    this.StopCmdlet(tagResponse.Error);
+                    return;
                 }
 
                 foreach (var tag in tagResponse.Data)
@@ -83,11 +84,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                     }
                 }
             }
-
-            return null;
         }
 
-        protected override ErrorRecord? End()
+        protected override void End()
         {
             foreach (var kvp in _updates)
             {
@@ -108,12 +107,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                     var response = this.SendPutRequest(path: kvp.Key, body: kvp.Value);
                     if (response.IsError)
                     {
-                        return response.Error;
+                        this.WriteConditionalError(response.Error);
                     }
                 }
             }
-
-            return null;
         }
     }
 }

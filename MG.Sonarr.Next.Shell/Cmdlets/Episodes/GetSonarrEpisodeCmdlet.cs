@@ -76,51 +76,44 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         [Alias("SeasonEpId")]
         public SeasonEpisodeId EpisodeIdentifier { get; set; }
 
-        protected override ErrorRecord? Begin()
+        protected override void Begin()
         {
             if (this.HasParameter(x => x.EpisodeIdentifier) && this.EpisodeIdentifier.IsEmpty)
             {
-                return new ArgumentException("Episode identifiers should be either be in \"S<seasonNumber>E<episodeNumber>\" format or a number.")
-                    .ToRecord(ErrorCategory.InvalidArgument, this.EpisodeIdentifier);
+                this.WriteError(new ArgumentException("Episode identifiers should be either be in \"S<seasonNumber>E<episodeNumber>\" format or a number.")
+                    .ToRecord(ErrorCategory.InvalidArgument, this.EpisodeIdentifier));
             }
-
-            return null;
         }
 
-        protected override ErrorRecord? End()
+        protected override void End()
         {
             if (this.EpIds is null && this.SeriesIds is null)
             {
-                return null;
+                return;
             }
 
             IEnumerable<EpisodeObject> episodes = this.ParameterSetNameIsLike("ByEpisode*")
                 ? this.GetEpisodesById<EpisodeObject>(this.EpIds!)
                 : this.GetEpisodesBySeries<EpisodeObject>(this.SeriesIds);
 
-            if (this.HasParameter(x => x.EpisodeIdentifier))
+            if (this.HasParameter(x => x.EpisodeIdentifier) && !this.EpisodeIdentifier.IsEmpty)
             {
-                if (!this.EpisodeIdentifier.IsEmpty)
+                if (this.EpisodeIdentifier.IsAbsolute)
                 {
-                    if (this.EpisodeIdentifier.IsAbsolute)
-                    {
-                        episodes = episodes.Where(x =>
-                            x.HasAbsolute
-                            &&
-                            x.AbsoluteEpisodeNumber == this.EpisodeIdentifier.Episode);
-                    }
-                    else
-                    {
-                        episodes = episodes.Where(x => x.EpisodeNumber == this.EpisodeIdentifier.Episode
-                                                       &&
-                                                       x.SeasonNumber == this.EpisodeIdentifier.Season);
-                    }
+                    episodes = episodes.Where(x =>
+                        x.HasAbsolute
+                        &&
+                        x.AbsoluteEpisodeNumber == this.EpisodeIdentifier.Episode);
+                }
+                else
+                {
+                    episodes = episodes.Where(x => x.EpisodeNumber == this.EpisodeIdentifier.Episode
+                                                   &&
+                                                   x.SeasonNumber == this.EpisodeIdentifier.Season);
                 }
             }
 
             this.WriteCollection(episodes);
-
-            return null;
         }
 
         private IEnumerable<T> GetEpisodesById<T>(IReadOnlySet<int> episodeIds) where T : PSObject, IJsonMetadataTaggable
@@ -131,7 +124,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 var response = this.SendGetRequest<T>(url);
                 if (response.IsError)
                 {
-                    this.WriteError(response.Error);
+                    this.WriteConditionalError(response.Error);
                 }
                 else
                 {
@@ -150,7 +143,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 var response = this.SendGetRequest<MetadataList<T>>(url);
                 if (response.IsError)
                 {
-                    this.WriteError(response.Error);
+                    this.WriteConditionalError(response.Error);
                     continue;
                 }
 

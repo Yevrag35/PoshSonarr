@@ -116,7 +116,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             return dict;
         }
 
-        protected override ErrorRecord? Process()
+        protected override void Process()
         {
             var range = _list.GetRange(_range.Start.Value, _range.End.Value);
 
@@ -150,10 +150,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                     pso.IsMonitored = this.IsMonitored.ToBool();
                 }
             }
-
-            return null;
         }
-        protected override ErrorRecord? End()
+        protected override void End()
         {
             this.SetAddOptions(this.AddOptions);
             string url = this.Tag.UrlBase;
@@ -165,15 +163,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 if (this.ShouldProcess(pso.Title, "Adding Series"))
                 {
                     var response = this.SendPostRequest<AddSeriesObject, SeriesObject>(url, pso);
-                    var error = this.WriteSonarrResult(response);
-                    if (error is not null)
+                    if (response.TryPickT0(out SeriesObject? so, out var error))
                     {
-                        this.WriteError(error);
+                        this.WriteObject(so);
+                    }
+                    else
+                    {
+                        this.WriteConditionalError(error);
                     }
                 }
             }
-
-            return null;
         }
 
         private void SetAddOptions(SeriesAddOptions options)

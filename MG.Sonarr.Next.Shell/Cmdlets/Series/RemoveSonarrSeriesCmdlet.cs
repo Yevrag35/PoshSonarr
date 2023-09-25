@@ -74,12 +74,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
         }
 
-        protected override ErrorRecord? End()
+        protected override void End()
         {
             if (_dict.Count <= 0)
             {
                 this.WriteWarning("No series were passed via the pipeline. Make sure to pass the correct object type.");
-                return null;
+                return;
             }
 
             bool force = this.Force.ToBool();
@@ -99,8 +99,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                     this.SendDeleteSeries(url);
                 }
             }
-
-            return null;
         }
 
         private bool ShouldContinue(in KeyValuePair<int, string?> kvp, ref bool yesToAll, ref bool noToAll)
@@ -122,7 +120,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 }
                 else
                 {
-                    this.WriteError(result.Error);
+                    this.WriteConditionalError(result.Error);
                 }
             }
         }

@@ -41,28 +41,5 @@ namespace MG.Sonarr.Next.Shell.Extensions
             value.AddMetadata(tag);
             cmdlet.WriteObject(value, enumerateCollection);
         }
-
-        public static void WriteSonarrResults<T>(this Cmdlet cmdlet, SonarrResponse<T> result, MetadataTag? tag = null) where T : IEnumerable<PSObject>
-        {
-            if (result.IsError)
-            {
-                cmdlet.WriteError(result.Error);
-            }
-            else if (!result.IsEmpty)
-            {
-                WriteCollection(cmdlet, tag, result.Data);
-            }
-        }
-        public static void WriteSonarrResult<T>(this Cmdlet cmdlet, SonarrResponse<T> result, MetadataTag? tag = null) where T : PSObject
-        {
-            if (result.IsError)
-            {
-                cmdlet.WriteError(result.Error);
-            }
-            else if (!result.IsEmpty)
-            {
-                WriteObject(cmdlet, tag, result.Data, enumerateCollection: false);
-            }
-        }
     }
 }

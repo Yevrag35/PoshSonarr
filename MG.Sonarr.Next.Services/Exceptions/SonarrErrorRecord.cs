@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Exceptions;
+using MG.Sonarr.Next.Services.Extensions;
 using Microsoft.PowerShell.Commands;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
@@ -21,12 +22,12 @@ namespace MG.Sonarr.Next.Services.Exceptions
         public string? ReasonPhrase { get; }
         public string? RequestUri { get; }
 
-        public SonarrErrorRecord(HttpRequestException exception, HttpResponseMessage response, object? targetObj = null)
+        public SonarrErrorRecord(SonarrHttpException exception, HttpResponseMessage? response, object? targetObj = null)
             : base(exception, exception.GetTypeName(), GetCategoryFromStatusCode(exception.StatusCode, out bool isIgnorable), targetObj)
         {
             this.StatusCode = exception.StatusCode;
-            this.ReasonPhrase = response.ReasonPhrase;
-            _headers = ParseResponseHeaders(response);
+            this.ReasonPhrase = response?.ReasonPhrase;
+            _headers = exception.Headers;
             this.IsIgnorable = isIgnorable;
 
             this.ErrorDetails = new ErrorDetails(GetMessage(exception, response, out string? requestUri))
@@ -36,11 +37,11 @@ namespace MG.Sonarr.Next.Services.Exceptions
 
             this.RequestUri = requestUri;
 
-            this.CategoryInfo.Activity = $"Sending {response.RequestMessage?.Method.Method ?? "an"} HTTP request.";
+            this.CategoryInfo.Activity = $"Sending {response?.RequestMessage?.Method.Method ?? "an"} HTTP request.";
             this.CategoryInfo.Reason = this.ReasonPhrase;
             this.CategoryInfo.TargetType = targetObj?.GetType().GetTypeName();
         }
-        public SonarrErrorRecord(HttpResponseException response, object? targetObj = null)
+        public SonarrErrorRecord(SonarrHttpException response, object? targetObj = null)
             : this(exception: response, response: response.Response, targetObj)
         {
         }
@@ -107,9 +108,9 @@ namespace MG.Sonarr.Next.Services.Exceptions
             return dict;
         }
 
-        private static string GetMessage(Exception exception, HttpResponseMessage response, out string? requestUri)
+        private static string GetMessage(Exception exception, HttpResponseMessage? response, out string? requestUri)
         {
-            requestUri = response.RequestMessage?.RequestUri?.ToString();
+            requestUri = response?.RequestMessage?.RequestUri?.ToString();
             if (string.IsNullOrWhiteSpace(requestUri))
             {
                 return exception.Message;

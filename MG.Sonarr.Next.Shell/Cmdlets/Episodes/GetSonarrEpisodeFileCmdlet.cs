@@ -73,7 +73,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             }
         }
 
-        protected override ErrorRecord? End()
+        protected override void End()
         {
             IEnumerable<EpisodeFileObject> files = ParameterNameStartsWithSeries(this.ParameterSetName)
                 ? this.GetEpFilesBySeriesId(this.SeriesIds)
@@ -83,8 +83,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             {
                 this.WriteObject(item);
             }
-
-            return null;
         }
 
         private IEnumerable<EpisodeFileObject> GetEpFilesById(IReadOnlySet<int> fileIds)
@@ -95,7 +93,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 var response = this.SendGetRequest<EpisodeFileObject>(url);
                 if (response.IsError)
                 {
-                    this.WriteError(response.Error);
+                    this.WriteConditionalError(response.Error);
                 }
                 else
                 {
@@ -113,7 +111,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 var response = this.SendGetRequest<MetadataList<EpisodeFileObject>>(url);
                 if (response.IsError)
                 {
-                    this.WriteError(response.Error);
+                    this.WriteConditionalError(response.Error);
                     continue;
                 }
 

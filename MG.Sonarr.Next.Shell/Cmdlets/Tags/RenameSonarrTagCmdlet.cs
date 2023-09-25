@@ -46,7 +46,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             set => _dict[Constants.LABEL] = value;
         }
 
-        protected override ErrorRecord? Process()
+        protected override void Process()
         {
             if (_dict.Count == 2)
             {
@@ -54,11 +54,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                 if (this.ShouldProcess(url, "Update tag label"))
                 {
                     var result = this.SendPutRequest(url, _dict);
-                    return result.Error;
+                    if (result.IsError)
+                    {
+                        this.WriteError(result.Error);
+                    }
                 }
             }
-
-            return null;
         }
     }
 }

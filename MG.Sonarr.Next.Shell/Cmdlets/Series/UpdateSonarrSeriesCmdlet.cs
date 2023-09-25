@@ -36,12 +36,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
         }
 
-        protected override ErrorRecord? End()
+        protected override void End()
         {
             if (_list.Count <= 0)
             {
                 this.WriteWarning("No series were passed via the pipeline. Make sure to pass the correct object type.");
-                return null;
+                return;
             }
 
             foreach (SeriesObject item in _list)
@@ -51,11 +51,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 string path = $"/series/{item.Id}";
                 if (this.ShouldProcess(path, "Update Series"))
                 {
-                    this.SendPutRequest(path, item);
+                    var response = this.SendPutRequest(path, item);
+                    if (response.IsError)
+                    {
+                        this.WriteError(response.Error);
+                    }
                 }
             }
-
-            return null;
         }
     }
 }

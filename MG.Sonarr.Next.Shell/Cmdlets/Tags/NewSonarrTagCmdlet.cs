@@ -20,7 +20,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         [Alias("Name")]
         public string Label { get; set; } = null!;
 
-        protected override ErrorRecord? Process()
+        protected override void Process()
         {
             SonarrTag tag = new() { Id = 0, Label = this.Label };
 
@@ -28,10 +28,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             if (this.ShouldProcess(json, "Creating Tag"))
             {
                 var oneOf = this.SendPostRequest<SonarrTag, TagObject>(Constants.TAG, tag);
-                return this.WriteSonarrResult(oneOf);
+                if (oneOf.TryPickT0(out TagObject? to, out var error))
+                {
+                    this.WriteObject(to);
+                }
+                else
+                {
+                    this.WriteError(error);
+                }
             }
-
-            return null;
         }
     }
 }

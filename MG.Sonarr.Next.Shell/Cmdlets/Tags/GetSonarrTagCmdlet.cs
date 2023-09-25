@@ -49,7 +49,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             set => value.SplitToSets(_ids, _names);
         }
 
-        protected override ErrorRecord? End()
+        protected override void End()
         {
             bool hasIds = this.ProcessIds(_ids);
 
@@ -58,13 +58,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                 SonarrResponse<MetadataList<TagObject>> tags = this.GetAllTags();
                 if (tags.IsError)
                 {
-                    return tags.Error;
+                    this.StopCmdlet(tags.Error);
+                    return;
                 }
 
-                this.WriteSonarrResults(tags);
+                this.WriteCollection(tags.Data);
             }
-
-            return null;
         }
         private SonarrResponse<MetadataList<TagObject>> GetAllTags()
         {
@@ -89,21 +88,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                 foreach (int id in ids)
                 {
                     var result = this.SendGetRequest<TagObject>($"/tag/{id}");
-                    if (!result.IsError)
+                    if (result.IsError)
                     {
-                        this.WriteObject(result.Data, enumerateCollection: true);
+                        this.WriteConditionalError(result.Error);
+                        continue;
                     }
-                    else
-                    {
-                        if (result.Error.IsIgnorable)
-                        {
-                            this.WriteWarning(result.Error.Message);
-                        }
-                        else
-                        {
-                            this.WriteError(result.Error);
-                        } 
-                    }
+
+                    this.WriteObject(result.Data, enumerateCollection: true);
                 }
             }
 
@@ -119,12 +110,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             SonarrResponse<MetadataList<TagObject>> list = this.GetAllTags();
             if (list.IsError)
             {
-                this.Error = list.Error;
+                this.StopCmdlet(list.Error);
+                return false;
             }
             else
             {
                 ProcessAndFilterTags(list.Data, _names);
-                this.WriteSonarrResults(list);
+                this.WriteCollection(list.Data);
             }
             
             return true;

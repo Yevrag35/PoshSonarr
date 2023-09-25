@@ -3,17 +3,17 @@
     [Cmdlet(VerbsCommon.Get, "SonarrStatus")]
     public sealed class GetSonarrStatusCmdlet : SonarrApiCmdletBase
     {
-        protected override ErrorRecord? Process()
+        protected override void Process()
         {
             var result = this.SendGetRequest<PSObject>("/system/status");
             if (result.IsError)
             {
-                return result.Error;
+                this.StopCmdlet(result.Error);
+                return;
             }
             else
             {
                 this.WriteObject(result.Data);
-                return null;
             }
         }
     }

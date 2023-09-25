@@ -41,7 +41,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         [Parameter(Mandatory = false, ParameterSetName = "BySeriesName")]
         public SwitchParameter Strict { get; set; }
 
-        protected override ErrorRecord? Process()
+        protected override void Process()
         {
             string path = this.HasParameter(x => x.Name)
                 ? GetSearchByNamePath(this.Name)
@@ -50,7 +50,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             var result = this.SendGetRequest<List<AddSeriesObject>>(path);
             if (result.IsError)
             {
-                return result.Error;
+                this.StopCmdlet(result.Error);
+                return;
             }
 
             if (this.Strict)
@@ -59,10 +60,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
             else
             {
-                this.WriteCollection(this.Tag, result.Data);
+                this.WriteCollection(result.Data);
             }
-
-            return null;
         }
 
         private void ProcessStricly(IEnumerable<AddSeriesObject> values, in WildcardString wildcardString)

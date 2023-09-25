@@ -17,6 +17,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         bool _disposed;
         ErrorRecord? _error;
         IServiceScope _scope;
+        bool _isStopped;
 
         protected ActionPreference DebugPreference { get; private set; }
         protected ErrorRecord? Error
@@ -53,6 +54,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             {
                 this.ThrowTerminatingError(this.Error);
             }
+            else if (_isStopped)
+            {
+                return;
+            }
 
             try
             {
@@ -68,7 +73,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
 
             try
             {
-                this.Error = this.Begin();
+                this.Begin();
             }
             catch (Exception e)
             {
@@ -78,21 +83,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             }
         }
 
-        protected virtual ErrorRecord? Begin()
+        protected virtual void Begin()
         {
-            return null;
         }
 
         protected sealed override void ProcessRecord()
         {
-            if (this.HasError)
+            if (_isStopped)
             {
                 return;
             }
 
             try
             {
-                this.Error = this.Process();
+                this.Process();
             }
             catch (Exception e)
             {
@@ -102,9 +106,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             }
         }
 
-        protected virtual ErrorRecord? Process()
+        protected virtual void Process()
         {
-            return null;
         }
 
         protected sealed override void EndProcessing()
@@ -112,9 +115,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             Queue<IApiCmdlet>? queue = null;
             try
             {
-                if (!this.HasError)
+                if (!_isStopped)
                 {
-                    this.Error = this.End();
+                    this.End();
                 }
 
                 queue = _scope?.ServiceProvider.GetService<Queue<IApiCmdlet>>();
@@ -130,16 +133,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 this.Dispose();
             }
 
-            if (this.HasError
-                && 
-                (this.Error is not SonarrErrorRecord rec || !rec.IsIgnorable))
+            if (this.HasError)
             {
-                this.WriteError(this.Error);
+                this.WriteConditionalError(this.Error);
             }
         }
-        protected virtual ErrorRecord? End()
+        protected virtual void End()
         {
-            return null;
         }
 
         protected sealed override void StopProcessing()
@@ -158,6 +158,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         }
         protected virtual void Stop()
         {
+        }
+
+        protected void StopCmdlet()
+        {
+            _isStopped = true;
+        }
+        protected void StopCmdlet(ErrorRecord record)
+        {
+            this.WriteError(record);
+            this.StopCmdlet();
         }
 
         private void StoreDebugPreference()
@@ -204,41 +214,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             }
         }
 
-        protected void WriteSonarrResult<T>(SonarrResponse<T> response, MetadataTag? tag = null)
+        protected void WriteConditionalError(ErrorRecord error)
         {
-            if (response.IsError)
+            if (error is SonarrErrorRecord sonarrError && sonarrError.IsIgnorable)
             {
-                this.WriteError(response.Error);
+                return;
             }
-            else
-            {
-                response.Data.AddMetadata(tag);
-                this.WriteObject(response.Data, enumerateCollection: true);
-            }
-        }
-        protected ErrorRecord? WriteSonarrResult<T>(OneOf<T, ErrorRecord> result, MetadataTag? tag = null) where T : IEnumerable<PSObject>
-        {
-            if (result.TryPickT0(out T value, out ErrorRecord? error))
-            {
-                this.WriteObject(value, enumerateCollection: true);
-                return null;
-            }
-            else
-            {
-                return error;
-            }
-        }
-        protected ErrorRecord? WriteSonarrResult<T>(OneOf<T, ErrorRecord> result) where T : IJsonSonarrMetadata
-        {
-            if (result.TryPickT0(out T value, out ErrorRecord? error))
-            {
-                this.WriteObject(value);
-                return null;
-            }
-            else
-            {
-                return error;
-            }
+
+            this.WriteError(error);
         }
         public void WriteVerboseSonarrResult(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
         {

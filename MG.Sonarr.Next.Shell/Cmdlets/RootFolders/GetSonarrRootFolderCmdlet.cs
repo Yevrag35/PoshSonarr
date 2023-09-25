@@ -18,11 +18,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
         [Parameter(Mandatory = false, Position = 0)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
-        protected override ErrorRecord? Process()
+        protected override void Process()
         {
             IEnumerable<PSObject> rootFolders = this.SendRequests(this.Id);
             this.WriteCollection(this.Tag, rootFolders);
-            return null;
         }
 
         private IEnumerable<PSObject> SendRequests(int[] ids)
@@ -32,7 +31,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
                 var allResponse = this.SendGetRequest<List<PSObject>>(this.Tag.UrlBase);
                 if (allResponse.IsError)
                 {
-                    this.Error = allResponse.Error;
+                    this.StopCmdlet(allResponse.Error);
                     yield break;
                 }
 
@@ -50,7 +49,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
                 var response = this.SendGetRequest<PSObject>(url);
                 if (response.IsError)
                 {
-                    this.WriteError(response.Error);
+                    this.WriteConditionalError(response.Error);
                     continue;
                 }
 

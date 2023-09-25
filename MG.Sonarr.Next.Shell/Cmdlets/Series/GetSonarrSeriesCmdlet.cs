@@ -55,7 +55,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             set => _ids.UnionWith(value.Select(x => x.SeriesId));
         }
 
-        protected override ErrorRecord? Process()
+        protected override void Process()
         {
             bool hadIds = false;
             if (_ids.Count > 0)
@@ -65,7 +65,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 {
                     if (result.IsError)
                     {
-                        return result.Error;
+                        this.WriteConditionalError(result.Error);
+                        continue;
                     }
 
                     this.WriteObject(result.Data);
@@ -75,20 +76,25 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             if (_names.Count > 0)
             {
                 var response = this.GetSeriesByName<SeriesObject>(_names);
-                this.WriteSonarrResults(response);
+                if (response.IsError)
+                {
+                    this.StopCmdlet(response.Error);
+                    return;
+                }
+
+                this.WriteCollection(response.Data);
             }
             else if (!hadIds)
             {
                 var response = this.GetAllSeries<SeriesObject>();
                 if (response.IsError)
                 {
-                    return response.Error;
+                    this.StopCmdlet(response.Error);
+                    return;
                 }
 
                 this.WriteCollection(response.Data);
             }
-
-            return null;
         }
 
         private SonarrResponse<MetadataList<T>> GetSeriesByName<T>(IReadOnlySet<WildcardString> names) where T : PSObject, IJsonMetadataTaggable
@@ -127,7 +133,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 var result = this.SendGetRequest<T>($"/series/{id}");
                 if (result.IsError)
                 {
-                    this.WriteError(result.Error);
+                    this.WriteConditionalError(result.Error);
                     continue;
                 }
 
