@@ -8,6 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Json\Converters\Spans\UtcTimeToLocalConverter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Json\Converters\Spans\UtcTimeToLocalConverter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MG.Collections" Version="1.2.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />

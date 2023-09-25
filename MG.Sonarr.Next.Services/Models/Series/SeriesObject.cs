@@ -1,11 +1,15 @@
 ﻿using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Shell.Models;
+using System.Management.Automation;
+using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Models.Series
 {
-    public class SeriesObject : SonarrObject, IHasId, IEpisodeBySeriesPipeable, IEpisodeFileBySeriesPipeable, ITagPipeable
+    public class SeriesObject : SonarrObject, IHasId, IEpisodeBySeriesPipeable, IEpisodeFileBySeriesPipeable, ITagPipeable, IJsonOnSerializing
     {
+        private DateOnly _firstAired;
+
         public int Id { get; private set; }
         int IEpisodeBySeriesPipeable.SeriesId => this.Id;
         int IEpisodeFileBySeriesPipeable.SeriesId => this.Id;
@@ -29,6 +33,13 @@ namespace MG.Sonarr.Next.Services.Models.Series
 
         public override void OnDeserialized()
         {
+            PSPropertyInfo? property = this.Properties["FirstAired"];
+            if (property is not null && property.Value is DateOnly dateOnly)
+            {
+                _firstAired = dateOnly;
+                this.Properties.Remove(property.Name);
+            }
+
             if (this.TryGetId(out int id))
             {
                 this.Id = id;
@@ -38,6 +49,11 @@ namespace MG.Sonarr.Next.Services.Models.Series
             {
                 this.Tags = tags;
             }
+        }
+
+        public virtual void OnSerializing()
+        {
+            this.AddProperty("FirstAired", _firstAired);
         }
     }
 }

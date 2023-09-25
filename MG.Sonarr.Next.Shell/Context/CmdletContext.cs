@@ -2,8 +2,10 @@
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Json.Converters;
+using MG.Sonarr.Next.Services.Json.Converters.Spans;
 using MG.Sonarr.Next.Services.Json.Modifiers;
 using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models.Calendar;
 using MG.Sonarr.Next.Services.Models.Episodes;
 using MG.Sonarr.Next.Services.Models.Series;
 using MG.Sonarr.Next.Services.Models.Tags;
@@ -101,6 +103,9 @@ namespace MG.Sonarr.Next.Shell.Context
         {
             return new SonarrJsonOptions(options =>
             {
+                var doSpanConverter = new DateOnlyConverter();
+                var timeConverter = new TimeOnlyConverter();
+
                 ObjectConverter objCon = new(
                         ignoreProps: new string[]
                         {
@@ -113,17 +118,25 @@ namespace MG.Sonarr.Next.Shell.Context
                         },
                         convertTypes: new KeyValuePair<string, Type>[]
                         {
+                            new("AirDate", typeof(DateOnly)),
                             new("Tags", typeof(SortedSet<int>)),
                             new("Genres", typeof(string[])),
+                        },
+                        spanConverters: new KeyValuePair<string, SpanConverter>[]
+                        {
+                            new("AirDate", doSpanConverter),
+                            new("FirstAired", doSpanConverter),
+                            new("AirTime", timeConverter),
                         }
                     );
 
                 options.Converters.AddMany(
                     objCon,
-                    new SonarrObjectConverter<TagObject>(objCon),
+                    new SonarrObjectConverter<CalendarObject>(objCon),
                     new SonarrObjectConverter<EpisodeObject>(objCon),
                     new SonarrObjectConverter<EpisodeFileObject>(objCon),
                     new SeriesObjectConverter<SeriesObject>(objCon),
+                    new SonarrObjectConverter<TagObject>(objCon),
                     new SeriesObjectConverter<AddSeriesObject>(objCon),
                     new SonarrResponseConverter());
 

@@ -1,6 +1,8 @@
 ﻿using MG.Sonarr.Next.Services;
 using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
+using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models.Calendar;
 using MG.Sonarr.Next.Shell.Extensions;
 using System;
 using System.Collections.Generic;
@@ -16,6 +18,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         const string START = "start";
         const string END = "end";
         DateTime? _end;
+        readonly HashSet<DayOfWeek> _dows;
+
+        public GetSonarrCalendarCmdlet()
+            : base()
+        {
+            _dows = new(1);
+        }
 
         [Parameter(Mandatory = false, Position = 0)]
         public DateTime StartDate { get; set; } = DateTime.Now;
@@ -26,6 +35,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         {
             get => _end ?? this.StartDate.AddDays(7d);
             set => _end = value;
+        }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [Parameter(Mandatory = false)]
+        public DayOfWeek[] DayOfWeek
+        {
+            get => Array.Empty<DayOfWeek>();
+            set => _dows.UnionWith(value);
         }
 
         [Parameter(Mandatory = true, ParameterSetName = "ShowToday")]
@@ -39,7 +56,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 
         protected override void Begin()
         {
-            //if (this.HasParameter(x => x.)
+            if (this.HasParameter(x => x.Today))
+            {
+                this.StartDate = DateTime.Today;
+                this.EndDate = this.StartDate.AddDays(1d).AddSeconds(-1d);
+            }
+            else if (this.HasParameter(x => x.Tomorrow))
+            {
+                this.StartDate = DateTime.Today.AddDays(1d);
+                this.EndDate = this.StartDate.AddDays(1d).AddSeconds(-1d);
+            }
         }
 
         protected override void Process()
@@ -47,17 +73,30 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
             var parameters = GetParameters(this.StartDate, this.EndDate, this.IncludeUnmonitored);
             string url = GetUrl(parameters);
 
-            var response = this.SendGetRequest<List<PSObject>>(url);
+            var response = this.SendGetRequest<MetadataList<CalendarObject>>(url);
             if (response.IsError)
             {
                 this.StopCmdlet(response.Error);
+                return;
             }
-            else
+            else if (this.HasParameter(x => x.DayOfWeek) && _dows.Count > 0)
             {
-                this.WriteCollection(response.Data);
+                FilterByDayOfWeek(response.Data, _dows);
             }
+
+            this.WriteCollection(response.Data);
         }
 
+        private static void FilterByDayOfWeek(List<CalendarObject> list, IReadOnlySet<DayOfWeek> dows)
+        {
+            for (int i = list.Count - 1; i >= 0; i--)
+            {
+                if (!dows.Contains(list[i].AirDateUtc.DayOfWeek))
+                {
+                    list.RemoveAt(i);
+                }
+            }
+        }
         private static string GetUrl(QueryParameterCollection col)
         {
             ReadOnlySpan<char> baseUrl = Constants.CALENDAR;

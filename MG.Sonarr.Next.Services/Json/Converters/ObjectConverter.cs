@@ -1,11 +1,13 @@
 ﻿using MG.Sonarr.Next.Services.Collections;
 using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Json.Collections;
+using MG.Sonarr.Next.Services.Json.Converters.Spans;
 using System.Buffers;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks.Sources;
 
 namespace MG.Sonarr.Next.Services.Json.Converters
 {
@@ -14,11 +16,13 @@ namespace MG.Sonarr.Next.Services.Json.Converters
         readonly HashSet<string> _ignore;
         readonly ReadOnlyDictionary<string, Type> _convertProps;
         readonly JsonNameDictionary _globalReplaceNames;
+        readonly IReadOnlyDictionary<string, SpanConverter> _spanConverters;
 
-        public ObjectConverter(IEnumerable<string> ignoreProps, IEnumerable<KeyValuePair<string, string>> replaceNames, IEnumerable<KeyValuePair<string, Type>> convertTypes)
+        public ObjectConverter(IEnumerable<string> ignoreProps, IEnumerable<KeyValuePair<string, string>> replaceNames, IEnumerable<KeyValuePair<string, Type>> convertTypes, IEnumerable<KeyValuePair<string, SpanConverter>> spanConverters)
         {
             _ignore = new(ignoreProps, StringComparer.InvariantCultureIgnoreCase);
             _convertProps = BuildLookup(convertTypes);
+            _spanConverters = BuildLookup(spanConverters);
             _globalReplaceNames = new(replaceNames);
         }
 
@@ -37,7 +41,7 @@ namespace MG.Sonarr.Next.Services.Json.Converters
             {
                 JsonTokenType.StartArray => ConvertToListOfObjects(ref reader, options),
                 JsonTokenType.StartObject => this.ConvertToObject<PSObject>(ref reader, options),
-                JsonTokenType.String => ReadString(ref reader, options),
+                JsonTokenType.String => this.ReadString(ref reader, options, string.Empty),
                 JsonTokenType.Number => ReadNumber(ref reader, options),
                 JsonTokenType.True or JsonTokenType.False => ReadBoolean(ref reader, options),
                 JsonTokenType.None or JsonTokenType.Null => null,
@@ -93,7 +97,7 @@ namespace MG.Sonarr.Next.Services.Json.Converters
                                 break;
 
                             case JsonTokenType.String:
-                                o = ReadString(ref reader, options);
+                                o = this.ReadString(ref reader, options, pn);
                                 break;
 
                             case JsonTokenType.Number:
@@ -141,7 +145,7 @@ namespace MG.Sonarr.Next.Services.Json.Converters
 
             return bool.TryParse(chars.Slice(0, written), out bool result) && result;
         }
-        private static object ReadString(ref Utf8JsonReader reader, JsonSerializerOptions options)
+        private object? ReadString(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
         {
             bool isRented = false;
             char[]? array = null;
@@ -151,8 +155,18 @@ namespace MG.Sonarr.Next.Services.Json.Converters
                 : RentArray(reader.ValueSpan.Length, ref isRented, ref array);
 
             int written = Encoding.UTF8.GetChars(reader.ValueSpan, span);
+            span = span.Slice(0, written);
 
-            object result = ReadString(span.Slice(0, written));
+            object? result;
+            if (_spanConverters.TryGetValue(propertyName, out SpanConverter? converter))
+            {
+                result = converter.ConvertSpan(span, propertyName);
+            }
+            else
+            {
+                result = this.ReadString(span, propertyName);
+            }
+
             if (isRented)
             {
                 ArrayPool<char>.Shared.Return(array!);
@@ -168,19 +182,21 @@ namespace MG.Sonarr.Next.Services.Json.Converters
             return array.AsSpan(0, length);
         }
 
-        private static object ReadString(Span<char> chars)
+        private object ReadString(Span<char> chars, string propertyName)
         {
             if (Guid.TryParse(chars, null, out Guid guidStr))
             {
                 return guidStr;
             }
-            else if (DateTimeOffset.TryParse(chars, null, out DateTimeOffset offset))
+            else if (DateOnly.TryParse(chars, Statics.DefaultProvider, DateTimeStyles.None, out DateOnly @do))
             {
-                return offset;
+                return @do;
             }
-            else if (DateTime.TryParse(chars, null, out DateTime dt))
+            else if (DateTimeOffset.TryParse(chars, Statics.DefaultProvider, DateTimeStyles.AssumeUniversal, out DateTimeOffset offset))
             {
-                return dt;
+                return propertyName.AsSpan().EndsWith(stackalloc char[] { 'U', 'T', 'C' }, StringComparison.InvariantCultureIgnoreCase)
+                    ? offset
+                    : offset.ToLocalTime();
             }
             else if (Version.TryParse(chars, out Version? version))
             {

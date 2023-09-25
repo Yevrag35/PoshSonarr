@@ -7,7 +7,7 @@ Introducing a completely, redesigned, overhauled version of PoshSonarr.  In orde
 
 ## BREAKING CHANGE
 
-In addition to this, I am making the executive decision to only write the NEXT versions of the module for PowerShell 7 and up (previously known as PowerShell Core).  Doing so will allow to focus allow making the library easier to develop and allow me to take advantage of some key functionality that PowerShell 7's SDK brings to the table.
+In addition to this, I am making the executive decision to only write the NEXT versions of the module for PowerShell 7 and up (previously known as PowerShell Core).  Doing so will allow me to focus on making the library easier to develop and to take advantage of some key functionality that PowerShell 7's SDK brings to the table.
 
 # CHANGELOG
 

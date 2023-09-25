@@ -59,7 +59,7 @@ namespace MG.Sonarr.Next.Services.Models.Series
                 this.UseSeasonFolders = true;
             }
         }
-        public void OnSerializing()
+        public override void OnSerializing()
         {
             this.AddProperties(x => x.AddOptions, x => x.ProfileId, x => x.LanguageProfileId, x => x.QualityProfileId);
             this.UpdateProperty(x => x.Title);

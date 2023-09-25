@@ -63,7 +63,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             {
                 this.StoreVerbosePreference();
                 this.StoreDebugPreference();
-            } 
+            }
             catch (Exception e)
             {
                 this.Error = e.ToRecord();
@@ -74,6 +74,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             try
             {
                 this.Begin();
+            }
+            catch (PipelineStoppedException)
+            {
+                Debug.WriteLine("Pipeline stopped.");
+                throw;
             }
             catch (Exception e)
             {
@@ -97,6 +102,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             try
             {
                 this.Process();
+            }
+            catch (PipelineStoppedException)
+            {
+                Debug.WriteLine("Pipeline stopped.");
+                throw;
             }
             catch (Exception e)
             {
@@ -122,6 +132,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
 
                 queue = _scope?.ServiceProvider.GetService<Queue<IApiCmdlet>>();
                 queue?.Clear();
+            }
+            catch (PipelineStoppedException)
+            {
+                Debug.WriteLine("Pipeline stopped.");
+                throw;
             }
             catch (Exception e)
             {

@@ -16,7 +16,22 @@ namespace MG.Sonarr.Next.Shell.Extensions
         public static bool HasParameter<T>(this T cmdlet, Expression<Func<T, object?>> parameter) where T : PSCmdlet
         {
             return parameter.TryGetAsMember(out MemberExpression? memEx)
-                && cmdlet.MyInvocation.BoundParameters.ContainsKey(memEx.Member.Name);
+                   && 
+                   cmdlet.MyInvocation.BoundParameters.ContainsKey(memEx.Member.Name);
+        }
+        public static bool HasParameter<T>(this T cmdlet, Expression<Func<T, SwitchParameter>> switchExpression, bool onlyIfPresent = false) where T : PSCmdlet
+        {
+            if (!switchExpression.TryGetAsMember(out MemberExpression? memEx))
+            {
+                return false;
+            }
+            else if (!cmdlet.MyInvocation.BoundParameters.ContainsKey(memEx.Member.Name))
+            {
+                return false;
+            }
+
+            var func = switchExpression.Compile();
+            return !onlyIfPresent || func(cmdlet).ToBool();
         }
 
         public static bool ParameterSetNameIsLike(this PSCmdlet cmdlet, WildcardString wildString)

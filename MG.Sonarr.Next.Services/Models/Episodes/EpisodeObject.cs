@@ -1,10 +1,13 @@
 ﻿using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Metadata;
+using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Models.Episodes
 {
-    public sealed class EpisodeObject : SonarrObject, IEpisodeFilePipeable, ISeriesPipeable
+    public sealed class EpisodeObject : SonarrObject, IEpisodeFilePipeable, ISeriesPipeable, IJsonOnSerializing
     {
+        private DateOnly _airDate;
+
         public int AbsoluteEpisodeNumber { get; private set; }
         public int EpisodeFileId { get; private set; }
         public int EpisodeNumber { get; private set; }
@@ -25,6 +28,12 @@ namespace MG.Sonarr.Next.Services.Models.Episodes
 
         public override void OnDeserialized()
         {
+            if (this.TryGetProperty("AirDate", out DateOnly airDate))
+            {
+                _airDate = airDate;
+                this.Properties.Remove("AirDate");
+            }
+
             if (this.TryGetId(out int id))
             {
                 this.Id = id;
@@ -56,6 +65,11 @@ namespace MG.Sonarr.Next.Services.Models.Episodes
             {
                 this.SeriesId = seriesId;
             }
+        }
+
+        public void OnSerializing()
+        {
+            this.AddProperty("AirDate", _airDate);
         }
     }
 }

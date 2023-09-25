@@ -72,6 +72,7 @@ namespace MG.Sonarr.Next
 
     public static class Meta
     {
+        public const string CALENDAR = "#calendar";
         public const string EPISODE = "#episode";
         public const string EPISODE_FILE = "#episode_file";
         public const string INDEXER = "#indexer";
