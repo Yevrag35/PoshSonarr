@@ -1,9 +1,13 @@
-# PoshSonarr
+# PoshSonarr-NEXT
 
 [![version](https://img.shields.io/powershellgallery/v/PoshSonarr.svg?include_prereleases)](https://www.powershellgallery.com/packages/PoshSonarr)
 [![downloads](https://img.shields.io/powershellgallery/dt/PoshSonarr.svg?label=downloads)](https://www.powershellgallery.com/stats/packages/PoshSonarr?groupby=Version)
 
-This will eventually be a complete PowerShell module for quickly issuing [Sonarr PVR API](https://github.com/Sonarr/Sonarr/wiki/API) calls. The module was completely redesigned from the ground up in PowerShell Core, and I'm happy to say it works (has been tested) in Ubuntu 16.04 and Ubuntu 18.04 as well as Windows.
+Introducing a completely, redesigned, overhauled version of PoshSonarr.  In order to become the flexible module that I envisioned, I had to take a completely new approach.  Gone are the static types and the needlessly complex, rigid architecture of the previous cmdlets.  The NEXT cmdlets are lighter, more error-resistant, and more flexible in accounting for the changes the [Sonarr PVR API](https://github.com/Sonarr/Sonarr/wiki/API) brings in every update.
+
+## BREAKING CHANGE
+
+In addition to this, I am making the executive decision to only write the NEXT versions of the module for PowerShell 7 and up (previously known as PowerShell Core).  Doing so will allow to focus allow making the library easier to develop and allow me to take advantage of some key functionality that PowerShell 7's SDK brings to the table.
 
 # CHANGELOG
 
