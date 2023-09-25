@@ -60,6 +60,9 @@ namespace MG.Sonarr.Next
         public const string UPDATE = "/update";
         public const string WANTEDMISSING = "/wanted/missing";
 
+        public const string CALENDAR_DT_FORMAT = "yyyy-MM-ddTHH:mm:ss";
+        //public const string CALENDAR_WITH_DATE = CALENDAR + "?start={0}&end={1}";
+
         public const string DEBUG = "Debug";
         public const string VERBOSE = "Verbose";
         public const string PREFERENCE = "Preference";
