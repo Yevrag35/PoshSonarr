@@ -19,10 +19,11 @@ namespace MG.Sonarr.Next.Services.Metadata
             _dict = new(capacity, StringComparer.InvariantCultureIgnoreCase);
         }
 
-        public bool Add(string tag, string baseUrl, bool supportsId, params string[] canPipeTo)
+        public bool Add(string tag, string baseUrl, bool supportsId, string[]? canPipeTo = null)
         {
             ArgumentException.ThrowIfNullOrEmpty(tag);
             ArgumentException.ThrowIfNullOrEmpty(baseUrl);
+            canPipeTo ??= Array.Empty<string>();
 
             return _dict.TryAdd(tag, new MetadataTag(baseUrl, tag, supportsId, canPipeTo));
         }

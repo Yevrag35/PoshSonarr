@@ -1,10 +1,5 @@
 ﻿using MG.Sonarr.Next.Services.Metadata;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MG.Sonarr.Next.Shell.Context
 {
@@ -14,13 +9,15 @@ namespace MG.Sonarr.Next.Shell.Context
         {
             MetadataResolver dict = new(10)
             {
-                { Meta.CALENDAR, Constants.CALENDAR, false, Meta.SERIES, Meta.EPISODE },
-                { Meta.EPISODE, Constants.EPISODE, true, Meta.SERIES, Meta.EPISODE_FILE },
-                { Meta.EPISODE_FILE, Constants.EPISODEFILE, true, Meta.EPISODE },
+                { Meta.CALENDAR, Constants.CALENDAR, false, new string[] { Meta.SERIES, Meta.EPISODE } },
+                { Meta.DELAY_PROFILE, Constants.DELAY_PROFILE, true, new string[] { Meta.TAG } },
+                { Meta.EPISODE, Constants.EPISODE, true, new string[] { Meta.SERIES, Meta.EPISODE_FILE } },
+                { Meta.EPISODE_FILE, Constants.EPISODEFILE, true, new string[] { Meta.EPISODE } },
                 { Meta.INDEXER, Constants.INDEXER, true },
                 { Meta.QUALITY_PROFILE, Constants.PROFILE, true },
+                { Meta.RELEASE_PROFILE, Constants.RELEASE_PROFILE, true, new string[] { Meta.TAG } },
                 { Meta.ROOT_FOLDER, Constants.ROOTFOLDER, true },
-                { Meta.SERIES, Constants.SERIES, true, Meta.TAG, Meta.EPISODE, Meta.QUALITY_PROFILE },
+                { Meta.SERIES, Constants.SERIES, true, new string[] { Meta.TAG, Meta.EPISODE, Meta.QUALITY_PROFILE } },
                 { Meta.SERIES_ADD, Constants.SERIES + "/lookup", false },
                 { Meta.TAG, Constants.TAG, true },
             };

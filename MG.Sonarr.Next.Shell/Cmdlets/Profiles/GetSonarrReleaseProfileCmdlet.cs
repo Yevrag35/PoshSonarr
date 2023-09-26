@@ -1,7 +1,10 @@
 ﻿using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Extensions.PSO;
+using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models.Profiles;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,11 +13,18 @@ using System.Threading.Tasks;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
 {
-    [Cmdlet(VerbsCommon.Get, "SonarrLanguageProfile", DefaultParameterSetName = "ByProfileNameOrId")]
-    public sealed class GetSonarrLanguageProfileCmdlet : SonarrApiCmdletBase
+    [Cmdlet(VerbsCommon.Get, "SonarrReleaseProfile")]
+    public sealed class GetSonarrReleaseProfileCmdlet : SonarrApiCmdletBase
     {
         SortedSet<int>? _ids;
         HashSet<WildcardString>? _wcNames;
+        MetadataTag Tag { get; }
+
+        public GetSonarrReleaseProfileCmdlet()
+            : base()
+        {
+            this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.RELEASE_PROFILE];
+        }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = "ByProfileId")]
@@ -45,14 +55,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
 
         protected override void Process()
         {
-            IEnumerable<PSObject> profiles = !_ids.IsNullOrEmpty()
+            IEnumerable<ReleaseProfileObject> profiles = !_ids.IsNullOrEmpty()
                 ? this.GetById(_ids)
                 : this.GetByName(_wcNames);
 
             this.WriteCollection(profiles);
         }
 
-        private IEnumerable<PSObject> GetById(IReadOnlySet<int>? ids)
+        private IEnumerable<ReleaseProfileObject> GetById(IReadOnlySet<int>? ids)
         {
             if (ids.IsNullOrEmpty())
             {
@@ -61,8 +71,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
 
             foreach (int id in ids)
             {
-                string url = Constants.LANGUAGE_PROFILE + '/' + id.ToString();
-                var response = this.SendGetRequest<PSObject>(url);
+                string url = this.Tag.GetUrlForId(id);
+                var response = this.SendGetRequest<ReleaseProfileObject>(url);
                 if (response.IsError)
                 {
                     this.WriteConditionalError(response.Error);
@@ -74,13 +84,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
             }
         }
 
-        private IEnumerable<PSObject> GetByName(IReadOnlySet<WildcardString>? names)
+        private IEnumerable<ReleaseProfileObject> GetByName(IReadOnlySet<WildcardString>? names)
         {
-            var response = this.SendGetRequest<List<PSObject>>(Constants.LANGUAGE_PROFILE);
+            var response = this.SendGetRequest<MetadataList<ReleaseProfileObject>>(this.Tag.UrlBase);
             if (response.IsError)
             {
                 this.StopCmdlet(response.Error);
-                return Enumerable.Empty<PSObject>();
+                return Enumerable.Empty<ReleaseProfileObject>();
             }
             else if (names.IsNullOrEmpty())
             {

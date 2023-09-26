@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Services.Metadata;
+using System.Configuration;
 
 namespace MG.Sonarr.Next
 {
@@ -51,6 +52,7 @@ namespace MG.Sonarr.Next
         public const string QUALITY_DEFINITIONS = "/qualitydefinition";
         public const string QUEUE = "/queue";
         public const string RELEASE = "/release";
+        public const string RELEASE_PROFILE = RELEASE + "profile";
         public const string RESTART = SYSTEM + "/restart";
         public const string RESTRICTION = "/restriction";
         public const string ROOTFOLDER = "/rootfolder";
@@ -74,10 +76,12 @@ namespace MG.Sonarr.Next
     public static class Meta
     {
         public const string CALENDAR = "#calendar";
+        public const string DELAY_PROFILE = "#delay_profile";
         public const string EPISODE = "#episode";
         public const string EPISODE_FILE = "#episode_file";
         public const string INDEXER = "#indexer";
         public const string QUALITY_PROFILE = "#quality_profile";
+        public const string RELEASE_PROFILE = "#release_profile";
         public const string ROOT_FOLDER = "#root_folder";
         public const string SERIES = "#series";
         public const string SERIES_ADD = "#add_series";

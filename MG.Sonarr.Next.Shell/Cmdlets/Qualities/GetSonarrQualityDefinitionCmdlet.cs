@@ -22,6 +22,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
         const string NAME = " -Name ";
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0)]
+        [SupportsWildcards]
         public IntOrString[] Name
         {
             get => Array.Empty<IntOrString>();
