@@ -107,7 +107,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                     var response = this.SendPutRequest(path: kvp.Key, body: kvp.Value);
                     if (response.IsError)
                     {
+                        kvp.Value.Reset();
                         this.WriteConditionalError(response.Error);
+                    }
+                    else
+                    {
+                        kvp.Value.CommitTags();
                     }
                 }
             }

@@ -8,7 +8,10 @@ namespace MG.Sonarr.Next.Services.Models.Series
 {
     public class SeriesObject : SonarrObject, IHasId, IEpisodeBySeriesPipeable, IEpisodeFileBySeriesPipeable, IQualityProfilePipeable, ITagPipeable, IJsonOnSerializing
     {
+        private const string FIRST_AIRED = "FirstAired";
         private DateOnly _firstAired;
+        private SortedSet<int>? _tags;
+        private int[]? _originalTags;
 
         public int Id { get; private set; }
         public int QualityProfileId
@@ -18,7 +21,16 @@ namespace MG.Sonarr.Next.Services.Models.Series
         }
         int IEpisodeBySeriesPipeable.SeriesId => this.Id;
         int IEpisodeFileBySeriesPipeable.SeriesId => this.Id;
-        public SortedSet<int> Tags { get; private set; } = null!;
+        public SortedSet<int> Tags
+        {
+            get => _tags ??= new();
+            set
+            {
+                _tags = value;
+                _originalTags = new int[value.Count];
+                value.CopyTo(_originalTags);
+            }
+        }
         ISet<int> ITagPipeable.Tags => this.Tags;
 
         public SeriesObject()
@@ -31,6 +43,25 @@ namespace MG.Sonarr.Next.Services.Models.Series
         {
         }
 
+        public override void Commit()
+        {
+            this.Properties.Remove(FIRST_AIRED);
+            this.CommitTags();
+        }
+        public void CommitTags()
+        {
+            if (_originalTags is not null)
+            {
+                Array.Clear(_originalTags);
+                if (_originalTags.Length != this.Tags.Count)
+                {
+                    Array.Resize(ref _originalTags, this.Tags.Count);
+                }
+
+                this.Tags.CopyTo(_originalTags);
+            }
+        }
+
         protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.SERIES];
@@ -38,7 +69,7 @@ namespace MG.Sonarr.Next.Services.Models.Series
 
         public override void OnDeserialized()
         {
-            PSPropertyInfo? property = this.Properties["FirstAired"];
+            PSPropertyInfo? property = this.Properties[FIRST_AIRED];
             if (property is not null && property.Value is DateOnly dateOnly)
             {
                 _firstAired = dateOnly;
@@ -60,10 +91,15 @@ namespace MG.Sonarr.Next.Services.Models.Series
                 this.Tags = tags;
             }
         }
-
         public virtual void OnSerializing()
         {
-            this.SetValue(_firstAired, "FirstAired");
+            this.SetValue(_firstAired, FIRST_AIRED);
+        }
+        public override void Reset()
+        {
+            _tags?.Clear();
+            _tags?.UnionWith(_originalTags ?? Array.Empty<int>());
+            this.Properties.Remove(FIRST_AIRED);
         }
     }
 }

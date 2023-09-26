@@ -18,14 +18,14 @@ namespace MG.Sonarr.Next.Services.Models
         {
             this.MetadataTag = MetadataTag.Empty;
         }
-
-        public bool TryGetId(out int id)
+        public virtual void Commit()
         {
-            return this.TryGetProperty(Constants.ID, out id);
         }
-
         protected abstract MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing);
         public virtual void OnDeserialized()
+        {
+        }
+        public virtual void Reset()
         {
         }
         public void SetTag(MetadataResolver resolver)
@@ -40,6 +40,10 @@ namespace MG.Sonarr.Next.Services.Models
             {
                 this.Properties.Add(new PSNoteProperty(Constants.META_PROPERTY_NAME, this.MetadataTag));
             }
+        }
+        public bool TryGetId(out int id)
+        {
+            return this.TryGetProperty(Constants.ID, out id);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     {
         readonly HashSet<int> _ids;
         readonly HashSet<WildcardString> _resolveNames;
-        readonly Dictionary<string, PSObject> _updates;
+        readonly Dictionary<string, ITagPipeable> _updates;
 
         public AddSonarrTagCmdlet()
             : base()
@@ -24,9 +24,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
-        public object[] InputObject
+        public ITagPipeable[] InputObject
         {
-            get => Array.Empty<object>();
+            get => Array.Empty<ITagPipeable>();
             set => this.AddUrlsFromMetadata(value);
         }
 
@@ -46,23 +46,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             set => value.SplitToSets(_ids, _resolveNames);
         }
 
-        private void AddUrlsFromMetadata(object[]? array)
+        private void AddUrlsFromMetadata(ITagPipeable[] pipeables)
         {
-            if (array is null)
+            foreach (ITagPipeable item in pipeables)
             {
-                return;
-            }
-
-            foreach (PSObject pso in array.OfType<PSObject>())
-            {
-                if (pso.TryGetNonNullProperty(Constants.META_PROPERTY_NAME, out MetadataTag? tag)
-                    &&
-                    tag.SupportsId
-                    &&
-                    pso.TryGetProperty(Constants.ID, out int id))
-                {
-                    _updates.TryAdd(tag.GetUrlForId(id), pso);
-                }
+                bool added = _updates.TryAdd(item.MetadataTag.GetUrlForId(item.Id), item);
             }
         }
 
@@ -91,12 +79,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         {
             foreach (var kvp in _updates)
             {
-                if (!kvp.Value.TryGetNonNullProperty("Tags", out SortedSet<int>? set))
-                {
-                    this.WriteWarning("Object does not have a 'Tags' property.");
-                    continue;
-                }
-                else if (set.IsSupersetOf(_ids))
+                if (kvp.Value.Tags.IsSupersetOf(_ids))
                 {
                     this.WriteVerbose("No tags are being added that didn't already exist on the object.");
                     continue;
@@ -106,15 +89,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                     target: kvp.Key, 
                     action: string.Format(
                         "Adding tags: ({0})",
-                        string.Join(", ", _ids.Where(x => !set.Contains(x))))))
+                        string.Join(", ", _ids.Where(x => !kvp.Value.Tags.Contains(x))))))
                 {
-                    set.UnionWith(_ids);
+                    kvp.Value.Tags.UnionWith(_ids);
 
                     var response = this.SendPutRequest(path: kvp.Key, body: kvp.Value);
                     if (response.IsError)
                     {
+                        kvp.Value.Reset();
                         this.WriteConditionalError(response.Error);
                         continue;
+                    }
+                    else
+                    {
+                        kvp.Value.CommitTags();
                     }
                 }
             }

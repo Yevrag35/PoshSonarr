@@ -36,5 +36,8 @@ namespace MG.Sonarr.Next.Services.Metadata
     public interface ITagPipeable : IHasId, IJsonSonarrMetadata
     {
         ISet<int> Tags { get; }
+
+        void CommitTags();
+        void Reset();
     }
 }

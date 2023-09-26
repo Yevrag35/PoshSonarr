@@ -22,18 +22,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
-        public object[] InputObject
+        public SeriesObject[] InputObject
         {
-            get => Array.Empty<object>();
-            set => this.AddArrayToList(value);
-        }
-
-        private void AddArrayToList(object[] value)
-        {
-            foreach (SeriesObject item in value?.OfType<SeriesObject>() ?? Enumerable.Empty<SeriesObject>())
-            {
-                _list.Add(item);
-            }
+            get => Array.Empty<SeriesObject>();
+            set => _list.AddRange(value);
         }
 
         protected override void End()
@@ -55,6 +47,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                     if (response.IsError)
                     {
                         this.WriteError(response.Error);
+                        item.Reset();
+                    }
+                    else
+                    {
+                        item.Commit();
                     }
                 }
             }

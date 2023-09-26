@@ -11,6 +11,7 @@ namespace MG.Sonarr.Next.Services.Models.Series
     public sealed class AddSeriesObject : SeriesObject, IJsonOnSerializing
     {
         private string? _path;
+        private string? _pathProp;
 
         public SeriesAddOptions? AddOptions { get; set; }
         public bool IsFullPath { get; set; }
@@ -80,27 +81,36 @@ namespace MG.Sonarr.Next.Services.Models.Series
         }
         public override void OnSerializing()
         {
-            //this.UpdateProperty(x => x.QualityProfileId);
             this.UpdateProperty(x => x.AddOptions);
-            //this.UpdateProperty(x => x.LanguageProfileId);
-            ////this.AddProperties(x => x.AddOptions, x => x.ProfileId, x => x.LanguageProfileId, x => x.QualityProfileId);
             this.UpdateProperty(x => x.Title);
-            //this.UpdateProperty(x => x.IsMonitored);
-            //this.UpdateProperty(x => x.SeriesType);
-            //this.UpdateProperty(x => x.UseSeasonFolders);
             this.SetPath();
         }
 
+        const string ROOT_FOLDER_PATH = "RootFolderPath";
         private void SetPath()
         {
             if (this.IsFullPath)
             {
-                this.AddProperty(x => x.Path);
+                this.UpdateProperty(x => x.Path);
+                _pathProp = nameof(this.Path);
             }
             else
             {
-                this.Properties.Add(new PSNoteProperty("RootFolderPath", this.Path));
+                this.SetValue(this.Path, ROOT_FOLDER_PATH);
+                _pathProp = ROOT_FOLDER_PATH;
             }
+        }
+
+        public override void Reset()
+        {
+            if (!string.IsNullOrEmpty(_pathProp))
+            {
+                this.Properties.Remove(_pathProp);
+                this.IsFullPath = false;
+            }
+
+            this.AddOptions = null;
+            base.Reset();
         }
     }
 }

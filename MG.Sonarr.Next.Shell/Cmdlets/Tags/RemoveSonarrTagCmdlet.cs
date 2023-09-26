@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models.Tags;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,28 +22,22 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         [ValidateRange(ValidateRangeKind.Positive)]
         public int Id { get; set; }
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput",
             DontShow = true)]
-        public object InputObject
+        public TagObject InputObject
         {
             get => null!;
-            set
-            {
-                if (value.IsCorrectType(Meta.TAG, out PSObject? pso)
-                    &&
-                    pso.TryGetNonNullProperty(Constants.ID, out int id))
-                {
-                    this.Id = id;
-                    return;
-                }
-
-                this.StopCmdlet();
-                this.Error = new ArgumentException("Object is not the correct metadata type. Was expecting #tag. Did you mean to use \"Clear-SonarrTag\"?", nameof(this.InputObject)).ToRecord(ErrorCategory.InvalidArgument, value);
-            }
+            set => this.Id = value.Id;
         }
 
         protected override void Process()
         {
+            if (this.InvokeCommand.HasErrors)
+            {
+                return;
+            }
+
             string path = this.Tag.GetUrlForId(this.Id);
             if (this.ShouldProcess(path, "Delete Tag"))
             {

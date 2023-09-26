@@ -39,6 +39,7 @@ namespace MG.Sonarr.Next
         public const string INDEXER_BY_ID = INDEXER + BY_ID;
         public const string INDEXER_OPTIONS = CONFIG + INDEXER;
         public const string INDEXER_SCHEMA = INDEXER + "/schema";
+        public const string LANGUAGE_PROFILE = "/languageprofile";
         public const string LOG = "/log";
         public const string LOGFILE = LOG + "/file";
         public const string MANUALIMPORT = "/manualimport";

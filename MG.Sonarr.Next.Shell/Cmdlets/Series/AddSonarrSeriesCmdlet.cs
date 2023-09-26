@@ -50,6 +50,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         [Parameter(Mandatory = false)]
         public SwitchParameter IsMonitored { get; set; }
 
+        [Parameter(Mandatory = true)]
+        [ValidateRange(ValidateRangeKind.Positive)]
+        public int LanguageProfileId { get; set; }
+
         [Parameter(Mandatory = false)]
         [ValidateRange(ValidateRangeKind.Positive)]
         public int ProfileId { get; set; }
@@ -124,6 +128,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             {
                 this.SetPath(pso);
                 pso.AddOptions = this.AddOptions;
+                pso.LanguageProfileId = this.LanguageProfileId;
 
                 if (this.HasParameter(x => x.UseSeasonFolders))
                 {
@@ -166,10 +171,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                     if (response.TryPickT0(out SeriesObject? so, out var error))
                     {
                         this.WriteObject(so);
+                        pso.Commit();
                     }
                     else
                     {
                         this.WriteConditionalError(error);
+                        pso.Reset();
                     }
                 }
             }
