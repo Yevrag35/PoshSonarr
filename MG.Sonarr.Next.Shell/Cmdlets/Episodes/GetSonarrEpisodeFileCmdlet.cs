@@ -15,8 +15,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
     [Cmdlet(VerbsCommon.Get, "SonarrEpisodeFile")]
     public sealed class GetSonarrEpisodeFileCmdlet : SonarrApiCmdletBase
     {
-        SortedSet<int> Ids { get; set; } = null!;
-        SortedSet<int> SeriesIds { get; set; } = null!;
+        SortedSet<int>? Ids { get; set; }
+        SortedSet<int>? SeriesIds { get; set; }
         MetadataTag Tag { get; }
 
         public GetSonarrEpisodeFileCmdlet()
@@ -74,8 +74,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             }
         }
 
+        private bool HasNoParameters()
+        {
+            return (this.Ids?.Count).GetValueOrDefault() <= 0
+                   &&
+                   (this.SeriesIds?.Count).GetValueOrDefault() <= 0;
+        }
+
         protected override void End()
         {
+            if (this.InvokeCommand.HasErrors || this.HasNoParameters())
+            {
+                return;
+            }
+
             IEnumerable<EpisodeFileObject> files = ParameterNameStartsWithSeries(this.ParameterSetName)
                 ? this.GetEpFilesBySeriesId(this.SeriesIds)
                 : this.GetEpFilesById(this.Ids);
@@ -86,8 +98,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             }
         }
 
-        private IEnumerable<EpisodeFileObject> GetEpFilesById(IReadOnlySet<int> fileIds)
+        private IEnumerable<EpisodeFileObject> GetEpFilesById(IReadOnlySet<int>? fileIds)
         {
+            if (fileIds is null)
+            {
+                yield break;
+            }
+
             foreach (int id in fileIds)
             {
                 string url = this.Tag.GetUrlForId(id);
@@ -102,8 +119,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 }
             }
         }
-        private IEnumerable<EpisodeFileObject> GetEpFilesBySeriesId(IReadOnlySet<int> seriesIds)
+        private IEnumerable<EpisodeFileObject> GetEpFilesBySeriesId(IReadOnlySet<int>? seriesIds)
         {
+            if (seriesIds is null)
+            {
+                yield break;
+            }
+
             QueryParameterCollection queryCol = new();
             foreach (int id in seriesIds)
             {

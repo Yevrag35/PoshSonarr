@@ -9,7 +9,7 @@ namespace MG.Sonarr.Next.Shell.Extensions
 {
     public static class SetExtensions
     {
-        public static bool ValueLike(this IReadOnlySet<WildcardString> set, string? value)
+        public static bool AnyValueLike(this IReadOnlySet<WildcardString> set, string? value)
         {
             foreach (WildcardString ws in set)
             {

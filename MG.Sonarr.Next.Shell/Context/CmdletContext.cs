@@ -7,6 +7,7 @@ using MG.Sonarr.Next.Services.Json.Modifiers;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Calendar;
 using MG.Sonarr.Next.Services.Models.Episodes;
+using MG.Sonarr.Next.Services.Models.Qualities;
 using MG.Sonarr.Next.Services.Models.Series;
 using MG.Sonarr.Next.Services.Models.Tags;
 using MG.Sonarr.Next.Shell.Cmdlets;
@@ -135,6 +136,7 @@ namespace MG.Sonarr.Next.Shell.Context
                     new SonarrObjectConverter<CalendarObject>(objCon),
                     new SonarrObjectConverter<EpisodeObject>(objCon),
                     new SonarrObjectConverter<EpisodeFileObject>(objCon),
+                    new SonarrObjectConverter<QualityProfileObject>(objCon),
                     new SeriesObjectConverter<SeriesObject>(objCon),
                     new SonarrObjectConverter<TagObject>(objCon),
                     new SeriesObjectConverter<AddSeriesObject>(objCon),

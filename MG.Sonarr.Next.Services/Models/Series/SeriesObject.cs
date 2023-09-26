@@ -6,11 +6,16 @@ using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Models.Series
 {
-    public class SeriesObject : SonarrObject, IHasId, IEpisodeBySeriesPipeable, IEpisodeFileBySeriesPipeable, ITagPipeable, IJsonOnSerializing
+    public class SeriesObject : SonarrObject, IHasId, IEpisodeBySeriesPipeable, IEpisodeFileBySeriesPipeable, IQualityProfilePipeable, ITagPipeable, IJsonOnSerializing
     {
         private DateOnly _firstAired;
 
         public int Id { get; private set; }
+        public int QualityProfileId
+        {
+            get => this.GetValue<int>(nameof(this.QualityProfileId));
+            set => this.SetValue(value);
+        }
         int IEpisodeBySeriesPipeable.SeriesId => this.Id;
         int IEpisodeFileBySeriesPipeable.SeriesId => this.Id;
         public SortedSet<int> Tags { get; private set; } = null!;
@@ -40,6 +45,11 @@ namespace MG.Sonarr.Next.Services.Models.Series
                 this.Properties.Remove(property.Name);
             }
 
+            if (this.TryGetProperty(nameof(this.QualityProfileId), out int profileId))
+            {
+                this.QualityProfileId = profileId;
+            }
+
             if (this.TryGetId(out int id))
             {
                 this.Id = id;
@@ -53,7 +63,7 @@ namespace MG.Sonarr.Next.Services.Models.Series
 
         public virtual void OnSerializing()
         {
-            this.AddProperty("FirstAired", _firstAired);
+            this.SetValue(_firstAired, "FirstAired");
         }
     }
 }

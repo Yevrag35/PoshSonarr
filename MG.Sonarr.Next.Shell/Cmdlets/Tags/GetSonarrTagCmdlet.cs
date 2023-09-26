@@ -73,7 +73,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         {
             for (int i = data.Count - 1; i >= 0; i--)
             {
-                if (!names.ValueLike(data[i].Label))
+                if (!names.AnyValueLike(data[i].Label))
                 {
                     data.RemoveAt(i);
                 }

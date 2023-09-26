@@ -18,8 +18,9 @@ namespace MG.Sonarr.Next.Shell.Context
                 { Meta.EPISODE, Constants.EPISODE, true, Meta.SERIES, Meta.EPISODE_FILE },
                 { Meta.EPISODE_FILE, Constants.EPISODEFILE, true, Meta.EPISODE },
                 { Meta.INDEXER, Constants.INDEXER, true },
+                { Meta.QUALITY_PROFILE, Constants.PROFILE, true },
                 { Meta.ROOT_FOLDER, Constants.ROOTFOLDER, true },
-                { Meta.SERIES, Constants.SERIES, true, Meta.TAG, Meta.EPISODE },
+                { Meta.SERIES, Constants.SERIES, true, Meta.TAG, Meta.EPISODE, Meta.QUALITY_PROFILE },
                 { Meta.SERIES_ADD, Constants.SERIES + "/lookup", false },
                 { Meta.TAG, Constants.TAG, true },
             };

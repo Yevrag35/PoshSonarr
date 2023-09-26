@@ -12,20 +12,39 @@ namespace MG.Sonarr.Next.Services.Models.Series
     {
         private string? _path;
 
-        public SeriesAddOptions AddOptions { get; set; } = null!;
+        public SeriesAddOptions? AddOptions { get; set; }
         public bool IsFullPath { get; set; }
-        public bool IsMonitored { get; set; } = true;
-        public int LanguageProfileId { get; set; }
-        public int ProfileId { get; set; }
-        public int QualityProfileId { get; set; }
+        public bool IsMonitored
+        {
+            get => this.GetValue<bool>();
+            set => this.SetValue(value);
+        }
+        public int LanguageProfileId
+        {
+            get => this.GetValue<int>();
+            set => this.SetValue(value);
+        }
+        public int ProfileId
+        {
+            get => this.GetValue<int>();
+            set => this.SetValue(value);
+        }
         public string Path
         {
             get => _path ??= string.Empty;
             set => _path = value;
         }
-        public string SeriesType { get; set; } = string.Empty;
+        public string SeriesType
+        {
+            get => this.GetValue<string>() ?? string.Empty;
+            set => this.SetValue(value);
+        }
         public string Title { get; set; } = string.Empty;
-        public bool UseSeasonFolders { get; set; }
+        public bool UseSeasonFolders
+        {
+            get => this.GetValue<bool>();
+            set => this.SetValue(value);
+        }
 
         public AddSeriesObject()
             : base(50)
@@ -41,7 +60,7 @@ namespace MG.Sonarr.Next.Services.Models.Series
         {
             base.OnDeserialized();
             this.Properties.Add(new PSAliasProperty(Constants.NAME, Constants.TITLE));
-            this.Properties.RemoveMany(Constants.ID, "Added", Constants.QUALITY_PROFILE_ID, Constants.PROFILE_ID, Constants.LANG_PROFILE_ID);
+            this.Properties.RemoveMany(Constants.ID, "Added");
 
             if (this.TryGetNonNullProperty(Constants.TITLE, out string? title))
             {
@@ -61,11 +80,14 @@ namespace MG.Sonarr.Next.Services.Models.Series
         }
         public override void OnSerializing()
         {
-            this.AddProperties(x => x.AddOptions, x => x.ProfileId, x => x.LanguageProfileId, x => x.QualityProfileId);
+            //this.UpdateProperty(x => x.QualityProfileId);
+            this.UpdateProperty(x => x.AddOptions);
+            //this.UpdateProperty(x => x.LanguageProfileId);
+            ////this.AddProperties(x => x.AddOptions, x => x.ProfileId, x => x.LanguageProfileId, x => x.QualityProfileId);
             this.UpdateProperty(x => x.Title);
-            this.UpdateProperty(x => x.IsMonitored);
-            this.UpdateProperty(x => x.SeriesType);
-            this.UpdateProperty(x => x.UseSeasonFolders);
+            //this.UpdateProperty(x => x.IsMonitored);
+            //this.UpdateProperty(x => x.SeriesType);
+            //this.UpdateProperty(x => x.UseSeasonFolders);
             this.SetPath();
         }
 

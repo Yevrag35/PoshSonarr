@@ -1,5 +1,7 @@
 ﻿using MG.Sonarr.Next.Services.Metadata;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Management.Automation;
+using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Services.Extensions.PSO
 {
@@ -17,6 +19,29 @@ namespace MG.Sonarr.Next.Services.Extensions.PSO
             return pso.TryGetNonNullProperty(MetadataResolver.META_PROPERTY_NAME, out MetadataTag? mt)
                    &&
                    mt.Value == tag;
+        }
+
+        public static T? GetValue<T>(this PSObject pso, [CallerMemberName] string propertyName = "")
+        {
+            try
+            {
+                return (T?)pso.Properties[propertyName]?.Value;
+            }
+            catch
+            {
+                return default;
+            }
+        }
+        public static void SetValue<T>(this PSObject pso, T? value, [CallerMemberName] string propertyName = "")
+        {
+            PSPropertyInfo? prop = pso.Properties[propertyName];
+            if (prop is null)
+            {
+                pso.AddProperty(propertyName, value);
+                return;
+            }
+
+            prop.Value = value;
         }
 
         public static bool PropertyEquals<T>(this object? obj, string propertyName, T mustEqual) where T : IEquatable<T>

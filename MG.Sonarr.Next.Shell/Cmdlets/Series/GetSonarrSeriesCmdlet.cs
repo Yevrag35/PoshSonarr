@@ -110,7 +110,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 PSObject item = result.Data[i];
                 if (!item.TryGetProperty(Constants.TITLE, out string? title)
                     ||
-                    !names.ValueLike(title))
+                    !names.AnyValueLike(title))
                 {
                     result.Data.RemoveAt(i);
                 }
