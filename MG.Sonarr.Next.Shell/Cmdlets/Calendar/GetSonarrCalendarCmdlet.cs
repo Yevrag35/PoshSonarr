@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Services;
 using MG.Sonarr.Next.Services.Extensions;
-using MG.Sonarr.Next.Services.Http;
+using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Calendar;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -113,9 +113,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         {
             return new(3)
             {
-                { START, start, 19 },
-                { END, end, 19 },
                 { nameof(unmonitored), unmonitored },
+                { START, start, Constants.CALENDAR_DT_FORMAT.Length },
+                { END, end, Constants.CALENDAR_DT_FORMAT.Length },
             };
         }
     }

@@ -1,9 +1,8 @@
 ﻿using OneOf;
-using System.Net;
 
-namespace MG.Sonarr.Next.Services.Http
+namespace MG.Sonarr.Next.Services.Http.Queries
 {
-    public readonly struct QueryParameter : IComparable<QueryParameter>, IEquatable<QueryParameter>, ISpanFormattable
+    public readonly struct QueryParameter : IComparable<QueryParameter>, IEquatable<QueryParameter>, ISpanFormattable, IQueryParameter
     {
         readonly string? _key;
         readonly string? _value;
@@ -51,6 +50,10 @@ namespace MG.Sonarr.Next.Services.Http
         {
             return StringComparer.InvariantCultureIgnoreCase.Equals(_key, other._key);
         }
+        public bool Equals(IQueryParameter? other)
+        {
+            return StringComparer.InvariantCultureIgnoreCase.Equals(_key, other?.Key);
+        }
         public override bool Equals([NotNullWhen(true)] object? obj)
         {
             if (obj is QueryParameter other)
@@ -60,7 +63,7 @@ namespace MG.Sonarr.Next.Services.Http
             else
             {
                 return false;
-            } 
+            }
         }
         public override int GetHashCode()
         {
@@ -96,7 +99,11 @@ namespace MG.Sonarr.Next.Services.Http
 
         public static QueryParameter Create(string key, ISpanFormattable formattable, in int maxLength)
         {
-            return new(key, OneOf<string?, ISpanFormattable>.FromT1(formattable), in maxLength);
+            return new QueryParameter(key, OneOf<string?, ISpanFormattable>.FromT1(formattable), in maxLength);
+        }
+        public static IQueryParameter Create(string key, bool value)
+        {
+            return new QueryBooleanParameter(key, in value);
         }
         public static QueryParameter Create(string key, string? value)
         {
@@ -106,7 +113,7 @@ namespace MG.Sonarr.Next.Services.Http
         {
             return Create(kvp.Key, kvp.Value);
         }
-        public static implicit operator QueryParameter(string key)
+        public static explicit operator QueryParameter(string key)
         {
             ArgumentException.ThrowIfNullOrEmpty(key);
             return new(key);
@@ -119,6 +126,63 @@ namespace MG.Sonarr.Next.Services.Http
         public static bool operator !=(QueryParameter x, QueryParameter y)
         {
             return !(x == y);
+        }
+    }
+
+    internal readonly struct QueryBooleanParameter : IQueryParameter
+    {
+        readonly string? _key;
+        readonly bool _value;
+        readonly int _maxLength;
+        readonly bool _isNotEmpty;
+
+        public string Key => _key ?? string.Empty;
+        public int MaxLength => _maxLength;
+        public bool Value => _value;
+
+        public QueryBooleanParameter(string key, in bool value)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(key);
+            _key = key;
+            _value = value;
+            _maxLength = key.Length + 1 + bool.FalseString.Length;
+        }
+
+        public bool Equals(IQueryParameter? other)
+        {
+            return StringComparer.InvariantCultureIgnoreCase.Equals(_key, other?.Key);
+        }
+        public bool Equals(QueryParameter other)
+        {
+            return StringComparer.InvariantCultureIgnoreCase.Equals(_key, other.Key);
+        }
+
+        public string ToString(string? format, IFormatProvider? formatProvider)
+        {
+            Span<char> span = stackalloc char[this.MaxLength];
+            _ = this.TryFormat(span, out int written, default, null);
+            return new string(span.Slice(0, written));
+        }
+
+        public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+        {
+            ReadOnlySpan<char> key = this.Key;
+            key.CopyTo(destination);
+            charsWritten = key.Length;
+
+            destination[charsWritten++] = '=';
+            
+            if (!_value.TryFormat(destination.Slice(charsWritten), out int written))
+            {
+                charsWritten += written;
+                return false;
+            }
+
+            ref char c = ref destination[charsWritten];
+            c = char.ToLower(c);
+
+            charsWritten += written;
+            return true;
         }
     }
 }

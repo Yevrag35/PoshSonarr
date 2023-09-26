@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Http;
+﻿using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Episodes;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -33,7 +33,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             set
             {
                 this.Ids ??= new();
-                this.Ids.UnionWith(value.Select(x => x.EpisodeFileId));
+                this.Ids.UnionWith(
+                    value.Where(x => x.EpisodeFileId > 0).Select(x => x.EpisodeFileId));
             }
         }
 

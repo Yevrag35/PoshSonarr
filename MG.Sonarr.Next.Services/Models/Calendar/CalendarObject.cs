@@ -1,17 +1,12 @@
 ﻿using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Metadata;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace MG.Sonarr.Next.Services.Models.Calendar
 {
-    public sealed class CalendarObject : SonarrObject, ISeriesPipeable, IEpisodePipeable
+    public sealed class CalendarObject : SonarrObject, ISeriesPipeable, IEpisodePipeable, IEpisodeFilePipeable
     {
         public DateTimeOffset AirDateUtc { get; private set; }
         public int Id { get; private set; }
+        public int EpisodeFileId { get; private set; }
         int IEpisodePipeable.EpisodeId => this.Id;
         public int SeriesId { get; private set; }
 
@@ -27,6 +22,7 @@ namespace MG.Sonarr.Next.Services.Models.Calendar
 
         public override void OnDeserialized()
         {
+            this.Properties.Remove("AirDate");
             if (this.TryGetId(out int id))
             {
                 this.Id = id;
@@ -40,6 +36,11 @@ namespace MG.Sonarr.Next.Services.Models.Calendar
             if (this.TryGetProperty(nameof(this.AirDateUtc), out DateTimeOffset airDateUtc))
             {
                 this.AirDateUtc = airDateUtc;
+            }
+
+            if (this.TryGetProperty(nameof(this.EpisodeFileId), out int epFileId))
+            {
+                this.EpisodeFileId = epFileId;
             }
         }
     }

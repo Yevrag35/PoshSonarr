@@ -1,17 +1,17 @@
 ﻿using System.Collections;
 
-namespace MG.Sonarr.Next.Services.Http
+namespace MG.Sonarr.Next.Services.Http.Queries
 {
-    public sealed class QueryParameterCollection : IReadOnlyCollection<QueryParameter>, ISpanFormattable
+    public sealed class QueryParameterCollection : IReadOnlyCollection<IQueryParameter>, ISpanFormattable
     {
-        readonly HashSet<QueryParameter> _params;
+        readonly HashSet<IQueryParameter> _params;
         int _maxLength;
 
-        public QueryParameter this[string key] => _params.TryGetValue(key, out QueryParameter actual)
+        public IQueryParameter this[string key] => _params.TryGetValue((QueryParameter)key, out IQueryParameter? actual)
             ? actual
-            : default;
+            : (QueryParameter)default;
 
-        public int MaxLength => _maxLength + (1 * (this.Count - 1));
+        public int MaxLength => _maxLength + 1 * (this.Count - 1);
         public int Count => _params.Count;
 
         public QueryParameterCollection(int capacity = 1)
@@ -34,7 +34,14 @@ namespace MG.Sonarr.Next.Services.Http
         }
         public bool Add(string key, bool value)
         {
-            return this.Add(key, value ? bool.TrueString : bool.FalseString);
+            IQueryParameter adding = QueryParameter.Create(key, value);
+            if (_params.Add(adding))
+            {
+                _maxLength += adding.MaxLength;
+                return true;
+            }
+
+            return false;
         }
         public bool Add(string key, int value)
         {
@@ -62,7 +69,7 @@ namespace MG.Sonarr.Next.Services.Http
 
         public bool Remove(string key)
         {
-            if (_params.TryGetValue(key, out var actual))
+            if (_params.TryGetValue((QueryParameter)key, out var actual))
             {
                 _maxLength -= actual.MaxLength;
                 return _params.Remove(actual);
@@ -81,7 +88,7 @@ namespace MG.Sonarr.Next.Services.Http
         {
             written = 0;
             int count = 0;
-            foreach (QueryParameter p in _params)
+            foreach (IQueryParameter p in _params)
             {
                 try
                 {
@@ -111,7 +118,7 @@ namespace MG.Sonarr.Next.Services.Http
             return true;
         }
 
-        public IEnumerator<QueryParameter> GetEnumerator()
+        public IEnumerator<IQueryParameter> GetEnumerator()
         {
             return _params.GetEnumerator();
         }
