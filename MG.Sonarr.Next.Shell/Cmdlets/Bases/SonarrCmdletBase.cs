@@ -78,6 +78,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             catch (PipelineStoppedException)
             {
                 Debug.WriteLine("Pipeline stopped.");
+                this.Dispose();
                 throw;
             }
             catch (Exception e)
@@ -106,6 +107,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             catch (PipelineStoppedException)
             {
                 Debug.WriteLine("Pipeline stopped.");
+                this.Dispose();
                 throw;
             }
             catch (Exception e)

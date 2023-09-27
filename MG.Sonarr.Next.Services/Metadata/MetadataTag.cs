@@ -72,28 +72,29 @@ namespace MG.Sonarr.Next.Services.Metadata
         public string GetUrlForId<T>(T id) where T : ISpanFormattable
         {
             this.ThrowIfNotSupportId();
-            Span<char> chars = stackalloc char[this.UrlBase.Length + 1 + LengthConstants.INT128_MAX];
-            this.UrlBase.CopyTo(chars);
+            Span<char> span = stackalloc char[this.UrlBase.Length + 1 + LengthConstants.INT128_MAX];
+            int position = 0;
+            this.UrlBase.CopyToSlice(span, ref position);
 
-            int position = this.UrlBase.Length;
-            chars[position++] = '/';
+            span[position++] = '/';
 
-            if (!id.TryFormat(chars.Slice(position), out int written, default, Statics.DefaultProvider))
+            if (!id.TryFormat(span.Slice(position), out int written, default, Statics.DefaultProvider))
             {
                 Debug.Fail($"Unable to format '{id}' into the BaseUrl.");
                 return this.UrlBase + '/' + id.ToString();
             }
 
-            return new string(chars.Slice(0, position + written));
+            return new string(span.Slice(0, position + written));
         }
         public string GetUrlForId<T>(T id, QueryParameterCollection parameters) where T : ISpanFormattable
         {
             this.ThrowIfNotSupportId();
             Span<char> span = stackalloc char[this.UrlBase.Length + 2 + parameters.MaxLength + LengthConstants.INT128_MAX];
-            this.UrlBase.CopyTo(span);
-            int position = this.UrlBase.Length;
+            int position = 0;
+            this.UrlBase.CopyToSlice(span, ref position);
 
             span[position++] = '/';
+
             _ = id.TryFormat(span.Slice(position), out int written, default, Statics.DefaultProvider);
             position += written;
 
@@ -115,7 +116,7 @@ namespace MG.Sonarr.Next.Services.Metadata
         {
             ReadOnlySpan<char> path = url.AsSpan();
             ReadOnlySpan<char> thisUrl = this.UrlBase.AsSpan();
-            if (!path.StartsWith(new ReadOnlySpan<char>('/'), StringComparison.InvariantCultureIgnoreCase))
+            if (!path.StartsWith('/', StringComparison.InvariantCulture))
             {
                 thisUrl = thisUrl.TrimStart('/');
             }
@@ -132,9 +133,11 @@ namespace MG.Sonarr.Next.Services.Metadata
 
         public override string ToString()
         {
-            int length = this.UrlBase.Length + this.SupportsId.GetLength() + this.Value.Length + 10;
-            length += nameof(this.UrlBase).Length + nameof(this.SupportsId).Length + nameof(this.Value).Length +
-                nameof(this.CanPipeTo).Length + 14;
+            int length = this.UrlBase.Length + this.SupportsId.GetLength() + this.Value.Length + 24;
+            length += nameof(this.UrlBase).Length +
+                nameof(this.SupportsId).Length +
+                nameof(this.Value).Length +
+                nameof(this.CanPipeTo).Length;
 
             if (this.CanPipeTo.Count > 0)
             {
