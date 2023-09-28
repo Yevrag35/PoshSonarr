@@ -71,6 +71,8 @@ namespace MG.Sonarr.Next
         public const string PREFERENCE = "Preference";
         public const string DEBUG_PREFERENCE = DEBUG + PREFERENCE;
         public const string VERBOSE_PREFERENCE = VERBOSE + PREFERENCE;
+        public const string ERROR_ACTION = "ErrorAction";
+        public const string ERROR_ACTION_PREFERENCE = ERROR_ACTION + PREFERENCE;
     }
 
     public static class Meta

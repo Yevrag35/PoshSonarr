@@ -87,7 +87,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 
         protected override void End()
         {
-            if (this.EpIds.IsNullOrEmpty() && this.SeriesIds.IsNullOrEmpty())
+            if (this.InvokeCommand.HasErrors || (this.EpIds.IsNullOrEmpty() && this.SeriesIds.IsNullOrEmpty()))
             {
                 return;
             }

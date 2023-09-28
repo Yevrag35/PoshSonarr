@@ -26,5 +26,17 @@ namespace MG.Sonarr.Next.Services.Extensions
 
             return new(dict);
         }
+
+        public static bool TryGetValueAs<TKey, TOutput>(this IReadOnlyDictionary<TKey, object?> dictionary, TKey key, [NotNullWhen(true)] out TOutput? result) where TKey : notnull
+        {
+            result = default;
+            if (dictionary.TryGetValue(key, out object? value) && value is TOutput tOut)
+            {
+                result = tOut;
+                return result is not null;
+            }
+
+            return false;
+        }
     }
 }

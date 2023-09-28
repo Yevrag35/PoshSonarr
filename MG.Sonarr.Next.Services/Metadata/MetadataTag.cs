@@ -33,12 +33,12 @@ namespace MG.Sonarr.Next.Services.Metadata
         public static MetadataTag Copy(MetadataTag tag) => new(tag);
         public string GetUrl(QueryParameterCollection? parameters)
         {
-            if (0 >= parameters?.Count)
+            if (parameters.IsNullOrEmpty())
             {
                 return this.UrlBase;
             }
 
-            Span<char> span = stackalloc char[this.UrlBase.Length + 1 + parameters!.MaxLength];
+            Span<char> span = stackalloc char[this.UrlBase.Length + 1 + parameters.MaxLength];
             int position = 0;
             this.UrlBase.CopyToSlice(span, ref position);
             span[position++] = '?';
@@ -47,6 +47,7 @@ namespace MG.Sonarr.Next.Services.Metadata
 
             return new string(span.Slice(0, position));
         }
+
         /// <exception cref="InvalidOperationException"/>
         public string GetUrlForId(string? id)
         {
@@ -108,21 +109,21 @@ namespace MG.Sonarr.Next.Services.Metadata
             return new string(span.Slice(0, position));
         }
 
-        public bool IsUrlForThis([NotNullWhen(true)] Uri? uri)
-        {
-            return this.IsUrlForThis(uri?.ToString());
-        }
-        public bool IsUrlForThis([NotNullWhen(true)] string? url)
-        {
-            ReadOnlySpan<char> path = url.AsSpan();
-            ReadOnlySpan<char> thisUrl = this.UrlBase.AsSpan();
-            if (!path.StartsWith('/', StringComparison.InvariantCulture))
-            {
-                thisUrl = thisUrl.TrimStart('/');
-            }
+        //public bool IsUrlForThis([NotNullWhen(true)] Uri? uri)
+        //{
+        //    return this.IsUrlForThis(uri?.ToString());
+        //}
+        //public bool IsUrlForThis([NotNullWhen(true)] string? url)
+        //{
+        //    ReadOnlySpan<char> path = url.AsSpan();
+        //    ReadOnlySpan<char> thisUrl = this.UrlBase.AsSpan();
+        //    if (!path.StartsWith('/', StringComparison.InvariantCulture))
+        //    {
+        //        thisUrl = thisUrl.TrimStart('/');
+        //    }
 
-            return path.StartsWith(thisUrl, StringComparison.InvariantCultureIgnoreCase);
-        }
+        //    return path.StartsWith(thisUrl, StringComparison.InvariantCultureIgnoreCase);
+        //}
         private void ThrowIfNotSupportId()
         {
             if (!this.SupportsId)

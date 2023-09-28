@@ -13,6 +13,36 @@ namespace MG.Sonarr.Next.Shell.Extensions
 {
     public static class PSCmdletExtensions
     {
+        public static ActionPreference GetCurrentActionPreferenceFromParam(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName)
+        {
+            if (cmdlet.MyInvocation.BoundParameters.TryGetValueAs(parameterName, out ActionPreference actionPref))
+            {
+                return actionPref;
+            }
+            else if (cmdlet.SessionState.PSVariable.TryGetVariableValue(variableName, out actionPref))
+            {
+                return actionPref;
+            }
+
+            return default;
+        }
+
+        public static ActionPreference GetCurrentActionPreferenceFromSwitch(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName)
+        {
+            if (cmdlet.MyInvocation.BoundParameters.TryGetValueAs(parameterName, out SwitchParameter result)
+                &&
+                result.ToBool())
+            {
+                return ActionPreference.Continue;
+            }
+            else if (cmdlet.SessionState.PSVariable.TryGetVariableValue(variableName, out ActionPreference actionPref))
+            {
+                return actionPref;
+            }
+
+            return default; // silently continue
+        }
+
         public static bool HasParameter<T>(this T cmdlet, Expression<Func<T, object?>> parameter) where T : PSCmdlet
         {
             return parameter.TryGetAsMember(out MemberExpression? memEx)

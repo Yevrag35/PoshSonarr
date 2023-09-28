@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Calendar;
 using MG.Sonarr.Next.Shell.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,17 +21,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         DateTime? _end;
         readonly HashSet<DayOfWeek> _dows;
 
+        MetadataTag Tag { get; }
+
         public GetSonarrCalendarCmdlet()
             : base()
         {
             _dows = new(1);
+            this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.CALENDAR];
         }
 
-        [Parameter(Mandatory = false, Position = 0)]
+        [Parameter(Position = 0)]
         public DateTime StartDate { get; set; } = DateTime.Now;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = false, Position = 1)]
+        [Parameter(Position = 1)]
         public DateTime EndDate
         {
             get => _end ?? this.StartDate.AddDays(7d);
@@ -38,7 +42,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = false)]
+        [Parameter]
         public DayOfWeek[] DayOfWeek
         {
             get => Array.Empty<DayOfWeek>();
@@ -51,7 +55,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         [Parameter(Mandatory = true, ParameterSetName = "ShowTomorrow")]
         public SwitchParameter Tomorrow { get; set; }
 
-        [Parameter(Mandatory = false)]
+        [Parameter]
         public SwitchParameter IncludeUnmonitored { get; set; }
 
         protected override void Begin()
@@ -71,7 +75,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         protected override void Process()
         {
             var parameters = GetParameters(this.StartDate, this.EndDate, this.IncludeUnmonitored);
-            string url = GetUrl(parameters);
+            string url = this.Tag.GetUrl(parameters);
 
             var response = this.SendGetRequest<MetadataList<CalendarObject>>(url);
             if (response.IsError)
@@ -96,18 +100,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
                     list.RemoveAt(i);
                 }
             }
-        }
-        private static string GetUrl(QueryParameterCollection col)
-        {
-            ReadOnlySpan<char> baseUrl = Constants.CALENDAR;
-            Span<char> span = stackalloc char[baseUrl.Length + col.MaxLength + 1];
-
-            int position = 0;
-            baseUrl.CopyToSlice(span, ref position);
-            span[position++] = '?';
-            _ = col.TryFormat(span.Slice(position), out int written, Constants.CALENDAR_DT_FORMAT, Statics.DefaultProvider);
-
-            return new string(span.Slice(0, position + written));
         }
         private static QueryParameterCollection GetParameters(DateTime start, DateTime end, bool unmonitored)
         {

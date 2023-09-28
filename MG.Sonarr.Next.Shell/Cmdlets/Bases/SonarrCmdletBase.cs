@@ -37,6 +37,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 }
             }
         }
+        protected ActionPreference ErrorPreference { get; private set; }
         [MemberNotNullWhen(true, nameof(Error), nameof(_error))]
         bool HasError { get; set; }
 
@@ -63,6 +64,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             {
                 this.StoreVerbosePreference();
                 this.StoreDebugPreference();
+                this.ErrorPreference = this
+                    .GetCurrentActionPreferenceFromParam(
+                        Constants.ERROR_ACTION, Constants.ERROR_ACTION_PREFERENCE);
             }
             catch (Exception e)
             {
@@ -189,29 +193,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
 
         private void StoreDebugPreference()
         {
-            if (this.MyInvocation.BoundParameters.TryGetValue(Constants.DEBUG, out object? oVal)
-                            &&
-              ((oVal is SwitchParameter sw && sw.ToBool()) || (oVal is bool justBool && justBool)))
-            {
-                this.DebugPreference = ActionPreference.Continue;
-            }
-            else if (this.SessionState.PSVariable.TryGetVariableValue(Constants.DEBUG_PREFERENCE, out ActionPreference pref))
-            {
-                this.DebugPreference = pref;
-            }
+            this.DebugPreference = this
+                .GetCurrentActionPreferenceFromSwitch(Constants.DEBUG, Constants.DEBUG_PREFERENCE);
         }
         private void StoreVerbosePreference()
         {
-            if (this.MyInvocation.BoundParameters.TryGetValue(Constants.VERBOSE, out object? oVal)
-                            &&
-              ((oVal is SwitchParameter sw && sw.ToBool()) || (oVal is bool justBool && justBool)))
-            {
-                this.VerbosePreference = ActionPreference.Continue;
-            }
-            else if (this.SessionState.PSVariable.TryGetVariableValue(Constants.VERBOSE_PREFERENCE, out ActionPreference pref))
-            {
-                this.VerbosePreference = pref;
-            }
+            this.VerbosePreference = this
+                .GetCurrentActionPreferenceFromSwitch(Constants.VERBOSE, Constants.VERBOSE_PREFERENCE);
         }
         protected void SerializeIfDebug<T>(T value, string? message = null, JsonSerializerOptions? options = null)
         {
