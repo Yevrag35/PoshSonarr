@@ -1,22 +1,25 @@
 ﻿using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Tags;
+using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
     [Cmdlet(VerbsCommon.Clear, "SonarrTag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
-    public sealed class ClearSonarrTagCmdlet : SonarrApiCmdletBase
+    public sealed class ClearSonarrTagCmdlet : SonarrMetadataCmdlet
     {
-        readonly HashSet<int> _ids;
-        readonly HashSet<WildcardString> _resolveNames;
+        SortedSet<int> _ids;
+        HashSet<WildcardString> _resolveNames;
         readonly Dictionary<string, ITagPipeable> _updates;
 
         public ClearSonarrTagCmdlet()
-            : base()
+            : base(2)
         {
-            _ids = new(1);
-            _resolveNames = new(1);
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
+            _resolveNames = this.GetPooledObject<HashSet<WildcardString>>();
+            this.Returnables[1] = _resolveNames;
             _updates = new(1, StringComparer.InvariantCultureIgnoreCase);
         }
 
@@ -63,18 +66,18 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             }
         }
 
+        protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
+        {
+            return resolver[Meta.TAG];
+        }
+
         protected override void Begin()
         {
             if (_resolveNames.Count > 0)
             {
-                var tagResponse = this.SendGetRequest<List<TagObject>>(Constants.TAG);
-                if (tagResponse.IsError)
-                {
-                    this.StopCmdlet(tagResponse.Error);
-                    return;
-                }
+                var all = this.GetAll<TagObject>();
 
-                foreach (var tag in tagResponse.Data)
+                foreach (var tag in all)
                 {
                     if (_resolveNames.AnyValueLike(tag.Label))
                     {
@@ -83,7 +86,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                 }
             }
         }
-
         protected override void End()
         {
             foreach (var kvp in _updates)
@@ -114,6 +116,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                     }
                 }
             }
+        }
+
+        bool _disposed;
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && !_disposed)
+            {
+                _ids = null!;
+                _resolveNames = null!;
+                _disposed = true;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

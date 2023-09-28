@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Series;
+using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,18 +11,18 @@ using Microsoft.Extensions.DependencyInjection;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
     [Cmdlet(VerbsCommon.Get, "SonarrSeries", DefaultParameterSetName = "BySeriesName")]
-    public sealed class GetSonarrSeriesCmdlet : SonarrApiCmdletBase
+    public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
     {
-        readonly SortedSet<int> _ids;
-        readonly SortedSet<WildcardString> _names;
-        MetadataTag Tag { get; }
+        SortedSet<int> _ids;
+        HashSet<WildcardString> _names;
 
         public GetSonarrSeriesCmdlet()
-            : base()
+            : base(2)
         {
-            _ids = new SortedSet<int>();
-            _names = new SortedSet<WildcardString>();
-            this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.SERIES];
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
+            _names = this.GetPooledObject<HashSet<WildcardString>>();
+            this.Returnables[1] = _names;
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -48,6 +49,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         {
             get => Array.Empty<ISeriesPipeable>();
             set => _ids.UnionWith(value.Select(x => x.SeriesId));
+        }
+
+        protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
+        {
+            return resolver[Meta.SERIES];
         }
 
         protected override void Process()
@@ -136,6 +142,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
                 yield return result;
             }
+        }
+
+        bool _disposed;
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && !_disposed)
+            {
+                _ids = null!;
+                _names = null!;
+                _disposed = true;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Qualities;
+using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,18 +10,18 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
 {
     [Cmdlet(VerbsCommon.Get, "SonarrQualityProfile", DefaultParameterSetName = "ByProfileName")]
     [Alias("Get-SonarrProfile")]
-    public sealed class GetSonarrQualityProfileCmdlet : SonarrApiCmdletBase
+    public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids;
         HashSet<WildcardString> _wcNames;
-        MetadataTag Tag { get; }
 
         public GetSonarrQualityProfileCmdlet()
-            : base()
+            : base(2)
         {
-            this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.QUALITY_PROFILE];
             _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
             _wcNames = this.GetPooledObject<HashSet<WildcardString>>();
+            this.Returnables[1] = _wcNames;
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -52,6 +53,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             }
         }
 
+        protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
+        {
+            return resolver[Meta.QUALITY_PROFILE];
+        }
+
         protected override void End()
         {
             if (this.InvokeCommand.HasErrors)
@@ -59,56 +65,44 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
                 return;
             }
 
-            IEnumerable<QualityProfileObject> profiles = _ids.Count > 0
-                ? this.GetProfileById(_ids)
-                : this.GetProfileByName(_wcNames);
+            List<QualityProfileObject> list = new(_ids.Count + _wcNames.Count);
 
-            this.WriteCollection(profiles);
+            bool addedIds = false;
+            if (_ids.Count > 0)
+            {
+                IEnumerable<QualityProfileObject> profiles = this.GetById<QualityProfileObject>(_ids);
+                list.AddRange(profiles);
+                addedIds = true;
+            }
+
+            if (_wcNames.Count > 0 || !addedIds)
+            {
+                var all = this.GetAll<QualityProfileObject>();
+                if (all.Count > 0)
+                {
+                    FilterByProfileName(all, _wcNames, _ids);
+                }
+
+                list.AddRange(all);
+            }
+
+            this.WriteCollection(list);
         }
-
-        private IEnumerable<QualityProfileObject> GetProfileById(IReadOnlySet<int>? ids)
+        private static void FilterByProfileName(List<QualityProfileObject> list, IReadOnlySet<WildcardString> names, IReadOnlySet<int> ids)
         {
-            if (ids is null)
+            if (ids.Count <= 0 && names.Count <= 0)
             {
-                yield break;
+                return;
             }
 
-            foreach (int id in ids)
+            for (int i = list.Count - 1; i >= 0; i--)
             {
-                string url = this.Tag.GetUrlForId(id);
-                var response = this.SendGetRequest<QualityProfileObject>(url);
-                if (response.IsError)
+                QualityProfileObject item = list[i];
+                if (ids.Contains(item.Id) || !names.AnyValueLike(item.Name))
                 {
-                    this.WriteConditionalError(response.Error);
-                }
-                else
-                {
-                    yield return response.Data;
+                    list.RemoveAt(i);
                 }
             }
-        }
-        private IEnumerable<QualityProfileObject> GetProfileByName(IReadOnlySet<WildcardString>? names)
-        {
-            var all = this.SendGetRequest<MetadataList<QualityProfileObject>>(this.Tag.UrlBase);
-            if (all.IsError)
-            {
-                this.StopCmdlet(all.Error);
-                return Enumerable.Empty<QualityProfileObject>();
-            }
-            else if (names is null)
-            {
-                return all.Data;
-            }
-
-            for (int i = all.Data.Count - 1; i >= 0; i--)
-            {
-                if (!names.AnyValueLike(all.Data[i].Name))
-                {
-                    all.Data.RemoveAt(i);
-                }
-            }
-
-            return all.Data;
         }
 
         bool _disposed;
@@ -116,8 +110,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
         {
             if (disposing && !_disposed)
             {
-                this.ReturnPooledObject(_ids);
-                this.ReturnPooledObject(_wcNames);
                 _ids = null!;
                 _wcNames = null!;
                 _disposed = true;

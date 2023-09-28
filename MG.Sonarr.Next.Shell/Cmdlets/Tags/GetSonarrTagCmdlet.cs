@@ -1,22 +1,25 @@
 ﻿using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Tags;
+using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
     [Cmdlet(VerbsCommon.Get, "SonarrTag", DefaultParameterSetName = "ByName")]
-    public sealed class GetSonarrTagCmdlet : SonarrApiCmdletBase
+    public sealed class GetSonarrTagCmdlet : SonarrMetadataCmdlet
     {
-        readonly SortedSet<int> _ids;
-        readonly SortedSet<WildcardString> _names;
+        SortedSet<int> _ids;
+        HashSet<WildcardString> _names;
 
         public GetSonarrTagCmdlet()
-            : base()
+            : base(2)
         {
-            _ids = new SortedSet<int>();
-            _names = new SortedSet<WildcardString>();
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
+            _names = this.GetPooledObject<HashSet<WildcardString>>();
+            this.Returnables[1] = _names;
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -43,6 +46,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         {
             get => Array.Empty<IntOrString>();
             set => value.SplitToSets(_ids, _names);
+        }
+
+        protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
+        {
+            return resolver[Meta.TAG];
         }
 
         protected override void End()
@@ -116,6 +124,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             }
             
             return true;
+        }
+
+        bool _disposed;
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && !_disposed)
+            {
+                _ids = null!;
+                _names = null!;
+                _disposed = true;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }
