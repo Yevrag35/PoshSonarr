@@ -82,6 +82,8 @@ namespace MG.Sonarr.Next
         public const string EPISODE = "#episode";
         public const string EPISODE_FILE = "#episode_file";
         public const string INDEXER = "#indexer";
+        public const string LANGUAGE = "#language_profile";
+        public const string QUALITY_DEFINITION = "#quality_definition";
         public const string QUALITY_PROFILE = "#quality_profile";
         public const string RELEASE_PROFILE = "#release_profile";
         public const string ROOT_FOLDER = "#root_folder";

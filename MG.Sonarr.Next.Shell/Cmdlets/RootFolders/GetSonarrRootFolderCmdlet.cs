@@ -1,59 +1,53 @@
 ﻿using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models.RootFolders;
+using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
 {
     [Cmdlet(VerbsCommon.Get, "SonarrRootFolder")]
-    public sealed class GetSonarrRootFolderCmdlet : SonarrApiCmdletBase
+    public sealed class GetSonarrRootFolderCmdlet : SonarrMetadataCmdlet
     {
-        MetadataTag Tag { get; }
+        SortedSet<int> _ids;
 
         public GetSonarrRootFolderCmdlet()
-            : base()
+            : base(1)
         {
-            this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.ROOT_FOLDER];
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
         }
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        [ValidateRange(ValidateRangeKind.Positive)]
+        public int[] Id
+        {
+            get => Array.Empty<int>();
+            set => _ids.UnionWith(value);
+        }
+
+        protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
+        {
+            return resolver[Meta.ROOT_FOLDER];
+        }
 
         protected override void Process()
         {
-            IEnumerable<PSObject> rootFolders = this.SendRequests(this.Id);
-            this.WriteCollection(this.Tag, rootFolders);
+            IEnumerable<RootFolderObject> folders = this.HasParameter(x => x.Id)
+                ? this.GetById<RootFolderObject>(_ids)
+                : this.GetAll<RootFolderObject>();
+
+            this.WriteCollection(folders);
         }
 
-        private IEnumerable<PSObject> SendRequests(int[] ids)
+        bool _disposed;
+        protected override void Dispose(bool disposing)
         {
-            if (ids.Length <= 0)
+            base.Dispose(disposing);
+            if (disposing && !_disposed)
             {
-                var allResponse = this.SendGetRequest<List<PSObject>>(this.Tag.UrlBase);
-                if (allResponse.IsError)
-                {
-                    this.StopCmdlet(allResponse.Error);
-                    yield break;
-                }
-
-                foreach (var pso in allResponse.Data)
-                {
-                    yield return pso;
-                }
-
-                yield break;
-            }
-
-            foreach (int id in ids)
-            {
-                string url = this.Tag.GetUrlForId(id);
-                var response = this.SendGetRequest<PSObject>(url);
-                if (response.IsError)
-                {
-                    this.WriteConditionalError(response.Error);
-                    continue;
-                }
-
-                yield return response.Data;
+                _ids = null!;
+                _disposed = true;
             }
         }
     }

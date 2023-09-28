@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Exceptions;
+﻿using MG.Sonarr.Next.Services.Collections;
+using MG.Sonarr.Next.Services.Exceptions;
 using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
@@ -88,7 +89,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 return;
             }
         }
-
         protected virtual void Begin()
         {
         }
@@ -117,7 +117,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 return;
             }
         }
-
         protected virtual void Process()
         {
         }
@@ -187,16 +186,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             this.StopCmdlet();
         }
 
-        private void StoreDebugPreference()
+        protected T GetPooledObject<T>() where T : notnull
         {
-            this.DebugPreference = this
-                .GetCurrentActionPreferenceFromSwitch(Constants.DEBUG, Constants.DEBUG_PREFERENCE);
+            return this.Services.GetRequiredService<IObjectPool<T>>().Get();
         }
-        private void StoreVerbosePreference()
+        protected void ReturnPooledObject<T>(T item) where T : notnull
         {
-            this.VerbosePreference = this
-                .GetCurrentActionPreferenceFromSwitch(Constants.VERBOSE, Constants.VERBOSE_PREFERENCE);
+            this.Services.GetRequiredService<IObjectPool<T>>().Return(item);
         }
+
         protected void SerializeIfDebug<T>(T value, string? message = null, JsonSerializerOptions? options = null)
         {
             if (this.DebugPreference != ActionPreference.SilentlyContinue)
@@ -213,6 +211,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 this.WriteDebug($"Serializing 'value' of type: {type.FullName ?? type.Name}");
                 this.WriteDebug(JsonSerializer.Serialize(value, type, options));
             }
+        }
+        private void StoreDebugPreference()
+        {
+            this.DebugPreference = this
+                .GetCurrentActionPreferenceFromSwitch(Constants.DEBUG, Constants.DEBUG_PREFERENCE);
+        }
+        private void StoreVerbosePreference()
+        {
+            this.VerbosePreference = this
+                .GetCurrentActionPreferenceFromSwitch(Constants.VERBOSE, Constants.VERBOSE_PREFERENCE);
         }
 
         protected void WriteConditionalError(ErrorRecord error)

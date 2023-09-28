@@ -1,5 +1,8 @@
 ﻿using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Extensions.PSO;
+using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models.Qualities;
+using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 
@@ -7,11 +10,29 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
 {
     [Cmdlet(VerbsCommon.Get, "SonarrQualityDefinition")]
     [Alias("Get-SonarrQuality")]
-    public sealed class GetSonarrQualityDefinitionCmdlet : SonarrApiCmdletBase
+    public sealed class GetSonarrQualityDefinitionCmdlet : SonarrMetadataCmdlet
     {
-        HashSet<int> _ids = null!;
-        HashSet<WildcardString> _wcNames = null!;
-        //bool _explicitlySetName;
+        SortedSet<int> _ids;
+        HashSet<WildcardString> _wcNames;
+        readonly List<QualityDefinitionObject> _list;
+
+        public GetSonarrQualityDefinitionCmdlet()
+            : base(2)
+        {
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
+            _wcNames = this.GetPooledObject<HashSet<WildcardString>>();
+            this.Returnables[1] = _wcNames;
+            _list = new(1);
+        }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [Parameter(Mandatory = false)]
+        public int[] Id
+        {
+            get => Array.Empty<int>();
+            set => _ids.UnionWith(value.Where(x => x > 0));
+        }
 
         const string NAME = " -Name ";
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -22,109 +43,67 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             get => Array.Empty<IntOrString>();
             set
             {
-                _ids ??= new();
-                _wcNames ??= new();
                 value.SplitToSets(_ids, _wcNames,
                     this.MyInvocation.Line.Contains(NAME, StringComparison.InvariantCultureIgnoreCase));
             }
         }
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = false)]
-        public int[] Id
+        protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
         {
-            get => Array.Empty<int>();
-            set
-            {
-                _ids ??= new(1);
-                _ids.UnionWith(value.Where(x => x > 0));
-            }
+            return resolver[Meta.QUALITY_DEFINITION];
         }
-
-        //[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        //[Parameter(Mandatory = true, DontShow = true, ValueFromPipeline = true)]
-        //public IQualityDefinitionPipeable[] InputObject
-        //{
-        //    get => Array.Empty<IQualityDefinitionPipeable>();
-        //    set
-        //    {
-        //        _ids ??= new(value.Length);
-        //        _ids.UnionWith(value.Where(x => x.QualityId > 0).Select(x => x.QualityId));
-        //    }
-        //}
-
         protected override void Process()
         {
-            List<PSObject> list = new(17);
-
             bool addedIds = false;
-            if (_ids is not null && _ids.Count > 0)
+            if (_ids.Count > 0)
             {
-                list.AddRange(this.GetById(_ids));
+                _list.AddRange(this.GetById<QualityDefinitionObject>(_ids));
                 addedIds = true;
             }
 
-            list.AddRange(this.GetByName(_wcNames, addedIds));
-
-            foreach (PSObject obj in list)
+            if (_wcNames.Count > 0 || !addedIds)
             {
-                this.WriteObject(obj);
-            }
-        }
-
-        private IEnumerable<PSObject> GetById(IReadOnlySet<int>? ids)
-        {
-            if (ids is null)
-            {
-                yield break;
-            }
-
-            foreach (int id in ids)
-            {
-                string url = Constants.QUALITY_DEFINITIONS + '/' + id.ToString();
-                var response = this.SendGetRequest<PSObject>(url);
-                if (response.IsError)
+                var all = this.GetAll<QualityDefinitionObject>();
+                if (all.Count > 0)
                 {
-                    this.WriteConditionalError(response.Error);
-                }
-                else
-                {
-                    yield return response.Data;
+                    FilterByName(all, _ids, _wcNames);
+                    _list.AddRange(all);
                 }
             }
         }
-
-        private IEnumerable<PSObject> GetByName(IReadOnlySet<WildcardString>? names, bool addedIds)
+        protected override void End()
         {
-            bool empty = names.IsNullOrEmpty();
-            if (empty && addedIds)
+            this.WriteCollection(_list);
+        }
+
+        private static void FilterByName(List<QualityDefinitionObject> all, IReadOnlySet<int> ids, IReadOnlySet<WildcardString>? names)
+        {
+            if (names.IsNullOrEmpty())
             {
-                return Enumerable.Empty<PSObject>();
+                return;
             }
 
-            var allQualities = this.SendGetRequest<List<PSObject>>(Constants.QUALITY_DEFINITIONS);
-            if (allQualities.IsError)
+            for (int i = all.Count - 1; i >= 0; i--)
             {
-                this.StopCmdlet(allQualities.Error);
-                return Enumerable.Empty<PSObject>();
-            }
-            else if (empty)
-            {
-                return allQualities.Data;
-            }
-
-            for (int i = allQualities.Data.Count - 1; i >= 0; i--)
-            {
-                var pso = allQualities.Data[i];
-                if (!pso.TryGetNonNullProperty(Constants.TITLE, out string? title)
-                    ||
-                    !names!.AnyValueLike(title))
+                QualityDefinitionObject item = all[i];
+                if (ids.Contains(item.Id) || !names.AnyValueLike(item.Title))
                 {
-                    allQualities.Data.RemoveAt(i);
+                    all.RemoveAt(i);
                 }
             }
+        }
 
-            return allQualities.Data;
+        bool _disposed;
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && !_disposed)
+            {
+                _ids = null!;
+                _wcNames = null!;
+                _disposed = true;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

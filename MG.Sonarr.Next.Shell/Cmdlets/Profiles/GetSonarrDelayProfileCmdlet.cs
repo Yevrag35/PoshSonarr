@@ -1,76 +1,46 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
-using MG.Sonarr.Next.Shell.Extensions;
-using MG.Sonarr.Next.Services.Models.Profiles;
+﻿using MG.Sonarr.Next.Services.Collections;
+using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models.Profiles;
+using MG.Sonarr.Next.Shell.Cmdlets.Bases;
+using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
 {
     [Cmdlet(VerbsCommon.Get, "SonarrDelayProfile")]
-    public sealed class GetSonarrDelayProfileCmdlet : SonarrApiCmdletBase
+    public sealed class GetSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
     {
-        SortedSet<int>? _ids;
-        MetadataTag Tag { get; }
+        SortedSet<int> _ids;
 
         public GetSonarrDelayProfileCmdlet()
-            : base()
+            : base(1)
         {
-            this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.DELAY_PROFILE];
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = false)]
+        [Parameter(Mandatory = false, Position = 0)]
+        [ValidateRange(ValidateRangeKind.Positive)]
         public int[] Id
         {
             get => Array.Empty<int>();
-            set
-            {
-                _ids ??= new();
-                _ids.UnionWith(value);
-            }
+            set => _ids.UnionWith(value);
+        }
+
+        protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
+        {
+            return resolver[Meta.DELAY_PROFILE];
         }
 
         protected override void Process()
         {
-            IEnumerable<PSObject> profiles = !_ids.IsNullOrEmpty()
-                ? this.GetById(_ids)
-                : this.GetByName();
+            IEnumerable<DelayProfileObject> profiles = !_ids.IsNullOrEmpty()
+                ? this.GetById<DelayProfileObject>(_ids)
+                : this.GetAll<DelayProfileObject>();
 
             this.WriteCollection(profiles);
-        }
-
-        private IEnumerable<DelayProfileObject> GetById(IReadOnlySet<int>? ids)
-        {
-            if (ids.IsNullOrEmpty())
-            {
-                yield break;
-            }
-
-            foreach (int id in ids)
-            {
-                string url = this.Tag.GetUrlForId(id);
-                var response = this.SendGetRequest<DelayProfileObject>(url);
-                if (response.IsError)
-                {
-                    this.WriteConditionalError(response.Error);
-                }
-                else
-                {
-                    yield return response.Data;
-                }
-            }
-        }
-
-        private IEnumerable<DelayProfileObject> GetByName()
-        {
-            var response = this.SendGetRequest<MetadataList<DelayProfileObject>>(this.Tag.UrlBase);
-            if (response.IsError)
-            {
-                this.StopCmdlet(response.Error);
-                return Enumerable.Empty<DelayProfileObject>();
-            }
-
-            return response.Data;
         }
     }
 }

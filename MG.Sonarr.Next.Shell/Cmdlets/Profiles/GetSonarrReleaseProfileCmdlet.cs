@@ -2,23 +2,27 @@
 using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Profiles;
+using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using System.Buffers;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
 {
     [Cmdlet(VerbsCommon.Get, "SonarrReleaseProfile")]
-    public sealed class GetSonarrReleaseProfileCmdlet : SonarrApiCmdletBase
+    public sealed class GetSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
     {
-        SortedSet<int>? _ids;
-        HashSet<WildcardString>? _wcNames;
-        MetadataTag Tag { get; }
+        SortedSet<int> _ids;
+        HashSet<WildcardString> _wcNames;
 
         public GetSonarrReleaseProfileCmdlet()
-            : base()
+            : base(2)
         {
-            this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.RELEASE_PROFILE];
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
+            _wcNames = this.GetPooledObject<HashSet<WildcardString>>();
+            this.Returnables[1] = _wcNames;
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -26,11 +30,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
         public int[] Id
         {
             get => Array.Empty<int>();
-            set
-            {
-                _ids ??= new();
-                _ids.UnionWith(value);
-            }
+            set => _ids.UnionWith(value);
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -41,42 +41,22 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
             get => Array.Empty<IntOrString>();
             set
             {
-                _ids ??= new();
-                _wcNames ??= new();
                 value.SplitToSets(_ids, _wcNames,
                     this.MyInvocation.Line.Contains(" -Name ", StringComparison.InvariantCultureIgnoreCase));
             }
         }
 
+        protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
+        {
+            return resolver[Meta.RELEASE_PROFILE];
+        }
         protected override void Process()
         {
-            IEnumerable<ReleaseProfileObject> profiles = !_ids.IsNullOrEmpty()
-                ? this.GetById(_ids)
+            IEnumerable<ReleaseProfileObject> profiles = _ids.Count > 0
+                ? this.GetById<ReleaseProfileObject>(_ids)
                 : this.GetByName(_wcNames);
 
             this.WriteCollection(profiles);
-        }
-
-        private IEnumerable<ReleaseProfileObject> GetById(IReadOnlySet<int>? ids)
-        {
-            if (ids.IsNullOrEmpty())
-            {
-                yield break;
-            }
-
-            foreach (int id in ids)
-            {
-                string url = this.Tag.GetUrlForId(id);
-                var response = this.SendGetRequest<ReleaseProfileObject>(url);
-                if (response.IsError)
-                {
-                    this.WriteConditionalError(response.Error);
-                }
-                else
-                {
-                    yield return response.Data;
-                }
-            }
         }
 
         private IEnumerable<ReleaseProfileObject> GetByName(IReadOnlySet<WildcardString>? names)
@@ -104,6 +84,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
             }
 
             return response.Data;
+        }
+
+        bool _disposed;
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && !_disposed)
+            {
+                this.Returner.Return(this.Returnables.AsSpan(0, 2));
+                _ids = null!;
+                _wcNames = null!;
+                _disposed = true;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Services.Collections;
+using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Metadata;
@@ -12,14 +13,18 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
     [Cmdlet(VerbsCommon.Get, "SonarrEpisode", DefaultParameterSetName = "ByEpisodeId")]
     public sealed class GetSonarrEpisodeCmdlet : SonarrApiCmdletBase
     {
-        SortedSet<int> EpIds { get; set; } = null!;
-        SortedSet<int> SeriesIds { get; set; } = null!;
+        bool _disposed;
+        SortedSet<int> EpIds { get; set; }
+        SortedSet<int> SeriesIds { get; set; }
         MetadataTag Tag { get; }
 
         public GetSonarrEpisodeCmdlet()
             : base()
         {
             this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.EPISODE];
+            var pool = this.Services.GetRequiredService<IObjectPool<SortedSet<int>>>();
+            this.EpIds = pool.Get();
+            this.SeriesIds = pool.Get();
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -27,11 +32,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         public int[] Id
         {
             get => Array.Empty<int>();
-            set
-            {
-                this.EpIds ??= new();
-                this.EpIds.UnionWith(value);
-            }
+            set => this.EpIds.UnionWith(value);
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -39,11 +40,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         public int[] SeriesId
         {
             get => Array.Empty<int>();
-            set
-            {
-                this.SeriesIds ??= new();
-                this.SeriesIds.UnionWith(value);
-            }
+            set => this.SeriesIds.UnionWith(value);
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -51,11 +48,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         public IEpisodePipeable[] EpisodeInput
         {
             get => Array.Empty<IEpisodePipeable>();
-            set
-            {
-                this.EpIds ??= new();
-                this.EpIds.UnionWith(value.Select(x => x.EpisodeId));
-            }
+            set => this.EpIds.UnionWith(value.Select(x => x.EpisodeId));
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -63,11 +56,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         public IEpisodeBySeriesPipeable[] SeriesInput
         {
             get => Array.Empty<IEpisodeBySeriesPipeable>();
-            set
-            {
-                this.SeriesIds ??= new();
-                this.SeriesIds.UnionWith(value.Select(x => x.SeriesId));
-            }
+            set => this.SeriesIds.UnionWith(value.Select(x => x.SeriesId));
         }
 
         [Parameter(Mandatory = false, Position = 1, ParameterSetName = "BySeriesId")]
@@ -153,6 +142,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 
                 queryCol.Clear();
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && !_disposed)
+            {
+                var pool = this.Services.GetRequiredService<IObjectPool<SortedSet<int>>>();
+                pool.Return(this.EpIds);
+                pool.Return(this.SeriesIds);
+                this.EpIds = null!;
+                this.SeriesIds = null!;
+                _disposed = true;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

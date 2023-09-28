@@ -11,15 +11,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
     [Alias("Get-SonarrProfile")]
     public sealed class GetSonarrQualityProfileCmdlet : SonarrApiCmdletBase
     {
-        SortedSet<int>? _ids;
-        HashSet<WildcardString>? _wcNames;
+        SortedSet<int> _ids;
+        HashSet<WildcardString> _wcNames;
         MetadataTag Tag { get; }
 
         public GetSonarrQualityProfileCmdlet()
             : base()
         {
             this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.QUALITY_PROFILE];
-            _ids = new();
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            _wcNames = this.GetPooledObject<HashSet<WildcardString>>();
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -27,11 +28,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
         public IQualityProfilePipeable[] InputObject
         {
             get => Array.Empty<IQualityProfilePipeable>();
-            set
-            {
-                _ids ??= new();
-                _ids.UnionWith(value.Where(x => x.QualityProfileId > 0).Select(x => x.QualityProfileId));
-            }
+            set => _ids.UnionWith(value.Where(x => x.QualityProfileId > 0).Select(x => x.QualityProfileId));
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -39,11 +36,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
         public int[] Id
         {
             get => Array.Empty<int>();
-            set
-            {
-                _ids ??= new();
-                _ids.UnionWith(value);
-            }
+            set => _ids.UnionWith(value);
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -54,9 +47,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             get => Array.Empty<IntOrString>();
             set
             {
-                _wcNames ??= new(value.Length);
-                _ids ??= new();
-
                 value.SplitToSets(_ids, _wcNames,
                     this.MyInvocation.Line.Contains(" -Name ", StringComparison.InvariantCultureIgnoreCase));
             }
@@ -69,7 +59,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
                 return;
             }
 
-            IEnumerable<QualityProfileObject> profiles = !_ids.IsNullOrEmpty()
+            IEnumerable<QualityProfileObject> profiles = _ids.Count > 0
                 ? this.GetProfileById(_ids)
                 : this.GetProfileByName(_wcNames);
 
@@ -119,6 +109,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             }
 
             return all.Data;
+        }
+
+        bool _disposed;
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && !_disposed)
+            {
+                this.ReturnPooledObject(_ids);
+                this.ReturnPooledObject(_wcNames);
+                _ids = null!;
+                _wcNames = null!;
+                _disposed = true;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

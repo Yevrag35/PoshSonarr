@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Http.Queries;
+﻿using MG.Sonarr.Next.Services.Collections;
+using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Episodes;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,14 +9,18 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
     [Cmdlet(VerbsCommon.Get, "SonarrEpisodeFile")]
     public sealed class GetSonarrEpisodeFileCmdlet : SonarrApiCmdletBase
     {
-        SortedSet<int>? Ids { get; set; }
-        SortedSet<int>? SeriesIds { get; set; }
+        bool _disposed;
+        SortedSet<int> Ids { get; set; }
+        SortedSet<int> SeriesIds { get; set; }
         MetadataTag Tag { get; }
 
         public GetSonarrEpisodeFileCmdlet()
             : base()
         {
             this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.EPISODE_FILE];
+            var pool = this.Services.GetRequiredService<IObjectPool<SortedSet<int>>>();
+            this.Ids = pool.Get();
+            this.SeriesIds = pool.Get();
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -25,7 +30,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             get => Array.Empty<IEpisodeFilePipeable>();
             set
             {
-                this.Ids ??= new();
                 this.Ids.UnionWith(
                     value.Where(x => x.EpisodeFileId > 0).Select(x => x.EpisodeFileId));
             }
@@ -36,11 +40,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         public IEpisodeFileBySeriesPipeable[] SeriesInput
         {
             get => Array.Empty<IEpisodeFileBySeriesPipeable>();
-            set
-            {
-                this.SeriesIds ??= new();
-                this.SeriesIds.UnionWith(value.Select(x => x.SeriesId));
-            }
+            set => this.SeriesIds.UnionWith(value.Select(x => x.SeriesId));
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -48,11 +48,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         public int[] Id
         {
             get => Array.Empty<int>();
-            set
-            {
-                this.Ids ??= new();
-                this.Ids.UnionWith(value);
-            }
+            set => this.Ids.UnionWith(value);
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -60,18 +56,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         public int[] SeriesId
         {
             get => Array.Empty<int>();
-            set
-            {
-                this.SeriesIds ??= new();
-                this.SeriesIds.UnionWith(value);
-            }
+            set => this.SeriesIds.UnionWith(value);
         }
 
         private bool HasNoParameters()
         {
-            return (this.Ids?.Count).GetValueOrDefault() <= 0
+            return this.Ids.Count <= 0
                    &&
-                   (this.SeriesIds?.Count).GetValueOrDefault() <= 0;
+                   this.SeriesIds.Count <= 0;
         }
 
         protected override void End()
@@ -143,6 +135,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         {
             return setName.StartsWith(
                 stackalloc char[] { 'b', 'y', 's', 'e', 'r', 'i', 'e', 's' }, StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && !_disposed)
+            {
+                var pool = this.Services.GetRequiredService<IObjectPool<SortedSet<int>>>();
+                pool.Return(this.Ids);
+                pool.Return(this.SeriesIds);
+                this.Ids = null!;
+                this.SeriesIds = null!;
+                _disposed = true;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

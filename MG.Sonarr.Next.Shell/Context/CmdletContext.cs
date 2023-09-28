@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Services.Collections;
+using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Json.Converters;
@@ -9,10 +10,13 @@ using MG.Sonarr.Next.Services.Models.Calendar;
 using MG.Sonarr.Next.Services.Models.Episodes;
 using MG.Sonarr.Next.Services.Models.Profiles;
 using MG.Sonarr.Next.Services.Models.Qualities;
+using MG.Sonarr.Next.Services.Models.RootFolders;
 using MG.Sonarr.Next.Services.Models.Series;
 using MG.Sonarr.Next.Services.Models.Tags;
 using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Shell.Cmdlets.Connection;
+using MG.Sonarr.Next.Shell.Components;
+using MG.Sonarr.Next.Shell.Pools;
 using MG.Sonarr.Next.Shell.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json.Serialization.Metadata;
@@ -78,11 +82,11 @@ namespace MG.Sonarr.Next.Shell.Context
 
             ServiceCollection services = new();
             services
-                //.AddMemoryCache()
                 .AddSingleton(jsonOptions)
                 .AddSingleton<Queue<IApiCmdlet>>()
                 .AddSonarrClient(settings);
 
+            AddObjectPools(services);
             MetadataHandler.AddMetadata(services);
 
             ServiceProviderOptions providerOptions = new()
@@ -99,6 +103,22 @@ namespace MG.Sonarr.Next.Shell.Context
             _provider = services.BuildServiceProvider(providerOptions);
         }
 
+        private static void AddObjectPools(IServiceCollection services)
+        {
+            services.AddObjectPoolReturner();
+
+            AddPool<HashSet<WildcardString>, HashSetWildstringPool>(services);
+            AddPool<SortedSet<int>, SortedIntSetPool>(services);
+        }
+        private static void AddPool<T, TPool>(IServiceCollection services) 
+            where TPool : class, IObjectPoolReturnable, IObjectPool<T>, new()
+            where T : notnull
+        {
+            TPool pool = new TPool();
+            services.AddSingleton<TPool>(pool)
+                    .AddSingleton<IObjectPool<T>>(x => x.GetRequiredService<TPool>())
+                    .AddSingleton<IObjectPoolReturnable>(x => x.GetRequiredService<TPool>());
+        }
         private static SonarrJsonOptions CreateSonarrJsonOptions()
         {
             return new SonarrJsonOptions(options =>
@@ -132,15 +152,18 @@ namespace MG.Sonarr.Next.Shell.Context
 
                 options.Converters.AddMany(
                     objCon,
+                    new SeriesObjectConverter<AddSeriesObject>(objCon),
                     new SonarrObjectConverter<CalendarObject>(objCon),
                     new SonarrObjectConverter<DelayProfileObject>(objCon),
                     new SonarrObjectConverter<EpisodeObject>(objCon),
                     new SonarrObjectConverter<EpisodeFileObject>(objCon),
+                    new SonarrObjectConverter<LanguageProfileObject>(objCon),
+                    new SonarrObjectConverter<QualityDefinitionObject>(objCon),
                     new SonarrObjectConverter<QualityProfileObject>(objCon),
                     new SonarrObjectConverter<ReleaseProfileObject>(objCon),
+                    new SonarrObjectConverter<RootFolderObject>(objCon),
                     new SeriesObjectConverter<SeriesObject>(objCon),
                     new SonarrObjectConverter<TagObject>(objCon),
-                    new SeriesObjectConverter<AddSeriesObject>(objCon),
                     new SonarrResponseConverter());
 
                 options.PropertyNamingPolicy = null;
