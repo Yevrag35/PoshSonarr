@@ -1,13 +1,6 @@
-﻿using MG.Sonarr.Next.Services;
-using MG.Sonarr.Next.Services.Models.Tags;
-using MG.Sonarr.Next.Shell.Extensions;
+﻿using MG.Sonarr.Next.Services.Models.Tags;
 using MG.Sonarr.Next.Shell.Models.Tags;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {

@@ -1,6 +1,5 @@
 ﻿using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Shell.Components;
-using Namotion.Reflection;
 using PSO = MG.Sonarr.Next.Services.Extensions.PSO.PSOExtensions;
 
 namespace MG.Sonarr.Next.Shell.Extensions

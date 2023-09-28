@@ -1,15 +1,8 @@
-﻿using MG.Sonarr.Next.Services;
-using MG.Sonarr.Next.Services.Extensions;
-using MG.Sonarr.Next.Services.Http.Queries;
+﻿using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Calendar;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 {

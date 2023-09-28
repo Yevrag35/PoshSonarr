@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Next.Services.Auth;
-using Namotion.Reflection;
 using System.Net;
 
 namespace MG.Sonarr.Next.Shell.Settings

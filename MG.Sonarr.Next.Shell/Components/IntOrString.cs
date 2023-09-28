@@ -1,6 +1,4 @@
-﻿using OneOf;
-
-namespace MG.Sonarr.Next.Shell.Components
+﻿namespace MG.Sonarr.Next.Shell.Components
 {
     public readonly struct IntOrString : IEquatable<IntOrString>, IEquatable<int>, IEquatable<string>
     {
@@ -18,7 +16,7 @@ namespace MG.Sonarr.Next.Shell.Components
         public bool IsString => _isStr;
 
         public int AsInt => _int.GetValueOrDefault();
-        public string AsString => IsString ? _str : string.Empty;
+        public string AsString => this.IsString ? _str : string.Empty;
 
         private IntOrString(in int value)
         {
@@ -39,11 +37,11 @@ namespace MG.Sonarr.Next.Shell.Components
 
         public bool Equals(IntOrString other)
         {
-            if (IsString && other.IsString)
+            if (this.IsString && other.IsString)
             {
                 return StringComparer.InvariantCultureIgnoreCase.Equals(_str, other._str);
             }
-            else if (IsNumber && other.IsNumber)
+            else if (this.IsNumber && other.IsNumber)
             {
                 return _int.Value == other._int;
             }
@@ -62,33 +60,33 @@ namespace MG.Sonarr.Next.Shell.Components
         }
         public override bool Equals([NotNullWhen(true)] object? obj)
         {
-            if (obj is null && !IsNumber && !IsString)
+            if (obj is null && !this.IsNumber && !this.IsString)
             {
                 return true;
             }
 
             if (obj is IntOrString other)
             {
-                return Equals(other);
+                return this.Equals(other);
             }
             else if (obj is int intVal)
             {
-                return Equals(intVal);
+                return this.Equals(intVal);
             }
             else if (obj is string strVal)
             {
-                return Equals(strVal);
+                return this.Equals(strVal);
             }
 
             return false;
         }
         public override int GetHashCode()
         {
-            if (IsNumber)
+            if (this.IsNumber)
             {
                 return _int.GetHashCode();
             }
-            else if (IsString)
+            else if (this.IsString)
             {
                 return StringComparer.InvariantCultureIgnoreCase.GetHashCode(_str);
             }

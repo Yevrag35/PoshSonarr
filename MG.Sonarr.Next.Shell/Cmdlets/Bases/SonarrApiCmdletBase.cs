@@ -2,7 +2,6 @@
 using MG.Sonarr.Next.Services.Json;
 using Microsoft.Extensions.DependencyInjection;
 using OneOf;
-using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
 {

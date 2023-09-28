@@ -1,16 +1,11 @@
-﻿using MG.Sonarr.Next.Services;
-using MG.Sonarr.Next.Services.Extensions.PSO;
+﻿using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Metadata;
-using MG.Sonarr.Next.Services.Models;
 using MG.Sonarr.Next.Services.Models.Series;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using Namotion.Reflection;
-using OneOf.Types;
-using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {

@@ -5,11 +5,6 @@ using MG.Sonarr.Next.Services.Models.Profiles;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
 {

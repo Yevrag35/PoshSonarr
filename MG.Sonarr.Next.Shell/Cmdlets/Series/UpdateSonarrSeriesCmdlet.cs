@@ -1,10 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
-using MG.Sonarr.Next.Services.Json;
-using MG.Sonarr.Next.Services.Models;
-using MG.Sonarr.Next.Services.Models.Series;
-using MG.Sonarr.Next.Shell.Extensions;
-using Microsoft.Extensions.DependencyInjection;
-using System.Text.Json;
+﻿using MG.Sonarr.Next.Services.Models.Series;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {

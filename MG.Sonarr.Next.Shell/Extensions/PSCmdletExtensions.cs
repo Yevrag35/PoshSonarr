@@ -1,13 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Extensions;
-using MG.Sonarr.Next.Services.Http;
-using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Metadata;
-using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Shell.Components;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Extensions.DependencyInjection;
-using OneOf;
-using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Extensions
 {

@@ -1,9 +1,7 @@
-﻿using MG.Sonarr.Next.Services.Extensions.PSO;
-using MG.Sonarr.Next.Services.Metadata;
+﻿using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Tags;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
-using MG.Sonarr.Next.Shell.Models.Tags;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {

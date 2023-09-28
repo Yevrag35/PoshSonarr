@@ -3,11 +3,6 @@ using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
