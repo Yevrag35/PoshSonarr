@@ -9,10 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
 {
-    [Cmdlet(VerbsCommon.Get, "SonarrLanguageProfile")]
+    [Cmdlet(VerbsCommon.Get, "SonarrLanguageProfile", DefaultParameterSetName = "None")]
     public sealed class GetSonarrLanguageProfileCmdlet : SonarrMetadataCmdlet
     {
-        bool _disposed;
         SortedSet<int> _ids;
         readonly List<LanguageProfileObject> _list;
         HashSet<WildcardString> _wcNames;
@@ -69,9 +68,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
                 var all = this.GetAll<LanguageProfileObject>();
                 if (all.Count > 0)
                 {
-
+                    FilterByName(all, _wcNames, _ids);
                 }
+
+                _list.AddRange(all);
             }
+
+            this.WriteCollection(_list);
         }
 
         private static void FilterByName(List<LanguageProfileObject> list, IReadOnlySet<WildcardString>? names, IReadOnlySet<int> ids)
@@ -79,6 +82,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
 
         }
 
+        bool _disposed;
         protected override void Dispose(bool disposing)
         {
             if (disposing && !_disposed)
