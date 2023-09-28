@@ -58,7 +58,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
         }
         protected override void ProcessRecord()
         {
-            this.SetContext(this.Settings);
+            this.SetContext(this.Settings, (services, options) =>
+            {
+                return services.BuildServiceProvider(options);
+            });
             IServiceProvider provider = this.GetServiceProvider();
             using var scope = provider.CreateScope();
 

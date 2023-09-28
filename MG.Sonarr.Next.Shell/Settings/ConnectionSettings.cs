@@ -3,16 +3,16 @@ using System.Net;
 
 namespace MG.Sonarr.Next.Shell.Settings
 {
-    internal sealed class ConnectionSettings : IConnectionSettings
+    public sealed class ConnectionSettings : IConnectionSettings
     {
         internal ApiKey Key { get; set; }
         IApiKey IConnectionSettings.ApiKey => this.Key;
-        public bool NoApiInPath { get; internal set; }
-        public Uri ServiceUri { get; internal set; } = null!;
-        public bool SkipCertValidation { get; internal set; }
-        internal string? ProxyUri { get; set; }
+        public bool NoApiInPath { get; set; }
+        public Uri ServiceUri { get; set; } = null!;
+        public bool SkipCertValidation { get; set; }
+        public string? ProxyUri { get; set; }
         internal ProxyCredential? ProxyCredential { get; set; }
-        public TimeSpan Timeout { get; internal set; } = TimeSpan.FromSeconds(60d);
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(60d);
 
         public bool TryGetProxy([NotNullWhen(true)] out IWebProxy? proxy)
         {

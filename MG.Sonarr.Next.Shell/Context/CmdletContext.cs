@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Collections;
+﻿using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Collections;
 using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
@@ -46,9 +47,9 @@ namespace MG.Sonarr.Next.Shell.Context
             return SonarrContext.GetProvider();
         }
 
-        internal static void SetContext(this ConnectSonarrInstanceCmdlet cmdlet, ConnectionSettings settings)
+        public static void SetContext(this ConnectSonarrInstanceCmdlet cmdlet, IConnectionSettings settings, Func<IServiceCollection, ServiceProviderOptions, IServiceProvider> buildProvider)
         {
-            SonarrContext.Initialize(settings);
+            SonarrContext.Initialize(settings, buildProvider);
         }
         internal static void UnsetContext(this DisconnectSonarrInstanceCmdlet cmdlet)
         {
@@ -71,7 +72,7 @@ namespace MG.Sonarr.Next.Shell.Context
             _provider = null!;
         }
 
-        internal static void Initialize(ConnectionSettings settings)
+        internal static void Initialize(IConnectionSettings settings, Func<IServiceCollection, ServiceProviderOptions, IServiceProvider> buildProvider)
         {
             if (_provider is not null)
             {
@@ -100,7 +101,7 @@ namespace MG.Sonarr.Next.Shell.Context
 #endif
             };
 
-            _provider = services.BuildServiceProvider(providerOptions);
+            _provider = buildProvider(services, providerOptions);
         }
 
         private static void AddObjectPools(IServiceCollection services)
