@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
     public abstract class SonarrMetadataCmdlet : SonarrApiCmdletBase
     {
         object[]? _objs;
-        int _capacity;
+        readonly int _capacity;
         protected object[] Returnables => _objs ?? Array.Empty<object>();
         protected IPoolReturner Returner { get; }
         protected MetadataTag Tag { get; private set; } = MetadataTag.Empty;

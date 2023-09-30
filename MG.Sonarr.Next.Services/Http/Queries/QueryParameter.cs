@@ -156,6 +156,10 @@ namespace MG.Sonarr.Next.Services.Http.Queries
         {
             return StringComparer.InvariantCultureIgnoreCase.Equals(_key, other.Key);
         }
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(StringComparer.InvariantCultureIgnoreCase.GetHashCode(this.Key));
+        }
 
         public string ToString(string? format, IFormatProvider? formatProvider)
         {

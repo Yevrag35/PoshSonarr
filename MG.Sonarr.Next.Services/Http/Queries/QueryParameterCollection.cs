@@ -22,26 +22,12 @@ namespace MG.Sonarr.Next.Services.Http.Queries
         public bool Add(string key, string? value)
         {
             var p = QueryParameter.Create(key, value);
-            if (_params.Add(p))
-            {
-                _maxLength += p.MaxLength;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return this.Add(p);
         }
         public bool Add(string key, bool value)
         {
             IQueryParameter adding = QueryParameter.Create(key, value);
-            if (_params.Add(adding))
-            {
-                _maxLength += adding.MaxLength;
-                return true;
-            }
-
-            return false;
+            return this.Add(adding);
         }
         public bool Add(string key, int value)
         {
@@ -50,9 +36,13 @@ namespace MG.Sonarr.Next.Services.Http.Queries
         public bool Add<T>(string key, T value, in int maxLength) where T : notnull, ISpanFormattable
         {
             QueryParameter p = QueryParameter.Create(key, value, in maxLength);
-            if (_params.Add(p))
+            return this.Add(p);
+        }
+        public bool Add(IQueryParameter parameter)
+        {
+            if (_params.Add(parameter))
             {
-                _maxLength += p.MaxLength;
+                _maxLength += parameter.MaxLength;
                 return true;
             }
             else

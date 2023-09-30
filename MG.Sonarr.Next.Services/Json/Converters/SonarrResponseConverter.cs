@@ -69,9 +69,6 @@ namespace MG.Sonarr.Next.Services.Json.Converters
             span[position++] = ')';
 
             writer.WriteRawValue(span.Slice(0, position), skipInputValidation: true);
-            //writer.WriteString(options.ConvertName(nameof(value.RequestUrl)), value.RequestUrl);
-            //writer.WriteNumber(options.ConvertName(nameof(value.StatusCode)), (int)value.StatusCode);
-            //writer.WriteString(options.ConvertName("Status"), value.StatusCode.ToString());
         }
     }
 }

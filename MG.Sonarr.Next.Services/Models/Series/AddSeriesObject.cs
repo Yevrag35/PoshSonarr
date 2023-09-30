@@ -40,7 +40,6 @@ namespace MG.Sonarr.Next.Services.Models.Series
             get => this.GetValue<string>() ?? string.Empty;
             set => this.SetValue(value);
         }
-        public string Title { get; set; } = string.Empty;
         public bool UseSeasonFolders
         {
             get => this.GetValue<bool>();
@@ -63,11 +62,6 @@ namespace MG.Sonarr.Next.Services.Models.Series
             this.Properties.Add(new PSAliasProperty(Constants.NAME, Constants.TITLE));
             this.Properties.RemoveMany(Constants.ID, "Added");
 
-            if (this.TryGetNonNullProperty(Constants.TITLE, out string? title))
-            {
-                this.Title = title;
-            }
-
             if (this.TryGetNonNullProperty(Constants.SERIES_TYPE, out string? seriesType))
             {
                 this.SeriesType = seriesType;
@@ -84,6 +78,7 @@ namespace MG.Sonarr.Next.Services.Models.Series
             this.UpdateProperty(x => x.AddOptions);
             this.UpdateProperty(x => x.Title);
             this.SetPath();
+            base.OnSerializing();
         }
 
         const string ROOT_FOLDER_PATH = "RootFolderPath";

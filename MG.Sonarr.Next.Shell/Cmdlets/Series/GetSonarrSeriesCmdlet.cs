@@ -36,6 +36,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId")]
+        [ValidateRange(ValidateRangeKind.Positive)]
         public int[] Id
         {
             get => Array.Empty<int>();

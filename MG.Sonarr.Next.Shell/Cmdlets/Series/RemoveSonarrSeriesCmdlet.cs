@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models.Series;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,18 +12,27 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     [CmdletBinding(PositionalBinding = false, ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
     public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
     {
+        static readonly IQueryParameter FALSE = QueryParameter.Create("deleteFiles", false);
+        static readonly IQueryParameter TRUE = QueryParameter.Create("deleteFiles", true);
+
+        readonly QueryParameterCollection _col;
         readonly SortedDictionary<int, string?> _dict;
         MetadataTag Tag { get; }
 
         public RemoveSonarrSeriesCmdlet()
             : base()
         {
+            _col = new()
+            {
+                FALSE,
+            };
             _dict = new();
             this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.SERIES];
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ById")]
+        [ValidateRange(ValidateRangeKind.Positive)]
         public int[] Id
         {
             get => Array.Empty<int>();
@@ -37,35 +47,36 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput", DontShow = true)]
-        public object[] InputObject
+        [ValidateNotNull]
+        public SeriesObject[] InputObject
         {
-            get => Array.Empty<object>();
-            set => AddIdsToSet(value, _dict);
+            get => Array.Empty<SeriesObject>();
+            set => AddIdsToDict(value, _dict);
         }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false)]
-        public SwitchParameter DeleteFiles { get; set; }
-
-        private static void AddIdsToSet(object[]? array, IDictionary<int, string?> dictionary)
+        public SwitchParameter DeleteFiles
         {
-            if (array is null)
+            get => SwitchParameter.Present;
+            set
             {
-                return;
-            }
-
-            foreach (object item in array)
-            {
-                if (item.IsCorrectType(Meta.SERIES, out PSObject? pso)
-                    &&
-                    pso.TryGetProperty(Constants.ID, out int id))
+                if (value.ToBool())
                 {
-                    _ = dictionary.TryAdd(id, pso.TryGetProperty(Constants.TITLE, out string? title)
-                        ? title
-                        : null);
+                    _col.Remove(FALSE.Key);
+                    _col.Add(TRUE);
                 }
+            }
+        }
+
+        private static void AddIdsToDict(IEnumerable<SeriesObject> array, IDictionary<int, string?> dictionary)
+        {
+            foreach (SeriesObject so in array)
+            {
+                _ = dictionary.TryAdd(so.Id, so.Title);
             }
         }
 
@@ -74,6 +85,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             if (_dict.Count <= 0)
             {
                 this.WriteWarning("No series were passed via the pipeline. Make sure to pass the correct object type.");
+                this.StopCmdlet();
                 return;
             }
 
@@ -83,9 +95,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
             foreach (var kvp in _dict)
             {
-                string url = GetUrl(this.Tag, kvp.Key, this.DeleteFiles);
+                string url = GetUrl(this.Tag, kvp.Key, _col);
 
-                if (this.ShouldProcess(url, "Deleting Series")
+                if (this.ShouldProcess(url, $"Deleting Series")
                     &&
                     (force
                     ||
@@ -128,14 +140,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             return $"Are you sure you want to delete the Series \"{id}\"?";
         }
 
-        private static string GetUrl(MetadataTag tag, int id, SwitchParameter deleteFiles)
+        private static string GetUrl(MetadataTag tag, int id, QueryParameterCollection col)
         {
-            QueryParameterCollection parameters = new()
-            {
-                { nameof(deleteFiles), deleteFiles.ToBool() }
-            };
-
-            return tag.GetUrlForId(id, parameters);
+            return tag.GetUrlForId(id, col);
         }
     }
 }

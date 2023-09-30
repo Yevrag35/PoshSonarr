@@ -10,8 +10,6 @@ namespace MG.Sonarr.Next.Services.Models.Series
     {
         private const string FIRST_AIRED = "FirstAired";
         private DateOnly _firstAired;
-        private SortedSet<int>? _tags;
-        private int[]? _originalTags;
 
         public int QualityProfileId
         {
@@ -20,6 +18,7 @@ namespace MG.Sonarr.Next.Services.Models.Series
         }
         int IEpisodeBySeriesPipeable.SeriesId => this.Id;
         int IEpisodeFileBySeriesPipeable.SeriesId => this.Id;
+        public virtual string Title { get; set; } = string.Empty;
 
         public SeriesObject()
             : this(46)
@@ -56,6 +55,11 @@ namespace MG.Sonarr.Next.Services.Models.Series
             if (this.TryGetProperty(nameof(this.QualityProfileId), out int profileId))
             {
                 this.QualityProfileId = profileId;
+            }
+
+            if (this.TryGetNonNullProperty(nameof(this.Title), out string? title))
+            {
+                this.Title = title;
             }
         }
         public virtual void OnSerializing()
