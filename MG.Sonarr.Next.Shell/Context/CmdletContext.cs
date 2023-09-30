@@ -81,17 +81,18 @@ namespace MG.Sonarr.Next.Shell.Context
                 return;
             }
 
-            SonarrJsonOptions jsonOptions = CreateSonarrJsonOptions();
+            
 
             ServiceCollection services = new();
             services
                 .AddMemoryCache()
-                .AddSingleton(jsonOptions)
                 .AddSingleton<Queue<IApiCmdlet>>()
                 .AddSonarrClient(settings);
 
             AddObjectPools(services);
-            MetadataHandler.AddMetadata(services);
+            var resolver = MetadataHandler.AddMetadata(services);
+            SonarrJsonOptions jsonOptions = CreateSonarrJsonOptions(resolver);
+            services.AddSingleton(jsonOptions);
 
             ServiceProviderOptions providerOptions = new()
             {
@@ -123,7 +124,7 @@ namespace MG.Sonarr.Next.Shell.Context
                     .AddSingleton<IObjectPool<T>>(x => x.GetRequiredService<TPool>())
                     .AddSingleton<IObjectPoolReturnable>(x => x.GetRequiredService<TPool>());
         }
-        private static SonarrJsonOptions CreateSonarrJsonOptions()
+        private static SonarrJsonOptions CreateSonarrJsonOptions(MetadataResolver resolver)
         {
             return new SonarrJsonOptions(options =>
             {
@@ -151,7 +152,8 @@ namespace MG.Sonarr.Next.Shell.Context
                             new("AirDate", doSpanConverter),
                             new("FirstAired", doSpanConverter),
                             new("AirTime", timeConverter),
-                        }
+                        },
+                        resolver
                     );
 
                 options.Converters.AddMany(

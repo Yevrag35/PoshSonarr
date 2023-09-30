@@ -99,8 +99,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
             return new(3)
             {
                 { nameof(unmonitored), unmonitored },
-                { START, start, Constants.CALENDAR_DT_FORMAT.Length },
-                { END, end, Constants.CALENDAR_DT_FORMAT.Length },
+                { START, start, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT },
+                { END, end, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT },
             };
         }
     }

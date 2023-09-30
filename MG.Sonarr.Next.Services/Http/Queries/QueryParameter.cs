@@ -10,6 +10,7 @@ namespace MG.Sonarr.Next.Services.Http.Queries
         readonly int _maxLength;
         readonly bool _isNotEmpty;
         readonly bool _isFormattable;
+        readonly string? _format;
 
         public bool IsEmpty => !_isNotEmpty;
         [MemberNotNullWhen(true, nameof(_formattable))]
@@ -27,9 +28,10 @@ namespace MG.Sonarr.Next.Services.Http.Queries
             _isFormattable = false;
             _maxLength = 0;
             _isNotEmpty = true;
+            _format = null;
         }
 
-        public QueryParameter(string key, OneOf<string?, ISpanFormattable> oneOf, in int oneOfLength)
+        public QueryParameter(string key, OneOf<string?, ISpanFormattable> oneOf, in int oneOfLength, string? format = null)
         {
             ArgumentException.ThrowIfNullOrEmpty(key);
             _key = key;
@@ -40,6 +42,7 @@ namespace MG.Sonarr.Next.Services.Http.Queries
 
             _maxLength = key.Length + 1 + oneOfLength;
             _isNotEmpty = true;
+            _format = format;
         }
 
         public int CompareTo(QueryParameter other)
@@ -82,6 +85,11 @@ namespace MG.Sonarr.Next.Services.Http.Queries
             key.CopyTo(span);
             written = key.Length;
 
+            if (format.IsEmpty)
+            {
+                format = _format;
+            }
+
             span[written++] = '=';
             if (this.IsFormattable && _formattable.TryFormat(span.Slice(written), out int formatWritten, format, provider))
             {
@@ -97,17 +105,17 @@ namespace MG.Sonarr.Next.Services.Http.Queries
             return true;
         }
 
-        public static QueryParameter Create(string key, ISpanFormattable formattable, in int maxLength)
+        public static QueryParameter Create(string key, ISpanFormattable formattable, in int maxLength, string? format = null)
         {
-            return new QueryParameter(key, OneOf<string?, ISpanFormattable>.FromT1(formattable), in maxLength);
+            return new QueryParameter(key, OneOf<string?, ISpanFormattable>.FromT1(formattable), in maxLength, format);
         }
         public static IQueryParameter Create(string key, bool value)
         {
             return new QueryBooleanParameter(key, in value);
         }
-        public static QueryParameter Create(string key, string? value)
+        public static QueryParameter Create(string key, string? value, string? format = null)
         {
-            return new(key, OneOf<string?, ISpanFormattable>.FromT0(value), value?.Length ?? 0);
+            return new(key, OneOf<string?, ISpanFormattable>.FromT0(value), value?.Length ?? 0, format);
         }
         public static implicit operator QueryParameter(KeyValuePair<string, string?> kvp)
         {

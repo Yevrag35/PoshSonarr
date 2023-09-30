@@ -5,7 +5,7 @@ namespace MG.Sonarr.Next.Shell.Context
 {
     internal static class MetadataHandler
     {
-        internal static void AddMetadata(IServiceCollection services)
+        internal static MetadataResolver AddMetadata(IServiceCollection services)
         {
             MetadataResolver dict = new(20)
             {
@@ -28,6 +28,7 @@ namespace MG.Sonarr.Next.Shell.Context
             };
             
             services.AddSingleton(dict);
+            return dict;
         }
     }
 }

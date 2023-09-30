@@ -29,13 +29,13 @@ namespace MG.Sonarr.Next.Services.Http.Queries
             IQueryParameter adding = QueryParameter.Create(key, value);
             return this.Add(adding);
         }
-        public bool Add(string key, int value)
+        public bool Add(string key, int value, string? format = null)
         {
-            return this.Add(key, value, LengthConstants.INT_MAX);
+            return this.Add(key, value, LengthConstants.INT_MAX, format);
         }
-        public bool Add<T>(string key, T value, in int maxLength) where T : notnull, ISpanFormattable
+        public bool Add<T>(string key, T value, in int maxLength, string? format = null) where T : notnull, ISpanFormattable
         {
-            QueryParameter p = QueryParameter.Create(key, value, in maxLength);
+            QueryParameter p = QueryParameter.Create(key, value, in maxLength, format);
             return this.Add(p);
         }
         public bool Add(IQueryParameter parameter)

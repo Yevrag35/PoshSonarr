@@ -2,6 +2,8 @@
 using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Json.Collections;
 using MG.Sonarr.Next.Services.Json.Converters.Spans;
+using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models.Series;
 using System.Buffers;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
@@ -14,16 +16,18 @@ namespace MG.Sonarr.Next.Services.Json.Converters
     public sealed class ObjectConverter : JsonConverter<object>
     {
         readonly HashSet<string> _ignore;
+        readonly MetadataResolver _resolver;
         readonly ReadOnlyDictionary<string, Type> _convertProps;
         readonly JsonNameDictionary _globalReplaceNames;
         readonly IReadOnlyDictionary<string, SpanConverter> _spanConverters;
 
-        public ObjectConverter(IEnumerable<string> ignoreProps, IEnumerable<KeyValuePair<string, string>> replaceNames, IEnumerable<KeyValuePair<string, Type>> convertTypes, IEnumerable<KeyValuePair<string, SpanConverter>> spanConverters)
+        public ObjectConverter(IEnumerable<string> ignoreProps, IEnumerable<KeyValuePair<string, string>> replaceNames, IEnumerable<KeyValuePair<string, Type>> convertTypes, IEnumerable<KeyValuePair<string, SpanConverter>> spanConverters, MetadataResolver resolver)
         {
             _ignore = new(ignoreProps, StringComparer.InvariantCultureIgnoreCase);
             _convertProps = BuildLookup(convertTypes);
             _spanConverters = BuildLookup(spanConverters);
             _globalReplaceNames = new(replaceNames);
+            _resolver = resolver;
         }
 
         public override bool CanConvert(Type typeToConvert)
@@ -89,7 +93,18 @@ namespace MG.Sonarr.Next.Services.Json.Converters
                         switch (reader.TokenType)
                         {
                             case JsonTokenType.StartObject:
-                                o = this.ConvertToObject<PSObject>(ref reader, options);
+                                if (pn.Equals("Series", StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    var series = this.ConvertToObject<SeriesObject>(ref reader, options);
+                                    series.OnDeserialized();
+                                    series.SetTag(_resolver);
+                                    o = series;
+                                }
+                                else
+                                {
+                                    o = this.ConvertToObject<PSObject>(ref reader, options);
+                                }
+
                                 break;
 
                             case JsonTokenType.StartArray:
