@@ -57,12 +57,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
                     RequestMessage = request,
                     ReasonPhrase = HttpStatusCode.ServiceUnavailable.ToString(),
                 }
-                : new HttpResponseMessage(originalCode)
-                {
-                    Content = ResetStream(memStream),
-                    RequestMessage = request,
-                    ReasonPhrase = reason,
-                };
+                : ResetResponse(response, memStream);
 
             return response;
         }
@@ -86,6 +81,11 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
             {
                 return false;
             }
+        }
+        private static HttpResponseMessage ResetResponse(HttpResponseMessage original, MemoryStream stream)
+        {
+            original.Content = ResetStream(stream);
+            return original;
         }
         private static HttpContent ResetStream(MemoryStream stream)
         {
