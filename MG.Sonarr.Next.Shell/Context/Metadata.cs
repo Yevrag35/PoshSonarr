@@ -7,7 +7,7 @@ namespace MG.Sonarr.Next.Shell.Context
     {
         internal static void AddMetadata(IServiceCollection services)
         {
-            MetadataResolver dict = new(12)
+            MetadataResolver dict = new(20)
             {
                 { Meta.BACKUP, Constants.BACKUP, false, new string[] { "Save-SonarrBackup" } },
                 { Meta.CALENDAR, Constants.CALENDAR, false, new string[] { Meta.SERIES, Meta.EPISODE } },
@@ -16,6 +16,8 @@ namespace MG.Sonarr.Next.Shell.Context
                 { Meta.EPISODE_FILE, Constants.EPISODEFILE, true, new string[] { Meta.EPISODE } },
                 { Meta.INDEXER, Constants.INDEXER, true },
                 { Meta.LANGUAGE, Constants.LANGUAGE_PROFILE, true },
+                { Meta.LOG_ITEM, Constants.LOG, false },
+                { Meta.LOG_FILE, Constants.LOGFILE, false, new string[] { "Save-SonarrLog" } },
                 { Meta.QUALITY_DEFINITION, Constants.QUALITY_DEFINITIONS, true },
                 { Meta.QUALITY_PROFILE, Constants.PROFILE, true },
                 { Meta.RELEASE_PROFILE, Constants.RELEASE_PROFILE, true, new string[] { Meta.TAG } },

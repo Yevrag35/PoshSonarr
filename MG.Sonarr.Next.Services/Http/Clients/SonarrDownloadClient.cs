@@ -9,7 +9,8 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 {
     public interface ISonarrDownloadClient
     {
-        Task<SonarrResponse<string>> DownloadToPathAsync(string url, string path, NetworkCredential? credential, CancellationToken token = default);
+        SonarrResponse<string> DownloadToPath(string url, string path, CancellationToken token = default);
+        SonarrResponse<string> DownloadToPath(string url, string path, NetworkCredential? credential, CancellationToken token = default);
     }
 
     file sealed class SonarrDownloadClient : ISonarrDownloadClient
@@ -21,10 +22,10 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             this.Client = client;
         }
 
-        public async Task<SonarrResponse<string>> DownloadToPathAsync(string url, string path, NetworkCredential? credential, CancellationToken token = default)
+        public SonarrResponse<string> DownloadToPath(string url, string path, CancellationToken token = default)
         {
             using HttpRequestMessage msg = new(HttpMethod.Get, url);
-            msg.Options.Set(CookieHandler.CredentialKey, credential);
+            msg.Options.Set(CookieHandler.NoCookie, true);
 
             HttpResponseMessage response = null!;
             try
@@ -39,13 +40,41 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                 return result;
             }
 
+            this.WriteFileAsync(response, path, token).GetAwaiter().GetResult();
+
+            return new SonarrResponse<string>(url, path, null, HttpStatusCode.OK);
+        }
+        public SonarrResponse<string> DownloadToPath(string url, string path, NetworkCredential? credential, CancellationToken token = default)
+        {
+            using HttpRequestMessage msg = new(HttpMethod.Get, url);
+            msg.Options.Set(CookieHandler.CredentialKey, credential);
+            msg.Options.Set(CookieHandler.NoCookie, false);
+
+            HttpResponseMessage response = null!;
+            try
+            {
+                response = this.Client.Send(msg, token);
+            }
+            catch (SonarrHttpException ex)
+            {
+                var result = SonarrResponse.FromException<string>(
+                    url, ex, ErrorCategory.AuthenticationError, HttpStatusCode.Unauthorized, response);
+
+                return result;
+            }
+
+            this.WriteFileAsync(response, path, token).GetAwaiter().GetResult();
+
+            return new SonarrResponse<string>(url, path, null, HttpStatusCode.OK);
+        }
+
+        private async Task WriteFileAsync(HttpResponseMessage response, string path, CancellationToken token)
+        {
             await using Stream stream = response.Content.ReadAsStream(token);
 
             await using FileStream fs = new(path, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
 
             await stream.CopyToAsync(fs, token);
-
-            return new SonarrResponse<string>(url, path, null, HttpStatusCode.OK);
         }
     }
 
@@ -60,14 +89,15 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                     var settings = provider.GetRequiredService<IConnectionSettings>();
                     client.BaseAddress = settings.ServiceUri;
                     client.Timeout = settings.Timeout;
-                    //client.DefaultRequestHeaders
-                    //    .Add(SonarrClientDependencyInjection.API_HEADER_KEY, settings.ApiKey.GetValue());
+                    client.DefaultRequestHeaders
+                        .Add(SonarrClientDependencyInjection.API_HEADER_KEY, settings.ApiKey.GetValue());
 
                     client.DefaultRequestHeaders.UserAgent
                         .Add(SonarrClientDependencyInjection.UserAgent);
                 })
                 .ConfigurePrimaryHttpMessageHandler<SonarrClientHandler>()
                 .AddHttpMessageHandler<VerboseHandler>()
+                .AddHttpMessageHandler<PathHandler>()
                 .AddHttpMessageHandler<CookieHandler>();
 
             return services;

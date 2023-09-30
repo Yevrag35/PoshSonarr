@@ -24,19 +24,16 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
             var response = await respTask.ConfigureAwait(false);
 
-            HttpStatusCode originalCode = response.StatusCode;
-            string? reason = response.ReasonPhrase;
-
             if (response.IsSuccessStatusCode)
             {
                 response = await this.ReadAndReturnNewResponse(
-                    request, response, originalCode, reason, cancellationToken);
+                    request, response, cancellationToken);
             }
 
             return response;
         }
 
-        private async Task<HttpResponseMessage> ReadAndReturnNewResponse(HttpRequestMessage request, HttpResponseMessage response, HttpStatusCode originalCode, string? reason, CancellationToken cancellationToken)
+        private async Task<HttpResponseMessage> ReadAndReturnNewResponse(HttpRequestMessage request, HttpResponseMessage response, CancellationToken cancellationToken)
         {
             bool isHtml = false;
             MemoryStream memStream = new MemoryStream();

@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Extensions;
+using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Json;
 using System.Buffers;
 using System.Net;
@@ -21,21 +22,40 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
         protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            this.SetPath(request);
+            if (!request.Options.TryGetValue(CookieHandler.CredentialKey, out _))
+            {
+                this.SetPath(request);
+            }
+
             return base.Send(request, cancellationToken);
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
 
-            this.SetPath(request);
+            if (!request.Options.TryGetValue(CookieHandler.CredentialKey, out _))
+            {
+                this.SetPath(request);
+            }
+
             return base.SendAsync(request, cancellationToken);
         }
 
         private void SetPath(HttpRequestMessage request)
         {
             ReadOnlySpan<char> path = request.RequestUri?.GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+            if (path.StartsWith('/'))
+            {
+                path = path.TrimStart('/');
+            }
+
+            if (path.StartsWith("api/v3", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return;
+            }
+
             ReadOnlySpan<char> authority = request.RequestUri?.GetComponents(UriComponents.SchemeAndServer, UriFormat.Unescaped);
+
 
             Span<char> span = stackalloc char[path.Length + API.Length + V3.Length + authority.Length];
             int position = 0;

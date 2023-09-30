@@ -14,6 +14,7 @@ using MG.Sonarr.Next.Services.Models.Profiles;
 using MG.Sonarr.Next.Services.Models.Qualities;
 using MG.Sonarr.Next.Services.Models.RootFolders;
 using MG.Sonarr.Next.Services.Models.Series;
+using MG.Sonarr.Next.Services.Models.System;
 using MG.Sonarr.Next.Services.Models.Tags;
 using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Shell.Cmdlets.Connection;
@@ -162,6 +163,8 @@ namespace MG.Sonarr.Next.Shell.Context
                     new SonarrObjectConverter<EpisodeObject>(objCon),
                     new SonarrObjectConverter<EpisodeFileObject>(objCon),
                     new SonarrObjectConverter<LanguageProfileObject>(objCon),
+                    new SonarrObjectConverter<LogObject>(objCon),
+                    new SonarrObjectConverter<LogFileObject>(objCon),
                     new SonarrObjectConverter<QualityDefinitionObject>(objCon),
                     new SonarrObjectConverter<QualityProfileObject>(objCon),
                     new SonarrObjectConverter<ReleaseProfileObject>(objCon),

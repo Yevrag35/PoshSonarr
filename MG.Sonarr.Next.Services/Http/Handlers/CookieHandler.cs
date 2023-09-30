@@ -13,6 +13,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
         const string USERNAME = "username";
         const string PASSWORD = "password";
         public static readonly HttpRequestOptionsKey<NetworkCredential?> CredentialKey = new("Credentials");
+        public static readonly HttpRequestOptionsKey<bool> NoCookie = new("nocookie");
 
         readonly bool _isForms;
         IMemoryCache Cache { get; }
@@ -25,7 +26,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            if (!_isForms)
+            if (!_isForms || (request.Options.TryGetValue(NoCookie, out bool val) && val))
             {
                 return base.SendAsync(request, cancellationToken);
             }
