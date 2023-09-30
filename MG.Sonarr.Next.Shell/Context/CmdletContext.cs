@@ -2,6 +2,7 @@
 using MG.Sonarr.Next.Services.Collections;
 using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
+using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Json.Converters;
 using MG.Sonarr.Next.Services.Json.Converters.Spans;
@@ -83,6 +84,7 @@ namespace MG.Sonarr.Next.Shell.Context
 
             ServiceCollection services = new();
             services
+                .AddMemoryCache()
                 .AddSingleton(jsonOptions)
                 .AddSingleton<Queue<IApiCmdlet>>()
                 .AddSonarrClient(settings);
@@ -153,6 +155,7 @@ namespace MG.Sonarr.Next.Shell.Context
 
                 options.Converters.AddMany(
                     objCon,
+                    new BackupObjectConverter(objCon),
                     new SeriesObjectConverter<AddSeriesObject>(objCon),
                     new SonarrObjectConverter<CalendarObject>(objCon),
                     new SonarrObjectConverter<DelayProfileObject>(objCon),

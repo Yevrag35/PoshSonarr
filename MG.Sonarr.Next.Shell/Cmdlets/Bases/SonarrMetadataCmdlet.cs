@@ -15,13 +15,23 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         protected IPoolReturner Returner { get; }
         protected MetadataTag Tag { get; private set; } = MetadataTag.Empty;
 
-        protected SonarrMetadataCmdlet(int capacity)
+        private SonarrMetadataCmdlet(bool isPrivate)
             : base()
         {
-            _capacity = capacity;
             this.Tag = this.GetMetadataTag(this.Services.GetRequiredService<MetadataResolver>());
             this.Returner = this.Services.GetRequiredService<IPoolReturner>();
-            _objs = ArrayPool<object>.Shared.Rent(capacity);
+        }
+        protected SonarrMetadataCmdlet()
+            : this(isPrivate: true)
+        {
+            _capacity = 0;
+            _objs = Array.Empty<object>();
+        }
+        protected SonarrMetadataCmdlet(int capacity)
+            : this(isPrivate: true)
+        {
+            _capacity = capacity >= 0 ? capacity : 0;
+            _objs = _capacity > 0 ? ArrayPool<object>.Shared.Rent(capacity) : Array.Empty<object>();
         }
 
         protected abstract MetadataTag GetMetadataTag(MetadataResolver resolver);
@@ -63,8 +73,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         {
             if (disposing && !_disposed && _objs is not null)
             {
-                this.Returner.Return(this.Returnables.AsSpan(0, _capacity));
-                ArrayPool<object>.Shared.Return(_objs);
+                if (_objs.Length > 0)
+                {
+                    this.Returner.Return(this.Returnables.AsSpan(0, _capacity));
+                    ArrayPool<object>.Shared.Return(_objs);
+                }
+
                 _objs = null;
                 _disposed = true;
             }

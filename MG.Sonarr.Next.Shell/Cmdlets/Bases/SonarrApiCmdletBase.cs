@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
+using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Json;
 using Microsoft.Extensions.DependencyInjection;
 using OneOf;

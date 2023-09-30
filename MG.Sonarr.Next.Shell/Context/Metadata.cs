@@ -9,6 +9,7 @@ namespace MG.Sonarr.Next.Shell.Context
         {
             MetadataResolver dict = new(12)
             {
+                { Meta.BACKUP, Constants.BACKUP, false, new string[] { "Save-SonarrBackup" } },
                 { Meta.CALENDAR, Constants.CALENDAR, false, new string[] { Meta.SERIES, Meta.EPISODE } },
                 { Meta.DELAY_PROFILE, Constants.DELAY_PROFILE, true, new string[] { Meta.TAG } },
                 { Meta.EPISODE, Constants.EPISODE, true, new string[] { Meta.SERIES, Meta.EPISODE_FILE } },

@@ -10,8 +10,9 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
 using MG.Sonarr.Next.Services.Models;
+using MG.Sonarr.Next.Services.Http.Handlers;
 
-namespace MG.Sonarr.Next.Services.Http
+namespace MG.Sonarr.Next.Services.Http.Clients
 {
     public interface ISonarrClient
     {
@@ -26,8 +27,8 @@ namespace MG.Sonarr.Next.Services.Http
 
     file sealed class SonarrHttpClient : ISonarrClient
     {
-        internal const string API_HEADER_KEY = "X-Api-Key";
         const string TEST_API = "/system/status";
+        readonly IConnectionSettings _settings;
 
         HttpClient Client { get; }
         JsonSerializerOptions DeserializingOptions { get; }
@@ -35,13 +36,14 @@ namespace MG.Sonarr.Next.Services.Http
         IResponseReader ResponseReader { get; }
         JsonSerializerOptions SerializingOptions { get; }
 
-        public SonarrHttpClient(HttpClient client, SonarrJsonOptions options, MetadataResolver resolver, IResponseReader reader)
+        public SonarrHttpClient(HttpClient client, IConnectionSettings settings, SonarrJsonOptions options, MetadataResolver resolver, IResponseReader reader)
         {
             this.Client = client;
             this.DeserializingOptions = options.GetForDeserializing();
             this.Resolver = resolver;
             this.ResponseReader = reader;
             this.SerializingOptions = options.GetForSerializing();
+            _settings = settings;
         }
 
         public SonarrResponse SendDelete(string path, CancellationToken token = default)
@@ -105,20 +107,44 @@ namespace MG.Sonarr.Next.Services.Http
 
             try
             {
-                
+
                 response = this.Client.Send(request, token);
+                if (response.IsSuccessStatusCode)
+                {
+                    SonarrStatus? status = TryParseForStatus(response, this.DeserializingOptions, token);
+                    SonarrAuthType authType = SonarrAuthType.None;
+                    _settings.AuthType = (status?.TryGetAuthType(out authType)).GetValueOrDefault() 
+                        ? authType : SonarrAuthType.None;
+                }
+
                 return response.IsSuccessStatusCode
                     ? SonarrResponse.Create(response, TEST_API)
                     : ParseMessage(TEST_API, response, token);
             }
             catch (Exception e)
             {
-                var result = SonarrResponse.FromException(TEST_API, e, ErrorCategory.ConnectionError, response?.StatusCode ?? System.Net.HttpStatusCode.Unused, response);
+                var result = SonarrResponse.FromException(TEST_API, e, ErrorCategory.ConnectionError, response?.StatusCode ?? HttpStatusCode.Unused, response);
                 response?.Dispose();
                 return result;
             }
         }
 
+        private static SonarrStatus? TryParseForStatus(HttpResponseMessage response, JsonSerializerOptions? options, CancellationToken token)
+        {
+            try
+            {
+                return response.Content.ReadFromJsonAsync<SonarrStatus>(options, token)
+                    .GetAwaiter().GetResult();
+            } 
+            catch
+            {
+                return null;
+            }
+            finally
+            {
+                response.Dispose();
+            }
+        }
         private static SonarrServerError? ParseResponseForError(HttpResponseMessage? response, JsonSerializerOptions? options, CancellationToken token)
         {
             try
@@ -141,7 +167,7 @@ namespace MG.Sonarr.Next.Services.Http
             try
             {
                 response = this.Client.Send(request, token);
-                return this.ResponseReader.ReadNoResult((path, request, response), path, token)
+                return this.ResponseReader.ReadNoResultAsync((path, request, response), path, token)
                     .GetAwaiter().GetResult();
             }
             catch (HttpRequestException httpEx)
@@ -172,7 +198,7 @@ namespace MG.Sonarr.Next.Services.Http
             try
             {
                 response = this.Client.Send(request, token);
-                return this.ResponseReader.ReadResult<T>((path, request, response), path, token)
+                return this.ResponseReader.ReadResultAsync<T>((path, request, response), path, token)
                     .GetAwaiter().GetResult();
             }
             catch (HttpRequestException httpEx)
@@ -202,8 +228,10 @@ namespace MG.Sonarr.Next.Services.Http
 
     public static class SonarrClientDependencyInjection
     {
+        internal const string API_HEADER_KEY = "X-Api-Key";
+
         internal static readonly HttpRequestOptionsKey<bool> KEY = new(nameof(ISonarrClient.SendTest));
-        static readonly ProductInfoHeaderValue _userAgent = new("PoshSonarr-Next", "2.0.0");
+        internal static readonly ProductInfoHeaderValue UserAgent = new("PoshSonarr-Next", "2.0.0");
 
         public static IServiceCollection AddSonarrClient(this IServiceCollection services, IConnectionSettings settings)
         {
@@ -219,9 +247,9 @@ namespace MG.Sonarr.Next.Services.Http
                         client.BaseAddress = settings.ServiceUri;
                         client.Timeout = settings.Timeout;
                         client.DefaultRequestHeaders
-                            .Add(SonarrHttpClient.API_HEADER_KEY, settings.ApiKey.GetValue());
+                            .Add(API_HEADER_KEY, settings.ApiKey.GetValue());
 
-                        client.DefaultRequestHeaders.UserAgent.Add(_userAgent);
+                        client.DefaultRequestHeaders.UserAgent.Add(UserAgent);
 
                     })
                     .ConfigurePrimaryHttpMessageHandler<SonarrClientHandler>()
@@ -229,7 +257,7 @@ namespace MG.Sonarr.Next.Services.Http
                     .AddHttpMessageHandler<VerboseHandler>()
                     .AddHttpMessageHandler<TestingHandler>();
 
-            return services;
+            return services.AddSonarrDownloadClient();
         }
     }
 }

@@ -13,8 +13,8 @@ namespace MG.Sonarr.Next.Services.Http
 {
     public interface IResponseReader
     {
-        Task<SonarrResponse> ReadNoResult(HttpCall call, object? targetObj = null, CancellationToken token = default);
-        Task<SonarrResponse<T>> ReadResult<T>(HttpCall call, object? targetObj = null, CancellationToken token = default);
+        Task<SonarrResponse> ReadNoResultAsync(HttpCall call, object? targetObj = null, CancellationToken token = default);
+        Task<SonarrResponse<T>> ReadResultAsync<T>(HttpCall call, object? targetObj = null, CancellationToken token = default);
     }
 
     file sealed class SonarrResponseReader : IResponseReader
@@ -26,7 +26,7 @@ namespace MG.Sonarr.Next.Services.Http
             this.Options = options.GetForDeserializing();
         }
 
-        public async Task<SonarrResponse> ReadNoResult(HttpCall call, object? targetObj = null, CancellationToken token = default)
+        public async Task<SonarrResponse> ReadNoResultAsync(HttpCall call, object? targetObj = null, CancellationToken token = default)
         {
             if (call.IsEmpty)
             {
@@ -48,7 +48,7 @@ namespace MG.Sonarr.Next.Services.Http
 
             return SonarrResponse.FromException(record);
         }
-        public async Task<SonarrResponse<T>> ReadResult<T>(HttpCall call, object? targetObj = null, CancellationToken token = default)
+        public async Task<SonarrResponse<T>> ReadResultAsync<T>(HttpCall call, object? targetObj = null, CancellationToken token = default)
         {
             if (call.IsEmpty)
             {

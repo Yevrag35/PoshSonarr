@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Shell.Cmdlets.System
+﻿namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
 {
     [Cmdlet(VerbsCommon.Get, "SonarrStatus")]
     public sealed class GetSonarrStatusCmdlet : SonarrApiCmdletBase

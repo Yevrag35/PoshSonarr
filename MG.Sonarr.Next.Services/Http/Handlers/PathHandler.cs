@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Runtime.InteropServices;
 
-namespace MG.Sonarr.Next.Services.Http
+namespace MG.Sonarr.Next.Services.Http.Handlers
 {
     public sealed class PathHandler : DelegatingHandler
     {
@@ -77,7 +77,7 @@ namespace MG.Sonarr.Next.Services.Http
         //            UriComponents.SchemeAndServer, UriFormat.Unescaped);
 
         //        Span<char> newPath = stackalloc char[chars.Length + API.Length + V3.Length + authority.Length];
-                
+
         //        int position = 0;
         //        authority.CopyToSlice(newPath, ref position);
         //        API.CopyToSlice(newPath, ref position);

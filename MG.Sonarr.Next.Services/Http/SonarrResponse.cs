@@ -57,7 +57,7 @@ namespace MG.Sonarr.Next.Services.Http
         {
             string name = exception.GetTypeName();
             SonarrErrorRecord record = exception is SonarrHttpException reqEx
-                ? new SonarrErrorRecord(reqEx, response, url)
+                ? new SonarrErrorRecord(reqEx, response ?? reqEx.Response, url)
                 : new SonarrErrorRecord(exception, name, category, url);
             return new SonarrResponse<T>(url, default, record, statusCode);
         }

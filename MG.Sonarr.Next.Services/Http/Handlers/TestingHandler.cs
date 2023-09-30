@@ -1,8 +1,9 @@
 ﻿using System.Net.Http.Json;
 using System.Net;
 using MG.Sonarr.Next.Services.Json;
+using MG.Sonarr.Next.Services.Http.Clients;
 
-namespace MG.Sonarr.Next.Services.Http
+namespace MG.Sonarr.Next.Services.Http.Handlers
 {
     public sealed class TestingHandler : DelegatingHandler
     {
@@ -38,9 +39,12 @@ namespace MG.Sonarr.Next.Services.Http
         private async Task<HttpResponseMessage> ReadAndReturnNewResponse(HttpRequestMessage request, HttpResponseMessage response, HttpStatusCode originalCode, string? reason, CancellationToken cancellationToken)
         {
             bool isHtml = false;
+            MemoryStream memStream = new MemoryStream();
+
             await using (var stream = await response.Content.ReadAsStreamAsync(cancellationToken))
             {
-                isHtml = IsHtml(stream);
+                await stream.CopyToAsync(memStream, cancellationToken);
+                isHtml = IsHtml(memStream);
             }
 
             response = isHtml
@@ -55,7 +59,7 @@ namespace MG.Sonarr.Next.Services.Http
                 }
                 : new HttpResponseMessage(originalCode)
                 {
-                    Content = new StringContent(string.Empty),
+                    Content = ResetStream(memStream),
                     RequestMessage = request,
                     ReasonPhrase = reason,
                 };
@@ -82,6 +86,11 @@ namespace MG.Sonarr.Next.Services.Http
             {
                 return false;
             }
+        }
+        private static HttpContent ResetStream(MemoryStream stream)
+        {
+            stream.Seek(0, SeekOrigin.Begin);
+            return new StreamContent(stream);
         }
     }
 }

@@ -8,7 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MG.Sonarr.Next.Services.Http
+namespace MG.Sonarr.Next.Services.Http.Handlers
 {
     internal sealed class SonarrClientHandler : HttpClientHandler
     {

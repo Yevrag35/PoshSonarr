@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OneOf.Types;
 using System.Management.Automation;
 
-namespace MG.Sonarr.Next.Services.Http
+namespace MG.Sonarr.Next.Services.Http.Handlers
 {
     public sealed class VerboseHandler : DelegatingHandler
     {
@@ -25,7 +25,7 @@ namespace MG.Sonarr.Next.Services.Http
                 cmdlet.WriteVerbose(request);
             }
 
-            var response = base.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
+            var response = this.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
 
             using (var scope = _scopeFactory.CreateScope())
             {

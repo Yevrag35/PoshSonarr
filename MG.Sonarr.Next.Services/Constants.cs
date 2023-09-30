@@ -77,6 +77,7 @@ namespace MG.Sonarr.Next
 
     public static class Meta
     {
+        public const string BACKUP = "#backup";
         public const string CALENDAR = "#calendar";
         public const string DELAY_PROFILE = "#delay_profile";
         public const string EPISODE = "#episode";
