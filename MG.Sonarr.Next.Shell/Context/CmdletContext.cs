@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Services.Collections;
 using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
+using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Json.Converters;
 using MG.Sonarr.Next.Services.Json.Converters.Spans;
@@ -114,6 +115,7 @@ namespace MG.Sonarr.Next.Shell.Context
 
             AddPool<HashSet<WildcardString>, HashSetWildstringPool>(services);
             AddPool<SortedSet<int>, SortedIntSetPool>(services);
+            AddPool<PagingParameter, PagingPool>(services);
         }
         private static void AddPool<T, TPool>(IServiceCollection services) 
             where TPool : class, IObjectPoolReturnable, IObjectPool<T>, new()

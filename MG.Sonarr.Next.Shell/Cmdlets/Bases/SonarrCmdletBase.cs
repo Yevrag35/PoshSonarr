@@ -13,7 +13,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
     {
         bool _disposed;
         ErrorRecord? _error;
-        IServiceScope _scope;
+        IServiceScope? _scope;
         bool _isStopped;
 
         protected ActionPreference DebugPreference { get; private set; }
@@ -38,16 +38,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         [MemberNotNullWhen(true, nameof(Error), nameof(_error))]
         bool HasError { get; set; }
 
-        protected internal IServiceProvider Services => _scope.ServiceProvider;
         protected ActionPreference VerbosePreference { get; private set; }
 
         protected SonarrCmdletBase()
         {
-            _scope = this.CreateScope();
+        }
+
+        protected virtual void OnCreatingScope(IServiceProvider provider)
+        {
         }
 
         protected sealed override void BeginProcessing()
         {
+            _scope = this.CreateScope();
+            this.OnCreatingScope(_scope.ServiceProvider);
+
             if (this.HasError)
             {
                 this.ThrowTerminatingError(this.Error);
@@ -74,7 +79,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
 
             try
             {
-                this.Begin();
+                this.Begin(_scope.ServiceProvider);
             }
             catch (PipelineStoppedException)
             {
@@ -89,7 +94,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 return;
             }
         }
-        protected virtual void Begin()
+        protected virtual void Begin(IServiceProvider provider)
         {
         }
 
@@ -100,9 +105,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 return;
             }
 
+            _scope ??= this.CreateScope();
+
             try
             {
-                this.Process();
+                this.Process(_scope.ServiceProvider);
             }
             catch (PipelineStoppedException)
             {
@@ -117,18 +124,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 return;
             }
         }
-        protected virtual void Process()
+        protected virtual void Process(IServiceProvider provider)
         {
         }
 
         protected sealed override void EndProcessing()
         {
             Queue<IApiCmdlet>? queue = null;
+            _scope ??= this.CreateScope();
+
             try
             {
                 if (!_isStopped)
                 {
-                    this.End();
+                    this.End(_scope.ServiceProvider);
                 }
 
                 queue = _scope?.ServiceProvider.GetService<Queue<IApiCmdlet>>();
@@ -154,17 +163,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 this.WriteConditionalError(this.Error);
             }
         }
-        protected virtual void End()
+        protected virtual void End(IServiceProvider provider)
         {
         }
 
         protected sealed override void StopProcessing()
         {
+            _scope ??= this.CreateScope();
+
             try
             {
                 Queue<IApiCmdlet> queue = _scope.ServiceProvider.GetRequiredService<Queue<IApiCmdlet>>();
                 queue.Clear();
-                this.Stop();
+                this.Stop(_scope.ServiceProvider);
                 this.ThrowTerminatingError(this.Error);
             }
             finally
@@ -172,7 +183,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 this.Dispose();
             }
         }
-        protected virtual void Stop()
+        protected virtual void Stop(IServiceProvider provider)
         {
         }
 
@@ -186,13 +197,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             this.StopCmdlet();
         }
 
+        /// <exception cref="InvalidOperationException"/>
         protected T GetPooledObject<T>() where T : notnull
         {
-            return this.Services.GetRequiredService<IObjectPool<T>>().Get();
+            try
+            {
+                return _scope!.ServiceProvider.GetRequiredService<IObjectPool<T>>().Get();
+            }
+            catch (NullReferenceException e)
+            {
+                throw new InvalidOperationException("Cannot use the scope before it's been initialized.", e);
+            }
         }
         protected void ReturnPooledObject<T>(T item) where T : notnull
         {
-            this.Services.GetRequiredService<IObjectPool<T>>().Return(item);
+            _scope?.ServiceProvider.GetRequiredService<IObjectPool<T>>().Return(item);
         }
 
         protected void SerializeIfDebug<T>(T value, string? message = null, JsonSerializerOptions? options = null)
@@ -242,10 +261,26 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         }
 
         #region DISPOSAL
+        protected virtual void Dispose(bool disposing, IServiceScopeFactory? scopeFactory)
+        {
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
             {
+                IServiceProvider? provider = null;
+                try
+                {
+                    provider = this.GetServiceProvider();
+                }
+                catch (InvalidOperationException)
+                {
+                    provider = null;
+                }
+
+                this.Dispose(disposing, provider?.GetService<IServiceScopeFactory>());
+
                 _scope?.Dispose();
                 _scope = null!;
                 _disposed = true;

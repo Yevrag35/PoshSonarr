@@ -13,13 +13,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         const string SEARCH_STR_QUERY = Constants.SERIES + "/lookup?term={0}";
         const string SEARCH_ID_QUERY = Constants.SERIES + "/lookup?term=tvdb:{0}";
         WildcardString _wildcardStr;
-        MetadataTag Tag { get; }
-
-        public SearchSonarrSeriesCmdlet()
-            : base()
-        {
-            this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.SERIES_ADD];
-        }
+        MetadataTag Tag { get; set; } = null!;
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesName")]
         public string Name
@@ -34,7 +28,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         [Parameter(Mandatory = false, ParameterSetName = "BySeriesName")]
         public SwitchParameter Strict { get; set; }
 
-        protected override void Process()
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            base.OnCreatingScope(provider);
+            this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.SERIES_ADD];
+        }
+        protected override void Process(IServiceProvider provider)
         {
             string path = this.HasParameter(x => x.Name)
                 ? GetSearchByNamePath(this.Name)

@@ -9,16 +9,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
 {
     public abstract class SonarrApiCmdletBase : SonarrCmdletBase, IApiCmdlet
     {
-        ISonarrClient Client { get; }
-        protected SonarrJsonOptions? Options { get; }
-        Queue<IApiCmdlet> Queue { get; }
+        ISonarrClient Client { get; set; } = null!;
+        protected SonarrJsonOptions? Options { get; private set; } = null!;
+        Queue<IApiCmdlet> Queue { get; set; } = null!;
 
         protected SonarrApiCmdletBase()
             : base()
         {
-            this.Client = this.Services.GetRequiredService<ISonarrClient>();
-            this.Options = this.Services.GetService<SonarrJsonOptions>();
-            this.Queue = this.Services.GetRequiredService<Queue<IApiCmdlet>>();
+        }
+
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            this.Client = provider.GetRequiredService<ISonarrClient>();
+            this.Options = provider.GetService<SonarrJsonOptions>();
+            this.Queue = provider.GetRequiredService<Queue<IApiCmdlet>>();
         }
 
         protected virtual SonarrResponse SendDeleteRequest(string path, CancellationToken token = default)

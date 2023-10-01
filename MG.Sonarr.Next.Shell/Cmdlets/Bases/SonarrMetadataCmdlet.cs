@@ -10,25 +10,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
     public abstract class SonarrMetadataCmdlet : SonarrApiCmdletBase
     {
         object[]? _objs;
-        readonly int _capacity;
+        int _capacity;
+        protected abstract int Capacity { get; }
         protected object[] Returnables => _objs ?? Array.Empty<object>();
-        protected IPoolReturner Returner { get; }
+        protected IPoolReturner Returner { get; private set; } = null!;
         protected MetadataTag Tag { get; private set; } = MetadataTag.Empty;
 
-        private SonarrMetadataCmdlet(bool isPrivate)
-            : base()
+        protected override void OnCreatingScope(IServiceProvider provider)
         {
-            this.Tag = this.GetMetadataTag(this.Services.GetRequiredService<MetadataResolver>());
-            this.Returner = this.Services.GetRequiredService<IPoolReturner>();
+            this.Tag = this.GetMetadataTag(provider.GetRequiredService<MetadataResolver>());
+            this.Returner = provider.GetRequiredService<IPoolReturner>();
+            this.CreatingScopeAndCapacity(provider, this.Capacity);
         }
-        protected SonarrMetadataCmdlet()
-            : this(isPrivate: true)
-        {
-            _capacity = 0;
-            _objs = Array.Empty<object>();
-        }
-        protected SonarrMetadataCmdlet(int capacity)
-            : this(isPrivate: true)
+        protected void CreatingScopeAndCapacity(IServiceProvider provider, int capacity)
         {
             _capacity = capacity >= 0 ? capacity : 0;
             _objs = _capacity > 0 ? ArrayPool<object>.Shared.Rent(capacity) : Array.Empty<object>();

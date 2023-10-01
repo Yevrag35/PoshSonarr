@@ -8,15 +8,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         DefaultParameterSetName = "ById")]
     public sealed class RenameSonarrTagCmdlet : SonarrApiCmdletBase
     {
-        readonly Dictionary<string, object> _dict = new(2, StringComparer.InvariantCultureIgnoreCase);
-
-        MetadataTag Tag { get; }
-
-        public RenameSonarrTagCmdlet()
-            : base()
-        {
-            this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.TAG];
-        }
+        Dictionary<string, object> _dict = null!;
+        MetadataTag Tag { get; set; } = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ById")]
@@ -44,7 +37,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             set => _dict[Constants.LABEL] = value;
         }
 
-        protected override void Process()
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            base.OnCreatingScope(provider);
+            _dict = new(2, StringComparer.InvariantCultureIgnoreCase);
+            this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.TAG];
+
+        }
+        protected override void Process(IServiceProvider provider)
         {
             if (_dict.Count == 2)
             {

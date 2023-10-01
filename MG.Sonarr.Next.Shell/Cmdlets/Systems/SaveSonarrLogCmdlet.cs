@@ -14,15 +14,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
     public sealed class SaveSonarrLogCmdlet : SonarrCmdletBase, IApiCmdlet
     {
         bool _noFileName;
-        ISonarrDownloadClient Downloader { get; }
-        Queue<IApiCmdlet> Queue { get; }
-
-        public SaveSonarrLogCmdlet()
-            : base()
-        {
-            this.Downloader = this.Services.GetRequiredService<ISonarrDownloadClient>();
-            this.Queue = this.Services.GetRequiredService<Queue<IApiCmdlet>>();
-        }
+        ISonarrDownloadClient Downloader { get; set; } = null!;
+        Queue<IApiCmdlet> Queue { get; set; } = null!;
 
         [Parameter(Mandatory = true, ParameterSetName = "ByExplicitUrl")]
         [ValidateUrl(UriKind.Relative)]
@@ -53,7 +46,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
         }
         NetworkCredential? _creds;
 
-        protected override void Begin()
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            base.OnCreatingScope(provider);
+            this.Downloader = provider.GetRequiredService<ISonarrDownloadClient>();
+            this.Queue = provider.GetRequiredService<Queue<IApiCmdlet>>();
+        }
+
+        protected override void Begin(IServiceProvider provider)
         {
             ReadOnlySpan<char> originalPath = this.Path.AsSpan();
             this.Path = this.GetAbsolutePath(this.Path);
@@ -76,7 +76,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
                 _noFileName = true;
             }
         }
-        protected override void Process()
+        protected override void Process(IServiceProvider provider)
         {
             this.Queue.Enqueue(this);
             string downloadPath = this.MakeFilePath(this.Path, this.LogUri, _noFileName);

@@ -7,13 +7,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     [Cmdlet(VerbsCommon.Remove, "SonarrTag", SupportsShouldProcess = true, DefaultParameterSetName = "ByPipelineInput")]
     public sealed class RemoveSonarrTagCmdlet : SonarrApiCmdletBase
     {
-        MetadataTag Tag { get; }
-
-        public RemoveSonarrTagCmdlet()
-            : base()
-        {
-            this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.TAG];
-        }
+        MetadataTag Tag { get; set; } = null!;
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ById")]
         [ValidateRange(ValidateRangeKind.Positive)]
@@ -28,7 +22,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             set => this.Id = value.Id;
         }
 
-        protected override void Process()
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            base.OnCreatingScope(provider);
+            this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.TAG];
+        }
+        protected override void Process(IServiceProvider provider)
         {
             if (this.InvokeCommand.HasErrors)
             {

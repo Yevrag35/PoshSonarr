@@ -8,14 +8,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
     [Cmdlet(VerbsCommon.Get, "SonarrRootFolder")]
     public sealed class GetSonarrRootFolderCmdlet : SonarrMetadataCmdlet
     {
-        SortedSet<int> _ids;
-
-        public GetSonarrRootFolderCmdlet()
-            : base(1)
-        {
-            _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
-        }
+        SortedSet<int> _ids = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0)]
@@ -26,12 +19,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
             set => _ids.UnionWith(value);
         }
 
+        protected override int Capacity => 1;
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            base.OnCreatingScope(provider);
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
+        }
+
         protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
         {
             return resolver[Meta.ROOT_FOLDER];
         }
 
-        protected override void Process()
+        protected override void Process(IServiceProvider provider)
         {
             IEnumerable<RootFolderObject> folders = this.HasParameter(x => x.Id)
                 ? this.GetById<RootFolderObject>(_ids)

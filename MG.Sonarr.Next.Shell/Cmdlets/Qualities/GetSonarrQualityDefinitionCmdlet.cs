@@ -12,19 +12,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
     [Alias("Get-SonarrQuality")]
     public sealed class GetSonarrQualityDefinitionCmdlet : SonarrMetadataCmdlet
     {
-        SortedSet<int> _ids;
-        HashSet<WildcardString> _wcNames;
-        readonly List<QualityDefinitionObject> _list;
-
-        public GetSonarrQualityDefinitionCmdlet()
-            : base(2)
-        {
-            _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
-            _wcNames = this.GetPooledObject<HashSet<WildcardString>>();
-            this.Returnables[1] = _wcNames;
-            _list = new(1);
-        }
+        SortedSet<int> _ids = null!;
+        HashSet<WildcardString> _wcNames = null!;
+        List<QualityDefinitionObject> _list = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false)]
@@ -48,11 +38,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             }
         }
 
+        protected override int Capacity => 2;
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            base.OnCreatingScope(provider);
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
+            _wcNames = this.GetPooledObject<HashSet<WildcardString>>();
+            this.Returnables[1] = _wcNames;
+            _list = new(1);
+        }
         protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
         {
             return resolver[Meta.QUALITY_DEFINITION];
         }
-        protected override void Process()
+        protected override void Process(IServiceProvider provider)
         {
             bool addedIds = false;
             if (_ids.Count > 0)
@@ -71,7 +71,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
                 }
             }
         }
-        protected override void End()
+        protected override void End(IServiceProvider provider)
         {
             this.WriteCollection(_list);
         }

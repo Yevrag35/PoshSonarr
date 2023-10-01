@@ -3,7 +3,7 @@ using MG.Sonarr.Next.Services.Metadata;
 
 namespace MG.Sonarr.Next.Services.Models.Calendar
 {
-    public sealed class CalendarObject : SonarrObject, ISeriesPipeable, IEpisodePipeable, IEpisodeFilePipeable
+    public sealed class CalendarObject : SonarrObject, ISeriesPipeable, IEpisodePipeable, IEpisodeFilePipeable, ITagResolvable<CalendarObject>
     {
         public DateTimeOffset AirDateUtc { get; private set; }
         public int Id { get; private set; }
@@ -17,6 +17,11 @@ namespace MG.Sonarr.Next.Services.Models.Calendar
         }
 
         protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)
+        {
+            return resolver[Meta.CALENDAR];
+        }
+
+        public static MetadataTag GetTag(MetadataResolver resolver)
         {
             return resolver[Meta.CALENDAR];
         }

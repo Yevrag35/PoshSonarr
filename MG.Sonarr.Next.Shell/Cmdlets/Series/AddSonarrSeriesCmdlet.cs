@@ -12,19 +12,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     [CmdletBinding(DefaultParameterSetName = "RootFolderPath")]
     public sealed class AddSonarrSeriesCmdlet : SonarrApiCmdletBase, IDynamicParameters
     {
-        readonly List<AddSeriesObject> _list;
+        List<AddSeriesObject> _list = null!;
         Range _range;
-        SeriesAddOptions AddOptions { get; }
-
-        MetadataTag Tag { get; }
-
-        public AddSonarrSeriesCmdlet()
-            : base()
-        {
-            _list = new(1);
-            this.AddOptions = new();
-            this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.SERIES];
-        }
+        SeriesAddOptions AddOptions { get; set; } = null!;
+        MetadataTag Tag { get; set; } = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
@@ -120,7 +111,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             return dict;
         }
 
-        protected override void Process()
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            base.OnCreatingScope(provider);
+            _list = new(1);
+            this.AddOptions = new();
+            this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.SERIES];
+        }
+        protected override void Process(IServiceProvider provider)
         {
             var range = _list.GetRange(_range.Start.Value, _range.End.Value);
 
@@ -156,14 +154,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 }
             }
         }
-        protected override void End()
+        protected override void End(IServiceProvider provider)
         {
             this.SetAddOptions(this.AddOptions);
             string url = this.Tag.UrlBase;
 
             foreach (AddSeriesObject pso in _list)
             {
-                this.SerializeIfDebug(pso, options: this.Services.GetService<SonarrJsonOptions>()?.GetForDebugging());
+                this.SerializeIfDebug(pso, options: provider.GetService<SonarrJsonOptions>()?.GetForDebugging());
 
                 if (this.ShouldProcess(pso.Title, "Adding Series"))
                 {

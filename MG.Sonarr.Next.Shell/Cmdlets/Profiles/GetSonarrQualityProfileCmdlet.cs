@@ -12,17 +12,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
     [Alias("Get-SonarrProfile")]
     public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
     {
-        SortedSet<int> _ids;
-        HashSet<WildcardString> _wcNames;
-
-        public GetSonarrQualityProfileCmdlet()
-            : base(2)
-        {
-            _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
-            _wcNames = this.GetPooledObject<HashSet<WildcardString>>();
-            this.Returnables[1] = _wcNames;
-        }
+        SortedSet<int> _ids = null!;
+        HashSet<WildcardString> _wcNames = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput", ValueFromPipeline = true)]
@@ -53,12 +44,23 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             }
         }
 
+        protected override int Capacity => 2;
+
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            base.OnCreatingScope(provider);
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
+            _wcNames = this.GetPooledObject<HashSet<WildcardString>>();
+            this.Returnables[1] = _wcNames;
+        }
+
         protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
         {
             return resolver[Meta.QUALITY_PROFILE];
         }
 
-        protected override void End()
+        protected override void End(IServiceProvider provider)
         {
             if (this.InvokeCommand.HasErrors)
             {

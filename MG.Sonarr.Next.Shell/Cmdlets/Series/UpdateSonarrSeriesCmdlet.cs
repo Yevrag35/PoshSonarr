@@ -6,13 +6,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     [Alias("Set-SonarrSeries")]
     public sealed class UpdateSonarrSeriesCmdlet : SonarrApiCmdletBase
     {
-        readonly List<SeriesObject> _list;
-
-        public UpdateSonarrSeriesCmdlet()
-            : base()
-        {
-            _list = new List<SeriesObject>(1);
-        }
+        List<SeriesObject> _list = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
@@ -22,7 +16,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             set => _list.AddRange(value);
         }
 
-        protected override void End()
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            base.OnCreatingScope(provider);
+            _list = new List<SeriesObject>(1);
+        }
+        protected override void End(IServiceProvider provider)
         {
             if (_list.Count <= 0)
             {

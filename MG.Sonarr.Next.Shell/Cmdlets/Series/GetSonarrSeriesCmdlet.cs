@@ -13,26 +13,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     [Cmdlet(VerbsCommon.Get, "SonarrSeries", DefaultParameterSetName = "BySeriesName")]
     public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
     {
-        SortedSet<int> _ids;
-        HashSet<WildcardString> _names;
-
-        public GetSonarrSeriesCmdlet()
-            : base(2)
-        {
-            _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
-            _names = this.GetPooledObject<HashSet<WildcardString>>();
-            this.Returnables[1] = _names;
-        }
+        SortedSet<int> _ids = null!;
+        HashSet<WildcardString> _names = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesName")]
         [SupportsWildcards]
-        public IntOrString[] Name
-        {
-            get => Array.Empty<IntOrString>();
-            set => value.SplitToSets(_ids, _names);
-        }
+        public IntOrString[] Name { get; set; } = Array.Empty<IntOrString>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId")]
@@ -52,12 +39,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             set => _ids.UnionWith(value.Select(x => x.SeriesId));
         }
 
+        protected override int Capacity => 2;
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            base.OnCreatingScope(provider);
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
+            _names = this.GetPooledObject<HashSet<WildcardString>>();
+            this.Returnables[1] = _names;
+        }
         protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
         {
             return resolver[Meta.SERIES];
         }
 
-        protected override void Process()
+        protected override void Process(IServiceProvider provider)
         {
             bool hadIds = false;
             if (_ids.Count > 0)

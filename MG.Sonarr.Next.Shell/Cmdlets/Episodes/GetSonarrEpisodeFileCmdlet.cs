@@ -10,17 +10,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
     public sealed class GetSonarrEpisodeFileCmdlet : SonarrApiCmdletBase
     {
         bool _disposed;
-        SortedSet<int> Ids { get; set; }
-        SortedSet<int> SeriesIds { get; set; }
-        MetadataTag Tag { get; }
+        SortedSet<int> Ids { get; set; } = null!;
+        SortedSet<int> SeriesIds { get; set; } = null!;
+        MetadataTag Tag { get; set; } = null!;
 
         public GetSonarrEpisodeFileCmdlet()
             : base()
         {
-            this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.EPISODE_FILE];
-            var pool = this.Services.GetRequiredService<IObjectPool<SortedSet<int>>>();
-            this.Ids = pool.Get();
-            this.SeriesIds = pool.Get();
+            
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -59,6 +56,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             set => this.SeriesIds.UnionWith(value);
         }
 
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            base.OnCreatingScope(provider);
+            this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.EPISODE_FILE];
+            var pool = provider.GetRequiredService<IObjectPool<SortedSet<int>>>();
+            this.Ids = pool.Get();
+            this.SeriesIds = pool.Get();
+        }
+
         private bool HasNoParameters()
         {
             return this.Ids.Count <= 0
@@ -66,7 +72,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                    this.SeriesIds.Count <= 0;
         }
 
-        protected override void End()
+        protected override void End(IServiceProvider provider)
         {
             if (this.InvokeCommand.HasErrors || this.HasNoParameters())
             {
@@ -137,19 +143,22 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 stackalloc char[] { 'b', 'y', 's', 'e', 'r', 'i', 'e', 's' }, StringComparison.InvariantCultureIgnoreCase);
         }
 
-        protected override void Dispose(bool disposing)
+        protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
         {
             if (disposing && !_disposed)
             {
-                var pool = this.Services.GetRequiredService<IObjectPool<SortedSet<int>>>();
-                pool.Return(this.Ids);
-                pool.Return(this.SeriesIds);
+                if (factory is not null)
+                {
+                    using var scope = factory.CreateScope();
+                    var pool = scope.ServiceProvider.GetService<IObjectPool<SortedSet<int>>>();
+                    pool?.Return(this.Ids);
+                    pool?.Return(this.SeriesIds);
+                }
+                
                 this.Ids = null!;
                 this.SeriesIds = null!;
                 _disposed = true;
             }
-
-            base.Dispose(disposing);
         }
     }
 }

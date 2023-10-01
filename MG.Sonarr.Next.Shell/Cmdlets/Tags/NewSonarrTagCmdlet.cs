@@ -13,7 +13,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         [Alias("Name")]
         public string Label { get; set; } = null!;
 
-        protected override void Process()
+        protected override void Process(IServiceProvider provider)
         {
             SonarrTag tag = new() { Id = 0, Label = this.Label };
 

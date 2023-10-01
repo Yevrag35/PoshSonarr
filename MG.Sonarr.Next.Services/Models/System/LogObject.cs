@@ -3,7 +3,7 @@ using MG.Sonarr.Next.Services.Metadata;
 
 namespace MG.Sonarr.Next.Services.Models.System
 {
-    public sealed class LogObject : SonarrObject
+    public sealed class LogObject : SonarrObject, IComparable<LogObject>
     {
         public string Level { get; private set; } = string.Empty;
         public DateTimeOffset Time { get; private set; }
@@ -15,6 +15,12 @@ namespace MG.Sonarr.Next.Services.Models.System
         protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.LOG_ITEM];
+        }
+
+        public int CompareTo(LogObject? other)
+        {
+            DateTimeOffset offset = other?.Time ?? default;
+            return this.Time.CompareTo(offset);
         }
 
         public override void OnDeserialized()

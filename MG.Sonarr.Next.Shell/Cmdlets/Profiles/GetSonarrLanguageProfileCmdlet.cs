@@ -12,19 +12,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
     [Cmdlet(VerbsCommon.Get, "SonarrLanguageProfile", DefaultParameterSetName = "None")]
     public sealed class GetSonarrLanguageProfileCmdlet : SonarrMetadataCmdlet
     {
-        SortedSet<int> _ids;
-        readonly List<LanguageProfileObject> _list;
-        HashSet<WildcardString> _wcNames;
-
-        public GetSonarrLanguageProfileCmdlet()
-            : base(2)
-        {
-            _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
-            _wcNames = this.GetPooledObject<HashSet<WildcardString>>();
-            this.Returnables[1] = _wcNames;
-            _list = new(1);
-        }
+        SortedSet<int> _ids = null!;
+        List<LanguageProfileObject> _list = null!;
+        HashSet<WildcardString> _wcNames = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = "ByProfileId")]
@@ -48,12 +38,24 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
             }
         }
 
+        protected override int Capacity => 2;
+
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            base.OnCreatingScope(provider);
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
+            _wcNames = this.GetPooledObject<HashSet<WildcardString>>();
+            this.Returnables[1] = _wcNames;
+            _list = new(1);
+        }
+
         protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
         {
             return resolver[Meta.LANGUAGE];
         }
 
-        protected override void Process()
+        protected override void Process(IServiceProvider provider)
         {
             bool addedIds = false;
             if (!_ids.IsNullOrEmpty())

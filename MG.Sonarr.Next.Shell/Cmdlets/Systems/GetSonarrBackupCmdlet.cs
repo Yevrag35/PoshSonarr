@@ -8,16 +8,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
     [Cmdlet(VerbsCommon.Get, "SonarrBackup")]
     public sealed class GetSonarrBackupCmdlet : SonarrMetadataCmdlet
     {
-        public GetSonarrBackupCmdlet() : base()
-        {
-        }
-
+        protected override int Capacity => 0;
         protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
         {
             return resolver[Meta.BACKUP];
         }
 
-        protected override void Process()
+        protected override void Process(IServiceProvider provider)
         {
             var response = this.GetAll<BackupObject>();
             this.WriteCollection(response);

@@ -12,14 +12,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
     [Alias("Connect-Sonarr")]
     public sealed class ConnectSonarrInstanceCmdlet : PSCmdlet, IApiCmdlet
     {
-        ConnectionSettings _settings;
+        ConnectionSettings _settings = null!;
         private ConnectionSettings Settings => _settings;
 
         private ActionPreference VerbosePreference { get; set; }
 
         public ConnectSonarrInstanceCmdlet()
         {
-            _settings = new();
         }
 
         [Parameter(Mandatory = true, Position = 1)]
@@ -27,7 +26,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
         public ApiKey ApiKey
         {
             get => this.Settings.Key;
-            set => this.Settings.Key = value;
+            set
+            {
+                _settings ??= new();
+                this.Settings.Key = value;
+            }
         }
 
         [Parameter(Mandatory = true, Position = 0)]
@@ -35,7 +38,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
         public Uri Url
         {
             get => this.Settings.ServiceUri;
-            set => this.Settings.ServiceUri = value;
+            set
+            {
+                _settings ??= new();
+                this.Settings.ServiceUri = value;
+            }
         }
 
         [Parameter(Mandatory = false)]
@@ -43,18 +50,27 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
         public SwitchParameter NoApiInPath
         {
             get => this.Settings.NoApiInPath;
-            set => this.Settings.NoApiInPath = value.ToBool();
+            set
+            {
+                _settings ??= new();
+                this.Settings.NoApiInPath = value.ToBool();
+            }
         }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter SkipCertificateCheck
         {
             get => this.Settings.SkipCertValidation;
-            set => this.Settings.SkipCertValidation = value;
+            set
+            {
+                _settings ??= new();
+                this.Settings.SkipCertValidation = value;
+            }
         }
 
         protected override void BeginProcessing()
         {
+            _settings = new();
             this.StoreVerbosePreference();
         }
         protected override void ProcessRecord()

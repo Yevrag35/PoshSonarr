@@ -10,17 +10,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     [Cmdlet(VerbsCommon.Get, "SonarrTag", DefaultParameterSetName = "ByName")]
     public sealed class GetSonarrTagCmdlet : SonarrMetadataCmdlet
     {
-        SortedSet<int> _ids;
-        HashSet<WildcardString> _names;
-
-        public GetSonarrTagCmdlet()
-            : base(2)
-        {
-            _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
-            _names = this.GetPooledObject<HashSet<WildcardString>>();
-            this.Returnables[1] = _names;
-        }
+        SortedSet<int> _ids = null!;
+        HashSet<WildcardString> _names = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput")]
@@ -48,12 +39,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             set => value.SplitToSets(_ids, _names);
         }
 
+        protected override int Capacity => 2;
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            base.OnCreatingScope(provider);
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
+            _names = this.GetPooledObject<HashSet<WildcardString>>();
+            this.Returnables[1] = _names;
+        }
         protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
         {
             return resolver[Meta.TAG];
         }
 
-        protected override void End()
+        protected override void End(IServiceProvider provider)
         {
             bool hasIds = this.ProcessIds(_ids);
 

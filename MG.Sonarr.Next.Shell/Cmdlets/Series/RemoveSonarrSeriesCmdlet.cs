@@ -15,20 +15,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         static readonly IQueryParameter FALSE = QueryParameter.Create("deleteFiles", false);
         static readonly IQueryParameter TRUE = QueryParameter.Create("deleteFiles", true);
 
-        readonly QueryParameterCollection _col;
-        readonly SortedDictionary<int, string?> _dict;
-        MetadataTag Tag { get; }
-
-        public RemoveSonarrSeriesCmdlet()
-            : base()
-        {
-            _col = new()
-            {
-                FALSE,
-            };
-            _dict = new();
-            this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.SERIES];
-        }
+        QueryParameterCollection _col = null!;
+        SortedDictionary<int, string?> _dict = null!;
+        MetadataTag Tag { get; set; } = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ById")]
@@ -72,6 +61,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
         }
 
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            base.OnCreatingScope(provider);
+            _col = new()
+            {
+                FALSE,
+            };
+            _dict = new();
+            this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.SERIES];
+        }
+
         private static void AddIdsToDict(IEnumerable<SeriesObject> array, IDictionary<int, string?> dictionary)
         {
             foreach (SeriesObject so in array)
@@ -80,7 +80,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
         }
 
-        protected override void End()
+        protected override void End(IServiceProvider provider)
         {
             if (_dict.Count <= 0)
             {

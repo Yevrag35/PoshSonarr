@@ -51,6 +51,20 @@ namespace MG.Sonarr.Next.Services.Http.Queries
             }
         }
 
+        public void AddOrUpdate(IQueryParameter parameter)
+        {
+            if (_params.TryGetValue(parameter, out var actual))
+            {
+                _params.Remove(actual);
+                _maxLength -= actual.MaxLength;
+                _ = this.Add(parameter);
+            }
+            else
+            {
+                _ = this.Add(parameter);
+            }
+        }
+
         public void Clear()
         {
             _params.Clear();

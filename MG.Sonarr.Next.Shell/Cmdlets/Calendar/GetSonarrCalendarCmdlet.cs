@@ -12,16 +12,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         const string START = "start";
         const string END = "end";
         DateTime? _end;
-        readonly HashSet<DayOfWeek> _dows;
-
-        MetadataTag Tag { get; }
-
-        public GetSonarrCalendarCmdlet()
-            : base()
-        {
-            _dows = new(1);
-            this.Tag = this.Services.GetRequiredService<MetadataResolver>()[Meta.CALENDAR];
-        }
+        HashSet<DayOfWeek> _dows = null!;
+        MetadataTag Tag { get; set; } = null!;
 
         [Parameter(Position = 0)]
         public DateTime StartDate { get; set; } = DateTime.Now;
@@ -51,7 +43,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         [Parameter]
         public SwitchParameter IncludeUnmonitored { get; set; }
 
-        protected override void Begin()
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            base.OnCreatingScope(provider);
+            _dows = new(1);
+            this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.CALENDAR];
+        }
+
+        protected override void Begin(IServiceProvider provider)
         {
             if (this.HasParameter(x => x.Today))
             {
@@ -65,7 +64,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
             }
         }
 
-        protected override void Process()
+        protected override void Process(IServiceProvider provider)
         {
             var parameters = GetParameters(this.StartDate, this.EndDate, this.IncludeUnmonitored);
             string url = this.Tag.GetUrl(parameters);

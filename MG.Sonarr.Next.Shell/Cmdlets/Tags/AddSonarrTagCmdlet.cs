@@ -9,19 +9,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     [Cmdlet(VerbsCommon.Add, "SonarrTag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
     public sealed class AddSonarrTagCmdlet : SonarrMetadataCmdlet
     {
-        SortedSet<int> _ids;
-        HashSet<WildcardString> _resolveNames;
-        readonly Dictionary<string, ITagPipeable> _updates;
-
-        public AddSonarrTagCmdlet()
-            : base(2)
-        {
-            _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
-            _resolveNames = this.GetPooledObject<HashSet<WildcardString>>();
-            this.Returnables[1] = _resolveNames;
-            _updates = new(1, StringComparer.InvariantCultureIgnoreCase);
-        }
+        SortedSet<int> _ids = null!;
+        HashSet<WildcardString> _resolveNames = null!;
+        Dictionary<string, ITagPipeable> _updates = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
@@ -47,6 +37,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             set => value.SplitToSets(_ids, _resolveNames);
         }
 
+        protected override int Capacity => 2;
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            base.OnCreatingScope(provider);
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
+            _resolveNames = this.GetPooledObject<HashSet<WildcardString>>();
+            this.Returnables[1] = _resolveNames;
+            _updates = new(1, StringComparer.InvariantCultureIgnoreCase);
+        }
+
         private void AddUrlsFromMetadata(ITagPipeable[] pipeables)
         {
             foreach (ITagPipeable item in pipeables)
@@ -60,7 +61,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             return resolver[Meta.TAG];
         }
 
-        protected override void Begin()
+        protected override void Begin(IServiceProvider provider)
         {
             if (_resolveNames.Count > 0)
             {
@@ -75,7 +76,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                 }
             }
         }
-        protected override void End()
+        protected override void End(IServiceProvider provider)
         {
             foreach (var kvp in _updates)
             {
