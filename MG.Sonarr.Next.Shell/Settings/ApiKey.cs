@@ -7,9 +7,13 @@ namespace MG.Sonarr.Next.Shell.Settings
     public readonly struct ApiKey : IApiKey
     {
         readonly string? _key;
+        readonly bool _isNotEmpty;
+
+        public bool IsEmpty => !_isNotEmpty;
 
         private ApiKey(string? key)
         {
+            _isNotEmpty = !string.IsNullOrWhiteSpace(key);
             _key = key ?? string.Empty;
         }
         private ApiKey(SecureString secureString)
@@ -29,11 +33,13 @@ namespace MG.Sonarr.Next.Shell.Settings
             Marshal.ZeroFreeBSTR(pp);
             return s ?? string.Empty;
         }
+
+        public static readonly ApiKey Empty = new(string.Empty);
         
-        /// <exception cref="InvalidOperationException"/>
         public string GetValue()
         {
-            return _key ?? throw new InvalidOperationException("No API key is present.");
+            return _key ?? string.Empty;
+            //return _key ?? throw new InvalidOperationException("No API key is present.");
         }
 
         /// <exception cref="ArgumentException"></exception>

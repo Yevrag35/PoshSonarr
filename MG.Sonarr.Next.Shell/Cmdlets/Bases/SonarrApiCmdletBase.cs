@@ -13,11 +13,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         protected SonarrJsonOptions? Options { get; private set; } = null!;
         Queue<IApiCmdlet> Queue { get; set; } = null!;
 
-        protected SonarrApiCmdletBase()
-            : base()
-        {
-        }
-
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             this.Client = provider.GetRequiredService<ISonarrClient>();

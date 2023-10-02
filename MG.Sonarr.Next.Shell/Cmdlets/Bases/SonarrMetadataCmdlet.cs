@@ -18,6 +18,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
+            base.OnCreatingScope(provider);
             this.Tag = this.GetMetadataTag(provider.GetRequiredService<MetadataResolver>());
             this.Returner = provider.GetRequiredService<IPoolReturner>();
             this.CreatingScopeAndCapacity(provider, this.Capacity);

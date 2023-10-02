@@ -10,48 +10,37 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 {
-    [Cmdlet(VerbsCommon.Get, "SonarrEpisode", DefaultParameterSetName = "ByEpisodeId")]
+    [Cmdlet(VerbsCommon.Get, "SonarrEpisode", DefaultParameterSetName = BY_EP_ID)]
     public sealed class GetSonarrEpisodeCmdlet : SonarrApiCmdletBase
     {
+        const string BY_EP_ID = "ByEpisodeId";
+        const string BY_EP_INPUT = "ByEpisodeInput";
+        const string BY_SERIES_ID = "BySeriesId";
+        const string BY_SERIES_INPUT = "BySeriesInput";
         bool _disposed;
+
         SortedSet<int> EpIds { get; set; } = null!;
         SortedSet<int> SeriesIds { get; set; } = null!;
         MetadataTag Tag { get; set; } = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByEpisodeId")]
-        public int[] Id
-        {
-            get => Array.Empty<int>();
-            set => this.EpIds.UnionWith(value);
-        }
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = BY_EP_ID)]
+        public int[] Id { get; set; } = Array.Empty<int>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ParameterSetName = "BySeriesId")]
-        public int[] SeriesId
-        {
-            get => Array.Empty<int>();
-            set => this.SeriesIds.UnionWith(value);
-        }
+        [Parameter(Mandatory = true, ParameterSetName = BY_SERIES_ID)]
+        public int[] SeriesId { get; set; } = Array.Empty<int>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByEpisodeInput", DontShow = true)]
-        public IEpisodePipeable[] EpisodeInput
-        {
-            get => Array.Empty<IEpisodePipeable>();
-            set => this.EpIds.UnionWith(value.Select(x => x.EpisodeId));
-        }
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_EP_INPUT, DontShow = true)]
+        public IEpisodePipeable[] EpisodeInput { get; set; } = Array.Empty<IEpisodePipeable>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "BySeriesInput", DontShow = true)]
-        public IEpisodeBySeriesPipeable[] SeriesInput
-        {
-            get => Array.Empty<IEpisodeBySeriesPipeable>();
-            set => this.SeriesIds.UnionWith(value.Select(x => x.SeriesId));
-        }
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_SERIES_INPUT, DontShow = true)]
+        public IEpisodeBySeriesPipeable[] SeriesInput { get; set; } = Array.Empty<IEpisodeBySeriesPipeable>();
 
-        [Parameter(Mandatory = false, Position = 1, ParameterSetName = "BySeriesId")]
-        [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesInput")]
+        [Parameter(Mandatory = false, Position = 1, ParameterSetName = BY_SERIES_ID)]
+        [Parameter(Mandatory = false, Position = 0, ParameterSetName = BY_SERIES_INPUT)]
         [Alias("SeasonEpId")]
         public SeasonEpisodeId EpisodeIdentifier { get; set; }
 
@@ -70,6 +59,28 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             {
                 this.WriteError(new ArgumentException("Episode identifiers should be either be in \"S<seasonNumber>E<episodeNumber>\" format or a number.")
                     .ToRecord(ErrorCategory.InvalidArgument, this.EpisodeIdentifier));
+            }
+        }
+
+        protected override void Process(IServiceProvider provider)
+        {
+            switch (this.ParameterSetName)
+            {
+                case BY_EP_ID:
+                    this.EpIds.UnionWith(this.Id);
+                    break;
+
+                case BY_SERIES_ID:
+                    this.SeriesIds.UnionWith(this.SeriesId);
+                    break;
+
+                case BY_EP_INPUT:
+                    this.EpIds.UnionWith(this.EpisodeInput.Select(x => x.EpisodeId));
+                    break;
+
+                case BY_SERIES_INPUT:
+                    this.SeriesIds.UnionWith(this.SeriesInput.Select(x => x.SeriesId));
+                    break;
             }
         }
 

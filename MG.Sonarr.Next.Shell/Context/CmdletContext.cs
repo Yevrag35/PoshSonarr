@@ -21,7 +21,6 @@ using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Shell.Cmdlets.Connection;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Pools;
-using MG.Sonarr.Next.Shell.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json.Serialization.Metadata;
 
@@ -34,6 +33,10 @@ namespace MG.Sonarr.Next.Shell.Context
 #endif
     {
         internal static IServiceScope CreateScope(this SonarrCmdletBase cmdlet)
+        {
+            return SonarrContext.GetProvider().CreateScope();
+        }
+        internal static IServiceScope CreateScope(this ConnectSonarrInstanceCmdlet cmdlet)
         {
             return SonarrContext.GetProvider().CreateScope();
         }

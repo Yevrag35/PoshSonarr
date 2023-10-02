@@ -25,6 +25,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             set
             {
                 value ??= Array.Empty<AddSeriesObject>();
+                _list ??= new(value.Length);
                 int count = _list.Count;
                 int howMany = value.Length;
                 _range = new Range(count, howMany);
@@ -62,8 +63,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         [Parameter(Mandatory = true, ParameterSetName = "RootFolderPathAndSearch")]
         public SwitchParameter SearchForMissingEpisodes
         {
-            get => this.AddOptions.SearchForMissingEpisodes;
-            set => this.AddOptions.SearchForMissingEpisodes = value.ToBool();
+            get => this.AddOptions?.SearchForMissingEpisodes ?? default;
+            set => this.SetAddOptionsValue(in value);
         }
 
         [Parameter(Mandatory = false)]
@@ -114,46 +115,50 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _list = new(1);
-            this.AddOptions = new();
             this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.SERIES];
         }
         protected override void Process(IServiceProvider provider)
         {
             var range = _list.GetRange(_range.Start.Value, _range.End.Value);
 
-            foreach (var pso in range)
+            foreach (AddSeriesObject pso in range)
             {
                 this.SetPath(pso);
-                pso.AddOptions = this.AddOptions;
-                pso.LanguageProfileId = this.LanguageProfileId;
-
-                if (this.HasParameter(x => x.UseSeasonFolders))
-                {
-                    pso.UseSeasonFolders = this.UseSeasonFolders.ToBool();
-                }
-
-                if (this.HasParameter(x => x.ProfileId))
-                {
-                    pso.ProfileId = this.ProfileId;
-                }
-
-                if (this.HasParameter(x => x.QualityProfileId))
-                {
-                    pso.QualityProfileId = this.QualityProfileId;
-                }
-
-                if (this.HasParameter(x => x.SeriesType))
-                {
-                    pso.SeriesType = this.SeriesType;
-                }
-
-                if (this.HasParameter(x => x.IsMonitored))
-                {
-                    pso.IsMonitored = this.IsMonitored.ToBool();
-                }
+                this.SetPropertiesFromParameters(pso);
             }
         }
+
+        private void SetPropertiesFromParameters(AddSeriesObject pso)
+        {
+            pso.AddOptions = this.AddOptions;
+            pso.LanguageProfileId = this.LanguageProfileId;
+
+            if (this.HasParameter(x => x.UseSeasonFolders))
+            {
+                pso.UseSeasonFolders = this.UseSeasonFolders.ToBool();
+            }
+
+            if (this.HasParameter(x => x.ProfileId))
+            {
+                pso.ProfileId = this.ProfileId;
+            }
+
+            if (this.HasParameter(x => x.QualityProfileId))
+            {
+                pso.QualityProfileId = this.QualityProfileId;
+            }
+
+            if (this.HasParameter(x => x.SeriesType))
+            {
+                pso.SeriesType = this.SeriesType;
+            }
+
+            if (this.HasParameter(x => x.IsMonitored))
+            {
+                pso.IsMonitored = this.IsMonitored.ToBool();
+            }
+        }
+
         protected override void End(IServiceProvider provider)
         {
             this.SetAddOptions(this.AddOptions);
@@ -209,6 +214,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
             pso.Path = this.AbsolutePath;
             pso.IsFullPath = true;
+        }
+        private void SetAddOptionsValue(in SwitchParameter swParam)
+        {
+            this.SetValue(
+                cmdlet: this,
+                getSetting: x => x.AddOptions,
+                value: swParam.ToBool(),
+                setValue: (x, options) => options.SearchForMissingEpisodes = x);
         }
     }
 }

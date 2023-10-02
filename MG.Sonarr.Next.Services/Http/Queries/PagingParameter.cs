@@ -130,9 +130,6 @@ namespace MG.Sonarr.Next.Services.Http.Queries
 
         public void Reset()
         {
-            _constructed = string.Empty;
-            _isConstructed = false;
-            _hash = 0;
             _pageNo = DEFAULT_PAGE_NO;
             _pageSize = DEFAULT_PAGE_SIZE;
             _sortKey = Constants.ID;

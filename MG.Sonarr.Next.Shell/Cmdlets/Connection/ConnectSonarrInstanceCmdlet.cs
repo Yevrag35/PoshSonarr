@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Json;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Settings;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,60 +18,45 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 
         private ActionPreference VerbosePreference { get; set; }
 
-        public ConnectSonarrInstanceCmdlet()
-        {
-        }
-
         [Parameter(Mandatory = true, Position = 1)]
         [Alias("Key")]
         public ApiKey ApiKey
         {
-            get => this.Settings.Key;
-            set
-            {
-                _settings ??= new();
-                this.Settings.Key = value;
-            }
+            get => _settings?.Key ?? ApiKey.Empty;
+            set => this.SetConnectionSetting(value, (x, settings) => settings.Key = x);
         }
 
         [Parameter(Mandatory = true, Position = 0)]
         [Alias("SonarrUrl")] // for backward compatibility
+        [ValidateUrl(UriKind.Absolute)]
+        [MaybeNull]
         public Uri Url
         {
-            get => this.Settings.ServiceUri;
-            set
-            {
-                _settings ??= new();
-                this.Settings.ServiceUri = value;
-            }
+            get => _settings?.ServiceUri;
+            set => this.SetConnectionSetting(value, (x, settings) => settings.ServiceUri = x);
         }
 
         [Parameter(Mandatory = false)]
         [Alias("NoApiPrefix")]  // for backward-compatibility
         public SwitchParameter NoApiInPath
         {
-            get => this.Settings.NoApiInPath;
-            set
-            {
-                _settings ??= new();
-                this.Settings.NoApiInPath = value.ToBool();
-            }
+            get => _settings?.NoApiInPath ?? default;
+            set => this.SetConnectionSetting(value.ToBool(), (x, settings) => settings.NoApiInPath = x);
         }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter SkipCertificateCheck
         {
-            get => this.Settings.SkipCertValidation;
+            get => _settings?.SkipCertValidation ?? default;
             set
             {
                 _settings ??= new();
-                this.Settings.SkipCertValidation = value;
+                _settings.SkipCertValidation = value.ToBool();
             }
         }
 
         protected override void BeginProcessing()
         {
-            _settings = new();
             this.StoreVerbosePreference();
         }
         protected override void ProcessRecord()
@@ -79,8 +65,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             {
                 return services.BuildServiceProvider(options);
             });
-            IServiceProvider provider = this.GetServiceProvider();
-            using var scope = provider.CreateScope();
+            using IServiceScope scope = this.CreateScope();
 
             var queue = scope.ServiceProvider.GetService<Queue<IApiCmdlet>>();
             queue?.Enqueue(this);
@@ -92,10 +77,18 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
                 this.ThrowTerminatingError(result.Error);
             }
         }
-
         protected override void EndProcessing()
         {
             _settings = null!;
+        }
+
+        private void SetConnectionSetting<T>(T? value, Action<T, ConnectionSettings> setValue)
+        {
+            if (value is not null)
+            {
+                _settings ??= new();
+                setValue.Invoke(value, _settings);
+            }
         }
 
         private void StoreVerbosePreference()

@@ -16,11 +16,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0)]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id
-        {
-            get => Array.Empty<int>();
-            set => _ids.UnionWith(value);
-        }
+        public int[] Id { get; set; } = Array.Empty<int>();
 
         protected override int Capacity => 1;
 
@@ -36,9 +32,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
             return resolver[Meta.DELAY_PROFILE];
         }
 
+        protected override void Begin(IServiceProvider provider)
+        {
+            _ids.UnionWith(this.Id);
+        }
         protected override void Process(IServiceProvider provider)
         {
-            IEnumerable<DelayProfileObject> profiles = !_ids.IsNullOrEmpty()
+            IEnumerable<DelayProfileObject> profiles = _ids.Count > 0
                 ? this.GetById<DelayProfileObject>(_ids)
                 : this.GetAll<DelayProfileObject>();
 

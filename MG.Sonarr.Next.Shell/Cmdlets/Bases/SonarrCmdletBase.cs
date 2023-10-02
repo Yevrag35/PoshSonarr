@@ -3,8 +3,11 @@ using MG.Sonarr.Next.Services.Exceptions;
 using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Json;
+using MG.Sonarr.Next.Services.Reflection;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using OneOf;
+using System.Reflection;
 using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
@@ -39,14 +42,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         bool HasError { get; set; }
 
         protected ActionPreference VerbosePreference { get; private set; }
-
-        protected SonarrCmdletBase()
-        {
-        }
-
-        protected virtual void OnCreatingScope(IServiceProvider provider)
-        {
-        }
 
         protected sealed override void BeginProcessing()
         {
@@ -197,6 +192,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             this.StopCmdlet();
         }
 
+        protected virtual void OnCreatingScope(IServiceProvider provider)
+        {
+        }
+
         /// <exception cref="InvalidOperationException"/>
         protected T GetPooledObject<T>() where T : notnull
         {
@@ -231,6 +230,30 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 this.WriteDebug(JsonSerializer.Serialize(value, type, options));
             }
         }
+
+        protected void SetValue<TCmdlet, TObj, TValue>(TCmdlet cmdlet, Expression<Func<TCmdlet, TObj?>> getSetting, TValue? value, Action<TValue, TObj> setValue)
+            where TCmdlet : SonarrCmdletBase
+            where TObj : class, new()
+        {
+            if (value is not null)
+            {
+                var func = getSetting.Compile();
+                TObj? obj = func(cmdlet);
+                if (obj is null)
+                {
+                    if (!getSetting.TryGetAsSetter(out FieldOrPropertyInfoSetter setter))
+                    {
+                        throw new InvalidOperationException("TObj must resolve to a field or property.");
+                    }
+
+                    obj = new();
+                    setter.SetValue(cmdlet, obj);
+                }
+
+                setValue.Invoke(value, obj);
+            }
+        }
+
         private void StoreDebugPreference()
         {
             this.DebugPreference = this

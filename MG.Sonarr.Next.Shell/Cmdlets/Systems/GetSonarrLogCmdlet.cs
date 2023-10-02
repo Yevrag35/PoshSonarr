@@ -81,7 +81,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
 
         protected override void Process(IServiceProvider provider)
         {
-            this.WriteVerbose(this.Paging.ToString(null, null));
+            this.WriteDebug(this.Paging.ToString(null, null));
             string url = this.Tag.GetUrl(this.Parameters);
             if (this.GetLogs(url, out var result))
             {

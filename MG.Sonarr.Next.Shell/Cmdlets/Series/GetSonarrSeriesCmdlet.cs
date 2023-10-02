@@ -6,7 +6,6 @@ using MG.Sonarr.Next.Services.Models.Series;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
@@ -24,11 +23,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId")]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id
-        {
-            get => Array.Empty<int>();
-            set => _ids.UnionWith(value);
-        }
+        public int[] Id { get; set; } = Array.Empty<int>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput", DontShow = true,
@@ -36,7 +31,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         public ISeriesPipeable[] InputObject
         {
             get => Array.Empty<ISeriesPipeable>();
-            set => _ids.UnionWith(value.Select(x => x.SeriesId));
+            set
+            {
+                if (value is not null)
+                {
+                    _ids ??= new();
+                    _ids.UnionWith(value.Select(x => x.SeriesId));
+                }
+            }
         }
 
         protected override int Capacity => 2;
@@ -53,8 +55,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             return resolver[Meta.SERIES];
         }
 
+        protected override void Begin(IServiceProvider provider)
+        {
+            _ids.UnionWith(this.Id);
+        }
         protected override void Process(IServiceProvider provider)
         {
+            if (this.HasParameter(x => x.InputObject))
+            {
+                _ids.UnionWith(this.InputObject.Select(x => x.SeriesId));
+            }
+            else
+            {
+                this.Name.SplitToSets(_ids, _names);
+            }
+
             bool hadIds = false;
             if (_ids.Count > 0)
             {

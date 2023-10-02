@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.Shell.Pools
 
         protected override bool ResetObject(PagingParameter obj)
         {
-            //obj.Reset();
+            obj?.Reset();
             return true;
         }
     }
