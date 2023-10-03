@@ -6,23 +6,29 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     [Alias("Set-SonarrSeries")]
     public sealed class UpdateSonarrSeriesCmdlet : SonarrApiCmdletBase
     {
-        List<SeriesObject>? _list = null;
+        List<SeriesObject> _list = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
-        public SeriesObject[] InputObject
-        {
-            get => Array.Empty<SeriesObject>();
-            set
-            {
-                _list ??= new(value.Length);
-                _list.AddRange(value);
-            }
-        }
+        public SeriesObject[] InputObject { get; set; } = Array.Empty<SeriesObject>();
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
+            _list = new(1);
+        }
+        protected override void Process(IServiceProvider provider)
+        {
+            foreach (SeriesObject series in this.InputObject)
+            {
+                if (series.Id <= 0)
+                {
+                    this.WriteWarning("A series with an invalid ID was passed. It will be ignored.");
+                    continue;
+                }
+
+                _list.Add(series);
+            }
         }
         protected override void End(IServiceProvider provider)
         {
