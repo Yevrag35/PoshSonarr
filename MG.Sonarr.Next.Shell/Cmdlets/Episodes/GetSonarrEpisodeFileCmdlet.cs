@@ -2,6 +2,7 @@
 using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Episodes;
+using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
@@ -14,47 +15,23 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         SortedSet<int> SeriesIds { get; set; } = null!;
         MetadataTag Tag { get; set; } = null!;
 
-        public GetSonarrEpisodeFileCmdlet()
-            : base()
-        {
-            
-        }
-
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByEpisodeFileInput", DontShow = true)]
-        public IEpisodeFilePipeable[] InputObject
-        {
-            get => Array.Empty<IEpisodeFilePipeable>();
-            set
-            {
-                this.Ids.UnionWith(
-                    value.Where(x => x.EpisodeFileId > 0).Select(x => x.EpisodeFileId));
-            }
-        }
+        public IEpisodeFilePipeable[] InputObject { get; set; } = Array.Empty<IEpisodeFilePipeable>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "BySeriesInput", DontShow = true)]
-        public IEpisodeFileBySeriesPipeable[] SeriesInput
-        {
-            get => Array.Empty<IEpisodeFileBySeriesPipeable>();
-            set => this.SeriesIds.UnionWith(value.Select(x => x.SeriesId));
-        }
+        public IEpisodeFileBySeriesPipeable[] SeriesInput { get; set; } = Array.Empty<IEpisodeFileBySeriesPipeable>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByEpisodeFileId")]
-        public int[] Id
-        {
-            get => Array.Empty<int>();
-            set => this.Ids.UnionWith(value);
-        }
+        [ValidateRange(ValidateRangeKind.Positive)]
+        public int[] Id { get; set; } = Array.Empty<int>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = "BySeriesId")]
-        public int[] SeriesId
-        {
-            get => Array.Empty<int>();
-            set => this.SeriesIds.UnionWith(value);
-        }
+        [ValidateRange(ValidateRangeKind.Positive)]
+        public int[] SeriesId { get; set;  } = Array.Empty<int>();
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
@@ -72,6 +49,28 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                    this.SeriesIds.Count <= 0;
         }
 
+        protected override void Begin(IServiceProvider provider)
+        {
+            this.Ids.UnionWith(this.Id);
+            this.SeriesIds.UnionWith(this.SeriesId);
+        }
+        protected override void Process(IServiceProvider provider)
+        {
+            if (this.HasParameter(x => x.InputObject))
+            {
+                this.Ids.UnionWith(
+                    this.InputObject
+                        .Where(x => x.EpisodeFileId > 0)
+                            .Select(x => x.EpisodeFileId));
+            }
+            else if (this.HasParameter(x => x.SeriesInput))
+            {
+                this.SeriesIds.UnionWith(
+                    this.SeriesInput
+                        .Where(x => x.SeriesId > 0)
+                            .Select(x => x.SeriesId));
+            }
+        }
         protected override void End(IServiceProvider provider)
         {
             if (this.InvokeCommand.HasErrors || this.HasNoParameters())
@@ -83,10 +82,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 ? this.GetEpFilesBySeriesId(this.SeriesIds)
                 : this.GetEpFilesById(this.Ids);
 
-            foreach (var item in files)
-            {
-                this.WriteObject(item);
-            }
+            this.WriteCollection(files);
         }
 
         private IEnumerable<EpisodeFileObject> GetEpFilesById(IReadOnlySet<int>? fileIds)

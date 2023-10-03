@@ -27,6 +27,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             get => Array.Empty<int>();
             set
             {
+                _dict ??= new();
                 foreach (int id in value)
                 {
                     _ = _dict.TryAdd(id, null);
@@ -40,7 +41,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         public SeriesObject[] InputObject
         {
             get => Array.Empty<SeriesObject>();
-            set => AddIdsToDict(value, _dict);
+            set
+            {
+                _dict ??= new();
+                AddIdsToDict(value, _dict);
+            }
         }
 
         [Parameter(Mandatory = false)]
@@ -53,6 +58,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             get => SwitchParameter.Present;
             set
             {
+                _col ??= new(1);
                 if (value.ToBool())
                 {
                     _col.Remove(FALSE.Key);
@@ -64,11 +70,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _col = new()
-            {
-                FALSE,
-            };
-            _dict = new();
             this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.SERIES];
         }
 
