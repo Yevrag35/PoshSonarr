@@ -13,11 +13,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0)]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id
-        {
-            get => Array.Empty<int>();
-            set => _ids.UnionWith(value);
-        }
+        public int[] Id { get; set; } = Array.Empty<int>();
 
         protected override int Capacity => 1;
         protected override void OnCreatingScope(IServiceProvider provider)
@@ -30,6 +26,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
         protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
         {
             return resolver[Meta.ROOT_FOLDER];
+        }
+
+        protected override void Begin(IServiceProvider provider)
+        {
+            _ids.UnionWith(this.Id);
         }
 
         protected override void Process(IServiceProvider provider)

@@ -46,11 +46,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         protected sealed override void BeginProcessing()
         {
             _scope = this.CreateScope();
-            this.OnCreatingScope(_scope.ServiceProvider);
+            try
+            {
+                this.OnCreatingScope(_scope.ServiceProvider);
+            }
+            catch (Exception e)
+            {
+                this.Error = e.ToRecord();
+            }
 
             if (this.HasError)
             {
+                this.Dispose();
                 this.ThrowTerminatingError(this.Error);
+                return;
             }
             else if (_isStopped)
             {
@@ -228,29 +237,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
 
                 this.WriteDebug($"Serializing 'value' of type: {type.FullName ?? type.Name}");
                 this.WriteDebug(JsonSerializer.Serialize(value, type, options));
-            }
-        }
-
-        protected void SetValue<TCmdlet, TObj, TValue>(TCmdlet cmdlet, Expression<Func<TCmdlet, TObj?>> getSetting, TValue? value, Action<TValue, TObj> setValue)
-            where TCmdlet : SonarrCmdletBase
-            where TObj : class, new()
-        {
-            if (value is not null)
-            {
-                var func = getSetting.Compile();
-                TObj? obj = func(cmdlet);
-                if (obj is null)
-                {
-                    if (!getSetting.TryGetAsSetter(out FieldOrPropertyInfoSetter setter))
-                    {
-                        throw new InvalidOperationException("TObj must resolve to a field or property.");
-                    }
-
-                    obj = new();
-                    setter.SetValue(cmdlet, obj);
-                }
-
-                setValue.Invoke(value, obj);
             }
         }
 

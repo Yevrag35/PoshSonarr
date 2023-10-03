@@ -18,25 +18,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false)]
-        public int[] Id
-        {
-            get => Array.Empty<int>();
-            set => _ids.UnionWith(value.Where(x => x > 0));
-        }
+        [ValidateRange(ValidateRangeKind.Positive)]
+        public int[] Id { get; set; } = Array.Empty<int>();
 
         const string NAME = " -Name ";
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0)]
         [SupportsWildcards]
-        public IntOrString[] Name
-        {
-            get => Array.Empty<IntOrString>();
-            set
-            {
-                value.SplitToSets(_ids, _wcNames,
-                    this.MyInvocation.Line.Contains(NAME, StringComparison.InvariantCultureIgnoreCase));
-            }
-        }
+        public IntOrString[] Name { get; set; } = Array.Empty<IntOrString>();
 
         protected override int Capacity => 2;
         protected override void OnCreatingScope(IServiceProvider provider)
@@ -51,6 +40,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
         protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
         {
             return resolver[Meta.QUALITY_DEFINITION];
+        }
+
+        protected override void Begin(IServiceProvider provider)
+        {
+            _ids.UnionWith(this.Id);
+
+            if (this.HasParameter(x => x.Name))
+            {
+                this.Name.SplitToSets(_ids, _wcNames,
+                    this.MyInvocation.Line.Contains(NAME, StringComparison.InvariantCultureIgnoreCase));
+            }
         }
         protected override void Process(IServiceProvider provider)
         {

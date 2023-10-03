@@ -15,27 +15,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
-        public ITagPipeable[] InputObject
-        {
-            get => Array.Empty<ITagPipeable>();
-            set => this.AddUrlsFromMetadata(value);
-        }
+        public ITagPipeable[] InputObject { get; set; } = Array.Empty<ITagPipeable>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = "ById")]
-        public int[] Id
-        {
-            get => Array.Empty<int>();
-            set => _ids.UnionWith(value);
-        }
+        public int[] Id { get; set; } = Array.Empty<int>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByName")]
-        public IntOrString[] Name
-        {
-            get => Array.Empty<IntOrString>();
-            set => value.SplitToSets(_ids, _resolveNames);
-        }
+        public IntOrString[] Name { get; set; } = Array.Empty<IntOrString>();
 
         protected override int Capacity => 2;
         protected override void OnCreatingScope(IServiceProvider provider)
@@ -48,19 +36,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             _updates = new(1, StringComparer.InvariantCultureIgnoreCase);
         }
 
-        private void AddUrlsFromMetadata(ITagPipeable[]? array)
+        private static void AddUrlsFromMetadata(ITagPipeable[] array, IDictionary<string, ITagPipeable> updates)
         {
-            if (array is null)
-            {
-                return;
-            }
-
             foreach (ITagPipeable pipeable in array)
             {
-                _updates.TryAdd(pipeable.MetadataTag.GetUrlForId(pipeable.Id), pipeable);
+                updates.TryAdd(pipeable.MetadataTag.GetUrlForId(pipeable.Id), pipeable);
             }
 
-            if (_updates.Count <= 0)
+            if (updates.Count <= 0)
             {
                 throw new ArgumentException(
                     "No tag ID's were provided from the pipeline. Did you mean to use \"Clear-SonarrTag\"?");
@@ -74,6 +57,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
         protected override void Begin(IServiceProvider provider)
         {
+            if (this.HasParameter(x => x.Id))
+            {
+                _ids.UnionWith(this.Id);
+            }
+            else if (this.HasParameter(x => x.Name))
+            {
+                this.Name.SplitToSets(_ids, _resolveNames);
+            }
+
             if (_resolveNames.Count > 0)
             {
                 var all = this.GetAll<TagObject>();
@@ -87,8 +79,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                 }
             }
         }
+        protected override void Process(IServiceProvider provider)
+        {
+            if (this.HasParameter(x => x.InputObject))
+            {
+                AddUrlsFromMetadata(this.InputObject, _updates);
+            }
+        }
         protected override void End(IServiceProvider provider)
         {
+            if (this.InvokeCommand.HasErrors)
+            {
+                return;
+            }
+
             foreach (var kvp in _updates)
             {
                 if (!_ids.Overlaps(kvp.Value.Tags))

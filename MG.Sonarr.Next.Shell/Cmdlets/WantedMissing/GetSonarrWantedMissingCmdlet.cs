@@ -22,8 +22,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing
         [ValidateRange(ValidateRangeKind.Positive)]
         public int PageNumber
         {
-            get => default;
-            set => this.QueryCol.Add("page", value);
+            get => 0;
+            set
+            {
+                this.QueryCol ??= new(3);
+                this.QueryCol.Add("page", value);
+            }
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -31,18 +35,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing
         [ValidateRange(ValidateRangeKind.Positive)]
         public int PageSize
         {
-            get => default;
-            set => this.QueryCol.Add("pageSize", value);
-        }
-
-        protected override void OnCreatingScope(IServiceProvider provider)
-        {
-            base.OnCreatingScope(provider);
-            this.QueryCol = new(3);
+            get => 0;
+            set
+            {
+                this.QueryCol ??= new(3);
+                this.QueryCol.Add("pageSize", value);
+            }
         }
 
         protected override void Process(IServiceProvider provider)
         {
+            this.QueryCol ??= new();
             if (this.All.ToBool())
             {
                 IEnumerable<EpisodeObject> records = this.SendAllRecords();

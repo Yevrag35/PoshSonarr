@@ -1,9 +1,11 @@
-﻿using MG.Sonarr.Next.Services.Json;
+﻿using MG.Sonarr.Next.Services.Extensions;
+using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Series;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Models.Series;
 using Microsoft.Extensions.DependencyInjection;
+using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
@@ -119,9 +121,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         }
         protected override void Process(IServiceProvider provider)
         {
-            var range = _list.GetRange(_range.Start.Value, _range.End.Value);
+            ReadOnlySpan<AddSeriesObject> span = CollectionsMarshal.AsSpan(_list).Slice(_range.Start.Value, _range.End.Value);
 
-            foreach (AddSeriesObject pso in range)
+            foreach (AddSeriesObject pso in span)
             {
                 this.SetPath(pso);
                 this.SetPropertiesFromParameters(pso);
@@ -133,7 +135,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             pso.AddOptions = this.AddOptions;
             pso.LanguageProfileId = this.LanguageProfileId;
 
-            if (this.HasParameter(x => x.UseSeasonFolders))
+            if (this.HasParameter(x => x.UseSeasonFolders, onlyIfPresent: true))
             {
                 pso.UseSeasonFolders = this.UseSeasonFolders.ToBool();
             }
@@ -153,7 +155,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 pso.SeriesType = this.SeriesType;
             }
 
-            if (this.HasParameter(x => x.IsMonitored))
+            if (this.HasParameter(x => x.IsMonitored, onlyIfPresent: true))
             {
                 pso.IsMonitored = this.IsMonitored.ToBool();
             }
@@ -196,9 +198,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                     options.IgnoreEpisodesWithFiles = !wfSwitch.ToBool();
                 }
 
-                if (this.MyInvocation.BoundParameters.TryGetValue(WITHOUT_FILES, out object? wof)
-                    &&
-                    wof is SwitchParameter wofSwitch)
+                if (this.MyInvocation.BoundParameters.TryGetValueAs(WITHOUT_FILES, out SwitchParameter wofSwitch))
                 {
                     options.IgnoreEpisodesWithoutFiles = !wofSwitch.ToBool();
                 }
@@ -218,9 +218,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         private void SetAddOptionsValue(in SwitchParameter swParam)
         {
             this.SetValue(
-                cmdlet: this,
-                getSetting: x => x.AddOptions,
                 value: swParam.ToBool(),
+                getSetting: x => x.AddOptions,
                 setValue: (x, options) => options.SearchForMissingEpisodes = x);
         }
     }

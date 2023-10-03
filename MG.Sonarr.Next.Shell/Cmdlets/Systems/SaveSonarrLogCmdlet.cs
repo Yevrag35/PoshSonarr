@@ -42,7 +42,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
         public PSCredential Credential
         {
             get => null;
-            set => _creds = value.GetNetworkCredential();
+            set => _creds = value?.GetNetworkCredential();
         }
         NetworkCredential? _creds;
 

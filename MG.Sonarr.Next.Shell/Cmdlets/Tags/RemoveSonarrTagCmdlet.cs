@@ -19,7 +19,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         public TagObject InputObject
         {
             get => null!;
-            set => this.Id = value.Id;
+            set => this.Id = value?.Id ?? 0;
         }
 
         protected override void OnCreatingScope(IServiceProvider provider)
@@ -29,7 +29,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         }
         protected override void Process(IServiceProvider provider)
         {
-            if (this.InvokeCommand.HasErrors)
+            if (this.InvokeCommand.HasErrors || this.Id <= 0)
             {
                 return;
             }

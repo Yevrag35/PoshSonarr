@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Metadata;
+﻿using MG.Sonarr.Next.Services.Extensions;
+using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Tags;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,7 +9,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         DefaultParameterSetName = "ById")]
     public sealed class RenameSonarrTagCmdlet : SonarrApiCmdletBase
     {
-        Dictionary<string, object> _dict = null!;
+        Dictionary<string, object?> _dict = null!;
         MetadataTag Tag { get; set; } = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -16,7 +17,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         public int Id
         {
             get => default;
-            set => _dict[nameof(this.Id)] = value;
+            set
+            {
+                _dict ??= new(2);
+                _dict[nameof(this.Id)] = value;
+            }
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -24,7 +29,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         public TagObject InputObject
         {
             get => null!;
-            set => _dict[nameof(this.Id)] = value.Id;
+            set
+            {
+                _dict ??= new(2);
+                _dict[nameof(this.Id)] = value?.Id ?? 0;
+            }
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -34,21 +43,23 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         public string NewName
         {
             get => string.Empty;
-            set => _dict[Constants.LABEL] = value;
+            set
+            {
+                _dict ??= new(2);
+                _dict[Constants.LABEL] = value;
+            }
         }
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _dict = new(2, StringComparer.InvariantCultureIgnoreCase);
             this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.TAG];
-
         }
         protected override void Process(IServiceProvider provider)
         {
-            if (_dict.Count == 2)
+            if (_dict.Count == 2 && _dict.TryGetValueAs(nameof(this.Id), out int id) && id > 0)
             {
-                string url = this.Tag.GetUrlForId((int)_dict[nameof(this.Id)]);
+                string url = this.Tag.GetUrlForId(id);
                 if (this.ShouldProcess(url, "Update tag label"))
                 {
                     var result = this.SendPutRequest(url, _dict);

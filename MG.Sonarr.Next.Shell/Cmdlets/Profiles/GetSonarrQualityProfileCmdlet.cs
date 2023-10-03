@@ -17,35 +17,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput", ValueFromPipeline = true)]
-        public IQualityProfilePipeable[] InputObject
-        {
-            get => Array.Empty<IQualityProfilePipeable>();
-            set => _ids.UnionWith(value.Where(x => x.QualityProfileId > 0).Select(x => x.QualityProfileId));
-        }
+        public IQualityProfilePipeable[] InputObject { get; set; } = Array.Empty<IQualityProfilePipeable>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = "ByProfileId")]
-        public int[] Id
-        {
-            get => Array.Empty<int>();
-            set => _ids.UnionWith(value);
-        }
+        [ValidateRange(ValidateRangeKind.Positive)]
+        public int[] Id { get; set; } = Array.Empty<int>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByProfileName")]
         [SupportsWildcards]
-        public IntOrString[] Name
-        {
-            get => Array.Empty<IntOrString>();
-            set
-            {
-                value.SplitToSets(_ids, _wcNames,
-                    this.MyInvocation.Line.Contains(" -Name ", StringComparison.InvariantCultureIgnoreCase));
-            }
-        }
+        public IntOrString[] Name { get; set; } = Array.Empty<IntOrString>();
 
         protected override int Capacity => 2;
-
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
@@ -60,6 +44,23 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             return resolver[Meta.QUALITY_PROFILE];
         }
 
+        protected override void Begin(IServiceProvider provider)
+        {
+            _ids.UnionWith(this.Id);
+            if (this.HasParameter(x => x.Name))
+            {
+                this.Name.SplitToSets(_ids, _wcNames,
+                    this.MyInvocation.Line.Contains(" -Name ", StringComparison.InvariantCultureIgnoreCase));
+            }
+        }
+        protected override void Process(IServiceProvider provider)
+        {
+            if (this.HasParameter(x => x.InputObject))
+            {
+                _ids.UnionWith(
+                    this.InputObject.Where(x => x.QualityProfileId > 0).Select(x => x.QualityProfileId));
+            }
+        }
         protected override void End(IServiceProvider provider)
         {
             if (this.InvokeCommand.HasErrors)

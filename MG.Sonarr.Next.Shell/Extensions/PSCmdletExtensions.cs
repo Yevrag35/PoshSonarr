@@ -1,5 +1,7 @@
 ﻿using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Reflection;
+using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Shell.Components;
 
 namespace MG.Sonarr.Next.Shell.Extensions
@@ -52,14 +54,41 @@ namespace MG.Sonarr.Next.Shell.Extensions
             {
                 return false;
             }
+            else if (onlyIfPresent)
+            {
+                return true;
+            }
 
             var func = switchExpression.Compile();
-            return !onlyIfPresent || func(cmdlet).ToBool();
+            return func(cmdlet).ToBool();
         }
 
         public static bool ParameterSetNameIsLike(this PSCmdlet cmdlet, WildcardString wildString)
         {
             return wildString.IsMatch(cmdlet.ParameterSetName);
+        }
+
+        public static void SetValue<TCmdlet, TObj, TValue>(this TCmdlet cmdlet, TValue? value, Expression<Func<TCmdlet, TObj?>> getSetting, Action<TValue, TObj> setValue)
+            where TCmdlet : SonarrCmdletBase
+            where TObj : class, new()
+        {
+            if (value is not null)
+            {
+                var func = getSetting.Compile();
+                TObj? obj = func(cmdlet);
+                if (obj is null)
+                {
+                    if (!getSetting.TryGetAsSetter(out FieldOrPropertyInfoSetter setter))
+                    {
+                        throw new InvalidOperationException("TObj must resolve to a field or property.");
+                    }
+
+                    obj = new();
+                    setter.SetValue(cmdlet, obj);
+                }
+
+                setValue.Invoke(value, obj);
+            }
         }
         
         public static void WriteCollection<T>(this Cmdlet cmdlet, IEnumerable<T> collection)
