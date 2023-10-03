@@ -85,8 +85,6 @@ namespace MG.Sonarr.Next.Shell.Context
                 return;
             }
 
-            
-
             ServiceCollection services = new();
             services
                 .AddMemoryCache()
