@@ -1,10 +1,12 @@
 ﻿using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
+using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Models.System;
 using MG.Sonarr.Next.Shell.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
+using System.Text.Json;
 using IOFile = System.IO.File;
 using IOPath = System.IO.Path;
 
@@ -135,9 +137,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
             this.WriteDebug($"Appending file name to {nameof(this.Path)} -> {fileName}");
             return IOPath.Combine(dirPath, fileName);
         }
-        public void WriteVerbose(HttpRequestMessage request)
+        public void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            this.WriteVerbose($"Sending {request.Method.Method} request -> {request.RequestUri?.ToString()}");
+            this.WriteVerbose($"Sending {request.Method} request ->  {request.RequestUri}");
+        }
+        public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
+        {
+            if (this.VerbosePreference != ActionPreference.SilentlyContinue)
+            {
+                options ??= provider.GetService<SonarrJsonOptions>()?.GetForSerializing();
+                this.WriteVerbose(JsonSerializer.Serialize(response, options));
+            }
         }
 
         bool _disposed;

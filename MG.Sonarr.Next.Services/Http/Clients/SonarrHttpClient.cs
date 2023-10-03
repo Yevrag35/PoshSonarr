@@ -11,6 +11,7 @@ using System.Net.Http.Json;
 using System.Text.Json.Nodes;
 using MG.Sonarr.Next.Services.Models;
 using MG.Sonarr.Next.Services.Http.Handlers;
+using MG.Sonarr.Next.Services.Http.Requests;
 
 namespace MG.Sonarr.Next.Services.Http.Clients
 {
@@ -48,16 +49,14 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 
         public SonarrResponse SendDelete(string path, CancellationToken token = default)
         {
-            using HttpRequestMessage request = new(HttpMethod.Delete, path);
-            request.Options.Set(SonarrClientDependencyInjection.KEY, false);
+            using ApiKeyRequestMessage request = new(HttpMethod.Delete, path);
 
             return this.SendNoResultRequest(request, path, token);
         }
 
         public SonarrResponse<T> SendGet<T>(string path, CancellationToken token = default)
         {
-            using HttpRequestMessage request = new(HttpMethod.Get, path);
-            request.Options.Set(SonarrClientDependencyInjection.KEY, false);
+            using ApiKeyRequestMessage request = new(HttpMethod.Get, path);
 
             var response = this.SendResultRequest<T>(request, path, token);
             if (response.IsDataTaggable(out IJsonMetadataTaggable? taggable))
@@ -69,16 +68,14 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         }
         public SonarrResponse SendPost<T>(string path, T body, CancellationToken token = default) where T : notnull
         {
-            using HttpRequestMessage request = new(HttpMethod.Post, path);
-            request.Options.Set(SonarrClientDependencyInjection.KEY, false);
+            using ApiKeyRequestMessage request = new(HttpMethod.Post, path);
             request.Content = JsonContent.Create(body, body.GetType(), options: this.SerializingOptions);
 
             return this.SendNoResultRequest(request, path, token);
         }
         public SonarrResponse<TOutput> SendPost<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull
         {
-            using HttpRequestMessage request = new(HttpMethod.Post, path);
-            request.Options.Set(SonarrClientDependencyInjection.KEY, false);
+            using ApiKeyRequestMessage request = new(HttpMethod.Post, path);
 
             request.Content = JsonContent.Create(body, body.GetType(), options: this.SerializingOptions);
 
@@ -93,8 +90,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         public SonarrResponse SendPut<T>(string path, T body, CancellationToken token = default)
             where T : notnull
         {
-            using var request = new HttpRequestMessage(HttpMethod.Put, path);
-            request.Options.Set(SonarrClientDependencyInjection.KEY, false);
+            using ApiKeyRequestMessage request = new(HttpMethod.Put, path);
             request.Content = JsonContent.Create(body, body!.GetType(), options: this.SerializingOptions);
 
             return this.SendNoResultRequest(request, path, token);
@@ -102,8 +98,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         public SonarrResponse SendTest(CancellationToken token = default)
         {
             HttpResponseMessage response = null!;
-            using HttpRequestMessage request = new(HttpMethod.Get, TEST_API);
-            request.Options.Set(SonarrClientDependencyInjection.KEY, true);
+            using TestRequestMessage request = new(TEST_API);
 
             try
             {
@@ -230,7 +225,6 @@ namespace MG.Sonarr.Next.Services.Http.Clients
     {
         internal const string API_HEADER_KEY = "X-Api-Key";
 
-        internal static readonly HttpRequestOptionsKey<bool> KEY = new(nameof(ISonarrClient.SendTest));
         internal static readonly ProductInfoHeaderValue UserAgent = new("PoshSonarr-Next", "2.0.0");
 
         public static IServiceCollection AddSonarrClient(this IServiceCollection services, IConnectionSettings settings)

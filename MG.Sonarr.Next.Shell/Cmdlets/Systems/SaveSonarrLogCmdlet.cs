@@ -7,6 +7,8 @@ using MG.Sonarr.Next.Services.Models.System;
 using MG.Sonarr.Next.Shell.Attributes;
 using System.Net;
 using Microsoft.Extensions.DependencyInjection;
+using MG.Sonarr.Next.Services.Json;
+using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
 {
@@ -134,9 +136,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
             this.WriteDebug($"Appending file name to {nameof(this.Path)} -> {fileName}");
             return IOPath.Combine(dirPath, fileName);
         }
-        public void WriteVerbose(HttpRequestMessage request)
+        public void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            this.WriteVerbose($"Sending {request.Method.Method} request -> {request.RequestUri?.ToString()}");
+            this.WriteVerbose($"Sending {request.Method} request ->  {request.RequestUri}");
+        }
+        public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
+        {
+            if (this.VerbosePreference != ActionPreference.SilentlyContinue)
+            {
+                options ??= provider.GetService<SonarrJsonOptions>()?.GetForSerializing();
+                this.WriteVerbose(JsonSerializer.Serialize(response, options));
+            }
         }
 
         bool _disposed;

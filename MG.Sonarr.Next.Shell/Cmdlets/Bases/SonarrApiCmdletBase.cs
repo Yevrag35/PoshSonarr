@@ -1,9 +1,10 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Services.Exceptions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Json;
 using Microsoft.Extensions.DependencyInjection;
 using OneOf;
+using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
 {
@@ -42,7 +43,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             SonarrResponse response = this.Client.SendPost(path, body, token);
             return response;
         }
-        protected virtual OneOf<TOutput, ErrorRecord> SendPostRequest<TBody, TOutput>(string path, TBody body, CancellationToken token = default)
+        protected virtual OneOf<TOutput, SonarrErrorRecord> SendPostRequest<TBody, TOutput>(string path, TBody body, CancellationToken token = default)
             where TBody : notnull
         {
             this.Queue.Enqueue(this);
@@ -60,9 +61,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             return response;
         }
 
-        public virtual void WriteVerbose(HttpRequestMessage request)
+        public virtual void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            this.WriteVerbose($"Sending {request.Method.Method} request -> {request.RequestUri?.ToString()}");
+            this.WriteVerbose($"Sending {request.Method} request -> {request.RequestUri}");
+        }
+        public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
+        {
+            if (this.VerbosePreference != ActionPreference.SilentlyContinue)
+            {
+                options ??= provider.GetService<SonarrJsonOptions>()?.GetForSerializing();
+                this.WriteVerbose(JsonSerializer.Serialize(response, options));
+            }
         }
     }
 }

@@ -105,12 +105,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             }
         }
 
-        public void WriteVerbose(HttpRequestMessage request)
+        public void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            this.WriteVerbose($"Sending {request.Method.Method} request -> {request.RequestUri?.ToString()}");
+            this.WriteVerbose($"Sending {request.Method}  request ->  {request.RequestUri}");
         }
 
-        public void WriteVerboseSonarrResult(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
+        public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
         {
             if (this.VerbosePreference != ActionPreference.SilentlyContinue)
             {

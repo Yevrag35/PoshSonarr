@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Json;
+﻿using MG.Sonarr.Next.Services.Http.Requests;
+using MG.Sonarr.Next.Services.Json;
 using Microsoft.Extensions.DependencyInjection;
 using OneOf.Types;
 using System.Management.Automation;
@@ -20,16 +21,16 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
         protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            if (_queue.TryDequeue(out IApiCmdlet? cmdlet))
+            if (_queue.TryDequeue(out IApiCmdlet? cmdlet) && request is SonarrRequestMessage sr)
             {
-                cmdlet.WriteVerbose(request);
+                cmdlet.WriteVerboseBefore(sr);
             }
 
             var response = this.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
 
             using (var scope = _scopeFactory.CreateScope())
             {
-                cmdlet?.WriteVerboseSonarrResult(
+                cmdlet?.WriteVerboseAfter(
                     response: SonarrResponse.Create(response, request.RequestUri?.ToString() ?? string.Empty),
                     provider: scope.ServiceProvider,
                     options: _options);

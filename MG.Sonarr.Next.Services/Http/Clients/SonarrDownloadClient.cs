@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Http.Handlers;
+using MG.Sonarr.Next.Services.Http.Requests;
 using Microsoft.Extensions.DependencyInjection;
 using System.Management.Automation;
 using System.Net;
@@ -24,7 +25,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 
         public SonarrResponse<string> DownloadToPath(string url, string path, CancellationToken token = default)
         {
-            using HttpRequestMessage msg = new(HttpMethod.Get, url);
+            using ApiKeyRequestMessage msg = new(HttpMethod.Get, url);
             msg.Options.Set(CookieHandler.NoCookie, true);
 
             HttpResponseMessage response = null!;

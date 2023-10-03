@@ -2,6 +2,7 @@
 using System.Net;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Http.Clients;
+using MG.Sonarr.Next.Services.Http.Requests;
 
 namespace MG.Sonarr.Next.Services.Http.Handlers
 {
@@ -61,9 +62,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
         private static bool IsTesting(HttpRequestMessage request)
         {
-            return request.Options.TryGetValue(SonarrClientDependencyInjection.KEY, out bool isTest)
-                   &&
-                   isTest;
+            return request is SonarrRequestMessage sonarrRequest && sonarrRequest.IsTest;
         }
         private static bool IsHtml(Stream stream)
         {
