@@ -103,8 +103,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
                 return;
             }
 
-            FileInfo fi = new(downloadPath);
-            this.WriteObject(fi);
+            if (!string.IsNullOrWhiteSpace(response.Data))
+            {
+                FileInfo fi = new(downloadPath);
+                this.WriteObject(fi);
+            }
         }
 
         private string GetAbsolutePath(string providedPath)
@@ -139,7 +142,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
         }
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            this.WriteVerbose($"Sending {request.Method} request ->  {request.RequestUri}");
+            this.WriteVerbose($"Sending {request.Method} request -> {request.RequestUri}");
         }
         public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
         {

@@ -12,8 +12,10 @@ using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
 {
-    [Cmdlet(VerbsData.Save, "SonarrLog", DefaultParameterSetName = "ByExplicitUrl")]
-    public sealed class SaveSonarrLogCmdlet : SonarrCmdletBase, IApiCmdlet
+    [Cmdlet(VerbsData.Save, "SonarrLogFile", DefaultParameterSetName = "ByExplicitUrl")]
+    [Alias("Download-SonarrLogFile")]
+    [OutputType(typeof(FileInfo))]
+    public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
     {
         bool _noFileName;
         ISonarrDownloadClient Downloader { get; set; } = null!;
@@ -99,8 +101,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
                 return;
             }
 
-            FileInfo fi = new(downloadPath);
-            this.WriteObject(fi);
+            if (!string.IsNullOrWhiteSpace(response.Data))
+            {
+                FileInfo fi = new(downloadPath);
+                this.WriteObject(fi);
+            }
         }
 
         private string GetAbsolutePath(string providedPath)
@@ -138,7 +143,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
         }
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            this.WriteVerbose($"Sending {request.Method} request ->  {request.RequestUri}");
+            this.WriteVerbose($"Sending {request.Method} request -> {request.RequestUri}");
         }
         public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
         {

@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Exceptions;
 using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Services.Http.Requests;
 using Microsoft.Extensions.DependencyInjection;
@@ -64,18 +65,27 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                 return result;
             }
 
-            this.WriteFileAsync(response, path, token).GetAwaiter().GetResult();
+            bool written = this.WriteFileAsync(response, path, token).GetAwaiter().GetResult();
 
-            return new SonarrResponse<string>(url, path, null, HttpStatusCode.OK);
+            return written
+                ? new SonarrResponse<string>(url, path, null, response.StatusCode)
+                : new SonarrResponse<string>(url, null, 
+                    new SonarrErrorRecord(new SonarrHttpException(msg, response, (PSObject?)null, null)),
+                    HttpStatusCode.Unauthorized);
         }
 
-        private async Task WriteFileAsync(HttpResponseMessage response, string path, CancellationToken token)
+        private async Task<bool> WriteFileAsync(HttpResponseMessage response, string path, CancellationToken token)
         {
             await using Stream stream = response.Content.ReadAsStream(token);
+            if (stream.CanSeek && stream.Length <= 0)
+            {
+                return false;
+            }
 
             await using FileStream fs = new(path, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
 
             await stream.CopyToAsync(fs, token);
+            return true;
         }
     }
 

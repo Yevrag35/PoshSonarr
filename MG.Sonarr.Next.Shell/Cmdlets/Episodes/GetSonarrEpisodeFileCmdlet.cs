@@ -155,6 +155,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 this.SeriesIds = null!;
                 _disposed = true;
             }
+
+            base.Dispose(disposing, factory);
         }
     }
 }
