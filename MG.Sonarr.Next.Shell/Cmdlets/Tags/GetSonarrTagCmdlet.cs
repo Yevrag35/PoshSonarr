@@ -15,29 +15,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput")]
-        public ITagPipeable[] InputObject
-        {
-            get => Array.Empty<ITagPipeable>();
-            set => _ids.UnionWith(value.SelectMany(x => x.Tags));
-        }
-
+        public ITagPipeable[] InputObject { get; set; } = Array.Empty<ITagPipeable>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ById")]
-        public int[] Id
-        {
-            get => Array.Empty<int>();
-            set => _ids.UnionWith(value);
-        }
+        public int[] Id { get; set; } = Array.Empty<int>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByName")]
         [SupportsWildcards]
-        public IntOrString[] Name
-        {
-            get => Array.Empty<IntOrString>();
-            set => value.SplitToSets(_ids, _names);
-        }
+        public IntOrString[] Name { get; set; } = Array.Empty<IntOrString>();
 
         protected override int Capacity => 2;
         protected override void OnCreatingScope(IServiceProvider provider)
@@ -53,8 +40,29 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             return resolver[Meta.TAG];
         }
 
+        protected override void Begin(IServiceProvider provider)
+        {
+            _ids.UnionWith(this.Id);
+            if (this.HasParameter(x => x.Name))
+            {
+                this.Name.SplitToSets(_ids, _names);
+            }
+        }
+        protected override void Process(IServiceProvider provider)
+        {
+            if (this.HasParameter(x => x.InputObject))
+            {
+                _ids.UnionWith(this.InputObject.SelectMany(x => x.Tags)
+                    .Where(x => x > 0));
+            }
+        }
         protected override void End(IServiceProvider provider)
         {
+            if (this.InvokeCommand.HasErrors)
+            {
+                return;
+            }
+
             bool hasIds = this.ProcessIds(_ids);
 
             if (!this.TryProcessNames(_names) && !hasIds)
