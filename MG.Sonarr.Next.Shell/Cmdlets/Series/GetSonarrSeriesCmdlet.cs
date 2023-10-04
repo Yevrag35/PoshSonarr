@@ -13,7 +13,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
-        HashSet<WildcardString> _names = null!;
+        HashSet<Wildcard> _names = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesName")]
@@ -47,7 +47,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
             this.Returnables[0] = _ids;
-            _names = this.GetPooledObject<HashSet<WildcardString>>();
+            _names = this.GetPooledObject<HashSet<Wildcard>>();
             this.Returnables[1] = _names;
         }
         protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
@@ -110,7 +110,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
         }
 
-        private SonarrResponse<MetadataList<T>> GetSeriesByName<T>(IReadOnlySet<WildcardString> names) where T : PSObject, IJsonMetadataTaggable
+        private SonarrResponse<MetadataList<T>> GetSeriesByName<T>(IReadOnlySet<Wildcard> names) where T : PSObject, IJsonMetadataTaggable
         {
             var result = this.GetAllSeries<T>();
             if (result.IsError)

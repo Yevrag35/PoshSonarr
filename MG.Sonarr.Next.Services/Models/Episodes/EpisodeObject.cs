@@ -4,11 +4,16 @@ using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Models.Episodes
 {
-    public sealed class EpisodeObject : SonarrObject, IEpisodeFilePipeable, ISeriesPipeable, IJsonOnSerializing
+    public sealed class EpisodeObject : SonarrObject,
+        IEpisodeFilePipeable,
+        IJsonOnSerializing,
+        IReleasePipeableByEpisode,
+        ISeriesPipeable
     {
         private DateOnly _airDate;
 
         public int AbsoluteEpisodeNumber { get; private set; }
+        int IReleasePipeableByEpisode.EpisodeId => this.Id;
         public int EpisodeFileId { get; private set; }
         public int EpisodeNumber { get; private set; }
         public bool HasAbsolute { get; private set; }

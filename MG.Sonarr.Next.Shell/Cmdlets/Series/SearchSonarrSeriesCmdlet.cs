@@ -12,13 +12,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     {
         const string SEARCH_STR_QUERY = Constants.SERIES + "/lookup?term={0}";
         const string SEARCH_ID_QUERY = Constants.SERIES + "/lookup?term=tvdb:{0}";
-        WildcardString _wildcardStr;
+        Wildcard _wildcardStr;
         MetadataTag Tag { get; set; } = null!;
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesName")]
         public string Name
         {
-            get => _wildcardStr.Value;
+            get => string.Empty;
             set => _wildcardStr = value;
         }
 
@@ -36,7 +37,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         protected override void Process(IServiceProvider provider)
         {
             string path = this.HasParameter(x => x.Name)
-                ? GetSearchByNamePath(this.Name)
+                ? GetSearchByNamePath(_wildcardStr)
                 : string.Format(SEARCH_ID_QUERY, this.TVDbId);
 
             var result = this.SendGetRequest<List<AddSeriesObject>>(path);
@@ -56,7 +57,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
         }
 
-        private void ProcessStricly(IEnumerable<AddSeriesObject> values, in WildcardString wildcardString)
+        private void ProcessStricly(IEnumerable<AddSeriesObject> values, in Wildcard wildcardString)
         {
             foreach (AddSeriesObject pso in values)
             {
@@ -67,16 +68,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
         }
 
-        private static string GetSearchByNamePath(string name)
+        private static string GetSearchByNamePath(in Wildcard name)
         {
-            return string.Format(SEARCH_STR_QUERY, WebUtility.UrlEncode(name));
+            string use = name.ContainsWildcards
+                ? ((string)name).Replace('*', ' ').Replace('?', ' ').Trim()
+                : (string)name;
+
+            return string.Format(SEARCH_STR_QUERY, WebUtility.UrlEncode(use));
         }
 
-        private static bool StrictlyMatches(string value, in WildcardString stringToMatch)
+        private static bool StrictlyMatches(string value, in Wildcard stringToMatch)
         {
             return stringToMatch.IsMatch(value)
                    ||
-                   value.Contains(stringToMatch.Value, StringComparison.OrdinalIgnoreCase);
+                   value.Contains((string)stringToMatch, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

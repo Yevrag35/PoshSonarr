@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
     {
         SortedSet<int> _ids = null!;
         List<LanguageProfileObject> _list = null!;
-        HashSet<WildcardString> _wcNames = null!;
+        HashSet<Wildcard> _wcNames = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = "ByProfileId")]
@@ -32,7 +32,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
             this.Returnables[0] = _ids;
-            _wcNames = this.GetPooledObject<HashSet<WildcardString>>();
+            _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
             this.Returnables[1] = _wcNames;
             _list = new(1);
         }
@@ -75,7 +75,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
             this.WriteCollection(_list);
         }
 
-        private static void FilterByName(List<LanguageProfileObject> list, IReadOnlySet<WildcardString>? names, IReadOnlySet<int> ids)
+        private static void FilterByName(List<LanguageProfileObject> list, IReadOnlySet<Wildcard>? names, IReadOnlySet<int> ids)
         {
 
         }

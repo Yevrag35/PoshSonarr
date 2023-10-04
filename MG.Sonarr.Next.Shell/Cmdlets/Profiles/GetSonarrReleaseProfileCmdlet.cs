@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
     public sealed class GetSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
-        HashSet<WildcardString> _wcNames = null!;
+        HashSet<Wildcard> _wcNames = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = "ByProfileId")]
@@ -32,7 +32,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
             this.Returnables[0] = _ids;
-            _wcNames = this.GetPooledObject<HashSet<WildcardString>>();
+            _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
             this.Returnables[1] = _wcNames;
         }
 
@@ -59,7 +59,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
             this.WriteCollection(profiles);
         }
 
-        private IEnumerable<ReleaseProfileObject> GetByName(IReadOnlySet<WildcardString>? names)
+        private IEnumerable<ReleaseProfileObject> GetByName(IReadOnlySet<Wildcard>? names)
         {
             var response = this.SendGetRequest<MetadataList<ReleaseProfileObject>>(this.Tag.UrlBase);
             if (response.IsError)

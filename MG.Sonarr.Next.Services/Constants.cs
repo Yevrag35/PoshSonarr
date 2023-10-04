@@ -88,6 +88,7 @@ namespace MG.Sonarr.Next
         public const string LOG_ITEM = "#log_item";
         public const string QUALITY_DEFINITION = "#quality_definition";
         public const string QUALITY_PROFILE = "#quality_profile";
+        public const string RELEASE = "#release";
         public const string RELEASE_PROFILE = "#release_profile";
         public const string ROOT_FOLDER = "#root_folder";
         public const string SERIES = "#series";

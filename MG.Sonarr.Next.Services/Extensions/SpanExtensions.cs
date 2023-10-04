@@ -21,6 +21,19 @@
             CopyToSlice(spanValue: writtableSpan, span, ref position);
         }
 
+        public static bool TryCopyToSlice(this ReadOnlySpan<char> spanValue, Span<char> span, ref int position)
+        {
+            if (!spanValue.IsEmpty && spanValue.TryCopyTo(span.Slice(position)))
+            {
+                position += spanValue.Length;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public static bool StartsWith(this ReadOnlySpan<char> span, in char value, StringComparison comparison = StringComparison.InvariantCultureIgnoreCase)
         {
             return span.StartsWith(new ReadOnlySpan<char>(in value), comparison);

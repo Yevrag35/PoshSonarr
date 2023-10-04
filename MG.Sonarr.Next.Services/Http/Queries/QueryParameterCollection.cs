@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using MG.Sonarr.Next.Services.Extensions;
+using System.Collections;
 
 namespace MG.Sonarr.Next.Services.Http.Queries
 {
@@ -49,6 +50,20 @@ namespace MG.Sonarr.Next.Services.Http.Queries
             {
                 return false;
             }
+        }
+
+        public bool Add<T, TValue>(T input, in int maxLength, Expression<Func<T, TValue>> expression, string? format = null)
+            where T : class
+            where TValue : notnull, ISpanFormattable
+        {
+            if (!expression.TryGetAsMember(out MemberExpression? memEx))
+            {
+                return false;
+            }
+
+            var func = expression.Compile();
+            TValue value = func(input);
+            return this.Add(memEx.Member.Name, value, in maxLength, format);
         }
 
         public void AddOrUpdate(IQueryParameter parameter)

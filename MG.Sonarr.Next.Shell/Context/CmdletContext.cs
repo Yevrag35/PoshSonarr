@@ -13,6 +13,7 @@ using MG.Sonarr.Next.Services.Models.Calendar;
 using MG.Sonarr.Next.Services.Models.Episodes;
 using MG.Sonarr.Next.Services.Models.Profiles;
 using MG.Sonarr.Next.Services.Models.Qualities;
+using MG.Sonarr.Next.Services.Models.Releases;
 using MG.Sonarr.Next.Services.Models.RootFolders;
 using MG.Sonarr.Next.Services.Models.Series;
 using MG.Sonarr.Next.Services.Models.System;
@@ -114,7 +115,7 @@ namespace MG.Sonarr.Next.Shell.Context
         {
             services.AddObjectPoolReturner();
 
-            AddPool<HashSet<WildcardString>, HashSetWildstringPool>(services);
+            AddPool<HashSet<Wildcard>, HashSetWildcardPool>(services);
             AddPool<SortedSet<int>, SortedIntSetPool>(services);
             AddPool<PagingParameter, PagingPool>(services);
             AddPool<Stopwatch, StopwatchPool>(services);
@@ -173,6 +174,7 @@ namespace MG.Sonarr.Next.Shell.Context
                     new SonarrObjectConverter<LogFileObject>(objCon),
                     new SonarrObjectConverter<QualityDefinitionObject>(objCon),
                     new SonarrObjectConverter<QualityProfileObject>(objCon),
+                    new SonarrObjectConverter<ReleaseObject>(objCon),
                     new SonarrObjectConverter<ReleaseProfileObject>(objCon),
                     new SonarrObjectConverter<RootFolderObject>(objCon),
                     new SeriesObjectConverter<SeriesObject>(objCon),

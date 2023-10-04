@@ -4,7 +4,9 @@ using MG.Sonarr.Next.Shell.Models;
 
 namespace MG.Sonarr.Next.Services.Models.Episodes
 {
-    public sealed class EpisodeFileObject : SonarrObject, IHasId, ISeriesPipeable
+    public sealed class EpisodeFileObject : SonarrObject,
+        IHasId,
+        ISeriesPipeable
     {
         public int Id { get; private set; }
         public int SeriesId { get; private set; }

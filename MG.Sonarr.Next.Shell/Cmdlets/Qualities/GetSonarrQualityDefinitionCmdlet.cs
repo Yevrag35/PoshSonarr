@@ -13,7 +13,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
     public sealed class GetSonarrQualityDefinitionCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
-        HashSet<WildcardString> _wcNames = null!;
+        HashSet<Wildcard> _wcNames = null!;
         List<QualityDefinitionObject> _list = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -33,7 +33,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
             this.Returnables[0] = _ids;
-            _wcNames = this.GetPooledObject<HashSet<WildcardString>>();
+            _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
             this.Returnables[1] = _wcNames;
             _list = new(1);
         }
@@ -76,7 +76,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             this.WriteCollection(_list);
         }
 
-        private static void FilterByName(List<QualityDefinitionObject> all, IReadOnlySet<int> ids, IReadOnlySet<WildcardString>? names)
+        private static void FilterByName(List<QualityDefinitionObject> all, IReadOnlySet<int> ids, IReadOnlySet<Wildcard>? names)
         {
             if (names.IsNullOrEmpty())
             {

@@ -6,7 +6,13 @@ using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Models.Series
 {
-    public class SeriesObject : TagUpdateObject, IHasId, IEpisodeBySeriesPipeable, IEpisodeFileBySeriesPipeable, IQualityProfilePipeable, IJsonOnSerializing
+    public class SeriesObject : TagUpdateObject,
+        IEpisodeBySeriesPipeable,
+        IEpisodeFileBySeriesPipeable,
+        IHasId,
+        IQualityProfilePipeable,
+        IReleasePipeableBySeries,
+        IJsonOnSerializing
     {
         private const string FIRST_AIRED = "FirstAired";
         private DateOnly _firstAired;
@@ -18,6 +24,7 @@ namespace MG.Sonarr.Next.Services.Models.Series
         }
         int IEpisodeBySeriesPipeable.SeriesId => this.Id;
         int IEpisodeFileBySeriesPipeable.SeriesId => this.Id;
+        int IReleasePipeableBySeries.SeriesId => this.Id;
         public virtual string Title { get; set; } = string.Empty;
 
         public SeriesObject()

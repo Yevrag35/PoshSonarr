@@ -13,7 +13,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
     public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
-        HashSet<WildcardString> _wcNames = null!;
+        HashSet<Wildcard> _wcNames = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput", ValueFromPipeline = true)]
@@ -35,7 +35,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
             this.Returnables[0] = _ids;
-            _wcNames = this.GetPooledObject<HashSet<WildcardString>>();
+            _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
             this.Returnables[1] = _wcNames;
         }
 
@@ -91,7 +91,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
 
             this.WriteCollection(list);
         }
-        private static void FilterByProfileName(List<QualityProfileObject> list, IReadOnlySet<WildcardString> names, IReadOnlySet<int> ids)
+        private static void FilterByProfileName(List<QualityProfileObject> list, IReadOnlySet<Wildcard> names, IReadOnlySet<int> ids)
         {
             if (ids.Count <= 0 && names.Count <= 0)
             {

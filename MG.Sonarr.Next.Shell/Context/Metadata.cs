@@ -20,6 +20,7 @@ namespace MG.Sonarr.Next.Shell.Context
                 { Meta.LOG_FILE, Constants.LOGFILE, false, new string[] { "Save-SonarrLog" } },
                 { Meta.QUALITY_DEFINITION, Constants.QUALITY_DEFINITIONS, true },
                 { Meta.QUALITY_PROFILE, Constants.PROFILE, true },
+                { Meta.RELEASE, Constants.RELEASE, false },
                 { Meta.RELEASE_PROFILE, Constants.RELEASE_PROFILE, true, new string[] { Meta.TAG } },
                 { Meta.ROOT_FOLDER, Constants.ROOTFOLDER, true },
                 { Meta.SERIES, Constants.SERIES, true, new string[] { Meta.TAG, Meta.EPISODE, Meta.QUALITY_PROFILE } },

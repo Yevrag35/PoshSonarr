@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     public sealed class GetSonarrTagCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
-        HashSet<WildcardString> _names = null!;
+        HashSet<Wildcard> _names = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput")]
@@ -32,8 +32,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
             this.Returnables[0] = _ids;
-            _names = this.GetPooledObject<HashSet<WildcardString>>();
-            this.Returnables[1] = _names;
+            _names = new(1);
+            //_names = this.GetPooledObject<HashSet<WildcardString>>();
+            //this.Returnables[1] = _names;
         }
         protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
         {
@@ -81,7 +82,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         {
             return this.SendGetRequest<MetadataList<TagObject>>(Constants.TAG);
         }
-        private static void ProcessAndFilterTags(IList<TagObject> data, IReadOnlySet<WildcardString> names)
+        private static void ProcessAndFilterTags(IList<TagObject> data, IReadOnlySet<Wildcard> names)
         {
             for (int i = data.Count - 1; i >= 0; i--)
             {
@@ -112,7 +113,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
             return hasIds;
         }
-        private bool TryProcessNames(IReadOnlySet<WildcardString> names)
+        private bool TryProcessNames(IReadOnlySet<Wildcard> names)
         {
             if (names.Count <= 0)
             {
