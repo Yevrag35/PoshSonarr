@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
     [Cmdlet(VerbsCommon.Remove, "SonarrTag", SupportsShouldProcess = true, DefaultParameterSetName = "ByPipelineInput")]
+    [Alias("Delete-SonarrTag")]
     public sealed class RemoveSonarrTagCmdlet : SonarrApiCmdletBase
     {
         MetadataTag Tag { get; set; } = null!;

@@ -1,4 +1,5 @@
-﻿using OneOf;
+﻿using MG.Sonarr.Next.Services.Extensions;
+using OneOf;
 
 namespace MG.Sonarr.Next.Services.Http.Queries
 {
@@ -59,14 +60,7 @@ namespace MG.Sonarr.Next.Services.Http.Queries
         }
         public override bool Equals([NotNullWhen(true)] object? obj)
         {
-            if (obj is QueryParameter other)
-            {
-                return this.Equals(other);
-            }
-            else
-            {
-                return false;
-            }
+            return obj is QueryParameter other && this.Equals(other);
         }
         public override int GetHashCode()
         {
@@ -81,9 +75,11 @@ namespace MG.Sonarr.Next.Services.Http.Queries
         }
         public bool TryFormat(Span<char> span, out int written, ReadOnlySpan<char> format, IFormatProvider? provider)
         {
-            string key = this.Key;
-            key.CopyTo(span);
+            ReadOnlySpan<char> key = this.Key;
             written = key.Length;
+            key.CopyTo(span);
+            ref char first = ref span[0];
+            first = char.ToLower(first);
 
             if (format.IsEmpty)
             {
@@ -97,9 +93,8 @@ namespace MG.Sonarr.Next.Services.Http.Queries
             }
             else
             {
-                string val = _value ?? string.Empty;
-                val.CopyTo(span.Slice(written));
-                written += val.Length;
+                ReadOnlySpan<char> val = _value;
+                val.CopyToSlice(span, ref written);
             }
 
             return true;
@@ -180,6 +175,9 @@ namespace MG.Sonarr.Next.Services.Http.Queries
         {
             ReadOnlySpan<char> key = this.Key;
             key.CopyTo(destination);
+            ref char first = ref destination[0];
+            first = char.ToLower(first);
+
             charsWritten = key.Length;
 
             destination[charsWritten++] = '=';

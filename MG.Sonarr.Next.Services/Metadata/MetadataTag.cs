@@ -108,22 +108,6 @@ namespace MG.Sonarr.Next.Services.Metadata
 
             return new string(span.Slice(0, position));
         }
-
-        //public bool IsUrlForThis([NotNullWhen(true)] Uri? uri)
-        //{
-        //    return this.IsUrlForThis(uri?.ToString());
-        //}
-        //public bool IsUrlForThis([NotNullWhen(true)] string? url)
-        //{
-        //    ReadOnlySpan<char> path = url.AsSpan();
-        //    ReadOnlySpan<char> thisUrl = this.UrlBase.AsSpan();
-        //    if (!path.StartsWith('/', StringComparison.InvariantCulture))
-        //    {
-        //        thisUrl = thisUrl.TrimStart('/');
-        //    }
-
-        //    return path.StartsWith(thisUrl, StringComparison.InvariantCultureIgnoreCase);
-        //}
         private void ThrowIfNotSupportId()
         {
             if (!this.SupportsId)
