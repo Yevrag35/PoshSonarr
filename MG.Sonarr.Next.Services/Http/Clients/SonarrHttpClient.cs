@@ -267,7 +267,8 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                     .AddHttpMessageHandler<VerboseHandler>()
                     .AddHttpMessageHandler<TestingHandler>();
 
-            return services.AddSonarrDownloadClient();
+            return services.AddSonarrDownloadClient()
+                           .AddSignalRClient();
         }
     }
 }
