@@ -21,20 +21,28 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
         {
             foreach (ReleaseObject release in this.InputObject)
             {
+                var post = ToPostRelease(release);
 
-                var response = this.SendPostRequest<PostRelease, PSObject>(this.Tag.UrlBase, ToPostRelease(release));
-
-                if (response.IsT1)
+                if (this.ShouldProcess($"{post.Guid} from Indexer {post.IndexerId}", "Download Release"))
                 {
-                    this.WriteError(response.AsT1);
-                }
-                else
-                {
-                    this.WriteObject(response.AsT0);
+                    this.SendRelease(post);
                 }
             }
         }
 
+        private void SendRelease(PostRelease post)
+        {
+            var response = this.SendPostRequest<PostRelease, PSObject>(this.Tag.UrlBase, post);
+
+            if (response.IsT1)
+            {
+                this.WriteError(response.AsT1);
+            }
+            else
+            {
+                this.WriteObject(response.AsT0);
+            }
+        }
         private static PostRelease ToPostRelease(ReleaseObject release)
         {
             return new()

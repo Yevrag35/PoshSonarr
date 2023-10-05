@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 namespace MG.Sonarr.Next.Services.Auth
 {
     /// <summary>
-    /// A mock <see cref="NetworkCredential"/> class that can implicitly convert <see cref="PSCredential"/> to <see cref="ICredentials"/>.
+    /// A wrapper class for <see cref="NetworkCredential"/> that can implicitly convert 
+    /// <see cref="PSCredential"/> to <see cref="ICredentials"/>.
     /// </summary>
     public sealed class ProxyCredential : ICredentials
     {
@@ -19,8 +20,8 @@ namespace MG.Sonarr.Next.Services.Auth
         private ProxyCredential(PSCredential psCreds)
             : this(psCreds.GetNetworkCredential()) { }
 
-        public static implicit operator ProxyCredential(PSCredential psCreds) => new ProxyCredential(psCreds);
-        public static implicit operator ProxyCredential(NetworkCredential icreds) => new ProxyCredential(icreds);
+        public static implicit operator ProxyCredential(PSCredential psCreds) => new(psCreds);
+        public static implicit operator ProxyCredential(NetworkCredential icreds) => new(icreds);
 
         NetworkCredential? ICredentials.GetCredential(Uri uri, string authType) => _nc.GetCredential(uri, authType);
     }

@@ -15,6 +15,9 @@ using MG.Sonarr.Next.Services.Http.Requests;
 
 namespace MG.Sonarr.Next.Services.Http.Clients
 {
+    /// <summary>
+    /// An interface exposing HTTP methods for issuing RESTful requests to Sonarr's API v3 endpoints.
+    /// </summary>
     public interface ISonarrClient
     {
         SonarrResponse SendDelete(string path, CancellationToken token = default);

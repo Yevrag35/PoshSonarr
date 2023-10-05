@@ -4,6 +4,10 @@ using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Services.Metadata
 {
+    /// <summary>
+    /// A dictionary implementation of <see cref="MetadataTag"/> instances that describe the various
+    /// types of deserialized API response objects.
+    /// </summary>
     public sealed class MetadataResolver : IReadOnlyCollection<MetadataTag>
     {
         public const string META_PROPERTY_NAME = "MetadataTag";
