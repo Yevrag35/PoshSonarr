@@ -20,13 +20,16 @@ namespace MG.Sonarr.Next.Services.Models
         }
         public virtual void Commit()
         {
+            return;
         }
         protected abstract MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing);
         public virtual void OnDeserialized()
         {
+            return;
         }
         public virtual void Reset()
         {
+            return;
         }
         public void SetTag(MetadataResolver resolver)
         {
