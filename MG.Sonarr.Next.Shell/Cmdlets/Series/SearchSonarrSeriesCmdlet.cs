@@ -57,11 +57,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
         }
 
-        private void ProcessStricly(IEnumerable<AddSeriesObject> values, in Wildcard wildcardString)
+        private void ProcessStricly(IEnumerable<AddSeriesObject> values, in Wildcard Wildcard)
         {
             foreach (AddSeriesObject pso in values)
             {
-                if (StrictlyMatches(pso.Title, in wildcardString))
+                if (StrictlyMatches(pso.Title, in Wildcard))
                 {
                     this.WriteObject(pso);
                 }

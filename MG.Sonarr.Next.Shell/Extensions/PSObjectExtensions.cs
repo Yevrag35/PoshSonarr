@@ -41,7 +41,7 @@ namespace MG.Sonarr.Next.Shell.Extensions
         {
             if (PSO.TryGetProperty(obj, propertyName, out string? strVal))
             {
-                WildcardString ws = value;
+                Wildcard ws = value;
                 return ws.IsMatch(strVal);
             }
 

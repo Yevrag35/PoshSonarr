@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     public sealed class AddSonarrTagCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
-        HashSet<WildcardString> _resolveNames = null!;
+        HashSet<Wildcard> _resolveNames = null!;
         Dictionary<string, ITagPipeable> _updates = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -31,7 +31,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
             this.Returnables[0] = _ids;
-            _resolveNames = this.GetPooledObject<HashSet<WildcardString>>();
+            _resolveNames = this.GetPooledObject<HashSet<Wildcard>>();
             this.Returnables[1] = _resolveNames;
             _updates = new(1, StringComparer.InvariantCultureIgnoreCase);
         }

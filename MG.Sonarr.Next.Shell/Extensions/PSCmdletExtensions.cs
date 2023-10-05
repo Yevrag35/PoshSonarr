@@ -63,7 +63,7 @@ namespace MG.Sonarr.Next.Shell.Extensions
             return func(cmdlet).ToBool();
         }
 
-        public static bool ParameterSetNameIsLike(this PSCmdlet cmdlet, WildcardString wildString)
+        public static bool ParameterSetNameIsLike(this PSCmdlet cmdlet, Wildcard wildString)
         {
             return wildString.IsMatch(cmdlet.ParameterSetName);
         }

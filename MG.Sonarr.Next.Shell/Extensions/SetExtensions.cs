@@ -9,18 +9,6 @@ namespace MG.Sonarr.Next.Shell.Extensions
             foreach (Wildcard ws in set)
             {
                 if (ws.IsMatch(value))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-        public static bool AnyValueLike(this IReadOnlySet<WildcardString> set, string? value)
-        {
-            foreach (WildcardString ws in set)
-            {
-                if (ws.IsMatch(value))
                 { 
                     return true;
                 }
