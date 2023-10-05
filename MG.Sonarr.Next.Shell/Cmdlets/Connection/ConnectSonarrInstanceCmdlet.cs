@@ -5,6 +5,7 @@ using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Settings;
 using Microsoft.Extensions.DependencyInjection;
+using System.ComponentModel;
 using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
@@ -27,7 +28,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
         }
 
         [Parameter(Mandatory = true, Position = 0)]
-        [Alias("SonarrUrl")] // for backward compatibility
+        [Alias("SonarrUrl", "Uri")] // for backward compatibility
         [ValidateUrl(UriKind.Absolute)]
         [MaybeNull]
         public Uri Url
@@ -36,7 +37,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             set => this.SetConnectionSetting(value, (x, settings) => settings.ServiceUri = x);
         }
 
-        [Parameter(Mandatory = false)]
+        [Parameter]
         [Alias("NoApiPrefix")]  // for backward-compatibility
         public SwitchParameter NoApiInPath
         {
@@ -44,23 +45,33 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             set => this.SetConnectionSetting(value.ToBool(), (x, settings) => settings.NoApiInPath = x);
         }
 
-        [Parameter(Mandatory = false)]
+        [Parameter]
         public SwitchParameter SkipCertificateCheck
         {
             get => _settings?.SkipCertValidation ?? default;
-            set
-            {
-                _settings ??= new();
-                _settings.SkipCertValidation = value.ToBool();
-            }
+            set => this.SetConnectionSetting(value.ToBool(), (x, settings) => settings.SkipCertValidation = x);
+        }
+
+        [Parameter]
+        [PSDefaultValue(Value = "5 minutes")]
+        public TimeSpan Timeout
+        {
+            get => _settings?.Timeout ?? TimeSpan.Zero;
+            set => this.SetConnectionSetting(value, (x, settings) => settings.Timeout = x);
         }
 
         protected override void BeginProcessing()
         {
+            _settings ??= new();
             this.StoreVerbosePreference();
         }
         protected override void ProcessRecord()
         {
+            if (_settings.Timeout <= TimeSpan.Zero)
+            {
+                _settings.Timeout = TimeSpan.FromMinutes(5d);
+            }
+
             this.SetContext(this.Settings, (services, options) =>
             {
                 return services.BuildServiceProvider(options);
@@ -104,12 +115,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
                 this.VerbosePreference = pref;
             }
         }
-
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {
             this.WriteVerbose($"Sending {request.Method}  request ->  {request.RequestUri}");
         }
-
         public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
         {
             if (this.VerbosePreference != ActionPreference.SilentlyContinue)

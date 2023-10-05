@@ -11,6 +11,11 @@ namespace MG.Sonarr.Next.Services.Models.Releases
         double _ageMinutes;
 
         public TimeSpan Age { get; private set; }
+        public int IndexerId
+        {
+            get => this.GetValue<int>();
+        }
+        public string ReleaseUrl { get; private set; } = string.Empty;
 
         public ReleaseObject() : base(45)
         {
@@ -36,6 +41,11 @@ namespace MG.Sonarr.Next.Services.Models.Releases
             if (this.TryGetProperty(nameof(this.Age), out int days))
             {
                 _age = days;
+            }
+
+            if (this.TryGetNonNullProperty("Guid", out string? releaseUrl))
+            {
+                this.ReleaseUrl = releaseUrl;
             }
 
             this.Age = TimeSpan.FromMinutes(_ageMinutes);

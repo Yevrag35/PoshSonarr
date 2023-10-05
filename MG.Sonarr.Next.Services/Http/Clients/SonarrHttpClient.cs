@@ -205,12 +205,25 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 
                 return result;
             }
+            catch (TaskCanceledException cancelled)
+            {
+                ErrorCategory cat = cancelled.InnerException is TimeoutException tout
+                    ? ErrorCategory.OperationTimeout
+                    : ErrorCategory.OperationStopped;
+
+                return ReturnFromException<T>(path, response, cat, cancelled);
+            }
             catch (Exception e)
             {
-                var result = SonarrResponse.FromException<T>(path, e, ErrorCategory.ConnectionError, response?.StatusCode ?? HttpStatusCode.Unused, response);
-                response?.Dispose();
-                return result;
+                return ReturnFromException<T>(path, response, ErrorCategory.ConnectionError, e);
             }
+        }
+
+        private static SonarrResponse<T> ReturnFromException<T>(string path, HttpResponseMessage? response, ErrorCategory category, Exception e)
+        {
+            var result = SonarrResponse.FromException<T>(path, e, category, response?.StatusCode ?? HttpStatusCode.Unused, response);
+            response?.Dispose();
+            return result;
         }
 
         private static SonarrResponse ParseMessage(string url, HttpResponseMessage response, CancellationToken token)

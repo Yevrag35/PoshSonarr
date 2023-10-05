@@ -13,7 +13,7 @@ namespace MG.Sonarr.Next.Shell.Settings
         public bool SkipCertValidation { get; set; }
         public string? ProxyUri { get; set; }
         internal ProxyCredential? ProxyCredential { get; set; }
-        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(60d);
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromMinutes(5d);
 
         public bool TryGetProxy([NotNullWhen(true)] out IWebProxy? proxy)
         {
