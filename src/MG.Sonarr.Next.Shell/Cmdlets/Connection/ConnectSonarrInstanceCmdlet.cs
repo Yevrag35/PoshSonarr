@@ -1,12 +1,15 @@
-﻿using MG.Sonarr.Next.Services.Http;
+﻿using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Shell.Attributes;
+using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 {
@@ -21,6 +24,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 
         [Parameter(Mandatory = true, Position = 1)]
         [Alias("Key")]
+        [ValidateNotNullOrEmpty]
         public ApiKey ApiKey
         {
             get => _settings?.Key ?? ApiKey.Empty;
@@ -67,6 +71,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
         }
         protected override void ProcessRecord()
         {
+            this.ValidateSettings(_settings);
+
             if (_settings.Timeout <= TimeSpan.Zero)
             {
                 _settings.Timeout = TimeSpan.FromMinutes(5d);
@@ -88,6 +94,39 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
                 this.ThrowTerminatingError(result.Error);
             }
         }
+
+        /// <exception cref="SonarrParameterException"/>
+        private void ValidateSettings(ConnectionSettings settings)
+        {
+            ParameterErrorType type = ParameterErrorType.Invalid;
+
+            try
+            {
+                settings.Validate();
+            }
+            catch (InvalidApiKeyException keyEx)
+            {
+                string? key = settings.Key.GetValue();
+                if (string.IsNullOrEmpty(key))
+                {
+                    type = ParameterErrorType.Missing;
+                }
+                else
+                {
+                    type |= ParameterErrorType.Malformed;
+                }
+
+                SonarrParameterException pEx = new(nameof(this.ApiKey), type, null, keyEx);
+                this.ThrowTerminatingError(pEx.ToRecord());
+            }
+            catch (ArgumentNullException nullEx)
+            {
+                type |= ParameterErrorType.Malformed;
+                SonarrParameterException pEx = new(nameof(this.Url), type, null, nullEx);
+                this.ThrowTerminatingError(pEx.ToRecord(settings.ServiceUri));
+            }
+        }
+
         protected override void EndProcessing()
         {
             _settings = null!;

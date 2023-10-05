@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Services.Collections;
+using MG.Sonarr.Next.Services.Exceptions;
 using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Models;
 using System.Management.Automation;
@@ -7,15 +8,42 @@ using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Next.Exceptions
 {
+    /// <summary>
+    /// An exception class thrown when an <see cref="HttpClient"/> exception is thrown from a client 
+    /// implementation written for PoshSonarr.
+    /// </summary>
     [Serializable]
-    public sealed class SonarrHttpException : Exception
+    public sealed class SonarrHttpException : PoshSonarrException
     {
+        /// <summary>
+        /// The stack trace, if any, received from the Sonarr server.
+        /// </summary>
         public string? Description { get; }
+        /// <summary>
+        /// The headers from the <see cref="HttpResponseMessage"/> that generated this exception.
+        /// </summary>
         public IReadOnlyDictionary<string, string> Headers { get; }
+        /// <summary>
+        /// Indicates whether the response's status code was <see cref="HttpStatusCode.NotFound"/>.
+        /// </summary>
         public bool IsNotFound => HttpStatusCode.NotFound == this.StatusCode;
+        /// <summary>
+        /// Gets the status code of the response that generated the exception.
+        /// </summary>
         public HttpStatusCode? StatusCode { get; }
+        /// <summary>
+        /// The response message that generated the current exception.
+        /// </summary>
         public HttpResponseMessage? Response { get; }
+        /// <summary>
+        /// Gets the reason phrase which is typically is sent by servers together with the status code 
+        /// from the response that generated the current exception.
+        /// </summary>
         public string? ReasonPhrase { get; }
+        /// <summary>
+        /// The <see cref="string"/> representation of the <see cref="Uri"/> of the request message or the
+        /// original path provided that generated the current exception.
+        /// </summary>
         public string? RequestUri { get; }
 
         public SonarrHttpException(HttpRequestMessage request, HttpResponseMessage? response, PSObject? responseContent, Exception? innerException)
@@ -40,7 +68,7 @@ namespace MG.Sonarr.Next.Exceptions
         }
 
         private SonarrHttpException(SerializationInfo info, StreamingContext context)
-            : base()
+            : base(info, context)
         {
             // Retrieve properties/fields from the serialization store.
             this.Headers = (IReadOnlyDictionary<string, string>?)info.GetValue(nameof(this.Headers), typeof(Dictionary<string, string>)) ?? EmptyNameDictionary.Default;

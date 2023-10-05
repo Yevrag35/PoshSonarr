@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MG.Sonarr.Next.Services.Exceptions
+﻿namespace MG.Sonarr.Next.Services.Exceptions
 {
-    public sealed class EmptyHttpResponseException : Exception
+    public sealed class EmptyHttpResponseException : PoshSonarrException
     {
         public string Url { get; }
 

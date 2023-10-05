@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Shell.Exceptions;
 using System.Net;
 
 namespace MG.Sonarr.Next.Shell.Settings
@@ -27,13 +28,14 @@ namespace MG.Sonarr.Next.Shell.Settings
             return false;
         }
 
-        /// <exception cref="ArgumentException"/>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="InvalidApiKeyException"/>
         internal void Validate()
         {
             this.Key.Validate();
             if (this.ServiceUri is null)
             {
-                throw new ArgumentException("A base URL must be provided.");
+                throw new ArgumentNullException("A base URL must be provided.");
             }
         }
     }
