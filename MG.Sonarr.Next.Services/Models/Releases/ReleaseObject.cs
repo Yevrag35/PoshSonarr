@@ -17,7 +17,7 @@ namespace MG.Sonarr.Next.Services.Models.Releases
         }
         public string ReleaseUrl { get; private set; } = string.Empty;
 
-        public ReleaseObject() : base(45)
+        public ReleaseObject() : base(46)
         {
         }
 

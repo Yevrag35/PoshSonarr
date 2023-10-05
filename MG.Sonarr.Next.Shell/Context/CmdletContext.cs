@@ -11,6 +11,7 @@ using MG.Sonarr.Next.Services.Json.Modifiers;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Calendar;
 using MG.Sonarr.Next.Services.Models.Episodes;
+using MG.Sonarr.Next.Services.Models.Indexers;
 using MG.Sonarr.Next.Services.Models.Profiles;
 using MG.Sonarr.Next.Services.Models.Qualities;
 using MG.Sonarr.Next.Services.Models.Releases;
@@ -169,6 +170,7 @@ namespace MG.Sonarr.Next.Shell.Context
                     new SonarrObjectConverter<DelayProfileObject>(objCon),
                     new SonarrObjectConverter<EpisodeObject>(objCon),
                     new SonarrObjectConverter<EpisodeFileObject>(objCon),
+                    new SonarrObjectConverter<IndexerObject>(objCon),
                     new SonarrObjectConverter<LanguageProfileObject>(objCon),
                     new SonarrObjectConverter<LogObject>(objCon),
                     new SonarrObjectConverter<LogFileObject>(objCon),
