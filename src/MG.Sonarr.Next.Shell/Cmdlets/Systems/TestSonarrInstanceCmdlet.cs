@@ -8,6 +8,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
 {
     [Cmdlet(VerbsDiagnostic.Test, "SonarrInstance")]
     [Alias("Ping-Sonarr", "Test-Sonarr")]
+    [OutputType(typeof(PingResult), typeof(bool))]
     public sealed class TestSonarrInstanceCmdlet : SonarrCmdletBase, IApiCmdlet
     {
         ISignalRClient Client { get; set; } = null!;
