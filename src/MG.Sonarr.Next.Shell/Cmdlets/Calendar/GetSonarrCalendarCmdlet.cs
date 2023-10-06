@@ -11,6 +11,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
     {
         const string START = "start";
         const string END = "end";
+        static readonly TimeSpan WEEK_TIME_SPAN = TimeSpan.FromDays(8d).Subtract(TimeSpan.FromSeconds(1));
+
         DateTime? _end;
         HashSet<DayOfWeek> _dows = null!;
         MetadataTag Tag { get; set; } = null!;
@@ -22,7 +24,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         [Parameter(Position = 1)]
         public DateTime EndDate
         {
-            get => _end ?? this.StartDate.AddDays(7d);
+            get => _end ?? this.StartDate.Add(WEEK_TIME_SPAN);
             set => _end = value;
         }
 
