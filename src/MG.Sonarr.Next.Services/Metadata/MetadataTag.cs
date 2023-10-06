@@ -26,7 +26,7 @@ namespace MG.Sonarr.Next.Services.Metadata
             }
             else
             {
-                this.CanPipeTo = new ReadOnlySet<string>(supportedPipes);
+                this.CanPipeTo = new ReadOnlySet<string>(supportedPipes, StringComparer.InvariantCultureIgnoreCase);
             }
         }
         object ICloneable.Clone() => Copy(this);
