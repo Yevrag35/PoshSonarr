@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using MG.Sonarr.Next.Services.Attributes;
+using System.Collections.ObjectModel;
 using System.Net;
 
 namespace MG.Sonarr.Next.Services.Extensions
@@ -35,14 +36,14 @@ namespace MG.Sonarr.Next.Services.Extensions
 
         #endregion
 
-        public static string ToResponseString(this HttpStatusCode statusCode)
+        public static string ToResponseString([ValidatedNotNull] this HttpStatusCode statusCode)
         {
             return _codes.Value.TryGetValue((int)statusCode, out string? value)
                 ? value
                 : statusCode.ToString();
         }
 
-        public static bool TryFormatAsResponse(this HttpStatusCode statusCode, Span<char> destination, out int written)
+        public static bool TryFormatAsResponse([ValidatedNotNull] this HttpStatusCode statusCode, Span<char> destination, out int written)
         {
             written = 0;
             bool result = false;

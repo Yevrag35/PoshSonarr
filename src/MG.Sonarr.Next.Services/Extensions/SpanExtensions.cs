@@ -1,4 +1,6 @@
-﻿namespace MG.Sonarr.Next.Services.Extensions
+﻿using MG.Sonarr.Next.Services.Attributes;
+
+namespace MG.Sonarr.Next.Services.Extensions
 {
     public static class CharSpanExtensions
     {
@@ -7,7 +9,7 @@
         {
             CopyToSlice(spanValue: value.AsSpan(), span, ref position);
         }
-        public static void CopyToSlice(this ReadOnlySpan<char> spanValue, Span<char> span, ref int position)
+        public static void CopyToSlice([ValidatedNotNull] this ReadOnlySpan<char> spanValue, Span<char> span, ref int position)
         {
             if (spanValue.IsEmpty)
             {
@@ -19,12 +21,12 @@
         }
 
         [DebuggerStepThrough]
-        public static void CopyToSlice(this Span<char> writtableSpan, Span<char> span, ref int position)
+        public static void CopyToSlice([ValidatedNotNull] this Span<char> writtableSpan, Span<char> span, ref int position)
         {
             CopyToSlice(spanValue: writtableSpan, span, ref position);
         }
 
-        public static bool TryCopyToSlice(this ReadOnlySpan<char> spanValue, Span<char> span, ref int position)
+        public static bool TryCopyToSlice([ValidatedNotNull] this ReadOnlySpan<char> spanValue, Span<char> span, ref int position)
         {
             if (!spanValue.IsEmpty && spanValue.TryCopyTo(span.Slice(position)))
             {
@@ -43,16 +45,16 @@
         }
 
         [DebuggerStepThrough]
-        public static bool StartsWith(this ReadOnlySpan<char> span, in char value, StringComparison comparison = StringComparison.InvariantCultureIgnoreCase)
+        public static bool StartsWith([ValidatedNotNull] this ReadOnlySpan<char> span, in char value, StringComparison comparison = StringComparison.InvariantCultureIgnoreCase)
         {
             return span.StartsWith(new ReadOnlySpan<char>(in value), comparison);
         }
         [DebuggerStepThrough]
-        public static bool StartsWith(this Span<char> span, in char value)
+        public static bool StartsWith([ValidatedNotNull] this Span<char> span, in char value)
         {
             return span.StartsWith(new ReadOnlySpan<char>(in value));
         }
-        public static bool StartsWith(this Span<char> span, in char value, bool ignoreCase)
+        public static bool StartsWith([ValidatedNotNull] this Span<char> span, in char value, bool ignoreCase)
         {
             bool startsWith = StartsWith(span, in value);
             if (!startsWith && ignoreCase)

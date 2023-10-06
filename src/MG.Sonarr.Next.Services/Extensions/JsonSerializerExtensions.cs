@@ -2,9 +2,9 @@
 {
     public static class JsonSerializerExtensions
     {
-        public static string ConvertName(this JsonSerializerOptions options, string name)
+        public static string ConvertName(this JsonSerializerOptions? options, string name)
         {
-            return options.PropertyNamingPolicy?.ConvertName(name) ?? name;
+            return options?.PropertyNamingPolicy?.ConvertName(name) ?? name;
         }
     }
 }

@@ -3,7 +3,7 @@
 [![version](https://img.shields.io/powershellgallery/v/PoshSonarr.svg?include_prereleases)](https://www.powershellgallery.com/packages/PoshSonarr)
 [![downloads](https://img.shields.io/powershellgallery/dt/PoshSonarr.svg?label=downloads)](https://www.powershellgallery.com/stats/packages/PoshSonarr?groupby=Version)
 
-Introducing a completely, redesigned, overhauled version of PoshSonarr.  In order to become the flexible module that I envisioned, I had to take a completely new approach.  Gone are the static types and the needlessly complex, rigid architecture of the previous cmdlets.  The NEXT cmdlets are lighter, more error-resistant, and more flexible in accounting for the changes the [Sonarr PVR API](https://github.com/Sonarr/Sonarr/wiki/API) brings in every update.
+Introducing a completely, redesigned, overhauled version of PoshSonarr.  In order to become the flexible module that I envisioned, I had to take a completely new approach.  Gone are the static types and the needlessly complex, rigid architecture of the previous cmdlets.  The NEXT cmdlets are lighter, more error-resistant, and more flexible in accounting for the changes the [Sonarr PVR API](https://sonarr.tv/docs/api) brings in every update.
 
 ## COMPATIBILITY
 

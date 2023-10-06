@@ -11,12 +11,20 @@ namespace MG.Sonarr.Next.Services.Extensions
             return TypeExtensions.GetTypeName(type);
         }
 
-        public static ErrorRecord ToRecord(this Exception exception)
+        [return: NotNullIfNotNull(nameof(exception))]
+        public static ErrorRecord? ToRecord(this Exception? exception)
         {
             return ToRecord(exception, ErrorCategory.NotSpecified);
         }
-        public static ErrorRecord ToRecord(this Exception exception, ErrorCategory category, object? targetObj = null)
+
+        [return: NotNullIfNotNull(nameof(exception))]
+        public static ErrorRecord? ToRecord(this Exception? exception, ErrorCategory category, object? targetObj = null)
         {
+            if (exception is null)
+            {
+                return null;
+            }
+
             Type type = exception.GetType();
             return new ErrorRecord(exception, type.FullName ?? type.Name, category, targetObj);
         }

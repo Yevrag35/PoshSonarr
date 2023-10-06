@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Reflection;
+﻿using MG.Sonarr.Next.Services.Attributes;
+using MG.Sonarr.Next.Services.Reflection;
 using OneOf;
 using System.Reflection;
 
@@ -6,7 +7,7 @@ namespace MG.Sonarr.Next.Services.Extensions
 {
     public static class ExpressionExtensions
     {
-        public static bool TryGetAsMember(this LambdaExpression expression, [NotNullWhen(true)] out MemberExpression? memberExpression)
+        public static bool TryGetAsMember([ValidatedNotNull] this LambdaExpression expression, [NotNullWhen(true)] out MemberExpression? memberExpression)
         {
             if (expression.Body is MemberExpression memEx)
             {
@@ -23,7 +24,7 @@ namespace MG.Sonarr.Next.Services.Extensions
             return false;
         }
 
-        public static bool TryGetAsSetter(this LambdaExpression expression, [NotNullWhen(true)] out FieldOrPropertyInfoSetter setter)
+        public static bool TryGetAsSetter([ValidatedNotNull] this LambdaExpression expression, [NotNullWhen(true)] out FieldOrPropertyInfoSetter setter)
         {
             setter = default;
             OneOf<FieldInfo, PropertyInfo, object?> tempOne;

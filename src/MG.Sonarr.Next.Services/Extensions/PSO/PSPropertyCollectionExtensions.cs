@@ -7,6 +7,8 @@ namespace MG.Sonarr.Next.Services.Extensions.PSO
         public static void RemoveAll<T>(this PSMemberInfoCollection<T> collection, Func<T, bool> predicate)
             where T : PSMemberInfo
         {
+            ArgumentNullException.ThrowIfNull(collection);
+
             foreach (T item in collection)
             {
                 if (predicate(item))
@@ -18,6 +20,8 @@ namespace MG.Sonarr.Next.Services.Extensions.PSO
 
         public static void RemoveMany<T>(this PSMemberInfoCollection<T> collection, params string[] propertyNames) where T : PSMemberInfo
         {
+            ArgumentNullException.ThrowIfNull(collection);
+
             if (propertyNames is null || propertyNames.Length <= 0)
             {
                 return;

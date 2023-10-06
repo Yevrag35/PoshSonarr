@@ -1,8 +1,10 @@
-﻿namespace MG.Sonarr.Next.Services.Extensions
+﻿using MG.Sonarr.Next.Services.Attributes;
+
+namespace MG.Sonarr.Next.Services.Extensions
 {
     public static class BooleanExtensions
     {
-        public static int GetLength(this bool value)
+        public static int GetLength([ValidatedNotNull] this bool value)
         {
             return value ? bool.TrueString.Length : bool.FalseString.Length;
         }
@@ -12,7 +14,7 @@
             length = s.Length;
             return s;
         }
-        public static bool TryFormat(this bool value, Span<char> span, bool lowerCase, out int written)
+        public static bool TryFormat([ValidatedNotNull] this bool value, Span<char> span, bool lowerCase, out int written)
         {
             if (lowerCase)
             {

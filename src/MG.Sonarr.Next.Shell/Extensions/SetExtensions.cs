@@ -1,10 +1,11 @@
-﻿using MG.Sonarr.Next.Shell.Components;
+﻿using MG.Sonarr.Next.Services.Attributes;
+using MG.Sonarr.Next.Shell.Components;
 
 namespace MG.Sonarr.Next.Shell.Extensions
 {
-    public static class SetExtensions
+    internal static class SetExtensions
     {
-        public static bool AnyValueLike(this IReadOnlySet<Wildcard> set, string? value)
+        internal static bool AnyValueLike([ValidatedNotNull] this IReadOnlySet<Wildcard> set, string? value)
         {
             foreach (Wildcard ws in set)
             {

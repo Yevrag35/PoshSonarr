@@ -1,4 +1,6 @@
-﻿namespace MG.Sonarr.Next.Services.Extensions
+﻿using MG.Sonarr.Next.Services.Attributes;
+
+namespace MG.Sonarr.Next.Services.Extensions
 {
     public static class ListExtensions
     {
@@ -7,8 +9,10 @@
             AddMany(list, collection: values);
         }
 
-        public static void AddMany<T>(this IList<T> list, IEnumerable<T> collection)
+        /// <exception cref="ArgumentNullException"/>
+        public static void AddMany<T>(this IList<T> list, IEnumerable<T>? collection)
         {
+            ArgumentNullException.ThrowIfNull(list);
             if (collection is null)
             {
                 return;

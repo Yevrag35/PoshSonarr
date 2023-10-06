@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using MG.Sonarr.Next.Services.Attributes;
+using System.Numerics;
 
 namespace MG.Sonarr.Next.Services.Extensions
 {
@@ -13,7 +14,7 @@ namespace MG.Sonarr.Next.Services.Extensions
         /// <param name="n"></param>
         /// <returns></returns>
         [DebuggerStepThrough]
-        public static int GetLength<T>(this T n) where T : INumber<T>
+        public static int GetLength<T>([ValidatedNotNull] this T n) where T : unmanaged, INumber<T>
         {
             if (T.IsZero(n))
             {
