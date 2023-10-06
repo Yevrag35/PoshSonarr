@@ -9,7 +9,6 @@ using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks.Sources;
 
 namespace MG.Sonarr.Next.Services.Json.Converters
 {

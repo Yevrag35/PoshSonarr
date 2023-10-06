@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Next.Services.Extensions;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections;
 
 namespace MG.Sonarr.Next.Shell.Components

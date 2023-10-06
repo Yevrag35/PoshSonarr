@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Next.Services.Extensions;
-using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Qualities;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;

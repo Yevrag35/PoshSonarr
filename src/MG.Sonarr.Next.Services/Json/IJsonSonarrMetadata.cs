@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Next.Services.Metadata;
-using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Json
 {

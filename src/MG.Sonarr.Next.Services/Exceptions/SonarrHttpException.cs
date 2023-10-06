@@ -1,11 +1,7 @@
 ﻿using MG.Sonarr.Next.Services.Collections;
 using MG.Sonarr.Next.Services.Exceptions;
 using MG.Sonarr.Next.Services.Extensions;
-using MG.Sonarr.Next.Services.Extensions.PSO;
-using MG.Sonarr.Next.Services.Models;
-using System.Management.Automation;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Next.Exceptions
@@ -52,10 +48,19 @@ namespace MG.Sonarr.Next.Exceptions
         /// </summary>
         public string? RequestUri { get; }
 
+        [DebuggerStepThrough]
+        public SonarrHttpException(HttpRequestMessage request, HttpResponseMessage? response)
+            : this(request, response, ErrorCollection.Empty, null)
+        {
+        }
+        [DebuggerStepThrough]
+        public SonarrHttpException(HttpRequestMessage request, HttpResponseMessage? response, IErrorCollection errors)
+            : this(request, response, errors, null)
+        {
+        }
         public SonarrHttpException(HttpRequestMessage request, HttpResponseMessage? response, IErrorCollection errors, Exception? innerException)
             : base(GetMessage(request, response, innerException, errors, out string? reqUri), innerException)
         {
-            //this.Description = serverError?.Description;
             this.ExtendedInfo = errors;
             this.RequestUri = reqUri;
             this.Response = response;

@@ -4,12 +4,7 @@ using MG.Sonarr.Next.Services.Exceptions;
 using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Models;
 using MG.Sonarr.Next.Shell.Extensions;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.NonApi
 {

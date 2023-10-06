@@ -1,5 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Auth;
-using MG.Sonarr.Next.Services.Http;
+﻿using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Shell.Attributes;
@@ -7,9 +6,7 @@ using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Settings;
 using Microsoft.Extensions.DependencyInjection;
-using System.ComponentModel;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 {

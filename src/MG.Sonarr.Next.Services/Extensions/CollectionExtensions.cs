@@ -1,6 +1,4 @@
-﻿using System.Collections;
-
-namespace MG.Sonarr.Next.Services.Extensions
+﻿namespace MG.Sonarr.Next.Services.Extensions
 {
     public static class CollectionExtensions
     {

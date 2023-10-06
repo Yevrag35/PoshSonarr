@@ -1,6 +1,5 @@
 ﻿using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Metadata;
-using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Services.Models
 {

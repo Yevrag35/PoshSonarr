@@ -1,6 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Http.Clients;
-
-namespace MG.Sonarr.Next.Services.Http.Requests
+﻿namespace MG.Sonarr.Next.Services.Http.Requests
 {
     public abstract class SonarrRequestMessage : HttpRequestMessage, IHttpRequestDetails
     {

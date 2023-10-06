@@ -7,7 +7,6 @@ using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Http.Requests;
 using MG.Sonarr.Next.Services.Json;
-using MG.Sonarr.Next.Services.Models;
 using MG.Sonarr.Next.Services.Models.System;
 using Microsoft.Extensions.DependencyInjection;
 using System.Management.Automation;

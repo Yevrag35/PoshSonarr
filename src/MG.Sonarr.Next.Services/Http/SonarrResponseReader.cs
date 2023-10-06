@@ -4,13 +4,11 @@ using MG.Sonarr.Next.Services.Exceptions;
 using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Models;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using OneOf;
 using System.Management.Automation;
 using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Http
 {

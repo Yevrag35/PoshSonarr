@@ -1,13 +1,7 @@
-﻿using Markdig.Helpers;
-using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Management.Automation;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace MG.Sonarr.Next.Services.Json.Converters
 {

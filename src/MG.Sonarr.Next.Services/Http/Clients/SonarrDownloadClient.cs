@@ -1,9 +1,9 @@
 ﻿using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Collections;
 using MG.Sonarr.Next.Services.Exceptions;
 using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Services.Http.Requests;
-using MG.Sonarr.Next.Services.Models;
 using Microsoft.Extensions.DependencyInjection;
 using System.Management.Automation;
 using System.Net;
@@ -71,7 +71,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             return written
                 ? new SonarrResponse<string>(url, path, null, response.StatusCode)
                 : new SonarrResponse<string>(url, null, 
-                    new SonarrErrorRecord(new SonarrHttpException(msg, response, null, null)),
+                    new SonarrErrorRecord(new SonarrHttpException(msg, response, ErrorCollection.Empty, null)),
                     HttpStatusCode.Unauthorized);
         }
 

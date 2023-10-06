@@ -1,6 +1,4 @@
-﻿using MG.Sonarr.Next.Services;
-
-namespace MG.Sonarr.Next.Shell.Components
+﻿namespace MG.Sonarr.Next.Shell.Components
 {
     public readonly struct SeasonEpisodeId
     {

@@ -1,7 +1,4 @@
-﻿using MG.Sonarr.Next.Services;
-using MG.Sonarr.Next.Services.Http;
-using MG.Sonarr.Next.Services.Http.Queries;
-using MG.Sonarr.Next.Services.Metadata;
+﻿using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Models;
 using MG.Sonarr.Next.Services.Models.Episodes;
 using MG.Sonarr.Next.Shell.Extensions;

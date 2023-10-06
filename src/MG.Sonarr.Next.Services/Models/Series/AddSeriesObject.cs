@@ -1,9 +1,7 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
-using MG.Sonarr.Next.Services.Extensions.PSO;
+﻿using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Shell.Models.Series;
 using System.Management.Automation;
-using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Models.Series

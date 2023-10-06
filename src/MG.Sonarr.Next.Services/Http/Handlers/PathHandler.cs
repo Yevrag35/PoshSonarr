@@ -1,11 +1,5 @@
 ﻿using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Extensions;
-using MG.Sonarr.Next.Services.Http.Clients;
-using MG.Sonarr.Next.Services.Json;
-using System.Buffers;
-using System.Net;
-using System.Net.Http.Json;
-using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Services.Http.Handlers
 {

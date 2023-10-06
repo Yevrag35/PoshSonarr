@@ -1,10 +1,8 @@
 ﻿using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Services.Extensions;
-using Microsoft.PowerShell.Commands;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Net;
-using System.Reflection;
 
 namespace MG.Sonarr.Next.Services.Exceptions
 {

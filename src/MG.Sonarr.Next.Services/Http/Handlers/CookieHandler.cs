@@ -2,7 +2,6 @@
 using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Collections;
 using MG.Sonarr.Next.Services.Http.Requests;
-using MG.Sonarr.Next.Services.Models;
 using Microsoft.Extensions.Caching.Memory;
 using System.Net;
 

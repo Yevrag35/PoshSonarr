@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Next.Services.Metadata;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Management.Automation;
 using System.Runtime.CompilerServices;
 

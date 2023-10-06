@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Next.Services.Collections;
-using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models;
 using System.Text.Json.Serialization;
 

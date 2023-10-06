@@ -1,7 +1,5 @@
 ﻿using MG.Sonarr.Next.Services.Extensions;
 using System.ComponentModel;
-using System.Management.Automation.Language;
-using System.Numerics;
 
 namespace MG.Sonarr.Next.Services.Http.Queries
 {
