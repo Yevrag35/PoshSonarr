@@ -1,13 +1,16 @@
 ﻿using MG.Sonarr.Next.Exceptions;
+using MG.Sonarr.Next.Services.Collections;
 using MG.Sonarr.Next.Services.Exceptions;
 using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Models;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using OneOf;
 using System.Management.Automation;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Http
 {
@@ -42,7 +45,8 @@ namespace MG.Sonarr.Next.Services.Http
                 return SonarrResponse.Create(call.Response, call.RequestUri);
             }
 
-            SonarrServerError? deserializedError = await this.GetErrorFromContentAsync(call.Response, token);
+            string? content = await call.Response.Content.ReadAsStringAsync(token);
+            IErrorCollection deserializedError = GetErrorFromContent(content, this.Options);
             SonarrHttpException httpEx = new(call.Request, call.Response, deserializedError, null);
             SonarrErrorRecord record = new(httpEx, targetObj);
 
@@ -68,23 +72,47 @@ namespace MG.Sonarr.Next.Services.Http
                     : new SonarrResponse<T>(call.RequestUri, remainder, null, call.Response.StatusCode);
             }
 
-            SonarrServerError? deserializedError = await this.GetErrorFromContentAsync(call.Response, token);
+            string? content = await call.Response.Content.ReadAsStringAsync(token);
+            IErrorCollection deserializedError = GetErrorFromContent(content, this.Options);
             SonarrHttpException httpEx = new(call.Request, call.Response, deserializedError, null);
             SonarrErrorRecord record = new(httpEx, targetObj);
 
             return SonarrResponse.FromException<T>(record);
         }
 
-        private async Task<SonarrServerError?> GetErrorFromContentAsync(HttpResponseMessage response, CancellationToken token)
+        private static IErrorCollection GetErrorFromContent(string? content, JsonSerializerOptions? options)
         {
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return ErrorCollection.Empty;
+            }
+
+            IErrorCollection list;
             try
             {
-                return await response.Content.ReadFromJsonAsync<SonarrServerError>(this.Options, token);
+                if (content.StartsWith('{'))
+                {
+                    var error = JsonSerializer.Deserialize<SonarrServerError>(content, options);
+                    list = error is not null
+                        ? ErrorCollection.FromOne(error)
+                        : ErrorCollection.Empty;
+                }
+                else if (content.StartsWith('['))
+                {
+                    list = JsonSerializer.Deserialize<ErrorCollection>(content, options)
+                        ?? ErrorCollection.Empty;
+                }
+                else
+                {
+                    list = ErrorCollection.Empty;
+                }
             }
             catch
             {
-                return null;
+                list = ErrorCollection.Empty;
             }
+
+            return list;
         }
 
         private async Task<OneOf<SonarrErrorRecord, T?>> ReadContentAsync<T>(HttpResponseMessage response, object? targetObj, CancellationToken token)

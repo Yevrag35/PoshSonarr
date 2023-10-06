@@ -1,5 +1,9 @@
 ﻿namespace MG.Sonarr.Next.Shell.Components
 {
+    /// <summary>
+    /// A discriminated union of <see cref="int"/> and <see cref="string"/> types where the
+    /// underlying value can only be one or the other. Implicit casts to this type of object are allowed.
+    /// </summary>
     public readonly struct IntOrString : IEquatable<IntOrString>, IEquatable<int>, IEquatable<string>
     {
         readonly int? _int;

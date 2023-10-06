@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Services
+﻿namespace MG.Sonarr.Next
 {
     public static class LengthConstants
     {
@@ -14,5 +14,7 @@
         public const int GUID_FORM_N = 32;
         public const int GUID_FORM_D = 36;
         public const int GUID_FORM_X = 68;
+
+        public const int HTTP_STATUS_CODE_MAX = 29; // Enum.GetNames<HttpStatusCode>().Max(x => x.Length)
     }
 }

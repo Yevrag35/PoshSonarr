@@ -1,9 +1,11 @@
 ﻿using MG.Sonarr.Next.Services.Collections;
 using MG.Sonarr.Next.Services.Exceptions;
+using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Extensions.PSO;
 using MG.Sonarr.Next.Services.Models;
 using System.Management.Automation;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Next.Exceptions
@@ -15,10 +17,14 @@ namespace MG.Sonarr.Next.Exceptions
     [Serializable]
     public sealed class SonarrHttpException : PoshSonarrException
     {
+        ///// <summary>
+        ///// The stack trace, if any, received from the Sonarr server.
+        ///// </summary>
+        //public string? Description { get; }
         /// <summary>
-        /// The stack trace, if any, received from the Sonarr server.
+        /// The response body as extended information, if available.
         /// </summary>
-        public string? Description { get; }
+        public IErrorCollection ExtendedInfo { get; }
         /// <summary>
         /// The headers from the <see cref="HttpResponseMessage"/> that generated this exception.
         /// </summary>
@@ -46,20 +52,11 @@ namespace MG.Sonarr.Next.Exceptions
         /// </summary>
         public string? RequestUri { get; }
 
-        public SonarrHttpException(HttpRequestMessage request, HttpResponseMessage? response, PSObject? responseContent, Exception? innerException)
-            : base(GetMessage(request, innerException, responseContent, out string? reqUri), innerException)
+        public SonarrHttpException(HttpRequestMessage request, HttpResponseMessage? response, IErrorCollection errors, Exception? innerException)
+            : base(GetMessage(request, response, innerException, errors, out string? reqUri), innerException)
         {
-            this.Description = GetDescription(responseContent);
-            this.RequestUri = reqUri;
-            this.Response = response;
-            this.ReasonPhrase = response?.ReasonPhrase;
-            this.StatusCode = response?.StatusCode;
-            this.Headers = ParseResponseHeaders(response);
-        }
-        public SonarrHttpException(HttpRequestMessage request, HttpResponseMessage? response, SonarrServerError? serverError, Exception? innerException)
-            : base(GetMessage(request, innerException, serverError, out string? reqUri), innerException)
-        {
-            this.Description = serverError?.Description;
+            //this.Description = serverError?.Description;
+            this.ExtendedInfo = errors;
             this.RequestUri = reqUri;
             this.Response = response;
             this.ReasonPhrase = response?.ReasonPhrase;
@@ -71,6 +68,7 @@ namespace MG.Sonarr.Next.Exceptions
             : base(info, context)
         {
             // Retrieve properties/fields from the serialization store.
+            this.ExtendedInfo = ErrorCollection.Empty;
             this.Headers = (IReadOnlyDictionary<string, string>?)info.GetValue(nameof(this.Headers), typeof(Dictionary<string, string>)) ?? EmptyNameDictionary.Default;
             this.StatusCode = (HttpStatusCode?)info.GetValue(nameof(this.StatusCode), typeof(HttpStatusCode?));
             this.ReasonPhrase = (string?)info.GetValue(nameof(this.ReasonPhrase), typeof(string));
@@ -89,34 +87,18 @@ namespace MG.Sonarr.Next.Exceptions
 
             base.GetObjectData(info, context);
         }
-
-        private static string? GetDescription(PSObject? responseObj)
-        {
-            return responseObj?.Properties[nameof(Description)]?.Value as string;
-        }
-        private static string GetMessage(HttpRequestMessage request, Exception? inner, PSObject? responseObj, out string? requestUri)
+        private static string GetMessage(HttpRequestMessage request, HttpResponseMessage? response, Exception? inner, IErrorCollection errors, out string? requestUri)
         {
             requestUri = GetRequestUri(request);
-            if (responseObj is null || !responseObj.TryGetNonNullProperty(nameof(Message), out string? msg))
-            {
-                return inner is null ?
-                    $"An exception occurred in response -> {requestUri}"
-                    : inner.GetBaseException().Message;
-            }
-            else
-            {
-                return msg;
-            }
-        }
-        private static string GetMessage(HttpRequestMessage request, Exception? inner, SonarrServerError? serverError, out string? requestUri)
-        {
-            if (serverError is null)
-            {
-                return GetMessage(request, inner, (PSObject?)null, out requestUri);
-            }
+            string details = errors.Count <= 0
+                ? inner is null
+                    ? "An exception occurred in response"
+                    : inner.GetBaseException().Message
+                : errors.GetMessage();
 
-            requestUri = GetRequestUri(request);
-            return serverError.Message;
+            return response is not null
+                ? $"{response.StatusCode.ToResponseString()}: {details}"
+                : details;
         }
         private static string? GetRequestUri(HttpRequestMessage request)
         {

@@ -6,7 +6,7 @@ namespace MG.Sonarr.Next.Services.Exceptions
     /// An <see langword="abstract"/> base class for all <see cref="Exception"/> instances thrown by PoshSonarr libraries.
     /// </summary>
     [Serializable]
-    public abstract class PoshSonarrException : Exception
+    public class PoshSonarrException : Exception
     {
         protected PoshSonarrException(string message)
             : base(message)

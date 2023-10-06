@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-
-namespace MG.Sonarr.Next.Services
+﻿namespace MG.Sonarr.Next
 {
     public static class Statics
     {

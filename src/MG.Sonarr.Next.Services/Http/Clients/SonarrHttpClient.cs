@@ -12,6 +12,7 @@ using System.Text.Json.Nodes;
 using MG.Sonarr.Next.Services.Models;
 using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Services.Http.Requests;
+using MG.Sonarr.Next.Services.Collections;
 
 namespace MG.Sonarr.Next.Services.Http.Clients
 {
@@ -171,7 +172,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             catch (HttpRequestException httpEx)
             {
                 var pso = ParseResponseForError(response, this.DeserializingOptions, token);
-                SonarrHttpException sonarrEx = new(request, response, pso, httpEx);
+                SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
 
                 var result = SonarrResponse.FromException(path, sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);
 
@@ -202,7 +203,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             catch (HttpRequestException httpEx)
             {
                 var pso = ParseResponseForError(response, this.DeserializingOptions, token);
-                SonarrHttpException sonarrEx = new(request, response, pso, httpEx);
+                SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
 
                 var result = SonarrResponse.FromException<T>(path, sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);
 

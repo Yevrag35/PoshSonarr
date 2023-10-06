@@ -220,7 +220,7 @@ namespace MG.Sonarr.Next.Shell.Components
                 }
             }
 
-            while (j < pattern.Length && pattern[j] == '*')
+            while (j < pattern.Length && pattern[j] == STAR)
             {
                 ++j;
             }
@@ -251,24 +251,24 @@ namespace MG.Sonarr.Next.Shell.Components
         #endregion
 
         #region PARSABLE
-        public static Wildcard Parse(ReadOnlySpan<char> value, IFormatProvider? provider)
+        public static Wildcard Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
         {
-            return !value.IsEmpty
-                ? new(new string(value))
+            return !s.IsEmpty
+                ? new(new string(s))
                 : Empty;
         }
-        public static Wildcard Parse(string? value, IFormatProvider? provider)
+        public static Wildcard Parse(string? s, IFormatProvider? provider)
         {
-            return value;
+            return s;
         }
-        public static bool TryParse(ReadOnlySpan<char> value, IFormatProvider? provider, out Wildcard result)
+        public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Wildcard result)
         {
-            result = Parse(value, provider);
+            result = Parse(s, provider);
             return true;
         }
-        public static bool TryParse(string? value, IFormatProvider? provider, out Wildcard result)
+        public static bool TryParse(string? s, IFormatProvider? provider, out Wildcard result)
         {
-            result = Parse(value, provider);
+            result = Parse(s, provider);
             return true;
         }
 

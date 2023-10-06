@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Collections;
 using MG.Sonarr.Next.Services.Http.Requests;
 using MG.Sonarr.Next.Services.Models;
 using Microsoft.Extensions.Caching.Memory;
@@ -34,7 +35,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
             if (request is not CookieRequestMessage cookieMsg || cookieMsg.IsCredentialsBlank)
             {
-                throw new SonarrHttpException(request, null, (SonarrServerError?)null,
+                throw new SonarrHttpException(request, null, ErrorCollection.Empty,
                     new UnauthorizedAccessException("The Sonarr server requires Forms-based authentication and no credentials were provided."));
             }
 
@@ -66,7 +67,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
             }
             catch (UnauthorizedAccessException e)
             {
-                throw new SonarrHttpException(original, null, (SonarrServerError?)null, e);
+                throw new SonarrHttpException(original, null, ErrorCollection.Empty, e);
             }
 
             using HttpResponseMessage response = await base.SendAsync(request, token);
@@ -75,7 +76,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
             {
                 response.StatusCode = HttpStatusCode.Unauthorized;
                 response.ReasonPhrase = response.StatusCode.ToString();
-                throw new SonarrHttpException(request, response, (SonarrServerError?)null,
+                throw new SonarrHttpException(request, response, ErrorCollection.Empty,
                     new UnauthorizedAccessException("The username or password is incorrect."));
             }
 

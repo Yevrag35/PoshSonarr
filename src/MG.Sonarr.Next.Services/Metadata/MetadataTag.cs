@@ -1,7 +1,6 @@
 ﻿using MG.Collections;
 using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http.Queries;
-using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Services.Metadata
 {

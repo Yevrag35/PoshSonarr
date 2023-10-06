@@ -9,6 +9,7 @@ using MG.Sonarr.Next.Services.Json.Converters;
 using MG.Sonarr.Next.Services.Json.Converters.Spans;
 using MG.Sonarr.Next.Services.Json.Modifiers;
 using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Services.Models;
 using MG.Sonarr.Next.Services.Models.Calendar;
 using MG.Sonarr.Next.Services.Models.Episodes;
 using MG.Sonarr.Next.Services.Models.Indexers;
@@ -180,6 +181,7 @@ namespace MG.Sonarr.Next.Shell.Context
                     new SonarrObjectConverter<ReleaseProfileObject>(objCon),
                     new SonarrObjectConverter<RootFolderObject>(objCon),
                     new SeriesObjectConverter<SeriesObject>(objCon),
+                    new SonarrObjectConverter<SonarrServerError>(objCon),
                     new SonarrObjectConverter<TagObject>(objCon),
                     new SonarrResponseConverter());
 

@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Models.System;
 using MG.Sonarr.Next.Shell.Attributes;
+using MG.Sonarr.Next.Shell.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Text.Json;
@@ -69,14 +70,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
             if (IsFileExtensionZip(this.Path, out bool isEmpty))
             {
                 this.StopCmdlet(
-                    new ArgumentException("If a target file extension is provided, it must be '.zip'.")
+                    new SonarrParameterException(nameof(this.Path), ParameterErrorType.Malformed, "If a target file extension is provided, it must be '.zip'.")
                         .ToRecord(ErrorCategory.InvalidArgument, this.Path));
 
                 return;
             }
             else if (isEmpty)
             {
-                
                 this.WriteDebug($"No file name detected in provided path. Will add from {nameof(this.BackupUri)} or incoming {nameof(this.InputObject)}");
                 _noFileName = true;
             }
@@ -115,7 +115,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
             string path = this.GetUnresolvedProviderPathFromPSPath(providedPath);
             if (string.IsNullOrWhiteSpace(path))
             {
-                throw new ArgumentException("The provided path is invalid.", new DirectoryNotFoundException($"Unable to resolve the path -> {providedPath}"));
+                throw new SonarrParameterException(nameof(this.Path), ParameterErrorType.Missing, null,
+                    new DirectoryNotFoundException($"Unable to resolve the path -> {providedPath}"));
             }
 
             return path;

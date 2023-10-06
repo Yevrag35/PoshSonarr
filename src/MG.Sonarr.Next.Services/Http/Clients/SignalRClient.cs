@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Collections;
 using MG.Sonarr.Next.Services.Exceptions;
 using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http.Handlers;
@@ -83,7 +84,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             }
             catch (HttpRequestException httpEx)
             {
-                SonarrHttpException sonarrEx = new(request, response, (SonarrServerError?)null, httpEx);
+                SonarrHttpException sonarrEx = new(request, response, ErrorCollection.Empty, httpEx);
                 return SonarrResponse.FromException<T>(
                     request.OriginalRequestUri, sonarrEx, ErrorCategory.ConnectionError, response?.StatusCode ?? System.Net.HttpStatusCode.Unused, response);
             }

@@ -1,10 +1,12 @@
 ﻿using MG.Sonarr.Next.Services.Collections;
 using MG.Sonarr.Next.Services.Exceptions;
+using MG.Sonarr.Next.Services.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Json;
 using Microsoft.Extensions.DependencyInjection;
 using OneOf;
+using System.Net;
 using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
@@ -133,13 +135,37 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         {
             this.WriteVerbose($"Sending {request.Method} request -> {request.RequestUri}");
         }
+
+        const string AFTER_MSG_FORMAT_1 = "Received response after ";
+        const string AFTER_MSG_FORMAT_2 = "ms -> ";
         public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
         {
             _timer.Stop();
-            string msg = $"Received response after {_timer.ElapsedMilliseconds}ms -> {(int)response.StatusCode} ({response.StatusCode})";
+            string msg = GetAfterMessage(_timer.ElapsedMilliseconds, response.StatusCode);
 
             _timer.Reset();
             this.WriteVerbose(msg);
+        }
+
+        private static string GetAfterMessage(long elapsedMilliseconds, HttpStatusCode statusCode)
+        {
+            int length = AFTER_MSG_FORMAT_1.Length + AFTER_MSG_FORMAT_2.Length
+                         +
+                         LengthConstants.LONG_MAX + LengthConstants.HTTP_STATUS_CODE_MAX;
+
+            Span<char> span = stackalloc char[length];
+            int position = 0;
+
+            AFTER_MSG_FORMAT_1.CopyToSlice(span, ref position);
+            _ = elapsedMilliseconds.TryFormat(
+                span.Slice(position), out int written, default, Statics.DefaultProvider);
+
+            position += written;
+            AFTER_MSG_FORMAT_2.CopyToSlice(span, ref position);
+
+            _ = statusCode.TryFormatAsResponse(span.Slice(position), out int codeWritten);
+
+            return new string(span.Slice(0, position + codeWritten));
         }
 
         bool _disposed;

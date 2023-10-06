@@ -56,7 +56,7 @@ namespace MG.Sonarr.Next.Shell.Components
             int season = 0;
             if (value.IsWhiteSpace())
             {
-                result = new SeasonEpisodeId(in season, in episode, true);
+                result = new(in season, in episode, true);
                 return true;
             }
 
@@ -64,6 +64,7 @@ namespace MG.Sonarr.Next.Shell.Components
             if (index > -1)
             {
                 var sSlice = value.Slice(index + 1);
+
                 if (int.TryParse(sSlice, Statics.DefaultProvider, out season))
                 {
                     result = new(in season, in episode, false);

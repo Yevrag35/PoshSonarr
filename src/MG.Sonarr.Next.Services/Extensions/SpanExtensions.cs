@@ -2,6 +2,7 @@
 {
     public static class CharSpanExtensions
     {
+        [DebuggerStepThrough]
         public static void CopyToSlice(this string? value, Span<char> span, ref int position)
         {
             CopyToSlice(spanValue: value.AsSpan(), span, ref position);
@@ -16,6 +17,8 @@
             spanValue.CopyTo(span.Slice(position));
             position += spanValue.Length;
         }
+
+        [DebuggerStepThrough]
         public static void CopyToSlice(this Span<char> writtableSpan, Span<char> span, ref int position)
         {
             CopyToSlice(spanValue: writtableSpan, span, ref position);
@@ -33,11 +36,18 @@
                 return false;
             }
         }
+        [DebuggerStepThrough]
+        public static bool TryCopyToSlice(this Span<char> writtableSpan, Span<char> span, ref int position)
+        {
+            return TryCopyToSlice(spanValue: writtableSpan, span, ref position);
+        }
 
+        [DebuggerStepThrough]
         public static bool StartsWith(this ReadOnlySpan<char> span, in char value, StringComparison comparison = StringComparison.InvariantCultureIgnoreCase)
         {
             return span.StartsWith(new ReadOnlySpan<char>(in value), comparison);
         }
+        [DebuggerStepThrough]
         public static bool StartsWith(this Span<char> span, in char value)
         {
             return span.StartsWith(new ReadOnlySpan<char>(in value));
