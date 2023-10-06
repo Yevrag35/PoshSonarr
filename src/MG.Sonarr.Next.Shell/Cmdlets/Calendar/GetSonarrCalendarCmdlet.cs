@@ -97,7 +97,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         }
         private static QueryParameterCollection GetParameters(DateTime start, DateTime end, bool unmonitored)
         {
-            return new(3)
+            int numberOfParameters = 3;
+            return new(numberOfParameters)
             {
                 { nameof(unmonitored), unmonitored },
                 { START, start, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT },

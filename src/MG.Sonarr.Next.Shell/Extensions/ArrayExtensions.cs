@@ -2,10 +2,13 @@
 
 namespace MG.Sonarr.Next.Shell.Extensions
 {
-    public static class ArrayExtensions
+    internal static class ArrayExtensions
     {
-        public static void SplitToSets(this IntOrString[]? array, ISet<int> numbers, ISet<string> strings)
+        internal static void SplitToSets(this IntOrString[]? array, ISet<int> numbers, ISet<string> strings)
         {
+            ArgumentNullException.ThrowIfNull(numbers);
+            ArgumentNullException.ThrowIfNull(strings);
+
             if (array is null)
             {
                 return;
@@ -23,8 +26,11 @@ namespace MG.Sonarr.Next.Shell.Extensions
                 }
             }
         }
-        public static void SplitToSets(this IntOrString[]? array, ISet<int> numbers, ISet<Wildcard> strings, bool explicitlyCalledForString = false)
+        internal static void SplitToSets(this IntOrString[]? array, ISet<int> numbers, ISet<Wildcard> strings, bool explicitlyCalledForString = false)
         {
+            ArgumentNullException.ThrowIfNull(numbers);
+            ArgumentNullException.ThrowIfNull(strings);
+
             if (array is null)
             {
                 return;
