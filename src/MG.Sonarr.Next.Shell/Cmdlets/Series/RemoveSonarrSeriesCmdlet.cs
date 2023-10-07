@@ -96,7 +96,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             {
                 string url = GetUrl(this.Tag, kvp.Key, _col);
 
-                if (this.ShouldProcess(url, $"Deleting Series")
+                if (this.ShouldProcess(url, "Deleting Series")
                     &&
                     (force
                     ||

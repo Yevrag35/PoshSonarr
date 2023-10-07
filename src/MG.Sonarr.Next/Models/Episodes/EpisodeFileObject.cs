@@ -5,10 +5,12 @@ using MG.Sonarr.Next.Shell.Models;
 namespace MG.Sonarr.Next.Models.Episodes
 {
     public sealed class EpisodeFileObject : SonarrObject,
+        IEpisodeFilePipeable,
         IHasId,
         ISeriesPipeable
     {
         public int Id { get; private set; }
+        int IEpisodeFilePipeable.EpisodeFileId => this.Id;
         public int SeriesId { get; private set; }
 
         public EpisodeFileObject()
