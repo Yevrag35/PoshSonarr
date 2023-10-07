@@ -6,6 +6,7 @@ namespace MG.Sonarr.Next.Shell.Exceptions
     [Flags]
     public enum ParameterErrorType
     {
+        None = 0,
         Invalid = 1,
         Missing = 2,
         Malformed = 4,
