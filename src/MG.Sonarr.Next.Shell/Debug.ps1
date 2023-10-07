@@ -1,19 +1,32 @@
-﻿[CmdletBinding(SupportsShouldProcess=$true, PositionalBinding = $false)]
+﻿[CmdletBinding(SupportsShouldProcess=$true, PositionalBinding = $false, DefaultParameterSetName = "ByExplicitApiKeyAndUrl")]
 param  (
-	[Parameter(Mandatory=$false)]
+	[Parameter()]
 	[string] $LibraryName = 'MG.Sonarr.Next.Shell',
 
-	[Parameter(Mandatory=$false)]
+	[Parameter()]
 	[string] $RuntimeTarget,
 
-	[Parameter(Mandatory=$false)]
+	[Parameter(Mandatory = $true, ParameterSetName = "ByConfigFile")]
+	[ValidateNotNullOrEmpty()]
+	[string] $ConfigJson,
+
+	[Parameter(Mandatory = $false, ParameterSetName = "ByExplicitApiKeyAndUrl")]
+	[string] $ApiKey = $skey,
+
+	[Parameter(Mandatory = $false, ParameterSetName = "ByExplicitApiKeyAndUrl")]
+	[string] $SonarrUrl = $surl,
+
+	[Parameter(Mandatory = $false, ParameterSetName = "ByExplicitApiKeyAndUrl")]
+	[switch] $NoApiInPath,
+
+	[Parameter()]
 	[ValidateScript({
 		# Path must exist and be a directory
 		Test-Path -Path $_ -PathType 'Container'
 	})]
 	[string] $NugetDirectory = "$env:USERPROFILE\.nuget\packages",
 
-	[Parameter(Mandatory=$false)]
+	[Parameter()]
 	[string[]] $CopyToOutput = @(
 		'MG.Collections',
 		'Microsoft.Extensions.Caching.Memory',
@@ -28,6 +41,23 @@ param  (
 		'OneOf'
 	)
 )
+
+if (-not [string]::IsNullOrWhitespace($ConfigJson)) {
+
+	if (-not [System.IO.Path]::IsPathFullyQualified($ConfigJson)) {
+		$ConfigJson = "$PSScriptRoot\$ConfigJson"
+	}
+
+	$config = Get-Content -Path $ConfigJson | ConvertFrom-Json -Depth 10 -AsHashtable
+	if ($config.ContainsKey("Instance")) {
+
+		$config = $config["Instance"]
+	}
+
+	$SonarrUrl = $config["Url"] -as [string]
+	$ApiKey = $config["ApiKey"] -as [string]
+	$NoApiInPath = $config["NoApiInPath"] -as [bool]
+}
 
 $depFile = "$PSScriptRoot\$LibraryName.deps.json"
 $json = Get-Content -Path $depFile -Raw | ConvertFrom-Json
@@ -100,6 +130,8 @@ if ($PSCmdlet.ShouldProcess($dllPath, "Importing Module")) {
 }
 
 $VerbosePreference = "Continue"
-Connect-Sonarr -ApiKey $skey -Url $surl
+if (-not ([string]::IsNullOrWhitespace($SonarrUrl) -or [string]::IsNullOrWhitespace($ApiKey))) {
 
-$s = Get-SonarrSeries 607
+	Connect-SonarrInstance -Url $SonarrUrl -ApiKey $ApiKey
+	$s = Get-SonarrSeries asdfm*
+}
