@@ -1,23 +1,16 @@
-﻿[CmdletBinding(SupportsShouldProcess=$true, PositionalBinding = $false, DefaultParameterSetName = "ByExplicitApiKeyAndUrl")]
-param  (
+﻿[CmdletBinding()]
+param (
 	[Parameter()]
 	[string] $LibraryName = 'MG.Sonarr.Next.Shell',
 
 	[Parameter()]
+	[string] $ModuleName = "PoshSonarr",
+
+	[Parameter()]
 	[string] $RuntimeTarget,
 
-	[Parameter(Mandatory = $true, ParameterSetName = "ByConfigFile")]
-	[ValidateNotNullOrEmpty()]
-	[string] $ConfigJson,
-
-	[Parameter(Mandatory = $false, ParameterSetName = "ByExplicitApiKeyAndUrl")]
-	[string] $ApiKey = $skey,
-
-	[Parameter(Mandatory = $false, ParameterSetName = "ByExplicitApiKeyAndUrl")]
-	[string] $SonarrUrl = $surl,
-
-	[Parameter(Mandatory = $false, ParameterSetName = "ByExplicitApiKeyAndUrl")]
-	[switch] $NoApiInPath,
+    [Parameter(Mandatory = $true)]
+    [string] $OutputPath,
 
 	[Parameter()]
 	[ValidateScript({
@@ -31,31 +24,16 @@ param  (
 	[string] $BuildDependenciesJson = "build_dependencies.json"
 )
 
-if (-not [string]::IsNullOrWhitespace($ConfigJson)) {
-
-	if (-not [System.IO.Path]::IsPathFullyQualified($ConfigJson)) {
-		$ConfigJson = "$PSScriptRoot\$ConfigJson"
-	}
-
-	$config = Get-Content -Path $ConfigJson | ConvertFrom-Json -Depth 10 -AsHashtable
-	if ($config.ContainsKey("Instance")) {
-
-		$config = $config["Instance"]
-	}
-
-	$SonarrUrl = $config["Url"] -as [string]
-	$ApiKey = $config["ApiKey"] -as [string]
-	$NoApiInPath = $config["NoApiInPath"] -as [bool]
-}
+$OutputPath = $OutputPath.Trim('"')
 
 if (-not [System.IO.Path]::IsPathFullyQualified($BuildDependenciesJson)) {
 
-	$BuildDependenciesJson = "$PSScriptRoot\$BuildDependenciesJson"
+	$BuildDependenciesJson = "$OutputPath\$BuildDependenciesJson"
 }
 
 [string[]] $CopyToOutput = Get-Content -Path $BuildDependenciesJson -Raw | ConvertFrom-Json -Depth 10 | % -MemberName CopyToOutput
 
-$depFile = "$PSScriptRoot\$LibraryName.deps.json"
+$depFile = "$OutputPath\$LibraryName.deps.json"
 $json = Get-Content -Path $depFile -Raw | ConvertFrom-Json
 
 if (-not $PSBoundParameters.ContainsKey("RuntimeTarget")) {
@@ -101,12 +79,12 @@ foreach ($toCopy in $CopyToOutput)
 	foreach ($mem in $mems)
 	{
 		$fileName = [System.IO.Path]::GetFileName($mem.Name)
-		if (-not (Test-Path -Path "$PSScriptRoot\$fileName" -PathType Leaf))
+		if (-not (Test-Path -Path "$OutputPath\$fileName" -PathType Leaf))
 		{
 			$file = "$NugetDirectory\$name\$version\$($mem.Name)"
 			try { 
-				Copy-Item -Path $file -Destination "$PSScriptRoot" -ErrorAction Stop
-				Write-Host "Copied file -> $("$PSScriptRoot\$fileName")" -ForegroundColor Yellow
+				Copy-Item -Path $file -Destination "$OutputPath" -ErrorAction Stop
+				Write-Host "Copied file -> $("$OutputPath\$fileName")" -ForegroundColor Yellow
 			}
 			catch {
 				Write-Warning "Unable to copy file -> $file"
@@ -116,25 +94,38 @@ foreach ($toCopy in $CopyToOutput)
 	}
 }
 
-$myDesktop = [System.Environment]::GetFolderPath("Desktop")
-$dllPath = "$PSScriptRoot\$LibraryName.dll"
+$dllPath = "$OutputPath\$LibraryName.dll"
 if (-not (Test-Path -Path $dllPath -PathType Leaf)) {
 	throw "The specified module DLL was not found -> `"$dllPath`""
 }
 
-if ($PSCmdlet.ShouldProcess($dllPath, "Importing Module")) {
+Import-Module $dllPath -ErrorAction Stop
+$fileInfo = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($dllPath)
+$productVers = [version]::new($fileInfo.ProductMajorPart, $fileInfo.ProductMinorPart, $fileInfo.ProductBuildPart)
 
-	Import-Module $dllPath -ErrorAction Stop
-	Push-Location $myDesktop
+$info = [MG.Sonarr.Next.Shell.Build.Module]::GetAllAssemblyCmdlets()
+$manifestArgs = @{
+	Path = "$OutputPath\$($ModuleName).psd1"
+	Guid = '0cd92751-7c76-4b31-ae4a-48d344f9b786'
+	Author = 'Mike Garvey'
+	ModuleVersion = $productVers
+	CompanyName = $fileInfo.CompanyName
+	Description = "A PowerShell module for querying and managing Sonarr PVR through its APIs."
+	Copyright = $fileInfo.LegalCopyright.Replace("$([char]169)", "(c)")
+	PowerShellVersion = '7.3'
+	CompatiblePSEditions = "Core"
+	LicenseUri = 'https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE'
+	ProjectUri = 'https://github.com/Yevrag35/PoshSonarr'
+	IconUri = 'https://images.yevrag35.com/icons/sonarr_powershell.png'
+	HelpInfoURI = 'https://github.com/Yevrag35/PoshSonarr/issues'
+	RootModule = $LibraryName
+	CmdletsToExport = $info.Cmdlets
+	AliasesToExport = $info.Aliases
+	FunctionsToExport = @()
+	VariablesToExport = @()
+	Tags = @('Api','Backup','Calendar','Connect','dll','Episode','Json','.NET',
+            'Manage','PVR','Quality','Rss','Series','Sonarr',
+            'Status','Sync','Website')
 }
 
-Write-Host ""
-Write-Host "Debugging PoshSonarr PowerShell Module" -ForegroundColor Cyan
-Write-Host "`n"
-$VerbosePreference = "Continue"
-if (-not ([string]::IsNullOrWhitespace($SonarrUrl) -or [string]::IsNullOrWhitespace($ApiKey))) {
-
-	Connect-SonarrInstance -Url $SonarrUrl -ApiKey $ApiKey
-	#$s = Get-SonarrSeries asdfm*
-	[MG.Sonarr.Next.Shell.Build.Module]::GetAllAssemblyCmdlets()
-}
+New-ModuleManifest @manifestArgs

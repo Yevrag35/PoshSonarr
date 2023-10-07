@@ -19,6 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="build_dependencies.json" />
     <None Remove="Debug.ps1" />
   </ItemGroup>
 
@@ -29,6 +30,10 @@
 		<Delete Files="@(FilesToDelete)" />
 		<RemoveDir Directories="@(FoldersToDelete)" />
 		<Exec Command="pwsh.exe -File &quot;$(SolutionDir)\.tasks\clean_project.ps1&quot; -OutputPath &quot;$(TargetDir)&quot;" />
+	</Target>
+
+	<Target Name="ReleaseModuleAfterBuild" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Release'">
+		<Exec Command="pwsh.exe -NoExit -File &quot;$(SolutionDir)\.tasks\publish_module.ps1&quot; -OutputPath &quot;$(TargetDir)&quot;" />
 	</Target>
 
 	<ItemGroup Condition="'$(Configuration)' != 'Release'">
@@ -48,6 +53,11 @@
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
 		</Content>
+	</ItemGroup>
+	<ItemGroup>
+	  <Content Include="build_dependencies.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	</ItemGroup>
 
 	<ItemGroup>

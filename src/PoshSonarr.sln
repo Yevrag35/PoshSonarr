@@ -20,6 +20,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tasks", "Tasks", "{026AC762-80D7-4BD5-B5B0-20E820E3F2AD}"
 	ProjectSection(SolutionItems) = preProject
 		.tasks\clean_project.ps1 = .tasks\clean_project.ps1
+		.tasks\publish_module.ps1 = .tasks\publish_module.ps1
 	EndProjectSection
 EndProject
 Global
