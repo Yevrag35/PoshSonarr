@@ -23,6 +23,11 @@ namespace MG.Sonarr.Next.Services.Metadata
         int SeriesId { get; }
     }
 
+    public interface ILanguageProfilePipeable : IJsonMetadataTaggable
+    {
+        int LanguageProfileId { get; }
+    }
+
     public interface IQualityProfilePipeable : IJsonMetadataTaggable
     {
         int QualityProfileId { get; }

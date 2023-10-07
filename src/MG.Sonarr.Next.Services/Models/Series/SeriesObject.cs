@@ -10,6 +10,7 @@ namespace MG.Sonarr.Next.Services.Models.Series
         IEpisodeBySeriesPipeable,
         IEpisodeFileBySeriesPipeable,
         IHasId,
+        ILanguageProfilePipeable,
         IQualityProfilePipeable,
         IReleasePipeableBySeries,
         IJsonOnSerializing
@@ -17,9 +18,10 @@ namespace MG.Sonarr.Next.Services.Models.Series
         private const string FIRST_AIRED = "FirstAired";
         private DateOnly _firstAired;
 
+        public int LanguageProfileId => this.GetValue<int>();
         public int QualityProfileId
         {
-            get => this.GetValue<int>(nameof(this.QualityProfileId));
+            get => this.GetValue<int>();
             set => this.SetValue(value);
         }
         int IEpisodeBySeriesPipeable.SeriesId => this.Id;
