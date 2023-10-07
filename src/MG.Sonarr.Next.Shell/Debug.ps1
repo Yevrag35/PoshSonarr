@@ -108,11 +108,14 @@ foreach ($toCopy in $CopyToOutput)
 		if (-not (Test-Path -Path "$PSScriptRoot\$fileName" -PathType Leaf))
 		{
 			$file = "$NugetDirectory\$name\$version\$($mem.Name)"
-			Copy-Item -Path $file -Destination "$PSScriptRoot"
-		}
-		else
-		{
-			Write-Host "`"$fileName`" already copied..." -f Yellow
+			try { 
+				Copy-Item -Path $file -Destination "$PSScriptRoot" -ErrorAction Stop
+				Write-Host "Copied file -> $("$PSScriptRoot\$fileName")" -ForegroundColor Yellow
+			}
+			catch {
+				Write-Warning "Unable to copy file -> $file"
+				Write-Warning $_.Exception.Message
+			}
 		}
 	}
 }

@@ -17,6 +17,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MG.Sonarr.Next.Services", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MG.Sonarr.Next.Shell", "MG.Sonarr.Next.Shell\MG.Sonarr.Next.Shell.csproj", "{AA685AFD-07AB-4C49-B0C9-7860EBBB4D6A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tasks", "Tasks", "{026AC762-80D7-4BD5-B5B0-20E820E3F2AD}"
+	ProjectSection(SolutionItems) = preProject
+		.tasks\clean_project.ps1 = .tasks\clean_project.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -11,6 +11,15 @@
     <None Remove="Debug.ps1" />
   </ItemGroup>
 
+	<Target Name="Cleanup" AfterTargets="Clean">
+		<ItemGroup>
+			<FilesToDelete Include="$(TargetDir)\**\*.*" />
+		</ItemGroup>
+		<Delete Files="@(FilesToDelete)" />
+		<RemoveDir Directories="@(FoldersToDelete)" />
+		<Exec Command="pwsh.exe -File &quot;$(SolutionDir)\.tasks\clean_project.ps1&quot; -OutputPath &quot;$(TargetDir)&quot;" />
+	</Target>
+
 	<ItemGroup Condition="'$(Configuration)' != 'Release'">
 		<Content Include="Debug.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -29,11 +38,6 @@
 			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
 		</Content>
 	</ItemGroup>
-  <!--<ItemGroup>
-    <Content Include="Debug.ps1">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>-->
 
 	<ItemGroup>
 		<Using Include="MG.Sonarr.Next.Shell.Context" />
