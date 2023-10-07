@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Http;
-using MG.Sonarr.Next.Services.Metadata;
-using MG.Sonarr.Next.Services.Models.Tags;
+using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.Tags;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;

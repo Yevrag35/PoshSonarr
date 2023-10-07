@@ -2,8 +2,8 @@
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Json.Collections;
 using MG.Sonarr.Next.Services.Json.Converters.Spans;
-using MG.Sonarr.Next.Services.Metadata;
-using MG.Sonarr.Next.Services.Models.Series;
+using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.Series;
 using System.Buffers;
 using System.Collections.ObjectModel;
 using System.Management.Automation;

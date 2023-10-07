@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Json;
 
-namespace MG.Sonarr.Next.Services.Metadata
+namespace MG.Sonarr.Next.Metadata
 {
     public sealed class MetadataList<T> : List<T>, IJsonMetadataTaggable where T : IJsonMetadataTaggable
     {

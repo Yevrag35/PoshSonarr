@@ -3,7 +3,7 @@ using MG.Sonarr.Next.Services.Http;
 using System.Management.Automation;
 using System.Net;
 
-namespace MG.Sonarr.Next.Services.Models.System
+namespace MG.Sonarr.Next.Models.System
 {
     public sealed class PingResult
     {

@@ -1,10 +1,10 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Services.Json;
-using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Metadata;
 using System.Management.Automation;
 using System.Text.Json.Serialization;
 
-namespace MG.Sonarr.Next.Services.Models
+namespace MG.Sonarr.Next.Models
 {
     /// <summary>
     /// Dangerous object.

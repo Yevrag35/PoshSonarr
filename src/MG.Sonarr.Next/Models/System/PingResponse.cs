@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MG.Sonarr.Next.Services.Models.System
+namespace MG.Sonarr.Next.Models.System
 {
     public sealed class PingResponse
     {

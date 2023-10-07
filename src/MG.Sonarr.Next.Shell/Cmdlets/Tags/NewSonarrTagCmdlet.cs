@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Models.Tags;
+﻿using MG.Sonarr.Next.Models.Tags;
 using MG.Sonarr.Next.Shell.Models.Tags;
 using System.Text.Json;
 

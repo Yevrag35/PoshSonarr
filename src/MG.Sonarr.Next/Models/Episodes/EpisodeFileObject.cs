@@ -1,8 +1,8 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
-using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Shell.Models;
 
-namespace MG.Sonarr.Next.Services.Models.Episodes
+namespace MG.Sonarr.Next.Models.Episodes
 {
     public sealed class EpisodeFileObject : SonarrObject,
         IHasId,

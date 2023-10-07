@@ -1,7 +1,7 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
-using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Metadata;
 
-namespace MG.Sonarr.Next.Services.Models.System
+namespace MG.Sonarr.Next.Models.System
 {
     public enum LogFileType
     {

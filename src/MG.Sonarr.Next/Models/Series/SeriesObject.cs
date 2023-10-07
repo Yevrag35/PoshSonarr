@@ -1,10 +1,10 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
-using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Shell.Models;
 using System.Management.Automation;
 using System.Text.Json.Serialization;
 
-namespace MG.Sonarr.Next.Services.Models.Series
+namespace MG.Sonarr.Next.Models.Series
 {
     public class SeriesObject : TagUpdateObject,
         IEpisodeBySeriesPipeable,

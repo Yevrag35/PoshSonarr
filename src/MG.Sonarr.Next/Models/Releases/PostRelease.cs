@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Services.Models.Releases
+﻿namespace MG.Sonarr.Next.Models.Releases
 {
     public sealed class PostRelease
     {

@@ -1,5 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Metadata;
-using MG.Sonarr.Next.Services.Models.Tags;
+﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.Tags;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags

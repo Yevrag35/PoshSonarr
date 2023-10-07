@@ -1,5 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Metadata;
-using MG.Sonarr.Next.Services.Models.Releases;
+﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.Releases;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Releases

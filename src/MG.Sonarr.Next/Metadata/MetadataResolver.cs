@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Management.Automation;
 
-namespace MG.Sonarr.Next.Services.Metadata
+namespace MG.Sonarr.Next.Metadata
 {
     /// <summary>
     /// A dictionary implementation of <see cref="MetadataTag"/> instances that describe the various

@@ -1,7 +1,7 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
-using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Metadata;
 
-namespace MG.Sonarr.Next.Services.Models.Calendar
+namespace MG.Sonarr.Next.Models.Calendar
 {
     public sealed class CalendarObject : SonarrObject, ISeriesPipeable, IEpisodePipeable, IEpisodeFilePipeable, ITagResolvable<CalendarObject>
     {

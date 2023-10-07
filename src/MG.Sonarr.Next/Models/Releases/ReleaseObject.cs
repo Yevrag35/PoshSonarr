@@ -1,8 +1,8 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
-using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
 
-namespace MG.Sonarr.Next.Services.Models.Releases
+namespace MG.Sonarr.Next.Models.Releases
 {
     public sealed class ReleaseObject : SonarrObject, IJsonOnSerializing
     {

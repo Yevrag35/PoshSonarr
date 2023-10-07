@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace MG.Sonarr.Next.Services.Reflection
+namespace MG.Sonarr.Next.Reflection
 {
     public readonly struct FieldOrPropertyInfoSetter
     {

@@ -1,6 +1,6 @@
-﻿using MG.Sonarr.Next.Services.Metadata;
+﻿using MG.Sonarr.Next.Metadata;
 
-namespace MG.Sonarr.Next.Services.Models.RootFolders
+namespace MG.Sonarr.Next.Models.RootFolders
 {
     public sealed class RootFolderObject : SonarrObject
     {

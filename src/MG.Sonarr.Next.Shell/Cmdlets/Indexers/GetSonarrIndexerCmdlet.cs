@@ -1,5 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Metadata;
-using MG.Sonarr.Next.Services.Models.Indexers;
+﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.Indexers;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;

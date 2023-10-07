@@ -1,8 +1,8 @@
 ﻿using MG.Sonarr.Next.Services.Json;
-using MG.Sonarr.Next.Services.Metadata;
+using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
 
-namespace MG.Sonarr.Next.Shell.Models.Tags
+namespace MG.Sonarr.Next.Models.Tags
 {
     public sealed record SonarrTag : IHasId, IJsonSonarrMetadata
     {

@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Models.Series;
+﻿using MG.Sonarr.Next.Models.Series;
 
 namespace MG.Sonarr.Next.Services.Json.Converters
 {

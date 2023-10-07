@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace MG.Sonarr.Next.Services.Metadata
+namespace MG.Sonarr.Next.Metadata
 {
     public struct NumericHolder<T> : IComparable<T>, IEquatable<T>, IComparable<NumericHolder<T>>, IEquatable<NumericHolder<T>>
         where T : unmanaged, IComparable<T>, IEquatable<T>, INumber<T>

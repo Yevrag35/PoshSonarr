@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Auth;
 
-namespace MG.Sonarr.Next.Services.Models
+namespace MG.Sonarr.Next.Models
 {
     public sealed class SonarrStatus
     {

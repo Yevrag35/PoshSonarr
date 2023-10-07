@@ -2,7 +2,7 @@
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http.Queries;
 
-namespace MG.Sonarr.Next.Services.Metadata
+namespace MG.Sonarr.Next.Metadata
 {
     [DebuggerDisplay(@"\{{Value}, {UrlBase}\}")]
     public sealed record MetadataTag : ICloneable

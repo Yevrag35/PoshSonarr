@@ -1,5 +1,5 @@
 ﻿using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Services.Models;
+using MG.Sonarr.Next.Models;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Services.Json.Converters

@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Http.Queries;
-using MG.Sonarr.Next.Services.Models;
-using MG.Sonarr.Next.Services.Models.Episodes;
+using MG.Sonarr.Next.Models;
+using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing

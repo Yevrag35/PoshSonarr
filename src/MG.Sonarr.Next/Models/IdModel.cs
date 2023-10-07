@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Shell.Models
+﻿namespace MG.Sonarr.Next.Models
 {
     public sealed record IdModel : IHasId
     {

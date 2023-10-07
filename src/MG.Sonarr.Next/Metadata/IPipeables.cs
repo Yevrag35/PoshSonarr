@@ -1,7 +1,8 @@
-﻿using MG.Sonarr.Next.Services.Json;
+﻿using MG.Sonarr.Next.Models;
+using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Shell.Models;
 
-namespace MG.Sonarr.Next.Services.Metadata
+namespace MG.Sonarr.Next.Metadata
 {
     public interface IEpisodeBySeriesPipeable : IJsonSonarrMetadata
     {

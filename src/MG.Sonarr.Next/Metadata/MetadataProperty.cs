@@ -1,6 +1,6 @@
 ﻿using System.Management.Automation;
 
-namespace MG.Sonarr.Next.Services.Metadata
+namespace MG.Sonarr.Next.Metadata
 {
     public sealed class MetadataProperty : PSNoteProperty
     {
