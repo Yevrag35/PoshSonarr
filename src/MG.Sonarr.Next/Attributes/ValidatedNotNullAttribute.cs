@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Services.Attributes
+﻿namespace MG.Sonarr.Next.Attributes
 {
     /// <summary>
     /// An attribute for Codacy to recognize that decorated method parameters have been validated against 

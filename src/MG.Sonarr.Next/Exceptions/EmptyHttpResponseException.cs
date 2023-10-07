@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Services.Exceptions
+﻿namespace MG.Sonarr.Next.Exceptions
 {
     public sealed class EmptyHttpResponseException : PoshSonarrException
     {

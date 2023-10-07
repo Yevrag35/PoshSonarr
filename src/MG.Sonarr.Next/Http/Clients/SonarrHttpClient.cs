@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Next.Services.Auth;
-using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Metadata;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +11,7 @@ using System.Text.Json.Nodes;
 using MG.Sonarr.Next.Services.Models;
 using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Services.Http.Requests;
-using MG.Sonarr.Next.Services.Collections;
+using MG.Sonarr.Next.Collections;
 
 namespace MG.Sonarr.Next.Services.Http.Clients
 {

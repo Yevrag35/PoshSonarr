@@ -1,7 +1,6 @@
-﻿using MG.Sonarr.Next.Exceptions;
-using MG.Sonarr.Next.Services.Auth;
-using MG.Sonarr.Next.Services.Collections;
-using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http.Requests;
 using Microsoft.Extensions.Caching.Memory;
 using System.Net;

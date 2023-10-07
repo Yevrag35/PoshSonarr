@@ -1,5 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Exceptions;
-using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Exceptions;
+using MG.Sonarr.Next.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Exceptions
 {

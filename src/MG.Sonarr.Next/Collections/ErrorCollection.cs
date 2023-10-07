@@ -1,7 +1,7 @@
 ﻿using MG.Sonarr.Next.Services.Models;
 using System.Collections;
 
-namespace MG.Sonarr.Next.Services.Collections
+namespace MG.Sonarr.Next.Collections
 {
     public interface IErrorCollection : IReadOnlyList<SonarrServerError>
     {

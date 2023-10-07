@@ -1,5 +1,5 @@
 ﻿using MG.Collections;
-using MG.Sonarr.Next.Services.Extensions;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http.Queries;
 
 namespace MG.Sonarr.Next.Services.Metadata

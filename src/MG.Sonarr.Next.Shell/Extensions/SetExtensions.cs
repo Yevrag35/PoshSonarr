@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Attributes;
+﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Shell.Components;
 
 namespace MG.Sonarr.Next.Shell.Extensions

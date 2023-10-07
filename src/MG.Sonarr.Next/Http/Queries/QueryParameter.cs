@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Extensions;
 using OneOf;
 
 namespace MG.Sonarr.Next.Services.Http.Queries

@@ -1,8 +1,8 @@
-﻿using MG.Sonarr.Next.Services.Attributes;
+﻿using MG.Sonarr.Next.Attributes;
 using System.Collections.ObjectModel;
 using System.Net;
 
-namespace MG.Sonarr.Next.Services.Extensions
+namespace MG.Sonarr.Next.Extensions
 {
     public static class HttpStatusCodeExtensions
     {

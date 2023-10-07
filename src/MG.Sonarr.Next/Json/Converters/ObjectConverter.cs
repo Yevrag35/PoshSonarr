@@ -1,5 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Collections;
-using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Json.Collections;
 using MG.Sonarr.Next.Services.Json.Converters.Spans;
 using MG.Sonarr.Next.Services.Metadata;

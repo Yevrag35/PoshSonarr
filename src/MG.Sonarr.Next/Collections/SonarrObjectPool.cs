@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace MG.Sonarr.Next.Services.Collections
+namespace MG.Sonarr.Next.Collections
 {
     public interface IObjectPoolReturnable
     {

@@ -1,7 +1,5 @@
-﻿using MG.Sonarr.Next.Exceptions;
-using MG.Sonarr.Next.Services.Auth;
-using MG.Sonarr.Next.Services.Collections;
-using MG.Sonarr.Next.Services.Exceptions;
+﻿using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Services.Http.Requests;
 using Microsoft.Extensions.DependencyInjection;

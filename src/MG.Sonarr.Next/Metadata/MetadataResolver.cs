@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Extensions.PSO;
+﻿using MG.Sonarr.Next.Extensions.PSO;
 using System.Collections;
 using System.Management.Automation;
 

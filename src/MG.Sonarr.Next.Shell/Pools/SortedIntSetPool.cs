@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Collections;
+﻿using MG.Sonarr.Next.Collections;
 
 namespace MG.Sonarr.Next.Shell.Pools
 {

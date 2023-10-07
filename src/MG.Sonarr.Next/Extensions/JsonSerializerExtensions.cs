@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Services.Extensions
+﻿namespace MG.Sonarr.Next.Extensions
 {
     public static class JsonSerializerExtensions
     {

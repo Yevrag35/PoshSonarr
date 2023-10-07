@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace MG.Sonarr.Next.Services.Exceptions
+namespace MG.Sonarr.Next.Exceptions
 {
     /// <summary>
     /// An <see langword="abstract"/> base class for all <see cref="Exception"/> instances thrown by PoshSonarr libraries.

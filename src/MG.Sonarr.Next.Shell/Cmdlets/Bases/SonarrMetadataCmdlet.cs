@@ -1,5 +1,5 @@
-﻿using MG.Sonarr.Next.Services.Collections;
-using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Json;
 using MG.Sonarr.Next.Services.Metadata;
 using Microsoft.Extensions.DependencyInjection;

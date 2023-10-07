@@ -1,7 +1,7 @@
-﻿using MG.Sonarr.Next.Services.Attributes;
+﻿using MG.Sonarr.Next.Attributes;
 using System.Numerics;
 
-namespace MG.Sonarr.Next.Services.Extensions
+namespace MG.Sonarr.Next.Extensions
 {
     public static class UnmanagedExtensions
     {

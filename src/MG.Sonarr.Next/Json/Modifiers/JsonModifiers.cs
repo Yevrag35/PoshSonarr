@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Json.Attributes;
 using System.Collections.ObjectModel;
 using System.Reflection;

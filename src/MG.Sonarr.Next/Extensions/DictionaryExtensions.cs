@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace MG.Sonarr.Next.Services.Extensions
+namespace MG.Sonarr.Next.Extensions
 {
     public static class DictionaryExtensions
     {

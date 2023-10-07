@@ -1,6 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Attributes;
-
-namespace MG.Sonarr.Next.Services.Extensions
+﻿namespace MG.Sonarr.Next.Extensions
 {
     public static class ListExtensions
     {

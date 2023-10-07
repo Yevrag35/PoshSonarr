@@ -1,10 +1,9 @@
-﻿using MG.Sonarr.Next.Exceptions;
-using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Extensions;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Net;
 
-namespace MG.Sonarr.Next.Services.Exceptions
+namespace MG.Sonarr.Next.Exceptions
 {
     public sealed class SonarrErrorRecord : ErrorRecord
     {

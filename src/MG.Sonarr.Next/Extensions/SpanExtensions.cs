@@ -1,6 +1,6 @@
-﻿using MG.Sonarr.Next.Services.Attributes;
+﻿using MG.Sonarr.Next.Attributes;
 
-namespace MG.Sonarr.Next.Services.Extensions
+namespace MG.Sonarr.Next.Extensions
 {
     public static class CharSpanExtensions
     {

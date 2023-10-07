@@ -1,6 +1,6 @@
 ﻿using System.Management.Automation;
 
-namespace MG.Sonarr.Next.Services.Extensions.PSO
+namespace MG.Sonarr.Next.Extensions.PSO
 {
     public static class PSMemberInfoCollectionExtensions
     {

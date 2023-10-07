@@ -2,7 +2,7 @@
 using MG.Sonarr.Next.Services.Http;
 using IOFile = System.IO.File;
 using IOPath = System.IO.Path;
-using MG.Sonarr.Next.Services.Extensions;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Models.System;
 using MG.Sonarr.Next.Shell.Attributes;
 using System.Net;

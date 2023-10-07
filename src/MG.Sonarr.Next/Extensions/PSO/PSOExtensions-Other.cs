@@ -1,8 +1,7 @@
-﻿using MG.Sonarr.Next.Services.Metadata;
-using System.Management.Automation;
+﻿using System.Management.Automation;
 using System.Runtime.CompilerServices;
 
-namespace MG.Sonarr.Next.Services.Extensions.PSO
+namespace MG.Sonarr.Next.Extensions.PSO
 {
     public static partial class PSOExtensions
     {

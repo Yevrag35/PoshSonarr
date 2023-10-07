@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Collections;
+﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Metadata;
 using MG.Sonarr.Next.Services.Models.Episodes;

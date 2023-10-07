@@ -1,7 +1,6 @@
 ﻿using System.Collections;
-using System.Management.Automation;
 
-namespace MG.Sonarr.Next.Services.Collections
+namespace MG.Sonarr.Next.Collections
 {
     internal readonly struct EmptyNameDictionary : IEquatable<EmptyNameDictionary>, IReadOnlyDictionary<string, string>
     {

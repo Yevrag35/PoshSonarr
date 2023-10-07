@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Exceptions;
+﻿using MG.Sonarr.Next.Exceptions;
 using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Next.Shell.Exceptions

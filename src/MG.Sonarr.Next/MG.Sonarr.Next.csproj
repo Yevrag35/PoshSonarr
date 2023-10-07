@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<Version>2.0.0</Version>
-	  <RootNamespace>MG.Sonarr.Next</RootNamespace>
+	<RootNamespace>MG.Sonarr.Next</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,6 +28,7 @@
   </ItemGroup>
 
 	<ItemGroup>
+		<Using Include="MG.Sonarr.Next.Exceptions" />
 		<Using Include="System.Diagnostics" />
 		<Using Include="System.Diagnostics.CodeAnalysis" />
 		<Using Include="System.Globalization" />
