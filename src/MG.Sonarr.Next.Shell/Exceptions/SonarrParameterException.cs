@@ -1,11 +1,12 @@
-﻿using MG.Sonarr.Next.Services.Exceptions;
-using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Exceptions;
+using MG.Sonarr.Next.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Exceptions
 {
     [Flags]
     public enum ParameterErrorType
     {
+        None = 0,
         Invalid = 1,
         Missing = 2,
         Malformed = 4,

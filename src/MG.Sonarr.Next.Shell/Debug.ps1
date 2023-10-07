@@ -1,33 +1,59 @@
-﻿[CmdletBinding(SupportsShouldProcess=$true, PositionalBinding = $false)]
+﻿[CmdletBinding(SupportsShouldProcess=$true, PositionalBinding = $false, DefaultParameterSetName = "ByExplicitApiKeyAndUrl")]
 param  (
-	[Parameter(Mandatory=$false)]
+	[Parameter()]
 	[string] $LibraryName = 'MG.Sonarr.Next.Shell',
 
-	[Parameter(Mandatory=$false)]
+	[Parameter()]
 	[string] $RuntimeTarget,
 
-	[Parameter(Mandatory=$false)]
+	[Parameter(Mandatory = $true, ParameterSetName = "ByConfigFile")]
+	[ValidateNotNullOrEmpty()]
+	[string] $ConfigJson,
+
+	[Parameter(Mandatory = $false, ParameterSetName = "ByExplicitApiKeyAndUrl")]
+	[string] $ApiKey = $skey,
+
+	[Parameter(Mandatory = $false, ParameterSetName = "ByExplicitApiKeyAndUrl")]
+	[string] $SonarrUrl = $surl,
+
+	[Parameter(Mandatory = $false, ParameterSetName = "ByExplicitApiKeyAndUrl")]
+	[switch] $NoApiInPath,
+
+	[Parameter()]
 	[ValidateScript({
 		# Path must exist and be a directory
 		Test-Path -Path $_ -PathType 'Container'
 	})]
 	[string] $NugetDirectory = "$env:USERPROFILE\.nuget\packages",
 
-	[Parameter(Mandatory=$false)]
-	[string[]] $CopyToOutput = @(
-		'MG.Collections',
-		'Microsoft.Extensions.Caching.Memory',
-		'Microsoft.Extensions.Caching.Abstractions',
-		'Microsoft.Extensions.DependencyInjection',
-		'Microsoft.Extensions.DependencyInjection.Abstractions',
-		'Microsoft.Extensions.Http',
-		'Microsoft.Extensions.Logging',
-		'Microsoft.Extensions.Logging.Abstractions',
-		'Microsoft.Extensions.Options',
-		'Microsoft.Extensions.Primitives',
-		'OneOf'
-	)
+	[Parameter()]
+	[ValidateNotNullOrEmpty()]
+	[string] $BuildDependenciesJson = "build_dependencies.json"
 )
+
+if (-not [string]::IsNullOrWhitespace($ConfigJson)) {
+
+	if (-not [System.IO.Path]::IsPathFullyQualified($ConfigJson)) {
+		$ConfigJson = "$PSScriptRoot\$ConfigJson"
+	}
+
+	$config = Get-Content -Path $ConfigJson | ConvertFrom-Json -Depth 10 -AsHashtable
+	if ($config.ContainsKey("Instance")) {
+
+		$config = $config["Instance"]
+	}
+
+	$SonarrUrl = $config["Url"] -as [string]
+	$ApiKey = $config["ApiKey"] -as [string]
+	$NoApiInPath = $config["NoApiInPath"] -as [bool]
+}
+
+if (-not [System.IO.Path]::IsPathFullyQualified($BuildDependenciesJson)) {
+
+	$BuildDependenciesJson = "$PSScriptRoot\$BuildDependenciesJson"
+}
+
+[string[]] $CopyToOutput = Get-Content -Path $BuildDependenciesJson -Raw | ConvertFrom-Json -Depth 10 | % -MemberName CopyToOutput
 
 $depFile = "$PSScriptRoot\$LibraryName.deps.json"
 $json = Get-Content -Path $depFile -Raw | ConvertFrom-Json
@@ -78,11 +104,14 @@ foreach ($toCopy in $CopyToOutput)
 		if (-not (Test-Path -Path "$PSScriptRoot\$fileName" -PathType Leaf))
 		{
 			$file = "$NugetDirectory\$name\$version\$($mem.Name)"
-			Copy-Item -Path $file -Destination "$PSScriptRoot"
-		}
-		else
-		{
-			Write-Host "`"$fileName`" already copied..." -f Yellow
+			try { 
+				Copy-Item -Path $file -Destination "$PSScriptRoot" -ErrorAction Stop
+				Write-Host "Copied file -> $("$PSScriptRoot\$fileName")" -ForegroundColor Yellow
+			}
+			catch {
+				Write-Warning "Unable to copy file -> $file"
+				Write-Warning $_.Exception.Message
+			}
 		}
 	}
 }
@@ -99,7 +128,12 @@ if ($PSCmdlet.ShouldProcess($dllPath, "Importing Module")) {
 	Push-Location $myDesktop
 }
 
+Write-Host ""
+Write-Host "Debugging PoshSonarr PowerShell Module" -ForegroundColor Cyan
+Write-Host "`n"
 $VerbosePreference = "Continue"
-Connect-Sonarr -ApiKey $skey -Url $surl
+if (-not ([string]::IsNullOrWhitespace($SonarrUrl) -or [string]::IsNullOrWhitespace($ApiKey))) {
 
-$s = Get-SonarrSeries 607
+	Connect-SonarrInstance -Url $SonarrUrl -ApiKey $ApiKey
+	$s = Get-SonarrSeries asdfm*
+}

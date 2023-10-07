@@ -1,9 +1,9 @@
-﻿using MG.Sonarr.Next.Services.Collections;
-using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http.Queries;
-using MG.Sonarr.Next.Services.Json;
-using MG.Sonarr.Next.Services.Metadata;
-using MG.Sonarr.Next.Services.Models.Episodes;
+using MG.Sonarr.Next.Json;
+using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;

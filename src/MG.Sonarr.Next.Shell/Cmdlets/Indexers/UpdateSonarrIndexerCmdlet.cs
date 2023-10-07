@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Models.Indexers;
+﻿using MG.Sonarr.Next.Models.Indexers;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
 {

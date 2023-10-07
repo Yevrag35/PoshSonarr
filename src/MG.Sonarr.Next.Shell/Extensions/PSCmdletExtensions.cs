@@ -1,6 +1,6 @@
-﻿using MG.Sonarr.Next.Services.Attributes;
-using MG.Sonarr.Next.Services.Extensions;
-using MG.Sonarr.Next.Services.Reflection;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Reflection;
 using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Shell.Components;
 

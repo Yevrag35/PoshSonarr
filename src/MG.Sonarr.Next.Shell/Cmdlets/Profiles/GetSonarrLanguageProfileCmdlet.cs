@@ -1,6 +1,6 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
-using MG.Sonarr.Next.Services.Metadata;
-using MG.Sonarr.Next.Services.Models.Profiles;
+﻿using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -11,13 +11,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
     public sealed class GetSonarrLanguageProfileCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
-        List<LanguageProfileObject> _list = null!;
         HashSet<Wildcard> _wcNames = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = "ByProfileId")]
         [ValidateRange(ValidateRangeKind.Positive)]
         public int[] Id { get; set; } = Array.Empty<int>();
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput", DontShow = true)]
+        public ILanguageProfilePipeable[] InputObject { get; set; } = Array.Empty<ILanguageProfilePipeable>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0)]
@@ -32,7 +35,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
             this.Returnables[0] = _ids;
             _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
             this.Returnables[1] = _wcNames;
-            _list = new(1);
         }
 
         protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
@@ -51,31 +53,46 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
         }
         protected override void Process(IServiceProvider provider)
         {
+            if (this.HasParameter(x => x.InputObject))
+            {
+                _ids.UnionWith(this.InputObject.Select(x => x.LanguageProfileId));
+            }
+        }
+        protected override void End(IServiceProvider provider)
+        {
             bool addedIds = false;
             if (_ids.Count > 0)
             {
-                IEnumerable<LanguageProfileObject> byIds = this.GetById<LanguageProfileObject>(_ids);
-                _list.AddRange(byIds);
                 addedIds = true;
+                var fromIds = this.GetById<LanguageProfileObject>(_ids);
+                this.WriteCollection(fromIds);
             }
 
-            if (!_wcNames.IsNullOrEmpty() || !addedIds)
+            if (_wcNames.Count > 0 || !addedIds)
             {
-                var all = this.GetAll<LanguageProfileObject>();
-                if (all.Count > 0)
-                {
-                    FilterByName(all, _wcNames, _ids);
-                }
-
-                _list.AddRange(all);
+                var fromNames = this.GetByName(_wcNames, _ids);
+                this.WriteCollection(fromNames);
             }
-
-            this.WriteCollection(_list);
         }
 
-        private static void FilterByName(List<LanguageProfileObject> list, IReadOnlySet<Wildcard>? names, IReadOnlySet<int> ids)
+        private IEnumerable<LanguageProfileObject> GetByName(IReadOnlySet<Wildcard> names, IReadOnlySet<int> ids)
         {
+            var response = this.GetAll<LanguageProfileObject>();
+            if (response.Count <= 0 || names.Count <= 0)
+            {
+                return response;
+            }
 
+            for (int i = response.Count - 1; i >= 0; i--)
+            {
+                var item = response[i];
+                if (ids.Contains(item.Id) || !names.AnyValueLike(item.Name))
+                {
+                    response.RemoveAt(i);
+                }
+            }
+
+            return response;
         }
 
         bool _disposed;

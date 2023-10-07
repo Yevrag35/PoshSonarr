@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Http.Queries;
-using MG.Sonarr.Next.Services.Metadata;
-using MG.Sonarr.Next.Services.Models.Releases;
+using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.Releases;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 

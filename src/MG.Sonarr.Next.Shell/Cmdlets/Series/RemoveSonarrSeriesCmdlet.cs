@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Http.Queries;
-using MG.Sonarr.Next.Services.Metadata;
-using MG.Sonarr.Next.Services.Models.Series;
+using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.Series;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
@@ -96,7 +96,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             {
                 string url = GetUrl(this.Tag, kvp.Key, _col);
 
-                if (this.ShouldProcess(url, $"Deleting Series")
+                if (this.ShouldProcess(url, "Deleting Series")
                     &&
                     (force
                     ||

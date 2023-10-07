@@ -1,8 +1,8 @@
-﻿using MG.Sonarr.Next.Services.Extensions;
+﻿using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
-using MG.Sonarr.Next.Services.Json;
-using MG.Sonarr.Next.Services.Models.System;
+using MG.Sonarr.Next.Json;
+using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
