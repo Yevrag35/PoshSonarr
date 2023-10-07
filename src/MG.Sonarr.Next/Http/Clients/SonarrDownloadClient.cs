@@ -28,7 +28,6 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         public SonarrResponse<string> DownloadToPath(string url, string path, CancellationToken token = default)
         {
             using ApiKeyRequestMessage msg = new(HttpMethod.Get, url);
-            msg.Options.Set(CookieHandler.NoCookie, true);
 
             HttpResponseMessage response = null!;
             try
@@ -49,9 +48,8 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         }
         public SonarrResponse<string> DownloadToPath(string url, string path, NetworkCredential? credential, CancellationToken token = default)
         {
-            using HttpRequestMessage msg = new(HttpMethod.Get, url);
-            msg.Options.Set(CookieHandler.CredentialKey, credential);
-            msg.Options.Set(CookieHandler.NoCookie, false);
+            using AuthedRequestMessage msg = new(HttpMethod.Get, url);
+            msg.Options.Set(AuthHandler.CredentialKey, credential);
 
             HttpResponseMessage response = null!;
             try
@@ -95,7 +93,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         internal static IServiceCollection AddSonarrDownloadClient(this IServiceCollection services)
         {
             services
-                .AddTransient<CookieHandler>()
+                .AddTransient<AuthHandler>()
                 .AddHttpClient<ISonarrDownloadClient, SonarrDownloadClient>((provider, client) =>
                 {
                     var settings = provider.GetRequiredService<IConnectionSettings>();
@@ -110,7 +108,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                 .ConfigurePrimaryHttpMessageHandler<SonarrClientHandler>()
                 .AddHttpMessageHandler<VerboseHandler>()
                 .AddHttpMessageHandler<PathHandler>()
-                .AddHttpMessageHandler<CookieHandler>();
+                .AddHttpMessageHandler<AuthHandler>();
 
             return services;
         }

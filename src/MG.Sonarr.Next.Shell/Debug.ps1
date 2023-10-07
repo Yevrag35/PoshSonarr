@@ -132,6 +132,9 @@ if ($PSCmdlet.ShouldProcess($dllPath, "Importing Module")) {
 	Push-Location $myDesktop
 }
 
+Write-Host "`n`n"
+Write-Host "Debugging PoshSonarr PowerShell Module "
+
 $VerbosePreference = "Continue"
 if (-not ([string]::IsNullOrWhitespace($SonarrUrl) -or [string]::IsNullOrWhitespace($ApiKey))) {
 

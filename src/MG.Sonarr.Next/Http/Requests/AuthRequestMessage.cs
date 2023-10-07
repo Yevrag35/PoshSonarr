@@ -2,7 +2,7 @@
 
 namespace MG.Sonarr.Next.Services.Http.Requests
 {
-    internal sealed class CookieRequestMessage : SonarrRequestMessage
+    internal sealed class AuthedRequestMessage : SonarrRequestMessage
     {
         const string LOGIN_PART = "/login?returnUrl=/";
         const string PASSWORD = "password";
@@ -19,10 +19,10 @@ namespace MG.Sonarr.Next.Services.Http.Requests
                                           ||
                                           string.IsNullOrWhiteSpace(_creds.Password);
         public override bool IsTest => false;
-        public override bool UseCookieAuthentication => true;
+        public override bool CanUseCookieAuthentication => true;
 
-        public CookieRequestMessage(string requestUri)
-            : base(HttpMethod.Get, requestUri)
+        public AuthedRequestMessage(HttpMethod method, string requestUri)
+            : base(method, requestUri)
         {
         }
 

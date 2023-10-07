@@ -10,6 +10,6 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
         }
 
         public override bool IsTest => true;
-        public override bool UseCookieAuthentication => false;
+        public override bool CanUseCookieAuthentication => false;
     }
 }

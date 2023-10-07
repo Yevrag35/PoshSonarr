@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Legacy", "Legacy", "{BF64B7
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modern", "Modern", "{7045688D-A1C1-4EE6-94CA-877E01750D4F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MG.Sonarr.Next.Services", "MG.Sonarr.Next.Services\MG.Sonarr.Next.Services.csproj", "{579327AF-51FA-43F6-A3AD-7F91E02572AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MG.Sonarr.Next", "MG.Sonarr.Next\MG.Sonarr.Next.csproj", "{579327AF-51FA-43F6-A3AD-7F91E02572AF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MG.Sonarr.Next.Shell", "MG.Sonarr.Next.Shell\MG.Sonarr.Next.Shell.csproj", "{AA685AFD-07AB-4C49-B0C9-7860EBBB4D6A}"
 EndProject

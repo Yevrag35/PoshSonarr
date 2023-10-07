@@ -6,7 +6,7 @@
         string IHttpRequestDetails.Method => this.Method.Method;
         public string OriginalRequestUri { get; }
         string IHttpRequestDetails.RequestUri => this.GetRequestUri();
-        public abstract bool UseCookieAuthentication { get; }
+        public abstract bool CanUseCookieAuthentication { get; }
 
         public SonarrRequestMessage(HttpMethod method, string requestUri)
             : base(method, requestUri)

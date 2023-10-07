@@ -3,7 +3,7 @@
     internal sealed class ApiKeyRequestMessage : SonarrRequestMessage
     {
         public override bool IsTest => false;
-        public override bool UseCookieAuthentication => false;
+        public override bool CanUseCookieAuthentication => false;
 
         public ApiKeyRequestMessage(HttpMethod method, string requestUri)
             : base(method, requestUri)

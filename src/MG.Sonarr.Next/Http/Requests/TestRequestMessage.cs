@@ -3,7 +3,7 @@
     internal sealed class TestRequestMessage : SonarrRequestMessage
     {
         public override bool IsTest => true;
-        public override bool UseCookieAuthentication => false;
+        public override bool CanUseCookieAuthentication => false;
         public TestRequestMessage(string requestUri)
             : base(HttpMethod.Get, requestUri)
         {

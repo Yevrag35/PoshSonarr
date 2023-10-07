@@ -16,7 +16,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
         protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            if (!request.Options.TryGetValue(CookieHandler.CredentialKey, out _))
+            if (!request.Options.TryGetValue(AuthHandler.CredentialKey, out _))
             {
                 this.SetPath(request);
             }
@@ -27,7 +27,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
 
-            if (!request.Options.TryGetValue(CookieHandler.CredentialKey, out _))
+            if (!request.Options.TryGetValue(AuthHandler.CredentialKey, out _))
             {
                 this.SetPath(request);
             }
