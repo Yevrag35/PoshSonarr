@@ -54,7 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MG.Sonarr.Next.Services\MG.Sonarr.Next.csproj" />
+    <ProjectReference Include="..\MG.Sonarr.Next\MG.Sonarr.Next.csproj" />
   </ItemGroup>
 
 </Project>
