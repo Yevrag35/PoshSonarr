@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Models.Series;
 
-namespace MG.Sonarr.Next.Services.Json.Converters
+namespace MG.Sonarr.Next.Json.Converters
 {
     public sealed class SeriesObjectConverter<T> : SonarrObjectConverter<T> where T : SeriesObject, new()
     {

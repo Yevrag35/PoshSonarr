@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Services.Json
+﻿namespace MG.Sonarr.Next.Json
 {
     public sealed class SonarrJsonOptions
     {

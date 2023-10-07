@@ -3,7 +3,7 @@ using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
-using MG.Sonarr.Next.Services.Json;
+using MG.Sonarr.Next.Json;
 using Microsoft.Extensions.DependencyInjection;
 using OneOf;
 using System.Net;

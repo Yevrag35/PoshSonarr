@@ -1,7 +1,7 @@
 ﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Services.Json;
-using MG.Sonarr.Next.Services.Models;
+using MG.Sonarr.Next.Json;
+using MG.Sonarr.Next.Models;
 using Microsoft.Extensions.DependencyInjection;
 using OneOf;
 using System.Management.Automation;

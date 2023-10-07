@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace MG.Sonarr.Next.Services.Json.Collections
+namespace MG.Sonarr.Next.Json.Collections
 {
     public sealed class JsonNameDictionary : IReadOnlyCollection<KeyValuePair<string, string>>
     {

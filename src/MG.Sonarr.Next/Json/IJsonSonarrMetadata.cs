@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Metadata;
 
-namespace MG.Sonarr.Next.Services.Json
+namespace MG.Sonarr.Next.Json
 {
     public interface IJsonMetadataTaggable
     {

@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Services.Http;
-using MG.Sonarr.Next.Services.Json;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;

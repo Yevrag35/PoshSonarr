@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Services.Json.Attributes
+﻿namespace MG.Sonarr.Next.Json.Attributes
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
     public sealed class JsonIncludePrivateFieldsAttribute : Attribute

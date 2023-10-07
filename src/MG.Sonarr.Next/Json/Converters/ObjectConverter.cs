@@ -1,7 +1,7 @@
 ﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Services.Json.Collections;
-using MG.Sonarr.Next.Services.Json.Converters.Spans;
+using MG.Sonarr.Next.Json.Collections;
+using MG.Sonarr.Next.Json.Converters.Spans;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
 using System.Buffers;
@@ -10,7 +10,7 @@ using System.Management.Automation;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace MG.Sonarr.Next.Services.Json.Converters
+namespace MG.Sonarr.Next.Json.Converters
 {
     public sealed class ObjectConverter : JsonConverter<object>
     {

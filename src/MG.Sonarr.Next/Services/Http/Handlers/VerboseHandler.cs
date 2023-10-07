@@ -1,5 +1,5 @@
 ﻿using MG.Sonarr.Next.Services.Http.Requests;
-using MG.Sonarr.Next.Services.Json;
+using MG.Sonarr.Next.Json;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Services.Http.Handlers

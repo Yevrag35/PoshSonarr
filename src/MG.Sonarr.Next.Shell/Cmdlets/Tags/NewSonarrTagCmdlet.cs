@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Next.Models.Tags;
-using MG.Sonarr.Next.Shell.Models.Tags;
 using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags

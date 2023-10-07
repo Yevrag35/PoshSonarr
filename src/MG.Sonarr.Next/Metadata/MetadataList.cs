@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Json;
+﻿using MG.Sonarr.Next.Json;
 
 namespace MG.Sonarr.Next.Metadata
 {

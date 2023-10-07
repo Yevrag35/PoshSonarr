@@ -1,11 +1,11 @@
 ﻿using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Services.Json.Attributes;
+using MG.Sonarr.Next.Json.Attributes;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
-namespace MG.Sonarr.Next.Services.Json.Modifiers
+namespace MG.Sonarr.Next.Json.Modifiers
 {
     public static class JsonModifiers
     {

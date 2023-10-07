@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Services.Json.Converters.Spans
+﻿namespace MG.Sonarr.Next.Json.Converters.Spans
 {
     public abstract class SpanConverter
     {

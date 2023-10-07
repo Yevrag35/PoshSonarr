@@ -7,7 +7,7 @@ using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Shell.Attributes;
 using System.Net;
 using Microsoft.Extensions.DependencyInjection;
-using MG.Sonarr.Next.Services.Json;
+using MG.Sonarr.Next.Json;
 using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems

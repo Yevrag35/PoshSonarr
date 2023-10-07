@@ -1,5 +1,5 @@
 ﻿using MG.Sonarr.Next.Models;
-using MG.Sonarr.Next.Services.Json;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Shell.Models;
 
 namespace MG.Sonarr.Next.Metadata

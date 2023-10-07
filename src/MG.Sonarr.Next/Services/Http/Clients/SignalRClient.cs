@@ -5,10 +5,10 @@ using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Http.Requests;
-using MG.Sonarr.Next.Services.Json;
 using Microsoft.Extensions.DependencyInjection;
 using System.Management.Automation;
 using System.Net.Http.Json;
+using MG.Sonarr.Next.Json;
 
 namespace MG.Sonarr.Next.Services.Http.Clients
 {

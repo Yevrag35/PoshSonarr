@@ -3,7 +3,7 @@ using MG.Sonarr.Next.Services.Http;
 using System.Management.Automation;
 using System.Text.Json.Serialization;
 
-namespace MG.Sonarr.Next.Services.Json.Converters
+namespace MG.Sonarr.Next.Json.Converters
 {
     public sealed class SonarrResponseConverter : JsonConverter<ISonarrResponse>
     {

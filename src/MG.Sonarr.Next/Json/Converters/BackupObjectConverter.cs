@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Models.System;
 
-namespace MG.Sonarr.Next.Services.Json.Converters
+namespace MG.Sonarr.Next.Json.Converters
 {
     public sealed class BackupObjectConverter : SonarrObjectConverter<BackupObject>
     {
