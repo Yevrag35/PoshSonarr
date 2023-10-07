@@ -135,6 +135,5 @@ $VerbosePreference = "Continue"
 if (-not ([string]::IsNullOrWhitespace($SonarrUrl) -or [string]::IsNullOrWhitespace($ApiKey))) {
 
 	Connect-SonarrInstance -Url $SonarrUrl -ApiKey $ApiKey
-	#$s = Get-SonarrSeries asdfm*
-	[MG.Sonarr.Next.Shell.Build.Module]::GetAllAssemblyCmdlets()
+	$s = Get-SonarrSeries asdfm*
 }
