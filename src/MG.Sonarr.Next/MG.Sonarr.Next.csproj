@@ -1,11 +1,22 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<Version>2.0.0</Version>
 	<RootNamespace>MG.Sonarr.Next</RootNamespace>
+	<Version>2.0.0</Version>
+	<AssemblyVersion>2.0.0</AssemblyVersion>
+	<FileVersion>2.0.0</FileVersion>
+	<Authors>Mike Garvey</Authors>
+	<Company>Yevrag35, LLC.</Company>
+	<Product>PoshSonarr Services Library .NET 7</Product>
+	<Description>The service library for the PoshSonarr PowerShell module.</Description>
+	<Copyright>Copyright © 2018-2023 Yevrag35, LLC.</Copyright>
+	<PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
+	<PackageProjectUrl>https://github.com/Yevrag35/PoshSonarr</PackageProjectUrl>
+	<RepositoryUrl>https://github.com/Yevrag35/PoshSonarr</RepositoryUrl>
+	<RepositoryType>Git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
