@@ -4,7 +4,7 @@ using MG.Sonarr.Next.Metadata;
 namespace MG.Sonarr.Next.Models
 {
     public class RecordResult<T> : IJsonMetadataTaggable
-        where T : IJsonMetadataTaggable
+        where T : IComparable<T>, IJsonMetadataTaggable
     {
         public required int Page { get; init; }
         public required int PageSize { get; init; }

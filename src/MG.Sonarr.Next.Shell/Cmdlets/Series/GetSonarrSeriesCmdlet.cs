@@ -110,7 +110,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
         }
 
-        private SonarrResponse<MetadataList<T>> GetSeriesByName<T>(IReadOnlySet<Wildcard> names) where T : PSObject, IJsonMetadataTaggable
+        private SonarrResponse<MetadataList<T>> GetSeriesByName<T>(IReadOnlySet<Wildcard> names)
+            where T : PSObject, IComparable<T>, IJsonMetadataTaggable
         {
             var result = this.GetAllSeries<T>();
             if (result.IsError)
@@ -127,15 +128,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 {
                     result.Data.RemoveAt(i);
                 }
-                else
-                {
-                    item.AddNameAlias();
-                }
             }
 
             return result;
         }
-        private SonarrResponse<MetadataList<T>> GetAllSeries<T>() where T : PSObject, IJsonMetadataTaggable
+        private SonarrResponse<MetadataList<T>> GetAllSeries<T>()
+            where T : PSObject, IComparable<T>, IJsonMetadataTaggable
         {
             return this.SendGetRequest<MetadataList<T>>(this.Tag.UrlBase);
         }
@@ -149,8 +147,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                     this.WriteConditionalError(result.Error);
                     continue;
                 }
-
-                result.Data?.AddNameAlias();
 
                 yield return result;
             }

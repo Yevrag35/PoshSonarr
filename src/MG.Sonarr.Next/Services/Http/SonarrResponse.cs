@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using System.Management.Automation;
 using System.Net;
@@ -112,6 +113,18 @@ namespace MG.Sonarr.Next.Services.Http
             }
 
             taggable = default;
+            return false;
+        }
+
+        internal bool IsDataSortable([NotNullWhen(true)] out ISortable? sortable)
+        {
+            if (_data is ISortable sort)
+            {
+                sortable = sort;
+                return true;
+            }
+
+            sortable = default;
             return false;
         }
 

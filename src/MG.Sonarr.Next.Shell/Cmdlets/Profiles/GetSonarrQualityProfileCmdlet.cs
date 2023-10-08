@@ -89,7 +89,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
 
             this.WriteCollection(list);
         }
-        private static void FilterByProfileName(List<QualityProfileObject> list, IReadOnlySet<Wildcard> names, IReadOnlySet<int> ids)
+        private static void FilterByProfileName(IList<QualityProfileObject> list, IReadOnlySet<Wildcard> names, IReadOnlySet<int> ids)
         {
             if (ids.Count <= 0 && names.Count <= 0)
             {

@@ -30,7 +30,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         }
 
         protected abstract MetadataTag GetMetadataTag(MetadataResolver resolver);
-        protected MetadataList<T> GetAll<T>() where T : PSObject, IJsonMetadataTaggable
+        protected MetadataList<T> GetAll<T>() where T : PSObject, IComparable<T>, IJsonMetadataTaggable
         {
             var response = this.SendGetRequest<MetadataList<T>>(this.Tag.UrlBase);
             if (response.IsError)

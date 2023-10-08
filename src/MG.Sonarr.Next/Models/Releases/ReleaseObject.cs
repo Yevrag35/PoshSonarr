@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Releases
 {
-    public sealed class ReleaseObject : SonarrObject, IJsonOnSerializing
+    public sealed class ReleaseObject : SonarrObject, IComparable<ReleaseObject>, IJsonOnSerializing
     {
         const int CAPACITY = 46;
 
@@ -22,6 +22,21 @@ namespace MG.Sonarr.Next.Models.Releases
         public ReleaseObject()
             : base(CAPACITY)
         {
+        }
+
+        public int CompareTo(ReleaseObject? other)
+        {
+            int compare = Comparer<TimeSpan?>.Default.Compare(this.Age, other?.Age);
+            if (compare == 0)
+            {
+                compare = Comparer<int?>.Default.Compare(this.IndexerId, other?.IndexerId);
+                if (compare == 0)
+                {
+                    compare = StringComparer.InvariantCultureIgnoreCase.Compare(this.ReleaseUrl, other?.ReleaseUrl);
+                }
+            }
+
+            return compare;
         }
 
         protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)

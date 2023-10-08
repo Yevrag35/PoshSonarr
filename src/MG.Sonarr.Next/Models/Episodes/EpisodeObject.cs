@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 namespace MG.Sonarr.Next.Models.Episodes
 {
     public sealed class EpisodeObject : SonarrObject,
+        IComparable<EpisodeObject>,
         IEpisodeFilePipeable,
         IJsonOnSerializing,
         IReleasePipeableByEpisode,
@@ -25,6 +26,16 @@ namespace MG.Sonarr.Next.Models.Episodes
         public EpisodeObject()
             : base(CAPACITY)
         {
+        }
+
+        public int CompareTo(EpisodeObject? other)
+        {
+            if (other is null)
+            {
+                return -1;
+            }
+
+            return this.Id.CompareTo(other.Id);
         }
 
         protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)

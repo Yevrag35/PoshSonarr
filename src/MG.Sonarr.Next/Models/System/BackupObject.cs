@@ -3,7 +3,7 @@ using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.System
 {
-    public sealed class BackupObject : SonarrObject
+    public sealed class BackupObject : SonarrObject, IComparable<BackupObject>
     {
         const int CAPACITY = 6;
 
@@ -13,6 +13,11 @@ namespace MG.Sonarr.Next.Models.System
         public BackupObject()
             : base(CAPACITY)
         {
+        }
+
+        public int CompareTo(BackupObject? other)
+        {
+            return StringComparer.InvariantCultureIgnoreCase.Compare(this.Name, other?.Name);
         }
 
         protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)

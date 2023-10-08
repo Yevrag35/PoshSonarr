@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Metadata;
 namespace MG.Sonarr.Next.Models.Episodes
 {
     public sealed class EpisodeFileObject : SonarrObject,
+        IComparable<EpisodeFileObject>,
         IEpisodeFilePipeable,
         IHasId,
         ISeriesPipeable
@@ -17,6 +18,11 @@ namespace MG.Sonarr.Next.Models.Episodes
         public EpisodeFileObject()
             : base(CAPACITY)
         {
+        }
+
+        public int CompareTo(EpisodeFileObject? other)
+        {
+            return Comparer<int?>.Default.Compare(this.Id, other?.Id);
         }
 
         protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)

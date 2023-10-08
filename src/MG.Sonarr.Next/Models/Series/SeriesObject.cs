@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 namespace MG.Sonarr.Next.Models.Series
 {
     public class SeriesObject : TagUpdateObject,
+        IComparable<SeriesObject>,
         IEpisodeBySeriesPipeable,
         IEpisodeFileBySeriesPipeable,
         IHasId,
@@ -17,7 +18,11 @@ namespace MG.Sonarr.Next.Models.Series
         private const string FIRST_AIRED = "FirstAired";
         private DateOnly _firstAired;
 
-        public int LanguageProfileId => this.GetValue<int>();
+        public int LanguageProfileId
+        {
+            get => this.GetValue<int>();
+            set => this.SetValue(value);
+        }
         public int QualityProfileId
         {
             get => this.GetValue<int>();
@@ -44,6 +49,11 @@ namespace MG.Sonarr.Next.Models.Series
             base.Commit();
         }
 
+        public virtual int CompareTo(SeriesObject? other)
+        {
+            return this.CompareTo((TagUpdateObject?)other); // By ID.
+        }
+
         protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.SERIES];
@@ -68,6 +78,7 @@ namespace MG.Sonarr.Next.Models.Series
             if (this.TryGetNonNullProperty(nameof(this.Title), out string? title))
             {
                 this.Title = title;
+                this.Properties.Add(new PSAliasProperty("Name", nameof(this.Title)));
             }
         }
         public virtual void OnSerializing()

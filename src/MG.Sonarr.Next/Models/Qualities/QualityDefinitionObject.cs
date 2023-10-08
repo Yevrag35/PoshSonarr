@@ -3,7 +3,7 @@ using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.Qualities
 {
-    public sealed class QualityDefinitionObject : SonarrObject
+    public sealed class QualityDefinitionObject : SonarrObject, IComparable<QualityDefinitionObject>
     {
         const int CAPACITY = 10;
 
@@ -17,6 +17,11 @@ namespace MG.Sonarr.Next.Models.Qualities
         public QualityDefinitionObject()
             : base(CAPACITY)
         {
+        }
+
+        public int CompareTo(QualityDefinitionObject? other)
+        {
+            return Comparer<int?>.Default.Compare(this.Id, other?.Id);
         }
 
         protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)

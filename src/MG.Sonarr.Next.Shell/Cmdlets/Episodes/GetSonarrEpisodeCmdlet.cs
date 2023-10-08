@@ -132,7 +132,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             }
         }
 
-        private IEnumerable<T> GetEpisodesBySeries<T>(IReadOnlySet<int> seriesId) where T : PSObject, IJsonMetadataTaggable
+        private IEnumerable<T> GetEpisodesBySeries<T>(IReadOnlySet<int> seriesId)
+            where T : PSObject, IComparable<T>, IJsonMetadataTaggable
         {
             QueryParameterCollection queryCol = new();
             foreach (int id in seriesId)

@@ -3,7 +3,7 @@ using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.Profiles
 {
-    public sealed class LanguageProfileObject : SonarrObject
+    public sealed class LanguageProfileObject : SonarrObject, IComparable<LanguageProfileObject>
     {
         const int CAPACITY = 6;
 
@@ -18,6 +18,10 @@ namespace MG.Sonarr.Next.Models.Profiles
         {
         }
 
+        public int CompareTo(LanguageProfileObject? other)
+        {
+            return Comparer<int?>.Default.Compare(this.Id, other?.Id);
+        }
 
         protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)
         {

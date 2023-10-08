@@ -3,7 +3,7 @@ using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.Calendar
 {
-    public sealed class CalendarObject : SonarrObject, ISeriesPipeable, IEpisodePipeable, IEpisodeFilePipeable, ITagResolvable<CalendarObject>
+    public sealed class CalendarObject : SonarrObject, IComparable<CalendarObject>, ISeriesPipeable, IEpisodePipeable, IEpisodeFilePipeable, ITagResolvable<CalendarObject>
     {
         const int CAPACITY = 20;
 
@@ -16,6 +16,22 @@ namespace MG.Sonarr.Next.Models.Calendar
         public CalendarObject()
             : base(CAPACITY)
         {
+        }
+
+        public int CompareTo(CalendarObject? other)
+        {
+            if (other is null)
+            {
+                return -1;
+            }
+
+            int compare = this.AirDateUtc.CompareTo(other.AirDateUtc);
+            if (compare == 0)
+            {
+                compare = this.Id.CompareTo(other.Id);
+            }
+
+            return compare;
         }
 
         protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)

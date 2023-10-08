@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Indexers
 {
-    public sealed class IndexerObject : TagUpdateObject, IJsonOnSerializing
+    public sealed class IndexerObject : TagUpdateObject, IComparable<IndexerObject>, IJsonOnSerializing
     {
         public bool EnableRss
         {
@@ -40,6 +40,10 @@ namespace MG.Sonarr.Next.Models.Indexers
             base.Commit();
             this.Name = this.GetValue<string>() ?? string.Empty;
             this.Protocol = this.GetValue<string>() ?? string.Empty;
+        }
+        public int CompareTo(IndexerObject? other)
+        {
+            return Comparer<int?>.Default.Compare(this.Id, other?.Id);
         }
         public override void OnDeserialized()
         {

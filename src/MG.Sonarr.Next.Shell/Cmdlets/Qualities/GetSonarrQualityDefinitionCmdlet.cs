@@ -75,7 +75,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             this.WriteCollection(_list);
         }
 
-        private static void FilterByName(List<QualityDefinitionObject> all, IReadOnlySet<int> ids, IReadOnlySet<Wildcard>? names)
+        private static void FilterByName(IList<QualityDefinitionObject> all, IReadOnlySet<int> ids, IReadOnlySet<Wildcard>? names)
         {
             if (names.IsNullOrEmpty())
             {

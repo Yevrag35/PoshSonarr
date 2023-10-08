@@ -67,6 +67,11 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                 taggable.SetTag(this.Resolver);
             }
 
+            if (response.IsDataSortable(out ISortable? sortable) && sortable.Count > 1)
+            {
+                sortable.Sort();
+            }
+
             return response;
         }
         public SonarrResponse SendPost<T>(string path, T body, CancellationToken token = default) where T : notnull

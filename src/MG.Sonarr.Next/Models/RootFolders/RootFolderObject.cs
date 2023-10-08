@@ -2,7 +2,7 @@
 
 namespace MG.Sonarr.Next.Models.RootFolders
 {
-    public sealed class RootFolderObject : SonarrObject
+    public sealed class RootFolderObject : SonarrObject, IComparable<RootFolderObject>
     {
         const int CAPACITY = 9;
 
@@ -11,6 +11,11 @@ namespace MG.Sonarr.Next.Models.RootFolders
         public RootFolderObject()
             : base(CAPACITY)
         {
+        }
+
+        public int CompareTo(RootFolderObject? other)
+        {
+            return Comparer<int?>.Default.Compare(this.Id, other?.Id);
         }
 
         protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)

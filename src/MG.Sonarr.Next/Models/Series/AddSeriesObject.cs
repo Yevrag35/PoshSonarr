@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Series
 {
-    public sealed class AddSeriesObject : SeriesObject, IJsonOnSerializing
+    public sealed class AddSeriesObject : SeriesObject, IComparable<AddSeriesObject>, IJsonOnSerializing
     {
         private string? _path;
         private string? _pathProp;
@@ -16,11 +16,6 @@ namespace MG.Sonarr.Next.Models.Series
         public bool IsMonitored
         {
             get => this.GetValue<bool>();
-            set => this.SetValue(value);
-        }
-        public int LanguageProfileId
-        {
-            get => this.GetValue<int>();
             set => this.SetValue(value);
         }
         public int ProfileId
@@ -49,6 +44,15 @@ namespace MG.Sonarr.Next.Models.Series
         {
         }
 
+        public int CompareTo(AddSeriesObject? other)
+        {
+            return this.CompareTo((SeriesObject?)other);
+        }
+        public override int CompareTo(SeriesObject? other)
+        {
+            return StringComparer.InvariantCultureIgnoreCase.Compare(this.Title, other?.Title);
+        }
+
         protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.SERIES_ADD];
@@ -70,6 +74,8 @@ namespace MG.Sonarr.Next.Models.Series
                 this.Properties[Constants.USE_SEASON_FOLDER].Value = true;
                 this.UseSeasonFolders = true;
             }
+
+
         }
         public override void OnSerializing()
         {

@@ -87,11 +87,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
             this.WriteCollection(response.Data);
         }
 
-        private static void FilterByDayOfWeek(List<CalendarObject> list, IReadOnlySet<DayOfWeek> dows)
+        private static void FilterByDayOfWeek(IList<CalendarObject> list, IReadOnlySet<DayOfWeek> dows)
         {
             int removed = list.RemoveWhere(dows, predicate: (item, state) =>
             {
-                return !state.Contains(item.AirDateUtc.DayOfWeek);
+                return !state!.Contains(item.AirDateUtc.DayOfWeek);
             });
 
             Debug.WriteLine($"Filtered {removed} items from {nameof(list)}.");

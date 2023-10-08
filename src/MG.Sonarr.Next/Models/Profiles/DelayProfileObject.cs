@@ -2,11 +2,16 @@
 
 namespace MG.Sonarr.Next.Models.Profiles
 {
-    public sealed class DelayProfileObject : TagUpdateObject
+    public sealed class DelayProfileObject : TagUpdateObject, IComparable<DelayProfileObject>
     {
         public DelayProfileObject()
             : base(7)
         {
+        }
+
+        public int CompareTo(DelayProfileObject? other)
+        {
+            return this.CompareTo((TagUpdateObject?)other);
         }
 
         protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)
