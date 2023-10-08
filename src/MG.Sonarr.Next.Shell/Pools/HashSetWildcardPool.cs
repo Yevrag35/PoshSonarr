@@ -20,9 +20,9 @@ namespace MG.Sonarr.Next.Shell.Pools
         {
             return new(DEFAULT_CAPACITY);
         }
-        protected override HashSet<Wildcard> GetItem()
+        protected override HashSet<Wildcard> GetItemFromBag()
         {
-            var set = base.GetItem(out bool wasConstructed);
+            var set = base.GetItemFromBag(out bool wasConstructed);
             if (!wasConstructed)
             {
                 CapSetCapacity(set, DEFAULT_CAPACITY);

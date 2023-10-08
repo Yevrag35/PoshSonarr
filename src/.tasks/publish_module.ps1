@@ -103,7 +103,7 @@ Import-Module $dllPath -ErrorAction Stop
 $fileInfo = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($dllPath)
 $productVers = [version]::new($fileInfo.ProductMajorPart, $fileInfo.ProductMinorPart, $fileInfo.ProductBuildPart)
 
-$info = [MG.Sonarr.Next.Shell.Build.Module]::GetAllAssemblyCmdlets()
+$info = [MG.Sonarr.Next.Shell.Build.Module]::ReadAllAssemblyCmdlets()
 $manifestArgs = @{
 	Path = "$OutputPath\$($ModuleName).psd1"
 	Guid = '0cd92751-7c76-4b31-ae4a-48d344f9b786'

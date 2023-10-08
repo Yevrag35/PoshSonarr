@@ -1,14 +1,13 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Shell.Build
 {
     public static class Module
     {
-        public static PSObject GetAllAssemblyCmdlets()
+        public static PSObject ReadAllAssemblyCmdlets()
         {
-            Assembly thisAss = Assembly.GetExecutingAssembly();
+            Assembly thisAss = typeof(Module).Assembly;
             List<Type> list = new(thisAss.GetExportedTypes());
 
             for (int i = list.Count - 1; i >= 0; i--)

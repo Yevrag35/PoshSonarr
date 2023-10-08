@@ -88,6 +88,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 
             if (result.IsError)
             {
+                this.UnsetContext();
                 this.ThrowTerminatingError(result.Error);
             }
         }

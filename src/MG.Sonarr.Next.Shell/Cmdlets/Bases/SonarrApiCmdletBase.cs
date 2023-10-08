@@ -47,7 +47,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <returns>
         ///     A response object indicating the status code and any errors that may have occurred.
         /// </returns>
-        protected virtual SonarrResponse SendDeleteRequest(string path, CancellationToken token = default)
+        protected SonarrResponse SendDeleteRequest(string path, CancellationToken token = default)
         {
             _timer.Start();
             this.Queue.Enqueue(this);
@@ -65,7 +65,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <returns>
         ///     A response object indicating the status code and any errors that may have occurred.
         /// </returns>
-        protected virtual SonarrResponse<T> SendGetRequest<T>(string path, CancellationToken token = default)
+        protected SonarrResponse<T> SendGetRequest<T>(string path, CancellationToken token = default)
         {
             _timer.Start();
             this.Queue.Enqueue(this);
@@ -83,7 +83,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <returns>
         ///     A response object indicating the status code and any errors that may have occurred.
         /// </returns>
-        protected virtual SonarrResponse SendPostRequest<T>(string path, T body, CancellationToken token = default)
+        protected SonarrResponse SendPostRequest<T>(string path, T body, CancellationToken token = default)
             where T : notnull
         {
             _timer.Start();
@@ -102,7 +102,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         ///     A <see cref="OneOf{T0, T1}"/> object that can either be the deserialized HTTP response or
         ///     an <see cref="SonarrErrorRecord"/>.
         /// </returns>
-        protected virtual OneOf<TOutput, SonarrErrorRecord> SendPostRequest<TBody, TOutput>(string path, TBody body, CancellationToken token = default)
+        protected OneOf<TOutput, SonarrErrorRecord> SendPostRequest<TBody, TOutput>(string path, TBody body, CancellationToken token = default)
             where TBody : notnull
         {
             _timer.Start();
@@ -122,7 +122,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <returns>
         ///     A response object indicating the status code and any errors that may have occurred.
         /// </returns>
-        protected virtual SonarrResponse SendPutRequest<T>(string path, T body , CancellationToken token = default)
+        protected SonarrResponse SendPutRequest<T>(string path, T body , CancellationToken token = default)
             where T : notnull
         {
             _timer.Start();

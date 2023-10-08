@@ -14,7 +14,18 @@ namespace MG.Sonarr.Next.Metadata
         public const char META_PREFIX = '#';
         readonly Dictionary<string, MetadataTag> _dict;
 
-        public MetadataTag this[string key] => _dict[key];
+        /// <summary>
+        /// Gets the <see cref="MetadataTag"/> associated with the specified key.
+        /// </summary>
+        /// <param name="key">The key of the <see cref="MetadataTag"/> to get; equal to 
+        /// <see cref="MetadataTag.Value"/></param>
+        /// <returns>
+        ///     The <see cref="MetadataTag"/> associated with the specified key. If the specified key is not
+        ///     found, <see cref="MetadataTag.Empty"/> is returned.
+        /// </returns>
+        public MetadataTag this[string key] => _dict.TryGetValue(key, out MetadataTag? tag)
+            ? tag
+            : MetadataTag.Empty;
 
         public int Count => _dict.Count;
 
@@ -23,7 +34,11 @@ namespace MG.Sonarr.Next.Metadata
             _dict = new(capacity, StringComparer.InvariantCultureIgnoreCase);
         }
 
-        public bool Add(string tag, string baseUrl, bool supportsId, string[]? canPipeTo = null)
+        public bool Add(string tag, string baseUrl, bool supportsId)
+        {
+            return this.Add(tag, baseUrl, supportsId, Array.Empty<string>());
+        }
+        public bool Add(string tag, string baseUrl, bool supportsId, string[] canPipeTo)
         {
             ArgumentException.ThrowIfNullOrEmpty(tag);
             ArgumentException.ThrowIfNullOrEmpty(baseUrl);
@@ -31,6 +46,7 @@ namespace MG.Sonarr.Next.Metadata
 
             return _dict.TryAdd(tag, new MetadataTag(baseUrl, tag, supportsId, canPipeTo));
         }
+
         public bool AddToObject([ConstantExpected] string tag, [NotNullWhen(true)] object? obj)
         {
             if (!_dict.ContainsKey(tag) || obj is null || obj is not PSObject pso)

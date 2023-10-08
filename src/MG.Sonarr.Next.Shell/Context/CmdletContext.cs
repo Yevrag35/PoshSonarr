@@ -64,6 +64,10 @@ namespace MG.Sonarr.Next.Shell.Context
         {
             SonarrContext.Deinitialize();
         }
+        internal static void UnsetContext(this ConnectSonarrInstanceCmdlet cmdlet)
+        {
+            SonarrContext.Deinitialize();
+        }
     }
 
     file static class SonarrContext

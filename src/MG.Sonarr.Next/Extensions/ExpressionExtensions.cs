@@ -5,10 +5,36 @@ using System.Reflection;
 
 namespace MG.Sonarr.Next.Extensions
 {
+    /// <summary>
+    /// Custom extension methods for <see cref="Expression"/> and derived classes.
+    /// </summary>
     public static class ExpressionExtensions
     {
-        public static bool TryGetAsMember([ValidatedNotNull] this LambdaExpression expression, [NotNullWhen(true)] out MemberExpression? memberExpression)
+        /// <summary>
+        /// Attempts to retrieve the body of a <see cref="LambdaExpression"/> as a member 
+        /// declaration.
+        /// </summary>
+        /// <param name="expression">
+        ///     The expression whose body could possibly be a member expression.
+        /// </param>
+        /// <param name="memberExpression">
+        ///     When this method returns <see langword="true"/>, the 
+        ///     <see cref="MemberExpression"/> read from the body of 
+        ///     <paramref name="expression"/>; otherwise, a <see langword="null"/> reference.
+        ///     <para>
+        ///         This parameter is passed uninitialized.
+        ///     </para>
+        /// </param>
+        /// <returns>
+        ///     <see langword="true"/> if <see cref="LambdaExpression.Body"/> is 
+        ///     <see cref="MemberExpression"/> or is a <see cref="UnaryExpression"/> whose 
+        ///     <see cref="UnaryExpression.Operand"/> is <see cref="MemberExpression"/>; otherwise,
+        ///     <see langword="false"/>.
+        /// </returns>
+        public static bool TryGetAsMember(this LambdaExpression expression, [NotNullWhen(true)] out MemberExpression? memberExpression)
         {
+            ArgumentNullException.ThrowIfNull(expression);
+
             if (expression.Body is MemberExpression memEx)
             {
                 memberExpression = memEx;
@@ -24,8 +50,27 @@ namespace MG.Sonarr.Next.Extensions
             return false;
         }
 
-        public static bool TryGetAsSetter([ValidatedNotNull] this LambdaExpression expression, [NotNullWhen(true)] out FieldOrPropertyInfoSetter setter)
+        /// <summary>
+        /// Attempts to retrieve a <see cref="LambdaExpression"/> instance's body as a
+        /// <see cref="MemberExpression"/> of a defined <see cref="PropertyInfo"/> or 
+        /// <see cref="FieldInfo"/> that is settable.
+        /// </summary>
+        /// <param name="expression">The expression to check.</param>
+        /// <param name="setter">
+        ///     When this method returns, the <see cref="FieldOrPropertyInfoSetter"/>
+        ///     of the expression's <see cref="MemberExpression.Member"/>; otherwise, the
+        ///     default instance of <see cref="FieldOrPropertyInfoSetter"/>.
+        /// </param>
+        /// <returns>
+        ///     <see langword="true"/> if <paramref name="expression"/>'s body is a valid 
+        ///     <see cref="MemberExpression"/> and that <see cref="MemberExpression.Member"/> is a
+        ///     settable <see cref="PropertyInfo"/> or <see cref="FieldInfo"/>; otherwise,
+        ///     <see langword="false"/>.
+        /// </returns>
+        public static bool TryGetAsSetter(this LambdaExpression expression, out FieldOrPropertyInfoSetter setter)
         {
+            ArgumentNullException.ThrowIfNull(expression);
+
             setter = default;
             OneOf<FieldInfo, PropertyInfo, object?> tempOne;
             if (expression.Body is MemberExpression memEx)
@@ -51,7 +96,6 @@ namespace MG.Sonarr.Next.Extensions
             return !setter.IsEmpty;
         }
 
-        /// <exception cref="ArgumentException"></exception>
         private static OneOf<FieldInfo, PropertyInfo, object?> GetAsEitherInfo(MemberExpression memberExpression)
         {
             switch (memberExpression.Member.MemberType)

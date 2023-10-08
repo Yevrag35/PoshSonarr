@@ -10,9 +10,12 @@ namespace MG.Sonarr.Next.Extensions
         /// up <typeparamref name="T"/> value if it were formatted as a 
         /// <see cref="string"/> instance without actually converting it.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="n"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">The type of value.</typeparam>
+        /// <param name="n">The value whose length will be calculated.</param>
+        /// <returns>
+        ///     The number of characters <paramref name="n"/> would consist of if converted to its default
+        ///     <see cref="string"/> equivalent.
+        /// </returns>
         [DebuggerStepThrough]
         public static int GetLength<T>([ValidatedNotNull] this T n) where T : unmanaged, INumber<T>
         {

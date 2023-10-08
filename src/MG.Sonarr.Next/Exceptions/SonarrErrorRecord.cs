@@ -1,25 +1,44 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Net;
 
 namespace MG.Sonarr.Next.Exceptions
 {
+    /// <summary>
+    /// Represents an error thrown from the PoshSonarr PowerShell module.
+    /// </summary>
+    /// <inheritdoc cref="ErrorRecord"/>
     public sealed class SonarrErrorRecord : ErrorRecord
     {
-        static readonly IReadOnlyDictionary<string, string> _empty =
-            new ReadOnlyDictionary<string, string>(new Dictionary<string, string>());
-
         readonly IReadOnlyDictionary<string, string> _headers;
 
+        /// <inheritdoc cref="SonarrHttpException.Headers"/>
         public IReadOnlyDictionary<string, string> Headers => _headers;
+
+        /// <inheritdoc cref="ErrorDetails.Message"/>
         public string Message => this.ErrorDetails?.Message ?? this.Exception.Message;
+        /// <summary>
+        /// Indicates whether this error record can be written through <see cref="Cmdlet.WriteError(ErrorRecord)"/> conditionally. If <see langword="true"/>, this record should only be optionally
+        /// written to the error stream.
+        /// </summary>
         public bool IsIgnorable { get; }
+
+        /// <inheritdoc cref="SonarrHttpException.StatusCode"/>
         public HttpStatusCode? StatusCode { get; }
+
+        /// <inheritdoc cref="SonarrHttpException.ReasonPhrase"/>
         public string? ReasonPhrase { get; }
+
+        /// <inheritdoc cref="SonarrHttpException.RequestUri"/>
         public string? RequestUri { get; }
 
-        public SonarrErrorRecord(SonarrHttpException exception, HttpResponseMessage? response, object? targetObj = null)
+        public SonarrErrorRecord(SonarrHttpException exception, HttpResponseMessage? response)
+            : this(exception, response, (object?)null)
+        {
+        }
+        public SonarrErrorRecord(SonarrHttpException exception, HttpResponseMessage? response, object? targetObj)
             : base(exception, exception.GetTypeName(), GetCategoryFromStatusCode(exception.StatusCode, out bool isIgnorable), targetObj)
         {
             this.StatusCode = exception.StatusCode;
@@ -38,7 +57,11 @@ namespace MG.Sonarr.Next.Exceptions
             this.CategoryInfo.Reason = this.ReasonPhrase;
             this.CategoryInfo.TargetType = targetObj?.GetType().GetTypeName();
         }
-        public SonarrErrorRecord(SonarrHttpException response, object? targetObj = null)
+        public SonarrErrorRecord(SonarrHttpException response)
+            : this(exception: response, response: response.Response, (object?)null)
+        {
+        }
+        public SonarrErrorRecord(SonarrHttpException response, object? targetObj)
             : this(exception: response, response: response.Response, targetObj)
         {
         }
@@ -46,13 +69,13 @@ namespace MG.Sonarr.Next.Exceptions
         public SonarrErrorRecord(Exception normalEx, string errorId, ErrorCategory category, object? targetObj)
             : base(exception: normalEx, errorId, category, targetObj)
         {
-            _headers = _empty;
+            _headers = EmptyNameDictionary.Default;
         }
 
         public SonarrErrorRecord(ErrorRecord wraps)
             : base(wraps, wraps.Exception)
         {
-            _headers = _empty;
+            _headers = EmptyNameDictionary.Default;
         }
 
         private static ErrorCategory GetCategoryFromStatusCode(HttpStatusCode? statusCode, out bool isIgnorable)

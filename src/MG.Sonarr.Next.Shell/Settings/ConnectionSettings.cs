@@ -4,6 +4,10 @@ using System.Net;
 
 namespace MG.Sonarr.Next.Shell.Settings
 {
+    /// <summary>
+    /// A class for setting the connection properties for all Sonarr-based <see cref="HttpClient"/> 
+    /// implementations.
+    /// </summary>
     public sealed class ConnectionSettings : IConnectionSettings
     {
         internal ApiKey Key { get; set; }

@@ -98,7 +98,7 @@ namespace MG.Sonarr.Next.Exceptions
                 ? inner is null
                     ? "An exception occurred in response"
                     : inner.GetBaseException().Message
-                : errors.GetMessage();
+                : errors.BuildMessage();
 
             return response is not null
                 ? $"{response.StatusCode.ToResponseString()}: {details}"

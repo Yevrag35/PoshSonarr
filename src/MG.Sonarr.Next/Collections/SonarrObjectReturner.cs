@@ -2,9 +2,21 @@
 
 namespace MG.Sonarr.Next.Collections
 {
+    /// <summary>
+    /// An interface exposing methods for returning objects back into their respective
+    /// <see cref="IObjectPool{T}"/>.
+    /// </summary>
     public interface IPoolReturner
     {
+        /// <summary>
+        /// Returns a single object back into its <see cref="IObjectPool{T}"/>.
+        /// </summary>
+        /// <param name="obj">The object to return.</param>
         void Return(object? obj);
+        /// <summary>
+        /// Returns a span of objects back into their respective <see cref="IObjectPool{T}"/> instances.
+        /// </summary>
+        /// <param name="span">The span of objects to return.</param>
         void Return(ReadOnlySpan<object> span);
     }
 
