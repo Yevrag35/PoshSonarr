@@ -11,6 +11,8 @@ namespace MG.Sonarr.Next.Json.Modifiers
     {
         public static void AddPrivateFieldsModifier(JsonTypeInfo typeInfo)
         {
+            ArgumentNullException.ThrowIfNull(typeInfo);
+
             if (typeInfo.Kind != JsonTypeInfoKind.Object)
             {
                 return;

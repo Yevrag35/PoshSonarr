@@ -8,6 +8,8 @@
 
         public SonarrJsonOptions(Action<JsonSerializerOptions> setupDeserializer)
         {
+            ArgumentNullException.ThrowIfNull(setupDeserializer);
+
             _deserializer = new(JsonSerializerDefaults.Web);
             _requestSerializer = new(JsonSerializerDefaults.Web)
             {

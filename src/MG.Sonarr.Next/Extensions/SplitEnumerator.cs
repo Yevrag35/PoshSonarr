@@ -10,8 +10,10 @@ namespace MG.Sonarr.Next.Extensions
 
         public SplitEntry Current { get; private set; }
 
-        public SplitEnumerator([ValidatedNotNull] ReadOnlySpan<char> str, [ValidatedNotNull] ReadOnlySpan<char> splitBy)
+        public SplitEnumerator(ReadOnlySpan<char> str, ReadOnlySpan<char> splitBy)
         {
+            Guard.IsSpan(str, splitBy);
+
             _str = str;
             _splitBy = splitBy;
         }
@@ -46,19 +48,24 @@ namespace MG.Sonarr.Next.Extensions
         public ReadOnlySpan<char> Chars { get; }
         public ReadOnlySpan<char> Separator { get; }
 
-        public SplitEntry([ValidatedNotNull] ReadOnlySpan<char> chars, [ValidatedNotNull] ReadOnlySpan<char> separator)
+        public SplitEntry(ReadOnlySpan<char> chars, ReadOnlySpan<char> separator)
         {
+            Guard.IsSpan(chars, separator);
             this.Chars = chars;
             this.Separator = separator;
         }
 
-        public void Deconstruct([ValidatedNotNull] out ReadOnlySpan<char> chars, [ValidatedNotNull] out ReadOnlySpan<char> separator)
+        public void Deconstruct(out ReadOnlySpan<char> chars, out ReadOnlySpan<char> separator)
         {
             chars = this.Chars;
             separator = this.Separator;
+            Guard.IsSpan(chars, separator);
         }
 
-        public static implicit operator ReadOnlySpan<char>([ValidatedNotNull] SplitEntry entry) => entry.Chars;
+        public static implicit operator ReadOnlySpan<char>(SplitEntry entry)
+        {
+            return entry.Chars;
+        }
     }
 
     [DebuggerStepThrough]
@@ -70,8 +77,9 @@ namespace MG.Sonarr.Next.Extensions
 
         public SplitEntry Current { get; private set; }
 
-        public DoubleSplitEnumerator([ValidatedNotNull] ReadOnlySpan<char> str, [ValidatedNotNull] ReadOnlySpan<char> splitBy1, [ValidatedNotNull] ReadOnlySpan<char> splitBy2)
+        public DoubleSplitEnumerator(ReadOnlySpan<char> str, ReadOnlySpan<char> splitBy1, ReadOnlySpan<char> splitBy2)
         {
+            Guard.IsSpan(str, splitBy1, splitBy2);
             _str = str;
             _splitBy1 = splitBy1;
             _splitBy2 = splitBy2;

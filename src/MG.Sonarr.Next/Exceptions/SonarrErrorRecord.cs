@@ -41,6 +41,8 @@ namespace MG.Sonarr.Next.Exceptions
         public SonarrErrorRecord(SonarrHttpException exception, HttpResponseMessage? response, object? targetObj)
             : base(exception, exception.GetTypeName(), GetCategoryFromStatusCode(exception.StatusCode, out bool isIgnorable), targetObj)
         {
+            ArgumentNullException.ThrowIfNull(exception);
+
             this.StatusCode = exception.StatusCode;
             this.ReasonPhrase = response?.ReasonPhrase;
             _headers = exception.Headers;

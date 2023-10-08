@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using MG.Sonarr.Next.Attributes;
+using System.Net;
 using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Next.Exceptions
@@ -33,6 +34,7 @@ namespace MG.Sonarr.Next.Exceptions
 
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
+            Guard.NotNull(info);
             ArgumentNullException.ThrowIfNull(info);
             info.AddValue(nameof(this.Url), this.Url, typeof(string));
 

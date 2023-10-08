@@ -30,7 +30,7 @@ namespace MG.Sonarr.Next.Extensions
         ///     The collection of elements that will be added into <paramref name="list"/>.
         /// </param>
         /// <exception cref="ArgumentNullException"/>
-        public static void AddMany<T>([ValidatedNotNull] this IList<T> list, IEnumerable<T>? collection)
+        public static void AddMany<T>(this IList<T> list, IEnumerable<T>? collection)
         {
             ArgumentNullException.ThrowIfNull(list);
             if (collection is null)
@@ -103,7 +103,7 @@ namespace MG.Sonarr.Next.Extensions
         /// <returns>
         ///     The number of items that were removed from <paramref name="list"/>.
         /// </returns>
-        public static int RemoveWhere<T, TState>(this IList<T>? list, TState? state, [ValidatedNotNull] Func<T, TState?, bool> predicate)
+        public static int RemoveWhere<T, TState>(this IList<T>? list, TState? state, Func<T, TState?, bool> predicate)
         {
             ArgumentNullException.ThrowIfNull(predicate);
 

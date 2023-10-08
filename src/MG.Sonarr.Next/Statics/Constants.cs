@@ -4,7 +4,7 @@ namespace MG.Sonarr.Next
 {
     public static class Constants
     {
-        public const string META_PROPERTY_NAME = MetadataResolver.META_PROPERTY_NAME;
+        public static readonly string META_PROPERTY_NAME = MetadataResolver.META_PROPERTY_NAME;
         public const char META_PREFIX = MetadataResolver.META_PREFIX;
 
         public const string ID = "Id";

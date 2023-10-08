@@ -32,6 +32,8 @@ namespace MG.Sonarr.Next.Shell.Pools
         }
         protected override bool ResetObject(HashSet<Wildcard> obj)
         {
+            ArgumentNullException.ThrowIfNull(obj);
+
             obj.Clear();
             return true;
         }

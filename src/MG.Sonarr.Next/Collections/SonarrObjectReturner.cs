@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using MG.Sonarr.Next.Attributes;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Collections
 {
@@ -26,6 +27,8 @@ namespace MG.Sonarr.Next.Collections
 
         public SonarrObjectReturner(IEnumerable<IObjectPoolReturnable> returnables)
         {
+            returnables ??= Enumerable.Empty<IObjectPoolReturnable>();
+
             _dict = new(returnables.TryGetNonEnumeratedCount(out int count) ? count : 0);
             foreach (IObjectPoolReturnable pool in returnables)
             {
@@ -47,6 +50,8 @@ namespace MG.Sonarr.Next.Collections
         }
         public void Return(ReadOnlySpan<object> span)
         {
+            Guard.IsSpan(span);
+
             if (span.IsEmpty)
             {
                 return;
@@ -63,6 +68,7 @@ namespace MG.Sonarr.Next.Collections
     {
         public static IServiceCollection AddObjectPoolReturner(this IServiceCollection services)
         {
+            ArgumentNullException.ThrowIfNull(services);
             return services.AddSingleton<IPoolReturner, SonarrObjectReturner>();
         }
     }

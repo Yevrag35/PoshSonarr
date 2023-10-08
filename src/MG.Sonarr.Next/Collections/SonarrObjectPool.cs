@@ -70,6 +70,7 @@ namespace MG.Sonarr.Next.Collections
         /// </param>
         protected SonarrObjectPool(IEnumerable<T> initialItems)
         {
+            initialItems ??= Enumerable.Empty<T>();
             this.Bag = new(initialItems);
         }
 
@@ -110,8 +111,13 @@ namespace MG.Sonarr.Next.Collections
         ///     If the item fails to be reset or the pool is at its max capacity, it will not be returned.
         /// </remarks>
         /// <param name="item">The object to return.</param>
-        public void Return(T item)
+        public void Return([MaybeNull] T item)
         {
+            if (item is null)
+            {
+                return;
+            }
+
             int count = this.Bag.Count;
             if (count < this.MaxPoolCapacity && this.ResetObject(item))
             {

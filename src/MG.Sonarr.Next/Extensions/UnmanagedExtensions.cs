@@ -17,8 +17,10 @@ namespace MG.Sonarr.Next.Extensions
         ///     <see cref="string"/> equivalent.
         /// </returns>
         [DebuggerStepThrough]
-        public static int GetLength<T>([ValidatedNotNull] this T n) where T : unmanaged, INumber<T>
+        public static int GetLength<T>(this T n) where T : unmanaged, INumber<T>
         {
+            Guard.NotNull(in n);
+
             if (T.IsZero(n))
             {
                 return 1;

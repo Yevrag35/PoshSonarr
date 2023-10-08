@@ -71,6 +71,8 @@ namespace MG.Sonarr.Next.Exceptions
         private SonarrHttpException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
+            ArgumentNullException.ThrowIfNull(info);
+
             // Retrieve properties/fields from the serialization store.
             this.ExtendedInfo = ErrorCollection.Empty;
             this.Headers = (IReadOnlyDictionary<string, string>?)info.GetValue(nameof(this.Headers), typeof(Dictionary<string, string>)) ?? EmptyNameDictionary.Default;

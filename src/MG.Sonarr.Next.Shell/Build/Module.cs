@@ -37,12 +37,12 @@ namespace MG.Sonarr.Next.Shell.Build
             return pso;
         }
 
-        private static bool IsCmdlet([ValidatedNotNull] Type type)
+        private static bool IsCmdlet(Type type)
         {
             return type.IsDefined(typeof(CmdletAttribute), false);
         }
 
-        private static void AddCmdletData(Type type, [ValidatedNotNull] List<string> names, [ValidatedNotNull] List<string> aliases)
+        private static void AddCmdletData(Type type, List<string> names, List<string> aliases)
         {
             CmdletAttribute cmdletAtt = type.GetCustomAttributes<CmdletAttribute>().First();
             names.Add($"{cmdletAtt.VerbName}-{cmdletAtt.NounName}");

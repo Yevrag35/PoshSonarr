@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Metadata
     /// </summary>
     public sealed class MetadataResolver : IReadOnlyCollection<MetadataTag>
     {
-        public const string META_PROPERTY_NAME = "MetadataTag";
+        public static readonly string META_PROPERTY_NAME = "MetadataTag";
         public const char META_PREFIX = '#';
         readonly Dictionary<string, MetadataTag> _dict;
 
@@ -23,7 +23,7 @@ namespace MG.Sonarr.Next.Metadata
         ///     The <see cref="MetadataTag"/> associated with the specified key. If the specified key is not
         ///     found, <see cref="MetadataTag.Empty"/> is returned.
         /// </returns>
-        public MetadataTag this[string key] => _dict.TryGetValue(key, out MetadataTag? tag)
+        public MetadataTag this[string key] => _dict.TryGetValue(key ?? string.Empty, out MetadataTag? tag)
             ? tag
             : MetadataTag.Empty;
 
@@ -49,6 +49,8 @@ namespace MG.Sonarr.Next.Metadata
 
         public bool AddToObject([ConstantExpected] string tag, [NotNullWhen(true)] object? obj)
         {
+            ArgumentNullException.ThrowIfNull(tag);
+
             if (!_dict.ContainsKey(tag) || obj is null || obj is not PSObject pso)
             {
                 return false;
@@ -58,6 +60,9 @@ namespace MG.Sonarr.Next.Metadata
         }
         public bool AddToObject([ConstantExpected] string tag, PSObject pso)
         {
+            ArgumentNullException.ThrowIfNull(tag);
+            ArgumentNullException.ThrowIfNull(pso);
+
             bool added = false;
             if (_dict.TryGetValue(tag, out MetadataTag? meta))
             {
@@ -77,6 +82,8 @@ namespace MG.Sonarr.Next.Metadata
         }
         public bool TryGetValue(PSObject pso, [NotNullWhen(true)] out MetadataTag? value)
         {
+            ArgumentNullException.ThrowIfNull(pso);
+
             if (pso.TryGetProperty(META_PROPERTY_NAME, out string? metaTag)
                 &&
                 this.TryGetValue(metaTag, out value))

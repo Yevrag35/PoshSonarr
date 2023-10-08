@@ -9,6 +9,7 @@ namespace MG.Sonarr.Next.Json.Converters
     {
         public override bool CanConvert(Type typeToConvert)
         {
+            ArgumentNullException.ThrowIfNull(typeToConvert);
             return typeToConvert.IsAssignableTo(typeof(ISonarrResponse));
         }
 
@@ -19,6 +20,14 @@ namespace MG.Sonarr.Next.Json.Converters
 
         public override void Write(Utf8JsonWriter writer, ISonarrResponse value, JsonSerializerOptions options)
         {
+            ArgumentNullException.ThrowIfNull(writer);
+            if (value is null)
+            {
+                writer.WriteStartObject();
+                writer.WriteEndObject();
+                return;
+            }
+
             if (value.IsError)
             {
                 writer.WriteStartObject();
@@ -31,7 +40,7 @@ namespace MG.Sonarr.Next.Json.Converters
             }
         }
 
-        private static void WriteAsError(Utf8JsonWriter writer, ErrorRecord record, ISonarrResponse value, JsonSerializerOptions options)
+        private static void WriteAsError(Utf8JsonWriter writer, ErrorRecord record, ISonarrResponse value, JsonSerializerOptions? options)
         {
             Type errType = record.Exception.GetType();
             writer.WriteString(options.ConvertName(nameof(value.RequestUrl)), value.RequestUrl);
@@ -42,7 +51,7 @@ namespace MG.Sonarr.Next.Json.Converters
         }
 
         const string RECEIVED = "Received response -> ";
-        private static void WriteAsSuccess(Utf8JsonWriter writer, ISonarrResponse value, JsonSerializerOptions options)
+        private static void WriteAsSuccess(Utf8JsonWriter writer, ISonarrResponse value, JsonSerializerOptions? options)
         {
             int length = RECEIVED.Length + 50;
 

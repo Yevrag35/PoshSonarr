@@ -25,6 +25,7 @@ namespace MG.Sonarr.Next.Extensions
         }
         static string ToResponseStringFormat(in HttpStatusCode statusCode)
         {
+            Guard.NotNull(in statusCode);
             string codeStr = statusCode.ToString();
 
             return string.Create(codeStr.Length + 6, (codeStr, statusCode), (chars, state) =>
@@ -52,8 +53,9 @@ namespace MG.Sonarr.Next.Extensions
         /// <returns>
         ///     The <see cref="string"/> repsonse form of the <see cref="HttpStatusCode"/> value.
         /// </returns>
-        public static string ToResponseString([ValidatedNotNull] this HttpStatusCode statusCode)
+        public static string ToResponseString(this HttpStatusCode statusCode)
         {
+            Guard.NotNull(in statusCode);
             return _codes.Value.TryGetValue((int)statusCode, out string? value)
                 ? value
                 : statusCode.ToString();
@@ -80,8 +82,11 @@ namespace MG.Sonarr.Next.Extensions
         ///     <see langword="true"/> if the formatting was successful; otherwise,
         ///     <see langword="false"/>.
         /// </returns>
-        public static bool TryFormatAsResponse([ValidatedNotNull] this HttpStatusCode statusCode, [ValidatedNotNull] Span<char> destination, out int charsWritten)
+        public static bool TryFormatAsResponse(this HttpStatusCode statusCode, Span<char> destination, out int charsWritten)
         {
+            Guard.NotNull(in statusCode);
+            Guard.IsSpan(destination);
+
             charsWritten = 0;
             bool result = false;
             if (_codes.Value.TryGetValue((int)statusCode, out string? value))
@@ -96,7 +101,7 @@ namespace MG.Sonarr.Next.Extensions
             return result;
         }
 
-        private static bool NotDefinedWriteTo(in HttpStatusCode statusCode, [ValidatedNotNull] Span<char> destination, ref int written)
+        private static bool NotDefinedWriteTo(in HttpStatusCode statusCode, Span<char> destination, ref int written)
         {
             ReadOnlySpan<char> sc = statusCode.ToString();
             bool result = sc.TryCopyTo(destination);

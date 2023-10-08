@@ -19,8 +19,10 @@ namespace MG.Sonarr.Next.Extensions
         /// <returns>
         ///     The number of characters in the <see cref="ListSortDirection"/> value's length.
         /// </returns>
-        public static int GetLength([ValidatedNotNull] this ListSortDirection direction)
+        public static int GetLength(this ListSortDirection direction)
         {
+            Guard.NotNull(in direction);
+
             return direction switch
             {
                 ListSortDirection.Ascending => ASCENDING_LENGTH,

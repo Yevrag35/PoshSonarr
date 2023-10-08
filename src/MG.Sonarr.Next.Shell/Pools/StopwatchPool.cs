@@ -13,10 +13,7 @@ namespace MG.Sonarr.Next.Shell.Pools
 
         protected override bool ResetObject(Stopwatch obj)
         {
-            if (obj is null)
-            {
-                return false;
-            }
+            ArgumentNullException.ThrowIfNull(obj);
 
             if (obj.IsRunning)
             {

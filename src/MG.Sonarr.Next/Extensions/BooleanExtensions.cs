@@ -13,8 +13,9 @@ namespace MG.Sonarr.Next.Extensions
         /// </summary>
         /// <param name="value">The bool value.</param>
         /// <returns>The number of characters in the <see cref="bool"/> value's length.</returns>
-        public static int GetLength([ValidatedNotNull] this bool value)
+        public static int GetLength(this bool value)
         {
+            Guard.NotNull(in value);
             return value ? bool.TrueString.Length : bool.FalseString.Length;
         }
         /// <summary>
@@ -36,8 +37,11 @@ namespace MG.Sonarr.Next.Extensions
         ///     <see langword="true"/> if the formatting was successful; otherwise,
         ///     <see langword="false"/>.
         /// </returns>
-        public static bool TryFormat([ValidatedNotNull] this bool value, [ValidatedNotNull] Span<char> destination, bool lowerCase, out int charsWritten)
+        public static bool TryFormat(this bool value, Span<char> destination, bool lowerCase, out int charsWritten)
         {
+            Guard.NotNull(in value);
+            Guard.IsSpan(destination);
+
             if (lowerCase)
             {
                 ReadOnlySpan<char> boolStr = value.ToString();

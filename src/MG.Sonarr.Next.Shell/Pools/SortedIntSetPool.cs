@@ -18,10 +18,7 @@ namespace MG.Sonarr.Next.Shell.Pools
         }
         protected override bool ResetObject(SortedSet<int> obj)
         {
-            if (obj is null)
-            {
-                return false;
-            }
+            ArgumentNullException.ThrowIfNull(obj);
 
             obj.Clear();
             return true;

@@ -27,8 +27,9 @@ namespace MG.Sonarr.Next.Extensions
         ///     split by <paramref name="splitBy"/>.
         /// </returns>
         [DebuggerStepThrough]
-        public static SplitEnumerator SpanSplit([ValidatedNotNull] this ReadOnlySpan<char> value, in char splitBy)
+        public static SplitEnumerator SpanSplit(this ReadOnlySpan<char> value, in char splitBy)
         {
+            Guard.IsSpan(value);
             return SpanSplit(value, new ReadOnlySpan<char>(in splitBy));
         }
         /// <summary>
@@ -50,8 +51,9 @@ namespace MG.Sonarr.Next.Extensions
         ///     split by <paramref name="splitBy"/>.
         /// </returns>
         [DebuggerStepThrough]
-        public static SplitEnumerator SpanSplit([ValidatedNotNull] this ReadOnlySpan<char> value, [ValidatedNotNull] ReadOnlySpan<char> splitBy)
+        public static SplitEnumerator SpanSplit(this ReadOnlySpan<char> value, ReadOnlySpan<char> splitBy)
         {
+            Guard.IsSpan(value, splitBy);
             return new SplitEnumerator(value, splitBy);
         }
         /// <summary>
@@ -75,8 +77,9 @@ namespace MG.Sonarr.Next.Extensions
         ///     split by <paramref name="splitBy1"/> or <paramref name="splitBy2"/>.
         /// </returns>
         [DebuggerStepThrough]
-        public static DoubleSplitEnumerator SpanSplit([ValidatedNotNull] this ReadOnlySpan<char> value, [ValidatedNotNull] ReadOnlySpan<char> splitBy1, [ValidatedNotNull] ReadOnlySpan<char> splitBy2)
+        public static DoubleSplitEnumerator SpanSplit(this ReadOnlySpan<char> value, ReadOnlySpan<char> splitBy1, ReadOnlySpan<char> splitBy2)
         {
+            Guard.IsSpan(value, splitBy1, splitBy2);
             return new DoubleSplitEnumerator(value, splitBy1, splitBy2);
         }
     }

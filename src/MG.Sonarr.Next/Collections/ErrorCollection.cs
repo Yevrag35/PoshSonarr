@@ -36,9 +36,9 @@ namespace MG.Sonarr.Next.Collections
         }
     }
 
-    public sealed class ErrorCollection : List<SonarrServerError>, IErrorCollection
+    internal sealed class ErrorCollection : List<SonarrServerError>, IErrorCollection
     {
-        public ErrorCollection()
+        internal ErrorCollection()
             : base(1)
         {
         }
@@ -56,7 +56,7 @@ namespace MG.Sonarr.Next.Collections
         /// A <see langword="static"/>, read-only empty collection of errors.
         /// </summary>
         public static readonly IErrorCollection Empty = new EmptyReadOnlyErrorCollection();
-        public static IErrorCollection FromOne(SonarrServerError? one)
+        internal static IErrorCollection FromOne(SonarrServerError? one)
         {
             return one is not null
                 ? new ErrorCollection(one)
