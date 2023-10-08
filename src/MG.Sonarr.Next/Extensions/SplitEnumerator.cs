@@ -1,4 +1,6 @@
-﻿namespace MG.Sonarr.Next.Extensions
+﻿using MG.Sonarr.Next.Attributes;
+
+namespace MG.Sonarr.Next.Extensions
 {
     [DebuggerStepThrough]
     public ref struct SplitEnumerator
@@ -8,7 +10,7 @@
 
         public SplitEntry Current { get; private set; }
 
-        public SplitEnumerator(ReadOnlySpan<char> str, ReadOnlySpan<char> splitBy)
+        public SplitEnumerator([ValidatedNotNull] ReadOnlySpan<char> str, [ValidatedNotNull] ReadOnlySpan<char> splitBy)
         {
             _str = str;
             _splitBy = splitBy;
@@ -44,19 +46,19 @@
         public ReadOnlySpan<char> Chars { get; }
         public ReadOnlySpan<char> Separator { get; }
 
-        public SplitEntry(ReadOnlySpan<char> chars, ReadOnlySpan<char> separator)
+        public SplitEntry([ValidatedNotNull] ReadOnlySpan<char> chars, [ValidatedNotNull] ReadOnlySpan<char> separator)
         {
             this.Chars = chars;
             this.Separator = separator;
         }
 
-        public void Deconstruct(out ReadOnlySpan<char> chars, out ReadOnlySpan<char> separator)
+        public void Deconstruct([ValidatedNotNull] out ReadOnlySpan<char> chars, [ValidatedNotNull] out ReadOnlySpan<char> separator)
         {
             chars = this.Chars;
             separator = this.Separator;
         }
 
-        public static implicit operator ReadOnlySpan<char>(SplitEntry entry) => entry.Chars;
+        public static implicit operator ReadOnlySpan<char>([ValidatedNotNull] SplitEntry entry) => entry.Chars;
     }
 
     [DebuggerStepThrough]
@@ -68,7 +70,7 @@
 
         public SplitEntry Current { get; private set; }
 
-        public DoubleSplitEnumerator(ReadOnlySpan<char> str, ReadOnlySpan<char> splitBy1, ReadOnlySpan<char> splitBy2)
+        public DoubleSplitEnumerator([ValidatedNotNull] ReadOnlySpan<char> str, [ValidatedNotNull] ReadOnlySpan<char> splitBy1, [ValidatedNotNull] ReadOnlySpan<char> splitBy2)
         {
             _str = str;
             _splitBy1 = splitBy1;

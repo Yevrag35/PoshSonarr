@@ -11,6 +11,7 @@ namespace MG.Sonarr.Next.Models.System
 
     public sealed class LogFileObject : SonarrObject, IComparable<LogFileObject>, IEquatable<LogFileObject>
     {
+        const int CAPACITY = 5;
         const string UPDATE_PART = "/file/update/";
 
         public int Id { get; private set; }
@@ -22,7 +23,8 @@ namespace MG.Sonarr.Next.Models.System
             set => this.SetValue(value);
         }
 
-        public LogFileObject() : base(5)
+        public LogFileObject()
+            : base(CAPACITY)
         {
         }
 

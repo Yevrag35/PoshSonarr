@@ -5,11 +5,13 @@ namespace MG.Sonarr.Next.Models.Qualities
 {
     public sealed class QualityProfileObject : SonarrObject
     {
+        const int CAPACITY = 10;
+
         public int Id { get; private set; }
         public string Name { get; private set; } = string.Empty;
 
         public QualityProfileObject()
-            : base(10)
+            : base(CAPACITY)
         {
         }
 

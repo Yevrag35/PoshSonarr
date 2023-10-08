@@ -5,13 +5,14 @@ namespace MG.Sonarr.Next.Models
 {
     public sealed class SonarrServerError : SonarrObject
     {
+        const int CAPACITY = 5;
         const string STRING_TYPE = "System.String";
 
         public string Message { get; private set; } = string.Empty;
         public string? PropertyName { get; private set; }
 
         public SonarrServerError()
-            : base(5)
+            : base(CAPACITY)
         {
         }
 

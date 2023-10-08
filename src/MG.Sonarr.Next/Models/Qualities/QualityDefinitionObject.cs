@@ -5,6 +5,8 @@ namespace MG.Sonarr.Next.Models.Qualities
 {
     public sealed class QualityDefinitionObject : SonarrObject
     {
+        const int CAPACITY = 10;
+
         public int Id { get; private set; }
         public string Title
         {
@@ -13,7 +15,7 @@ namespace MG.Sonarr.Next.Models.Qualities
         }
 
         public QualityDefinitionObject()
-            : base(10)
+            : base(CAPACITY)
         {
         }
 

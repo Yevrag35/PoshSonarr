@@ -10,6 +10,7 @@ namespace MG.Sonarr.Next.Models.Episodes
         IReleasePipeableByEpisode,
         ISeriesPipeable
     {
+        const int CAPACITY = 25;
         private DateOnly _airDate;
 
         public int AbsoluteEpisodeNumber { get; private set; }
@@ -22,7 +23,7 @@ namespace MG.Sonarr.Next.Models.Episodes
         public int SeriesId { get; private set; }
 
         public EpisodeObject()
-            : base(25)
+            : base(CAPACITY)
         {
         }
 

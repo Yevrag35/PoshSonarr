@@ -5,6 +5,8 @@ namespace MG.Sonarr.Next.Models.Calendar
 {
     public sealed class CalendarObject : SonarrObject, ISeriesPipeable, IEpisodePipeable, IEpisodeFilePipeable, ITagResolvable<CalendarObject>
     {
+        const int CAPACITY = 20;
+
         public DateTimeOffset AirDateUtc { get; private set; }
         public int Id { get; private set; }
         public int EpisodeFileId { get; private set; }
@@ -12,7 +14,7 @@ namespace MG.Sonarr.Next.Models.Calendar
         public int SeriesId { get; private set; }
 
         public CalendarObject()
-            : base(20)
+            : base(CAPACITY)
         {
         }
 

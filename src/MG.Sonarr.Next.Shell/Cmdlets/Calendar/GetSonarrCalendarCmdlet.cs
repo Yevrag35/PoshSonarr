@@ -3,6 +3,8 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Calendar;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using MG.Sonarr.Next.Extensions;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 {
@@ -87,13 +89,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 
         private static void FilterByDayOfWeek(List<CalendarObject> list, IReadOnlySet<DayOfWeek> dows)
         {
-            for (int i = list.Count - 1; i >= 0; i--)
+            int removed = list.RemoveWhere(dows, predicate: (item, state) =>
             {
-                if (!dows.Contains(list[i].AirDateUtc.DayOfWeek))
-                {
-                    list.RemoveAt(i);
-                }
-            }
+                return !state.Contains(item.AirDateUtc.DayOfWeek);
+            });
+
+            Debug.WriteLine($"Filtered {removed} items from {nameof(list)}.");
         }
         private static QueryParameterCollection GetParameters(DateTime start, DateTime end, bool unmonitored)
         {

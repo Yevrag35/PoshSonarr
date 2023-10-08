@@ -80,7 +80,7 @@ namespace MG.Sonarr.Next.Extensions
         ///     <see langword="true"/> if the formatting was successful; otherwise,
         ///     <see langword="false"/>.
         /// </returns>
-        public static bool TryFormatAsResponse([ValidatedNotNull] this HttpStatusCode statusCode, Span<char> destination, out int charsWritten)
+        public static bool TryFormatAsResponse([ValidatedNotNull] this HttpStatusCode statusCode, [ValidatedNotNull] Span<char> destination, out int charsWritten)
         {
             charsWritten = 0;
             bool result = false;
@@ -96,7 +96,7 @@ namespace MG.Sonarr.Next.Extensions
             return result;
         }
 
-        private static bool NotDefinedWriteTo(in HttpStatusCode statusCode, Span<char> destination, ref int written)
+        private static bool NotDefinedWriteTo(in HttpStatusCode statusCode, [ValidatedNotNull] Span<char> destination, ref int written)
         {
             ReadOnlySpan<char> sc = statusCode.ToString();
             bool result = sc.TryCopyTo(destination);

@@ -6,6 +6,8 @@ namespace MG.Sonarr.Next.Models.Releases
 {
     public sealed class ReleaseObject : SonarrObject, IJsonOnSerializing
     {
+        const int CAPACITY = 46;
+
         int _age;
         double _ageHours;
         double _ageMinutes;
@@ -17,7 +19,8 @@ namespace MG.Sonarr.Next.Models.Releases
         }
         public string ReleaseUrl { get; private set; } = string.Empty;
 
-        public ReleaseObject() : base(46)
+        public ReleaseObject()
+            : base(CAPACITY)
         {
         }
 

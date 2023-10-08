@@ -4,10 +4,12 @@ namespace MG.Sonarr.Next.Models.RootFolders
 {
     public sealed class RootFolderObject : SonarrObject
     {
+        const int CAPACITY = 9;
+
         public int Id { get; private set; }
 
         public RootFolderObject()
-            : base(9)
+            : base(CAPACITY)
         {
         }
 

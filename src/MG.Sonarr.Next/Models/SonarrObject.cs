@@ -33,6 +33,8 @@ namespace MG.Sonarr.Next.Models
         }
         public void SetTag(MetadataResolver resolver)
         {
+            ArgumentNullException.ThrowIfNull(resolver);
+
             this.MetadataTag = this.GetTag(resolver, this.MetadataTag);
             PSPropertyInfo? prop = this.Properties[Constants.META_PROPERTY_NAME];
             if (prop is not null)

@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using System.Collections;
 
 namespace MG.Sonarr.Next.Shell.Components
@@ -98,7 +99,7 @@ namespace MG.Sonarr.Next.Shell.Components
         {
             return _pattern.AsSpan(start, length);
         }
-        private static bool ContainsWildcardCharacters(ReadOnlySpan<char> pattern)
+        private static bool ContainsWildcardCharacters([ValidatedNotNull] ReadOnlySpan<char> pattern)
         {
             return pattern.IndexOfAny(stackalloc char[] { STAR, QUESTION }) >= 0;
         }
@@ -179,14 +180,14 @@ namespace MG.Sonarr.Next.Shell.Components
         ///     <see langword="true"/> if <paramref name="input"/> matches the <see cref="Wildcard"/> pattern;
         ///     otherwise, <see langword="false"/>.
         /// </returns>
-        public bool IsMatch(ReadOnlySpan<char> input)
+        public bool IsMatch([ValidatedNotNull] ReadOnlySpan<char> input)
         {
             return _containsWildcards
                 ? IsMatch(_pattern.AsSpan(), input)
                 : _pattern.AsSpan().Equals(input, StringComparison.InvariantCultureIgnoreCase);
         }
 
-        private static bool IsMatch(ReadOnlySpan<char> pattern, ReadOnlySpan<char> input)
+        private static bool IsMatch([ValidatedNotNull] ReadOnlySpan<char> pattern, [ValidatedNotNull] ReadOnlySpan<char> input)
         {
             int starIndex = -1;
             int iIndex = -1;
@@ -228,7 +229,7 @@ namespace MG.Sonarr.Next.Shell.Components
         }
 
         #region FORMATTABLE
-        public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+        public bool TryFormat([ValidatedNotNull] Span<char> destination, out int charsWritten, [ValidatedNotNull] ReadOnlySpan<char> format, IFormatProvider? provider)
         {
             charsWritten = 0;
             return this.AsSpan().TryCopyToSlice(destination, ref charsWritten);

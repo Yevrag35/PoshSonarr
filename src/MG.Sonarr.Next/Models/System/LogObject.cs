@@ -5,10 +5,13 @@ namespace MG.Sonarr.Next.Models.System
 {
     public sealed class LogObject : SonarrObject, IComparable<LogObject>
     {
+        const int CAPACITY = 5;
+
         public string Level { get; private set; } = string.Empty;
         public DateTimeOffset Time { get; private set; }
 
-        public LogObject() : base(5)
+        public LogObject()
+            : base(CAPACITY)
         {
         }
 

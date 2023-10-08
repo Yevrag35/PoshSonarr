@@ -36,7 +36,7 @@ namespace MG.Sonarr.Next.Extensions
         ///     <see langword="true"/> if the formatting was successful; otherwise,
         ///     <see langword="false"/>.
         /// </returns>
-        public static bool TryFormat([ValidatedNotNull] this bool value, Span<char> destination, bool lowerCase, out int charsWritten)
+        public static bool TryFormat([ValidatedNotNull] this bool value, [ValidatedNotNull] Span<char> destination, bool lowerCase, out int charsWritten)
         {
             if (lowerCase)
             {

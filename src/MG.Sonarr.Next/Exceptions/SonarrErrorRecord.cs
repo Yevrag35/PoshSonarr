@@ -58,11 +58,11 @@ namespace MG.Sonarr.Next.Exceptions
             this.CategoryInfo.TargetType = targetObj?.GetType().GetTypeName();
         }
         public SonarrErrorRecord(SonarrHttpException response)
-            : this(exception: response, response: response.Response, (object?)null)
+            : this(exception: response, response: response?.Response, (object?)null)
         {
         }
         public SonarrErrorRecord(SonarrHttpException response, object? targetObj)
-            : this(exception: response, response: response.Response, targetObj)
+            : this(exception: response, response: response?.Response, targetObj)
         {
         }
 
@@ -73,7 +73,7 @@ namespace MG.Sonarr.Next.Exceptions
         }
 
         public SonarrErrorRecord(ErrorRecord wraps)
-            : base(wraps, wraps.Exception)
+            : base(wraps, wraps?.Exception)
         {
             _headers = EmptyNameDictionary.Default;
         }

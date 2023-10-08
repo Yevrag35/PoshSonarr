@@ -1,4 +1,6 @@
-﻿namespace MG.Sonarr.Next.Shell.Components
+﻿using MG.Sonarr.Next.Attributes;
+
+namespace MG.Sonarr.Next.Shell.Components
 {
     public readonly struct SeasonEpisodeId
     {
@@ -27,7 +29,7 @@
             _isNotEmpty = season > 0 || episode > 0;
         }
 
-        public static bool TryParse(ReadOnlySpan<char> value, out SeasonEpisodeId result)
+        public static bool TryParse([ValidatedNotNull] ReadOnlySpan<char> value, out SeasonEpisodeId result)
         {
             result = default;
             if (value.IsWhiteSpace())

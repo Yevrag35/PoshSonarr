@@ -8,12 +8,14 @@ namespace MG.Sonarr.Next.Models.Episodes
         IHasId,
         ISeriesPipeable
     {
+        const int CAPACITY = 14;
+
         public int Id { get; private set; }
         int IEpisodeFilePipeable.EpisodeFileId => this.Id;
         public int SeriesId { get; private set; }
 
         public EpisodeFileObject()
-            : base(14)
+            : base(CAPACITY)
         {
         }
 

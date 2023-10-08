@@ -5,11 +5,13 @@ namespace MG.Sonarr.Next.Models.System
 {
     public sealed class BackupObject : SonarrObject
     {
+        const int CAPACITY = 6;
+
         public Uri BackupUri { get; private set; } = null!;
         public string Name { get; private set; } = string.Empty;
 
         public BackupObject()
-            : base(6)
+            : base(CAPACITY)
         {
         }
 

@@ -5,11 +5,13 @@ namespace MG.Sonarr.Next.Models.Tags
 {
     public sealed class TagObject : SonarrObject
     {
+        const int CAPACITY = 3;
+
         public int Id { get; private set; }
         public string Label { get; private set; } = string.Empty;
 
         public TagObject()
-            : base(3)
+            : base(CAPACITY)
         {
         }
 

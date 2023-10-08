@@ -14,6 +14,7 @@ namespace MG.Sonarr.Next.Models
             get => _tags ??= new();
             set
             {
+                ArgumentNullException.ThrowIfNull(value, nameof(this.Tags));
                 _tags = value;
                 _originalTags = new int[value.Count];
                 value.CopyTo(_originalTags);

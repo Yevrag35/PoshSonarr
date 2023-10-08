@@ -20,7 +20,7 @@ namespace MG.Sonarr.Next.Extensions
         ///     successful.
         /// </param>
         [DebuggerStepThrough]
-        public static void CopyToSlice(this string? value, Span<char> span, scoped ref int position)
+        public static void CopyToSlice([ValidatedNotNull] this string? value, [ValidatedNotNull] Span<char> span, scoped ref int position)
         {
             CopyToSlice(spanValue: value.AsSpan(), span, ref position);
         }
@@ -35,13 +35,9 @@ namespace MG.Sonarr.Next.Extensions
         ///     The ref <see cref="int"/> to add the number of the characters to if copying was
         ///     successful.
         /// </param>
-        public static void CopyToSlice([ValidatedNotNull] this ReadOnlySpan<char> spanValue, Span<char> span, scoped ref int position)
+        public static void CopyToSlice([ValidatedNotNull] this ReadOnlySpan<char> spanValue, [ValidatedNotNull] Span<char> span, scoped ref int position)
         {
-            if (spanValue.IsEmpty)
-            {
-                return;
-            }
-            else if (spanValue.TryCopyTo(span.Slice(position)))
+            if (!spanValue.IsEmpty && spanValue.TryCopyTo(span.Slice(position)))
             {
                 position += spanValue.Length;
             }
@@ -58,7 +54,7 @@ namespace MG.Sonarr.Next.Extensions
         ///     successful.
         /// </param>
         [DebuggerStepThrough]
-        public static void CopyToSlice([ValidatedNotNull] this Span<char> writtableSpan, Span<char> span, scoped ref int position)
+        public static void CopyToSlice([ValidatedNotNull] this Span<char> writtableSpan, [ValidatedNotNull] Span<char> span, scoped ref int position)
         {
             CopyToSlice(spanValue: writtableSpan, span, ref position);
         }
@@ -79,17 +75,17 @@ namespace MG.Sonarr.Next.Extensions
         ///     <see langword="true"/> if the copying operation was successful; otherwise
         ///     <see langword="false"/>.
         /// </returns>
-        public static bool TryCopyToSlice([ValidatedNotNull] this ReadOnlySpan<char> spanValue, Span<char> span, scoped ref int position)
+        public static bool TryCopyToSlice([ValidatedNotNull] this ReadOnlySpan<char> spanValue, [ValidatedNotNull] Span<char> span, scoped ref int position)
         {
+            bool result = false;
+
             if (!spanValue.IsEmpty && spanValue.TryCopyTo(span.Slice(position)))
             {
                 position += spanValue.Length;
-                return true;
+                result = true;
             }
-            else
-            {
-                return false;
-            }
+
+            return result;
         }
         /// <summary>
         /// Attemps to copy the contents of this <see cref="Span{T}"/> into a destination
@@ -108,9 +104,25 @@ namespace MG.Sonarr.Next.Extensions
         ///     <see langword="false"/>.
         /// </returns>
         [DebuggerStepThrough]
-        public static bool TryCopyToSlice(this Span<char> writtableSpan, Span<char> span, scoped ref int position)
+        public static bool TryCopyToSlice([ValidatedNotNull] this Span<char> writtableSpan, [ValidatedNotNull] Span<char> span, scoped ref int position)
         {
             return TryCopyToSlice(spanValue: writtableSpan, span, ref position);
+        }
+        /// <summary>
+        /// Determines whether the beginning of the <paramref name="span"/> matches the specified <paramref name="value"/> when compared ignoring case.
+        /// </summary>
+        /// <param name="span">The source span.</param>
+        /// <param name="value">The character to compare to the beginning of the source span.</param>
+        /// <returns>
+        ///     <see langword="true"/> if <paramref name="value"/> matches the beginning of 
+        ///     <paramref name="span"/>; otherwise, <see langword="false"/>.
+        /// </returns>
+        [DebuggerStepThrough]
+        public static bool StartsWith([ValidatedNotNull] this ReadOnlySpan<char> span, in char value)
+        {
+            return span.StartsWith(
+                new ReadOnlySpan<char>(in value),
+                StringComparison.InvariantCultureIgnoreCase);
         }
         /// <summary>
         /// Determines whether the beginning of the <paramref name="span"/> matches the specified <paramref name="value"/> when compared using the specified 
@@ -119,18 +131,19 @@ namespace MG.Sonarr.Next.Extensions
         /// <param name="span">The source span.</param>
         /// <param name="value">The character to compare to the beginning of the source span.</param>
         /// <param name="comparisonType">
-        ///     One of the enumeration values that determines how the <paramref name="span"/> and 
-        ///     <paramref name="value"/> are compared. Default value is
-        ///     <see cref="StringComparison.InvariantCultureIgnoreCase"/>.
+        ///     One of the enumeration values that determines how the 
+        ///     <paramref name="span"/> and <paramref name="value"/> are compared.
         /// </param>
         /// <returns>
         ///     <see langword="true"/> if <paramref name="value"/> matches the beginning of 
         ///     <paramref name="span"/>; otherwise, <see langword="false"/>.
         /// </returns>
         [DebuggerStepThrough]
-        public static bool StartsWith([ValidatedNotNull] this ReadOnlySpan<char> span, in char value, StringComparison comparisonType = StringComparison.InvariantCultureIgnoreCase)
+        public static bool StartsWith([ValidatedNotNull] this ReadOnlySpan<char> span, in char value, [ValidatedNotNull] StringComparison comparisonType)
         {
-            return span.StartsWith(new ReadOnlySpan<char>(in value), comparisonType);
+            return span.StartsWith(
+                new ReadOnlySpan<char>(in value),
+                comparisonType);
         }
         /// <summary>
         /// Determines whether the specified sequence appears at the start of the span.
