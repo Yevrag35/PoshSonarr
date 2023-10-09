@@ -1,9 +1,12 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.Qualities
 {
-    public sealed class QualityProfileObject : SonarrObject, IComparable<QualityProfileObject>
+    public sealed class QualityProfileObject : SonarrObject,
+        IComparable<QualityProfileObject>,
+        ISerializableNames<QualityProfileObject>
     {
         const int CAPACITY = 10;
 

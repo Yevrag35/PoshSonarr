@@ -1,9 +1,12 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.Profiles
 {
-    public sealed class LanguageProfileObject : SonarrObject, IComparable<LanguageProfileObject>
+    public sealed class LanguageProfileObject : SonarrObject,
+        IComparable<LanguageProfileObject>,
+        ISerializableNames<LanguageProfileObject>
     {
         const int CAPACITY = 6;
 

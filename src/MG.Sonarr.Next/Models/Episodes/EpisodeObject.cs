@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
 
@@ -9,7 +10,8 @@ namespace MG.Sonarr.Next.Models.Episodes
         IEpisodeFilePipeable,
         IJsonOnSerializing,
         IReleasePipeableByEpisode,
-        ISeriesPipeable
+        ISeriesPipeable,
+        ISerializableNames<EpisodeObject>
     {
         const int CAPACITY = 25;
         private DateOnly _airDate;

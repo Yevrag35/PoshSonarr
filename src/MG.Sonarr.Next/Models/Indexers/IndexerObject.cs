@@ -1,10 +1,14 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Indexers
 {
-    public sealed class IndexerObject : TagUpdateObject, IComparable<IndexerObject>, IJsonOnSerializing
+    public sealed class IndexerObject : TagUpdateObject,
+        IComparable<IndexerObject>,
+        IJsonOnSerializing,
+        ISerializableNames<IndexerObject>
     {
         public bool EnableRss
         {

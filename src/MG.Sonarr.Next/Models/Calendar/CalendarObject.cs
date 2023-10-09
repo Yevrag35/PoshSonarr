@@ -1,9 +1,16 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.Calendar
 {
-    public sealed class CalendarObject : SonarrObject, IComparable<CalendarObject>, ISeriesPipeable, IEpisodePipeable, IEpisodeFilePipeable, ITagResolvable<CalendarObject>
+    public sealed class CalendarObject : SonarrObject,
+        IComparable<CalendarObject>,
+        IEpisodeFilePipeable,
+        IEpisodePipeable,
+        ISeriesPipeable,
+        ISerializableNames<CalendarObject>,
+        ITagResolvable<CalendarObject>
     {
         const int CAPACITY = 20;
 

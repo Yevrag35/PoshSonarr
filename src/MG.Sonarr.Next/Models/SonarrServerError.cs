@@ -1,9 +1,11 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models
 {
-    public sealed class SonarrServerError : SonarrObject
+    public sealed class SonarrServerError : SonarrObject,
+        ISerializableNames<SonarrServerError>
     {
         const int CAPACITY = 5;
         const string STRING_TYPE = "System.String";

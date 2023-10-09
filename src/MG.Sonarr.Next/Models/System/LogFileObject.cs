@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.System
@@ -9,7 +10,10 @@ namespace MG.Sonarr.Next.Models.System
         Update,
     }
 
-    public sealed class LogFileObject : SonarrObject, IComparable<LogFileObject>, IEquatable<LogFileObject>
+    public sealed class LogFileObject : SonarrObject,
+        IComparable<LogFileObject>,
+        IEquatable<LogFileObject>,
+        ISerializableNames<LogFileObject>
     {
         const int CAPACITY = 5;
         const string UPDATE_PART = "/file/update/";

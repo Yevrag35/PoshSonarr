@@ -10,10 +10,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     [Cmdlet(VerbsCommon.Search, "SonarrSeries", DefaultParameterSetName = "BySeriesName")]
     public sealed class SearchSonarrSeriesCmdlet : SonarrApiCmdletBase
     {
-        const string SEARCH_STR_QUERY = Constants.SERIES + "/lookup?term={0}";
-        const string SEARCH_ID_QUERY = Constants.SERIES + "/lookup?term=tvdb:{0}";
+        static readonly string SEARCH_STR_QUERY = Constants.SERIES + "/lookup?term={0}";
+        static readonly string SEARCH_ID_QUERY = Constants.SERIES + "/lookup?term=tvdb:{0}";
         Wildcard _wildcardStr;
-        MetadataTag Tag { get; set; } = null!;
+        MetadataTag _tag = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesName")]
@@ -32,7 +32,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.SERIES_ADD];
+            _tag = provider.GetRequiredService<MetadataResolver>()[Meta.SERIES_ADD];
         }
         protected override void Process(IServiceProvider provider)
         {

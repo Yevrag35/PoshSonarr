@@ -1,10 +1,14 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Releases
 {
-    public sealed class ReleaseObject : SonarrObject, IComparable<ReleaseObject>, IJsonOnSerializing
+    public sealed class ReleaseObject : SonarrObject,
+        IComparable<ReleaseObject>,
+        IJsonOnSerializing,
+        ISerializableNames<ReleaseObject>
     {
         const int CAPACITY = 46;
 

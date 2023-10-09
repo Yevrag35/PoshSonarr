@@ -1,9 +1,12 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.System
 {
-    public sealed class BackupObject : SonarrObject, IComparable<BackupObject>
+    public sealed class BackupObject : SonarrObject,
+        IComparable<BackupObject>,
+        ISerializableNames<BackupObject>
     {
         const int CAPACITY = 6;
 
@@ -39,6 +42,20 @@ namespace MG.Sonarr.Next.Models.System
             {
                 this.BackupUri = backupUri;
             }
+        }
+
+        const int DICT_CAPACITY = 2;
+        public static IReadOnlyDictionary<string, string> GetDeserializedNames()
+        {
+            return new Dictionary<string, string>(DICT_CAPACITY, StringComparer.InvariantCultureIgnoreCase)
+            {
+                { "Path", "BackupUri" },
+            };
+        }
+        public static IReadOnlyDictionary<string, string> GetSerializedNames()
+        {
+            return GetDeserializedNames()
+                .ToDictionary(x => x.Value, x => x.Key, StringComparer.InvariantCultureIgnoreCase);
         }
     }
 }

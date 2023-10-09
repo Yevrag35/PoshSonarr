@@ -1,8 +1,11 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Json;
+using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.RootFolders
 {
-    public sealed class RootFolderObject : SonarrObject, IComparable<RootFolderObject>
+    public sealed class RootFolderObject : SonarrObject,
+        IComparable<RootFolderObject>,
+        ISerializableNames<RootFolderObject>
     {
         const int CAPACITY = 9;
 

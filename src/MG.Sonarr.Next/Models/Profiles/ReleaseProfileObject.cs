@@ -1,9 +1,12 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.Profiles
 {
-    public sealed class ReleaseProfileObject : TagUpdateObject, IComparable<ReleaseProfileObject>
+    public sealed class ReleaseProfileObject : TagUpdateObject,
+        IComparable<ReleaseProfileObject>,
+        ISerializableNames<ReleaseProfileObject>
     {
         public string Name
         {

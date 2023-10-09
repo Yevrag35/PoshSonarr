@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Shell.Models.Series;
 using System.Management.Automation;
@@ -6,7 +7,10 @@ using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Series
 {
-    public sealed class AddSeriesObject : SeriesObject, IComparable<AddSeriesObject>, IJsonOnSerializing
+    public sealed class AddSeriesObject : SeriesObject,
+        IComparable<AddSeriesObject>,
+        IJsonOnSerializing,
+        ISerializableNames<AddSeriesObject>
     {
         private string? _path;
         private string? _pathProp;

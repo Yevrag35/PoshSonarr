@@ -1,9 +1,12 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.System
 {
-    public sealed class LogObject : SonarrObject, IComparable<LogObject>
+    public sealed class LogObject : SonarrObject,
+        IComparable<LogObject>,
+        ISerializableNames<LogObject>
     {
         const int CAPACITY = 5;
 

@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Management.Automation;
 using System.Text.Json.Serialization;
@@ -10,10 +11,11 @@ namespace MG.Sonarr.Next.Models.Series
         IEpisodeBySeriesPipeable,
         IEpisodeFileBySeriesPipeable,
         IHasId,
+        IJsonOnSerializing,
         ILanguageProfilePipeable,
         IQualityProfilePipeable,
         IReleasePipeableBySeries,
-        IJsonOnSerializing
+        ISerializableNames<SeriesObject>
     {
         private const string FIRST_AIRED = "FirstAired";
         private DateOnly _firstAired;
@@ -89,6 +91,26 @@ namespace MG.Sonarr.Next.Models.Series
         {
             this.Properties.Remove(FIRST_AIRED);
             base.Reset();
+        }
+
+        const int DICT_CAPACITY = 2;
+        protected private static IReadOnlyDictionary<string, string> GetSerializationNames()
+        {
+            return new Dictionary<string, string>(DICT_CAPACITY, StringComparer.InvariantCultureIgnoreCase)
+            {
+                { "ImdbId", "IMDbId" },
+                { "SeasonFolder", "UseSeasonFolders" },
+            };
+        }
+
+        public static IReadOnlyDictionary<string, string> GetDeserializedNames()
+        {
+            return GetSerializationNames();
+        }
+        public static IReadOnlyDictionary<string, string> GetSerializedNames()
+        {
+            return GetDeserializedNames()
+                .ToDictionary(x => x.Value, x => x.Key, StringComparer.InvariantCultureIgnoreCase);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.Episodes
@@ -7,7 +8,8 @@ namespace MG.Sonarr.Next.Models.Episodes
         IComparable<EpisodeFileObject>,
         IEpisodeFilePipeable,
         IHasId,
-        ISeriesPipeable
+        ISeriesPipeable,
+        ISerializableNames<EpisodeFileObject>
     {
         const int CAPACITY = 14;
 

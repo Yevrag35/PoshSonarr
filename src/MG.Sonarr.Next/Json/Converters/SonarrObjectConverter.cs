@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Json.Converters
 {
-    public class SonarrObjectConverter<T> : JsonConverter<T> where T : SonarrObject, new()
+    public class SonarrObjectConverter<T> : JsonConverter<T> where T : SonarrObject, ISerializableNames<T>, new()
     {
         readonly ObjectConverter _converter;
         readonly IReadOnlyDictionary<string, string> _deserializedNames;
@@ -13,17 +13,8 @@ namespace MG.Sonarr.Next.Json.Converters
         public SonarrObjectConverter(ObjectConverter converter)
         {
             _converter = converter;
-            _deserializedNames = this.GetDeserializedNames();
-            _serializedNames = this.GetSerializedNames();
-        }
-
-        protected virtual IReadOnlyDictionary<string, string> GetDeserializedNames()
-        {
-            return EmptyNameDictionary.Default;
-        }
-        protected virtual IReadOnlyDictionary<string, string> GetSerializedNames()
-        {
-            return EmptyNameDictionary.Default;
+            _deserializedNames = T.GetDeserializedNames();
+            _serializedNames = T.GetSerializedNames();
         }
 
         public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

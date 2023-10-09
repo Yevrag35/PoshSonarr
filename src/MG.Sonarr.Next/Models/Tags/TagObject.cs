@@ -1,9 +1,12 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.Tags
 {
-    public sealed class TagObject : SonarrObject, IComparable<TagObject>
+    public sealed class TagObject : SonarrObject,
+        IComparable<TagObject>,
+        ISerializableNames<TagObject>
     {
         const int CAPACITY = 3;
 
