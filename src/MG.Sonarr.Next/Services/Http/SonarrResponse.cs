@@ -14,6 +14,11 @@ namespace MG.Sonarr.Next.Services.Http
         HttpStatusCode StatusCode { get; }
         string RequestUrl { get; }
     }
+    public interface ISonarrTimedResponse : ISonarrResponse
+    {
+        TimeSpan Elapsed { get; }
+        IServiceProvider Services { get; }
+    }
 
     public readonly struct SonarrResponse : ISonarrResponse
     {

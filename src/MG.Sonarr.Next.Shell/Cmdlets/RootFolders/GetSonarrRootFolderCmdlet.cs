@@ -43,9 +43,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
         }
 
         bool _disposed;
-        protected override void Dispose(bool disposing)
+        protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
         {
-            base.Dispose(disposing);
+            base.Dispose(disposing, factory);
             if (disposing && !_disposed)
             {
                 _ids = null!;

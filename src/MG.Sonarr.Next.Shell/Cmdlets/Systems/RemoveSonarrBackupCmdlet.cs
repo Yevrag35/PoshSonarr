@@ -1,28 +1,33 @@
 ﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
+namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
 {
-    [Cmdlet(VerbsCommon.Remove, "SonarrEpisodeFile", SupportsShouldProcess = true)]
-    [Alias("Delete-SonarrEpisodeFile")]
-    public sealed class RemoveSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
+    [Cmdlet(VerbsCommon.Remove, "SonarrBackup", SupportsShouldProcess = true,
+        DefaultParameterSetName = "ByExplicitId")]
+    [Alias("Delete-SonarrBackup")]
+    public sealed class RemoveSonarrBackupCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
+        bool _yesToAll;
+        bool _noToAll;
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByEpisodeId")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByExplicitId")]
         public int[] Id { get; set; } = Array.Empty<int>();
 
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput")]
-        public IEpisodeFilePipeable[] InputObject { get; set; } = Array.Empty<IEpisodeFilePipeable>();
+        [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput", ValueFromPipeline = true)]
+        public BackupObject[] InputObject { get; set; } = Array.Empty<BackupObject>();
 
         [Parameter]
         public SwitchParameter Force { get; set; }
 
         protected override int Capacity => 1;
+
         protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
         {
-            return resolver[Meta.EPISODE_FILE];
+            return resolver[Meta.BACKUP];
         }
         protected override void OnCreatingScope(IServiceProvider provider)
         {
@@ -31,45 +36,36 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             this.Returnables[0] = _ids;
         }
 
-        protected override void Begin(IServiceProvider provider)
-        {
-            _ids.UnionWith(this.Id);
-        }
         protected override void Process(IServiceProvider provider)
         {
+            _ids.UnionWith(this.Id);
             if (this.HasParameter(x => x.InputObject))
             {
-                _ids.UnionWith(
-                    this.InputObject.Select(x => x.EpisodeFileId)
-                                    .Where(x => x > 0));
+                _ids.UnionWith(this.InputObject.Where(x => x.Id > 0).Select(x => x.Id));
             }
         }
+
         protected override void End(IServiceProvider provider)
         {
-            bool yesToAll = false;
-            bool noToAll = false;
-
             bool force = this.Force.ToBool();
-
             foreach (int id in _ids)
             {
                 string url = this.Tag.GetUrlForId(id);
-                if (this.ShouldProcess(url, "Deleting Episode File")
+                if (this.ShouldProcess(url, "Deleting Backup")
                     &&
                     (force
                     ||
-                    this.ShouldContinue(
-                        query: "Are you sure you want to delete the episode file?",
-                        caption: $"Delete Episode file: {id}",
-                        yesToAll: ref yesToAll,
-                        noToAll: ref noToAll)))
+                    this.ShouldContinue(query: "Are you sure you want to delete the backup?",
+                        caption: $"Delete Backup: {id}",
+                        yesToAll: ref _yesToAll,
+                        noToAll: ref _noToAll)))
                 {
-                    this.DeleteEpisodeFile(url);
+                    this.DeleteBackup(url);
                 }
             }
         }
 
-        private void DeleteEpisodeFile(string url)
+        private void DeleteBackup(string url)
         {
             var response = this.SendDeleteRequest(url);
             if (response.IsError)

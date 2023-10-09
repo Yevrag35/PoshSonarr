@@ -26,6 +26,8 @@ using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Pools;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json.Serialization.Metadata;
+using MG.Sonarr.Next.Services.Jobs;
+using MG.Sonarr.Next.Models.Commands;
 
 namespace MG.Sonarr.Next.Shell.Context
 {
@@ -37,6 +39,8 @@ namespace MG.Sonarr.Next.Shell.Context
     {
         internal static IServiceScope CreateScope(this SonarrCmdletBase cmdlet)
         {
+
+
             return SonarrContext.GetProvider().CreateScope();
         }
         internal static IServiceScope CreateScope(this ConnectSonarrInstanceCmdlet cmdlet)
@@ -96,7 +100,8 @@ namespace MG.Sonarr.Next.Shell.Context
             services
                 .AddMemoryCache()
                 .AddSingleton<Queue<IApiCmdlet>>()
-                .AddSonarrClient(settings);
+                .AddSonarrClient(settings)
+                .AddCommandTracker();
 
             AddObjectPools(services);
             var resolver = MetadataHandler.AddMetadata(services);
@@ -141,6 +146,7 @@ namespace MG.Sonarr.Next.Shell.Context
             {
                 var doSpanConverter = new DateOnlyConverter();
                 var timeConverter = new TimeOnlyConverter();
+                var timeSpanConverter = new TimeSpanConverter();
 
                 ObjectConverter objCon = new(
                         ignoreProps: new string[]
@@ -163,15 +169,18 @@ namespace MG.Sonarr.Next.Shell.Context
                             new("AirDate", doSpanConverter),
                             new("FirstAired", doSpanConverter),
                             new("AirTime", timeConverter),
+                            new("Duration", timeSpanConverter),
                         },
                         resolver
                     );
 
                 options.Converters.AddMany(
                     objCon,
+                    new PostCommandWriter(),
                     new SonarrObjectConverter<AddSeriesObject>(objCon),
                     new SonarrObjectConverter<BackupObject>(objCon),
                     new SonarrObjectConverter<CalendarObject>(objCon),
+                    new SonarrObjectConverter<CommandObject>(objCon),
                     new SonarrObjectConverter<DelayProfileObject>(objCon),
                     new SonarrObjectConverter<EpisodeObject>(objCon),
                     new SonarrObjectConverter<EpisodeFileObject>(objCon),

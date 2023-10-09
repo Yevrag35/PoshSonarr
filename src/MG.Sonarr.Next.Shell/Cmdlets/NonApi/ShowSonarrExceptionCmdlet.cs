@@ -12,7 +12,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.NonApi
     public sealed class ShowSonarrExceptionCmdlet : SonarrCmdletBase
     {
         const string ERROR = "error";
-        bool ProcessedPipeline { get; set; }
+        bool _processedPipeline;
 
         [Parameter(Position = 0, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true)]
         [Alias("Exception")]
@@ -22,13 +22,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.NonApi
         {
             if (this.InputObject is not null)
             {
-                this.ProcessedPipeline = true;
+                this._processedPipeline = true;
                 this.WriteDetails(this.InputObject);
             }
         }
         protected override void End(IServiceProvider provider)
         {
-            if (!this.ProcessedPipeline)
+            if (!_processedPipeline)
             {
                 if (TryGetLastError(this.SessionState.PSVariable, out SonarrHttpException? exception))
                 {

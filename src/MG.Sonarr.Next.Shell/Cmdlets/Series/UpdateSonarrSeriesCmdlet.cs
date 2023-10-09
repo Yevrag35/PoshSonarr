@@ -1,4 +1,6 @@
-﻿using MG.Sonarr.Next.Models.Series;
+﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.Series;
+using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
@@ -8,7 +10,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     {
         List<SeriesObject> _list = null!;
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
         public SeriesObject[] InputObject { get; set; } = Array.Empty<SeriesObject>();
 
@@ -32,6 +33,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         }
         protected override void End(IServiceProvider provider)
         {
+            MetadataTag tag = provider.GetMetadataTag(Meta.SERIES);
+
             if (_list is null || _list.Count <= 0)
             {
                 this.WriteWarning("No series were passed via the pipeline. Make sure to pass the correct object type.");
@@ -42,7 +45,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             {
                 this.SerializeIfDebug(item, options: this.Options?.GetForSerializing());
 
-                string path = $"/series/{item.Id}";
+                string path = tag.GetUrlForId(item.Id);
                 if (this.ShouldProcess(path, "Update Series"))
                 {
                     var response = this.SendPutRequest(path, item);

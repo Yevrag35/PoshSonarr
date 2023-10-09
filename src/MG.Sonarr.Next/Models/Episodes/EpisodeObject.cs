@@ -8,6 +8,7 @@ namespace MG.Sonarr.Next.Models.Episodes
     public sealed class EpisodeObject : SonarrObject,
         IComparable<EpisodeObject>,
         IEpisodeFilePipeable,
+        IHasId,
         IJsonOnSerializing,
         IReleasePipeableByEpisode,
         ISeriesPipeable,

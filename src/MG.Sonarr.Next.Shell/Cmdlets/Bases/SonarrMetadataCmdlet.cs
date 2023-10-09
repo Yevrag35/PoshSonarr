@@ -7,6 +7,7 @@ using System.Buffers;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
 {
+    [DebuggerStepThrough]
     public abstract class SonarrMetadataCmdlet : SonarrApiCmdletBase
     {
         object[]? _objs;
@@ -64,7 +65,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         }
 
         bool _disposed;
-        protected override void Dispose(bool disposing)
+        protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
         {
             if (disposing && !_disposed && _objs is not null)
             {
@@ -78,7 +79,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
                 _disposed = true;
             }
 
-            base.Dispose(disposing);
+            base.Dispose(disposing, factory);
         }
     }
 }

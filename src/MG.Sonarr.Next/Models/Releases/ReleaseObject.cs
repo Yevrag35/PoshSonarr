@@ -11,8 +11,10 @@ namespace MG.Sonarr.Next.Models.Releases
         ISerializableNames<ReleaseObject>
     {
         const int CAPACITY = 46;
+        
 
         int _age;
+        Weight _weight;
         double _ageHours;
         double _ageMinutes;
 
@@ -22,15 +24,23 @@ namespace MG.Sonarr.Next.Models.Releases
             get => this.GetValue<int>();
         }
         public string ReleaseUrl { get; private set; } = string.Empty;
+        public int TotalWeight => _weight.TotalWeight;
 
         public ReleaseObject()
             : base(CAPACITY)
         {
+            
         }
 
         public int CompareTo(ReleaseObject? other)
         {
-            int compare = Comparer<TimeSpan?>.Default.Compare(this.Age, other?.Age);
+            int compare = Comparer<int?>.Default.Compare(this.TotalWeight, other?.TotalWeight);
+            if (compare != 0)
+            {
+                return compare;
+            }
+
+            compare = Comparer<TimeSpan?>.Default.Compare(this.Age, other?.Age);
             if (compare == 0)
             {
                 compare = Comparer<int?>.Default.Compare(this.IndexerId, other?.IndexerId);
@@ -70,12 +80,16 @@ namespace MG.Sonarr.Next.Models.Releases
                 this.ReleaseUrl = releaseUrl;
             }
 
+            _weight = new(this);
+            this.AddProperty(nameof(this.TotalWeight), this.TotalWeight);
+
             this.Age = TimeSpan.FromMinutes(_ageMinutes);
             this.Reset();
         }
 
         public void OnSerializing()
         {
+            _weight.SetRelease(this);
             this.UpdateProperty(nameof(this.Age), _age);
             this.AddProperty("AgeHours", _ageHours);
             this.AddProperty("AgeMinutes", _ageMinutes);

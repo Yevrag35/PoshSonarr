@@ -93,7 +93,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
         }
 
         bool _disposed;
-        protected override void Dispose(bool disposing)
+        protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
         {
             if (disposing && !_disposed)
             {
@@ -102,7 +102,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
                 _disposed = true;
             }
 
-            base.Dispose(disposing);
+            base.Dispose(disposing, factory);
         }
     }
 }

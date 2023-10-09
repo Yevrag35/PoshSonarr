@@ -28,6 +28,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         IServiceScope? _scope;
         bool _isStopped;
 
+        protected SonarrCmdletBase()
+            : base()
+        {
+        }
+
         /// <summary>
         /// The current Debug preference either set from the "-Debug" <see cref="SwitchParameter"/>
         /// or read from the global "$DebugPreference" variable.
@@ -45,7 +50,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// </remarks>
         protected ErrorRecord? Error
         {
+            [DebuggerStepThrough]
             get => _error;
+
+            [DebuggerStepThrough]
             set
             {
                 if (value is not null)
@@ -79,6 +87,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// </remarks>
         protected ActionPreference VerbosePreference { get; private set; }
 
+        [DebuggerStepThrough]
         protected sealed override void BeginProcessing()
         {
             _scope = this.CreateScope();
@@ -142,11 +151,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// </summary>
         /// <param name="provider">The scoped service provider for use by derived cmdlets.</param>
         /// <exception cref="Exception"/>
+        [DebuggerStepThrough]
         protected virtual void Begin(IServiceProvider provider)
         {
             return;
         }
 
+        [DebuggerStepThrough]
         protected sealed override void ProcessRecord()
         {
             if (_isStopped)
@@ -180,11 +191,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// </summary>
         /// <param name="provider">The scoped service provider for use by derived cmdlets.</param>
         /// <exception cref="Exception"/>
+        [DebuggerStepThrough]
         protected virtual void Process(IServiceProvider provider)
         {
             return;
         }
 
+        [DebuggerStepThrough]
         protected sealed override void EndProcessing()
         {
             Queue<IApiCmdlet>? queue = null;
@@ -227,11 +240,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// </summary>
         /// <param name="provider">The scoped service provider for use by derived cmdlets.</param>
         /// <exception cref="Exception"/>
+        [DebuggerStepThrough]
         protected virtual void End(IServiceProvider provider)
         {
             return;
         }
 
+        [DebuggerStepThrough]
         protected sealed override void StopProcessing()
         {
             _scope ??= this.CreateScope();
@@ -255,6 +270,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// </summary>
         /// <param name="provider">The scoped service provider for use by derived cmdlets.</param>
         /// <exception cref="Exception"/>
+        [DebuggerStepThrough]
         protected virtual void Stop(IServiceProvider provider)
         {
             return;
@@ -268,6 +284,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <see cref="End(IServiceProvider)"/> methods in order to determine is the next processing step 
         /// should be skipped.
         /// </remarks>
+        [DebuggerStepThrough]
         protected void StopCmdlet()
         {
             _isStopped = true;
@@ -282,6 +299,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <see cref="End(IServiceProvider)"/> methods in order to determine is the next processing step 
         /// should be skipped.
         /// </remarks>
+        [DebuggerStepThrough]
         protected void StopCmdlet(ErrorRecord record)
         {
             this.WriteError(record);
@@ -302,6 +320,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// </remarks>
         /// <param name="provider">The scoped service provider for use by derived cmdlets.</param>
         /// <exception cref="Exception"/>
+        [DebuggerStepThrough]
         protected virtual void OnCreatingScope(IServiceProvider provider)
         {
             return;
@@ -317,6 +336,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <typeparam name="T"></typeparam>
         /// <exception cref="InvalidOperationException"/>
         /// <exception cref="PipelineStoppedException"/>
+        [DebuggerStepThrough]
         protected T GetPooledObject<T>() where T : notnull
         {
             try
@@ -333,6 +353,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="item">The item to return to the pool.</param>
+        [DebuggerStepThrough]
         protected void ReturnPooledObject<T>(T item) where T : notnull
         {
             _scope?.ServiceProvider.GetService<IObjectPool<T>>()?.Return(item);
@@ -347,6 +368,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <param name="value">The object to serialize.</param>
         /// <param name="message">An optional message to display before the serialization.</param>
         /// <param name="options">Options to provide the <see cref="JsonSerializer"/>.</param>
+        [DebuggerStepThrough]
         protected void SerializeIfDebug<T>(T value, string? message = null, JsonSerializerOptions? options = null)
         {
             if (this.DebugPreference != ActionPreference.SilentlyContinue)
@@ -365,15 +387,46 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             }
         }
 
+        [DebuggerStepThrough]
         private void StoreDebugPreference()
         {
             this.DebugPreference = this
                 .GetCurrentActionPreferenceFromSwitch(Constants.DEBUG, Constants.DEBUG_PREFERENCE);
         }
+        [DebuggerStepThrough]
         private void StoreVerbosePreference()
         {
             this.VerbosePreference = this
                 .GetCurrentActionPreferenceFromSwitch(Constants.VERBOSE, Constants.VERBOSE_PREFERENCE);
+        }
+
+        [DebuggerStepThrough]
+        protected bool TryWriteObject<T>(in SonarrResponse<T> response)
+        {
+            return this.TryWriteObject(in response, writeConditionally: true, enumerateCollection: false);
+        }
+        [DebuggerStepThrough]
+        protected bool TryWriteObject<T>(in SonarrResponse<T> response, bool enumerateCollection)
+        {
+            return this.TryWriteObject(in response, writeConditionally: true, enumerateCollection);
+        }
+        protected bool TryWriteObject<T>(in SonarrResponse<T> response, bool writeConditionally, bool enumerateCollection)
+        {
+            if (!response.IsError)
+            {
+                this.WriteObject(response.Data, enumerateCollection);
+                return true;
+            }
+            else if (writeConditionally)
+            {
+                this.WriteConditionalError(response.Error);
+            }
+            else
+            {
+                this.WriteError(response.Error);
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -381,6 +434,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <see cref="SonarrErrorRecord.IsIgnorable"/> is <see langword="false"/>.
         /// </summary>
         /// <param name="error">The error record to write.</param>
+        [DebuggerStepThrough]
         protected void WriteConditionalError(SonarrErrorRecord error)
         {
             if (error.IsIgnorable)
@@ -401,6 +455,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <param name="scopeFactory">
         ///     The scope factory that can be used to create any services needed.
         /// </param>
+        [DebuggerStepThrough]
         protected virtual void Dispose(bool disposing, IServiceScopeFactory? scopeFactory)
         {
             return;
@@ -435,6 +490,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             }
         }
 
+        [DebuggerStepThrough]
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method

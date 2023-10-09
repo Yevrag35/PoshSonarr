@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OneOf;
 using System.Net;
 using System.Text.Json;
+using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
 {
@@ -15,13 +16,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
     /// An <see langword="abstract"/>, base class for Sonarr cmdlets that issue HTTP requests to Sonarr API
     /// endpoints.
     /// </summary>
-    public abstract class SonarrApiCmdletBase : SonarrCmdletBase, IApiCmdlet
+    [DebuggerStepThrough]
+    public abstract class SonarrApiCmdletBase : TimedCmdlet
     {
-        Stopwatch _timer = null!;
+        ISonarrClient _client = null!;
+        protected SonarrJsonOptions Options { get; private set; } = null!;
+        Queue<IApiCmdlet> _queue = null!;
 
-        ISonarrClient Client { get; set; } = null!;
-        protected SonarrJsonOptions? Options { get; private set; } = null!;
-        Queue<IApiCmdlet> Queue { get; set; } = null!;
+        protected SonarrApiCmdletBase()
+            : base()
+        {
+        }
 
         /// <summary>
         /// Overridden to retrieve a scoped <see cref="ISonarrClient"/> instance to be used for any API
@@ -32,11 +37,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <exception cref="InvalidOperationException"/>
         protected override void OnCreatingScope(IServiceProvider provider)
         {
-            this.Client = provider.GetRequiredService<ISonarrClient>();
-            this.Options = provider.GetService<SonarrJsonOptions>();
-            this.Queue = provider.GetRequiredService<Queue<IApiCmdlet>>();
-            var pool = provider.GetRequiredService<IObjectPool<Stopwatch>>();
-            _timer = pool.Get();
+            base.OnCreatingScope(provider);
+            _client = provider.GetRequiredService<ISonarrClient>();
+            this.Options = provider.GetRequiredService<SonarrJsonOptions>();
+            _queue = provider.GetRequiredService<Queue<IApiCmdlet>>();
         }
 
         /// <summary>
@@ -49,10 +53,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// </returns>
         protected SonarrResponse SendDeleteRequest(string path, CancellationToken token = default)
         {
-            _timer.Start();
-            this.Queue.Enqueue(this);
+            this.StartTimer();
+            _queue.Enqueue(this);
 
-            var response = this.Client.SendDelete(path, token);
+            var response = _client.SendDelete(path, token);
 
             return response;
         }
@@ -67,9 +71,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// </returns>
         protected SonarrResponse<T> SendGetRequest<T>(string path, CancellationToken token = default)
         {
-            _timer.Start();
-            this.Queue.Enqueue(this);
-            SonarrResponse<T> response = this.Client.SendGet<T>(path, token);
+            this.StartTimer();
+            _queue.Enqueue(this);
+            SonarrResponse<T> response = _client.SendGet<T>(path, token);
             return response;
         }
 
@@ -86,9 +90,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         protected SonarrResponse SendPostRequest<T>(string path, T body, CancellationToken token = default)
             where T : notnull
         {
-            _timer.Start();
-            this.Queue.Enqueue(this);
-            SonarrResponse response = this.Client.SendPost(path, body, token);
+            this.StartTimer();
+            _queue.Enqueue(this);
+            SonarrResponse response = _client.SendPost(path, body, token);
             return response;
         }
         /// <summary>
@@ -105,9 +109,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         protected OneOf<TOutput, SonarrErrorRecord> SendPostRequest<TBody, TOutput>(string path, TBody body, CancellationToken token = default)
             where TBody : notnull
         {
-            _timer.Start();
-            this.Queue.Enqueue(this);
-            SonarrResponse<TOutput> response = this.Client.SendPost<TBody, TOutput>(path, body, token);
+            this.StartTimer();
+            _queue.Enqueue(this);
+            SonarrResponse<TOutput> response = _client.SendPost<TBody, TOutput>(path, body, token);
             return !response.IsError
                 ? response.Data
                 : response.Error;
@@ -125,62 +129,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         protected SonarrResponse SendPutRequest<T>(string path, T body , CancellationToken token = default)
             where T : notnull
         {
-            _timer.Start();
-            this.Queue.Enqueue(this);
-            SonarrResponse response = this.Client.SendPut(path, body, token);
+            this.StartTimer();
+            _queue.Enqueue(this);
+            SonarrResponse response = _client.SendPut(path, body, token);
             return response;
-        }
-
-        public virtual void WriteVerboseBefore(IHttpRequestDetails request)
-        {
-            this.WriteVerbose($"Sending {request.Method} request -> {request.RequestUri}");
-        }
-
-        const string AFTER_MSG_FORMAT_1 = "Received response after ";
-        const string AFTER_MSG_FORMAT_2 = "ms -> ";
-        public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
-        {
-            _timer.Stop();
-            string msg = GetAfterMessage(_timer.ElapsedMilliseconds, response.StatusCode);
-
-            _timer.Reset();
-            this.WriteVerbose(msg);
-        }
-
-        private static string GetAfterMessage(long elapsedMilliseconds, HttpStatusCode statusCode)
-        {
-            int length = AFTER_MSG_FORMAT_1.Length + AFTER_MSG_FORMAT_2.Length
-                         +
-                         LengthConstants.LONG_MAX + LengthConstants.HTTP_STATUS_CODE_MAX;
-
-            Span<char> span = stackalloc char[length];
-            int position = 0;
-
-            AFTER_MSG_FORMAT_1.CopyToSlice(span, ref position);
-            _ = elapsedMilliseconds.TryFormat(
-                span.Slice(position), out int written, default, Statics.DefaultProvider);
-
-            position += written;
-            AFTER_MSG_FORMAT_2.CopyToSlice(span, ref position);
-
-            _ = statusCode.TryFormatAsResponse(span.Slice(position), out int codeWritten);
-
-            return new string(span.Slice(0, position + codeWritten));
-        }
-
-        bool _disposed;
-        protected override void Dispose(bool disposing, IServiceScopeFactory? scopeFactory)
-        {
-            if (!_disposed && disposing && scopeFactory is not null)
-            {
-                using var scope = scopeFactory.CreateScope();
-                var pool = scope.ServiceProvider.GetService<IObjectPool<Stopwatch>>();
-
-                pool?.Return(_timer);
-                _timer = null!;
-
-                _disposed = true;
-            }
         }
     }
 }

@@ -22,6 +22,6 @@ namespace MG.Sonarr.Next.Services.Http
         /// <param name="provider">A scoped service provider to construct/retrieve any services.</param>
         /// <param name="options">The JSON serialization options being used by the deserialization
         /// process.</param>
-        void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null);
+        void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options);
     }
 }

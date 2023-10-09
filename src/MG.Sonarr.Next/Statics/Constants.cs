@@ -6,8 +6,10 @@ namespace MG.Sonarr.Next
     {
         static Constants()
         {
-            CONFIG = "/config";
             SYSTEM = "/system";
+            BACKUP = SYSTEM + "/backup";
+            RESTART = SYSTEM + "/restart";
+            STATUS = SYSTEM + "/status";
         }
 
         public static readonly string META_PROPERTY_NAME = MetadataResolver.META_PROPERTY_NAME;
@@ -27,9 +29,9 @@ namespace MG.Sonarr.Next
         public static readonly string USE_SEASON_FOLDER = "UseSeasonFolders";
 
         internal const string BY_ID = "/{0}";
-        internal static readonly string CONFIG;
+        internal static readonly string CONFIG = "/config";
 
-        public static readonly string BACKUP = SYSTEM + "/backup";
+        public static readonly string BACKUP;
         public static readonly string CALENDAR = "/calendar";
         public static readonly string COMMAND = "/command";
         public static readonly string DISKSPACE = "/diskspace";
@@ -59,11 +61,11 @@ namespace MG.Sonarr.Next
         public static readonly string QUEUE = "/queue";
         public static readonly string RELEASE = "/release";
         public static readonly string RELEASE_PROFILE = RELEASE + "profile";
-        public static readonly string RESTART = SYSTEM + "/restart";
+        public static readonly string RESTART;
         public static readonly string RESTRICTION = "/restriction";
         public static readonly string ROOTFOLDER = "/rootfolder";
         public static readonly string SERIES = "/series";
-        public static readonly string STATUS = SYSTEM + "/status";
+        public static readonly string STATUS;
         public static readonly string SYSTEM;
         public static readonly string TAG = "/tag";
         public static readonly string UPDATE = "/update";
@@ -84,6 +86,7 @@ namespace MG.Sonarr.Next
     {
         public static readonly string BACKUP = "#backup";
         public static readonly string CALENDAR = "#calendar";
+        public static readonly string COMMAND = "#command";
         public static readonly string DELAY_PROFILE = "#delay_profile";
         public static readonly string EPISODE = "#episode";
         public static readonly string EPISODE_FILE = "#episode_file";

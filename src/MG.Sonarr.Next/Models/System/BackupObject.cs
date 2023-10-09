@@ -11,6 +11,7 @@ namespace MG.Sonarr.Next.Models.System
         const int CAPACITY = 6;
 
         public Uri BackupUri { get; private set; } = null!;
+        public int Id { get; private set; }
         public string Name { get; private set; } = string.Empty;
 
         public BackupObject()
@@ -31,6 +32,11 @@ namespace MG.Sonarr.Next.Models.System
         public override void OnDeserialized()
         {
             base.OnDeserialized();
+            if (this.TryGetId(out int id))
+            {
+                this.Id = id;
+            }
+
             if (this.TryGetNonNullProperty(nameof(this.Name), out string? name))
             {
                 this.Name = name;

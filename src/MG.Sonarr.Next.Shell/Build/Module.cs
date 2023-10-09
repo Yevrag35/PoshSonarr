@@ -1,5 +1,7 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
+﻿using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.PSO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Shell.Build
 {
@@ -7,16 +9,7 @@ namespace MG.Sonarr.Next.Shell.Build
     {
         public static PSObject ReadAllAssemblyCmdlets()
         {
-            Assembly thisAss = typeof(Module).Assembly;
-            List<Type> list = new(thisAss.GetExportedTypes());
-
-            for (int i = list.Count - 1; i >= 0; i--)
-            {
-                if (!IsCmdlet(list[i]))
-                {
-                    list.RemoveAt(i);
-                }
-            }
+            List<Type> list = GetCmdletTypes();
 
             List<string> names = new(list.Count);
             List<string> aliases = new(list.Count / 4);
@@ -35,12 +28,6 @@ namespace MG.Sonarr.Next.Shell.Build
 
             return pso;
         }
-
-        private static bool IsCmdlet(Type type)
-        {
-            return type.IsDefined(typeof(CmdletAttribute), false);
-        }
-
         private static void AddCmdletData(Type type, List<string> names, List<string> aliases)
         {
             CmdletAttribute cmdletAtt = type.GetCustomAttributes<CmdletAttribute>().First();
@@ -56,6 +43,20 @@ namespace MG.Sonarr.Next.Shell.Build
                     }
                 }
             }
+        }
+        private static List<Type> GetCmdletTypes()
+        {
+            Assembly thisAss = typeof(Module).Assembly;
+
+            IEnumerable<Type> cmdletTypes = thisAss
+                .GetExportedTypes()
+                    .Where(IsCmdlet);
+
+            return new(cmdletTypes);
+        }
+        private static bool IsCmdlet(Type type)
+        {
+            return type.IsDefined(typeof(CmdletAttribute), false);
         }
     }
 }

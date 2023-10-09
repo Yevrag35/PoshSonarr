@@ -12,7 +12,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
     {
         const string START = "start";
         const string END = "end";
-        static readonly TimeSpan WEEK_TIME_SPAN = TimeSpan.FromDays(8d).Subtract(TimeSpan.FromSeconds(1));
+        static readonly TimeSpan WEEK_TIME_SPAN = TimeSpan.FromDays(8).Subtract(TimeSpan.FromSeconds(1));
 
         DateTime? _end;
         HashSet<DayOfWeek> _dows = null!;

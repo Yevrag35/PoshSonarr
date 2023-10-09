@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Models.Qualities;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
 {
@@ -107,7 +108,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
         }
 
         bool _disposed;
-        protected override void Dispose(bool disposing)
+        protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
         {
             if (disposing && !_disposed)
             {
@@ -116,7 +117,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
                 _disposed = true;
             }
 
-            base.Dispose(disposing);
+            base.Dispose(disposing, factory);
         }
     }
 }
