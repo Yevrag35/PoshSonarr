@@ -9,12 +9,12 @@ namespace MG.Sonarr.Next.Shell.Pools
         const int MAX_CAPACITY = 10000;
         const int MAX_POOL = 20;
 
+        protected override int MaxPoolCapacity => MAX_POOL;
+
         public HashSetWildcardPool()
             : base()
         {
         }
-
-        protected override int MaxPoolCapacity => MAX_POOL;
 
         protected override HashSet<Wildcard> Construct()
         {

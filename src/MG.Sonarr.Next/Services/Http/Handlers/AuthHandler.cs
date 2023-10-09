@@ -13,18 +13,18 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
     {
         public static readonly HttpRequestOptionsKey<NetworkCredential?> CredentialKey = new("Credentials");
 
-        SonarrAuthType AuthType { get; }
-        IMemoryCache Cache { get; }
+        readonly SonarrAuthType _authType;
+        readonly IMemoryCache _cache;
 
         public AuthHandler(IConnectionSettings settings, IMemoryCache cache)
         {
-            this.AuthType = settings.AuthType;
-            this.Cache = cache;
+            _authType = settings.AuthType;
+            _cache = cache;
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            switch (this.AuthType)
+            switch (_authType)
             {
                 case SonarrAuthType.None:
                 case SonarrAuthType.External:
@@ -103,7 +103,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
         private async Task<HttpRequestMessage> ProcessFormsLogin(AuthedRequestMessage request, CancellationToken token)
         {
-            if (!TryGetCookieFromCache(this.Cache, out string? cookie))
+            if (!TryGetCookieFromCache(_cache, out string? cookie))
             {
                 cookie = await this.PerformLogin(request, token);
                 if (string.IsNullOrWhiteSpace(cookie))
@@ -142,7 +142,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
                 &&
                 response.Headers.TryGetValues("Set-Cookie", out var values))
             {
-                return StoreCookieInCache(this.Cache, values.FirstOrDefault() ?? string.Empty);
+                return StoreCookieInCache(_cache, values.FirstOrDefault() ?? string.Empty);
             }
 
             return string.Empty;

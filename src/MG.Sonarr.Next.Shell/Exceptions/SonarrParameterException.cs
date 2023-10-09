@@ -14,8 +14,6 @@ namespace MG.Sonarr.Next.Shell.Exceptions
 
     public sealed class SonarrParameterException : PoshSonarrException
     {
-        //static readonly ParameterErrorType[] _allErrorsTypes = Enum.GetValues<ParameterErrorType>();
-
         const string AND = "and ";
         const string MSG_FORMAT = "The cmdlet parameter '{0}' is {1}.";
         const string MSG_ADD_FORMAT = MSG_FORMAT + " {2}";

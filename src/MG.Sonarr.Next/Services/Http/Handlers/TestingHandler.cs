@@ -7,11 +7,11 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 {
     public sealed class TestingHandler : DelegatingHandler
     {
-        JsonSerializerOptions Options { get; }
+        readonly JsonSerializerOptions _options;
 
         public TestingHandler(SonarrJsonOptions options)
         {
-            this.Options = options.GetForSerializing();
+            _options = options.GetForSerializing();
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -50,7 +50,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
                     Content = JsonContent.Create(new
                     {
                         Message = "The response returned something that looks like an HTML page. You sure the URL is correct?"
-                    }, options: this.Options),
+                    }, options: _options),
                     RequestMessage = request,
                     ReasonPhrase = HttpStatusCode.ServiceUnavailable.ToString(),
                 }

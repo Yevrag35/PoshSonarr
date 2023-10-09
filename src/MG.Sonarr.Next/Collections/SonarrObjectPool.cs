@@ -46,7 +46,7 @@ namespace MG.Sonarr.Next.Collections
     /// <typeparam name="T"></typeparam>
     public abstract class SonarrObjectPool<T> : IObjectPoolReturnable, IObjectPool<T> where T : notnull
     {
-        ConcurrentBag<T> Bag { get; }
+        readonly ConcurrentBag<T> _bag;
         /// <summary>
         /// The maximum number of objects to kept in the pool at any one time.
         /// </summary>
@@ -58,7 +58,7 @@ namespace MG.Sonarr.Next.Collections
         /// </summary>
         protected SonarrObjectPool()
         {
-            this.Bag = new();
+            _bag = new();
         }
         /// <summary>
         /// Initializes a new instance of the <see cref="SonarrObjectPool{T}"/> class that contains an initial
@@ -71,7 +71,7 @@ namespace MG.Sonarr.Next.Collections
         protected SonarrObjectPool(IEnumerable<T> initialItems)
         {
             initialItems ??= Enumerable.Empty<T>();
-            this.Bag = new(initialItems);
+            _bag = new(initialItems);
         }
 
         public T Get()
@@ -95,7 +95,7 @@ namespace MG.Sonarr.Next.Collections
         protected T GetItemFromBag(out bool wasConstructed)
         {
             wasConstructed = false;
-            if (!this.Bag.TryTake(out T? item))
+            if (!_bag.TryTake(out T? item))
             {
                 item = this.Construct();
                 wasConstructed = true;
@@ -118,10 +118,10 @@ namespace MG.Sonarr.Next.Collections
                 return;
             }
 
-            int count = this.Bag.Count;
+            int count = _bag.Count;
             if (count < this.MaxPoolCapacity && this.ResetObject(item))
             {
-                this.Bag.Add(item);
+                _bag.Add(item);
             }
         }
         void IObjectPoolReturnable.Return(object? obj)

@@ -11,8 +11,8 @@ namespace MG.Sonarr.Next.Services.Auth
     {
         readonly ICredentials _nc;
 
-        private ProxyCredential(ICredentials icreds) => _nc = icreds;
-        private ProxyCredential(PSCredential psCreds)
+        public ProxyCredential(ICredentials icreds) => _nc = icreds;
+        public ProxyCredential(PSCredential psCreds)
             : this(psCreds.GetNetworkCredential()) { }
 
         public static implicit operator ProxyCredential(PSCredential psCreds) => new(psCreds);

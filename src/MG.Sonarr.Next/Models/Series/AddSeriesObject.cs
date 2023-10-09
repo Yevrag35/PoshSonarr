@@ -10,6 +10,7 @@ namespace MG.Sonarr.Next.Models.Series
     {
         private string? _path;
         private string? _pathProp;
+        const int CAPACITY = 50;
 
         public SeriesAddOptions? AddOptions { get; set; }
         public bool IsFullPath { get; set; }
@@ -40,7 +41,7 @@ namespace MG.Sonarr.Next.Models.Series
         }
 
         public AddSeriesObject()
-            : base(50)
+            : base(CAPACITY)
         {
         }
 
@@ -74,8 +75,6 @@ namespace MG.Sonarr.Next.Models.Series
                 this.Properties[Constants.USE_SEASON_FOLDER].Value = true;
                 this.UseSeasonFolders = true;
             }
-
-
         }
         public override void OnSerializing()
         {

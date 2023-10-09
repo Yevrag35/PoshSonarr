@@ -16,11 +16,11 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 
     file sealed class SonarrDownloadClient : ISonarrDownloadClient
     {
-        HttpClient Client { get; }
+        readonly HttpClient _client;
 
         public SonarrDownloadClient(HttpClient client)
         {
-            this.Client = client;
+            _client = client;
         }
 
         public SonarrResponse<string> DownloadToPath(string url, string path, CancellationToken token = default)
@@ -30,7 +30,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             HttpResponseMessage response = null!;
             try
             {
-                response = this.Client.Send(msg, token);
+                response = _client.Send(msg, token);
             }
             catch (SonarrHttpException ex)
             {
@@ -52,7 +52,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             HttpResponseMessage response = null!;
             try
             {
-                response = this.Client.Send(msg, token);
+                response = _client.Send(msg, token);
             }
             catch (SonarrHttpException ex)
             {

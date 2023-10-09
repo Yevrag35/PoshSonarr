@@ -7,11 +7,11 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
     {
         const string API = "/api";
         const string V3 = "/v3/";
-        bool NoApiInPath { get; }
+        readonly bool _noApiInPath;
 
         public PathHandler(IConnectionSettings settings)
         {
-            this.NoApiInPath = settings.NoApiInPath;
+            _noApiInPath = settings.NoApiInPath;
         }
 
         protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -55,7 +55,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
             int position = 0;
             authority.CopyToSlice(span, ref position);
 
-            if (!this.NoApiInPath)
+            if (!_noApiInPath)
             {
                 API.CopyToSlice(span, ref position);
             }
@@ -69,40 +69,6 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
             path.CopyToSlice(span, ref position);
 
             request.RequestUri = new Uri(new string(span.Slice(0, position)), UriKind.Absolute);
-
-            //if (request.RequestUri is not null && request.RequestUri.IsAbsoluteUri && !this.NoApiInPath)
-            //{
-            //    request.RequestUri = this.AddApiToPath(request.RequestUri);
-            //}
         }
-        //private Uri AddApiToPath(Uri requestUri)
-        //{
-        //    string path = requestUri.GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
-        //    ReadOnlySpan<char> chars = path.AsSpan();
-
-        //    if (chars.StartsWith(new ReadOnlySpan<char>('/'), StringComparison.InvariantCultureIgnoreCase))
-        //    {
-        //        chars = chars.Slice(1);
-        //    }
-
-        //    if (!chars.StartsWith(API.AsSpan(1), StringComparison.InvariantCultureIgnoreCase))
-        //    {
-        //        ReadOnlySpan<char> authority = requestUri.GetComponents(
-        //            UriComponents.SchemeAndServer, UriFormat.Unescaped);
-
-        //        Span<char> newPath = stackalloc char[chars.Length + API.Length + V3.Length + authority.Length];
-
-        //        int position = 0;
-        //        authority.CopyToSlice(newPath, ref position);
-        //        API.CopyToSlice(newPath, ref position);
-        //        chars.CopyToSlice(newPath, ref position);
-
-        //        return new Uri(new string(newPath.Slice(0, position)), UriKind.Absolute);
-        //    }
-        //    else if (!chars.StartsWith(V3.AsSpan(1), StringComparison.InvariantCultureIgnoreCase))
-        //    {
-        //        return requestUri;
-        //    } 
-        //}
     }
 }

@@ -18,7 +18,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
         public int[] Id { get; set; } = Array.Empty<int>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput", DontShow = true)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput", DontShow = true)]
         public ILanguageProfilePipeable[] InputObject { get; set; } = Array.Empty<ILanguageProfilePipeable>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]

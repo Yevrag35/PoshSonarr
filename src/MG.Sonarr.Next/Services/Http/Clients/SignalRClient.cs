@@ -23,17 +23,18 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         const string SIGNAL_R = "/signalr";
         const string PING = SIGNAL_R + "/ping";
         const string UNDERSCORE = "_";
-        readonly Random _rng;   // this is *NOT* meant to be cryptographically secure.
 
-        HttpClient Client { get; }
-        QueryParameterCollection QueryParams { get; }
-        JsonSerializerOptions? Options { get; }
+        readonly HttpClient _client;
+        readonly QueryParameterCollection _queryParams;
+        readonly JsonSerializerOptions? _options;
+        readonly Random _rng;   // this is *NOT* meant to be cryptographically secure.
 
         public SignalRClient(HttpClient client, Random random, IConnectionSettings settings, SonarrJsonOptions options)
         {
-            this.Client = client;
-            this.Options = options.GetForDeserializing();
-            this.QueryParams = new(2)
+            _client = client;
+            _options = options.GetForDeserializing();
+            int initialCapacity = 2;
+            _queryParams = new(initialCapacity)
             {
                 { nameof(IConnectionSettings.ApiKey), settings.ApiKey.GetValue() }
             };
@@ -43,7 +44,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 
         public SonarrResponse<PingResponse> SendPing(CancellationToken token = default)
         {
-            string path = GetPingUrl(this.QueryParams, _rng);
+            string path = GetPingUrl(_queryParams, _rng);
             using PingRequestMessage request = new(path);
 
             return this.SendRequest<PingResponse>(request, token);
@@ -76,7 +77,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             HttpResponseMessage response = null!;
             try
             {
-                response = this.Client.Send(request, token);
+                response = _client.Send(request, token);
                 response.EnsureSuccessStatusCode();
             }
             catch (HttpRequestException httpEx)
@@ -86,7 +87,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                     request.OriginalRequestUri, sonarrEx, ErrorCategory.ConnectionError, response?.StatusCode ?? System.Net.HttpStatusCode.Unused, response);
             }
 
-            bool passed = TryDeserialize(response, this.Options, out T? result, out SonarrErrorRecord? error, token);
+            bool passed = TryDeserialize(response, _options, out T? result, out SonarrErrorRecord? error, token);
             Debug.Assert(passed);
 
             return new SonarrResponse<T>(request.OriginalRequestUri, result, error, response.StatusCode);

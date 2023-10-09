@@ -10,11 +10,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     [Cmdlet(VerbsCommon.Get, "SonarrTag", DefaultParameterSetName = "ByName")]
     public sealed class GetSonarrTagCmdlet : SonarrMetadataCmdlet
     {
+        const string BY_PIPELINE = "ByPipelineInput";
+
         SortedSet<int> _ids = null!;
         HashSet<Wildcard> _names = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput")]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_PIPELINE)]
         public ITagPipeable[] InputObject { get; set; } = Array.Empty<ITagPipeable>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -32,9 +34,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
             this.Returnables[0] = _ids;
-            _names = new(1);
-            //_names = this.GetPooledObject<HashSet<Wildcard>>();
-            //this.Returnables[1] = _names;
+            _names = this.GetPooledObject<HashSet<Wildcard>>();
+            this.Returnables[1] = _names;
         }
         protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
         {
@@ -66,7 +67,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
             bool hasIds = this.ProcessIds(_ids);
 
-            if (!this.TryProcessNames(_names) && !hasIds)
+            if (this.ParameterSetName != BY_PIPELINE && !this.TryProcessNames(_names) && !hasIds)
             {
                 SonarrResponse<MetadataList<TagObject>> tags = this.GetAllTags();
                 if (tags.IsError)

@@ -23,13 +23,5 @@ namespace MG.Sonarr.Next.Shell.Exceptions
             : base(info, context)
         {
         }
-        //public InvalidApiKeyException(Exception? innerException)
-        //    : this(DEF_MSG, innerException)
-        //{
-        //}
-        //public InvalidApiKeyException(string message, Exception? innerException)
-        //    : base(message, innerException)
-        //{
-        //}
     }
 }

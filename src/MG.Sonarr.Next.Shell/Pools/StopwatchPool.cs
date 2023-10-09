@@ -4,7 +4,9 @@ namespace MG.Sonarr.Next.Shell.Pools
 {
     public sealed class StopwatchPool : SonarrObjectPool<Stopwatch>
     {
-        protected override int MaxPoolCapacity => 10;
+        const int MAX_CAPACITY = 10;
+
+        protected override int MaxPoolCapacity => MAX_CAPACITY;
 
         protected override Stopwatch Construct()
         {

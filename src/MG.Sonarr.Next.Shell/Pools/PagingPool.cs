@@ -5,7 +5,8 @@ namespace MG.Sonarr.Next.Shell.Pools
 {
     public sealed class PagingPool : SonarrObjectPool<PagingParameter>
     {
-        protected override int MaxPoolCapacity => 6;
+        const int MAX_CAPACITY = 6;
+        protected override int MaxPoolCapacity => MAX_CAPACITY;
 
         protected override PagingParameter Construct()
         {

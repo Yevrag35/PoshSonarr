@@ -18,11 +18,11 @@ namespace MG.Sonarr.Next.Services.Http
 
     file sealed class SonarrResponseReader : IResponseReader
     {
-        JsonSerializerOptions Options { get; }
+        readonly JsonSerializerOptions _options;
 
         public SonarrResponseReader(SonarrJsonOptions options)
         {
-            this.Options = options.GetForDeserializing();
+            _options = options.GetForDeserializing();
         }
 
         public async Task<SonarrResponse> ReadNoResultAsync(HttpCall call, object? targetObj = null, CancellationToken token = default)
@@ -42,7 +42,7 @@ namespace MG.Sonarr.Next.Services.Http
             }
 
             string? content = await call.Response.Content.ReadAsStringAsync(token);
-            IErrorCollection deserializedError = GetErrorFromContent(content, this.Options);
+            IErrorCollection deserializedError = GetErrorFromContent(content, _options);
             SonarrHttpException httpEx = new(call.Request, call.Response, deserializedError, null);
             SonarrErrorRecord record = new(httpEx, targetObj);
 
@@ -69,7 +69,7 @@ namespace MG.Sonarr.Next.Services.Http
             }
 
             string? content = await call.Response.Content.ReadAsStringAsync(token);
-            IErrorCollection deserializedError = GetErrorFromContent(content, this.Options);
+            IErrorCollection deserializedError = GetErrorFromContent(content, _options);
             SonarrHttpException httpEx = new(call.Request, call.Response, deserializedError, null);
             SonarrErrorRecord record = new(httpEx, targetObj);
 
@@ -115,7 +115,7 @@ namespace MG.Sonarr.Next.Services.Http
         {
             try
             {
-                return await response.Content.ReadFromJsonAsync<T>(this.Options, token);
+                return await response.Content.ReadFromJsonAsync<T>(_options, token);
             }
             catch (Exception e)
             {
