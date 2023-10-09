@@ -31,7 +31,7 @@ namespace MG.Sonarr.Next.Models.Series
         int IEpisodeBySeriesPipeable.SeriesId => this.Id;
         int IEpisodeFileBySeriesPipeable.SeriesId => this.Id;
         int IReleasePipeableBySeries.SeriesId => this.Id;
-        public virtual string Title { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
 
         public SeriesObject()
             : this(46)

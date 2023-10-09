@@ -81,7 +81,7 @@ namespace MG.Sonarr.Next.Metadata
             if (!id.TryFormat(span.Slice(position), out int written, default, Statics.DefaultProvider))
             {
                 Debug.Fail($"Unable to format '{id}' into the BaseUrl.");
-                return this.UrlBase + '/' + id.ToString();
+                return this.UrlBase + '/' + id;
             }
 
             return new string(span.Slice(0, position + written));
