@@ -1,6 +1,4 @@
-﻿using System.Collections.ObjectModel;
-
-namespace MG.Sonarr.Next.Extensions
+﻿namespace MG.Sonarr.Next.Extensions
 {
     /// <summary>
     /// Custom extension methods for specific types of <see cref="Dictionary{TKey, TValue}"/>.

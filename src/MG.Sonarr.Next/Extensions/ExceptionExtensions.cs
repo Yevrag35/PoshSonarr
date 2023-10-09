@@ -1,6 +1,4 @@
 ﻿using System.Management.Automation;
-using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Extensions
 {

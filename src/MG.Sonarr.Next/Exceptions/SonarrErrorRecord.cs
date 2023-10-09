@@ -1,6 +1,5 @@
 ﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
-using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Net;
 

@@ -4,6 +4,12 @@ namespace MG.Sonarr.Next
 {
     public static class Constants
     {
+        static Constants()
+        {
+            CONFIG = "/config";
+            SYSTEM = "/system";
+        }
+
         public static readonly string META_PROPERTY_NAME = MetadataResolver.META_PROPERTY_NAME;
         public const char META_PREFIX = MetadataResolver.META_PREFIX;
 
@@ -20,8 +26,8 @@ namespace MG.Sonarr.Next
         public static readonly string TITLE = "Title";
         public static readonly string USE_SEASON_FOLDER = "UseSeasonFolders";
 
-        internal const string CONFIG = "/config";
         internal const string BY_ID = "/{0}";
+        internal static readonly string CONFIG;
 
         public static readonly string BACKUP = SYSTEM + "/backup";
         public static readonly string CALENDAR = "/calendar";
@@ -58,7 +64,7 @@ namespace MG.Sonarr.Next
         public static readonly string ROOTFOLDER = "/rootfolder";
         public static readonly string SERIES = "/series";
         public static readonly string STATUS = SYSTEM + "/status";
-        public static readonly string SYSTEM = "/system";
+        public static readonly string SYSTEM;
         public static readonly string TAG = "/tag";
         public static readonly string UPDATE = "/update";
         public static readonly string WANTEDMISSING = "/wanted/missing";

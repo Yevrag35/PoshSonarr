@@ -1,5 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Reflection;
+﻿using MG.Sonarr.Next.Reflection;
 using OneOf;
 using System.Reflection;
 

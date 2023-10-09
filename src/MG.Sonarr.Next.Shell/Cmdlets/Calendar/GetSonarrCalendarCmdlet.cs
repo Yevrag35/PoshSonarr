@@ -4,7 +4,6 @@ using MG.Sonarr.Next.Models.Calendar;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using MG.Sonarr.Next.Extensions;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 {

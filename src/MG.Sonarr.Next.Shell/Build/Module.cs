@@ -1,5 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions.PSO;
+﻿using MG.Sonarr.Next.Extensions.PSO;
 using System.Reflection;
 
 namespace MG.Sonarr.Next.Shell.Build
