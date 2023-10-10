@@ -24,7 +24,7 @@ namespace MG.Sonarr.Next.Models.System
             return StringComparer.InvariantCultureIgnoreCase.Compare(this.Name, other?.Name);
         }
 
-        protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)
+        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.BACKUP];
         }

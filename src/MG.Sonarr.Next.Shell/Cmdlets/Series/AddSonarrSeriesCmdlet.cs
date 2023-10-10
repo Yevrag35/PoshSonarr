@@ -117,7 +117,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.SERIES];
+            this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.SERIES];
         }
         protected override void Process(IServiceProvider provider)
         {
@@ -168,7 +168,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
             foreach (AddSeriesObject pso in _list)
             {
-                this.SerializeIfDebug(pso, options: provider.GetService<SonarrJsonOptions>()?.GetForDebugging());
+                this.SerializeIfDebug(pso, options: provider.GetService<ISonarrJsonOptions>()?.GetForDebugging());
 
                 if (this.ShouldProcess(pso.Title, "Adding Series"))
                 {

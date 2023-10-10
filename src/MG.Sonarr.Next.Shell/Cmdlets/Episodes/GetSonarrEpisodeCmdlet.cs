@@ -47,7 +47,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.EPISODE];
+            this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.EPISODE];
             var pool = provider.GetRequiredService<IObjectPool<SortedSet<int>>>();
             this.EpIds = pool.Get();
             this.SeriesIds = pool.Get();

@@ -53,7 +53,7 @@ namespace MG.Sonarr.Next.Models.Releases
             return compare;
         }
 
-        protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)
+        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.RELEASE];
         }

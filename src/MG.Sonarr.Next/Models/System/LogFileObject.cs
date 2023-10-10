@@ -74,7 +74,7 @@ namespace MG.Sonarr.Next.Models.System
                 StringComparer.InvariantCultureIgnoreCase.GetHashCode(this.ContentsUrl));
         }
 
-        protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)
+        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.LOG_FILE];
         }

@@ -20,7 +20,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         public SwitchParameter Force { get; set; }
 
         protected override int Capacity => 1;
-        protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
+        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {
             return resolver[Meta.EPISODE_FILE];
         }

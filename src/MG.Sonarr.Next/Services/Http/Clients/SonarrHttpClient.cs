@@ -35,12 +35,12 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 
         readonly HttpClient _client;
         readonly JsonSerializerOptions _deserializingOptions;
-        readonly MetadataResolver _resolver;
+        readonly IMetadataResolver _resolver;
         readonly IResponseReader _responseReader;
         readonly JsonSerializerOptions _serializingOptions;
         readonly IConnectionSettings _settings;
 
-        public SonarrHttpClient(HttpClient client, IConnectionSettings settings, SonarrJsonOptions options, MetadataResolver resolver, IResponseReader reader)
+        public SonarrHttpClient(HttpClient client, IConnectionSettings settings, ISonarrJsonOptions options, IMetadataResolver resolver, IResponseReader reader)
         {
             _client = client;
             _deserializingOptions = options.GetForDeserializing();
@@ -247,15 +247,17 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         internal const string API_HEADER_KEY = "X-Api-Key";
 
         internal static readonly ProductInfoHeaderValue UserAgent = new("PoshSonarr-Next", "2.0.0");
-
-        public static IServiceCollection AddSonarrClient(this IServiceCollection services, IConnectionSettings settings)
+        
+        private static IHttpClientBuilder AddSonarrClientInternal(IServiceCollection services, IConnectionSettings settings, Action<IServiceProvider, JsonSerializerOptions> configureJson)
         {
-            services.AddSingleton(settings)
-                    .AddResponseReader()
-                    .AddTransient<PathHandler>()
-                    .AddTransient<VerboseHandler>()
-                    .AddTransient<TestingHandler>()
+            return services
+                    .AddSingleton(settings)
                     .AddTransient<SonarrClientHandler>()
+                    .AddMetadata()
+                    .AddResponseReader()
+                    .AddSignalRClient()
+                    .AddSonarrDownloadClient()
+                    .AddSonarrJsonOptions(configureJson)
                     .AddHttpClient<ISonarrClient, SonarrHttpClient>((provider, client) =>
                     {
                         var settings = provider.GetRequiredService<IConnectionSettings>();
@@ -267,13 +269,31 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                         client.DefaultRequestHeaders.UserAgent.Add(UserAgent);
 
                     })
-                    .ConfigurePrimaryHttpMessageHandler<SonarrClientHandler>()
-                    .AddHttpMessageHandler<PathHandler>()
-                    .AddHttpMessageHandler<VerboseHandler>()
-                    .AddHttpMessageHandler<TestingHandler>();
+                    .ConfigurePrimaryHttpMessageHandler<SonarrClientHandler>();
+        }
+        public static IServiceCollection AddSonarrNonPSClient(this IServiceCollection services, IConnectionSettings settings, Action<IServiceProvider, JsonSerializerOptions> configureJson)
+        {
+            services.AddTransient<PathHandler>()
+                    .AddTransient<TestingHandler>();
 
-            return services.AddSonarrDownloadClient()
-                           .AddSignalRClient();
+            AddSonarrClientInternal(services, settings, configureJson)
+                .AddHttpMessageHandler<PathHandler>()
+                .AddHttpMessageHandler<TestingHandler>();
+
+            return services;
+        }
+        public static IServiceCollection AddSonarrClient(this IServiceCollection services, IConnectionSettings settings, Action<IServiceProvider, JsonSerializerOptions> configureJson)
+        {
+            services.AddTransient<PathHandler>()
+                    .AddTransient<VerboseHandler>()
+                    .AddTransient<TestingHandler>();
+
+            AddSonarrClientInternal(services, settings, configureJson)
+                .AddHttpMessageHandler<PathHandler>()
+                .AddHttpMessageHandler<VerboseHandler>()
+                .AddHttpMessageHandler<TestingHandler>();
+
+            return services;
         }
     }
 }

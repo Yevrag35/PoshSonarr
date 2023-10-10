@@ -41,12 +41,12 @@ namespace MG.Sonarr.Next.Models.Calendar
             return compare;
         }
 
-        protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)
+        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
-            return resolver[Meta.CALENDAR];
+            return GetTag(resolver);
         }
 
-        public static MetadataTag GetTag(MetadataResolver resolver)
+        public static MetadataTag GetTag(IMetadataResolver resolver)
         {
             return resolver[Meta.CALENDAR];
         }

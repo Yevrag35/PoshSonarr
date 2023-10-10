@@ -32,7 +32,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _tag = provider.GetRequiredService<MetadataResolver>()[Meta.SERIES_ADD];
+            _tag = provider.GetRequiredService<IMetadataResolver>()[Meta.SERIES_ADD];
         }
         protected override void Process(IServiceProvider provider)
         {

@@ -149,7 +149,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
         {
             if (this.VerbosePreference != ActionPreference.SilentlyContinue)
             {
-                options ??= provider.GetService<SonarrJsonOptions>()?.GetForSerializing();
+                options ??= provider.GetService<ISonarrJsonOptions>()?.GetForSerializing();
                 this.WriteVerbose(JsonSerializer.Serialize(response, options));
             }
         }

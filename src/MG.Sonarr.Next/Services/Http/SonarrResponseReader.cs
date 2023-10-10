@@ -20,7 +20,7 @@ namespace MG.Sonarr.Next.Services.Http
     {
         readonly JsonSerializerOptions _options;
 
-        public SonarrResponseReader(SonarrJsonOptions options)
+        public SonarrResponseReader(ISonarrJsonOptions options)
         {
             _options = options.GetForDeserializing();
         }

@@ -56,7 +56,7 @@ namespace MG.Sonarr.Next.Models.Series
             return this.CompareTo((TagUpdateObject?)other); // By ID.
         }
 
-        protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)
+        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.SERIES];
         }

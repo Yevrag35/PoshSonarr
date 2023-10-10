@@ -29,7 +29,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         readonly JsonSerializerOptions? _options;
         readonly Random _rng;   // this is *NOT* meant to be cryptographically secure.
 
-        public SignalRClient(HttpClient client, Random random, IConnectionSettings settings, SonarrJsonOptions options)
+        public SignalRClient(HttpClient client, Random random, IConnectionSettings settings, ISonarrJsonOptions options)
         {
             _client = client;
             _options = options.GetForDeserializing();

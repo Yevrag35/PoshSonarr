@@ -13,7 +13,7 @@ namespace MG.Sonarr.Next.Json
         /// the implementation being of that type.
         /// </summary>
         /// <param name="resolver">The resolver collection to search for tags in.</param>
-        void SetTag(MetadataResolver resolver);
+        void SetTag(IMetadataResolver resolver);
     }
 
     /// <summary>

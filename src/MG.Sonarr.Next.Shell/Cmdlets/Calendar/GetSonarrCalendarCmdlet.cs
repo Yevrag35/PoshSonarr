@@ -50,7 +50,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         {
             base.OnCreatingScope(provider);
             _dows = new(1);
-            this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.CALENDAR];
+            this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.CALENDAR];
         }
 
         protected override void Begin(IServiceProvider provider)

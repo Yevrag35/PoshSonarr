@@ -34,7 +34,7 @@ namespace MG.Sonarr.Next.Models.Indexers
         {
         }
 
-        protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)
+        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.INDEXER];
         }

@@ -97,7 +97,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
             return true;
         }
 
-        protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
+        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {
             return resolver[Meta.LOG_ITEM];
         }

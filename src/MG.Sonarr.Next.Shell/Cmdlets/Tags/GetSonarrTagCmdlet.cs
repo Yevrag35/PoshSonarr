@@ -37,7 +37,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             _names = this.GetPooledObject<HashSet<Wildcard>>();
             this.Returnables[1] = _names;
         }
-        protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
+        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {
             return resolver[Meta.TAG];
         }

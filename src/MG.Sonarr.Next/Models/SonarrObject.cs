@@ -22,7 +22,7 @@ namespace MG.Sonarr.Next.Models
         {
             return;
         }
-        protected abstract MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing);
+        protected abstract MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing);
         public virtual void OnDeserialized()
         {
             return;
@@ -31,7 +31,7 @@ namespace MG.Sonarr.Next.Models
         {
             return;
         }
-        public void SetTag(MetadataResolver resolver)
+        public void SetTag(IMetadataResolver resolver)
         {
             ArgumentNullException.ThrowIfNull(resolver);
 

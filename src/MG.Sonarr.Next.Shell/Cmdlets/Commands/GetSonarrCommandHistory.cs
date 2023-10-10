@@ -4,7 +4,6 @@ using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Shell.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
 {
@@ -41,7 +40,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
         private IEnumerable<ICommand> RefreshUnfinished(IServiceProvider provider, ICommandHistory history)
         {
             var client = provider.GetRequiredService<ISonarrClient>();
-            var tag = provider.GetRequiredService<MetadataResolver>()[Meta.COMMAND];
+            var tag = provider.GetRequiredService<IMetadataResolver>()[Meta.COMMAND];
 
             foreach (ICommand command in history.Where(x => !x.IsCompleted))
             {

@@ -1,11 +1,10 @@
-﻿using MG.Sonarr.Next.Metadata;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace MG.Sonarr.Next.Shell.Context
+namespace MG.Sonarr.Next.Metadata
 {
-    internal static class MetadataHandler
+    public static class MetadataResolverDI
     {
-        internal static MetadataResolver AddMetadata(IServiceCollection services)
+        public static IServiceCollection AddMetadata(this IServiceCollection services)
         {
             int initialCapacity = 18;
             MetadataResolver dict = new(initialCapacity)
@@ -31,8 +30,7 @@ namespace MG.Sonarr.Next.Shell.Context
             };
 
             Debug.Assert(dict.Count <= initialCapacity);
-            services.AddSingleton(dict);
-            return dict;
+            return services.AddSingleton<IMetadataResolver>(dict);
         }
     }
 }

@@ -45,7 +45,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.RELEASE];
+            this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.RELEASE];
             this.QueryParams = new();
         }
 

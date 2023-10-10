@@ -49,9 +49,9 @@ namespace MG.Sonarr.Next.Shell.Context
         }
 
 #if DEBUG
-        public static MetadataResolver GetResolver()
+        public static IMetadataResolver GetResolver()
         {
-            return SonarrContext.GetProvider().GetRequiredService<MetadataResolver>();
+            return SonarrContext.GetProvider().GetRequiredService<IMetadataResolver>();
         }
 #endif
 
@@ -100,13 +100,13 @@ namespace MG.Sonarr.Next.Shell.Context
             services
                 .AddMemoryCache()
                 .AddSingleton<Queue<IApiCmdlet>>()
-                .AddSonarrClient(settings)
+                .AddSonarrClient(settings, (provider, options) =>
+                {
+                    options.WriteIndented = true;
+                })
                 .AddCommandTracker();
 
             AddObjectPools(services);
-            var resolver = MetadataHandler.AddMetadata(services);
-            SonarrJsonOptions jsonOptions = CreateSonarrJsonOptions(resolver);
-            services.AddSingleton(jsonOptions);
 
             ServiceProviderOptions providerOptions = new()
             {
@@ -139,74 +139,6 @@ namespace MG.Sonarr.Next.Shell.Context
             services.AddSingleton<TPool>(pool)
                     .AddSingleton<IObjectPool<T>>(x => x.GetRequiredService<TPool>())
                     .AddSingleton<IObjectPoolReturnable>(x => x.GetRequiredService<TPool>());
-        }
-        private static SonarrJsonOptions CreateSonarrJsonOptions(MetadataResolver resolver)
-        {
-            return new SonarrJsonOptions(options =>
-            {
-                var doSpanConverter = new DateOnlyConverter();
-                var timeConverter = new TimeOnlyConverter();
-                var timeSpanConverter = new TimeSpanConverter();
-
-                ObjectConverter objCon = new(
-                        ignoreProps: new string[]
-                        {
-                            Constants.META_PROPERTY_NAME,
-                        },
-                        replaceNames: new KeyValuePair<string, string>[]
-                        {
-                            new("Monitored", "IsMonitored"),
-                            new("TvdbId", "TVDbId"),
-                        },
-                        convertTypes: new KeyValuePair<string, Type>[]
-                        {
-                            new("AirDate", typeof(DateOnly)),
-                            new("Tags", typeof(SortedSet<int>)),
-                            new("Genres", typeof(string[])),
-                        },
-                        spanConverters: new KeyValuePair<string, SpanConverter>[]
-                        {
-                            new("AirDate", doSpanConverter),
-                            new("FirstAired", doSpanConverter),
-                            new("AirTime", timeConverter),
-                            new("Duration", timeSpanConverter),
-                        },
-                        resolver
-                    );
-
-                options.Converters.AddMany(
-                    objCon,
-                    new PostCommandWriter(),
-                    new SonarrObjectConverter<AddSeriesObject>(objCon),
-                    new SonarrObjectConverter<BackupObject>(objCon),
-                    new SonarrObjectConverter<CalendarObject>(objCon),
-                    new SonarrObjectConverter<CommandObject>(objCon),
-                    new SonarrObjectConverter<DelayProfileObject>(objCon),
-                    new SonarrObjectConverter<EpisodeObject>(objCon),
-                    new SonarrObjectConverter<EpisodeFileObject>(objCon),
-                    new SonarrObjectConverter<IndexerObject>(objCon),
-                    new SonarrObjectConverter<LanguageProfileObject>(objCon),
-                    new SonarrObjectConverter<LogObject>(objCon),
-                    new SonarrObjectConverter<LogFileObject>(objCon),
-                    new SonarrObjectConverter<QualityDefinitionObject>(objCon),
-                    new SonarrObjectConverter<QualityProfileObject>(objCon),
-                    new SonarrObjectConverter<ReleaseObject>(objCon),
-                    new SonarrObjectConverter<ReleaseProfileObject>(objCon),
-                    new SonarrObjectConverter<RootFolderObject>(objCon),
-                    new SonarrObjectConverter<SeriesObject>(objCon),
-                    new SonarrObjectConverter<SonarrServerError>(objCon),
-                    new SonarrObjectConverter<TagObject>(objCon),
-                    new SonarrResponseConverter());
-
-                options.PropertyNamingPolicy = null;
-                options.TypeInfoResolver = new DefaultJsonTypeInfoResolver
-                {
-                    Modifiers =
-                    {
-                        JsonModifiers.AddPrivateFieldsModifier,
-                    }
-                };
-            });
         }
     }
 }

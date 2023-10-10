@@ -20,7 +20,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            this.Tag = this.GetMetadataTag(provider.GetRequiredService<MetadataResolver>());
+            this.Tag = this.GetMetadataTag(provider.GetRequiredService<IMetadataResolver>());
             this.Returner = provider.GetRequiredService<IPoolReturner>();
             this.CreatingScopeAndCapacity(provider, this.Capacity);
         }
@@ -30,7 +30,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             _objs = _capacity > 0 ? ArrayPool<object>.Shared.Rent(capacity) : Array.Empty<object>();
         }
 
-        protected abstract MetadataTag GetMetadataTag(MetadataResolver resolver);
+        protected abstract MetadataTag GetMetadataTag(IMetadataResolver resolver);
         protected MetadataList<T> GetAll<T>() where T : PSObject, IComparable<T>, IJsonMetadataTaggable
         {
             var response = this.SendGetRequest<MetadataList<T>>(this.Tag.UrlBase);

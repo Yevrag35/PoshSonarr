@@ -68,7 +68,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.SERIES];
+            this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.SERIES];
         }
 
         private static void AddIdsToDict(IEnumerable<SeriesObject> array, IDictionary<int, string?> dictionary)

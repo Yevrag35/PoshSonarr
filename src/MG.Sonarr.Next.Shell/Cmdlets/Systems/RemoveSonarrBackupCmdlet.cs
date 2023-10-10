@@ -25,7 +25,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
 
         protected override int Capacity => 1;
 
-        protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
+        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {
             return resolver[Meta.BACKUP];
         }

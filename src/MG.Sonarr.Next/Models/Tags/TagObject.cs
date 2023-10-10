@@ -28,7 +28,7 @@ namespace MG.Sonarr.Next.Models.Tags
             return this.Id.CompareTo(other.Id);
         }
 
-        protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)
+        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.TAG];
         }

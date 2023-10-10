@@ -24,7 +24,7 @@ namespace MG.Sonarr.Next.Models.Profiles
             return this.CompareTo((TagUpdateObject?)other);
         }
 
-        protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)
+        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.RELEASE_PROFILE];
         }

@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
         readonly JsonSerializerOptions _options;
         readonly IServiceScopeFactory _scopeFactory;
 
-        public VerboseHandler(Queue<IApiCmdlet> queue, SonarrJsonOptions options, IServiceScopeFactory scopeFactory)
+        public VerboseHandler(Queue<IApiCmdlet> queue, ISonarrJsonOptions options, IServiceScopeFactory scopeFactory)
         {
             _queue = queue;
             _options = options.GetForSerializing();

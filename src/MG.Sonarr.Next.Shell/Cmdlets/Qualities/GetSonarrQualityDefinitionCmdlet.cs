@@ -36,7 +36,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             this.Returnables[1] = _wcNames;
             _list = new(1);
         }
-        protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
+        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {
             return resolver[Meta.QUALITY_DEFINITION];
         }

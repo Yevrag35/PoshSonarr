@@ -15,12 +15,12 @@ namespace MG.Sonarr.Next.Json.Converters
     public sealed class ObjectConverter : JsonConverter<object>
     {
         readonly HashSet<string> _ignore;
-        readonly MetadataResolver _resolver;
+        readonly IMetadataResolver _resolver;
         readonly ReadOnlyDictionary<string, Type> _convertProps;
         readonly JsonNameDictionary _globalReplaceNames;
         readonly IReadOnlyDictionary<string, SpanConverter> _spanConverters;
 
-        public ObjectConverter(IEnumerable<string> ignoreProps, IEnumerable<KeyValuePair<string, string>> replaceNames, IEnumerable<KeyValuePair<string, Type>> convertTypes, IEnumerable<KeyValuePair<string, SpanConverter>> spanConverters, MetadataResolver resolver)
+        public ObjectConverter(IEnumerable<string> ignoreProps, IEnumerable<KeyValuePair<string, string>> replaceNames, IEnumerable<KeyValuePair<string, Type>> convertTypes, IEnumerable<KeyValuePair<string, SpanConverter>> spanConverters, IMetadataResolver resolver)
         {
             _ignore = new(ignoreProps, StringComparer.InvariantCultureIgnoreCase);
             _convertProps = BuildLookup(convertTypes);

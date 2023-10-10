@@ -9,7 +9,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
     {
         readonly JsonSerializerOptions _options;
 
-        public TestingHandler(SonarrJsonOptions options)
+        public TestingHandler(ISonarrJsonOptions options)
         {
             _options = options.GetForSerializing();
         }

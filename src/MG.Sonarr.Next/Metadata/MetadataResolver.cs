@@ -5,10 +5,23 @@ using System.Management.Automation;
 namespace MG.Sonarr.Next.Metadata
 {
     /// <summary>
+    /// A dictionary interface of <see cref="MetadataTag"/> instances that describe the various
+    /// types of deserialized API response objects.
+    /// </summary>
+    public interface IMetadataResolver : IReadOnlyCollection<MetadataTag>
+    {
+        MetadataTag this[string key] { get; }
+
+        bool ContainsKey([NotNullWhen(true)] string? key);
+        bool TryGetValue([NotNullWhen(true)] string? key, [NotNullWhen(true)] out MetadataTag? value);
+        bool TryGetValue(PSObject pso, [NotNullWhen(true)] out MetadataTag? value);
+    }
+
+    /// <summary>
     /// A dictionary implementation of <see cref="MetadataTag"/> instances that describe the various
     /// types of deserialized API response objects.
     /// </summary>
-    public sealed class MetadataResolver : IReadOnlyCollection<MetadataTag>
+    internal sealed class MetadataResolver : IMetadataResolver
     {
         public static readonly string META_PROPERTY_NAME = "MetadataTag";
         public const char META_PREFIX = '#';

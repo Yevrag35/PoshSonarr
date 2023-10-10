@@ -16,7 +16,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.ROOT_FOLDER];
+            this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.ROOT_FOLDER];
         }
         protected override void Process(IServiceProvider provider)
         {

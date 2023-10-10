@@ -19,7 +19,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
         public IntOrString[] Name { get; set; } = Array.Empty<IntOrString>();
          
         protected override int Capacity => 2;
-        protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
+        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {
             return resolver[Meta.INDEXER];
         }

@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Shell.Extensions
             ArgumentNullException.ThrowIfNull(provider);
             ArgumentException.ThrowIfNullOrEmpty(tagValue);
 
-            return provider.GetRequiredService<MetadataResolver>()[tagValue];
+            return provider.GetRequiredService<IMetadataResolver>()[tagValue];
         }
     }
 }

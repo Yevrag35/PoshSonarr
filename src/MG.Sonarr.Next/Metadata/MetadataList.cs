@@ -87,7 +87,7 @@ namespace MG.Sonarr.Next.Metadata
             _list.RemoveAt(index);
         }
 
-        public void SetTag(MetadataResolver resolver)
+        public void SetTag(IMetadataResolver resolver)
         {
             if (this.Count <= 0)
             {

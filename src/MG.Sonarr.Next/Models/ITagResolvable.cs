@@ -5,6 +5,6 @@ namespace MG.Sonarr.Next.Models
 {
     public interface ITagResolvable<T> where T : IJsonMetadataTaggable
     {
-        static abstract MetadataTag GetTag(MetadataResolver resolver);
+        static abstract MetadataTag GetTag(IMetadataResolver resolver);
     }
 }

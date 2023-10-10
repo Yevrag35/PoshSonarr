@@ -26,7 +26,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            this.Tag = provider.GetRequiredService<MetadataResolver>()[Meta.TAG];
+            this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.TAG];
         }
         protected override void Process(IServiceProvider provider)
         {

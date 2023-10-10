@@ -13,7 +13,7 @@ namespace MG.Sonarr.Next.Models.Tags
         [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
         public MetadataTag MetadataTag { get; private set; } = MetadataTag.Empty;
 
-        public void SetTag(MetadataResolver resolver)
+        public void SetTag(IMetadataResolver resolver)
         {
             this.MetadataTag = resolver[Meta.TAG];
         }

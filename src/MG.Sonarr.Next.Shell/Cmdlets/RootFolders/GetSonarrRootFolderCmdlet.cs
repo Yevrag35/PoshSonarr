@@ -23,7 +23,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
             this.Returnables[0] = _ids;
         }
 
-        protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
+        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {
             return resolver[Meta.ROOT_FOLDER];
         }

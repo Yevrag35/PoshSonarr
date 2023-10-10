@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Models
         public required int TotalRecords { get; init; }
         public required MetadataList<T> Records { get; init; }
 
-        void IJsonMetadataTaggable.SetTag(MetadataResolver resolver)
+        void IJsonMetadataTaggable.SetTag(IMetadataResolver resolver)
         {
             this.Records.SetTag(resolver);
         }

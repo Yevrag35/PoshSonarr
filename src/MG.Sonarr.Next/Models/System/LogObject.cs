@@ -18,7 +18,7 @@ namespace MG.Sonarr.Next.Models.System
         {
         }
 
-        protected override MetadataTag GetTag(MetadataResolver resolver, MetadataTag existing)
+        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.LOG_ITEM];
         }

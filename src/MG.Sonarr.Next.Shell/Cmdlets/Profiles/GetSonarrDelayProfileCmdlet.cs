@@ -24,7 +24,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
             this.Returnables[0] = _ids;
         }
 
-        protected override MetadataTag GetMetadataTag(MetadataResolver resolver)
+        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {
             return resolver[Meta.DELAY_PROFILE];
         }
