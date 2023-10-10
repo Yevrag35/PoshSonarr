@@ -21,15 +21,20 @@ namespace MG.Sonarr.Next.Services.Http.Clients
     public interface ISonarrClient
     {
         SonarrResponse SendDelete(string path, CancellationToken token = default);
+        Task<SonarrResponse> SendDeleteAsync(string path, CancellationToken token = default);
         SonarrResponse<T> SendGet<T>(string path, CancellationToken token = default);
+        Task<SonarrResponse<T>> SendGetAsync<T>(string path, CancellationToken token = default);
         SonarrResponse SendPost<T>(string path, T body, CancellationToken token = default) where T : notnull;
+        Task<SonarrResponse> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull;
         SonarrResponse<TOutput> SendPost<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull;
+        Task<SonarrResponse<TOutput>> SendPostAsync<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull;
         SonarrResponse SendPut<T>(string path, T body, CancellationToken token = default)
             where T : notnull;
+        Task<SonarrResponse> SendPutAsync<T>(string path, T body, CancellationToken token = default) where T : notnull;
         SonarrResponse SendTest(CancellationToken token = default);
     }
 
-    file sealed class SonarrHttpClient : ISonarrClient
+    internal sealed partial class SonarrHttpClient : ISonarrClient
     {
         const string TEST_API = "/system/status";
 
@@ -95,11 +100,10 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 
             return response;
         }
-        public SonarrResponse SendPut<T>(string path, T body, CancellationToken token = default)
-            where T : notnull
+        public SonarrResponse SendPut<T>(string path, T body, CancellationToken token = default) where T : notnull
         {
             using ApiKeyRequestMessage request = new(HttpMethod.Put, path);
-            request.Content = JsonContent.Create(body, body!.GetType(), options: _serializingOptions);
+            request.Content = JsonContent.Create(body, body.GetType(), options: _serializingOptions);
 
             return this.SendNoResultRequest(request, path, token);
         }
