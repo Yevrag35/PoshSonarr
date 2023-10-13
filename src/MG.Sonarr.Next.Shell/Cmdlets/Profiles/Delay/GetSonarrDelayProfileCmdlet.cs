@@ -3,7 +3,7 @@ using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
+namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delays
 {
     [Cmdlet(VerbsCommon.Get, "SonarrDelayProfile")]
     public sealed class GetSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
@@ -20,8 +20,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
+            _ids = GetPooledObject<SortedSet<int>>();
+            Returnables[0] = _ids;
         }
 
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
@@ -31,13 +31,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles
 
         protected override void Begin(IServiceProvider provider)
         {
-            _ids.UnionWith(this.Id);
+            _ids.UnionWith(Id);
         }
         protected override void Process(IServiceProvider provider)
         {
             IEnumerable<DelayProfileObject> profiles = _ids.Count > 0
-                ? this.GetById<DelayProfileObject>(_ids)
-                : this.GetAll<DelayProfileObject>();
+                ? GetById<DelayProfileObject>(_ids)
+                : GetAll<DelayProfileObject>();
 
             this.WriteCollection(profiles);
         }

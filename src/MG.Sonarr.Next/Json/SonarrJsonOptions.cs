@@ -80,112 +80,107 @@ namespace MG.Sonarr.Next.Json
     {
         public static IServiceCollection AddSonarrJsonOptions(this IServiceCollection services, Action<IServiceProvider, JsonSerializerOptions> configureOptions)
         {
-            return services.AddSingleton<ISonarrJsonOptions>(provider =>
+            return services.AddSingleton((Func<IServiceProvider, ISonarrJsonOptions>)(provider =>
             {
                 void newAction(JsonSerializerOptions options)
                 {
-                    var resolver = provider.GetRequiredService<IMetadataResolver>();
-
-                    var doSpanConverter = new DateOnlyConverter();
-                    var timeConverter = new TimeOnlyConverter();
-                    var timeSpanConverter = new TimeSpanConverter();
-
-                    ObjectConverter objCon = new(
-                            ignoreProps: new string[]
-                            {
-                                Constants.META_PROPERTY_NAME,
-                            },
-                            replaceNames: new KeyValuePair<string, string>[]
-                            {
-                                new("Monitored", "IsMonitored"),
-                                new("TvdbId", "TVDbId"),
-                            },
-                            convertTypes: new KeyValuePair<string, Type>[]
-                            {
-                                new("AirDate", typeof(DateOnly)),
-                                new("Tags", typeof(SortedSet<int>)),
-                                new("Genres", typeof(string[])),
-                            },
-                            spanConverters: new KeyValuePair<string, SpanConverter>[]
-                            {
-                                new("AirDate", doSpanConverter),
-                                new("FirstAired", doSpanConverter),
-                                new("AirTime", timeConverter),
-                                new("Duration", timeSpanConverter),
-                            },
-                            resolver
-                        );
-
-                    options.Converters.AddMany(
-                        objCon,
-                        new PostCommandWriter(),
-                        //new SonarrObjectConverter<AddSeriesObject>(objCon),
-                        //new SonarrObjectConverter<BackupObject>(objCon),
-                        //new SonarrObjectConverter<CalendarObject>(objCon),
-                        //new SonarrObjectConverter<CommandObject>(objCon),
-                        //new SonarrObjectConverter<DelayProfileObject>(objCon),
-                        //new SonarrObjectConverter<EpisodeObject>(objCon),
-                        //new SonarrObjectConverter<EpisodeFileObject>(objCon),
-                        //new SonarrObjectConverter<IndexerObject>(objCon),
-                        //new SonarrObjectConverter<LanguageProfileObject>(objCon),
-                        //new SonarrObjectConverter<LogObject>(objCon),
-                        //new SonarrObjectConverter<LogFileObject>(objCon),
-                        //new SonarrObjectConverter<QualityDefinitionObject>(objCon),
-                        //new SonarrObjectConverter<QualityProfileObject>(objCon),
-                        //new SonarrObjectConverter<ReleaseObject>(objCon),
-                        //new SonarrObjectConverter<ReleaseProfileObject>(objCon),
-                        //new SonarrObjectConverter<RootFolderObject>(objCon),
-                        //new SonarrObjectConverter<SeriesObject>(objCon),
-                        //new SonarrObjectConverter<SonarrServerError>(objCon),
-                        //new SonarrObjectConverter<TagObject>(objCon),
-                        new SonarrResponseConverter());
-
-                    foreach (JsonConverter sonarrConverter in ConstructSonarrObjectConverters(objCon))
-                    {
-                        options.Converters.Add(sonarrConverter);
-                    }
-
                     options.PropertyNamingPolicy = null;
                     options.TypeInfoResolver = new DefaultJsonTypeInfoResolver
                     {
                         Modifiers =
-                    {
-                        JsonModifiers.AddPrivateFieldsModifier,
-                    }
+                        {
+                            JsonModifiers.AddPrivateFieldsModifier,
+                        }
                     };
+
+                    AddAllConverters(provider, options);
 
                     configureOptions(provider, options);
                 }
 
                 return new SonarrJsonOptions(newAction);
-            });
+            }));
+        }
+
+        private static void AddAllConverters(IServiceProvider provider, JsonSerializerOptions options)
+        {
+            var resolver = provider.GetRequiredService<IMetadataResolver>();
+
+            var doSpanConverter = new DateOnlyConverter();
+            var timeConverter = new TimeOnlyConverter();
+            var timeSpanConverter = new TimeSpanConverter();
+
+            ObjectConverter objCon = new(
+                    ignoreProps: new string[]
+                    {
+                                Constants.META_PROPERTY_NAME,
+                    },
+                    replaceNames: new KeyValuePair<string, string>[]
+                    {
+                                new("Monitored", "IsMonitored"),
+                                new("TvdbId", "TVDbId"),
+                    },
+                    convertTypes: new KeyValuePair<string, Type>[]
+                    {
+                                new("AirDate", typeof(DateOnly)),
+                                new("Tags", typeof(SortedSet<int>)),
+                                new("Genres", typeof(string[])),
+                    },
+                    spanConverters: new KeyValuePair<string, SpanConverter>[]
+                    {
+                                new("AirDate", doSpanConverter),
+                                new("FirstAired", doSpanConverter),
+                                new("AirTime", timeConverter),
+                                new("Duration", timeSpanConverter),
+                    },
+                    resolver: resolver
+                );
+
+            options.Converters.AddMany(objCon, new PostCommandWriter(), new SonarrResponseConverter());
+
+            IEnumerable<JsonConverter> sonarrConverters = ConstructSonarrObjectConverters(objCon);
+
+            options.Converters.AddMany(sonarrConverters);
         }
 
         private static IEnumerable<JsonConverter> ConstructSonarrObjectConverters(ObjectConverter converter)
         {
             Type genericClassType = typeof(SonarrObjectConverter<>);
-            object[] args = new object[] { converter };
+            object[] ctorArgs = new object[] { converter };
+            Type[] typeParams = new Type[1];
 
             IEnumerable<Type> types = GetSonarrObjectTypes();
 
-            foreach (Type type in types)
+            foreach (Type resolvedConverterType in types)
             {
-                Type constructedClassType = genericClassType.MakeGenericType(type);
-                JsonConverter constructed = (JsonConverter)Activator.CreateInstance(constructedClassType, args)!
-                    ?? throw new InvalidOperationException($"Unable to construct {constructedClassType.GetTypeName()}.");
-
-                yield return constructed;
+                typeParams[0] = resolvedConverterType;
+                yield return ConstructConverter(genericClassType, typeParams, ctorArgs);
             }
         }
+
+        private static JsonConverter ConstructConverter(Type genericClassType, Type[] typeParams, object[] activatorArgs)
+        {
+            Type constructedClassType = genericClassType.MakeGenericType(typeParams);
+            JsonConverter constructed = (JsonConverter?)Activator.CreateInstance(constructedClassType, activatorArgs)
+                ?? throw new InvalidOperationException($"Unable to construct {constructedClassType.GetTypeName()}.");
+
+            return constructed;
+        }
+
         private static IEnumerable<Type> GetSonarrObjectTypes()
         {
             Type attType = typeof(SonarrObjectAttribute);
+            Type sonarrObjType = typeof(SonarrObject);
             Assembly thisAss = attType.Assembly;
 
             IEnumerable<Type> types = thisAss.GetExportedTypes()
-                .Where(x => x.IsClass && !x.IsAbstract
+                .Where(x => x.IsClass 
+                            && 
+                            !x.IsAbstract
                             &&
-                            x.IsDefined(attType));
+                            x.IsDefined(attType)
+                            &&
+                            sonarrObjType.IsAssignableFrom(x));
 
             return types;
         }

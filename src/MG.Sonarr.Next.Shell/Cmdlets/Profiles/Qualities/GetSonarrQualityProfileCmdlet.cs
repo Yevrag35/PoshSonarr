@@ -5,7 +5,7 @@ using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
+namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities
 {
     [Cmdlet(VerbsCommon.Get, "SonarrQualityProfile", DefaultParameterSetName = "ByProfileName")]
     [Alias("Get-SonarrProfile")]
@@ -32,10 +32,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
-            _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
-            this.Returnables[1] = _wcNames;
+            _ids = GetPooledObject<SortedSet<int>>();
+            Returnables[0] = _ids;
+            _wcNames = GetPooledObject<HashSet<Wildcard>>();
+            Returnables[1] = _wcNames;
         }
 
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
@@ -45,11 +45,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
 
         protected override void Begin(IServiceProvider provider)
         {
-            _ids.UnionWith(this.Id);
+            _ids.UnionWith(Id);
             if (this.HasParameter(x => x.Name))
             {
-                this.Name.SplitToSets(_ids, _wcNames,
-                    this.MyInvocation.Line.Contains(" -Name ", StringComparison.InvariantCultureIgnoreCase));
+                Name.SplitToSets(_ids, _wcNames,
+                    MyInvocation.Line.Contains(" -Name ", StringComparison.InvariantCultureIgnoreCase));
             }
         }
         protected override void Process(IServiceProvider provider)
@@ -57,12 +57,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             if (this.HasParameter(x => x.InputObject))
             {
                 _ids.UnionWith(
-                    this.InputObject.Where(x => x.QualityProfileId > 0).Select(x => x.QualityProfileId));
+                    InputObject.Where(x => x.QualityProfileId > 0).Select(x => x.QualityProfileId));
             }
         }
         protected override void End(IServiceProvider provider)
         {
-            if (this.InvokeCommand.HasErrors)
+            if (InvokeCommand.HasErrors)
             {
                 return;
             }
@@ -72,14 +72,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             bool addedIds = false;
             if (_ids.Count > 0)
             {
-                IEnumerable<QualityProfileObject> profiles = this.GetById<QualityProfileObject>(_ids);
+                IEnumerable<QualityProfileObject> profiles = GetById<QualityProfileObject>(_ids);
                 list.AddRange(profiles);
                 addedIds = true;
             }
 
             if (_wcNames.Count > 0 || !addedIds)
             {
-                var all = this.GetAll<QualityProfileObject>();
+                var all = GetAll<QualityProfileObject>();
                 if (all.Count > 0)
                 {
                     FilterByProfileName(all, _wcNames, _ids);
