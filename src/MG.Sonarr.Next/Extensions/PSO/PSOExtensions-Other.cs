@@ -19,6 +19,13 @@ namespace MG.Sonarr.Next.Extensions.PSO
         }
 
         [DebuggerStepThrough]
+        public static string GetStringOrEmpty(this PSObject? pso, [CallerMemberName] string propertyName = "")
+        {
+            string? value = pso?.Properties[propertyName]?.Value as string;
+            return value ?? string.Empty;
+        }
+
+        [DebuggerStepThrough]
         public static void SetValue<T>(this PSObject pso, T? value, [CallerMemberName] string propertyName = "")
         {
             ArgumentNullException.ThrowIfNull(pso);

@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Models;
+﻿using MG.Sonarr.Next.Models.Errors;
 using System.Collections;
 
 namespace MG.Sonarr.Next.Collections

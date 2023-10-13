@@ -1,6 +1,8 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using System.Buffers;
 
 namespace MG.Sonarr.Next.Models.System
 {
@@ -10,15 +12,14 @@ namespace MG.Sonarr.Next.Models.System
         Update,
     }
 
-    public sealed class LogFileObject : SonarrObject,
-        IComparable<LogFileObject>,
+    [SonarrObject]
+    public sealed class LogFileObject : IdSonarrObject<LogFileObject>,
         IEquatable<LogFileObject>,
         ISerializableNames<LogFileObject>
     {
         const int CAPACITY = 5;
         const string UPDATE_PART = "/file/update/";
 
-        public int Id { get; private set; }
         public string ContentsUrl { get; private set; } = string.Empty;
         public DateTimeOffset LastWriteTime { get; private set; }
         public LogFileType Type
@@ -32,9 +33,15 @@ namespace MG.Sonarr.Next.Models.System
         {
         }
 
-        public int CompareTo(LogFileObject? other)
+        public override int CompareTo(LogFileObject? other)
         {
-            return other is not null ? this.LastWriteTime.CompareTo(other.LastWriteTime) : 1;
+            int compare = Comparer<DateTimeOffset?>.Default.Compare(this.LastWriteTime, other?.LastWriteTime);
+            if (compare == 0)
+            {
+                compare = StringComparer.InvariantCultureIgnoreCase.Compare(this.ContentsUrl, other?.ContentsUrl);
+            }
+
+            return compare;
         }
         public bool Equals(LogFileObject? other)
         {
@@ -70,7 +77,10 @@ namespace MG.Sonarr.Next.Models.System
         }
         public override int GetHashCode()
         {
-            return HashCode.Combine(this.Id, this.Type,
+            return HashCode.Combine(
+                this.Id,
+                this.Type,
+                this.LastWriteTime,
                 StringComparer.InvariantCultureIgnoreCase.GetHashCode(this.ContentsUrl));
         }
 
@@ -81,11 +91,8 @@ namespace MG.Sonarr.Next.Models.System
 
         public override void OnDeserialized()
         {
-            if (this.TryGetId(out int id))
-            {
-                this.Id = id;
-                this.Properties.Remove(nameof(this.Id));
-            }
+            base.OnDeserialized();
+            this.Properties.Remove(nameof(this.Id));
 
             if (this.TryGetNonNullProperty(nameof(this.ContentsUrl), out string? cl))
             {
@@ -99,8 +106,6 @@ namespace MG.Sonarr.Next.Models.System
             {
                 this.LastWriteTime = lastWriteTime;
             }
-
-            base.OnDeserialized();
         }
     }
 }

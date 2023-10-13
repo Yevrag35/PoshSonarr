@@ -1,9 +1,11 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.Qualities
 {
+    [SonarrObject]
     public sealed class QualityDefinitionObject : SonarrObject,
         IComparable<QualityDefinitionObject>,
         ISerializableNames<QualityDefinitionObject>
@@ -13,7 +15,7 @@ namespace MG.Sonarr.Next.Models.Qualities
         public int Id { get; private set; }
         public string Title
         {
-            get => this.GetValue<string>() ?? string.Empty;
+            get => this.GetStringOrEmpty();
             set => this.SetValue(value);
         }
 

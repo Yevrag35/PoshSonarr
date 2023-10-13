@@ -1,17 +1,18 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Releases
 {
+    [SonarrObject]
     public sealed class ReleaseObject : SonarrObject,
         IComparable<ReleaseObject>,
         IJsonOnSerializing,
         ISerializableNames<ReleaseObject>
     {
         const int CAPACITY = 46;
-        
 
         int _age;
         Weight _weight;
@@ -19,17 +20,13 @@ namespace MG.Sonarr.Next.Models.Releases
         double _ageMinutes;
 
         public TimeSpan Age { get; private set; }
-        public int IndexerId
-        {
-            get => this.GetValue<int>();
-        }
+        public int IndexerId { get; private set; }
         public string ReleaseUrl { get; private set; } = string.Empty;
         public int TotalWeight => _weight.TotalWeight;
 
         public ReleaseObject()
             : base(CAPACITY)
         {
-            
         }
 
         public int CompareTo(ReleaseObject? other)
@@ -60,6 +57,12 @@ namespace MG.Sonarr.Next.Models.Releases
 
         public override void OnDeserialized()
         {
+            base.OnDeserialized();
+            if (this.TryGetProperty(nameof(this.IndexerId), out int indexerId))
+            {
+                this.IndexerId = indexerId;
+            }
+
             if (this.TryGetProperty("AgeMinutes", out double value))
             {
                 _ageMinutes = value;
@@ -91,6 +94,8 @@ namespace MG.Sonarr.Next.Models.Releases
         {
             _weight.SetRelease(this);
             this.UpdateProperty(nameof(this.Age), _age);
+            this.UpdateProperty(nameof(this.IndexerId), this.IndexerId);
+            this.UpdateProperty(nameof(this.ReleaseUrl), this.ReleaseUrl);
             this.AddProperty("AgeHours", _ageHours);
             this.AddProperty("AgeMinutes", _ageMinutes);
         }

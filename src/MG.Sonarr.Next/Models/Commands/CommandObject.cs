@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System;
@@ -11,9 +12,9 @@ using System.Threading.Tasks;
 
 namespace MG.Sonarr.Next.Models.Commands
 {
-    public sealed class CommandObject : SonarrObject,
+    [SonarrObject]
+    public sealed class CommandObject : IdSonarrObject<CommandObject>,
         ICommand,
-        IComparable<CommandObject>,
         IJsonOnSerializing,
         ISerializableNames<CommandObject>
     {
@@ -23,7 +24,6 @@ namespace MG.Sonarr.Next.Models.Commands
 
         PSObject? _body;
 
-        public int Id { get; private set; }
         public bool IsCompleted => COMPLETED.Equals(this.Status, StringComparison.InvariantCultureIgnoreCase);
         public string Name { get; private set; } = string.Empty;
         public DateTimeOffset Started { get; private set; }
@@ -35,10 +35,6 @@ namespace MG.Sonarr.Next.Models.Commands
         {
         }
 
-        public int CompareTo(CommandObject? other)
-        {
-            return Comparer<int?>.Default.Compare(this.Id, other?.Id);
-        }
         public static readonly ICommand Empty = EmptyCommand.Default;
         protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
@@ -52,11 +48,6 @@ namespace MG.Sonarr.Next.Models.Commands
             {
                 _body = body;
                 this.Properties.Remove(BODY);
-            }
-
-            if (this.TryGetId(out int id))
-            {
-                this.Id = id;
             }
 
             if (this.TryGetNonNullProperty(Constants.NAME, out string? name))

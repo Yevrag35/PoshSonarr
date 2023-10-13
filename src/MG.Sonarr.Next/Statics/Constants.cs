@@ -88,6 +88,7 @@ namespace MG.Sonarr.Next
         public static readonly string CALENDAR = "#calendar";
         public static readonly string COMMAND = "#command";
         public static readonly string DELAY_PROFILE = "#delay_profile";
+        public static readonly string DOWNLOAD_CLIENT = "#download_client";
         public static readonly string EPISODE = "#episode";
         public static readonly string EPISODE_FILE = "#episode_file";
         public static readonly string INDEXER = "#indexer";

@@ -1,11 +1,12 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.Calendar
 {
-    public sealed class CalendarObject : SonarrObject,
-        IComparable<CalendarObject>,
+    [SonarrObject]
+    public sealed class CalendarObject : IdSonarrObject<CalendarObject>,
         IEpisodeFilePipeable,
         IEpisodePipeable,
         ISeriesPipeable,
@@ -15,7 +16,6 @@ namespace MG.Sonarr.Next.Models.Calendar
         const int CAPACITY = 20;
 
         public DateTimeOffset AirDateUtc { get; private set; }
-        public int Id { get; private set; }
         public int EpisodeFileId { get; private set; }
         int IEpisodePipeable.EpisodeId => this.Id;
         public int SeriesId { get; private set; }
@@ -25,7 +25,7 @@ namespace MG.Sonarr.Next.Models.Calendar
         {
         }
 
-        public int CompareTo(CalendarObject? other)
+        public override int CompareTo(CalendarObject? other)
         {
             if (other is null)
             {
@@ -53,11 +53,8 @@ namespace MG.Sonarr.Next.Models.Calendar
 
         public override void OnDeserialized()
         {
+            base.OnDeserialized();
             this.Properties.Remove("AirDate");
-            if (this.TryGetId(out int id))
-            {
-                this.Id = id;
-            }
 
             if (this.TryGetProperty(nameof(this.SeriesId), out int seriesId))
             {

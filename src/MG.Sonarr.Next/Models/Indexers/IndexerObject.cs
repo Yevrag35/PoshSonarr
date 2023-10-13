@@ -1,15 +1,18 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Indexers
 {
-    public sealed class IndexerObject : TagUpdateObject,
-        IComparable<IndexerObject>,
+    [SonarrObject]
+    public sealed class IndexerObject : TagUpdateObject<IndexerObject>,
         IJsonOnSerializing,
         ISerializableNames<IndexerObject>
     {
+        const int CAPACITY = 17;
+
         public bool EnableRss
         {
             get => this.GetValue<bool>();
@@ -30,7 +33,8 @@ namespace MG.Sonarr.Next.Models.Indexers
         }
         public string Protocol { get; private set; } = string.Empty;
 
-        public IndexerObject() : base(17)
+        public IndexerObject()
+            : base(CAPACITY)
         {
         }
 
@@ -44,10 +48,6 @@ namespace MG.Sonarr.Next.Models.Indexers
             base.Commit();
             this.Name = this.GetValue<string>() ?? string.Empty;
             this.Protocol = this.GetValue<string>() ?? string.Empty;
-        }
-        public int CompareTo(IndexerObject? other)
-        {
-            return Comparer<int?>.Default.Compare(this.Id, other?.Id);
         }
         public override void OnDeserialized()
         {

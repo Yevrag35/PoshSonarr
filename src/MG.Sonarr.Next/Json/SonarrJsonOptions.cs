@@ -17,6 +17,9 @@ using MG.Sonarr.Next.Models;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json.Serialization.Metadata;
 using MG.Sonarr.Next.Metadata;
+using System.Reflection;
+using MG.Sonarr.Next.Attributes;
+using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Json
 {
@@ -116,26 +119,31 @@ namespace MG.Sonarr.Next.Json
                     options.Converters.AddMany(
                         objCon,
                         new PostCommandWriter(),
-                        new SonarrObjectConverter<AddSeriesObject>(objCon),
-                        new SonarrObjectConverter<BackupObject>(objCon),
-                        new SonarrObjectConverter<CalendarObject>(objCon),
-                        new SonarrObjectConverter<CommandObject>(objCon),
-                        new SonarrObjectConverter<DelayProfileObject>(objCon),
-                        new SonarrObjectConverter<EpisodeObject>(objCon),
-                        new SonarrObjectConverter<EpisodeFileObject>(objCon),
-                        new SonarrObjectConverter<IndexerObject>(objCon),
-                        new SonarrObjectConverter<LanguageProfileObject>(objCon),
-                        new SonarrObjectConverter<LogObject>(objCon),
-                        new SonarrObjectConverter<LogFileObject>(objCon),
-                        new SonarrObjectConverter<QualityDefinitionObject>(objCon),
-                        new SonarrObjectConverter<QualityProfileObject>(objCon),
-                        new SonarrObjectConverter<ReleaseObject>(objCon),
-                        new SonarrObjectConverter<ReleaseProfileObject>(objCon),
-                        new SonarrObjectConverter<RootFolderObject>(objCon),
-                        new SonarrObjectConverter<SeriesObject>(objCon),
-                        new SonarrObjectConverter<SonarrServerError>(objCon),
-                        new SonarrObjectConverter<TagObject>(objCon),
+                        //new SonarrObjectConverter<AddSeriesObject>(objCon),
+                        //new SonarrObjectConverter<BackupObject>(objCon),
+                        //new SonarrObjectConverter<CalendarObject>(objCon),
+                        //new SonarrObjectConverter<CommandObject>(objCon),
+                        //new SonarrObjectConverter<DelayProfileObject>(objCon),
+                        //new SonarrObjectConverter<EpisodeObject>(objCon),
+                        //new SonarrObjectConverter<EpisodeFileObject>(objCon),
+                        //new SonarrObjectConverter<IndexerObject>(objCon),
+                        //new SonarrObjectConverter<LanguageProfileObject>(objCon),
+                        //new SonarrObjectConverter<LogObject>(objCon),
+                        //new SonarrObjectConverter<LogFileObject>(objCon),
+                        //new SonarrObjectConverter<QualityDefinitionObject>(objCon),
+                        //new SonarrObjectConverter<QualityProfileObject>(objCon),
+                        //new SonarrObjectConverter<ReleaseObject>(objCon),
+                        //new SonarrObjectConverter<ReleaseProfileObject>(objCon),
+                        //new SonarrObjectConverter<RootFolderObject>(objCon),
+                        //new SonarrObjectConverter<SeriesObject>(objCon),
+                        //new SonarrObjectConverter<SonarrServerError>(objCon),
+                        //new SonarrObjectConverter<TagObject>(objCon),
                         new SonarrResponseConverter());
+
+                    foreach (JsonConverter sonarrConverter in ConstructSonarrObjectConverters(objCon))
+                    {
+                        options.Converters.Add(sonarrConverter);
+                    }
 
                     options.PropertyNamingPolicy = null;
                     options.TypeInfoResolver = new DefaultJsonTypeInfoResolver
@@ -151,6 +159,35 @@ namespace MG.Sonarr.Next.Json
 
                 return new SonarrJsonOptions(newAction);
             });
+        }
+
+        private static IEnumerable<JsonConverter> ConstructSonarrObjectConverters(ObjectConverter converter)
+        {
+            Type genericClassType = typeof(SonarrObjectConverter<>);
+            object[] args = new object[] { converter };
+
+            IEnumerable<Type> types = GetSonarrObjectTypes();
+
+            foreach (Type type in types)
+            {
+                Type constructedClassType = genericClassType.MakeGenericType(type);
+                JsonConverter constructed = (JsonConverter)Activator.CreateInstance(constructedClassType, args)!
+                    ?? throw new InvalidOperationException($"Unable to construct {constructedClassType.GetTypeName()}.");
+
+                yield return constructed;
+            }
+        }
+        private static IEnumerable<Type> GetSonarrObjectTypes()
+        {
+            Type attType = typeof(SonarrObjectAttribute);
+            Assembly thisAss = attType.Assembly;
+
+            IEnumerable<Type> types = thisAss.GetExportedTypes()
+                .Where(x => x.IsClass && !x.IsAbstract
+                            &&
+                            x.IsDefined(attType));
+
+            return types;
         }
     }
 }

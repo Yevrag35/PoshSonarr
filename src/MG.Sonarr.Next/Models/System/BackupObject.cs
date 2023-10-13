@@ -1,17 +1,17 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.System
 {
-    public sealed class BackupObject : SonarrObject,
-        IComparable<BackupObject>,
+    [SonarrObject]
+    public sealed class BackupObject : IdSonarrObject<BackupObject>,
         ISerializableNames<BackupObject>
     {
         const int CAPACITY = 6;
 
         public Uri BackupUri { get; private set; } = null!;
-        public int Id { get; private set; }
         public string Name { get; private set; } = string.Empty;
 
         public BackupObject()
@@ -19,9 +19,15 @@ namespace MG.Sonarr.Next.Models.System
         {
         }
 
-        public int CompareTo(BackupObject? other)
+        public override int CompareTo(BackupObject? other)
         {
-            return StringComparer.InvariantCultureIgnoreCase.Compare(this.Name, other?.Name);
+            int compare = StringComparer.InvariantCultureIgnoreCase.Compare(this.Name, other?.Name);
+            if (compare == 0)
+            {
+                compare = base.CompareTo(other);
+            }
+
+            return compare;
         }
 
         protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
@@ -32,10 +38,6 @@ namespace MG.Sonarr.Next.Models.System
         public override void OnDeserialized()
         {
             base.OnDeserialized();
-            if (this.TryGetId(out int id))
-            {
-                this.Id = id;
-            }
 
             if (this.TryGetNonNullProperty(nameof(this.Name), out string? name))
             {

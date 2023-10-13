@@ -1,12 +1,13 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Episodes
 {
-    public sealed class EpisodeObject : SonarrObject,
-        IComparable<EpisodeObject>,
+    [SonarrObject]
+    public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
         IEpisodeFilePipeable,
         IHasId,
         IJsonOnSerializing,
@@ -22,23 +23,12 @@ namespace MG.Sonarr.Next.Models.Episodes
         public int EpisodeFileId { get; private set; }
         public int EpisodeNumber { get; private set; }
         public bool HasAbsolute { get; private set; }
-        public int Id { get; private set; }
         public int SeasonNumber { get; private set; }
         public int SeriesId { get; private set; }
 
         public EpisodeObject()
             : base(CAPACITY)
         {
-        }
-
-        public int CompareTo(EpisodeObject? other)
-        {
-            if (other is null)
-            {
-                return -1;
-            }
-
-            return this.Id.CompareTo(other.Id);
         }
 
         protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
@@ -48,15 +38,11 @@ namespace MG.Sonarr.Next.Models.Episodes
 
         public override void OnDeserialized()
         {
+            base.OnDeserialized();
             if (this.TryGetProperty("AirDate", out DateOnly airDate))
             {
                 _airDate = airDate;
                 this.Properties.Remove("AirDate");
-            }
-
-            if (this.TryGetId(out int id))
-            {
-                this.Id = id;
             }
 
             if (this.TryGetProperty(nameof(this.AbsoluteEpisodeNumber), out int abId))

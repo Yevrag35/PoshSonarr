@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Shell.Models.Series;
@@ -7,6 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Series
 {
+    [SonarrObject]
     public sealed class AddSeriesObject : SeriesObject,
         IComparable<AddSeriesObject>,
         IJsonOnSerializing,
@@ -35,7 +37,7 @@ namespace MG.Sonarr.Next.Models.Series
         }
         public string SeriesType
         {
-            get => this.GetValue<string>() ?? string.Empty;
+            get => this.GetStringOrEmpty();
             set => this.SetValue(value);
         }
         public bool UseSeasonFolders

@@ -2,7 +2,7 @@
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
-namespace MG.Sonarr.Next.Models
+namespace MG.Sonarr.Next.Models.Errors
 {
     public sealed class SonarrServerError : SonarrObject,
         ISerializableNames<SonarrServerError>

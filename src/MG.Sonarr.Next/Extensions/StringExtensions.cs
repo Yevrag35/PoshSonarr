@@ -8,6 +8,13 @@ namespace MG.Sonarr.Next.Extensions
     /// </summary>
     public static class SplittingExtensions
     {
+        
+        public static int GetIgnoreCaseHashCode(this string str)
+        {
+            ArgumentNullException.ThrowIfNull(str);
+            return StringComparer.InvariantCultureIgnoreCase.GetHashCode(str);
+        }
+
         /// <summary>
         /// A zero-allocation method for enumerating a <see cref="ReadOnlySpan{T}"/> source into sections
         /// split by a given character.

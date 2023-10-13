@@ -3,12 +3,13 @@ using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models
 {
-    public abstract class TagUpdateObject : SonarrObject, IComparable<TagUpdateObject>, ITagPipeable
+    public abstract class TagUpdateObject<TSelf> : IdSonarrObject<TSelf>,
+        ITagPipeable
+        where TSelf : IdSonarrObject<TSelf>
     {
         private SortedSet<int>? _tags;
         private int[]? _originalTags;
 
-        public int Id { get; private set; }
         public SortedSet<int> Tags
         {
             get => _tags ??= new();
@@ -45,18 +46,9 @@ namespace MG.Sonarr.Next.Models
                 this.Tags.CopyTo(_originalTags);
             }
         }
-        public int CompareTo(TagUpdateObject? other)
-        {
-            return Comparer<int?>.Default.Compare(this.Id, other?.Id);
-        }
         public override void OnDeserialized()
         {
             base.OnDeserialized();
-
-            if (this.TryGetId(out int id))
-            {
-                this.Id = id;
-            }
 
             if (this.TryGetNonNullProperty(nameof(this.Tags), out SortedSet<int>? tags))
             {

@@ -1,20 +1,18 @@
-﻿using MG.Sonarr.Next.Json;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.Profiles
 {
-    public sealed class DelayProfileObject : TagUpdateObject,
-        IComparable<DelayProfileObject>,
+    [SonarrObject]
+    public sealed class DelayProfileObject : TagUpdateObject<DelayProfileObject>,
         ISerializableNames<DelayProfileObject>
     {
-        public DelayProfileObject()
-            : base(7)
-        {
-        }
+        const int CAPACITY = 7;
 
-        public int CompareTo(DelayProfileObject? other)
+        public DelayProfileObject()
+            : base(CAPACITY)
         {
-            return this.CompareTo((TagUpdateObject?)other);
         }
 
         protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)

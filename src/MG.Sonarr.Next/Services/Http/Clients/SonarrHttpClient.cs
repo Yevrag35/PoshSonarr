@@ -12,6 +12,7 @@ using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Services.Http.Requests;
 using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Models.Errors;
 
 namespace MG.Sonarr.Next.Services.Http.Clients
 {

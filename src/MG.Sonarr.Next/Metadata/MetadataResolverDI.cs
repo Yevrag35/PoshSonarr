@@ -6,13 +6,14 @@ namespace MG.Sonarr.Next.Metadata
     {
         public static IServiceCollection AddMetadata(this IServiceCollection services)
         {
-            int initialCapacity = 18;
+            int initialCapacity = 22;
             MetadataResolver dict = new(initialCapacity)
             {
                 { Meta.BACKUP, Constants.BACKUP, true, new string[] { "Remove-SonarrBackup", "Save-SonarrBackup" } },
                 { Meta.CALENDAR, Constants.CALENDAR, false, new string[] { "Get-SonarrSeries", "Get-SonarrEpisode", "Get-SonarrEpisodeFile", "Remove-SonarrEpisodeFile" } },
                 { Meta.COMMAND, Constants.COMMAND, true },
                 { Meta.DELAY_PROFILE, Constants.DELAY_PROFILE, true, new string[] { "Get-SonarrTag", "Add-SonarrTag", "Clear-SonarrTag" } },
+                { Meta.DOWNLOAD_CLIENT, Constants.DOWNLOAD_CLIENT, true },
                 { Meta.EPISODE, Constants.EPISODE, true, new string[] { "Get-SonarrEpisodeFile", "Remove-SonarrEpisodeFile", "Get-SonarrRelease", "Get-SonarrSeries" } },
                 { Meta.EPISODE_FILE, Constants.EPISODEFILE, true, new string[] { "Get-SonarrEpisodeFile", "Remove-SonarrEpisodeFile" } },
                 { Meta.INDEXER, Constants.INDEXER, true, new string[] { "Get-SonarrTag", "Add-SonarrTag", "Remove-SonarrTag" } },

@@ -3,29 +3,28 @@ using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
-namespace MG.Sonarr.Next.Models.Profiles
+namespace MG.Sonarr.Next.Models.DownloadClients
 {
     [SonarrObject]
-    public sealed class LanguageProfileObject : IdSonarrObject<LanguageProfileObject>,
-        ISerializableNames<LanguageProfileObject>
+    public sealed class DownloadClientObject : TagUpdateObject<DownloadClientObject>,
+        ISerializableNames<DownloadClientObject>
     {
-        const int CAPACITY = 6;
+        const int CAPACITY = 15;
 
         public string Name
         {
-            get => this.GetStringOrEmpty();
+            get => this.GetValue<string>() ?? string.Empty;
             set => this.SetValue(value);
         }
-        public LanguageProfileObject()
+
+        public DownloadClientObject()
             : base(CAPACITY)
         {
         }
 
         protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
-            ArgumentNullException.ThrowIfNull(resolver);
-
-            return resolver[Meta.LANGUAGE];
+            return resolver[Meta.DOWNLOAD_CLIENT];
         }
     }
 }
