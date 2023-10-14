@@ -15,11 +15,14 @@ namespace MG.Sonarr.Next
         public static readonly string META_PROPERTY_NAME = MetadataResolver.META_PROPERTY_NAME;
         public const char META_PREFIX = MetadataResolver.META_PREFIX;
 
+        public static readonly string API_KEY = "ApiKey";
         public static readonly string ID = "Id";
         public static readonly string LABEL = "Label";
         public static readonly string LANG_PROFILE_ID = "LanguageProfileId";
         public static readonly string NAME = "Name";
+        public static readonly string PASSWORD = "Password";
         public static readonly string PROFILE_ID = "ProfileId";
+        public static readonly string PROXY_PASSWORD = "ProxyPassword";
         public static readonly string QUALITY_PROFILE_ID = "QualityProfileId";
         public static readonly string SEASONS = "Seasons";
         public static readonly string SERIES_ID = "seriesId";
@@ -35,7 +38,6 @@ namespace MG.Sonarr.Next
         public static readonly string CALENDAR = "/calendar";
         public static readonly string COMMAND = "/command";
         public static readonly string DISKSPACE = "/diskspace";
-        public static readonly string HOST_CONFIG = CONFIG + "/host";
         public static readonly string DELAY_PROFILE = "/delayprofile";
         public static readonly string DOWNLOAD_CLIENT = "/downloadclient";
         public static readonly string DOWNLOAD_CLIENT_BYID = DOWNLOAD_CLIENT + BY_ID;
@@ -44,6 +46,7 @@ namespace MG.Sonarr.Next
         public static readonly string EPISODEFILE = "/episodefile";
         public static readonly string FILESYSTEM = "/filesystem";
         public static readonly string HISTORY = "/history";
+        public static readonly string HOST = CONFIG + "/host";
         public static readonly string INDEXER = "/indexer";
         public static readonly string INDEXER_BY_ID = INDEXER + BY_ID;
         public static readonly string INDEXER_OPTIONS = CONFIG + INDEXER;
@@ -93,6 +96,7 @@ namespace MG.Sonarr.Next
         public static readonly string DOWNLOAD_CLIENT_CONFIG = "#download_client_config";
         public static readonly string EPISODE = "#episode";
         public static readonly string EPISODE_FILE = "#episode_file";
+        public static readonly string HOST = "#host_config";
         public static readonly string INDEXER = "#indexer";
         public static readonly string LANGUAGE = "#language_profile";
         public static readonly string LOG_FILE = "#log_file";
