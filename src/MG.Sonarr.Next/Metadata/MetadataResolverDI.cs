@@ -14,6 +14,7 @@ namespace MG.Sonarr.Next.Metadata
                 { Meta.COMMAND, Constants.COMMAND, true },
                 { Meta.DELAY_PROFILE, Constants.DELAY_PROFILE, true, new string[] { "Get-SonarrTag", "Add-SonarrTag", "Clear-SonarrTag" } },
                 { Meta.DOWNLOAD_CLIENT, Constants.DOWNLOAD_CLIENT, true },
+                { Meta.DOWNLOAD_CLIENT_CONFIG, Constants.DOWNLOAD_CLIENT_CONFIG, true, new string[] { "Update-SonarrDownloadClientConfig" } },
                 { Meta.EPISODE, Constants.EPISODE, true, new string[] { "Get-SonarrEpisodeFile", "Remove-SonarrEpisodeFile", "Get-SonarrRelease", "Get-SonarrSeries" } },
                 { Meta.EPISODE_FILE, Constants.EPISODEFILE, true, new string[] { "Get-SonarrEpisodeFile", "Remove-SonarrEpisodeFile" } },
                 { Meta.INDEXER, Constants.INDEXER, true, new string[] { "Get-SonarrTag", "Add-SonarrTag", "Remove-SonarrTag" } },

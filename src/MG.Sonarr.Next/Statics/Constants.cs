@@ -39,6 +39,7 @@ namespace MG.Sonarr.Next
         public static readonly string DELAY_PROFILE = "/delayprofile";
         public static readonly string DOWNLOAD_CLIENT = "/downloadclient";
         public static readonly string DOWNLOAD_CLIENT_BYID = DOWNLOAD_CLIENT + BY_ID;
+        public static readonly string DOWNLOAD_CLIENT_CONFIG = CONFIG + DOWNLOAD_CLIENT;
         public static readonly string EPISODE = "/episode";
         public static readonly string EPISODEFILE = "/episodefile";
         public static readonly string FILESYSTEM = "/filesystem";
@@ -89,6 +90,7 @@ namespace MG.Sonarr.Next
         public static readonly string COMMAND = "#command";
         public static readonly string DELAY_PROFILE = "#delay_profile";
         public static readonly string DOWNLOAD_CLIENT = "#download_client";
+        public static readonly string DOWNLOAD_CLIENT_CONFIG = "#download_client_config";
         public static readonly string EPISODE = "#episode";
         public static readonly string EPISODE_FILE = "#episode_file";
         public static readonly string INDEXER = "#indexer";
