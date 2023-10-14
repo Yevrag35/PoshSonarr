@@ -1,10 +1,13 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models.Errors
 {
+    [SonarrObject]
     public sealed class SonarrServerError : SonarrObject,
+        IComparable<SonarrServerError>,
         ISerializableNames<SonarrServerError>
     {
         const int CAPACITY = 5;
@@ -18,6 +21,16 @@ namespace MG.Sonarr.Next.Models.Errors
         {
         }
 
+        public int CompareTo(SonarrServerError? other)
+        {
+            int compare = StringComparer.InvariantCultureIgnoreCase.Compare(this.PropertyName, other?.PropertyName);
+            if (compare == 0)
+            {
+                compare = StringComparer.InvariantCultureIgnoreCase.Compare(this.Message, other?.Message);
+            }
+
+            return compare;
+        }
         protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
             return existing;

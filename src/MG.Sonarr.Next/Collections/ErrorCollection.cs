@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Models.Errors;
 using System.Collections;
+using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Collections
 {
@@ -38,7 +39,8 @@ namespace MG.Sonarr.Next.Collections
 
     internal sealed class ErrorCollection : List<SonarrServerError>, IErrorCollection
     {
-        internal ErrorCollection()
+        [JsonConstructor]
+        public ErrorCollection()
             : base(1)
         {
         }

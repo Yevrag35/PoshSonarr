@@ -170,6 +170,11 @@ namespace MG.Sonarr.Next.Json.Converters
             bool isRented = false;
             char[]? array = null;
 
+            if (reader.ValueIsEscaped)
+            {
+                return reader.GetString() ?? string.Empty;
+            }
+
             Span<char> span = reader.ValueSpan.Length < 1001
                 ? stackalloc char[reader.ValueSpan.Length]
                 : RentArray(reader.ValueSpan.Length, ref isRented, ref array);

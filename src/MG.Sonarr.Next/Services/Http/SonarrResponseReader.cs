@@ -103,8 +103,9 @@ namespace MG.Sonarr.Next.Services.Http
                     list = ErrorCollection.Empty;
                 }
             }
-            catch
+            catch (Exception e)
             {
+                Debug.Fail(e.Message);
                 list = ErrorCollection.Empty;
             }
 

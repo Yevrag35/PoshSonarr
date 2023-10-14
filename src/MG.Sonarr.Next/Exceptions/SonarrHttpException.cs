@@ -103,7 +103,7 @@ namespace MG.Sonarr.Next.Exceptions
                 : errors.BuildMessage();
 
             return response is not null
-                ? $"{response.StatusCode.ToResponseString()}: {details}"
+                ? $"{response.StatusCode.ToResponseString()}: {details}".TrimEnd().TrimEnd(':')
                 : details;
         }
         private static string? GetRequestUri(HttpRequestMessage request)
