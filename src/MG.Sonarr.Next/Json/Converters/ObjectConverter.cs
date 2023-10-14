@@ -355,8 +355,14 @@ namespace MG.Sonarr.Next.Json.Converters
                     writer.WriteNullValue();
                     continue;
                 }
+                else if (prop.Value is string strVal)
+                {
+                    writer.WriteStringValue(strVal);
+                    continue;
+                }
 
-                writer.WriteRawValue(JsonSerializer.Serialize(prop.Value, prop.Value.GetType(), options));
+                string serialized = JsonSerializer.Serialize(prop.Value, prop.Value.GetType(), options);
+                writer.WriteRawValue(serialized);
             }
 
             writer.WriteEndObject();

@@ -20,6 +20,7 @@ using MG.Sonarr.Next.Metadata;
 using System.Reflection;
 using MG.Sonarr.Next.Attributes;
 using System.Text.Json.Serialization;
+using System.Text.Encodings.Web;
 
 namespace MG.Sonarr.Next.Json
 {
@@ -43,12 +44,14 @@ namespace MG.Sonarr.Next.Json
             _deserializer = new(JsonSerializerDefaults.Web);
             _requestSerializer = new(JsonSerializerDefaults.Web)
             {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = true,
             };
 
             _debugSerializer = new(JsonSerializerDefaults.Web)
             {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = false,
             };
@@ -84,6 +87,7 @@ namespace MG.Sonarr.Next.Json
             {
                 void newAction(JsonSerializerOptions options)
                 {
+                    options.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
                     options.PropertyNamingPolicy = null;
                     options.TypeInfoResolver = new DefaultJsonTypeInfoResolver
                     {
@@ -109,6 +113,7 @@ namespace MG.Sonarr.Next.Json
             var doSpanConverter = new DateOnlyConverter();
             var timeConverter = new TimeOnlyConverter();
             var timeSpanConverter = new TimeSpanConverter();
+            var alwaysStringConverter = new AlwaysStringConverter();
 
             ObjectConverter objCon = new(
                     ignoreProps: new string[]
@@ -132,6 +137,7 @@ namespace MG.Sonarr.Next.Json
                                 new("FirstAired", doSpanConverter),
                                 new("AirTime", timeConverter),
                                 new("Duration", timeSpanConverter),
+                                new("ApiKey", alwaysStringConverter),
                     },
                     resolver: resolver
                 );
