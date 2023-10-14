@@ -32,10 +32,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _ids = GetPooledObject<SortedSet<int>>();
-            Returnables[0] = _ids;
-            _wcNames = GetPooledObject<HashSet<Wildcard>>();
-            Returnables[1] = _wcNames;
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
+            _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
+            this.Returnables[1] = _wcNames;
         }
 
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
@@ -45,11 +45,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities
 
         protected override void Begin(IServiceProvider provider)
         {
-            _ids.UnionWith(Id);
+            _ids.UnionWith(this.Id);
             if (this.HasParameter(x => x.Name))
             {
-                Name.SplitToSets(_ids, _wcNames,
-                    MyInvocation.Line.Contains(" -Name ", StringComparison.InvariantCultureIgnoreCase));
+                this.Name.SplitToSets(_ids, _wcNames,
+                    this.MyInvocation.Line.Contains(" -Name ", StringComparison.InvariantCultureIgnoreCase));
             }
         }
         protected override void Process(IServiceProvider provider)
@@ -57,12 +57,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities
             if (this.HasParameter(x => x.InputObject))
             {
                 _ids.UnionWith(
-                    InputObject.Where(x => x.QualityProfileId > 0).Select(x => x.QualityProfileId));
+                    this.InputObject.Where(x => x.QualityProfileId > 0).Select(x => x.QualityProfileId));
             }
         }
         protected override void End(IServiceProvider provider)
         {
-            if (InvokeCommand.HasErrors)
+            if (this.InvokeCommand.HasErrors)
             {
                 return;
             }
@@ -72,14 +72,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities
             bool addedIds = false;
             if (_ids.Count > 0)
             {
-                IEnumerable<QualityProfileObject> profiles = GetById<QualityProfileObject>(_ids);
+                IEnumerable<QualityProfileObject> profiles = this.GetById<QualityProfileObject>(_ids);
                 list.AddRange(profiles);
                 addedIds = true;
             }
 
             if (_wcNames.Count > 0 || !addedIds)
             {
-                var all = GetAll<QualityProfileObject>();
+                var all = this.GetAll<QualityProfileObject>();
                 if (all.Count > 0)
                 {
                     FilterByProfileName(all, _wcNames, _ids);

@@ -28,10 +28,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _ids = GetPooledObject<SortedSet<int>>();
-            Returnables[0] = _ids;
-            _wcNames = GetPooledObject<HashSet<Wildcard>>();
-            Returnables[1] = _wcNames;
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
+            _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
+            this.Returnables[1] = _wcNames;
         }
 
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
@@ -41,28 +41,28 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
 
         protected override void Begin(IServiceProvider provider)
         {
-            _ids.UnionWith(Id);
+            _ids.UnionWith(this.Id);
             if (this.HasParameter(x => x.Name))
             {
-                Name.SplitToSets(_ids, _wcNames,
-                    MyInvocation.Line.Contains(" -Name ", StringComparison.InvariantCultureIgnoreCase));
+                this.Name.SplitToSets(_ids, _wcNames,
+                    this.MyInvocation.Line.Contains(" -Name ", StringComparison.InvariantCultureIgnoreCase));
             }
         }
         protected override void Process(IServiceProvider provider)
         {
             IEnumerable<ReleaseProfileObject> profiles = _ids.Count > 0
-                ? GetById<ReleaseProfileObject>(_ids)
-                : GetByName(_wcNames);
+                ? this.GetById<ReleaseProfileObject>(_ids)
+                : this.GetByName(_wcNames);
 
             this.WriteCollection(profiles);
         }
 
         private IEnumerable<ReleaseProfileObject> GetByName(IReadOnlySet<Wildcard>? names)
         {
-            var response = SendGetRequest<MetadataList<ReleaseProfileObject>>(Tag.UrlBase);
+            var response = this.SendGetRequest<MetadataList<ReleaseProfileObject>>(this.Tag.UrlBase);
             if (response.IsError)
             {
-                StopCmdlet(response.Error);
+                this.StopCmdlet(response.Error);
                 return Enumerable.Empty<ReleaseProfileObject>();
             }
             else if (names.IsNullOrEmpty())
@@ -89,7 +89,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
         {
             if (disposing && !_disposed)
             {
-                Returner.Return(Returnables.AsSpan(0, 2));
+                this.Returner.Return(this.Returnables.AsSpan(0, 2));
                 _ids = null!;
                 _wcNames = null!;
                 _disposed = true;

@@ -20,8 +20,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delays
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _ids = GetPooledObject<SortedSet<int>>();
-            Returnables[0] = _ids;
+            _ids = this.GetPooledObject<SortedSet<int>>();
+            this.Returnables[0] = _ids;
         }
 
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
@@ -31,13 +31,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delays
 
         protected override void Begin(IServiceProvider provider)
         {
-            _ids.UnionWith(Id);
+            _ids.UnionWith(this.Id);
         }
         protected override void Process(IServiceProvider provider)
         {
             IEnumerable<DelayProfileObject> profiles = _ids.Count > 0
-                ? GetById<DelayProfileObject>(_ids)
-                : GetAll<DelayProfileObject>();
+                ? this.GetById<DelayProfileObject>(_ids)
+                : this.GetAll<DelayProfileObject>();
 
             this.WriteCollection(profiles);
         }
