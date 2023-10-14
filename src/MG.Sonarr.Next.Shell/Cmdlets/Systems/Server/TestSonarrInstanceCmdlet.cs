@@ -4,7 +4,7 @@ using MG.Sonarr.Next.Models.System;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
+namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
 {
     [Cmdlet(VerbsDiagnostic.Test, "SonarrInstance")]
     [Alias("Ping-Sonarr", "Test-Sonarr")]

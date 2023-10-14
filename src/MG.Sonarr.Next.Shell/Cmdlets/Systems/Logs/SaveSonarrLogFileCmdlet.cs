@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MG.Sonarr.Next.Json;
 using System.Text.Json;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
+namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
 {
     [Cmdlet(VerbsData.Save, "SonarrLogFile", DefaultParameterSetName = "ByExplicitUrl")]
     [Alias("Download-SonarrLogFile")]

@@ -6,7 +6,7 @@ using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
 using System.ComponentModel;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
+namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
 {
     [Cmdlet(VerbsCommon.Get, "SonarrLog")]
     public sealed class GetSonarrLogCmdlet : SonarrMetadataCmdlet
