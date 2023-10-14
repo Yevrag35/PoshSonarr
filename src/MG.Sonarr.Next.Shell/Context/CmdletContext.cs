@@ -28,6 +28,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json.Serialization.Metadata;
 using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Models.Commands;
+using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Context
 {
@@ -52,6 +53,10 @@ namespace MG.Sonarr.Next.Shell.Context
         public static IMetadataResolver GetResolver()
         {
             return SonarrContext.GetProvider().GetRequiredService<IMetadataResolver>();
+        }
+        public static JsonSerializerOptions GetSerializerOptions()
+        {
+            return SonarrContext.GetProvider().GetRequiredService<ISonarrJsonOptions>().GetForSerializing();
         }
 #endif
 
