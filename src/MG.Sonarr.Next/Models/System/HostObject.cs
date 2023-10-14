@@ -7,11 +7,6 @@ using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.System
 {
-    file static class HostObjectHelpers
-    {
-
-    }
-
     [SonarrObject]
     public class HostObject : IdSonarrObject<HostObject>,
         IJsonOnSerializing,
@@ -27,20 +22,28 @@ namespace MG.Sonarr.Next.Models.System
             this.Conditionals = new(CONDITIONAL_CAPACITY, StringComparer.InvariantCultureIgnoreCase);
         }
 
+        public override void Commit()
+        {
+            base.Commit();
+            this.Properties.Remove(nameof(this.Id));
+        }
         protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.HOST];
         }
-
         public override void OnDeserialized()
         {
             base.OnDeserialized();
             this.Properties.Remove(nameof(this.Id));
         }
-
         public virtual void OnSerializing()
         {
             this.UpdateProperty(x => x.Id);
+        }
+        public override void Reset()
+        {
+            base.Reset();
+            this.Properties.Remove(nameof(this.Id));
         }
     }
 
@@ -59,12 +62,22 @@ namespace MG.Sonarr.Next.Models.System
             return base.CompareTo(other);
         }
 
+        public override void Commit()
+        {
+            base.Commit();
+            this.Conditionals.Clear();
+            this.StoreConditionals();
+        }
         public override void OnDeserialized()
         {
             base.OnDeserialized();
             this.StoreConditionals();
         }
-
+        public override void Reset()
+        {
+            base.Reset();
+            this.Properties.RemoveMany(_removeProperties);
+        }
         private void StoreConditionals()
         {
             foreach (string property in _removeProperties)

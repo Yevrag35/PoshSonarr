@@ -46,7 +46,8 @@ namespace MG.Sonarr.Next.Json.Converters
                 JsonTokenType.StartObject => this.ConvertToObject<PSObject>(ref reader, options),
                 JsonTokenType.String => this.ReadString(ref reader, options, string.Empty),
                 JsonTokenType.Number => ReadNumber(ref reader, options),
-                JsonTokenType.True or JsonTokenType.False => ReadBoolean(ref reader, options),
+                JsonTokenType.True => true,
+                JsonTokenType.False => false,
                 JsonTokenType.None or JsonTokenType.Null => null,
                 _ => throw new JsonException($"Unable to process object with token type '{reader.TokenType}'."),
             };
@@ -86,57 +87,62 @@ namespace MG.Sonarr.Next.Json.Converters
 
                     reader.Read();
 
-                    object? o = null;
-                    if (!reader.ValueSpan.IsEmpty)
+                    object? o;
+                    switch (reader.TokenType)
                     {
-                        switch (reader.TokenType)
-                        {
-                            case JsonTokenType.StartObject:
-                                if (pn.Equals("Series", StringComparison.InvariantCultureIgnoreCase))
-                                {
-                                    var series = this.ConvertToObject<SeriesObject>(ref reader, options);
-                                    series.OnDeserialized();
-                                    series.SetTag(_resolver);
-                                    o = series;
-                                }
-                                else
-                                {
-                                    o = this.ConvertToObject<PSObject>(ref reader, options);
-                                }
+                        case JsonTokenType.StartObject:
+                            if (pn.Equals("Series", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                var series = this.ConvertToObject<SeriesObject>(ref reader, options);
+                                series.OnDeserialized();
+                                series.SetTag(_resolver);
+                                o = series;
+                            }
+                            else
+                            {
+                                o = this.ConvertToObject<PSObject>(ref reader, options);
+                            }
 
-                                break;
+                            break;
 
-                            case JsonTokenType.StartArray:
-                                o = this.ConvertToEnumerable(ref reader, pn, options);
-                                break;
+                        case JsonTokenType.StartArray:
+                            o = this.ConvertToEnumerable(ref reader, pn, options);
+                            break;
 
-                            case JsonTokenType.String:
+                        case JsonTokenType.String:
+                            if (reader.ValueSpan.IsEmpty)
+                            {
+                                o = string.Empty;
+                            }
+                            else
+                            {
                                 o = this.ReadString(ref reader, options, pn);
-                                break;
+                            }
 
-                            case JsonTokenType.Number:
-                                o = ReadNumber(ref reader, options);
-                                break;
+                            break;
 
-                            case JsonTokenType.True:
-                            case JsonTokenType.False:
-                                o = ReadBoolean(ref reader, options);
-                                break;
+                        case JsonTokenType.Number:
+                            o = ReadNumber(ref reader, options);
+                            break;
 
-                            case JsonTokenType.Null:
-                            case JsonTokenType.Comment:
-                            case JsonTokenType.None:
-                                o = null;
-                                break;
+                        case JsonTokenType.True:
+                        case JsonTokenType.False:
+                            o = ReadBoolean(ref reader, options);
+                            break;
 
-                            case JsonTokenType.EndObject:
-                            case JsonTokenType.EndArray:
-                            case JsonTokenType.PropertyName:
-                                goto default;
+                        case JsonTokenType.Null:
+                        case JsonTokenType.Comment:
+                        case JsonTokenType.None:
+                            o = null;
+                            break;
 
-                            default:
-                                throw new JsonException("Unable to deserialize the value(s).");
-                        }
+                        case JsonTokenType.EndObject:
+                        case JsonTokenType.EndArray:
+                        case JsonTokenType.PropertyName:
+                            goto default;
+
+                        default:
+                            throw new JsonException("Unable to deserialize the value(s).");
                     }
 
                     pso.Properties.Add(new PSNoteProperty(pn, o));
