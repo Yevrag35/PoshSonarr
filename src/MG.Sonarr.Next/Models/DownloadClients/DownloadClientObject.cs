@@ -7,7 +7,8 @@ namespace MG.Sonarr.Next.Models.DownloadClients
 {
     [SonarrObject]
     public sealed class DownloadClientObject : TagUpdateObject<DownloadClientObject>,
-        ISerializableNames<DownloadClientObject>
+        ISerializableNames<DownloadClientObject>,
+        ITestPipeable
     {
         const int CAPACITY = 15;
 

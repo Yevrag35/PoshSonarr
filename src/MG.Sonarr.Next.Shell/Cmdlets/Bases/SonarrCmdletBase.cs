@@ -3,7 +3,6 @@ using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 using System.Collections;
 using System.Text.Json;
 

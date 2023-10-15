@@ -125,4 +125,9 @@ namespace MG.Sonarr.Next.Metadata
         /// </remarks>
         void Reset();
     }
+
+    public interface ITestPipeable : IJsonSonarrMetadata
+    {
+        int Id { get; }
+    }
 }

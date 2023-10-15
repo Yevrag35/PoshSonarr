@@ -9,7 +9,8 @@ namespace MG.Sonarr.Next.Models.Indexers
     [SonarrObject]
     public sealed class IndexerObject : TagUpdateObject<IndexerObject>,
         IJsonOnSerializing,
-        ISerializableNames<IndexerObject>
+        ISerializableNames<IndexerObject>,
+        ITestPipeable
     {
         const int CAPACITY = 17;
 
