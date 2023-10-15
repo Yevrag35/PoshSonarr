@@ -50,7 +50,7 @@ namespace MG.Sonarr.Next.Shell.Context
             return SonarrContext.GetProvider().CreateScope();
         }
 
-#if DEBUG
+#if DEBUG   // Only used in interactive PowerShell testing. Never should be called in the code directly.
         public static IMetadataResolver GetResolver()
         {
             return SonarrContext.GetProvider().GetRequiredService<IMetadataResolver>();
@@ -66,7 +66,7 @@ namespace MG.Sonarr.Next.Shell.Context
             return SonarrContext.GetProvider();
         }
 
-        public static void SetContext(this ConnectSonarrInstanceCmdlet cmdlet, IConnectionSettings settings, Func<IServiceCollection, ServiceProviderOptions, IServiceProvider> buildProvider)
+        internal static void SetContext(this ConnectSonarrInstanceCmdlet cmdlet, IConnectionSettings settings, Func<IServiceCollection, ServiceProviderOptions, IServiceProvider> buildProvider)
         {
             SonarrContext.Initialize(settings, buildProvider);
         }
