@@ -110,14 +110,9 @@ namespace MG.Sonarr.Next.Json.Converters
                             break;
 
                         case JsonTokenType.String:
-                            if (reader.ValueSpan.IsEmpty)
-                            {
-                                o = string.Empty;
-                            }
-                            else
-                            {
-                                o = this.ReadString(ref reader, options, pn);
-                            }
+                            o = !reader.ValueSpan.IsEmpty
+                                ? this.ReadString(ref reader, options, pn)
+                                : string.Empty;
 
                             break;
 
