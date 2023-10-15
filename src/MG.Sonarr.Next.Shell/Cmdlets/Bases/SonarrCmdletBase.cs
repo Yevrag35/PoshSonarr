@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections;
 using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
@@ -23,6 +24,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
     /// </remarks>
     public abstract class SonarrCmdletBase : PSCmdlet, IDisposable
     {
+        static readonly Type _enumerableType = typeof(IEnumerable);
+        static readonly Type _stringType = typeof(string);
+
         bool _disposed;
         ErrorRecord? _error;
         IServiceScope? _scope;
@@ -86,6 +90,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         ///     This value is set at the very beginning of the <see cref="BeginProcessing"/> execution.
         /// </remarks>
         protected ActionPreference VerbosePreference { get; private set; }
+
+        #region PROCESSING
 
         [DebuggerStepThrough]
         protected sealed override void BeginProcessing()
@@ -326,6 +332,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             return;
         }
 
+        #endregion
+
         /// <summary>
         /// Retrieves a pooled item from the one of the <see cref="IObjectPool{T}"/> instances
         /// registered.
@@ -348,6 +356,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 throw new PipelineStoppedException("Cannot use the scope before it's been initialized.", e);
             }
         }
+
+        private static bool IsEnumerableType(Type type)
+        {
+            return _enumerableType.IsAssignableFrom(type) && !_stringType.IsAssignableFrom(type);
+        }
+
         /// <summary>
         /// Returns an previously retrieved item back into its <see cref="IObjectPool{T}"/>.
         /// </summary>
@@ -403,7 +417,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         [DebuggerStepThrough]
         protected bool TryWriteObject<T>(in SonarrResponse<T> response)
         {
-            return this.TryWriteObject(in response, writeConditionally: true, enumerateCollection: false);
+            return this.TryWriteObject(
+                in response,
+                writeConditionally: true,
+                enumerateCollection: IsEnumerableType(typeof(T)));
         }
         [DebuggerStepThrough]
         protected bool TryWriteObject<T>(in SonarrResponse<T> response, bool enumerateCollection)
