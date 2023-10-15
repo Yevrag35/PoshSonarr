@@ -40,6 +40,7 @@
 
 	<ItemGroup>
 		<Using Include="MG.Sonarr.Next.Exceptions" />
+		<Using Include="OneOf" />
 		<Using Include="System.Diagnostics" />
 		<Using Include="System.Diagnostics.CodeAnalysis" />
 		<Using Include="System.Globalization" />

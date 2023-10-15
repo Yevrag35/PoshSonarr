@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Models.Commands;
+using MG.Sonarr.Next.Models.Renames;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +8,7 @@ namespace MG.Sonarr.Next.Services.Jobs
 {
     public interface ICommandTracker
     {
+        SonarrResponse<CommandObject> SendRename(PostRename rename, CancellationToken token = default);
         SonarrResponse<CommandObject> SendRssSync(CommandPriority priority, bool updateScheduledTask, CancellationToken token = default);
     }
 
@@ -21,6 +23,16 @@ namespace MG.Sonarr.Next.Services.Jobs
             _history = history;
         }
 
+        public SonarrResponse<CommandObject> SendRename(PostRename rename, CancellationToken token = default)
+        {
+            var response = _client.SendPost<PostRename, CommandObject>(Constants.COMMAND, rename, token);
+            if (!response.IsEmpty && !response.IsError)
+            {
+                _history.Add(response.Data);
+            }
+
+            return response;
+        }
         public SonarrResponse<CommandObject> SendRssSync(CommandPriority priority, bool updateScheduledTask, CancellationToken token = default)
         {
             if (!Enum.IsDefined(priority))

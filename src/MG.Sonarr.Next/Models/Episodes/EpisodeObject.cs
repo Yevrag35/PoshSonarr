@@ -12,6 +12,7 @@ namespace MG.Sonarr.Next.Models.Episodes
         IHasId,
         IJsonOnSerializing,
         IReleasePipeableByEpisode,
+        IRenameFilePipeable,
         ISeriesPipeable,
         ISerializableNames<EpisodeObject>
     {

@@ -14,7 +14,7 @@
         ///     been determined to be not <see langword="null"/>.
         /// </param>
         /// <returns>
-        ///     <see langword="true"/> if the collection is not <see langword="null"/> and contains
+        ///     <see langword="true"/> if the collection is <see langword="null"/> or does NOT contains
         ///     at least 1 element; otherwise, <see langword="false"/>.
         /// </returns>
         public static bool IsNullOrEmpty<T>([NotNullWhen(false)] this IReadOnlyCollection<T>? collection)

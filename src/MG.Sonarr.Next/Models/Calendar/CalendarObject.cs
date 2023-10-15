@@ -9,6 +9,7 @@ namespace MG.Sonarr.Next.Models.Calendar
     public sealed class CalendarObject : IdSonarrObject<CalendarObject>,
         IEpisodeFilePipeable,
         IEpisodePipeable,
+        IRenameFilePipeable,
         ISeriesPipeable,
         ISerializableNames<CalendarObject>,
         ITagResolvable<CalendarObject>
