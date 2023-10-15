@@ -1,0 +1,15 @@
+{
+	"CopyToOutput": [
+		"MG.Collections",
+		"Microsoft.Extensions.Caching.Memory",
+		"Microsoft.Extensions.Caching.Abstractions",
+		"Microsoft.Extensions.DependencyInjection",
+		"Microsoft.Extensions.DependencyInjection.Abstractions",
+		"Microsoft.Extensions.Http",
+		"Microsoft.Extensions.Logging",
+		"Microsoft.Extensions.Logging.Abstractions",
+		"Microsoft.Extensions.Options",
+		"Microsoft.Extensions.Primitives",
+		"OneOf"
+	]
+}

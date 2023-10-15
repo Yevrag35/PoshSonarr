@@ -1,4 +1,4 @@
-Copyright (c) 2018 Yevrag35, LLC.
+Copyright (c) 2018 - 2023 Yevrag35, LLC.
 Copyright (c) 2016 - 2018 Mike Garvey
 
 Licensed under the GNU GENERAL PUBLIC LICENSE, Version 3 (the "License");

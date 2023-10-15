@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+	<ViewDefinitions>
+		<View>
+			<Name>QualityProfile ListView</Name>
+			<ViewSelectedBy>
+				<TypeName>MG.Sonarr.Results.QualityProfile</TypeName>
+			</ViewSelectedBy>
+			<ListControl>
+				<ListEntries>
+					<ListEntry>
+						<ListItems>
+							<ListItem>
+								<Label>Cutoff</Label>
+								<ScriptBlock>"{{{0}}}" -f $_.Cutoff.Name</ScriptBlock>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Id</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Allowed</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Disallowed</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Language</PropertyName>
+							</ListItem>
+							<ListItem>
+								<PropertyName>Name</PropertyName>
+							</ListItem>
+						</ListItems>
+					</ListEntry>
+				</ListEntries>
+			</ListControl>
+		</View>
+	</ViewDefinitions>
+</Configuration>

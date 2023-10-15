@@ -1,0 +1,83 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<Version>2.0.0</Version>
+	<AssemblyVersion>2.0.0</AssemblyVersion>
+	<FileVersion>2.0.0</FileVersion>
+	<Authors>Mike Garvey</Authors>
+	<Company>Yevrag35, LLC.</Company>
+	<Product>PoshSonarr .NET 7</Product>
+	<Description>The binary library of the PoshSonarr PowerShell module.</Description>
+	<Copyright>Copyright © 2018-2023 Yevrag35, LLC.</Copyright>
+	<PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
+	<PackageProjectUrl>https://github.com/Yevrag35/PoshSonarr</PackageProjectUrl>
+	<RepositoryUrl>https://github.com/Yevrag35/PoshSonarr</RepositoryUrl>
+	<RepositoryType>Git</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="build_dependencies.json" />
+    <None Remove="Debug.ps1" />
+  </ItemGroup>
+
+	<Target Name="Cleanup" AfterTargets="Clean">
+		<ItemGroup>
+			<FilesToDelete Include="$(TargetDir)\**\*.*" />
+		</ItemGroup>
+		<Delete Files="@(FilesToDelete)" />
+		<RemoveDir Directories="@(FoldersToDelete)" />
+		<Exec Command="pwsh.exe -File &quot;$(SolutionDir)\.tasks\clean_project.ps1&quot; -OutputPath &quot;$(TargetDir)&quot;" />
+	</Target>
+
+	<Target Name="ReleaseModuleAfterBuild" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Release'">
+		<Exec Command="pwsh.exe -NoExit -File &quot;$(SolutionDir)\.tasks\publish_module.ps1&quot; -OutputPath &quot;$(TargetDir)&quot;" />
+	</Target>
+
+	<ItemGroup Condition="'$(Configuration)' != 'Release'">
+		<Content Include="Debug.ps1">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="debugging.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	<ItemGroup Condition="'$(Configuration)' == 'Release'">
+		<Content Include="Debug.ps1">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
+		</Content>
+		<Content Include="debugging.json">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
+	<ItemGroup>
+	  <Content Include="build_dependencies.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="MG.Sonarr.Next.Shell.Context" />
+		<Using Include="Microsoft.Extensions.DependencyInjection" />
+		<Using Include="OneOf" />
+		<Using Include="System.Diagnostics" />
+		<Using Include="System.Diagnostics.CodeAnalysis" />
+		<Using Include="System.Globalization" />
+		<Using Include="System.Linq.Expressions" />
+		<Using Include="System.Management.Automation" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.3.7" />
+    <PackageReference Include="System.Management.Automation" Version="7.3.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MG.Sonarr.Next\MG.Sonarr.Next.csproj" />
+  </ItemGroup>
+
+</Project>

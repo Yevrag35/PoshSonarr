@@ -1,0 +1,45 @@
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Json;
+using MG.Sonarr.Next.Metadata;
+
+namespace MG.Sonarr.Next.Models.Qualities
+{
+    [SonarrObject]
+    public sealed class QualityDefinitionObject : SonarrObject,
+        IComparable<QualityDefinitionObject>,
+        ISerializableNames<QualityDefinitionObject>
+    {
+        const int CAPACITY = 10;
+
+        public int Id { get; private set; }
+        public string Title
+        {
+            get => this.GetStringOrEmpty();
+            set => this.SetValue(value);
+        }
+
+        public QualityDefinitionObject()
+            : base(CAPACITY)
+        {
+        }
+
+        public int CompareTo(QualityDefinitionObject? other)
+        {
+            return Comparer<int?>.Default.Compare(this.Id, other?.Id);
+        }
+
+        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
+        {
+            return resolver[Meta.QUALITY_DEFINITION];
+        }
+
+        public override void OnDeserialized()
+        {
+            if (this.TryGetId(out int id))
+            {
+                this.Id = id;
+            }
+        }
+    }
+}
