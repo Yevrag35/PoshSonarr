@@ -31,11 +31,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         IServiceScope? _scope;
         bool _isStopped;
 
-        protected SonarrCmdletBase()
-            : base()
-        {
-        }
-
         /// <summary>
         /// The current Debug preference either set from the "-Debug" <see cref="SwitchParameter"/>
         /// or read from the global "$DebugPreference" variable.

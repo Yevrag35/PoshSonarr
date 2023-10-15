@@ -8,7 +8,6 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
     internal sealed class SonarrClientHandler : HttpClientHandler
     {
         public SonarrClientHandler(IConnectionSettings settings)
-            : base()
         {
             if (settings.TryGetProxy(out IWebProxy? proxy))
             {

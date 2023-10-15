@@ -17,11 +17,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         protected ISonarrJsonOptions Options { get; private set; } = null!;
         Queue<IApiCmdlet> _queue = null!;
 
-        protected SonarrApiCmdletBase()
-            : base()
-        {
-        }
-
         /// <summary>
         /// Overridden to retrieve a scoped <see cref="ISonarrClient"/> instance to be used for any API
         /// requests.

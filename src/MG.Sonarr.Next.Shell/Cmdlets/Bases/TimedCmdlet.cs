@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http;
@@ -11,11 +11,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
     public abstract class TimedCmdlet : SonarrCmdletBase, IApiCmdlet
     {
         Stopwatch _timer = null!;
-
-        protected TimedCmdlet()
-            : base()
-        {
-        }
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
