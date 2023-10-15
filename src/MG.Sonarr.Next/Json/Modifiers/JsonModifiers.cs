@@ -92,14 +92,14 @@ namespace MG.Sonarr.Next.Json.Modifiers
 
             return changed ? new string(scratch) : fieldName;
         }
-        private static string GetJsonName(FieldInfo fieldInfo, JsonTypeInfo typeInfo, Type jsonNameType)
+        private static string GetJsonName(MemberInfo memberInfo, JsonTypeInfo typeInfo, Type jsonNameType)
         {
-            if (!fieldInfo.IsDefined(jsonNameType, inherit: false))
+            if (!memberInfo.IsDefined(jsonNameType, inherit: false))
             {
-                return GetNonUnderscoreName(fieldInfo.Name, typeInfo);
+                return GetNonUnderscoreName(memberInfo.Name, typeInfo);
             }
 
-            CustomAttributeTypedArgument arg = fieldInfo.CustomAttributes
+            CustomAttributeTypedArgument arg = memberInfo.CustomAttributes
                 .First(x => x.AttributeType == jsonNameType)
                     .ConstructorArguments
                         .FirstOrDefault();
