@@ -1,4 +1,4 @@
-using MG.Sonarr.Next.Collections;
+﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http;
@@ -101,7 +101,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
 
         public virtual void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            this.WriteVerbose($"Sending {request.Method} request -> {request.RequestUri}");
+            this.WriteVerbose($"Sending {request.RequestMethod} request -> {request.RequestUrl}");
         }
 
         private readonly struct TimedResponse : ISonarrTimedResponse

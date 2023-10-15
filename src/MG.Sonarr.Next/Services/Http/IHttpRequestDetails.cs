@@ -2,7 +2,7 @@
 {
     public interface IHttpRequestDetails
     {
-        string Method { get; }
-        string RequestUri { get; }
+        string RequestMethod { get; }
+        string RequestUrl { get; }
     }
 }

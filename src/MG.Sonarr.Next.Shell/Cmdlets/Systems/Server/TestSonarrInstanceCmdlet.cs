@@ -70,7 +70,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
 
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            this.WriteVerbose($"Sending test ping (GET) request to SignalR -> {request.RequestUri}");
+            this.WriteVerbose($"Sending test ping (GET) request to SignalR -> {request.RequestUrl}");
         }
 
         public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)

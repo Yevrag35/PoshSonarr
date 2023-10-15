@@ -154,7 +154,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
         }
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            this.WriteVerbose($"Sending {request.Method}  request ->  {request.RequestUri}");
+            this.WriteVerbose($"Sending {request.RequestMethod}  request ->  {request.RequestUrl}");
         }
         public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
         {
