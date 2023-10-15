@@ -29,6 +29,7 @@ using System.Text.Json.Serialization.Metadata;
 using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Models.Commands;
 using System.Text.Json;
+using MG.Sonarr.Next.Services.Testing;
 
 namespace MG.Sonarr.Next.Shell.Context
 {
@@ -109,7 +110,8 @@ namespace MG.Sonarr.Next.Shell.Context
                 {
                     options.WriteIndented = true;
                 })
-                .AddCommandTracker();
+                .AddCommandTracker()
+                .AddTestingService();
 
             AddObjectPools(services);
 
