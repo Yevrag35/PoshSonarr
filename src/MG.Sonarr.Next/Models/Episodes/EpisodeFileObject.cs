@@ -9,12 +9,14 @@ namespace MG.Sonarr.Next.Models.Episodes
     public sealed class EpisodeFileObject : IdSonarrObject<EpisodeFileObject>,
         IEpisodeFilePipeable,
         IHasId,
+        IRenameFilePipeable,
         ISeriesPipeable,
         ISerializableNames<EpisodeFileObject>
     {
         const int CAPACITY = 14;
 
         int IEpisodeFilePipeable.EpisodeFileId => this.Id;
+        int IRenameFilePipeable.EpisodeFileId => this.Id;
         public int SeriesId { get; private set; }
 
         public EpisodeFileObject()

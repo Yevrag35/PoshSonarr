@@ -65,6 +65,7 @@ namespace MG.Sonarr.Next
         public static readonly string QUEUE = "/queue";
         public static readonly string RELEASE = "/release";
         public static readonly string RELEASE_PROFILE = RELEASE + "profile";
+        public static readonly string RENAME = "/rename";
         public static readonly string RESTART;
         public static readonly string RESTRICTION = "/restriction";
         public static readonly string ROOTFOLDER = "/rootfolder";
@@ -105,6 +106,7 @@ namespace MG.Sonarr.Next
         public static readonly string QUALITY_PROFILE = "#quality_profile";
         public static readonly string RELEASE = "#release";
         public static readonly string RELEASE_PROFILE = "#release_profile";
+        public static readonly string RENAMABLE = "#rename_file";
         public static readonly string ROOT_FOLDER = "#root_folder";
         public static readonly string SERIES = "#series";
         public static readonly string SERIES_ADD = "#add_series";

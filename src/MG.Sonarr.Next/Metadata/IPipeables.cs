@@ -83,6 +83,11 @@ namespace MG.Sonarr.Next.Metadata
         /// </summary>
         int SeriesId { get; }
     }
+    public interface IRenameFilePipeable : IJsonMetadataTaggable
+    {
+        int EpisodeFileId { get; }
+        int SeriesId { get; }
+    }
     /// <summary>
     /// An interface exposing the SeriesId property for piping to the /series endpoint.
     /// </summary>

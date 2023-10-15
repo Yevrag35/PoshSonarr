@@ -16,7 +16,8 @@ namespace MG.Sonarr.Next.Models.Series
         ILanguageProfilePipeable,
         IQualityProfilePipeable,
         IReleasePipeableBySeries,
-        ISerializableNames<SeriesObject>
+        ISerializableNames<SeriesObject>,
+        ISeriesPipeable
     {
         private const string FIRST_AIRED = "FirstAired";
         private DateOnly _firstAired;
@@ -34,6 +35,7 @@ namespace MG.Sonarr.Next.Models.Series
         int IEpisodeBySeriesPipeable.SeriesId => this.Id;
         int IEpisodeFileBySeriesPipeable.SeriesId => this.Id;
         int IReleasePipeableBySeries.SeriesId => this.Id;
+        int ISeriesPipeable.SeriesId => this.Id;
         public string Title { get; set; } = string.Empty;
 
         public SeriesObject()

@@ -129,6 +129,7 @@ namespace MG.Sonarr.Next.Json
                     {
                                 new("AirDate", typeof(DateOnly)),
                                 new("Tags", typeof(SortedSet<int>)),
+                                new("EpisodeNumbers", typeof(int[])),
                                 new("Genres", typeof(string[])),
                     },
                     spanConverters: new KeyValuePair<string, SpanConverter>[]
