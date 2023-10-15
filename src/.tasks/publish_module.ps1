@@ -115,12 +115,12 @@ $manifestArgs = @{
 	ProjectUri           = 'https://github.com/Yevrag35/PoshSonarr'
 	IconUri              = 'https://images.yevrag35.com/icons/sonarr_powershell.png'
 	HelpInfoURI          = 'https://github.com/Yevrag35/PoshSonarr/issues'
-	RootModule           = $LibraryName
+	RootModule           = "$($LibraryName).dll"
 	CmdletsToExport      = $info.Cmdlets
 	AliasesToExport      = $info.Aliases
 	FunctionsToExport    = @()
 	VariablesToExport    = @()
-	Tags                 = @('Api', 'Backup', 'Calendar', 'Connect', 'dll', 'Episode', 'Json', '.NET',
+	Tags                 = @('Anime', 'Api', 'Backup', 'Calendar', 'Connect', 'dll', 'Episode', 'Json', '.NET',
 							 'Manage', 'PVR', 'Quality', 'Rss', 'Series', 'Sonarr',
 							 'Status', 'Sync', 'Website')
 }
