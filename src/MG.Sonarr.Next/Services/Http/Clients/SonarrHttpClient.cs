@@ -25,6 +25,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         Task<SonarrResponse> SendDeleteAsync(string path, CancellationToken token = default);
         SonarrResponse<T> SendGet<T>(string path, CancellationToken token = default);
         Task<SonarrResponse<T>> SendGetAsync<T>(string path, CancellationToken token = default);
+        SonarrResponse<TOutput> SendPost<TOutput>(string path, CancellationToken token = default);
         SonarrResponse SendPost<T>(string path, T body, CancellationToken token = default) where T : notnull;
         Task<SonarrResponse> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull;
         SonarrResponse<TOutput> SendPost<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull;
@@ -83,15 +84,21 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         public SonarrResponse SendPost<T>(string path, T body, CancellationToken token = default) where T : notnull
         {
             using ApiKeyRequestMessage request = new(HttpMethod.Post, path);
-            request.Content = JsonContent.Create(body, body.GetType(), options: _serializingOptions);
+            request.Content = JsonContent.Create(body, typeof(T), options: _serializingOptions);
 
             return this.SendNoResultRequest(request, path, token);
+        }
+        public SonarrResponse<TOutput> SendPost<TOutput>(string path, CancellationToken token = default)
+        {
+            using ApiKeyRequestMessage request = new(HttpMethod.Post, path);
+
+            return this.SendResultRequest<TOutput>(request, path, token);
         }
         public SonarrResponse<TOutput> SendPost<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull
         {
             using ApiKeyRequestMessage request = new(HttpMethod.Post, path);
 
-            request.Content = JsonContent.Create(body, body.GetType(), options: _serializingOptions);
+            request.Content = JsonContent.Create(body, typeof(TBody), options: _serializingOptions);
 
             var response = this.SendResultRequest<TOutput>(request, path, token);
             if (response.IsDataTaggable(out IJsonMetadataTaggable? taggable))
@@ -104,7 +111,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         public SonarrResponse SendPut<T>(string path, T body, CancellationToken token = default) where T : notnull
         {
             using ApiKeyRequestMessage request = new(HttpMethod.Put, path);
-            request.Content = JsonContent.Create(body, body.GetType(), options: _serializingOptions);
+            request.Content = JsonContent.Create(body, typeof(T), options: _serializingOptions);
 
             return this.SendNoResultRequest(request, path, token);
         }
