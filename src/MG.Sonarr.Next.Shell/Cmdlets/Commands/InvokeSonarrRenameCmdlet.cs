@@ -32,7 +32,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
 
         protected override void Process(IServiceProvider provider)
         {
-            if (this.ParameterSetName == BY_PIPELINE)
+            if (BY_PIPELINE == this.ParameterSetName)
             {
                 _renameables ??= new(this.InputObject.Length);
                 _renameables.AddRange(this.InputObject);
