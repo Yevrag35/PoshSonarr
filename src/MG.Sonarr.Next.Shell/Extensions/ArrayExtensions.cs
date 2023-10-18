@@ -4,6 +4,32 @@ namespace MG.Sonarr.Next.Shell.Extensions
 {
     internal static class ArrayExtensions
     {
+        internal static void UnionWith(this HashSet<Wildcard> set, string[]? array)
+        {
+            if (array is null)
+            {
+                return;
+            }
+
+            foreach (string str in array)
+            {
+                _ = set.Add(str);
+            }
+        }
+
+        internal static IEnumerable<Wildcard> ToWildcards(this string[]? array)
+        {
+            if (array is null)
+            {
+                yield break;
+            }
+
+            foreach (string str in array)
+            {
+                yield return str;
+            }
+        }
+
         internal static void SplitToSets(this IntOrString[]? array, ISet<int> numbers, ISet<string> strings)
         {
             ArgumentNullException.ThrowIfNull(numbers);
