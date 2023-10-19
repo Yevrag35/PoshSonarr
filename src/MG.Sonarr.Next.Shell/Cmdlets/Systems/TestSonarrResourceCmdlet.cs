@@ -29,11 +29,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
 
         protected override void Process(IServiceProvider provider)
         {
-            foreach (ITestPipeable testable in InputObject)
+            foreach (ITestPipeable testable in this.InputObject)
             {
                 _queue.Enqueue(this);
-                StartTimer();
-                var response = SendSingleTest(testable);
+                this.StartTimer();
+                var response = this.SendSingleTest(testable);
                 var obj = new
                 {
                     testable.Id,
@@ -42,7 +42,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
                     Error = response.Error?.Exception,
                 };
 
-                WriteObject(obj);
+                this.WriteObject(obj);
             }
         }
 
