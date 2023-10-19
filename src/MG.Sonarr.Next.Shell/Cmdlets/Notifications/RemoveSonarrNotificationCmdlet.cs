@@ -1,10 +1,12 @@
-﻿using MG.Sonarr.Next.Models.Notifications;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Models.Notifications;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications
 {
     [Cmdlet(VerbsCommon.Remove, "SonarrNotification", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true,
         DefaultParameterSetName = "ByExplicitId")]
+    [MetadataCanPipe(Tag = Meta.NOTIFICATION)]
     public sealed class RemoveSonarrNotificationCmdlet : SonarrApiCmdletBase
     {
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]

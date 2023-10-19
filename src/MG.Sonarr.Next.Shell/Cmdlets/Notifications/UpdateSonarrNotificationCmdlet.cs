@@ -1,9 +1,11 @@
-﻿using MG.Sonarr.Next.Models.Notifications;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Models.Notifications;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications
 {
     [Cmdlet(VerbsData.Update, "SonarrNotification", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [MetadataCanPipe(Tag = Meta.NOTIFICATION)]
     public sealed class UpdateSonarrNotificationCmdlet : SonarrApiCmdletBase
     {
         [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0)]

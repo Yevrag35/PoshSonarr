@@ -9,7 +9,7 @@ namespace MG.Sonarr.Next.Metadata
     {
         public static IServiceCollection AddMetadata(this IServiceCollection services, Assembly cmdletAssembly)
         {
-            int initialCapacity = 22;
+            int initialCapacity = 23;
             var pipes = FindPipeableCmdlets(cmdletAssembly);
             MetadataResolver dict = new(initialCapacity, pipes)
             {
