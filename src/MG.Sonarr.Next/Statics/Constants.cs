@@ -33,6 +33,7 @@ namespace MG.Sonarr.Next
 
         internal const string BY_ID = "/{0}";
         internal static readonly string CONFIG = "/config";
+        internal const string SCHEMA = "/schema";
 
         public static readonly string BACKUP;
         public static readonly string CALENDAR = "/calendar";
@@ -60,6 +61,7 @@ namespace MG.Sonarr.Next
         public static readonly string MEDIAMANAGEMENT = CONFIG + "/mediamanagement";
         public static readonly string METADATA = "/metadata";
         public static readonly string NOTIFICATION = "/notification";
+        public static readonly string NOTIFICATION_SCHEMA = NOTIFICATION + SCHEMA;
         public static readonly string PROFILE = "/qualityprofile";
         public static readonly string QUALITY_DEFINITIONS = "/qualitydefinition";
         public static readonly string QUEUE = "/queue";

@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using System.Management.Automation;
 using System.Reflection;
@@ -9,7 +9,7 @@ namespace MG.Sonarr.Next.Metadata
     {
         public static IServiceCollection AddMetadata(this IServiceCollection services, Assembly cmdletAssembly)
         {
-            int initialCapacity = 22;
+            int initialCapacity = 23;
             var pipes = FindPipeableCmdlets(cmdletAssembly);
             MetadataResolver dict = new(initialCapacity, pipes)
             {
@@ -27,6 +27,7 @@ namespace MG.Sonarr.Next.Metadata
                 { Meta.LANGUAGE, Constants.LANGUAGE_PROFILE, true },
                 { Meta.LOG_ITEM, Constants.LOG, false },
                 { Meta.LOG_FILE, Constants.LOGFILE, false, new string[] { "Save-SonarrLogFile" } },
+                { Meta.NOTIFICATION, Constants.NOTIFICATION, true, new string[] { "Test-SonarrResource", "Remove-SonarrNotification" } },
                 { Meta.QUALITY_DEFINITION, Constants.QUALITY_DEFINITIONS, true },
                 { Meta.QUALITY_PROFILE, Constants.PROFILE, true },
                 { Meta.RELEASE, Constants.RELEASE, false, new string[] { "Add-SonarrRelease" } },

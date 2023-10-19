@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http;
@@ -106,6 +106,7 @@ namespace MG.Sonarr.Next.Shell.Context
             services
                 .AddMemoryCache()
                 .AddSingleton<Queue<IApiCmdlet>>()
+                .AddScoped(typeof(Dictionary<,>))
                 .AddSonarrClient(typeof(CmdletContextExtensions).Assembly, settings, (provider, options) =>
                 {
                     options.WriteIndented = true;

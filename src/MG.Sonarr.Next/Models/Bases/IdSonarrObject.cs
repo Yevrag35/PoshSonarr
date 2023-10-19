@@ -7,7 +7,7 @@ namespace MG.Sonarr.Next.Models
         IHasId
         where TSelf : IdSonarrObject<TSelf>
     {
-        public int Id
+        public virtual int Id
         {
             get => this.GetValue<int>();
         }

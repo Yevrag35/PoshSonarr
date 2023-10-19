@@ -104,6 +104,15 @@ namespace MG.Sonarr.Next.Metadata
     public interface ITagPipeable : IHasId, IJsonSonarrMetadata
     {
         /// <summary>
+        /// Indicates that tag changes must be saved via a Sonarr API request.
+        /// </summary>
+        /// <remarks>
+        ///     This will be <see langword="false"/> for objects that have not been created yet on the Sonarr server side 
+        ///     or are simply scaffolding (schema) objects.
+        /// </remarks>
+        bool MustUpdateViaApi { get; }
+
+        /// <summary>
         /// Gets the unique set of tag IDs of the implementation.
         /// </summary>
         ISet<int> Tags { get; }
