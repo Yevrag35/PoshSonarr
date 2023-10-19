@@ -26,6 +26,7 @@ namespace MG.Sonarr.Next.Models.Notifications
         public NotificationObject()
             : base(CAPACITY)
         {
+            this.MustUpdateViaApi = false;
         }
 
         protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
@@ -36,6 +37,7 @@ namespace MG.Sonarr.Next.Models.Notifications
         public override void OnDeserialized()
         {
             base.OnDeserialized();
+            this.MustUpdateViaApi = false;
             bool isEnabled = CalculateIsEnabled(this.Properties);
             this.Properties.Add(new PSNoteProperty("IsEnabled", isEnabled));
         }

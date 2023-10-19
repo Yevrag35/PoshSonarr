@@ -1,5 +1,6 @@
-﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Tags;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
@@ -94,7 +95,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                 return;
             }
 
-            foreach (var kvp in _updates)
+            foreach (KeyValuePair<string, ITagPipeable> kvp in _updates)
             {
                 if (kvp.Value.Tags.IsSupersetOf(_ids))
                 {
@@ -108,20 +109,34 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                         "Adding tags: ({0})",
                         string.Join(", ", _ids.Where(x => !kvp.Value.Tags.Contains(x))))))
                 {
-                    kvp.Value.Tags.UnionWith(_ids);
-
-                    var response = this.SendPutRequest(path: kvp.Key, body: kvp.Value);
-                    if (response.IsError)
+                    if (!this.PerformTagUpdate(in kvp))
                     {
-                        kvp.Value.Reset();
-                        this.WriteConditionalError(response.Error);
                         continue;
                     }
-                    else
-                    {
-                        kvp.Value.CommitTags();
-                    }
                 }
+            }
+        }
+
+        private bool PerformTagUpdate(in KeyValuePair<string, ITagPipeable> kvp)
+        {
+            kvp.Value.Tags.UnionWith(_ids);
+
+            if (!kvp.Value.MustUpdateViaApi)
+            {
+                return true;
+            }
+
+            var response = this.SendPutRequest(path: kvp.Key, body: kvp.Value);
+            if (response.IsError)
+            {
+                kvp.Value.Reset();
+                this.WriteConditionalError(response.Error);
+                return false;
+            }
+            else
+            {
+                kvp.Value.CommitTags();
+                return true;
             }
         }
 

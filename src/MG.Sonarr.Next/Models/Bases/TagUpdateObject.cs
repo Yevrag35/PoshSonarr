@@ -10,6 +10,7 @@ namespace MG.Sonarr.Next.Models
         private SortedSet<int>? _tags;
         private int[]? _originalTags;
 
+        public virtual bool MustUpdateViaApi { get; protected set; }
         public SortedSet<int> Tags
         {
             get => _tags ??= new();
@@ -49,7 +50,7 @@ namespace MG.Sonarr.Next.Models
         public override void OnDeserialized()
         {
             base.OnDeserialized();
-
+            this.MustUpdateViaApi = true;
             if (this.TryGetNonNullProperty(nameof(this.Tags), out SortedSet<int>? tags))
             {
                 this.Tags = tags;

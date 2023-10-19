@@ -19,6 +19,7 @@ namespace MG.Sonarr.Next.Models.Series
         const int CAPACITY = 50;
 
         public SeriesAddOptions? AddOptions { get; set; }
+        public override int Id => -1;
         public bool IsFullPath { get; set; }
         public bool IsMonitored
         {
@@ -27,7 +28,6 @@ namespace MG.Sonarr.Next.Models.Series
         }
         public int ProfileId
         {
-            get => this.GetValue<int>();
             set => this.SetValue(value);
         }
         public string Path
