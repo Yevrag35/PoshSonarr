@@ -1,9 +1,11 @@
-﻿using MG.Sonarr.Next.Models.Indexers;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Models.Indexers;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
 {
     [Cmdlet(VerbsData.Update, "SonarrIndexer", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
     [Alias("Set-SonarrIndexer")]
+    [MetadataCanPipe(Tag = Meta.INDEXER)]
     public sealed class UpdateSonarrIndexerCmdlet : SonarrApiCmdletBase
     {
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]

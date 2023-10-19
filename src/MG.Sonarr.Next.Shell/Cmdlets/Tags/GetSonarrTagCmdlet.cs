@@ -4,10 +4,17 @@ using MG.Sonarr.Next.Models.Tags;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
     [Cmdlet(VerbsCommon.Get, "SonarrTag", DefaultParameterSetName = "ByName")]
+    [MetadataCanPipe(Tag = Meta.DELAY_PROFILE)]
+    [MetadataCanPipe(Tag = Meta.DOWNLOAD_CLIENT)]
+    [MetadataCanPipe(Tag = Meta.INDEXER)]
+    [MetadataCanPipe(Tag = Meta.RELEASE_PROFILE)]
+    [MetadataCanPipe(Tag = Meta.SERIES)]
+    [MetadataCanPipe(Tag = Meta.SERIES_ADD)]
     public sealed class GetSonarrTagCmdlet : SonarrMetadataCmdlet
     {
         const string BY_PIPELINE = "ByPipelineInput";

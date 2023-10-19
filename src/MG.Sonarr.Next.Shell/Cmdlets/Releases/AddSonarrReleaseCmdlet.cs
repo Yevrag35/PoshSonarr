@@ -1,10 +1,12 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Releases;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
 {
     [Cmdlet(VerbsCommon.Add, "SonarrRelease", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Low)]
+    [MetadataCanPipe(Tag = Meta.RELEASE)]
     public sealed class AddSonarrReleaseCmdlet : SonarrApiCmdletBase
     {
         MetadataTag Tag { get; set; } = null!;

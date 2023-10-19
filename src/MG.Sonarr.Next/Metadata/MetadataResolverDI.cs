@@ -1,13 +1,17 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using MG.Sonarr.Next.Attributes;
+using Microsoft.Extensions.DependencyInjection;
+using System.Management.Automation;
+using System.Reflection;
 
 namespace MG.Sonarr.Next.Metadata
 {
     public static class MetadataResolverDI
     {
-        public static IServiceCollection AddMetadata(this IServiceCollection services)
+        public static IServiceCollection AddMetadata(this IServiceCollection services, Assembly cmdletAssembly)
         {
             int initialCapacity = 22;
-            MetadataResolver dict = new(initialCapacity)
+            var pipes = FindPipeableCmdlets(cmdletAssembly);
+            MetadataResolver dict = new(initialCapacity, pipes)
             {
                 { Meta.BACKUP, Constants.BACKUP, true, new string[] { "Remove-SonarrBackup", "Save-SonarrBackup" } },
                 { Meta.CALENDAR, Constants.CALENDAR, false, new string[] { "Get-SonarrSeries", "Get-SonarrEpisode", "Get-SonarrEpisodeFile", "Invoke-SonarrRename", "Remove-SonarrEpisodeFile" } },
@@ -36,6 +40,40 @@ namespace MG.Sonarr.Next.Metadata
 
             Debug.Assert(dict.Count <= initialCapacity);
             return services.AddSingleton<IMetadataResolver>(dict);
+        }
+
+        public static Dictionary<string, SortedSet<string>> FindPipeableCmdlets(Assembly cmdletAssembly)
+        {
+            Dictionary<string, SortedSet<string>> namesToTags = new(100, StringComparer.InvariantCultureIgnoreCase);
+
+            Type cmdletAtt = typeof(CmdletAttribute);
+            Type pipeAtt = typeof(MetadataCanPipeAttribute);
+
+            IEnumerable<Type> cmdletTypes = cmdletAssembly.GetExportedTypes()
+                .Where(x => x.IsDefined(cmdletAtt, false) && x.IsDefined(pipeAtt, false));
+
+            foreach (Type cmdlet in cmdletTypes)
+            {
+                string cmdletName = GetCmdletNameFromAttribute(cmdlet);
+                foreach (MetadataCanPipeAttribute mta in cmdlet.GetCustomAttributes<MetadataCanPipeAttribute>())
+                {
+                    if (!namesToTags.TryGetValue(mta.Tag, out SortedSet<string>? list))
+                    {
+                        list = new(StringComparer.InvariantCultureIgnoreCase);
+                        namesToTags.Add(mta.Tag, list);
+                    }
+
+                    _ = list.Add(cmdletName);
+                }
+            }
+
+            return namesToTags;
+        }
+
+        private static string GetCmdletNameFromAttribute(Type cmdlet)
+        {
+            CmdletAttribute ca = cmdlet.GetCustomAttribute<CmdletAttribute>() ?? throw new InvalidOperationException();
+            return $"{ca.VerbName}-{ca.NounName}";
         }
     }
 }

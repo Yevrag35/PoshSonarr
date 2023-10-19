@@ -1,5 +1,7 @@
 ﻿using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Shell.Cmdlets.Connection;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -7,6 +9,13 @@ namespace MG.Sonarr.Next.Shell.Build
 {
     public static class Module
     {
+#if DEBUG
+        public static Dictionary<string, SortedSet<string>> GetCmdletsToTags()
+        {
+            return MetadataResolverDI.FindPipeableCmdlets(typeof(ConnectSonarrInstanceCmdlet).Assembly);
+        }
+#endif
+
         public static PSObject ReadAllAssemblyCmdlets()
         {
             List<Type> list = GetCmdletTypes();

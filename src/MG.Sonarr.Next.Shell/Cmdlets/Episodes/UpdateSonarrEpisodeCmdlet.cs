@@ -1,10 +1,11 @@
-﻿using MG.Sonarr.Next.Models;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
-using System.Management.Automation.Language;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 {
     [Cmdlet(VerbsData.Update, "SonarrEpisode", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Low)]
+    [MetadataCanPipe(Tag = Meta.EPISODE)]
     public sealed class UpdateSonarrEpisodeCmdlet : SonarrApiCmdletBase
     {
         [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput")]

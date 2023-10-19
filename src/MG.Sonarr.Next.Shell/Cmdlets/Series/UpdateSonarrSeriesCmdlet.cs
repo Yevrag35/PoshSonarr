@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Shell.Extensions;
 
@@ -6,6 +7,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
     [Cmdlet(VerbsData.Update, "SonarrSeries", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
     [Alias("Set-SonarrSeries")]
+    [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class UpdateSonarrSeriesCmdlet : SonarrApiCmdletBase
     {
         List<SeriesObject> _list = null!;

@@ -1,17 +1,17 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Models.Series;
-using Microsoft.Extensions.DependencyInjection;
 using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
     [Cmdlet(VerbsCommon.Add, "SonarrSeries", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
         DefaultParameterSetName = "RootFolderPath")]
-    [CmdletBinding(DefaultParameterSetName = "RootFolderPath")]
+    [MetadataCanPipe(Tag = Meta.SERIES_ADD)]
     public sealed class AddSonarrSeriesCmdlet : SonarrApiCmdletBase, IDynamicParameters
     {
         List<AddSeriesObject> _list = null!;

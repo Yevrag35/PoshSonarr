@@ -10,11 +10,13 @@ using System.Net;
 using System.Text.Json;
 using IOFile = System.IO.File;
 using IOPath = System.IO.Path;
+using MG.Sonarr.Next.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
 {
     [Cmdlet(VerbsData.Save, "SonarrBackup", DefaultParameterSetName = "ByExplicitUrl", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
     [Alias("Download-SonarrBackup")]
+    [MetadataCanPipe(Tag = Meta.BACKUP)]
     [OutputType(typeof(FileInfo))]
     public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
     {

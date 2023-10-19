@@ -3,10 +3,13 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Releases;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using MG.Sonarr.Next.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
 {
     [Cmdlet(VerbsCommon.Get, "SonarrRelease", DefaultParameterSetName = "ByEpisodeId")]
+    [MetadataCanPipe(Tag = Meta.EPISODE)]
+    [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class GetSonarrReleaseCmdlet : SonarrApiCmdletBase
     {
         QueryParameterCollection QueryParams { get; set; } = null!;

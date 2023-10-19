@@ -4,10 +4,13 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using MG.Sonarr.Next.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 {
     [Cmdlet(VerbsCommon.Get, "SonarrEpisodeFile")]
+    [MetadataCanPipe(Tag = Meta.CALENDAR)]
+    [MetadataCanPipe(Tag = Meta.EPISODE)]
     public sealed class GetSonarrEpisodeFileCmdlet : SonarrApiCmdletBase
     {
         bool _disposed;

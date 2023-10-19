@@ -7,10 +7,13 @@ using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using MG.Sonarr.Next.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 {
     [Cmdlet(VerbsCommon.Get, "SonarrEpisode", DefaultParameterSetName = BY_EP_ID)]
+    [MetadataCanPipe(Tag = Meta.CALENDAR)]
+    [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class GetSonarrEpisodeCmdlet : SonarrApiCmdletBase
     {
         const string BY_EP_ID = "ByEpisodeId";

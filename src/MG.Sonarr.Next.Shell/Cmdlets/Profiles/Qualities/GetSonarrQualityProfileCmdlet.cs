@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Qualities;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
@@ -9,6 +10,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities
 {
     [Cmdlet(VerbsCommon.Get, "SonarrQualityProfile", DefaultParameterSetName = "ByProfileName")]
     [Alias("Get-SonarrProfile")]
+    [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;

@@ -106,7 +106,7 @@ namespace MG.Sonarr.Next.Shell.Context
             services
                 .AddMemoryCache()
                 .AddSingleton<Queue<IApiCmdlet>>()
-                .AddSonarrClient(settings, (provider, options) =>
+                .AddSonarrClient(typeof(CmdletContextExtensions).Assembly, settings, (provider, options) =>
                 {
                     options.WriteIndented = true;
                 })

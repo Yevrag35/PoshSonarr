@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Renames;
 using MG.Sonarr.Next.Services.Http.Queries;
@@ -7,6 +8,10 @@ using MG.Sonarr.Next.Shell.Extensions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
 {
     [Cmdlet(VerbsDiagnostic.Test, "SonarrRename")]
+    [MetadataCanPipe(Tag = Meta.CALENDAR)]
+    [MetadataCanPipe(Tag = Meta.EPISODE)]
+    [MetadataCanPipe(Tag = Meta.EPISODE_FILE)]
+    [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class TestSonarrRenameCmdlet : SonarrApiCmdletBase
     {
         QueryParameterCollection _params = null!;

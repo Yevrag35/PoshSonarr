@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next
 {
@@ -89,27 +89,28 @@ namespace MG.Sonarr.Next
 
     public static class Meta
     {
-        public static readonly string BACKUP = "#backup";
-        public static readonly string CALENDAR = "#calendar";
-        public static readonly string COMMAND = "#command";
-        public static readonly string DELAY_PROFILE = "#delay_profile";
-        public static readonly string DOWNLOAD_CLIENT = "#download_client";
-        public static readonly string DOWNLOAD_CLIENT_CONFIG = "#download_client_config";
-        public static readonly string EPISODE = "#episode";
-        public static readonly string EPISODE_FILE = "#episode_file";
-        public static readonly string HOST = "#host_config";
-        public static readonly string INDEXER = "#indexer";
-        public static readonly string LANGUAGE = "#language_profile";
-        public static readonly string LOG_FILE = "#log_file";
-        public static readonly string LOG_ITEM = "#log_item";
-        public static readonly string QUALITY_DEFINITION = "#quality_definition";
-        public static readonly string QUALITY_PROFILE = "#quality_profile";
-        public static readonly string RELEASE = "#release";
-        public static readonly string RELEASE_PROFILE = "#release_profile";
-        public static readonly string RENAMABLE = "#rename_file";
-        public static readonly string ROOT_FOLDER = "#root_folder";
-        public static readonly string SERIES = "#series";
-        public static readonly string SERIES_ADD = "#add_series";
-        public static readonly string TAG = "#tag";
+        public const string BACKUP = "#backup";
+        public const string CALENDAR = "#calendar";
+        public const string COMMAND = "#command";
+        public const string DELAY_PROFILE = "#delay_profile";
+        public const string DOWNLOAD_CLIENT = "#download_client";
+        public const string DOWNLOAD_CLIENT_CONFIG = "#download_client_config";
+        public const string EPISODE = "#episode";
+        public const string EPISODE_FILE = "#episode_file";
+        public const string HOST = "#host_config";
+        public const string INDEXER = "#indexer";
+        public const string LANGUAGE = "#language_profile";
+        public const string LOG_FILE = "#log_file";
+        public const string LOG_ITEM = "#log_item";
+        public const string NOTIFICATION = "#notification";
+        public const string QUALITY_DEFINITION = "#quality_definition";
+        public const string QUALITY_PROFILE = "#quality_profile";
+        public const string RELEASE = "#release";
+        public const string RELEASE_PROFILE = "#release_profile";
+        public const string RENAMABLE = "#rename_file";
+        public const string ROOT_FOLDER = "#root_folder";
+        public const string SERIES = "#series";
+        public const string SERIES_ADD = "#add_series";
+        public const string TAG = "#tag";
     }
 }

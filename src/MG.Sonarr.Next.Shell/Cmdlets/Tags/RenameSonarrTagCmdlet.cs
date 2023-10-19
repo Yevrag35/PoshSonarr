@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Tags;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +8,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
     [Cmdlet(VerbsCommon.Rename, "SonarrTag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
         DefaultParameterSetName = "ById")]
+    [MetadataCanPipe(Tag = Meta.TAG)]
     public sealed class RenameSonarrTagCmdlet : SonarrApiCmdletBase
     {
         Dictionary<string, object?> _dict = null!;

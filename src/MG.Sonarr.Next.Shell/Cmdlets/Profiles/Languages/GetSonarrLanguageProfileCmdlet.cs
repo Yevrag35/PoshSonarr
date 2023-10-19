@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Languages
 {
     [Cmdlet(VerbsCommon.Get, "SonarrLanguageProfile", DefaultParameterSetName = "None")]
+    [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class GetSonarrLanguageProfileCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;

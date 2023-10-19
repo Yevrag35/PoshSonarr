@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Tags;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
@@ -7,6 +8,12 @@ using MG.Sonarr.Next.Shell.Extensions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
     [Cmdlet(VerbsCommon.Clear, "SonarrTag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [MetadataCanPipe(Tag = Meta.DELAY_PROFILE)]
+    [MetadataCanPipe(Tag = Meta.DOWNLOAD_CLIENT)]
+    [MetadataCanPipe(Tag = Meta.INDEXER)]
+    [MetadataCanPipe(Tag = Meta.RELEASE_PROFILE)]
+    [MetadataCanPipe(Tag = Meta.SERIES)]
+    [MetadataCanPipe(Tag = Meta.SERIES_ADD)]
     public sealed class ClearSonarrTagCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;

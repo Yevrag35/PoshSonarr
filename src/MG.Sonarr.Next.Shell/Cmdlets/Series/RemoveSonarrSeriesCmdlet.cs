@@ -2,12 +2,13 @@
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
 using Microsoft.Extensions.DependencyInjection;
+using MG.Sonarr.Next.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
     [Cmdlet(VerbsCommon.Remove, "SonarrSeries", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
     [Alias("Delete-SonarrSeries")]
-    [CmdletBinding(PositionalBinding = false, ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
     {
         static readonly IQueryParameter FALSE = QueryParameter.Create("deleteFiles", false);

@@ -14,6 +14,21 @@ namespace MG.Sonarr.Next.Metadata
         public string UrlBase { get; }
         public string Value { get; }
 
+        public MetadataTag(string urlBase, string value, bool supportsId, IEnumerable<string> pipesTo)
+        {
+            this.UrlBase = urlBase.TrimEnd('/');
+            this.Value = value;
+            this.SupportsId = supportsId;
+            this.CanPipeTo = new ReadOnlySet<string>(pipesTo);
+            //if (supportedPipes is null || supportedPipes.Length <= 0)
+            //{
+            //    this.CanPipeTo = _empty;
+            //}
+            //else
+            //{
+            //    this.CanPipeTo = new ReadOnlySet<string>(supportedPipes, StringComparer.InvariantCultureIgnoreCase);
+            //}
+        }
         public MetadataTag(string urlBase, string value, bool supportsId, string[]? supportedPipes)
         {
             this.UrlBase = urlBase.TrimEnd('/');

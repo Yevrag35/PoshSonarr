@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
 
@@ -6,6 +7,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 {
     [Cmdlet(VerbsCommon.Remove, "SonarrEpisodeFile", SupportsShouldProcess = true)]
     [Alias("Delete-SonarrEpisodeFile")]
+    [MetadataCanPipe(Tag = Meta.CALENDAR)]
+    [MetadataCanPipe(Tag = Meta.EPISODE)]
+    [MetadataCanPipe(Tag = Meta.EPISODE_FILE)]
     public sealed class RemoveSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;

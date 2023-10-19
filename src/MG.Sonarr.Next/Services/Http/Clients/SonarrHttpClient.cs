@@ -13,6 +13,7 @@ using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Services.Http.Requests;
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Models.Errors;
+using System.Reflection;
 
 namespace MG.Sonarr.Next.Services.Http.Clients
 {
@@ -253,12 +254,12 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 
         internal static readonly ProductInfoHeaderValue UserAgent = new("PoshSonarr-Next", "2.0.0");
         
-        private static IHttpClientBuilder AddSonarrClientInternal(IServiceCollection services, IConnectionSettings settings, Action<IServiceProvider, JsonSerializerOptions> configureJson)
+        private static IHttpClientBuilder AddSonarrClientInternal(IServiceCollection services, Assembly cmdletAssembly, IConnectionSettings settings, Action<IServiceProvider, JsonSerializerOptions> configureJson)
         {
             return services
                     .AddSingleton(settings)
                     .AddTransient<SonarrClientHandler>()
-                    .AddMetadata()
+                    .AddMetadata(cmdletAssembly)
                     .AddResponseReader()
                     .AddSignalRClient()
                     .AddSonarrDownloadClient()
@@ -281,19 +282,19 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             services.AddTransient<PathHandler>()
                     .AddTransient<TestingHandler>();
 
-            AddSonarrClientInternal(services, settings, configureJson)
+            AddSonarrClientInternal(services, typeof(SonarrHttpClient).Assembly, settings, configureJson)
                 .AddHttpMessageHandler<PathHandler>()
                 .AddHttpMessageHandler<TestingHandler>();
 
             return services;
         }
-        public static IServiceCollection AddSonarrClient(this IServiceCollection services, IConnectionSettings settings, Action<IServiceProvider, JsonSerializerOptions> configureJson)
+        public static IServiceCollection AddSonarrClient(this IServiceCollection services, Assembly cmdletAssembly, IConnectionSettings settings, Action<IServiceProvider, JsonSerializerOptions> configureJson)
         {
             services.AddTransient<PathHandler>()
                     .AddTransient<VerboseHandler>()
                     .AddTransient<TestingHandler>();
 
-            AddSonarrClientInternal(services, settings, configureJson)
+            AddSonarrClientInternal(services, cmdletAssembly, settings, configureJson)
                 .AddHttpMessageHandler<PathHandler>()
                 .AddHttpMessageHandler<VerboseHandler>()
                 .AddHttpMessageHandler<TestingHandler>();

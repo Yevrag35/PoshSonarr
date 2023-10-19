@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -8,6 +9,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
     [Cmdlet(VerbsCommon.Remove, "SonarrBackup", SupportsShouldProcess = true,
         DefaultParameterSetName = "ByExplicitId")]
     [Alias("Delete-SonarrBackup")]
+    [MetadataCanPipe(Tag = Meta.BACKUP)]
     public sealed class RemoveSonarrBackupCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;

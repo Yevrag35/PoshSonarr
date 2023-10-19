@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Exceptions;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Commands;
@@ -12,6 +13,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
     [Cmdlet(VerbsLifecycle.Invoke, "SonarrRename", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
         DefaultParameterSetName = BY_EXPLICIT)]
     [Alias("Rename-SonarrEpisodeFile")]
+    [MetadataCanPipe(Tag = Meta.CALENDAR)]
+    [MetadataCanPipe(Tag = Meta.EPISODE)]
+    [MetadataCanPipe(Tag = Meta.EPISODE_FILE)]
+    [MetadataCanPipe(Tag = Meta.RENAMABLE)]
     public sealed class InvokeSonarrRenameCmdlet : SonarrCmdletBase
     {
         const string BY_EXPLICIT = "ByExplicit";

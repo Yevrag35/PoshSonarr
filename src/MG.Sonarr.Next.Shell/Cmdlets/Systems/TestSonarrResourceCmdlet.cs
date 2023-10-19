@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Testing;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
@@ -6,6 +7,8 @@ using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
 {
     [Cmdlet(VerbsDiagnostic.Test, "SonarrResource")]
+    [MetadataCanPipe(Tag = Meta.DOWNLOAD_CLIENT)]
+    [MetadataCanPipe(Tag = Meta.INDEXER)]
     public sealed class TestSonarrResourceCmdlet : TimedCmdlet
     {
         const string TEST = "/test";

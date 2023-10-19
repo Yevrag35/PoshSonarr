@@ -6,10 +6,15 @@ using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
     [Cmdlet(VerbsCommon.Get, "SonarrSeries", DefaultParameterSetName = "BySeriesName")]
+    [MetadataCanPipe(Tag = Meta.CALENDAR)]
+    [MetadataCanPipe(Tag = Meta.EPISODE)]
+    [MetadataCanPipe(Tag = Meta.EPISODE_FILE)]
+    [MetadataCanPipe(Tag = Meta.RENAMABLE)]
     public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
