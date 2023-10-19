@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json.Collections;
 using MG.Sonarr.Next.Json.Converters.Spans;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Series;
 using System.Buffers;
 using System.Collections.ObjectModel;
@@ -86,6 +87,14 @@ namespace MG.Sonarr.Next.Json.Converters
                         ref reader, options, replaceNames, _globalReplaceNames.ForDeserializing());
 
                     reader.Read();
+
+                    if (reader.TokenType == JsonTokenType.Number
+                        &&
+                        Constants.ID.Equals(pn, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        pso.Properties.Add(new ReadOnlyNoteProperty<int>(pn, reader.GetInt32()));
+                        continue;
+                    }
 
                     object? o;
                     switch (reader.TokenType)

@@ -8,13 +8,16 @@ using System.Text.Json.Serialization;
 namespace MG.Sonarr.Next.Models.System
 {
     [SonarrObject]
-    public class HostObject : IdSonarrObject<HostObject>,
+    public class HostObject : SonarrObject,
+        IHasId,
         IJsonOnSerializing,
         ISerializableNames<HostObject>
     {
         const int CAPACITY = 32;
         const int CONDITIONAL_CAPACITY = 3;
         private protected Dictionary<string, object?> Conditionals { get; }
+
+        public int Id { get; private set; }
 
         public HostObject()
             : base(CAPACITY)

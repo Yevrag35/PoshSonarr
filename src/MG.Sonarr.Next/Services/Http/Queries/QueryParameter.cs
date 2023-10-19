@@ -139,6 +139,7 @@ namespace MG.Sonarr.Next.Services.Http.Queries
         readonly int _maxLength;
         readonly bool _isNotEmpty;
 
+        public bool IsEmpty => !_isNotEmpty;
         public string Key => _key ?? string.Empty;
         public int MaxLength => _maxLength;
         public bool Value => _value;

@@ -1,11 +1,16 @@
-﻿namespace MG.Sonarr.Next.Models
+﻿using MG.Sonarr.Next.Extensions.PSO;
+
+namespace MG.Sonarr.Next.Models
 {
     public abstract class IdSonarrObject<TSelf> : SonarrObject,
         IComparable<TSelf>,
         IHasId
         where TSelf : IdSonarrObject<TSelf>
     {
-        public int Id { get; private set; }
+        public int Id
+        {
+            get => this.GetValue<int>();
+        }
         protected IdSonarrObject(int capacity)
             : base(capacity)
         {
@@ -17,10 +22,7 @@
         }
         public override void OnDeserialized()
         {
-            if (this.TryGetId(out int id))
-            {
-                this.Id = id;
-            }
+
         }
     }
 }

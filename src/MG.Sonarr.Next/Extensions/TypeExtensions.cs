@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Management.Automation;
+using System.Reflection;
 
 namespace MG.Sonarr.Next.Extensions
 {
@@ -23,6 +24,22 @@ namespace MG.Sonarr.Next.Extensions
         public static string? GetTypeName(this Type? type)
         {
             return type?.FullName ?? type?.Name;
+        }
+
+        [return: NotNullIfNotNull(nameof(type))]
+        public static string? GetPSTypeName(this Type? type)
+        {
+            string? name = null;
+            if (type is null)
+            {
+                return name;
+            }
+            else
+            {
+                name = LanguagePrimitives.ConvertTypeNameToPSTypeName(type.FullName);
+            }
+
+            return name ?? type.FullName ?? type.Name;
         }
     }
 }
