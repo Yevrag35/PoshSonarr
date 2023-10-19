@@ -1,6 +1,5 @@
 ﻿using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Notifications;
-using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
