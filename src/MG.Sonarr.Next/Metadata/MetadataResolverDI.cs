@@ -27,7 +27,7 @@ namespace MG.Sonarr.Next.Metadata
                 { Meta.LANGUAGE, Constants.LANGUAGE_PROFILE, true },
                 { Meta.LOG_ITEM, Constants.LOG, false },
                 { Meta.LOG_FILE, Constants.LOGFILE, false, new string[] { "Save-SonarrLogFile" } },
-                { Meta.NOTIFICATION, Constants.NOTIFICATION, true },
+                { Meta.NOTIFICATION, Constants.NOTIFICATION, true, new string[] { "Test-SonarrResource", "Remove-SonarrNotification" } },
                 { Meta.QUALITY_DEFINITION, Constants.QUALITY_DEFINITIONS, true },
                 { Meta.QUALITY_PROFILE, Constants.PROFILE, true },
                 { Meta.RELEASE, Constants.RELEASE, false, new string[] { "Add-SonarrRelease" } },

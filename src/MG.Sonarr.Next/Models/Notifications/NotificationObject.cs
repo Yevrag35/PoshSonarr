@@ -8,7 +8,8 @@ namespace MG.Sonarr.Next.Models.Notifications
 {
     [SonarrObject]
     public class NotificationObject : TagUpdateObject<NotificationObject>,
-        ISerializableNames<NotificationObject>
+        ISerializableNames<NotificationObject>,
+        ITestPipeable
     {
         static readonly string[] _isEnabledProps = new[]
         {
