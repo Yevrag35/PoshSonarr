@@ -16,7 +16,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Languages
         HashSet<Wildcard> _wcNames = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ParameterSetName = "ByProfileId")]
+        [Parameter(Mandatory = true, ParameterSetName = "ByProfileId", Position = 0)]
         [ValidateRange(ValidateRangeKind.Positive)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
@@ -27,7 +27,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Languages
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0)]
         [SupportsWildcards]
-        public IntOrString[] Name { get; set; } = Array.Empty<IntOrString>();
+        public string[] Name { get; set; } = Array.Empty<string>();
 
         protected override int Capacity => 2;
         protected override void OnCreatingScope(IServiceProvider provider)
@@ -49,8 +49,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Languages
             _ids.UnionWith(this.Id);
             if (this.HasParameter(x => x.Name))
             {
-                this.Name.SplitToSets(_ids, _wcNames,
-                    this.MyInvocation.Line.Contains(" -Name ", StringComparison.InvariantCultureIgnoreCase));
+                _wcNames.UnionWith(this.Name);
             }
         }
         protected override void Process(IServiceProvider provider)
