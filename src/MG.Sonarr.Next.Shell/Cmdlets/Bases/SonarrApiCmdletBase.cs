@@ -53,6 +53,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <summary>
         /// Sends a GET Http request to the specified Sonarr API endpoint.
         /// </summary>
+        /// <typeparam name="T">The type of object the response's content will be deserialized as.</typeparam>
         /// <param name="path">The relative URL path of the API endpoint.</param>
         /// <param name="token"></param>
         /// <returns>
@@ -67,9 +68,25 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         }
 
         /// <summary>
+        /// Sends a POST Http request to the specified Sonarr API endpoint with no body in the request but deserializes 
+        /// the response as the specified type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of object to deserialize the response's content to.</typeparam>
+        /// <param name="path"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        protected SonarrResponse<T> SendPostRequest<T>(string path, CancellationToken token = default)
+        {
+            this.StartTimer();
+            _queue.Enqueue(this);
+            SonarrResponse<T> response = _client.SendPost<T>(path, token);
+            return response;
+        }
+        /// <summary>
         /// Sends a POST Http request to the specified Sonarr API endpoint with the specified object 
         /// of type <typeparamref name="T"/> JSON-serialized into the request's body.
         /// </summary>
+        /// <typeparam name="T">The type of object the request body will serialized from.</typeparam>
         /// <param name="path">The relative URL path of the API endpoint.</param>
         /// <param name="body">The body to serialize into the request's body.</param>
         /// <param name="token"></param>
@@ -88,6 +105,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// Sends a POST Http request to the specified Sonarr API endpoint with the specified object 
         /// of type <typeparamref name="T"/> JSON-serialized into the request's body.
         /// </summary>
+        /// <typeparam name="TBody">The type of object the request body will serialized from.</typeparam>
+        /// <typeparam name="TOutput">The type of object the response's content will be deserialized as.</typeparam>
         /// <param name="path">The relative URL path of the API endpoint.</param>
         /// <param name="body">The body to serialize into the request's body.</param>
         /// <param name="token"></param>
@@ -109,6 +128,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// Sends a PUT Http request to the specified Sonarr API endpoint with the specified object 
         /// of type <typeparamref name="T"/> JSON-serialized into the request's body.
         /// </summary>
+        /// <typeparam name="T">The type of object the request body will serialized from.</typeparam>
         /// <param name="path">The relative URL path of the API endpoint.</param>
         /// <param name="body">The body to serialize into the request's body.</param>
         /// <param name="token"></param>
