@@ -7,6 +7,7 @@ using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Shell.Output;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
@@ -15,6 +16,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     [MetadataCanPipe(Tag = Meta.EPISODE)]
     [MetadataCanPipe(Tag = Meta.EPISODE_FILE)]
     [MetadataCanPipe(Tag = Meta.RENAMABLE)]
+    [OutputType(typeof(ISeriesOutput))]
     public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;

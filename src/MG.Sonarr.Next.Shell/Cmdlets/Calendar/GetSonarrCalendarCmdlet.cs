@@ -2,12 +2,13 @@
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Calendar;
 using MG.Sonarr.Next.Shell.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Shell.Output;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 {
     [Cmdlet(VerbsCommon.Get, "SonarrCalendar", DefaultParameterSetName = "None")]
+    [OutputType(typeof(ICalendarOutput))]
     public sealed class GetSonarrCalendarCmdlet : SonarrApiCmdletBase
     {
         const string START = "start";
