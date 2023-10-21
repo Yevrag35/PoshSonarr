@@ -1,6 +1,6 @@
 ﻿namespace MG.Sonarr.Next.Models.Commands
 {
-    public interface ICommand
+    public interface ICommand : IComparable<ICommand>, IEquatable<ICommand>
     {
         int Id { get; }
         [MemberNotNullWhen(true, nameof(Ended))]

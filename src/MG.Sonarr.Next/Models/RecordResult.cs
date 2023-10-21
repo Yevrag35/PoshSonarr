@@ -3,7 +3,7 @@ using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models
 {
-    public class RecordResult<T> : IJsonMetadataTaggable
+    public sealed class RecordResult<T> : IJsonMetadataTaggable
         where T : IComparable<T>, IJsonMetadataTaggable
     {
         public required int Page { get; init; }
@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Models
         public required int TotalRecords { get; init; }
         public required MetadataList<T> Records { get; init; }
 
-        void IJsonMetadataTaggable.SetTag(IMetadataResolver resolver)
+        public void SetTag(IMetadataResolver resolver)
         {
             this.Records.SetTag(resolver);
         }

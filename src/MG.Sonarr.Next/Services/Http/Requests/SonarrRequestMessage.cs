@@ -8,12 +8,12 @@
         public string RequestUrl => this.RequestUri?.ToString() ?? this.OriginalRequestUri;
         public abstract bool CanUseCookieAuthentication { get; }
 
-        public SonarrRequestMessage(HttpMethod method, string requestUri)
+        protected SonarrRequestMessage(HttpMethod method, string requestUri)
             : base(method, requestUri)
         {
             this.OriginalRequestUri = requestUri ?? string.Empty;
         }
-        public SonarrRequestMessage(HttpMethod method, Uri requestUri)
+        protected SonarrRequestMessage(HttpMethod method, Uri requestUri)
             : base(method, requestUri)
         {
             this.OriginalRequestUri = requestUri.OriginalString;

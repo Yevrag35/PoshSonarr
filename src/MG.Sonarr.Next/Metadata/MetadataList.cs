@@ -36,7 +36,10 @@ namespace MG.Sonarr.Next.Metadata
 
         public void Add(T item)
         {
-            _list.Add(item);
+            if (item is not null)
+            {
+                _list.Add(item);
+            }
         }
 
         /// <inheritdoc cref="List{T}.AddRange(IEnumerable{T})"/>

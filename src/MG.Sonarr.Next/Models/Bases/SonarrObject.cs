@@ -18,6 +18,7 @@ namespace MG.Sonarr.Next.Models
         {
             this.MetadataTag = MetadataTag.Empty;
         }
+
         public virtual void Commit()
         {
             return;

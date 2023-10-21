@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
@@ -15,6 +16,7 @@ namespace MG.Sonarr.Next.Models.Commands
     [SonarrObject]
     public sealed class CommandObject : IdSonarrObject<CommandObject>,
         ICommand,
+        IEquatable<CommandObject>,
         IJsonOnSerializing,
         ISerializableNames<CommandObject>
     {
@@ -24,10 +26,10 @@ namespace MG.Sonarr.Next.Models.Commands
 
         PSObject? _body;
 
+        public DateTimeOffset? Ended { get; private set; }
         public bool IsCompleted => COMPLETED.Equals(this.Status, StringComparison.InvariantCultureIgnoreCase);
         public string Name { get; private set; } = string.Empty;
         public DateTimeOffset Started { get; private set; }
-        public DateTimeOffset? Ended { get; private set; }
         public string Status { get; private set; } = string.Empty;
 
         public CommandObject()
@@ -36,11 +38,64 @@ namespace MG.Sonarr.Next.Models.Commands
         }
 
         public static readonly ICommand Empty = EmptyCommand.Default;
+
+        private static bool AreCommandPropertiesEqual(ICommand thisAsCommand, [NotNullWhen(true)] ICommand? otherCommand)
+        {
+            return thisAsCommand.Id.IsEqualTo(otherCommand?.Id)
+                   &&
+                   // Safe to access directly because other cannot be null if the first part is true.
+                   thisAsCommand.Started == otherCommand.Started
+                   &&
+                   StringComparer.InvariantCultureIgnoreCase.Equals(thisAsCommand.Name, otherCommand.Name);
+        }
+        private static bool AreCommandPropertiesEqual(CommandObject @this, CommandObject? other)
+        {
+            return AreCommandPropertiesEqual(thisAsCommand: @this, otherCommand: other)
+                   &&
+                   // Safe to access directly because other cannot be null if the first part is true.
+                   @this.Ended == other.Ended
+                   &&
+                   StringComparer.InvariantCultureIgnoreCase.Equals(@this.Status, other.Status);
+        }
+        public override void Commit()
+        {
+            this.Properties.Remove(BODY);
+            base.Commit();
+        }
+        public int CompareTo(ICommand? other)
+        {
+            return Comparer<int?>.Default.Compare(this.Id, other?.Id);
+        }
+        public bool Equals([NotNullWhen(true)] CommandObject? other)
+        {
+            return ReferenceEquals(this, other) || AreCommandPropertiesEqual(this, other);
+        }
+        public bool Equals([NotNullWhen(true)] ICommand? command)
+        {
+            return ReferenceEquals(this, command) || AreCommandPropertiesEqual(this, command);
+        }
+        public override bool Equals([NotNullWhen(true)] object? obj)
+        {
+            return obj switch
+            {
+                CommandObject co => this.Equals(co),
+                ICommand command => this.Equals(command),
+                _ => false,
+            };
+        }
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(
+                this.Id,
+                this.Ended.GetValueOrDefault(),
+                StringComparer.InvariantCultureIgnoreCase.GetHashCode(this.Name),
+                this.Started,
+                StringComparer.InvariantCultureIgnoreCase.GetHashCode(this.Status));
+        }
         protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.COMMAND];
         }
-
         public override void OnDeserialized()
         {
             base.OnDeserialized();
@@ -70,12 +125,6 @@ namespace MG.Sonarr.Next.Models.Commands
                 this.Status = status;
             }
         }
-
-        public override void Commit()
-        {
-            this.Properties.Remove(BODY);
-            base.Commit();
-        }
         public void OnSerializing()
         {
             this.AddProperty(BODY, _body);
@@ -84,6 +133,31 @@ namespace MG.Sonarr.Next.Models.Commands
         {
             this.Properties.Remove(BODY);
             base.Reset();
+        }
+
+        public static bool operator ==(CommandObject? x, CommandObject? y)
+        {
+            return x.IsEqualTo<CommandObject>(y);
+        }
+        public static bool operator !=(CommandObject? x, CommandObject? y)
+        {
+            return !(x == y);
+        }
+        public static bool operator ==(CommandObject? x, ICommand? y)
+        {
+            return x.IsEqualTo(y);
+        }
+        public static bool operator !=(CommandObject? x, ICommand? y)
+        {
+            return !(x == y);
+        }
+        public static bool operator ==(ICommand? x, CommandObject? y)
+        {
+            return x.IsEqualTo(y);
+        }
+        public static bool operator !=(ICommand? x, CommandObject? y)
+        {
+            return !(x == y);
         }
     }
 }

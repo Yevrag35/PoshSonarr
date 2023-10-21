@@ -61,32 +61,6 @@ namespace MG.Sonarr.Next.Metadata
             return _dict.TryAdd(tag, metadataTag);
 
         }
-
-        //public bool AddToObject([ConstantExpected] string tag, [NotNullWhen(true)] object? obj)
-        //{
-        //    ArgumentNullException.ThrowIfNull(tag);
-
-        //    if (!_dict.ContainsKey(tag) || obj is null || obj is not PSObject pso)
-        //    {
-        //        return false;
-        //    }
-
-        //    return this.AddToObject(tag, pso);
-        //}
-        //public bool AddToObject([ConstantExpected] string tag, PSObject pso)
-        //{
-        //    ArgumentNullException.ThrowIfNull(tag);
-        //    ArgumentNullException.ThrowIfNull(pso);
-
-        //    bool added = false;
-        //    if (_dict.TryGetValue(tag, out MetadataTag? meta))
-        //    {
-        //        pso.Properties.Add(new MetadataProperty(meta));
-        //        added = true;
-        //    }
-
-        //    return added;
-        //}
         public bool ContainsKey([NotNullWhen(true)] string? key)
         {
             return !string.IsNullOrWhiteSpace(key) && _dict.ContainsKey(key);

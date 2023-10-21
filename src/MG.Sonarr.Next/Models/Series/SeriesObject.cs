@@ -32,10 +32,11 @@ namespace MG.Sonarr.Next.Models.Series
             get => this.GetValue<int>();
             set => this.SetValue(value);
         }
-        int IEpisodeBySeriesPipeable.SeriesId => this.Id;
-        int IEpisodeFileBySeriesPipeable.SeriesId => this.Id;
-        int IReleasePipeableBySeries.SeriesId => this.Id;
-        int ISeriesPipeable.SeriesId => this.Id;
+        int IEpisodeBySeriesPipeable.SeriesId => this.SeriesId;
+        int IEpisodeFileBySeriesPipeable.SeriesId => this.SeriesId;
+        int IReleasePipeableBySeries.SeriesId => this.SeriesId;
+        int ISeriesPipeable.SeriesId => this.SeriesId;
+        protected int SeriesId => this.Id;
         public string Title { get; set; } = string.Empty;
 
         public SeriesObject()
