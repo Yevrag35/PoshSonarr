@@ -72,6 +72,7 @@ namespace MG.Sonarr.Next
         public static readonly string RESTRICTION = "/restriction";
         public static readonly string ROOTFOLDER = "/rootfolder";
         public static readonly string SERIES = "/series";
+        public static readonly string SERIES_LOOKUP = SERIES + "/lookup";
         public static readonly string STATUS;
         public static readonly string SYSTEM;
         public static readonly string TAG = "/tag";

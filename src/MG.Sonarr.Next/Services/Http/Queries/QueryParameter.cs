@@ -150,6 +150,7 @@ namespace MG.Sonarr.Next.Services.Http.Queries
             _key = key;
             _value = value;
             _maxLength = key.Length + 1 + bool.FalseString.Length;
+            _isNotEmpty = true;
         }
 
         public bool Equals(IQueryParameter? other)

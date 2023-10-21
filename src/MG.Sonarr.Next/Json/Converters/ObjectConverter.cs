@@ -77,7 +77,7 @@ namespace MG.Sonarr.Next.Json.Converters
         internal T ConvertToObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options, IReadOnlyDictionary<string, string>? replaceNames = null) where T : PSObject, new()
         {
             var pso = new T();
-            replaceNames ??= EmptyNameDictionary.Default;
+            replaceNames ??= EmptyNameDictionary<string>.Default;
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
@@ -342,7 +342,7 @@ namespace MG.Sonarr.Next.Json.Converters
 
         internal void WritePSObject(Utf8JsonWriter writer, JsonSerializerOptions options, PSObject pso, IReadOnlyDictionary<string, string>? replaceNames = null)
         {
-            replaceNames ??= EmptyNameDictionary.Default;
+            replaceNames ??= EmptyNameDictionary<string>.Default;
             var globalReplace = _globalReplaceNames.ForSerializing();
 
             writer.WriteStartObject();

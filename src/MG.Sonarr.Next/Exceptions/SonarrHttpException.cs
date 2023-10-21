@@ -75,7 +75,7 @@ namespace MG.Sonarr.Next.Exceptions
 
             // Retrieve properties/fields from the serialization store.
             this.ExtendedInfo = ErrorCollection.Empty;
-            this.Headers = (IReadOnlyDictionary<string, string>?)info.GetValue(nameof(this.Headers), typeof(Dictionary<string, string>)) ?? EmptyNameDictionary.Default;
+            this.Headers = (IReadOnlyDictionary<string, string>?)info.GetValue(nameof(this.Headers), typeof(Dictionary<string, string>)) ?? EmptyNameDictionary<string>.Default;
             this.StatusCode = (HttpStatusCode?)info.GetValue(nameof(this.StatusCode), typeof(HttpStatusCode?));
             this.ReasonPhrase = (string?)info.GetValue(nameof(this.ReasonPhrase), typeof(string));
             this.RequestUri = (string?)info.GetValue(nameof(this.RequestUri), typeof(string));
@@ -114,7 +114,7 @@ namespace MG.Sonarr.Next.Exceptions
         {
             if (response is null)
             {
-                return EmptyNameDictionary.Default;
+                return EmptyNameDictionary<string>.Default;
             }
 
             Dictionary<string, string> dict = new(3);

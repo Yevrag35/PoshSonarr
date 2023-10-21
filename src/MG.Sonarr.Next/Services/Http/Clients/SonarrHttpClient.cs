@@ -261,16 +261,20 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 
         internal static readonly ProductInfoHeaderValue UserAgent = new("PoshSonarr-Next", "2.0.0");
         
-        private static IHttpClientBuilder AddSonarrClientInternal(IServiceCollection services, Assembly cmdletAssembly, IConnectionSettings settings, Action<IServiceProvider, JsonSerializerOptions> configureJson)
+        private static IHttpClientBuilder AddSonarrClientInternal(
+            IServiceCollection services,
+            Assembly cmdletAssembly,
+            IConnectionSettings settings,
+            Action<IServiceProvider, JsonSerializerOptions> configureJson)
         {
             return services
-                    .AddSingleton(settings)
-                    .AddTransient<SonarrClientHandler>()
                     .AddMetadata(cmdletAssembly)
                     .AddResponseReader()
+                    .AddSingleton(settings)
                     .AddSignalRClient()
                     .AddSonarrDownloadClient()
                     .AddSonarrJsonOptions(configureJson)
+                    .AddTransient<SonarrClientHandler>()
                     .AddHttpClient<ISonarrClient, SonarrHttpClient>((provider, client) =>
                     {
                         var settings = provider.GetRequiredService<IConnectionSettings>();
@@ -284,7 +288,9 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                     })
                     .ConfigurePrimaryHttpMessageHandler<SonarrClientHandler>();
         }
-        public static IServiceCollection AddSonarrNonPSClient(this IServiceCollection services, IConnectionSettings settings, Action<IServiceProvider, JsonSerializerOptions> configureJson)
+        public static IServiceCollection AddSonarrNonPSClient(this IServiceCollection services,
+            IConnectionSettings settings,
+            Action<IServiceProvider, JsonSerializerOptions> configureJson)
         {
             services.AddTransient<PathHandler>()
                     .AddTransient<TestingHandler>();
@@ -295,7 +301,10 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 
             return services;
         }
-        public static IServiceCollection AddSonarrClient(this IServiceCollection services, Assembly cmdletAssembly, IConnectionSettings settings, Action<IServiceProvider, JsonSerializerOptions> configureJson)
+        public static IServiceCollection AddSonarrClient(this IServiceCollection services,
+            Assembly cmdletAssembly,
+            IConnectionSettings settings,
+            Action<IServiceProvider, JsonSerializerOptions> configureJson)
         {
             services.AddTransient<PathHandler>()
                     .AddTransient<VerboseHandler>()

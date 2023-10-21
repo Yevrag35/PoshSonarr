@@ -9,13 +9,6 @@ namespace MG.Sonarr.Next.Shell.Build
 {
     public static class Module
     {
-#if DEBUG
-        public static Dictionary<string, SortedSet<string>> GetCmdletsToTags()
-        {
-            return MetadataResolverDI.FindPipeableCmdlets(typeof(ConnectSonarrInstanceCmdlet).Assembly);
-        }
-#endif
-
         public static PSObject ReadAllAssemblyCmdlets()
         {
             List<Type> list = GetCmdletTypes();

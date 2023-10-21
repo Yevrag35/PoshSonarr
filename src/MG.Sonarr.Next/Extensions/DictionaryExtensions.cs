@@ -5,32 +5,12 @@
     /// </summary>
     public static class DictionaryExtensions
     {
-        ///// <summary>
-        ///// Enumerates through a collection of <see cref="KeyValuePair{TKey, TValue}"/> instances
-        ///// and copies them to a new <see cref="ReadOnlyDictionary{TKey, TValue}"/>.
-        ///// </summary>
-        ///// <typeparam name="TKey"></typeparam>
-        ///// <typeparam name="TValue"></typeparam>
-        ///// <param name="items"></param>
-        ///// <param name="comparer"></param>
-        ///// <returns></returns>
-        //public static ReadOnlyDictionary<TKey, TValue> ToReadOnly<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>>? items, IEqualityComparer<TKey>? comparer = null) where TKey : notnull
-        //{
-        //    if (items is null)
-        //    {
-        //        return new(new Dictionary<TKey, TValue>());
-        //    }
-
-        //    int capacity = items.TryGetNonEnumeratedCount(out int count) ? count : 0;
-        //    Dictionary<TKey, TValue> dict = new(capacity, comparer);
-
-        //    foreach (var kvp in items)
-        //    {
-        //        _ = dict.TryAdd(kvp.Key, kvp.Value);
-        //    }
-
-        //    return new(dict);
-        //}
+        public static string GetValue<T>(this IReadOnlyDictionary<T, string>? dictionary, T key) where T : notnull
+        {
+            return dictionary is not null && dictionary.TryGetValue(key, out string? value)
+                ? value
+                : string.Empty;
+        }
 
         /// <summary>
         /// Extends <see cref="Dictionary{TKey, TValue}.TryGetValue(TKey, out TValue)"/> and 

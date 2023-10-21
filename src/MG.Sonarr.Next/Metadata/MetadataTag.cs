@@ -7,42 +7,34 @@ namespace MG.Sonarr.Next.Metadata
     [DebuggerDisplay(@"\{{Value}, {UrlBase}\}")]
     public sealed record MetadataTag : ICloneable
     {
-        static readonly IReadOnlySet<string> _empty = new ReadOnlySet<string>(Array.Empty<string>());
+        //static readonly IReadOnlySet<string> _empty = new ReadOnlySet<string>(Array.Empty<string>());
 
         public IReadOnlySet<string> CanPipeTo { get; }
         public bool SupportsId { get; }
         public string UrlBase { get; }
         public string Value { get; }
 
-        public MetadataTag(string urlBase, string value, bool supportsId, IEnumerable<string> pipesTo)
+        internal MetadataTag(string urlBase, string value, bool supportsId, IReadOnlySet<string> pipesTo)
         {
             this.UrlBase = urlBase.TrimEnd('/');
             this.Value = value;
             this.SupportsId = supportsId;
-            this.CanPipeTo = new ReadOnlySet<string>(pipesTo);
-            //if (supportedPipes is null || supportedPipes.Length <= 0)
-            //{
-            //    this.CanPipeTo = _empty;
-            //}
-            //else
-            //{
-            //    this.CanPipeTo = new ReadOnlySet<string>(supportedPipes, StringComparer.InvariantCultureIgnoreCase);
-            //}
+            this.CanPipeTo = pipesTo;
         }
-        public MetadataTag(string urlBase, string value, bool supportsId, string[]? supportedPipes)
-        {
-            this.UrlBase = urlBase.TrimEnd('/');
-            this.Value = value;
-            this.SupportsId = supportsId;
-            if (supportedPipes is null || supportedPipes.Length <= 0)
-            {
-                this.CanPipeTo = _empty;
-            }
-            else
-            {
-                this.CanPipeTo = new ReadOnlySet<string>(supportedPipes, StringComparer.InvariantCultureIgnoreCase);
-            }
-        }
+        //public MetadataTag(string urlBase, string value, bool supportsId, string[]? supportedPipes)
+        //{
+        //    this.UrlBase = urlBase.TrimEnd('/');
+        //    this.Value = value;
+        //    this.SupportsId = supportsId;
+        //    if (supportedPipes is null || supportedPipes.Length <= 0)
+        //    {
+        //        this.CanPipeTo = _empty;
+        //    }
+        //    else
+        //    {
+        //        this.CanPipeTo = new ReadOnlySet<string>(supportedPipes, StringComparer.InvariantCultureIgnoreCase);
+        //    }
+        //}
         object ICloneable.Clone() => Copy(this);
         public static MetadataTag Copy(MetadataTag tag) => new(tag);
         public string GetUrl(QueryParameterCollection? parameters)

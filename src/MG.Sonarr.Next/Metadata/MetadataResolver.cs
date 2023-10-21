@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
+﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions.PSO;
 using System.Collections;
 using System.Management.Automation;
 using System.Reflection;
@@ -27,7 +28,7 @@ namespace MG.Sonarr.Next.Metadata
         public static readonly string META_PROPERTY_NAME = "MetadataTag";
         public const char META_PREFIX = '#';
         readonly Dictionary<string, MetadataTag> _dict;
-        readonly IDictionary<string, SortedSet<string>> _pipesTo;
+        readonly NameLookup<string> _pipesTo;
 
         /// <summary>
         /// Gets the <see cref="MetadataTag"/> associated with the specified key.
@@ -44,31 +45,21 @@ namespace MG.Sonarr.Next.Metadata
 
         public int Count => _dict.Count;
 
-        public MetadataResolver(int capacity, IDictionary<string, SortedSet<string>> pipesTo)
+        public MetadataResolver(int capacity, NameLookup<string> pipesTo)
         {
             _dict = new(capacity, StringComparer.InvariantCultureIgnoreCase);
             _pipesTo = pipesTo;
         }
 
-        public bool Add(string tag, string baseUrl, bool supportsId)
-        {
-            return this.Add(tag, baseUrl, supportsId, Array.Empty<string>());
-        }
-        public bool Add(string tag, string baseUrl, bool supportsId, string[] canPipeTo)
+        internal bool Add(string tag, string baseUrl, bool supportsId)
         {
             ArgumentException.ThrowIfNullOrEmpty(tag);
             ArgumentException.ThrowIfNullOrEmpty(baseUrl);
-            //canPipeTo ??= Array.Empty<string>();
 
-            if (_pipesTo.TryGetValue(tag, out SortedSet<string>? pipesTo))
-            {
-                pipesTo.UnionWith(canPipeTo);
-                return _dict.TryAdd(tag, new MetadataTag(baseUrl, tag, supportsId, pipesTo));
-            }
-            else
-            {
-                return _dict.TryAdd(tag, new MetadataTag(baseUrl, tag, supportsId, canPipeTo));
-            }
+            MetadataTag metadataTag = new(baseUrl, tag, supportsId, _pipesTo[tag]);
+
+            return _dict.TryAdd(tag, metadataTag);
+
         }
 
         //public bool AddToObject([ConstantExpected] string tag, [NotNullWhen(true)] object? obj)
