@@ -22,6 +22,7 @@ namespace MG.Sonarr.Next
         public static readonly string NAME = "Name";
         public static readonly string PASSWORD = "Password";
         public static readonly string PROFILE_ID = "ProfileId";
+        internal const string PROPERTY_DATA = "Data";
         internal const string PROPERTY_EPISODE = "Episode";
         internal const string PROPERTY_EPISODE_FILE = "EpisodeFile";
         internal const string PROPERTY_SERIES = "Series";
@@ -103,6 +104,7 @@ namespace MG.Sonarr.Next
         public const string DOWNLOAD_CLIENT_CONFIG = "#download_client_config";
         public const string EPISODE = "#episode";
         public const string EPISODE_FILE = "#episode_file";
+        public const string HISTORY = "#history_item";
         public const string HOST = "#host_config";
         public const string INDEXER = "#indexer";
         public const string LANGUAGE = "#language_profile";
