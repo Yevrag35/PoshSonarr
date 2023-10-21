@@ -22,6 +22,9 @@ namespace MG.Sonarr.Next
         public static readonly string NAME = "Name";
         public static readonly string PASSWORD = "Password";
         public static readonly string PROFILE_ID = "ProfileId";
+        internal const string PROPERTY_EPISODE = "Episode";
+        internal const string PROPERTY_EPISODE_FILE = "EpisodeFile";
+        internal const string PROPERTY_SERIES = "Series";
         public static readonly string PROXY_PASSWORD = "ProxyPassword";
         public static readonly string QUALITY_PROFILE_ID = "QualityProfileId";
         public static readonly string SEASONS = "Seasons";

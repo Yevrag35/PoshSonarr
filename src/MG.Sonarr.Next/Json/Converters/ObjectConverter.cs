@@ -4,10 +4,12 @@ using MG.Sonarr.Next.Json.Collections;
 using MG.Sonarr.Next.Json.Converters.Spans;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
+using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Models.Series;
 using System.Buffers;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -92,6 +94,7 @@ namespace MG.Sonarr.Next.Json.Converters
                         &&
                         Constants.ID.Equals(pn, StringComparison.InvariantCultureIgnoreCase))
                     {
+                        //TODO: Move functionality into a read-only property key lookup operation.
                         pso.Properties.Add(new ReadOnlyNoteProperty<int>(pn, reader.GetInt32()));
                         continue;
                     }
@@ -100,18 +103,7 @@ namespace MG.Sonarr.Next.Json.Converters
                     switch (reader.TokenType)
                     {
                         case JsonTokenType.StartObject:
-                            if (pn.Equals("Series", StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                var series = this.ConvertToObject<SeriesObject>(ref reader, options);
-                                series.OnDeserialized();
-                                series.SetTag(_resolver);
-                                o = series;
-                            }
-                            else
-                            {
-                                o = this.ConvertToObject<PSObject>(ref reader, options);
-                            }
-
+                            o = this.ReadObject(ref reader, options, pn);
                             break;
 
                         case JsonTokenType.StartArray:
@@ -149,17 +141,39 @@ namespace MG.Sonarr.Next.Json.Converters
                             throw new JsonException("Unable to deserialize the value(s).");
                     }
 
-                    pso.Properties.Add(new PSNoteProperty(pn, o));
+                    pso.Properties.Add(new PSNoteProperty(pn, o));  //TODO: Add lookup for read-only properties.
                 }
             }
 
             return pso;
         }
+
         private object? ConvertToEnumerable(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options)
         {
             return _convertProps.TryGetValue(propertyName, out Type? convertTo)
                 ? JsonSerializer.Deserialize(ref reader, convertTo, options)
                 : JsonSerializer.Deserialize<object[]>(ref reader, options);
+        }
+
+        private static string ProcessQuotes(ReadOnlySpan<char> chars)
+        {
+            int position = 0;
+            ReadOnlySpan<char> quotes = stackalloc char[] { '\\', '"' };
+            ReadOnlySpan<char> backs = stackalloc char[] { '\\', '\\' };
+            Span<char> scratch = stackalloc char[chars.Length];
+
+            foreach (SplitEntry section in chars.SpanSplit(quotes, backs))
+            {
+                section.Chars.CopyTo(scratch.Slice(position));
+                position += section.Chars.Length;
+
+                if (!section.Separator.IsEmpty)
+                {
+                    scratch[position++] = section.Separator[1];
+                }
+            }
+
+            return new string(scratch.Slice(0, position));
         }
 
         private static bool ReadBoolean(ref Utf8JsonReader reader, JsonSerializerOptions options)
@@ -168,6 +182,108 @@ namespace MG.Sonarr.Next.Json.Converters
             int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
 
             return bool.TryParse(chars.Slice(0, written), out bool result) && result;
+        }
+        private static ValueType ReadNumber(ref Utf8JsonReader reader, JsonSerializerOptions options)
+        {
+            Span<char> chars = stackalloc char[reader.ValueSpan.Length];
+            int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
+
+            chars = chars.Slice(0, written);
+            if (int.TryParse(chars, null, out int intNum))
+            {
+                return intNum;
+            }
+            else if (long.TryParse(chars, null, out long longNum))
+            {
+                return longNum;
+            }
+            else if (double.TryParse(chars, null, out double dubNum))
+            {
+                return dubNum;
+            }
+            else if (decimal.TryParse(chars, null, out decimal decNum))
+            {
+                return decNum;
+            }
+            else
+            {
+                return int.MinValue;
+            }
+        }
+
+        private object ReadObject(ref Utf8JsonReader reader, JsonSerializerOptions options, string pn)
+        {
+            switch (pn)
+            {
+                case Constants.PROPERTY_EPISODE:
+                    return this.ReadPSObject<EpisodeObject>(ref reader, options);
+
+                case Constants.PROPERTY_EPISODE_FILE:
+                    return this.ReadPSObject<EpisodeFileObject>(ref reader, options);
+
+                case Constants.PROPERTY_SERIES:
+                    return this.ReadPSObject<SeriesObject>(ref reader, options);
+
+                default:
+                    return this.ConvertToObject<PSObject>(ref reader, options);
+            }
+        }
+        private T ReadPSObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options) where T : SonarrObject, ISerializableNames<T>, new()
+        {
+            var sonarrObj = this.ConvertToObject<T>(ref reader, options, T.GetDeserializedNames());
+            sonarrObj.OnDeserialized();
+            sonarrObj.SetTag(_resolver);
+            return sonarrObj;
+        }
+
+        private static string ReadPropertyName(ref Utf8JsonReader reader, JsonSerializerOptions options, IReadOnlyDictionary<string, string> replaceNames, IReadOnlyDictionary<string, string> globalReplace)
+        {
+            Span<char> chars = stackalloc char[reader.ValueSpan.Length];
+            int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
+
+            chars = chars.Slice(0, written);
+            ref char first = ref chars[0];
+            if (char.IsLower(first))
+            {
+                first = char.ToUpper(first);
+            }
+
+            string propertyName = new(chars);
+            if (replaceNames.TryGetValue(propertyName, out string? replacement))
+            {
+                return replacement;
+            }
+            else if (globalReplace.TryGetValue(propertyName, out string? gbReplacement))
+            {
+                return gbReplacement;
+            }
+
+            return propertyName;
+        }
+        private object ReadString(Span<char> chars, string propertyName)
+        {
+            if (Guid.TryParse(chars, null, out Guid guidStr))
+            {
+                return guidStr;
+            }
+            else if (DateOnly.TryParse(chars, Statics.DefaultProvider, DateTimeStyles.None, out DateOnly @do))
+            {
+                return @do;
+            }
+            else if (DateTimeOffset.TryParse(chars, Statics.DefaultProvider, DateTimeStyles.AssumeUniversal, out DateTimeOffset offset))
+            {
+                return propertyName.AsSpan().EndsWith(stackalloc char[] { 'U', 'T', 'C' }, StringComparison.InvariantCultureIgnoreCase)
+                    ? offset
+                    : offset.ToLocalTime();
+            }
+            else if (Version.TryParse(chars, out Version? version))
+            {
+                return version;
+            }
+            else
+            {
+                return ProcessQuotes(chars);
+            }
         }
         private object? ReadString(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
         {
@@ -203,112 +319,11 @@ namespace MG.Sonarr.Next.Json.Converters
 
             return result;
         }
-
         private static Span<T> RentArray<T>(in int length, ref bool isRented, ref T[]? array)
         {
             array = ArrayPool<T>.Shared.Rent(length);
             isRented = true;
             return array.AsSpan(0, length);
-        }
-
-        private object ReadString(Span<char> chars, string propertyName)
-        {
-            if (Guid.TryParse(chars, null, out Guid guidStr))
-            {
-                return guidStr;
-            }
-            else if (DateOnly.TryParse(chars, Statics.DefaultProvider, DateTimeStyles.None, out DateOnly @do))
-            {
-                return @do;
-            }
-            else if (DateTimeOffset.TryParse(chars, Statics.DefaultProvider, DateTimeStyles.AssumeUniversal, out DateTimeOffset offset))
-            {
-                return propertyName.AsSpan().EndsWith(stackalloc char[] { 'U', 'T', 'C' }, StringComparison.InvariantCultureIgnoreCase)
-                    ? offset
-                    : offset.ToLocalTime();
-            }
-            else if (Version.TryParse(chars, out Version? version))
-            {
-                return version;
-            }
-            else
-            {
-                return ProcessQuotes(chars);
-            }
-        }
-
-        private static string ProcessQuotes(ReadOnlySpan<char> chars)
-        {
-            int position = 0;
-            ReadOnlySpan<char> quotes = stackalloc char[] { '\\', '"' };
-            ReadOnlySpan<char> backs = stackalloc char[] { '\\', '\\' };
-            Span<char> scratch = stackalloc char[chars.Length];
-
-            foreach (SplitEntry section in chars.SpanSplit(quotes, backs))
-            {
-                section.Chars.CopyTo(scratch.Slice(position));
-                position += section.Chars.Length;
-
-                if (!section.Separator.IsEmpty)
-                {
-                    scratch[position++] = section.Separator[1];
-                }
-            }
-
-            return new string(scratch.Slice(0, position));
-        }
-
-        private static ValueType ReadNumber(ref Utf8JsonReader reader, JsonSerializerOptions options)
-        {
-            Span<char> chars = stackalloc char[reader.ValueSpan.Length];
-            int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
-
-            chars = chars.Slice(0, written);
-            if (int.TryParse(chars, null, out int intNum))
-            {
-                return intNum;
-            }
-            else if (long.TryParse(chars, null, out long longNum))
-            {
-                return longNum;
-            }
-            else if (double.TryParse(chars, null, out double dubNum))
-            {
-                return dubNum;
-            }
-            else if (decimal.TryParse(chars, null, out decimal decNum))
-            {
-                return decNum;
-            }
-            else
-            {
-                return int.MinValue;
-            }
-        }
-
-        private static string ReadPropertyName(ref Utf8JsonReader reader, JsonSerializerOptions options, IReadOnlyDictionary<string, string> replaceNames, IReadOnlyDictionary<string, string> globalReplace)
-        {
-            Span<char> chars = stackalloc char[reader.ValueSpan.Length];
-            int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
-
-            chars = chars.Slice(0, written);
-            ref char first = ref chars[0];
-            if (char.IsLower(first))
-            {
-                first = char.ToUpper(first);
-            }
-
-            string propertyName = new(chars);
-            if (replaceNames.TryGetValue(propertyName, out string? replacement))
-            {
-                return replacement;
-            }
-            else if (globalReplace.TryGetValue(propertyName, out string? gbReplacement))
-            {
-                return gbReplacement;
-            }
-
-            return propertyName;
         }
 
         [DoesNotReturn]

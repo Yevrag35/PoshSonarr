@@ -1,7 +1,10 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using System.Collections.ObjectModel;
+using System.Xml.Linq;
 
 namespace MG.Sonarr.Next.Models.System
 {
@@ -52,18 +55,33 @@ namespace MG.Sonarr.Next.Models.System
             }
         }
 
-        const int DICT_CAPACITY = 2;
-        public static IReadOnlyDictionary<string, string> GetDeserializedNames()
+        const int DICT_CAPACITY = 1;
+        private static readonly Lazy<JsonNameHolder> _names = new(GetJsonNames);
+
+        private static JsonNameHolder GetJsonNames()
         {
-            return new Dictionary<string, string>(DICT_CAPACITY, StringComparer.InvariantCultureIgnoreCase)
+            var deserialization = new Dictionary<string, string>(DICT_CAPACITY, StringComparer.InvariantCultureIgnoreCase)
             {
                 { "Path", "BackupUri" },
             };
+            ReadOnlyDictionary<string, string> readOnlyDeserialization = new(deserialization);
+            var serialization = new Dictionary<string, string>(deserialization.Count, deserialization.Comparer);
+
+            foreach (var kvp in deserialization)
+            {
+                serialization.Add(kvp.Value, kvp.Key);
+            }
+
+            return new(new ReadOnlyDictionary<string, string>(serialization), readOnlyDeserialization);
+        }
+
+        public static IReadOnlyDictionary<string, string> GetDeserializedNames()
+        {
+            return _names.Value.DeserializationNames;
         }
         public static IReadOnlyDictionary<string, string> GetSerializedNames()
         {
-            return GetDeserializedNames()
-                .ToDictionary(x => x.Value, x => x.Key, StringComparer.InvariantCultureIgnoreCase);
+            return _names.Value.SerializationNames;
         }
     }
 }
