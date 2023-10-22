@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json.Collections;
 using MG.Sonarr.Next.Json.Converters.Spans;
@@ -103,7 +103,7 @@ namespace MG.Sonarr.Next.Json.Converters
                     switch (reader.TokenType)
                     {
                         case JsonTokenType.StartObject:
-                            o = this.ReadObject(ref reader, options, pn);
+                            o = this.ReadObject<T>(ref reader, options, pn);
                             break;
 
                         case JsonTokenType.StartArray:
@@ -126,9 +126,9 @@ namespace MG.Sonarr.Next.Json.Converters
                             o = ReadBoolean(ref reader, options);
                             break;
 
-                        case JsonTokenType.Null:
-                        case JsonTokenType.Comment:
                         case JsonTokenType.None:
+                        case JsonTokenType.Comment:
+                        case JsonTokenType.Null:
                             o = null;
                             break;
 
@@ -211,7 +211,7 @@ namespace MG.Sonarr.Next.Json.Converters
             }
         }
 
-        private object ReadObject(ref Utf8JsonReader reader, JsonSerializerOptions options, string pn)
+        private object ReadObject<TParent>(ref Utf8JsonReader reader, JsonSerializerOptions options, string pn) where TParent : PSObject
         {
             switch (pn)
             {
