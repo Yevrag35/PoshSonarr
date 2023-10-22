@@ -48,8 +48,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
         [Parameter(ParameterSetName = BY_PAGING)]
         [ArgumentCompletions("Data", "Date", "EpisodeId", "EventType", "Id", "Lanugage", "Quality", "SeriesId", "SourceTitle")]
         [ValidateNotNullOrEmpty]
-        [PSDefaultValue(Value = "Date")]
-        public string SortKey { get; set; } = "Date";
+        [PSDefaultValue(Value = "Id")]
+        public string SortKey { get; set; } = "Id";
 
         [Parameter(ParameterSetName = BY_PAGING)]
         public string DownloadId { get; set; } = null!;
