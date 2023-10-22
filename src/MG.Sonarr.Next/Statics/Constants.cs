@@ -51,6 +51,8 @@ namespace MG.Sonarr.Next
         public static readonly string EPISODEFILE = "/episodefile";
         public static readonly string FILESYSTEM = "/filesystem";
         public static readonly string HISTORY = "/history";
+        public static readonly string HISTORY_BY_SERIES = HISTORY + "/series";
+        public static readonly string HISTORY_SINCE = HISTORY + "/since";
         public static readonly string HOST = CONFIG + "/host";
         public static readonly string INDEXER = "/indexer";
         public static readonly string INDEXER_BY_ID = INDEXER + BY_ID;
@@ -105,6 +107,7 @@ namespace MG.Sonarr.Next
         public const string EPISODE = "#episode";
         public const string EPISODE_FILE = "#episode_file";
         public const string HISTORY = "#history_item";
+        public const string HISTORY_SINCE = "#history_since";
         public const string HOST = "#host_config";
         public const string INDEXER = "#indexer";
         public const string LANGUAGE = "#language_profile";
@@ -119,6 +122,7 @@ namespace MG.Sonarr.Next
         public const string ROOT_FOLDER = "#root_folder";
         public const string SERIES = "#series";
         public const string SERIES_ADD = "#add_series";
+        public const string SERIES_HISTORY = "#history_series";
         public const string TAG = "#tag";
     }
 }

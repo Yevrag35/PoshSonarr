@@ -87,6 +87,7 @@ namespace MG.Sonarr.Next.Shell.Context
 
             ServiceCollection services = new();
             services
+                //.AddClock(mock => mock.GetNow = c => c.Now.AddDays(-7d))
                 .AddClock()
                 .AddMemoryCache()
                 .AddSingleton<Queue<IApiCmdlet>>()

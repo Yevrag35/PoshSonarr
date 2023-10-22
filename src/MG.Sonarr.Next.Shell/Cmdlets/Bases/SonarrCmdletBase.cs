@@ -417,15 +417,33 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 enumerateCollection: IsEnumerableType(typeof(T)));
         }
         [DebuggerStepThrough]
+        protected bool TryWriteObject<T, TOutput>(in SonarrResponse<T> response, Func<T, TOutput?> writeSelector)
+        {
+            return this.TryWriteObject(in response,
+                writeConditionally: true,
+                enumerateCollection: IsEnumerableType(typeof(TOutput)),
+                writeSelector);
+        }
+        [DebuggerStepThrough]
         protected bool TryWriteObject<T>(in SonarrResponse<T> response, bool enumerateCollection)
         {
             return this.TryWriteObject(in response, writeConditionally: true, enumerateCollection);
         }
+        [DebuggerStepThrough]
+        protected bool TryWriteObject<T>(in SonarrResponse<T> response, bool enumerateCollection, Func<T, object?> writeSelector)
+        {
+            return this.TryWriteObject(in response, writeConditionally: true, enumerateCollection, writeSelector);
+        }
+        [DebuggerStepThrough]
         protected bool TryWriteObject<T>(in SonarrResponse<T> response, bool writeConditionally, bool enumerateCollection)
+        {
+            return this.TryWriteObject(in response, writeConditionally, enumerateCollection, x => x);
+        }
+        protected bool TryWriteObject<T, TOutput>(in SonarrResponse<T> response, bool writeConditionally, bool enumerateCollection, Func<T, TOutput?> writeSelector)
         {
             if (!response.IsError)
             {
-                this.WriteObject(response.Data, enumerateCollection);
+                this.WriteObject(writeSelector(response.Data), enumerateCollection);
                 return true;
             }
             else if (writeConditionally)

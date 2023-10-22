@@ -20,9 +20,5 @@ namespace MG.Sonarr.Next.Models
         {
             return Comparer<int?>.Default.Compare(this.Id, other?.Id);
         }
-        public override void OnDeserialized()
-        {
-
-        }
     }
 }
