@@ -1,35 +1,18 @@
-using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Json;
+using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Http.Queries;
-using MG.Sonarr.Next.Json;
-using MG.Sonarr.Next.Json.Converters;
-using MG.Sonarr.Next.Json.Converters.Spans;
-using MG.Sonarr.Next.Json.Modifiers;
-using MG.Sonarr.Next.Metadata;
-using MG.Sonarr.Next.Models;
-using MG.Sonarr.Next.Models.Calendar;
-using MG.Sonarr.Next.Models.Episodes;
-using MG.Sonarr.Next.Models.Indexers;
-using MG.Sonarr.Next.Models.Profiles;
-using MG.Sonarr.Next.Models.Qualities;
-using MG.Sonarr.Next.Models.Releases;
-using MG.Sonarr.Next.Models.RootFolders;
-using MG.Sonarr.Next.Models.Series;
-using MG.Sonarr.Next.Models.System;
-using MG.Sonarr.Next.Models.Tags;
+using MG.Sonarr.Next.Services.Jobs;
+using MG.Sonarr.Next.Services.Testing;
+using MG.Sonarr.Next.Services.Time;
 using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Shell.Cmdlets.Connection;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Pools;
-using Microsoft.Extensions.DependencyInjection;
-using System.Text.Json.Serialization.Metadata;
-using MG.Sonarr.Next.Services.Jobs;
-using MG.Sonarr.Next.Models.Commands;
 using System.Text.Json;
-using MG.Sonarr.Next.Services.Testing;
 
 namespace MG.Sonarr.Next.Shell.Context
 {
@@ -104,6 +87,7 @@ namespace MG.Sonarr.Next.Shell.Context
 
             ServiceCollection services = new();
             services
+                .AddClock()
                 .AddMemoryCache()
                 .AddSingleton<Queue<IApiCmdlet>>()
                 .AddScoped(typeof(Dictionary<,>))
