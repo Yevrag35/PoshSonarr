@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Models.History;
@@ -13,6 +14,7 @@ using System.ComponentModel;
 namespace MG.Sonarr.Next.Shell.Cmdlets.History
 {
     [Cmdlet(VerbsCommon.Get, "SonarrHistory", DefaultParameterSetName = BY_PAGING)]
+    [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
     {
         const string BY_PAGING = "ByPaging";
