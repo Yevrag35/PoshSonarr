@@ -1,10 +1,12 @@
-using MG.Sonarr.Next.Collections;
+﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json.Collections;
 using MG.Sonarr.Next.Json.Converters.Spans;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
+using MG.Sonarr.Next.Models.History;
+using MG.Sonarr.Next.Models.Releases;
 using MG.Sonarr.Next.Models.Series;
 using System.Buffers;
 using System.Collections.ObjectModel;
@@ -189,19 +191,19 @@ namespace MG.Sonarr.Next.Json.Converters
             int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
 
             chars = chars.Slice(0, written);
-            if (int.TryParse(chars, null, out int intNum))
+            if (int.TryParse(chars, Statics.DefaultProvider, out int intNum))
             {
                 return intNum;
             }
-            else if (long.TryParse(chars, null, out long longNum))
+            else if (long.TryParse(chars, Statics.DefaultProvider, out long longNum))
             {
                 return longNum;
             }
-            else if (double.TryParse(chars, null, out double dubNum))
+            else if (double.TryParse(chars, Statics.DefaultProvider, out double dubNum))
             {
                 return dubNum;
             }
-            else if (decimal.TryParse(chars, null, out decimal decNum))
+            else if (decimal.TryParse(chars, Statics.DefaultProvider, out decimal decNum))
             {
                 return decNum;
             }
@@ -215,6 +217,14 @@ namespace MG.Sonarr.Next.Json.Converters
         {
             switch (pn)
             {
+                case Constants.PROPERTY_DATA:
+                    if (!typeof(TParent).Equals(typeof(HistoryObject)))
+                    {
+                        goto default;
+                    }
+
+                    return this.ReadPSObject<ReleaseObject>(ref reader, options);
+
                 case Constants.PROPERTY_EPISODE:
                     return this.ReadPSObject<EpisodeObject>(ref reader, options);
 
@@ -262,7 +272,7 @@ namespace MG.Sonarr.Next.Json.Converters
         }
         private object ReadString(Span<char> chars, string propertyName)
         {
-            if (Guid.TryParse(chars, null, out Guid guidStr))
+            if (Guid.TryParse(chars, Statics.DefaultProvider, out Guid guidStr))
             {
                 return guidStr;
             }
@@ -307,6 +317,10 @@ namespace MG.Sonarr.Next.Json.Converters
             {
                 result = converter.ConvertSpan(span, propertyName);
             }
+            else if (TryReadAsNumber(span, out ValueType? asValueType))
+            {
+                result = asValueType;
+            }
             else
             {
                 result = this.ReadString(span, propertyName);
@@ -330,6 +344,35 @@ namespace MG.Sonarr.Next.Json.Converters
         private static T ThrowCantRead<T>()
         {
             throw new JsonException("Unable to read the JSON token into an array of objects.");
+        }
+
+        private static bool TryReadAsNumber(Span<char> chars, [NotNullWhen(true)] out ValueType? result)
+        {
+            bool returnVal = false;
+            result = default;
+
+            if (int.TryParse(chars, Statics.DefaultProvider, out int intNum))
+            {
+                result = intNum;
+                returnVal = true;
+            }
+            else if (long.TryParse(chars, Statics.DefaultProvider, out long longNum))
+            {
+                result = longNum;
+                returnVal = true;
+            }
+            else if (double.TryParse(chars, Statics.DefaultProvider, out double dubNum))
+            {
+                result = dubNum;
+                returnVal = true;
+            }
+            else if (decimal.TryParse(chars, Statics.DefaultProvider, out decimal decNum))
+            {
+                result = decNum;
+                returnVal = true;
+            }
+
+            return returnVal;
         }
 
         public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)

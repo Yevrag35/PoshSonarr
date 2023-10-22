@@ -17,8 +17,6 @@ namespace MG.Sonarr.Next.Metadata
 
         public int Count => _list.Count;
         bool ICollection<T>.IsReadOnly => false;
-        bool ICollection.IsSynchronized => false;
-        object ICollection.SyncRoot => _list;
 
         public MetadataList()
             : this(0)
@@ -59,11 +57,6 @@ namespace MG.Sonarr.Next.Metadata
         public void CopyTo(T[] array, int index)
         {
             _list.CopyTo(array, index);
-        }
-        void ICollection.CopyTo(Array array, int index)
-        {
-            ArgumentNullException.ThrowIfNull(array);
-            ((ICollection)_list).CopyTo(array, index);
         }
         public IEnumerator<T> GetEnumerator()
         {

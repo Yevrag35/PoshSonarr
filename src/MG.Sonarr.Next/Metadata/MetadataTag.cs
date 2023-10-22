@@ -21,20 +21,7 @@ namespace MG.Sonarr.Next.Metadata
             this.SupportsId = supportsId;
             this.CanPipeTo = pipesTo;
         }
-        //public MetadataTag(string urlBase, string value, bool supportsId, string[]? supportedPipes)
-        //{
-        //    this.UrlBase = urlBase.TrimEnd('/');
-        //    this.Value = value;
-        //    this.SupportsId = supportsId;
-        //    if (supportedPipes is null || supportedPipes.Length <= 0)
-        //    {
-        //        this.CanPipeTo = _empty;
-        //    }
-        //    else
-        //    {
-        //        this.CanPipeTo = new ReadOnlySet<string>(supportedPipes, StringComparer.InvariantCultureIgnoreCase);
-        //    }
-        //}
+
         object ICloneable.Clone() => Copy(this);
         public static MetadataTag Copy(MetadataTag tag) => new(tag);
         public string GetUrl(QueryParameterCollection? parameters)
