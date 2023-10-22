@@ -139,6 +139,7 @@ namespace MG.Sonarr.Next.Json
                                 new("AirTime", timeConverter),
                                 new("Duration", timeSpanConverter),
                                 new("ApiKey", alwaysStringConverter),
+                                new("DownloadId", alwaysStringConverter),
                                 new("ReleaseHash", alwaysStringConverter),
                                 new("TorrentInfoHash", alwaysStringConverter),
                     },
