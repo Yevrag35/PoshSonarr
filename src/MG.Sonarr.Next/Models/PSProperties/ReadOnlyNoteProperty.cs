@@ -2,7 +2,7 @@
 using System.Data;
 using System.Management.Automation;
 
-namespace MG.Sonarr.Next.Models
+namespace MG.Sonarr.Next.Models.PSProperties
 {
     public sealed class ReadOnlyNoteProperty<T> : PSPropertyInfo
     {
@@ -32,7 +32,7 @@ namespace MG.Sonarr.Next.Models
         }
         private ReadOnlyNoteProperty(string name, T? value, string typeName)
         {
-            base.SetMemberName(name);
+            this.SetMemberName(name);
             this.ValueAsT = value;
             this.TypeNameOfValue = typeName;
         }

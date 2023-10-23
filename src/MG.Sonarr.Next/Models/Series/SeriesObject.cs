@@ -99,20 +99,12 @@ namespace MG.Sonarr.Next.Models.Series
 
         private static JsonNameHolder GetJsonNames()
         {
-            var deserialization = new Dictionary<string, string>(DICT_CAPACITY, StringComparer.InvariantCultureIgnoreCase)
-            {
-                { "ImdbId", "IMDbId" },
-                { "SeasonFolder", "UseSeasonFolders" },
-            };
-            ReadOnlyDictionary<string, string> readOnlyDeserialization = new(deserialization);
-            var serialization = new Dictionary<string, string>(deserialization.Count, deserialization.Comparer);
-
-            foreach (var kvp in deserialization)
-            {
-                serialization.Add(kvp.Value, kvp.Key);
-            }
-
-            return new(new ReadOnlyDictionary<string, string>(serialization), readOnlyDeserialization);
+            return JsonNameHolder
+                .FromDeserializationNamePairs(new KeyValuePair<string, string>[]
+                {
+                    new("ImdbId", "IMDbId"),
+                    new("SeasonFolder", "UseSeasonFolders"),
+                });
         }
 
         public static IReadOnlyDictionary<string, string> GetDeserializedNames()

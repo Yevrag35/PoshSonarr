@@ -1,4 +1,6 @@
-﻿namespace MG.Sonarr.Next.Extensions
+﻿using System.Collections.ObjectModel;
+
+namespace MG.Sonarr.Next.Extensions
 {
     /// <summary>
     /// Custom extension methods for specific types of <see cref="Dictionary{TKey, TValue}"/>.
@@ -10,6 +12,17 @@
             return dictionary is not null && dictionary.TryGetValue(key, out string? value)
                 ? value
                 : string.Empty;
+        }
+
+        [return: NotNullIfNotNull(nameof(dictionary))]
+        public static ReadOnlyDictionary<TKey, TValue>? ToReadOnly<TKey, TValue>(this Dictionary<TKey, TValue>? dictionary) where TKey : notnull
+        {
+            if (dictionary is null)
+            {
+                return null;
+            }
+
+            return new ReadOnlyDictionary<TKey, TValue>(dictionary);
         }
 
         /// <summary>

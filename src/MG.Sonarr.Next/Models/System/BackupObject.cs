@@ -60,19 +60,7 @@ namespace MG.Sonarr.Next.Models.System
 
         private static JsonNameHolder GetJsonNames()
         {
-            var deserialization = new Dictionary<string, string>(DICT_CAPACITY, StringComparer.InvariantCultureIgnoreCase)
-            {
-                { "Path", "BackupUri" },
-            };
-            ReadOnlyDictionary<string, string> readOnlyDeserialization = new(deserialization);
-            var serialization = new Dictionary<string, string>(deserialization.Count, deserialization.Comparer);
-
-            foreach (var kvp in deserialization)
-            {
-                serialization.Add(kvp.Value, kvp.Key);
-            }
-
-            return new(new ReadOnlyDictionary<string, string>(serialization), readOnlyDeserialization);
+            return JsonNameHolder.FromSingleNamePair("Path", "BackupUri");
         }
 
         public static IReadOnlyDictionary<string, string> GetDeserializedNames()

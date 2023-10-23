@@ -6,6 +6,7 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Models.History;
+using MG.Sonarr.Next.Models.PSProperties;
 using MG.Sonarr.Next.Models.Releases;
 using MG.Sonarr.Next.Models.Series;
 using System.Buffers;
@@ -143,7 +144,7 @@ namespace MG.Sonarr.Next.Json.Converters
                             throw new JsonException("Unable to deserialize the value(s).");
                     }
 
-                    pso.Properties.Add(new PSNoteProperty(pn, o));  //TODO: Add lookup for read-only properties.
+                    pso.Properties.Add(StringNoteProperty.ToProperty(pn, o));  //TODO: Add lookup for read-only properties.
                 }
             }
 
