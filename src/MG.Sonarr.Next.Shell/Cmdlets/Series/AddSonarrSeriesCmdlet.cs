@@ -168,7 +168,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
             foreach (AddSeriesObject pso in _list)
             {
-                this.SerializeIfDebug(pso, options: provider.GetService<ISonarrJsonOptions>()?.GetForDebugging());
+                this.SerializeIfDebug(
+                    value: pso,
+                    options: provider.GetService<ISonarrJsonOptions>()?.ForDebugging);
 
                 if (this.ShouldProcess(pso.Title, "Adding Series"))
                 {

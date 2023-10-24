@@ -151,7 +151,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
         {
             if (this.VerbosePreference != ActionPreference.SilentlyContinue)
             {
-                options ??= provider.GetService<ISonarrJsonOptions>()?.GetForSerializing();
+                options ??= provider.GetService<ISonarrJsonOptions>()?.ForSerializing;
                 this.WriteVerbose(JsonSerializer.Serialize(response, options));
             }
         }

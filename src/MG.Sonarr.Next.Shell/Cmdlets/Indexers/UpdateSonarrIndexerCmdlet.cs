@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.Indexers;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
@@ -14,7 +15,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
 
         protected override void Process(IServiceProvider provider)
         {
-            this.SerializeIfDebug(this.InputObject, options: this.Options?.GetForSerializing());
+            this.SerializeIfDebug(
+                value: this.InputObject, 
+                options: provider.GetRequiredService<ISonarrJsonOptions>().ForDeserializing);
 
             string path = this.InputObject.MetadataTag.GetUrlForId(this.InputObject.Id);
             if (this.ShouldProcess(path, "Update Indexer"))

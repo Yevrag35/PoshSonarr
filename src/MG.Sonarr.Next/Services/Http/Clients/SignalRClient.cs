@@ -32,7 +32,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         public SignalRClient(HttpClient client, Random random, IConnectionSettings settings, ISonarrJsonOptions options)
         {
             _client = client;
-            _options = options.GetForDeserializing();
+            _options = options.ForDeserializing;
             int initialCapacity = 2;
             _queryParams = new(initialCapacity)
             {

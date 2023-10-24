@@ -42,19 +42,17 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         const string TEST_API = "/system/status";
 
         readonly HttpClient _client;
-        readonly JsonSerializerOptions _deserializingOptions;
+        ISonarrJsonOptions _options;
         readonly IMetadataResolver _resolver;
         readonly IResponseReader _responseReader;
-        readonly JsonSerializerOptions _serializingOptions;
         readonly IConnectionSettings _settings;
 
         public SonarrHttpClient(HttpClient client, IConnectionSettings settings, ISonarrJsonOptions options, IMetadataResolver resolver, IResponseReader reader)
         {
             _client = client;
-            _deserializingOptions = options.GetForDeserializing();
+            _options = options;
             _resolver = resolver;
             _responseReader = reader;
-            _serializingOptions = options.GetForSerializing();
             _settings = settings;
         }
 
@@ -85,7 +83,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         public SonarrResponse SendPost<T>(string path, T body, CancellationToken token = default) where T : notnull
         {
             using ApiKeyRequestMessage request = new(HttpMethod.Post, path);
-            request.Content = JsonContent.Create(body, typeof(T), options: _serializingOptions);
+            request.Content = JsonContent.Create(body, typeof(T), options: _options.ForSerializing);
 
             return this.SendNoResultRequest(request, path, token);
         }
@@ -99,7 +97,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         {
             using ApiKeyRequestMessage request = new(HttpMethod.Post, path);
 
-            request.Content = JsonContent.Create(body, typeof(TBody), options: _serializingOptions);
+            request.Content = JsonContent.Create(body, typeof(TBody), options: _options.ForSerializing);
 
             var response = this.SendResultRequest<TOutput>(request, path, token);
             if (response.IsDataTaggable(out IJsonMetadataTaggable? taggable))
@@ -112,7 +110,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         public SonarrResponse SendPut<T>(string path, T body, CancellationToken token = default) where T : notnull
         {
             using ApiKeyRequestMessage request = new(HttpMethod.Put, path);
-            request.Content = JsonContent.Create(body, typeof(T), options: _serializingOptions);
+            request.Content = JsonContent.Create(body, typeof(T), options: _options.ForSerializing);
 
             return this.SendNoResultRequest(request, path, token);
         }
@@ -127,7 +125,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                 response = _client.Send(request, token);
                 if (response.IsSuccessStatusCode)
                 {
-                    SonarrStatus? status = TryParseForStatus(response, _deserializingOptions, token);
+                    SonarrStatus? status = TryParseForStatus(response, _options.ForDeserializing, token);
                     SonarrAuthType authType = SonarrAuthType.None;
                     _settings.AuthType = (status?.TryGetAuthType(out authType)).GetValueOrDefault() 
                         ? authType : SonarrAuthType.None;
@@ -188,7 +186,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             }
             catch (HttpRequestException httpEx)
             {
-                var pso = ParseResponseForError(response, _deserializingOptions, token);
+                var pso = ParseResponseForError(response, _options.ForDeserializing, token);
                 SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
 
                 var result = SonarrResponse.FromException(path, sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);
@@ -219,7 +217,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             }
             catch (HttpRequestException httpEx)
             {
-                var pso = ParseResponseForError(response, _deserializingOptions, token);
+                var pso = ParseResponseForError(response, _options.ForDeserializing, token);
                 SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
 
                 var result = SonarrResponse.FromException<T>(path, sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);

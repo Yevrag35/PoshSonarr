@@ -40,7 +40,7 @@ namespace MG.Sonarr.Next.Shell.Context
         }
         public static JsonSerializerOptions GetSerializerOptions()
         {
-            return SonarrContext.GetProvider().GetRequiredService<ISonarrJsonOptions>().GetForSerializing();
+            return SonarrContext.GetProvider().GetRequiredService<ISonarrJsonOptions>().ForSerializing;
         }
 #endif
 

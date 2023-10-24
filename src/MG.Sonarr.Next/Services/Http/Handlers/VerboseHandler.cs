@@ -13,7 +13,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
         public VerboseHandler(Queue<IApiCmdlet> queue, ISonarrJsonOptions options, IServiceScopeFactory scopeFactory)
         {
             _queue = queue;
-            _options = options.GetForSerializing();
+            _options = options.ForSerializing;
             _scopeFactory = scopeFactory;
         }
 

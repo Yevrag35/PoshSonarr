@@ -1,6 +1,5 @@
 ﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Json.Collections;
 using MG.Sonarr.Next.Json.Converters.Spans;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
@@ -12,7 +11,6 @@ using MG.Sonarr.Next.Models.Series;
 using System.Buffers;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -20,19 +18,14 @@ namespace MG.Sonarr.Next.Json.Converters
 {
     public sealed class ObjectConverter : JsonConverter<object>
     {
-        readonly HashSet<string> _ignore;
-        readonly IMetadataResolver _resolver;
-        readonly ReadOnlyDictionary<string, Type> _convertProps;
-        readonly JsonNameDictionary _globalReplaceNames;
-        readonly IReadOnlyDictionary<string, SpanConverter> _spanConverters;
+        readonly ObjectConverterConfiguration _config;
 
-        public ObjectConverter(IEnumerable<string> ignoreProps, IEnumerable<KeyValuePair<string, string>> replaceNames, IEnumerable<KeyValuePair<string, Type>> convertTypes, IEnumerable<KeyValuePair<string, SpanConverter>> spanConverters, IMetadataResolver resolver)
+        public ObjectConverter(IMetadataResolver resolver, Action<IObjectConverterConfig> configure)
         {
-            _ignore = new(ignoreProps, StringComparer.InvariantCultureIgnoreCase);
-            _convertProps = BuildLookup(convertTypes);
-            _spanConverters = BuildLookup(spanConverters);
-            _globalReplaceNames = new(replaceNames);
-            _resolver = resolver;
+            ObjectConverterConfiguration config = new(resolver);
+            configure(config);
+
+            _config = config;
         }
 
         public override bool CanConvert(Type typeToConvert)
@@ -89,7 +82,7 @@ namespace MG.Sonarr.Next.Json.Converters
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
                     string pn = ReadPropertyName(
-                        ref reader, options, replaceNames, _globalReplaceNames.ForDeserializing());
+                        ref reader, options, replaceNames, _config.GlobalReplaceNames.DeserializationNames);
 
                     reader.Read();
 
@@ -153,7 +146,7 @@ namespace MG.Sonarr.Next.Json.Converters
 
         private object? ConvertToEnumerable(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options)
         {
-            return _convertProps.TryGetValue(propertyName, out Type? convertTo)
+            return _config.ConvertProperties.TryGetValue(propertyName, out Type? convertTo)
                 ? JsonSerializer.Deserialize(ref reader, convertTo, options)
                 : JsonSerializer.Deserialize<object[]>(ref reader, options);
         }
@@ -243,7 +236,7 @@ namespace MG.Sonarr.Next.Json.Converters
         {
             var sonarrObj = this.ConvertToObject<T>(ref reader, options, T.GetDeserializedNames());
             sonarrObj.OnDeserialized();
-            sonarrObj.SetTag(_resolver);
+            sonarrObj.SetTag(_config.Resolver);
             return sonarrObj;
         }
 
@@ -314,7 +307,7 @@ namespace MG.Sonarr.Next.Json.Converters
             span = span.Slice(0, written);
 
             object? result;
-            if (_spanConverters.TryGetValue(propertyName, out SpanConverter? converter))
+            if (_config.SpanConverters.TryGetValue(propertyName, out SpanConverter? converter))
             {
                 result = converter.ConvertSpan(span, propertyName);
             }
@@ -402,7 +395,7 @@ namespace MG.Sonarr.Next.Json.Converters
         internal void WritePSObject(Utf8JsonWriter writer, JsonSerializerOptions options, PSObject pso, IReadOnlyDictionary<string, string>? replaceNames = null)
         {
             replaceNames ??= EmptyNameDictionary<string>.Default;
-            var globalReplace = _globalReplaceNames.ForSerializing();
+            var globalReplace = _config.GlobalReplaceNames.SerializationNames;
 
             writer.WriteStartObject();
 
@@ -411,7 +404,7 @@ namespace MG.Sonarr.Next.Json.Converters
                             &&
                             x.IsGettable))
             {
-                if (_ignore.Contains(prop.Name))
+                if (_config.IgnoreProperties.Contains(prop.Name))
                 {
                     continue;
                 }

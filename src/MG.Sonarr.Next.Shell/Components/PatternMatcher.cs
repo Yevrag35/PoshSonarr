@@ -20,6 +20,7 @@ namespace MG.Sonarr.Next.Shell.Components
         {
             _pattern = span;
             _isNotEmpty = !span.IsEmpty;
+            _length = span.Length;
             _containsWc = ContainsWildcardCharacters(span);
         }
 

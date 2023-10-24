@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
         public TestingHandler(ISonarrJsonOptions options)
         {
-            _options = options.GetForSerializing();
+            _options = options.ForSerializing;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

@@ -14,7 +14,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
     public abstract class SonarrApiCmdletBase : TimedCmdlet
     {
         ISonarrClient _client = null!;
-        protected ISonarrJsonOptions Options { get; private set; } = null!;
         Queue<IApiCmdlet> _queue = null!;
 
         /// <summary>
@@ -28,7 +27,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         {
             base.OnCreatingScope(provider);
             _client = provider.GetRequiredService<ISonarrClient>();
-            this.Options = provider.GetRequiredService<ISonarrJsonOptions>();
             _queue = provider.GetRequiredService<Queue<IApiCmdlet>>();
         }
 

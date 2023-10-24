@@ -11,7 +11,6 @@ namespace MG.Sonarr.Next.Models.PSProperties
 
         public override bool IsGettable => true;
         public override bool IsSettable => true;
-
         public override PSMemberTypes MemberType => PSMemberTypes.NoteProperty;
 
         public string StringValue
@@ -39,6 +38,8 @@ namespace MG.Sonarr.Next.Models.PSProperties
         {
             return new StringNoteProperty(this.Name, _value);
         }
+
+        /// <exception cref="SetValueException"></exception>
         private string SetValueAsString(object? value)
         {
             return value switch

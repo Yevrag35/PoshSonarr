@@ -22,7 +22,7 @@ namespace MG.Sonarr.Next.Services.Http
 
         public SonarrResponseReader(ISonarrJsonOptions options)
         {
-            _options = options.GetForDeserializing();
+            _options = options.ForDeserializing;
         }
 
         public async Task<SonarrResponse> ReadNoResultAsync(HttpCall call, object? targetObj = null, CancellationToken token = default)

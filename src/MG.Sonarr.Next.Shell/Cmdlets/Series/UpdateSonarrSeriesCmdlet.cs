@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -45,7 +46,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
             foreach (SeriesObject item in _list)
             {
-                this.SerializeIfDebug(item, options: this.Options?.GetForSerializing());
+                this.SerializeIfDebug(
+                    value: item,
+                    options: provider.GetService<ISonarrJsonOptions>()?.ForSerializing);
 
                 string path = tag.GetUrlForId(item.Id);
                 if (this.ShouldProcess(path, "Update Series"))

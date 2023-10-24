@@ -1,81 +1,57 @@
-﻿using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Json.Converters.Spans;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json.Converters;
+using MG.Sonarr.Next.Json.Converters.Spans;
 using MG.Sonarr.Next.Json.Modifiers;
-using MG.Sonarr.Next.Models.Calendar;
-using MG.Sonarr.Next.Models.Commands;
-using MG.Sonarr.Next.Models.Episodes;
-using MG.Sonarr.Next.Models.Indexers;
-using MG.Sonarr.Next.Models.Profiles;
-using MG.Sonarr.Next.Models.Qualities;
-using MG.Sonarr.Next.Models.Releases;
-using MG.Sonarr.Next.Models.RootFolders;
-using MG.Sonarr.Next.Models.Series;
-using MG.Sonarr.Next.Models.System;
-using MG.Sonarr.Next.Models.Tags;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text.Json.Serialization.Metadata;
-using MG.Sonarr.Next.Metadata;
 using System.Reflection;
-using MG.Sonarr.Next.Attributes;
-using System.Text.Json.Serialization;
 using System.Text.Encodings.Web;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace MG.Sonarr.Next.Json
 {
     public interface ISonarrJsonOptions
     {
-        JsonSerializerOptions GetForDebugging();
-        JsonSerializerOptions GetForDeserializing();
-        JsonSerializerOptions GetForSerializing();
+        JsonSerializerOptions ForDebugging { get; }
+        JsonSerializerOptions ForDeserializing { get; }
+        JsonSerializerOptions ForSerializing { get; }
     }
 
     internal sealed class SonarrJsonOptions : ISonarrJsonOptions
     {
-        readonly JsonSerializerOptions _deserializer;
-        readonly JsonSerializerOptions _debugSerializer;
-        readonly JsonSerializerOptions _requestSerializer;
+        public JsonSerializerOptions ForDebugging { get; }
+        public JsonSerializerOptions ForDeserializing { get; }
+        public JsonSerializerOptions ForSerializing { get; }
 
         public SonarrJsonOptions(Action<JsonSerializerOptions> setupDeserializer)
         {
             ArgumentNullException.ThrowIfNull(setupDeserializer);
 
-            _deserializer = new(JsonSerializerDefaults.Web);
-            _requestSerializer = new(JsonSerializerDefaults.Web)
+            this.ForDeserializing = new(JsonSerializerDefaults.Web);
+            this.ForSerializing = new(JsonSerializerDefaults.Web)
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = true,
             };
 
-            _debugSerializer = new(JsonSerializerDefaults.Web)
+            this.ForDebugging = new(JsonSerializerDefaults.Web)
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 WriteIndented = false,
             };
 
-            setupDeserializer(_deserializer);
+            setupDeserializer(this.ForDeserializing);
 
-            foreach (var conv in _deserializer.Converters)
+            foreach (var conv in this.ForDeserializing.Converters)
             {
-                _requestSerializer.Converters.Add(conv);
-                _debugSerializer.Converters.Add(conv);
+                this.ForSerializing.Converters.Add(conv);
+                this.ForDebugging.Converters.Add(conv);
             }
-        }
-
-        public JsonSerializerOptions GetForDebugging()
-        {
-            return _debugSerializer;
-        }
-        public JsonSerializerOptions GetForDeserializing()
-        {
-            return _deserializer;
-        }
-        public JsonSerializerOptions GetForSerializing()
-        {
-            return _requestSerializer;
         }
     }
 
@@ -83,7 +59,7 @@ namespace MG.Sonarr.Next.Json
     {
         public static IServiceCollection AddSonarrJsonOptions(this IServiceCollection services, Action<IServiceProvider, JsonSerializerOptions> configureOptions)
         {
-            return services.AddSingleton((Func<IServiceProvider, ISonarrJsonOptions>)(provider =>
+            return services.AddSingleton<ISonarrJsonOptions>(provider =>
             {
                 void newAction(JsonSerializerOptions options)
                 {
@@ -103,53 +79,39 @@ namespace MG.Sonarr.Next.Json
                 }
 
                 return new SonarrJsonOptions(newAction);
-            }));
+            });
         }
 
         private static void AddAllConverters(IServiceProvider provider, JsonSerializerOptions options)
         {
-            var resolver = provider.GetRequiredService<IMetadataResolver>();
+            IMetadataResolver resolver = provider.GetRequiredService<IMetadataResolver>();
 
-            var doSpanConverter = new DateOnlyConverter();
-            var timeConverter = new TimeOnlyConverter();
-            var timeSpanConverter = new TimeSpanConverter();
-            var alwaysStringConverter = new AlwaysStringConverter();
+            DateOnlyConverter doSpanConverter = new();
+            TimeOnlyConverter timeConverter = new();
+            TimeSpanConverter timeSpanConverter = new();
+            AlwaysStringConverter alwaysStringConverter = new();
 
-            ObjectConverter objCon = new(
-                    ignoreProps: new string[]
-                    {
-                                Constants.META_PROPERTY_NAME,
-                    },
-                    replaceNames: new KeyValuePair<string, string>[]
-                    {
-                                new("Monitored", "IsMonitored"),
-                                new("TvdbId", "TVDbId"),
-                    },
-                    convertTypes: new KeyValuePair<string, Type>[]
-                    {
-                                new("AirDate", typeof(DateOnly)),
-                                new("Tags", typeof(SortedSet<int>)),
-                                new("EpisodeNumbers", typeof(int[])),
-                                new("Genres", typeof(string[])),
-                    },
-                    spanConverters: new KeyValuePair<string, SpanConverter>[]
-                    {
-                                new("AirDate", doSpanConverter),
-                                new("FirstAired", doSpanConverter),
-                                new("AirTime", timeConverter),
-                                new("Duration", timeSpanConverter),
-                                new("ApiKey", alwaysStringConverter),
-                                new("DownloadId", alwaysStringConverter),
-                                new("ReleaseHash", alwaysStringConverter),
-                                new("TorrentInfoHash", alwaysStringConverter),
-                    },
-                    resolver: resolver
-                );
+            ObjectConverter objCon = new(resolver, config =>
+            {
+                config.AddConvertProperties(EnumerateConverterProperties())
+                      .AddGlobalReplaceNames(EnumerateGlobalReplaceNames())
+                      .AddIgnoreProperties(EnumerateIgnoreProperties())
+                      .AddSpanConverters(new KeyValuePair<string, SpanConverter>[]
+                      {
+                            new("AirDate", doSpanConverter),
+                            new("FirstAired", doSpanConverter),
+                            new("AirTime", timeConverter),
+                            new("Duration", timeSpanConverter),
+                            new("ApiKey", alwaysStringConverter),
+                            new("DownloadId", alwaysStringConverter),
+                            new("ReleaseHash", alwaysStringConverter),
+                            new("TorrentInfoHash", alwaysStringConverter),
+                      });
+            });
 
             options.Converters.AddMany(objCon, new PostCommandWriter(), new SonarrResponseConverter());
 
             IEnumerable<JsonConverter> sonarrConverters = ConstructSonarrObjectConverters(objCon);
-
             options.Converters.AddMany(sonarrConverters);
         }
 
@@ -175,6 +137,25 @@ namespace MG.Sonarr.Next.Json
                 ?? throw new InvalidOperationException($"Unable to construct {constructedClassType.GetTypeName()}.");
 
             return constructed;
+        }
+
+        private static IEnumerable<KeyValuePair<string, Type>> EnumerateConverterProperties()
+        {
+            yield return new("AirDate", typeof(DateOnly));
+            yield return new("Tags", typeof(SortedSet<int>));
+            yield return new("EpisodeNumbers", typeof(int[]));
+            yield return new("Genres", typeof(string[]));
+        }
+        private static IEnumerable<KeyValuePair<string, string>> EnumerateGlobalReplaceNames()
+        {
+            yield return new("Monitored", "IsMonitored");
+            yield return new("ChmodFolder", "CHMODFolder");
+            yield return new("ChownGroup", "CHOWNGroup");
+            yield return new("TvdbId", "TVDbId");
+        }
+        private static IEnumerable<string> EnumerateIgnoreProperties()
+        {
+            yield return Constants.META_PROPERTY_NAME;
         }
 
         private static IEnumerable<Type> GetSonarrObjectTypes()
