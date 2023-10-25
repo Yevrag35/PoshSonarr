@@ -1,7 +1,7 @@
 ﻿using MG.Sonarr.Next.Extensions;
 using System.Management.Automation;
 
-namespace MG.Sonarr.Next.Models.PSProperties
+namespace MG.Sonarr.Next.PSProperties
 {
     public abstract class WritableProperty : PSPropertyInfo
     {

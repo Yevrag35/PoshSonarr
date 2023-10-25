@@ -1,7 +1,7 @@
 ﻿using MG.Sonarr.Next.Extensions;
 using System.Management.Automation;
 
-namespace MG.Sonarr.Next.Models.PSProperties
+namespace MG.Sonarr.Next.PSProperties
 {
     public sealed class StringNoteProperty : WritableProperty<string>
     {
@@ -22,12 +22,12 @@ namespace MG.Sonarr.Next.Models.PSProperties
 
         public StringNoteProperty(string propertyName)
         {
-            base.SetMemberName(propertyName);
+            this.SetMemberName(propertyName);
             _value = string.Empty;
         }
         public StringNoteProperty(string name, string? value)
         {
-            base.SetMemberName(name);
+            this.SetMemberName(name);
             _value = value ?? string.Empty;
         }
 

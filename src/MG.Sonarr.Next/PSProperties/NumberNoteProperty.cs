@@ -2,7 +2,7 @@
 using System.Management.Automation;
 using System.Numerics;
 
-namespace MG.Sonarr.Next.Models.PSProperties
+namespace MG.Sonarr.Next.PSProperties
 {
     public sealed class NumberNoteProperty<T> : WritableProperty<T> where T : unmanaged, INumber<T>
     {
@@ -17,7 +17,7 @@ namespace MG.Sonarr.Next.Models.PSProperties
 
         public NumberNoteProperty(string propertyName)
         {
-            base.SetMemberName(propertyName);
+            this.SetMemberName(propertyName);
         }
         public NumberNoteProperty(string propertyName, T value)
             : this(propertyName)

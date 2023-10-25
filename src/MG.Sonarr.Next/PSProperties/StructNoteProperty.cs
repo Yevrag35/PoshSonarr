@@ -1,7 +1,7 @@
 using MG.Sonarr.Next.Extensions;
 using System.Management.Automation;
 
-namespace MG.Sonarr.Next.Models.PSProperties
+namespace MG.Sonarr.Next.PSProperties
 {
     public sealed class StructNoteProperty<T> : WritableProperty<T> where T : struct
     {
@@ -16,7 +16,7 @@ namespace MG.Sonarr.Next.Models.PSProperties
 
         public StructNoteProperty(string propertyName)
         {
-            base.SetMemberName(propertyName);
+            this.SetMemberName(propertyName);
         }
         public StructNoteProperty(string propertyName, T value)
             : this(propertyName)

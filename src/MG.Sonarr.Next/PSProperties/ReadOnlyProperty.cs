@@ -1,7 +1,7 @@
 ﻿using MG.Sonarr.Next.Extensions;
 using System.Management.Automation;
 
-namespace MG.Sonarr.Next.Models.PSProperties
+namespace MG.Sonarr.Next.PSProperties
 {
     public abstract class ReadOnlyProperty : PSPropertyInfo
     {
@@ -39,7 +39,7 @@ namespace MG.Sonarr.Next.Models.PSProperties
         protected ReadOnlyProperty(string propertyName)
         {
             ArgumentException.ThrowIfNullOrEmpty(propertyName);
-            base.SetMemberName(propertyName);
+            this.SetMemberName(propertyName);
         }
 
         protected virtual bool TryWriteValueToSpan(Span<char> span, out int written)

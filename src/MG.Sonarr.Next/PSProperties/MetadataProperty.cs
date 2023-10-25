@@ -2,7 +2,7 @@
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 
-namespace MG.Sonarr.Next.Models.PSProperties
+namespace MG.Sonarr.Next.PSProperties
 {
     public sealed class MetadataProperty : ReadOnlyProperty<MetadataTag>
     {

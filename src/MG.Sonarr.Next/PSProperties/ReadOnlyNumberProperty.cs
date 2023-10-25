@@ -2,7 +2,7 @@
 using System.Management.Automation;
 using System.Numerics;
 
-namespace MG.Sonarr.Next.Models.PSProperties
+namespace MG.Sonarr.Next.PSProperties
 {
     public sealed class ReadOnlyNumberProperty<T> : ReadOnlyProperty<T> where T : unmanaged, INumber<T>
     {
