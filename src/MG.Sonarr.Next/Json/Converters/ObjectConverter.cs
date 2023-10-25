@@ -91,7 +91,7 @@ namespace MG.Sonarr.Next.Json.Converters
                         Constants.ID.Equals(pn, StringComparison.InvariantCultureIgnoreCase))
                     {
                         //TODO: Move functionality into a read-only property key lookup operation.
-                        pso.Properties.Add(new ReadOnlyIntProperty(pn, reader.GetInt32()));
+                        pso.Properties.Add(new ReadOnlyNumberProperty<int>(pn, reader.GetInt32()));
                         continue;
                     }
 
@@ -137,7 +137,7 @@ namespace MG.Sonarr.Next.Json.Converters
                             throw new JsonException("Unable to deserialize the value(s).");
                     }
 
-                    pso.Properties.Add(StringNoteProperty.ToProperty(pn, o));  //TODO: Add lookup for read-only properties.
+                    pso.Properties.Add(WritableProperty.ToProperty(pn, o));  //TODO: Add lookup for read-only properties.
                 }
             }
 

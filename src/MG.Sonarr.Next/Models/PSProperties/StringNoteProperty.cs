@@ -3,15 +3,10 @@ using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Models.PSProperties
 {
-    public sealed class StringNoteProperty : PSPropertyInfo
+    public sealed class StringNoteProperty : WritableProperty<string>
     {
         const string STRING_TYPE = "System.String";
-        const string STRING_PS_TYPE = "string ";
         string _value;
-
-        public override bool IsGettable => true;
-        public override bool IsSettable => true;
-        public override PSMemberTypes MemberType => PSMemberTypes.NoteProperty;
 
         public string StringValue
         {
@@ -19,14 +14,17 @@ namespace MG.Sonarr.Next.Models.PSProperties
             set => _value = value ?? string.Empty;
         }
         public override string TypeNameOfValue => STRING_TYPE;
-
-        [NotNull]
-        public override object Value
+        protected override string? ValueAsT
         {
-            get => _value;
-            set => _value = this.SetValueAsString(value);
+            get => this.StringValue;
+            set => this.StringValue = value!;
         }
 
+        public StringNoteProperty(string propertyName)
+        {
+            base.SetMemberName(propertyName);
+            _value = string.Empty;
+        }
         public StringNoteProperty(string name, string? value)
         {
             base.SetMemberName(name);
@@ -40,7 +38,7 @@ namespace MG.Sonarr.Next.Models.PSProperties
         }
 
         /// <exception cref="SetValueException"></exception>
-        private string SetValueAsString(object? value)
+        protected override string ConvertFromObject(object? value)
         {
             return value switch
             {
@@ -49,37 +47,8 @@ namespace MG.Sonarr.Next.Models.PSProperties
                 IFormattable formattable => formattable.ToString(null, Statics.DefaultProvider),
                 IConvertible icon => Convert.ToString(icon) ?? string.Empty,
 
-                _ => throw new SetValueException($"The value for property '{this.Name}' must be of the type 'System.String'."),
+                _ => this.ThrowNotType<string>(),
             };
-        }
-
-        internal static PSPropertyInfo ToProperty(string name, object? value)
-        {
-            ArgumentException.ThrowIfNullOrEmpty(name);
-            return value switch
-            {
-                string strVal => new StringNoteProperty(name, strVal),
-                int intVal => new NumberNoteProperty<int>(name, intVal),
-                double dubVal => new NumberNoteProperty<double>(name, dubVal),
-                long longVal => new NumberNoteProperty<long>(name, longVal),
-                decimal decVal => new NumberNoteProperty<decimal>(name, decVal),
-                _ => new PSNoteProperty(name, value),
-            };
-        }
-        public override string ToString()
-        {
-            int length = STRING_PS_TYPE.Length + this.Name.Length + this.StringValue.Length + 1;
-
-            return string.Create(length, this, (chars, state) =>
-            {
-                int position = 0;
-
-                STRING_PS_TYPE.CopyToSlice(chars, ref position);
-                state.Name.CopyToSlice(chars, ref position);
-
-                chars[position++] = '=';
-                state.StringValue.CopyTo(chars.Slice(position));
-            });
         }
     }
 }

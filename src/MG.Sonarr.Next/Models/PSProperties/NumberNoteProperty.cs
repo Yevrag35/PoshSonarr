@@ -47,7 +47,7 @@ namespace MG.Sonarr.Next.Models.PSProperties
                 Debug.Fail("Shit");
             }
 
-            throw new SetValueException($"The property '{this.Name}' only can be set with values of type '{this.TypeNameOfValue}'.");
+            return this.ThrowNotType<T>();
         }
         public override PSMemberInfo Copy()
         {
