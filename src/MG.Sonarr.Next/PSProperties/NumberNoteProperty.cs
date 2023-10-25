@@ -6,6 +6,7 @@ namespace MG.Sonarr.Next.PSProperties
 {
     public sealed class NumberNoteProperty<T> : WritableProperty<T> where T : unmanaged, INumber<T>
     {
+        protected override int MaxValueCharacterLength => LengthConstants.INT128_MAX;
         public T NumValue { get; set; }
 
         public override string TypeNameOfValue => typeof(T).GetTypeName();

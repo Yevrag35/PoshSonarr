@@ -104,6 +104,7 @@ namespace MG.Sonarr.Next.Models.Releases
         {
             this.Properties.RemoveMany("AgeHours", "AgeMinutes");
             this.UpdateProperty(nameof(this.Age), this.Age);
+            base.Reset();
         }
     }
 }

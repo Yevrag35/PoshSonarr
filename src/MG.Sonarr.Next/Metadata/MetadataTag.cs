@@ -5,7 +5,7 @@ using MG.Sonarr.Next.Services.Http.Queries;
 namespace MG.Sonarr.Next.Metadata
 {
     [DebuggerDisplay(@"\{{Value}, {UrlBase}\}")]
-    public sealed class MetadataTag : ICloneable
+    public sealed class MetadataTag : ICloneable, IEquatable<MetadataTag>
     {
         public IReadOnlySet<string> CanPipeTo { get; }
         public bool SupportsId { get; }
@@ -47,6 +47,24 @@ namespace MG.Sonarr.Next.Metadata
 
         public static readonly MetadataTag Empty = new();
 
+        public bool Equals(MetadataTag? other)
+        {
+            return ReferenceEquals(this, other)
+                   ||
+                   (this.UrlBase == other?.UrlBase
+                    &&
+                    this.Value == other?.Value
+                    &&
+                    this.SupportsId == other?.SupportsId);
+        }
+        public override bool Equals(object? obj)
+        {
+            return obj is MetadataTag tag && this.Equals(tag);
+        }
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(this.UrlBase, this.Value, this.SupportsId);
+        }
         public string GetUrl(QueryParameterCollection? parameters)
         {
             if (parameters.IsNullOrEmpty())
@@ -191,6 +209,15 @@ namespace MG.Sonarr.Next.Metadata
                 chars[position++] = space;
                 chars[position++] = '}';
             });
+        }
+
+        public static bool operator ==(MetadataTag? x, MetadataTag? y)
+        {
+            return x.IsEqualTo<MetadataTag>(y);
+        }
+        public static bool operator !=(MetadataTag? x, MetadataTag? y)
+        {
+            return !(x == y);
         }
     }
 }
