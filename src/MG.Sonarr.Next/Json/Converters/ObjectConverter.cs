@@ -91,7 +91,7 @@ namespace MG.Sonarr.Next.Json.Converters
                         Constants.ID.Equals(pn, StringComparison.InvariantCultureIgnoreCase))
                     {
                         //TODO: Move functionality into a read-only property key lookup operation.
-                        pso.Properties.Add(new ReadOnlyNoteProperty<int>(pn, reader.GetInt32()));
+                        pso.Properties.Add(new ReadOnlyIntProperty(pn, reader.GetInt32()));
                         continue;
                     }
 

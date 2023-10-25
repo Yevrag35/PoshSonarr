@@ -56,14 +56,15 @@ namespace MG.Sonarr.Next.Models.PSProperties
         internal static PSPropertyInfo ToProperty(string name, object? value)
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
-            if (value is string strVal)
+            return value switch
             {
-                return new StringNoteProperty(name, strVal);
-            }
-            else
-            {
-                return new PSNoteProperty(name, value);
-            }
+                string strVal => new StringNoteProperty(name, strVal),
+                int intVal => new NumberNoteProperty<int>(name, intVal),
+                double dubVal => new NumberNoteProperty<double>(name, dubVal),
+                long longVal => new NumberNoteProperty<long>(name, longVal),
+                decimal decVal => new NumberNoteProperty<decimal>(name, decVal),
+                _ => new PSNoteProperty(name, value),
+            };
         }
         public override string ToString()
         {

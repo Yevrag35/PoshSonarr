@@ -1,19 +1,32 @@
-﻿using MG.Collections;
+﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http.Queries;
 
 namespace MG.Sonarr.Next.Metadata
 {
     [DebuggerDisplay(@"\{{Value}, {UrlBase}\}")]
-    public sealed record MetadataTag : ICloneable
+    public sealed class MetadataTag : ICloneable
     {
-        //static readonly IReadOnlySet<string> _empty = new ReadOnlySet<string>(Array.Empty<string>());
-
         public IReadOnlySet<string> CanPipeTo { get; }
         public bool SupportsId { get; }
         public string UrlBase { get; }
         public string Value { get; }
 
+        private MetadataTag()
+        {
+            this.CanPipeTo = EmptyNameDictionary<string>.Default;
+            this.SupportsId = false;
+            this.UrlBase = string.Empty;
+            this.Value = string.Empty;
+        }
+        private MetadataTag(MetadataTag copyFrom)
+        {
+            ArgumentNullException.ThrowIfNull(copyFrom);
+            this.CanPipeTo = CopyPipeSet(copyFrom);
+            this.SupportsId = copyFrom.SupportsId;
+            this.UrlBase = copyFrom.UrlBase;
+            this.Value = copyFrom.Value;
+        }
         internal MetadataTag(string urlBase, string value, bool supportsId, IReadOnlySet<string> pipesTo)
         {
             this.UrlBase = urlBase.TrimEnd('/');
@@ -22,8 +35,18 @@ namespace MG.Sonarr.Next.Metadata
             this.CanPipeTo = pipesTo;
         }
 
-        object ICloneable.Clone() => Copy(this);
-        public static MetadataTag Copy(MetadataTag tag) => new(tag);
+        private static IReadOnlySet<string> CopyPipeSet(MetadataTag copyFrom)
+        {
+            return copyFrom.CanPipeTo.Count > 0
+                ? new SortedSet<string>(copyFrom.CanPipeTo, StringComparer.InvariantCultureIgnoreCase)
+                : EmptyNameDictionary<string>.Default;
+        }
+
+        object ICloneable.Clone() => this.Clone();
+        public MetadataTag Clone() => new(this);
+
+        public static readonly MetadataTag Empty = new();
+
         public string GetUrl(QueryParameterCollection? parameters)
         {
             if (parameters.IsNullOrEmpty())
@@ -169,7 +192,5 @@ namespace MG.Sonarr.Next.Metadata
                 chars[position++] = '}';
             });
         }
-
-        public static readonly MetadataTag Empty = new(string.Empty, string.Empty, false, null);
     }
 }

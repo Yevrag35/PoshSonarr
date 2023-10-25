@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.PSProperties;
 using System.Management.Automation;
 using System.Text.Json.Serialization;
 
@@ -37,15 +38,8 @@ namespace MG.Sonarr.Next.Models
             ArgumentNullException.ThrowIfNull(resolver);
 
             this.MetadataTag = this.GetTag(resolver, this.MetadataTag);
-            PSPropertyInfo? prop = this.Properties[Constants.META_PROPERTY_NAME];
-            if (prop is not null)
-            {
-                prop.Value = this.MetadataTag;
-            }
-            else
-            {
-                this.Properties.Add(new PSNoteProperty(Constants.META_PROPERTY_NAME, this.MetadataTag));
-            }
+            this.Properties.Remove(MetadataResolver.META_PROPERTY_NAME);
+            this.Properties.Add(new MetadataProperty(this.MetadataTag));
         }
         public bool TryGetId(out int id)
         {
