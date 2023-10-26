@@ -29,9 +29,17 @@ namespace MG.Sonarr.Next.PSProperties
             {
                 string strVal => new StringNoteProperty(name, strVal),
                 int intVal => new NumberNoteProperty<int>(name, intVal),
+                bool boolVal => new StructNoteProperty<bool>(name, boolVal),
                 double dubVal => new NumberNoteProperty<double>(name, dubVal),
                 long longVal => new NumberNoteProperty<long>(name, longVal),
                 decimal decVal => new NumberNoteProperty<decimal>(name, decVal),
+                Guid guid => new StructNoteProperty<Guid>(name, guid),
+                DateOnly @do => new StructNoteProperty<DateOnly>(name, @do),
+                TimeOnly to => new StructNoteProperty<TimeOnly>(name, to),
+                DateTimeOffset offset => new StructNoteProperty<DateTimeOffset>(name, offset),
+                TimeSpan ts => new StructNoteProperty<TimeSpan>(name, ts),
+                PSObject pso => new ReadOnlyPSObjectProperty(name, pso),
+                SortedSet<int> set => new ReadOnlyTagsProperty(set),
                 _ => new PSNoteProperty(name, value),
             };
         }

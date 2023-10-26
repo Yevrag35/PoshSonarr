@@ -58,8 +58,15 @@ namespace MG.Sonarr.Next.Models
         }
         public override void Reset()
         {
-            _tags?.Clear();
-            _tags?.UnionWith(_originalTags ?? Array.Empty<int>());
+            if (_tags is not null)
+            {
+                _tags.Clear();
+                if (_originalTags is not null)
+                {
+                    _tags.UnionWith(_originalTags);
+                }
+            }
+
             base.Reset();
         }
     }

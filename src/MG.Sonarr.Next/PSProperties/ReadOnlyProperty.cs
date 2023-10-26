@@ -60,7 +60,7 @@ namespace MG.Sonarr.Next.PSProperties
         }
 
         const string READ_ONLY = "read-only ";
-        public sealed override string ToString()
+        public override string ToString()
         {
             ReadOnlySpan<char> typeName = this.PSTypeName.AsSpan().Trim(stackalloc char[] { '[', ']' });
             ReadOnlySpan<char> name = this.Name;
