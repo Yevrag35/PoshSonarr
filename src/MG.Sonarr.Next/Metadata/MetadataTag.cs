@@ -152,11 +152,7 @@ namespace MG.Sonarr.Next.Metadata
 
         public override string ToString()
         {
-            int length = this.UrlBase.Length + this.SupportsId.GetLength() + this.Value.Length + 24;
-            length += nameof(this.UrlBase).Length +
-                nameof(this.SupportsId).Length +
-                nameof(this.Value).Length +
-                nameof(this.CanPipeTo).Length;
+            int length = this.Value.Length + 22 + nameof(this.Value).Length + nameof(this.CanPipeTo).Length;
 
             if (this.CanPipeTo.Count > 0)
             {
@@ -171,22 +167,10 @@ namespace MG.Sonarr.Next.Metadata
                 ReadOnlySpan<char> comma = stackalloc char[2] { ',', space };
 
                 chars[position++] = '{';
-                chars[position++] = space;
-
-                nameof(state.UrlBase).CopyToSlice(chars, ref position);
-                sep.CopyToSlice(chars, ref position);
-                state.UrlBase.CopyToSlice(chars, ref position);
-                comma.CopyToSlice(chars, ref position);
 
                 nameof(state.Value).CopyToSlice(chars, ref position);
                 sep.CopyToSlice(chars, ref position);
                 state.Value.CopyToSlice(chars, ref position);
-                comma.CopyToSlice(chars, ref position);
-
-                nameof(state.SupportsId).CopyToSlice(chars, ref position);
-                sep.CopyToSlice(chars, ref position);
-                state.SupportsId.TryFormat(chars.Slice(position), out int written);
-                position += written;
                 comma.CopyToSlice(chars, ref position);
 
                 nameof(state.CanPipeTo).CopyToSlice(chars, ref position);
@@ -206,7 +190,6 @@ namespace MG.Sonarr.Next.Metadata
                 }
 
                 chars[position++] = '}';
-                chars[position++] = space;
                 chars[position++] = '}';
             });
         }

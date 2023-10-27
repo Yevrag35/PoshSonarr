@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Models.Calendar;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Shell.Output;
+using MG.Sonarr.Next.Shell.Components;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 {
@@ -17,7 +18,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 
         DateTime? _end;
         HashSet<DayOfWeek> _dows = null!;
-        MetadataTag Tag { get; set; } = null!;
+        MetadataTag _tag = null!;
 
         [Parameter(Position = 0)]
         public DateTime StartDate { get; set; } = DateTime.Now;
@@ -44,6 +45,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         [Parameter(Mandatory = true, ParameterSetName = "ShowTomorrow")]
         public SwitchParameter Tomorrow { get; set; }
 
+        // Possibly coming in v4
+        //[Parameter]
+        //public IntOrString[] Tag { get; set; } = Array.Empty<IntOrString>();
+
+        [Parameter]
+        public SwitchParameter IncludeEpisodeFile { get; set; }
+
+        [Parameter]
+        public SwitchParameter IncludeEpisodeImages { get; set; }
+
+        [Parameter]
+        public SwitchParameter IncludeSeries { get; set; }
+
         [Parameter]
         public SwitchParameter IncludeUnmonitored { get; set; }
 
@@ -51,7 +65,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         {
             base.OnCreatingScope(provider);
             _dows = new(1);
-            this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.CALENDAR];
+            _tag = provider.GetRequiredService<IMetadataResolver>()[Meta.CALENDAR];
         }
 
         protected override void Begin(IServiceProvider provider)
@@ -70,8 +84,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 
         protected override void Process(IServiceProvider provider)
         {
-            var parameters = GetParameters(this.StartDate, this.EndDate, this.IncludeUnmonitored);
-            string url = this.Tag.GetUrl(parameters);
+            var parameters = GetParameters(this.StartDate, this.EndDate, this.IncludeUnmonitored, this.IncludeEpisodeFile, this.IncludeEpisodeImages, this.IncludeSeries);
+            string url = _tag.GetUrl(parameters);
 
             var response = this.SendGetRequest<MetadataList<CalendarObject>>(url);
             if (response.IsError)
@@ -96,15 +110,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 
             Debug.WriteLine($"Filtered {removed} items from {nameof(list)}.");
         }
-        private static QueryParameterCollection GetParameters(DateTime start, DateTime end, bool unmonitored)
+        private static QueryParameterCollection GetParameters(DateTime start, DateTime end, bool unmonitored, bool includeEpisodeFile, bool includeEpisodeImages, bool includeSeries)
         {
-            int numberOfParameters = 3;
-            return new(numberOfParameters)
+            int numberOfParameters = 6;
+            QueryParameterCollection col = new(numberOfParameters)
             {
                 { nameof(unmonitored), unmonitored },
+                { nameof(includeEpisodeFile), includeEpisodeFile },
+                { nameof(includeSeries), includeSeries },
+                { nameof(includeEpisodeImages), includeEpisodeImages },
                 { START, start, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT },
                 { END, end, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT },
             };
+
+            Debug.Assert(col.Count <= numberOfParameters);
+            return col;
         }
     }
 }
