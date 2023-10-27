@@ -3,7 +3,6 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
-using MG.Sonarr.Next.Models.Notifications;
 using MG.Sonarr.Next.Shell.Models.Series;
 using System.Management.Automation;
 using System.Text.Json.Serialization;
@@ -109,7 +108,11 @@ namespace MG.Sonarr.Next.Models.Series
         protected override void SetPSTypeName()
         {
             base.SetPSTypeName();
-            Debug.Assert(this.TypeNames.Count > 0 && this.TypeNames[0] == typeof(SeriesObject).GetTypeName());
+            Debugger.Assert(() =>
+            {
+                return this.TypeNames.Count > 0 && this.TypeNames[0] == typeof(SeriesObject).GetTypeName();
+            });
+
             this.TypeNames[0] = _typeName;  // Should overwrite 'SeriesObject'.
         }
         public override void Reset()

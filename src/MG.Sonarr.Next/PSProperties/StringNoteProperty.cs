@@ -1,5 +1,4 @@
-﻿using MG.Sonarr.Next.Extensions;
-using System.Management.Automation;
+﻿using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties
 {

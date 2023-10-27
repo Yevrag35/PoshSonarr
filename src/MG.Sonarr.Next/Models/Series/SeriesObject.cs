@@ -4,7 +4,6 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
-using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Text.Json.Serialization;
 

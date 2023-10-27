@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Next.Extensions;
-using System.Collections.ObjectModel;
 
 namespace MG.Sonarr.Next.Collections
 {

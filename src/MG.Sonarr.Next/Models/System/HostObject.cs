@@ -1,8 +1,8 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.System
@@ -15,6 +15,8 @@ namespace MG.Sonarr.Next.Models.System
     {
         const int CAPACITY = 32;
         const int CONDITIONAL_CAPACITY = 3;
+        static readonly string _typeName = typeof(HostObject).GetTypeName();
+
         private protected Dictionary<string, object?> Conditionals { get; }
 
         public int Id { get; private set; }
@@ -48,6 +50,11 @@ namespace MG.Sonarr.Next.Models.System
             base.Reset();
             this.Properties.Remove(nameof(this.Id));
         }
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            this.TypeNames.Insert(0, _typeName);
+        }
     }
 
     [SonarrObject]
@@ -59,6 +66,7 @@ namespace MG.Sonarr.Next.Models.System
         {
             Constants.API_KEY, Constants.PASSWORD, Constants.PROXY_PASSWORD,
         };
+        static readonly string _typeName = typeof(NoKeyHostObject).GetTypeName();
 
         public int CompareTo(NoKeyHostObject? other)
         {
@@ -75,6 +83,14 @@ namespace MG.Sonarr.Next.Models.System
         {
             base.OnDeserialized();
             this.StoreConditionals();
+        }
+        public override void OnSerializing()
+        {
+            base.OnSerializing();
+            foreach (var kvp in this.Conditionals)
+            {
+                this.UpdateProperty(kvp.Key, kvp.Value);
+            }
         }
         public override void Reset()
         {
@@ -93,14 +109,12 @@ namespace MG.Sonarr.Next.Models.System
 
             this.Properties.RemoveMany(_removeProperties);
         }
-
-        public override void OnSerializing()
+        protected override void SetPSTypeName()
         {
-            base.OnSerializing();
-            foreach (var kvp in this.Conditionals)
-            {
-                this.UpdateProperty(kvp.Key, kvp.Value);
-            }
+            base.SetPSTypeName();
+
+            Debug.Assert(this.TypeNames.Count > 0 && this.TypeNames[0] == typeof(HostObject).GetTypeName());
+            this.TypeNames[0] = _typeName;
         }
     }
 }

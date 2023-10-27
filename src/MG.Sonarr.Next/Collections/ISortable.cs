@@ -1,6 +1,4 @@
-﻿using System.Collections;
-
-namespace MG.Sonarr.Next.Collections
+﻿namespace MG.Sonarr.Next.Collections
 {
     public interface ISortable
     {

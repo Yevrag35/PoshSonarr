@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Next.Reflection;
-using OneOf;
 using System.Reflection;
 
 namespace MG.Sonarr.Next.Extensions

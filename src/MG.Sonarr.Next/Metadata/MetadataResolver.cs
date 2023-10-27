@@ -2,7 +2,6 @@
 using MG.Sonarr.Next.Extensions.PSO;
 using System.Collections;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Next.Metadata
 {

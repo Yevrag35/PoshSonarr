@@ -2,7 +2,6 @@
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
-using MG.Sonarr.Next.Models.DownloadClients;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Notifications

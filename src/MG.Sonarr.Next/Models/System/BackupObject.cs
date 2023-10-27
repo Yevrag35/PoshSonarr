@@ -1,10 +1,9 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
-using System.Collections.ObjectModel;
-using System.Xml.Linq;
 
 namespace MG.Sonarr.Next.Models.System
 {
@@ -13,6 +12,7 @@ namespace MG.Sonarr.Next.Models.System
         ISerializableNames<BackupObject>
     {
         const int CAPACITY = 6;
+        static readonly string _typeName = typeof(BackupObject).GetTypeName();
 
         public Uri BackupUri { get; private set; } = null!;
         public string Name { get; private set; } = string.Empty;
@@ -53,6 +53,11 @@ namespace MG.Sonarr.Next.Models.System
             {
                 this.BackupUri = backupUri;
             }
+        }
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            this.TypeNames.Insert(0, _typeName);
         }
 
         const int DICT_CAPACITY = 1;

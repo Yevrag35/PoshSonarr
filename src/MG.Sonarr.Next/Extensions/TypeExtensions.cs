@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Management.Automation;
+﻿using System.Management.Automation;
 using System.Reflection;
 
 namespace MG.Sonarr.Next.Extensions
