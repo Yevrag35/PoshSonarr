@@ -1,4 +1,5 @@
-﻿using System.Management.Automation;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Management.Automation;
 using System.Reflection;
 
 namespace MG.Sonarr.Next.Extensions
@@ -26,8 +27,15 @@ namespace MG.Sonarr.Next.Extensions
             return type?.FullName ?? type?.Name;
         }
 
+        static readonly char[] _brackets = new[] { '[', ']' };
         [return: NotNullIfNotNull(nameof(type))]
         public static string? GetPSTypeName(this Type? type)
+        {
+            return GetPSTypeName(type, removeBrackets: false);
+        }
+
+        [return: NotNullIfNotNull(nameof(type))]
+        public static string? GetPSTypeName(this Type? type, bool removeBrackets)
         {
             string? name = null;
             if (type is null)
@@ -37,6 +45,10 @@ namespace MG.Sonarr.Next.Extensions
             else
             {
                 name = LanguagePrimitives.ConvertTypeNameToPSTypeName(type.FullName);
+                if (removeBrackets)
+                {
+                    name = name.Trim(_brackets);
+                }
             }
 
             return name ?? type.FullName ?? type.Name;

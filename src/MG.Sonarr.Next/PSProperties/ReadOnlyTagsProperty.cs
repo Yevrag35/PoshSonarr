@@ -20,7 +20,8 @@ namespace MG.Sonarr.Next.PSProperties
 
         public override PSMemberInfo Copy()
         {
-            return new ReadOnlyTagsProperty(new SortedSet<int>(this.Tags));
+            return this;
+            //return new ReadOnlyTagsProperty(new SortedSet<int>(this.Tags));
         }
 
         public override string ToString()

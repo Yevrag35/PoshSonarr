@@ -21,6 +21,7 @@
   <ItemGroup>
     <None Remove="build_dependencies.json" />
     <None Remove="Debug.ps1" />
+    <None Remove="PSFormats\SonarrProperty.ps1xml" />
   </ItemGroup>
 
 	<Target Name="Cleanup" AfterTargets="Clean">
@@ -56,6 +57,9 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Content Include="build_dependencies.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="PSFormats\SonarrProperty.ps1xml">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>

@@ -128,6 +128,8 @@ if ($PSCmdlet.ShouldProcess($dllPath, "Importing Module")) {
 	Push-Location $myDesktop
 }
 
+Get-ChildItem -Path "$PSScriptRoot\PSFormats" -File *.ps1xml -Recurse -ea Stop | Update-FormatData
+
 Write-Host ""
 Write-Host "Debugging PoshSonarr PowerShell Module" -ForegroundColor Cyan
 Write-Host "`n"

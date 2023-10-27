@@ -1,5 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
-using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.PSProperties;
 
 namespace MG.Sonarr.Next.Models
 {
@@ -51,10 +51,15 @@ namespace MG.Sonarr.Next.Models
         {
             base.OnDeserialized();
             this.MustUpdateViaApi = true;
-            if (this.TryGetNonNullProperty(nameof(this.Tags), out SortedSet<int>? tags))
+            if (this.Properties[Constants.TAGS] is ReadOnlyTagsProperty tagsProp)
             {
-                this.Tags = tags;
+                this.Tags = tagsProp.Tags;
             }
+
+            //if (this.TryGetNonNullProperty(nameof(this.Tags), out SortedSet<int>? tags))
+            //{
+            //    this.Tags = tags;
+            //}
         }
         public override void Reset()
         {

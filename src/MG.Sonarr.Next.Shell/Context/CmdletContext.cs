@@ -91,7 +91,7 @@ namespace MG.Sonarr.Next.Shell.Context
                 .AddClock()
                 .AddMemoryCache()
                 .AddSingleton<Queue<IApiCmdlet>>()
-                .AddScoped(typeof(Dictionary<,>))
+                .AddScoped<SortedSet<SonarrProperty>>()
                 .AddSonarrClient(typeof(CmdletContextExtensions).Assembly, settings, (provider, options) =>
                 {
                     options.WriteIndented = true;
