@@ -22,42 +22,43 @@ namespace MG.Sonarr.Next.Shell.Context
     internal static class CmdletContextExtensions
 #endif
     {
-        internal static IServiceScope CreateScope(this SonarrCmdletBase cmdlet)
+        internal static IServiceScope CreateScope(this SonarrCmdletBase _)
         {
-
-
             return SonarrContext.GetProvider().CreateScope();
         }
-        internal static IServiceScope CreateScope(this ConnectSonarrInstanceCmdlet cmdlet)
+        internal static IServiceScope CreateScope(this ConnectSonarrInstanceCmdlet _)
         {
             return SonarrContext.GetProvider().CreateScope();
         }
 
-#if DEBUG   // Only used in interactive PowerShell testing. Never should be called in the code directly.
+#if DEBUG
+        [Obsolete("Only used in interactive PowerShell testing. Never should be called in the code directly.", error: true)]
         public static IMetadataResolver GetResolver()
         {
             return SonarrContext.GetProvider().GetRequiredService<IMetadataResolver>();
         }
+
+        [Obsolete("Only used in interactive PowerShell testing. Never should be called in the code directly.", error: true)]
         public static JsonSerializerOptions GetSerializerOptions()
         {
             return SonarrContext.GetProvider().GetRequiredService<ISonarrJsonOptions>().ForSerializing;
         }
 #endif
 
-        internal static IServiceProvider GetServiceProvider(this Cmdlet cmdlet)
+        internal static IServiceProvider GetServiceProvider(this Cmdlet _)
         {
             return SonarrContext.GetProvider();
         }
 
-        internal static void SetContext(this ConnectSonarrInstanceCmdlet cmdlet, IConnectionSettings settings, Func<IServiceCollection, ServiceProviderOptions, IServiceProvider> buildProvider)
+        internal static void SetContext(this ConnectSonarrInstanceCmdlet _, IConnectionSettings settings, Func<IServiceCollection, ServiceProviderOptions, IServiceProvider> buildProvider)
         {
             SonarrContext.Initialize(settings, buildProvider);
         }
-        internal static void UnsetContext(this DisconnectSonarrInstanceCmdlet cmdlet)
+        internal static void UnsetContext(this DisconnectSonarrInstanceCmdlet _)
         {
             SonarrContext.Deinitialize();
         }
-        internal static void UnsetContext(this ConnectSonarrInstanceCmdlet cmdlet)
+        internal static void UnsetContext(this ConnectSonarrInstanceCmdlet _)
         {
             SonarrContext.Deinitialize();
         }

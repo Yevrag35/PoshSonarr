@@ -1,7 +1,9 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.Notifications;
 using MG.Sonarr.Next.Shell.Models.Series;
 using System.Management.Automation;
 using System.Text.Json.Serialization;
@@ -14,9 +16,11 @@ namespace MG.Sonarr.Next.Models.Series
         IJsonOnSerializing,
         ISerializableNames<AddSeriesObject>
     {
+        const int CAPACITY = 50;
+        const string ROOT_FOLDER_PATH = "RootFolderPath";
+        static readonly string _typeName = typeof(AddSeriesObject).GetTypeName();
         private string? _path;
         private string? _pathProp;
-        const int CAPACITY = 50;
 
         public SeriesAddOptions? AddOptions { get; set; }
         public override int Id => -1;
@@ -89,8 +93,6 @@ namespace MG.Sonarr.Next.Models.Series
             this.SetPath();
             base.OnSerializing();
         }
-
-        const string ROOT_FOLDER_PATH = "RootFolderPath";
         private void SetPath()
         {
             if (this.IsFullPath)
@@ -104,7 +106,12 @@ namespace MG.Sonarr.Next.Models.Series
                 _pathProp = ROOT_FOLDER_PATH;
             }
         }
-
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            Debug.Assert(this.TypeNames.Count > 0 && this.TypeNames[0] == typeof(SeriesObject).GetTypeName());
+            this.TypeNames[0] = _typeName;  // Should overwrite 'SeriesObject'.
+        }
         public override void Reset()
         {
             if (!string.IsNullOrEmpty(_pathProp))

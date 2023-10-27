@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
@@ -22,6 +23,7 @@ namespace MG.Sonarr.Next.Models.Series
         ISeriesPipeable
     {
         private const string FIRST_AIRED = "FirstAired";
+        static readonly string _typeName = typeof(SeriesObject).GetTypeName();
         private DateOnly _firstAired;
 
         public int LanguageProfileId
@@ -92,6 +94,11 @@ namespace MG.Sonarr.Next.Models.Series
         {
             this.Properties.Remove(FIRST_AIRED);
             base.Reset();
+        }
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            this.TypeNames.Insert(0, _typeName);
         }
 
         const int DICT_CAPACITY = 2;
