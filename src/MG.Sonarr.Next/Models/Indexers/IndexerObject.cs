@@ -1,7 +1,9 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.DownloadClients;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Indexers
@@ -13,6 +15,7 @@ namespace MG.Sonarr.Next.Models.Indexers
         ITestPipeable
     {
         const int CAPACITY = 17;
+        static readonly string _typeName = typeof(IndexerObject).GetTypeName();
 
         public bool EnableRss
         {
@@ -76,6 +79,11 @@ namespace MG.Sonarr.Next.Models.Indexers
             {
                 this.UpdateProperty(nameof(this.Name), this.Name);
             }
+        }
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            this.TypeNames.Insert(0, _typeName);
         }
     }
 }

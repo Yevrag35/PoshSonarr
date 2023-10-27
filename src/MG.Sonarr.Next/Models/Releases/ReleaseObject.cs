@@ -1,7 +1,9 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.Notifications;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Releases
@@ -13,6 +15,7 @@ namespace MG.Sonarr.Next.Models.Releases
         ISerializableNames<ReleaseObject>
     {
         const int CAPACITY = 46;
+        static readonly string _typeName = typeof(ReleaseObject).GetTypeName();
 
         int _age;
         Weight _weight;
@@ -105,6 +108,12 @@ namespace MG.Sonarr.Next.Models.Releases
             this.Properties.RemoveMany("AgeHours", "AgeMinutes");
             this.UpdateProperty(nameof(this.Age), this.Age);
             base.Reset();
+        }
+
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            this.TypeNames.Insert(0, _typeName);
         }
     }
 }

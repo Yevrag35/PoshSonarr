@@ -23,6 +23,7 @@ namespace MG.Sonarr.Next.Models.Commands
         const string BODY = "Body";
         const int CAPACITY = 16;
         const string COMPLETED = "completed";
+        static readonly string _typeName = typeof(CommandObject).GetTypeName();
 
         PSObject? _body;
 
@@ -133,6 +134,11 @@ namespace MG.Sonarr.Next.Models.Commands
         {
             this.Properties.Remove(BODY);
             base.Reset();
+        }
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            this.TypeNames.Insert(0, _typeName);
         }
 
         public static bool operator ==(CommandObject? x, CommandObject? y)

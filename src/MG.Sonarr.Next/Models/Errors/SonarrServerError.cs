@@ -1,7 +1,9 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.DownloadClients;
 
 namespace MG.Sonarr.Next.Models.Errors
 {
@@ -12,6 +14,7 @@ namespace MG.Sonarr.Next.Models.Errors
     {
         const int CAPACITY = 5;
         const string STRING_TYPE = "System.String";
+        static readonly string _typeName = typeof(SonarrServerError).GetTypeName();
 
         public string Message { get; private set; } = string.Empty;
         public string? PropertyName { get; private set; }
@@ -38,6 +41,7 @@ namespace MG.Sonarr.Next.Models.Errors
 
         public override void OnDeserialized()
         {
+            base.OnDeserialized();
             var col = this.Properties.Match("*message");
             if (col.Count > 0)
             {
@@ -52,6 +56,12 @@ namespace MG.Sonarr.Next.Models.Errors
             {
                 this.PropertyName = propName;
             }
+        }
+
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            this.TypeNames.Insert(0, _typeName);
         }
     }
 }

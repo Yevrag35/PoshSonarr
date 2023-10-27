@@ -1,7 +1,9 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.DownloadClients;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +17,7 @@ namespace MG.Sonarr.Next.Models.History
         ISerializableNames<HistoryObject>
     {
         const int CAPACITY = 14;
+        static readonly string _typeName = typeof(HistoryObject).GetTypeName();
 
         public string DownloadId { get; private set; } = string.Empty;
         public int EpisodeId { get; private set; }
@@ -46,6 +49,11 @@ namespace MG.Sonarr.Next.Models.History
             {
                 this.SeriesId = seriesId;
             }
+        }
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            this.TypeNames.Insert(0, _typeName);
         }
     }
 }

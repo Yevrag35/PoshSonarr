@@ -1,7 +1,9 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.DownloadClients;
 
 namespace MG.Sonarr.Next.Models.Episodes
 {
@@ -14,6 +16,7 @@ namespace MG.Sonarr.Next.Models.Episodes
         ISerializableNames<EpisodeFileObject>
     {
         const int CAPACITY = 14;
+        static readonly string _typeName = typeof(EpisodeFileObject).GetTypeName();
 
         int IEpisodeFilePipeable.EpisodeFileId => this.Id;
         int IRenameFilePipeable.EpisodeFileId => this.Id;
@@ -37,6 +40,12 @@ namespace MG.Sonarr.Next.Models.Episodes
             {
                 this.SeriesId = seriesId;
             }
+        }
+
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            this.TypeNames.Insert(0, _typeName);
         }
     }
 }

@@ -1,40 +1,36 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Configuration>
 	<ViewDefinitions>
 		<View>
-			<Name>SonarrProperty-Table</Name>
+			<Name>MetadataTag-Table</Name>
 			<ViewSelectedBy>
-				<TypeName>MG.Sonarr.Next.Shell.Components.SonarrProperty</TypeName>
+				<TypeName>MG.Sonarr.Next.Metadata.MetadataTag</TypeName>
 			</ViewSelectedBy>
-			<GroupBy>
-				<PropertyName>ObjectType</PropertyName>
-			</GroupBy>
 			<TableControl>
+				<AutoSize>true</AutoSize>
 				<TableHeaders>
 					<TableColumnHeader>
-						<!-- Name -->
 						<Alignment>Left</Alignment>
 					</TableColumnHeader>
 					<TableColumnHeader>
-						<!-- IsReadOnly -->
-						<Alignment>Center</Alignment>
+						<Alignment>Left</Alignment>
 					</TableColumnHeader>
 					<TableColumnHeader>
-						<!-- Type -->
 						<Alignment>Left</Alignment>
 					</TableColumnHeader>
 				</TableHeaders>
 				<TableRowEntries>
 					<TableRowEntry>
+						<Wrap>false</Wrap>
 						<TableColumnItems>
 							<TableColumnItem>
-								<PropertyName>Name</PropertyName>
+								<PropertyName>Value</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
-								<PropertyName>IsReadOnly</PropertyName>
+								<PropertyName>UrlBase</PropertyName>
 							</TableColumnItem>
 							<TableColumnItem>
-								<PropertyName>Type</PropertyName>
+								<PropertyName>CanPipeTo</PropertyName>
 							</TableColumnItem>
 						</TableColumnItems>
 					</TableRowEntry>

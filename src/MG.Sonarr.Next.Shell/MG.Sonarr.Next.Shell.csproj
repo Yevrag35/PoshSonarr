@@ -21,7 +21,9 @@
   <ItemGroup>
     <None Remove="build_dependencies.json" />
     <None Remove="Debug.ps1" />
-    <None Remove="PSFormats\SonarrProperty.ps1xml" />
+    <None Remove="PSFormats\MetadataTag.Format.ps1xml" />
+    <None Remove="PSFormats\SonarrProperty.Format.ps1xml" />
+    <None Remove="PSFormats\SonarrTag.Format.ps1xml" />
   </ItemGroup>
 
 	<Target Name="Cleanup" AfterTargets="Clean">
@@ -59,7 +61,13 @@
 	  <Content Include="build_dependencies.json">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
-	  <Content Include="PSFormats\SonarrProperty.ps1xml">
+	  <Content Include="PSFormats\MetadataTag.Format.ps1xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="PSFormats\SonarrProperty.Format.ps1xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="PSFormats\SonarrTag.Format.ps1xml">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>

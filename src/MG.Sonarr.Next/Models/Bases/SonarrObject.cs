@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
+﻿using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.PSProperties;
@@ -10,8 +11,13 @@ namespace MG.Sonarr.Next.Models
     /// <summary>
     /// Dangerous object.
     /// </summary>
-    public abstract class SonarrObject : PSObject, IJsonSonarrMetadata, IJsonOnDeserialized
+    public abstract class SonarrObject : PSObject,
+        IJsonSonarrMetadata,
+        IJsonOnDeserialized
     {
+        bool _addedType;
+        static readonly string _typeName = typeof(SonarrObject).GetTypeName();
+
         protected MetadataProperty MetadataProperty { get; set; }
         public MetadataTag MetadataTag => this.MetadataProperty.Tag;
 
@@ -33,7 +39,13 @@ namespace MG.Sonarr.Next.Models
         protected abstract MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing);
         public virtual void OnDeserialized()
         {
-            return;
+            if (_addedType)
+            {
+                return;
+            }
+
+            this.SetPSTypeName();
+            _addedType = true;
         }
         public virtual void Reset()
         {
@@ -57,6 +69,10 @@ namespace MG.Sonarr.Next.Models
             Debug.Assert(ReferenceEquals(prop, this.MetadataProperty));
             Debug.Assert(prop.Tag == this.MetadataProperty.Tag);
 #endif
+        }
+        protected virtual void SetPSTypeName()
+        {
+            this.TypeNames.Insert(0, _typeName);
         }
         public bool TryGetId(out int id)
         {

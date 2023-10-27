@@ -1,7 +1,9 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.Notifications;
 
 namespace MG.Sonarr.Next.Models.Profiles
 {
@@ -9,6 +11,8 @@ namespace MG.Sonarr.Next.Models.Profiles
     public sealed class ReleaseProfileObject : TagUpdateObject<ReleaseProfileObject>,
         ISerializableNames<ReleaseProfileObject>
     {
+        static readonly string _typeName = typeof(ReleaseProfileObject).GetTypeName();
+
         public string Name
         {
             get => this.GetStringOrEmpty();
@@ -23,6 +27,12 @@ namespace MG.Sonarr.Next.Models.Profiles
         protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.RELEASE_PROFILE];
+        }
+
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            this.TypeNames.Insert(0, _typeName);
         }
     }
 }

@@ -7,6 +7,8 @@ namespace MG.Sonarr.Next.Models
         IHasId
         where TSelf : IdSonarrObject<TSelf>
     {
+        static readonly Dictionary<Type, string> _typeNames = new(20);
+
         public virtual int Id
         {
             get => this.GetValue<int>();

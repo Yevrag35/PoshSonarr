@@ -1,7 +1,9 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.DownloadClients;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Models.Notifications
@@ -17,6 +19,7 @@ namespace MG.Sonarr.Next.Models.Notifications
             "OnEpisodeFileDeleteForUpgrade", "OnHealthIssue", "OnApplicationUpdate"
         };
         const int CAPACITY = 38;
+        static readonly string _typeName = typeof(NotificationObject).GetTypeName();
 
         public string Name
         {
@@ -41,6 +44,12 @@ namespace MG.Sonarr.Next.Models.Notifications
             this.MustUpdateViaApi = false;
             bool isEnabled = CalculateIsEnabled(this.Properties);
             this.Properties.Add(new PSNoteProperty("IsEnabled", isEnabled));
+        }
+
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            this.TypeNames.Insert(0, _typeName);
         }
 
         private static bool CalculateIsEnabled<T>(PSMemberInfoCollection<T> properties) where T : PSPropertyInfo

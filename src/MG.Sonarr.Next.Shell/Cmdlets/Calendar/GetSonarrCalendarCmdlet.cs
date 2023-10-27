@@ -123,7 +123,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
                 { END, end, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT },
             };
 
-            Debug.Assert(col.Count <= numberOfParameters);
+            Debug.Assert(col.Count == numberOfParameters);
             return col;
         }
     }

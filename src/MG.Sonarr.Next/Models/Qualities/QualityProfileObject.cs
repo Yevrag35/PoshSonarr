@@ -1,7 +1,9 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.Notifications;
 
 namespace MG.Sonarr.Next.Models.Qualities
 {
@@ -10,6 +12,7 @@ namespace MG.Sonarr.Next.Models.Qualities
         ISerializableNames<QualityProfileObject>
     {
         const int CAPACITY = 10;
+        static readonly string _typeName = typeof(QualityProfileObject).GetTypeName();
 
         public string Name { get; private set; } = string.Empty;
 
@@ -30,6 +33,12 @@ namespace MG.Sonarr.Next.Models.Qualities
             {
                 this.Name = name;
             }
+        }
+
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            this.TypeNames.Insert(0, _typeName);
         }
     }
 }
