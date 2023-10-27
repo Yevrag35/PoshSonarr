@@ -11,9 +11,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
     [OutputType(typeof(PingResult), typeof(bool))]
     public sealed class TestSonarrInstanceCmdlet : SonarrCmdletBase, IApiCmdlet
     {
-        ISignalRClient Client { get; set; } = null!;
-        Queue<IApiCmdlet> Queue { get; set; } = null!;
-        Stopwatch Stopwatch { get; set; } = null!;
+        ISignalRClient _client = null!;
+        Queue<IApiCmdlet> _queue = null!;
+        Stopwatch _stopwatch = null!;
 
         [Parameter]
         public SwitchParameter Quiet { get; set; }
@@ -21,18 +21,18 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            this.Client = provider.GetRequiredService<ISignalRClient>();
-            this.Stopwatch = this.GetPooledObject<Stopwatch>();
-            this.Queue = provider.GetRequiredService<Queue<IApiCmdlet>>();
+            _client = provider.GetRequiredService<ISignalRClient>();
+            _stopwatch = this.GetPooledObject<Stopwatch>();
+            _queue = provider.GetRequiredService<Queue<IApiCmdlet>>();
         }
 
         protected override void Process(IServiceProvider provider)
         {
-            this.Queue.Enqueue(this);
-            this.Stopwatch.Start();
+            _queue.Enqueue(this);
+            _stopwatch.Start();
 
-            var response = this.Client.SendPing();
-            this.Stopwatch.Stop();
+            var response = _client.SendPing();
+            _stopwatch.Stop();
 
             if (this.Quiet.ToBool())
             {
@@ -40,7 +40,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
                 return;
             }
 
-            PingResult result = new(in response, this.Stopwatch.ElapsedTicks);
+            PingResult result = new(in response, _stopwatch.ElapsedTicks);
             this.WriteObject(result);
         }
 
@@ -56,12 +56,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
             {
                 if (disposing)
                 {
-                    this.Queue?.Clear();
-                    this.ReturnPooledObject(this.Stopwatch);
+                    _queue?.Clear();
+                    this.ReturnPooledObject(_stopwatch);
                 }
 
-                this.Queue = null!;
-                this.Stopwatch = null!;
+                _queue = null!;
+                _stopwatch = null!;
                 _disposed = true;
             }
 

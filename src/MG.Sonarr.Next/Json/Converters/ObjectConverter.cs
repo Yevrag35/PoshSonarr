@@ -9,7 +9,6 @@ using MG.Sonarr.Next.Models.Releases;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.PSProperties;
 using System.Buffers;
-using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -52,24 +51,10 @@ namespace MG.Sonarr.Next.Json.Converters
             };
         }
 
-        private static ReadOnlyDictionary<string, T> BuildLookup<T>(IEnumerable<KeyValuePair<string, T>> pairs)
-        {
-            var dict = new Dictionary<string, T>(pairs.TryGetNonEnumeratedCount(out int count) ? count : 0,
-                StringComparer.InvariantCultureIgnoreCase);
-
-            foreach (var pair in pairs)
-            {
-                _ = dict.TryAdd(pair.Key, pair.Value);
-            }
-
-            dict.TrimExcess();
-
-            return new(dict);
-        }
-
         private static List<object> ConvertToListOfObjects(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
-            return JsonSerializer.Deserialize<List<object>>(ref reader, options) ?? throw new JsonException("Unable to deserialize into an array of PSObject instances.");
+            return JsonSerializer.Deserialize<List<object>>(ref reader, options) ?? 
+                throw new JsonException("Unable to deserialize into an array of PSObject instances.");
         }
 
         internal T ConvertToObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options, IReadOnlyDictionary<string, string>? replaceNames = null) where T : PSObject, new()

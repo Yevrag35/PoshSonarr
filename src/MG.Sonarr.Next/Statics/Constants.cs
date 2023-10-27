@@ -123,6 +123,7 @@ namespace MG.Sonarr.Next
         public const string SERIES = "#series";
         public const string SERIES_ADD = "#add_series";
         public const string SERIES_HISTORY = "#history_series";
+        public const string STATUS = "#system_status";
         public const string TAG = "#tag";
     }
 }

@@ -136,6 +136,7 @@ Write-Host "`n"
 $VerbosePreference = "Continue"
 if (-not ([string]::IsNullOrWhitespace($SonarrUrl) -or [string]::IsNullOrWhitespace($ApiKey))) {
 
-	Connect-SonarrInstance -Url $SonarrUrl -ApiKey $ApiKey
-	$s = Get-SonarrSeries asdfm*
+	$status = Connect-SonarrInstance -Url $SonarrUrl -ApiKey $ApiKey -PassThru
+	$status
+	#$s = Get-SonarrSeries asdfm*
 }

@@ -7,6 +7,7 @@ using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
+using MG.Sonarr.Next.Models.System;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 {
@@ -47,6 +48,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
         }
 
         [Parameter]
+        public SwitchParameter PassThru { get; set; }
+
+        [Parameter]
         public SwitchParameter SkipCertificateCheck
         {
             get => _settings?.SkipCertValidation ?? default;
@@ -84,13 +88,31 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             var queue = scope.ServiceProvider.GetService<Queue<IApiCmdlet>>();
             queue?.Enqueue(this);
             var client = scope.ServiceProvider.GetRequiredService<ISonarrClient>();
-            var result = client.SendTest();
+
+            ISonarrResponse result = this.SendTest(client, scope.ServiceProvider, this.PassThru);
 
             if (result.IsError)
             {
                 this.UnsetContext();
                 this.ThrowTerminatingError(result.Error);
             }
+        }
+
+        private ISonarrResponse SendTest(ISonarrClient client, IServiceProvider provider, bool passThru)
+        {
+            if (!passThru)
+            {
+                return client.SendTest();
+            }
+
+            var tag = provider.GetMetadataTag(Meta.STATUS);
+            var response = client.SendGet<SystemStatusObject>(tag.UrlBase);
+            if (!response.IsError)
+            {
+                this.WriteObject(response.Data);
+            }
+
+            return response;
         }
 
         /// <exception cref="SonarrParameterException"/>

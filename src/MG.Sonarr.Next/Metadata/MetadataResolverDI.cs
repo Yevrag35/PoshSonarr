@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Metadata
     {
         public static IServiceCollection AddMetadata(this IServiceCollection services, Assembly cmdletAssembly)
         {
-            int initialCapacity = 26;
+            int initialCapacity = 27;
             NameLookup<string> pipes = FindPipeableCmdlets(cmdletAssembly);
             MetadataResolver dict = new(initialCapacity, pipes)
             {
@@ -39,6 +39,7 @@ namespace MG.Sonarr.Next.Metadata
                 { Meta.SERIES, Constants.SERIES, true },
                 { Meta.SERIES_ADD, Constants.SERIES_LOOKUP, false },
                 { Meta.SERIES_HISTORY, Constants.HISTORY_BY_SERIES, false },
+                { Meta.STATUS, Constants.STATUS, false },
                 { Meta.TAG, Constants.TAG, true },
             };
 
@@ -72,7 +73,15 @@ namespace MG.Sonarr.Next.Metadata
         private static string GetCmdletNameFromAttribute(Type cmdlet)
         {
             CmdletAttribute ca = cmdlet.GetCustomAttribute<CmdletAttribute>() ?? throw new InvalidOperationException();
-            return $"{ca.VerbName}-{ca.NounName}";
+            return string.Create(ca.VerbName.Length + ca.NounName.Length + 1, ca, (chars, state) =>
+            {
+                state.VerbName.CopyTo(chars);
+
+                int position = state.VerbName.Length;
+                chars[position++] = '-';
+
+                state.NounName.CopyTo(chars.Slice(position));
+            });
         }
     }
 }
