@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties
@@ -25,6 +25,7 @@ namespace MG.Sonarr.Next.PSProperties
         internal static PSPropertyInfo ToProperty(string name, object? value)
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
+
             return value switch
             {
                 string strVal => new StringNoteProperty(name, strVal),
@@ -64,6 +65,8 @@ namespace MG.Sonarr.Next.PSProperties
 
             return new string(chars.Slice(0, position));
         }
+
+        public abstract bool ValueIsProper(object? value);
     }
 
     public abstract class WritableProperty<T> : WritableProperty
@@ -89,6 +92,10 @@ namespace MG.Sonarr.Next.PSProperties
             return this.MaxValueCharacterLength <= 0 || this.ValueAsT is not ISpanFormattable spanFormattable
                 ? ToStringNoSpan(typeName, this.ValueAsT, name)
                 : ToStringWithSpan(typeName, name, spanFormattable, this.MaxValueCharacterLength);
+        }
+        public override bool ValueIsProper(object? value)
+        {
+            return value is null || value is T;
         }
 
         private static string ToStringWithSpan(ReadOnlySpan<char> typeName, ReadOnlySpan<char> name, ISpanFormattable formattable, int maxLength)

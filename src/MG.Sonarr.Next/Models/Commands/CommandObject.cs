@@ -136,6 +136,15 @@ namespace MG.Sonarr.Next.Models.Commands
             this.TypeNames.Insert(0, _typeName);
         }
 
+        static readonly HashSet<string> _capitalProps = new()
+        {
+            "Priority", "Status", "Trigger",
+        };
+        public static IReadOnlySet<string> GetPropertiesToCapitalize()
+        {
+            return _capitalProps;
+        }
+
         public static bool operator ==(CommandObject? x, CommandObject? y)
         {
             return x.IsEqualTo<CommandObject>(y);

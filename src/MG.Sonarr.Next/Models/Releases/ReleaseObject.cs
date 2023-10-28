@@ -86,7 +86,7 @@ namespace MG.Sonarr.Next.Models.Releases
             }
 
             _weight = new(this);
-            this.AddProperty(nameof(this.TotalWeight), this.TotalWeight);
+            this.AddNumberProperty(nameof(this.TotalWeight), this.TotalWeight);
 
             this.Age = TimeSpan.FromMinutes(_ageMinutes);
             this.Reset();
@@ -95,17 +95,17 @@ namespace MG.Sonarr.Next.Models.Releases
         public void OnSerializing()
         {
             _weight.SetRelease(this);
-            this.UpdateProperty(nameof(this.Age), _age);
+            this.ReplaceNumberProperty(nameof(this.Age), _age);
             this.UpdateProperty(nameof(this.IndexerId), this.IndexerId);
             this.UpdateProperty(nameof(this.ReleaseUrl), this.ReleaseUrl);
-            this.AddProperty("AgeHours", _ageHours);
-            this.AddProperty("AgeMinutes", _ageMinutes);
+            this.AddNumberProperty("AgeHours", _ageHours);
+            this.AddNumberProperty("AgeMinutes", _ageMinutes);
         }
 
         public override void Reset()
         {
             this.Properties.RemoveMany("AgeHours", "AgeMinutes");
-            this.UpdateProperty(nameof(this.Age), this.Age);
+            this.ReplaceStructProperty(nameof(this.Age), this.Age);
             base.Reset();
         }
 
@@ -113,6 +113,15 @@ namespace MG.Sonarr.Next.Models.Releases
         {
             base.SetPSTypeName();
             this.TypeNames.Insert(0, _typeName);
+        }
+
+        static readonly HashSet<string> _capitalProps = new(1)
+        {
+            "Protocol",
+        };
+        public static IReadOnlySet<string> GetPropertiesToCapitalize()
+        {
+            return _capitalProps;
         }
     }
 }

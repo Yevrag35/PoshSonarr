@@ -26,16 +26,16 @@ namespace MG.Sonarr.Next.PSProperties
 
         protected override T ConvertFromObject(object? value)
         {
-            if (value is T tVal)
-            {
-                return tVal;
-            }
-
-            return this.ThrowNotType<T>();
+            return value is T tVal ? tVal : this.ThrowNotType<T>();
         }
         public override PSMemberInfo Copy()
         {
             return new StructNoteProperty<T>(this.Name, this.StructValue);
+        }
+
+        public override bool ValueIsProper(object? value)
+        {
+            return value is T;
         }
     }
 }

@@ -12,6 +12,7 @@
     /// <summary>
     /// Because Codacy is stupid.
     /// </summary>
+    [DebuggerStepThrough]
     public static class Guard
     {
         /// <summary>

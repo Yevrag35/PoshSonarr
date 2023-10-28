@@ -49,5 +49,10 @@ namespace MG.Sonarr.Next.PSProperties
                 _ => this.ThrowNotType<string>(),
             };
         }
+
+        public override bool ValueIsProper(object? value)
+        {
+            return value is null || value is string || value is IFormattable || value is IConvertible;
+        }
     }
 }

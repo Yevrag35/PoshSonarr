@@ -55,6 +55,15 @@ namespace MG.Sonarr.Next.Models.System
             base.SetPSTypeName();
             this.TypeNames.Insert(0, _typeName);
         }
+
+        static readonly HashSet<string> _capitalProps = new(5)
+        {
+            "AuthenticationMethod", "CertificateValidation", "LogLevel", "ProxyType", "UpdateMechanism",
+        };
+        public static IReadOnlySet<string> GetPropertiesToCapitalize()
+        {
+            return _capitalProps;
+        }
     }
 
     [SonarrObject]

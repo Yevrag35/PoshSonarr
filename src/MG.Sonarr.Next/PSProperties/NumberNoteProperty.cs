@@ -54,5 +54,9 @@ namespace MG.Sonarr.Next.PSProperties
         {
             return new NumberNoteProperty<T>(this.Name, this.NumValue);
         }
+        public override bool ValueIsProper([NotNullWhen(true)] object? value)
+        {
+            return value is T || value is IConvertible;
+        }
     }
 }

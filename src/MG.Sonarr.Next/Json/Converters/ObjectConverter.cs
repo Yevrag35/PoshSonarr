@@ -41,8 +41,8 @@ namespace MG.Sonarr.Next.Json.Converters
             return reader.TokenType switch
             {
                 JsonTokenType.StartArray => ConvertToListOfObjects(ref reader, options),
-                JsonTokenType.StartObject => this.ConvertToObject<PSObject>(ref reader, options),
-                JsonTokenType.String => this.ReadString(ref reader, options, string.Empty),
+                JsonTokenType.StartObject => this.ConvertToObject<PSObject>(ref reader, options, null, null),
+                JsonTokenType.String => this.ReadString(ref reader, options, string.Empty, null),
                 JsonTokenType.Number => ReadNumber(ref reader, options),
                 JsonTokenType.True => true,
                 JsonTokenType.False => false,
@@ -57,10 +57,11 @@ namespace MG.Sonarr.Next.Json.Converters
                 throw new JsonException("Unable to deserialize into an array of PSObject instances.");
         }
 
-        internal T ConvertToObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options, IReadOnlyDictionary<string, string>? replaceNames = null) where T : PSObject, new()
+        internal T ConvertToObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options, IReadOnlyDictionary<string, string>? replaceNames, IReadOnlySet<string>? propertiesToCapitalize) where T : PSObject, new()
         {
             var pso = new T();
             replaceNames ??= EmptyNameDictionary<string>.Default;
+            propertiesToCapitalize ??= EmptyNameDictionary<string>.Default;
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
@@ -93,7 +94,7 @@ namespace MG.Sonarr.Next.Json.Converters
 
                         case JsonTokenType.String:
                             o = !reader.ValueSpan.IsEmpty
-                                ? this.ReadString(ref reader, options, pn)
+                                ? this.ReadString(ref reader, options, pn, propertiesToCapitalize)
                                 : string.Empty;
 
                             break;
@@ -136,7 +137,7 @@ namespace MG.Sonarr.Next.Json.Converters
                 : JsonSerializer.Deserialize<object[]>(ref reader, options);
         }
 
-        private static string ProcessQuotes(ReadOnlySpan<char> chars)
+        private static string ProcessQuotes(ReadOnlySpan<char> chars, string propertyName)
         {
             int position = 0;
             ReadOnlySpan<char> quotes = stackalloc char[] { '\\', '"' };
@@ -214,12 +215,14 @@ namespace MG.Sonarr.Next.Json.Converters
                     return this.ReadPSObject<SeriesObject>(ref reader, options);
 
                 default:
-                    return this.ConvertToObject<PSObject>(ref reader, options);
+                    return this.ConvertToObject<PSObject>(ref reader, options, null, null);
             }
         }
         private T ReadPSObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options) where T : SonarrObject, ISerializableNames<T>, new()
         {
-            var sonarrObj = this.ConvertToObject<T>(ref reader, options, T.GetDeserializedNames());
+            var sonarrObj = this.ConvertToObject<T>(
+                ref reader, options, T.GetDeserializedNames(), T.GetPropertiesToCapitalize());
+
             sonarrObj.OnDeserialized();
             sonarrObj.SetTag(_config.Resolver);
             return sonarrObj;
@@ -271,11 +274,12 @@ namespace MG.Sonarr.Next.Json.Converters
             }
             else
             {
-                return ProcessQuotes(chars);
+                return ProcessQuotes(chars, propertyName);
             }
         }
-        private object? ReadString(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName)
+        private object? ReadString(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName, IReadOnlySet<string>? capitalize)
         {
+            capitalize ??= EmptyNameDictionary<string>.Default;
             bool isRented = false;
             char[]? array = null;
 
@@ -291,11 +295,11 @@ namespace MG.Sonarr.Next.Json.Converters
             int written = Encoding.UTF8.GetChars(reader.ValueSpan, span);
             span = span.Slice(0, written);
 
-            //ref char firstChar = ref span[0];
-            //if (char.IsLetter(firstChar) && char.IsLower(firstChar))
-            //{
-            //    firstChar = char.ToUpper(firstChar);
-            //}
+            ref char firstChar = ref span[0];
+            if (capitalize.Contains(propertyName) && char.IsLower(firstChar))
+            {
+                firstChar = char.ToUpper(firstChar);
+            }
 
             object? result;
             if (_config.SpanConverters.TryGetValue(propertyName, out SpanConverter? converter))
