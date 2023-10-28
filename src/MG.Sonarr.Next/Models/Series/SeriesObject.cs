@@ -22,6 +22,9 @@ namespace MG.Sonarr.Next.Models.Series
         ISeriesPipeable
     {
         private const string FIRST_AIRED = "FirstAired";
+        private const string OVERVIEW = "Overview";
+        private const string OVERVIEW_SHORT = "ShortOverview";
+        private const int SHORT_OVERVIEW_LENGTH = 90;
         static readonly string _typeName = typeof(SeriesObject).GetTypeName();
         private DateOnly _firstAired;
 
@@ -84,6 +87,11 @@ namespace MG.Sonarr.Next.Models.Series
                 this.Title = title;
                 this.Properties.Add(new PSAliasProperty("Name", nameof(this.Title)));
             }
+
+            if (this.TryGetProperty(OVERVIEW, out string? overview))
+            {
+                this.TruncateOverview(overview);
+            }
         }
         public virtual void OnSerializing()
         {
@@ -100,8 +108,30 @@ namespace MG.Sonarr.Next.Models.Series
             this.TypeNames.Insert(0, _typeName);
         }
 
+        private void TruncateOverview(string? overview)
+        {
+            PSPropertyInfo? existing = this.Properties[OVERVIEW_SHORT];
+            if (existing is not null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(overview) || overview.Length <= SHORT_OVERVIEW_LENGTH)
+            {
+                this.Properties.Add(new PSAliasProperty(OVERVIEW_SHORT, OVERVIEW));
+                return;
+            }
+
+            ShortOverview shorted = ShortOverview.FromValue(overview, SHORT_OVERVIEW_LENGTH);
+            this.Properties.Add(new PSNoteProperty(OVERVIEW_SHORT, shorted.Text));
+        }
+
         const int DICT_CAPACITY = 2;
         protected private static readonly Lazy<JsonNameHolder> _names = new(GetJsonNames);
+        private static readonly HashSet<string> _capitalProps = new(DICT_CAPACITY)
+        {
+            "SeriesType", "Status",
+        };
 
         private static JsonNameHolder GetJsonNames()
         {
@@ -116,6 +146,10 @@ namespace MG.Sonarr.Next.Models.Series
         public static IReadOnlyDictionary<string, string> GetDeserializedNames()
         {
             return _names.Value.DeserializationNames;
+        }
+        public static IReadOnlySet<string> GetPropertiesToCapitalize()
+        {
+            return _capitalProps;
         }
         public static IReadOnlyDictionary<string, string> GetSerializedNames()
         {
