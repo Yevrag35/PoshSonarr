@@ -291,6 +291,12 @@ namespace MG.Sonarr.Next.Json.Converters
             int written = Encoding.UTF8.GetChars(reader.ValueSpan, span);
             span = span.Slice(0, written);
 
+            //ref char firstChar = ref span[0];
+            //if (char.IsLetter(firstChar) && char.IsLower(firstChar))
+            //{
+            //    firstChar = char.ToUpper(firstChar);
+            //}
+
             object? result;
             if (_config.SpanConverters.TryGetValue(propertyName, out SpanConverter? converter))
             {

@@ -63,12 +63,17 @@ namespace MG.Sonarr.Next.Models
             MetadataTag tagToUse = this.GetTag(resolver, this.MetadataProperty.Tag);
 
             this.MetadataProperty.Tag = tagToUse;
-#if !RELEASE
-            var prop = (MetadataProperty)this.Properties[this.MetadataProperty.Name];
 
-            Debug.Assert(ReferenceEquals(prop, this.MetadataProperty));
-            Debug.Assert(prop.Tag == this.MetadataProperty.Tag);
-#endif
+            Debugger.Assert(() =>
+            {
+                PSPropertyInfo? prop = this.Properties[this.MetadataProperty.Name];
+
+                bool refEquals = ReferenceEquals(prop, this.MetadataProperty);
+
+                return refEquals
+                       &
+                       (prop is MetadataProperty mp && mp.Tag == this.MetadataProperty.Tag);
+            });
         }
         protected virtual void SetPSTypeName()
         {

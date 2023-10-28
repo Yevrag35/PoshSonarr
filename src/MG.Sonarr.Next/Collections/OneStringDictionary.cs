@@ -20,14 +20,14 @@ namespace MG.Sonarr.Next.Collections
         {
             get
             {
-                yield return _key ?? string.Empty;
+                yield return this.Key;
             }
         }
         IEnumerable<string> IReadOnlyDictionary<string, string>.Values
         {
             get
             {
-                yield return _value ?? string.Empty;
+                yield return this.Value;
             }
         }
         string IReadOnlyDictionary<string, string>.this[string key] => this.GetValueIfKeyIsSame(key, failOnNotEqual: true);
@@ -73,7 +73,7 @@ namespace MG.Sonarr.Next.Collections
         {
             if (!this.IsEmpty)
             {
-                yield return new(this.Key, this.Value);
+                yield return new(_key, _value);
             }
         }
         IEnumerator IEnumerable.GetEnumerator()
