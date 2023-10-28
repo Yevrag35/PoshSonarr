@@ -29,6 +29,7 @@ namespace MG.Sonarr.Next.Metadata
                 { Meta.LANGUAGE, Constants.LANGUAGE_PROFILE, true },
                 { Meta.LOG_ITEM, Constants.LOG, false },
                 { Meta.LOG_FILE, Constants.LOGFILE, false },
+                { Meta.MEDIA_MANGEMENT, Constants.MEDIA_MANAGEMENT, true },
                 { Meta.NOTIFICATION, Constants.NOTIFICATION, true },
                 { Meta.QUALITY_DEFINITION, Constants.QUALITY_DEFINITIONS, true },
                 { Meta.QUALITY_PROFILE, Constants.PROFILE, true },

@@ -64,7 +64,7 @@ namespace MG.Sonarr.Next
         public static readonly string LOGFILE = LOG + "/file";
         public static readonly string MANUALIMPORT = "/manualimport";
         public static readonly string MAPPING = "/remotepathmapping";
-        public static readonly string MEDIAMANAGEMENT = CONFIG + "/mediamanagement";
+        public static readonly string MEDIA_MANAGEMENT = CONFIG + "/mediamanagement";
         public static readonly string METADATA = "/metadata";
         public static readonly string NOTIFICATION = "/notification";
         public static readonly string NOTIFICATION_SCHEMA = NOTIFICATION + SCHEMA;
@@ -113,6 +113,7 @@ namespace MG.Sonarr.Next
         public const string LANGUAGE = "#language_profile";
         public const string LOG_FILE = "#log_file";
         public const string LOG_ITEM = "#log_item";
+        public const string MEDIA_MANGEMENT = "#media_management";
         public const string NOTIFICATION = "#notification";
         public const string QUALITY_DEFINITION = "#quality_definition";
         public const string QUALITY_PROFILE = "#quality_profile";
