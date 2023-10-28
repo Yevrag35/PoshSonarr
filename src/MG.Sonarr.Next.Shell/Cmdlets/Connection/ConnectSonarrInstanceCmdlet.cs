@@ -8,6 +8,9 @@ using MG.Sonarr.Next.Shell.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using MG.Sonarr.Next.Models.System;
+using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Models;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 {
@@ -109,6 +112,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             var response = client.SendGet<SystemStatusObject>(tag.UrlBase);
             if (!response.IsError)
             {
+                var settings = provider.GetRequiredService<IConnectionSettings>();
+                settings.AuthType = response.Data.Authentication;
+
                 this.WriteObject(response.Data);
             }
 

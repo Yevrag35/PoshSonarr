@@ -54,7 +54,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
         }
 
         #region BASIC AUTH
-        const string AUTHORIZATION = "Authorization";
+        const string BASIC = "Basic";
 
         private Task<HttpResponseMessage> DoBasicAuthProcedure(HttpRequestMessage request, CancellationToken token)
         {
@@ -81,7 +81,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
             });
 
             string base64Auth = Convert.ToBase64String(Encoding.UTF8.GetBytes(coupled));
-            request.Headers.Authorization = new AuthenticationHeaderValue(AUTHORIZATION, base64Auth);
+            request.Headers.Authorization = new AuthenticationHeaderValue(BASIC, base64Auth);
         }
 
         #endregion

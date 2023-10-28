@@ -46,8 +46,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         }
         public SonarrResponse<string> DownloadToPath(string url, string path, NetworkCredential? credential, CancellationToken token = default)
         {
-            using AuthedRequestMessage msg = new(HttpMethod.Get, url);
-            msg.Options.Set(AuthHandler.CredentialKey, credential);
+            using AuthedRequestMessage msg = new(HttpMethod.Get, url, credential);
 
             HttpResponseMessage response = null!;
             try

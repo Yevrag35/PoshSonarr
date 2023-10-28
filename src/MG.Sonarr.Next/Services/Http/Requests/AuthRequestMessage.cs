@@ -8,22 +8,18 @@ namespace MG.Sonarr.Next.Services.Http.Requests
         const string PASSWORD = "password";
         const string USERNAME = "username";
         static readonly NetworkCredential _blankCreds = new();
-        readonly NetworkCredential _creds = _blankCreds;
 
-        public NetworkCredential Credentials
-        {
-            get => _creds;
-            init => _creds = value ?? _blankCreds;
-        }
-        public bool IsCredentialsBlank => string.IsNullOrWhiteSpace(_creds.UserName)
+        public NetworkCredential Credentials { get; }
+        public bool IsCredentialsBlank => string.IsNullOrWhiteSpace(this.Credentials.UserName)
                                           ||
-                                          string.IsNullOrWhiteSpace(_creds.Password);
+                                          string.IsNullOrWhiteSpace(this.Credentials.Password);
         public override bool IsTest => false;
         public override bool CanUseCookieAuthentication => true;
 
-        public AuthedRequestMessage(HttpMethod method, string requestUri)
+        public AuthedRequestMessage(HttpMethod method, string requestUri, NetworkCredential? credentials)
             : base(method, requestUri)
         {
+            this.Credentials = credentials ?? _blankCreds;
         }
 
         public Uri GetLoginUrl()
@@ -54,7 +50,7 @@ namespace MG.Sonarr.Next.Services.Http.Requests
                 throw new UnauthorizedAccessException("The username or password is incorrect.");
             }
 
-            return new FormUrlEncodedContent(GetFormContents(_creds));
+            return new FormUrlEncodedContent(GetFormContents(this.Credentials));
         }
 
         private static IEnumerable<KeyValuePair<string, string>> GetFormContents(NetworkCredential credential)
