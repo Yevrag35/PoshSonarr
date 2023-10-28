@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8" ?> 
+<Types>
+	<Type>
+		<Name>MG.Sonarr.Next.Models.System.Diskspace</Name>
+		<Members>
+			<ScriptProperty>
+				<Name>FreeSpaceInGB</Name>
+				<GetScriptBlock>
+					$this.psobject.FreeSpace.InGB
+				</GetScriptBlock>
+			</ScriptProperty>
+			<ScriptProperty>
+				<Name>FreeSpaceInMB</Name>
+				<GetScriptBlock>
+					$this.psobject.FreeSpace.InMB
+				</GetScriptBlock>
+			</ScriptProperty>
+			<ScriptProperty>
+				<Name>FreeSpaceInTB</Name>
+				<GetScriptBlock>
+					$this.psobject.FreeSpace.InTB
+				</GetScriptBlock>
+			</ScriptProperty>
+			<ScriptProperty>
+				<Name>TotalSpaceInGB</Name>
+				<GetScriptBlock>
+					$this.psobject.TotalSpace.InGB
+				</GetScriptBlock>
+			</ScriptProperty>
+			<ScriptProperty>
+				<Name>TotalSpaceInMB</Name>
+				<GetScriptBlock>
+					$this.psobject.TotalSpace.InMB
+				</GetScriptBlock>
+			</ScriptProperty>
+			<ScriptProperty>
+				<Name>TotalSpaceInTB</Name>
+				<GetScriptBlock>
+					$this.psobject.TotalSpace.InTB
+				</GetScriptBlock>
+			</ScriptProperty>
+		</Members>
+	</Type>
+</Types>

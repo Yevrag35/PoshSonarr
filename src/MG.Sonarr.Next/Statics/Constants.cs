@@ -102,6 +102,7 @@ namespace MG.Sonarr.Next
         public const string CALENDAR = "#calendar";
         public const string COMMAND = "#command";
         public const string DELAY_PROFILE = "#delay_profile";
+        public const string DISK = "#disk";
         public const string DOWNLOAD_CLIENT = "#download_client";
         public const string DOWNLOAD_CLIENT_CONFIG = "#download_client_config";
         public const string EPISODE = "#episode";

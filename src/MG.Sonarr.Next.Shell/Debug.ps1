@@ -129,6 +129,7 @@ if ($PSCmdlet.ShouldProcess($dllPath, "Importing Module")) {
 }
 
 Get-ChildItem -Path "$PSScriptRoot\PSFormats" -File *.ps1xml -Recurse -ea Stop | %{ Update-FormatData -PrependPath $_.FullName }
+Get-ChildItem -Path "$PSScriptRoot\PSTypes" -File *.ps1xml -Recurse -ea Stop | %{ Update-TypeData -AppendPath $_.FullName }
 
 Write-Host ""
 Write-Host "Debugging PoshSonarr PowerShell Module" -ForegroundColor Cyan
