@@ -28,8 +28,9 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         readonly QueryParameterCollection _queryParams;
         readonly JsonSerializerOptions? _options;
         readonly Random _rng;   // this is *NOT* meant to be cryptographically secure.
+        readonly IServiceScopeFactory _scopeFactory;
 
-        public SignalRClient(HttpClient client, Random random, IConnectionSettings settings, ISonarrJsonOptions options)
+        public SignalRClient(HttpClient client, Random random, IConnectionSettings settings, ISonarrJsonOptions options, IServiceScopeFactory scopeFactory)
         {
             _client = client;
             _options = options.ForDeserializing;
@@ -40,12 +41,13 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             };
 
             _rng = random;
+            _scopeFactory = scopeFactory;
         }
 
         public SonarrResponse<PingResponse> SendPing(CancellationToken token = default)
         {
             string path = GetPingUrl(_queryParams, _rng);
-            using PingRequestMessage request = new(path);
+            using PingRequestMessage request = new(path, _scopeFactory);
 
             return this.SendRequest<PingResponse>(request, token);
         }

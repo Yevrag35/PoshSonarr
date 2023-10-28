@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Net;
 
 namespace MG.Sonarr.Next.Services.Http.Requests
 {
@@ -16,8 +17,8 @@ namespace MG.Sonarr.Next.Services.Http.Requests
         public override bool IsTest => false;
         public override bool CanUseCookieAuthentication => true;
 
-        public AuthedRequestMessage(HttpMethod method, string requestUri, NetworkCredential? credentials)
-            : base(method, requestUri)
+        public AuthedRequestMessage(HttpMethod method, string requestUri, NetworkCredential? credentials, IServiceScopeFactory scopeFactory)
+            : base(method, requestUri, scopeFactory)
         {
             this.Credentials = credentials ?? _blankCreds;
         }

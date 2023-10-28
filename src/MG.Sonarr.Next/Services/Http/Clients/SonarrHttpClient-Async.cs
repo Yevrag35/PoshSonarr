@@ -11,13 +11,13 @@ namespace MG.Sonarr.Next.Services.Http.Clients
     {
         public Task<SonarrResponse> SendDeleteAsync(string path, CancellationToken token = default)
         {
-            using ApiKeyRequestMessage request = new(HttpMethod.Delete, path);
+            using ApiKeyRequestMessage request = new(HttpMethod.Delete, path, _scopeFactory);
 
             return this.SendNoResultRequestAsync(request, path, token);
         }
         public async Task<SonarrResponse<T>> SendGetAsync<T>(string path, CancellationToken token = default)
         {
-            using ApiKeyRequestMessage request = new(HttpMethod.Get, path);
+            using ApiKeyRequestMessage request = new(HttpMethod.Get, path, _scopeFactory);
 
             var response = await this.SendResultRequestAsync<T>(request, path, token);
             if (response.IsDataTaggable(out IJsonMetadataTaggable? taggable))
@@ -34,14 +34,14 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         }
         public Task<SonarrResponse> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
         {
-            using ApiKeyRequestMessage request = new(HttpMethod.Post, path);
+            using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
             request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
 
             return this.SendNoResultRequestAsync(request, path, token);
         }
         public async Task<SonarrResponse<TOutput>> SendPostAsync<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull
         {
-            using ApiKeyRequestMessage request = new(HttpMethod.Post, path);
+            using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
 
             request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
 
@@ -55,7 +55,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         }
         public Task<SonarrResponse> SendPutAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
         {
-            using ApiKeyRequestMessage request = new(HttpMethod.Put, path);
+            using ApiKeyRequestMessage request = new(HttpMethod.Put, path, _scopeFactory);
             request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
 
             return this.SendNoResultRequestAsync(request, path, token);

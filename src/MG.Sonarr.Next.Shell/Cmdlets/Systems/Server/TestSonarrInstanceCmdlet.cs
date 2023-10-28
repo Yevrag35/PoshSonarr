@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Models.System;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
+using MG.Sonarr.Next.Services.Auth;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
 {
@@ -70,7 +71,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
 
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            this.WriteVerbose($"Sending test ping (GET) request to SignalR -> {request.RequestUrl}");
+            var settings = request.GetRequiredService<IConnectionSettings>();
+            string url = request.RequestUrl.Replace(settings.ApiKey.GetValue(), "<ApiKey_Omitted>");
+
+            this.WriteVerbose($"Sending test ping (GET) request to SignalR -> {url}");
         }
 
         public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
