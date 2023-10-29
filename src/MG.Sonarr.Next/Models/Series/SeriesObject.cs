@@ -24,6 +24,7 @@ namespace MG.Sonarr.Next.Models.Series
         ISerializableNames<SeriesObject>,
         ISeriesPipeable
     {
+        const int CAPACITY = 46;
         private const string FIRST_AIRED = "FirstAired";
         private const string OVERVIEW = "Overview";
         private const int SHORT_OVERVIEW_LENGTH = 90;
@@ -48,7 +49,7 @@ namespace MG.Sonarr.Next.Models.Series
         public string Title { get; set; } = string.Empty;
 
         public SeriesObject()
-            : this(46)
+            : this(CAPACITY)
         {
         }
 
@@ -82,6 +83,11 @@ namespace MG.Sonarr.Next.Models.Series
             if (this.TryGetProperty(nameof(this.QualityProfileId), out int profileId))
             {
                 this.QualityProfileId = profileId;
+            }
+
+            if (this.TryGetNonNullProperty(nameof(this.Title), out string? title))
+            {
+                this.Title = title;
             }
 
             if (this.TryGetProperty(OVERVIEW, out string? overview))
