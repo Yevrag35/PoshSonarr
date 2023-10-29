@@ -1,6 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?> 
 <Types>
 	<Type>
+		<Name>MG.Sonarr.Next.Models.Config.NamingConfigObject</Name>
+		<Members>
+			<ScriptProperty>
+				<Name>SeparatorLength</Name>
+				<GetScriptBlock>
+					$this.Separator.Length
+				</GetScriptBlock>
+			</ScriptProperty>
+		</Members>
+	</Type>
+	<Type>
 		<Name>MG.Sonarr.Next.Models.System.Diskspace</Name>
 		<Members>
 			<ScriptProperty>
