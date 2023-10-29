@@ -7,10 +7,10 @@ using MG.Sonarr.Next.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
 {
-    [Cmdlet(VerbsCommon.Get, "SonarrRelease", DefaultParameterSetName = "ByEpisodeId")]
+    [Cmdlet(VerbsCommon.Search, "SonarrRelease", DefaultParameterSetName = "ByEpisodeId")]
     [MetadataCanPipe(Tag = Meta.EPISODE)]
     [MetadataCanPipe(Tag = Meta.SERIES)]
-    public sealed class GetSonarrReleaseCmdlet : SonarrApiCmdletBase
+    public sealed class SearchSonarrReleaseCmdlet : SonarrApiCmdletBase
     {
         QueryParameterCollection QueryParams { get; set; } = null!;
         MetadataTag Tag { get; set; } = null!;
