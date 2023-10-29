@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Reflection;
 using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Shell.Components;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace MG.Sonarr.Next.Shell.Extensions
 {
@@ -49,6 +50,32 @@ namespace MG.Sonarr.Next.Shell.Extensions
             }
 
             return default; // silently continue
+        }
+
+        [return: NotNullIfNotNull(nameof(path))]
+        public static string? GetResolvedPath(this PSCmdlet cmdlet, string? path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return path;
+            }
+
+            var col = cmdlet.GetResolvedProviderPathFromPSPath(path, out _);
+            return col.Count switch
+            {
+                > 0 => col[0],
+                _ => string.Empty,
+            };
+        }
+        [return: NotNullIfNotNull(nameof(path))]
+        public static string? GetUnresolvedPath(this PSCmdlet cmdlet, string? path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return path;
+            }
+
+            return cmdlet.GetUnresolvedProviderPathFromPSPath(path) ?? string.Empty;
         }
 
         public static bool HasParameter<T>(this T cmdlet, Expression<Func<T, object?>> parameter) where T : PSCmdlet

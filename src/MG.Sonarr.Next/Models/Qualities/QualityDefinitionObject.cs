@@ -35,7 +35,6 @@ namespace MG.Sonarr.Next.Models.Qualities
         {
             return resolver[Meta.QUALITY_DEFINITION];
         }
-
         public override void OnDeserialized()
         {
             base.OnDeserialized();

@@ -7,14 +7,14 @@ namespace MG.Sonarr.Next.Metadata
     [DebuggerDisplay(@"\{{Value}, {UrlBase}\}")]
     public sealed class MetadataTag : ICloneable, IEquatable<MetadataTag>
     {
-        public IReadOnlySet<string> CanPipeTo { get; }
+        public string[] CanPipeTo { get; }
         public bool SupportsId { get; }
         public string UrlBase { get; }
         public string Value { get; }
 
         private MetadataTag()
         {
-            this.CanPipeTo = EmptyNameDictionary<string>.Default;
+            this.CanPipeTo = Array.Empty<string>();
             this.SupportsId = false;
             this.UrlBase = string.Empty;
             this.Value = string.Empty;
@@ -22,7 +22,7 @@ namespace MG.Sonarr.Next.Metadata
         private MetadataTag(MetadataTag copyFrom)
         {
             ArgumentNullException.ThrowIfNull(copyFrom);
-            this.CanPipeTo = CopyPipeSet(copyFrom);
+            this.CanPipeTo = CopyOriginal(copyFrom.CanPipeTo);
             this.SupportsId = copyFrom.SupportsId;
             this.UrlBase = copyFrom.UrlBase;
             this.Value = copyFrom.Value;
@@ -32,14 +32,39 @@ namespace MG.Sonarr.Next.Metadata
             this.UrlBase = urlBase.TrimEnd('/');
             this.Value = value;
             this.SupportsId = supportsId;
-            this.CanPipeTo = pipesTo;
+            this.CanPipeTo = CopyFromSet(pipesTo);
         }
 
-        private static IReadOnlySet<string> CopyPipeSet(MetadataTag copyFrom)
+        private static string[] CopyFromSet(IReadOnlySet<string> pipesTo)
         {
-            return copyFrom.CanPipeTo.Count > 0
-                ? new SortedSet<string>(copyFrom.CanPipeTo, StringComparer.InvariantCultureIgnoreCase)
-                : EmptyNameDictionary<string>.Default;
+            string[] canPipeTo;
+            if (pipesTo.Count <= 0)
+            {
+                canPipeTo = Array.Empty<string>();
+            }
+            else
+            {
+                canPipeTo = new string[pipesTo.Count];
+                int i = 0;
+                foreach (string s in pipesTo)
+                {
+                    canPipeTo[i++] = s;
+                }
+            }
+
+            return canPipeTo;
+        }
+
+        private static string[] CopyOriginal(ReadOnlySpan<string> canPipeTo)
+        {
+            if (canPipeTo.Length <= 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            string[] copyInto = new string[canPipeTo.Length];
+            canPipeTo.CopyTo(copyInto);
+            return copyInto;
         }
 
         object ICloneable.Clone() => this.Clone();
@@ -154,9 +179,9 @@ namespace MG.Sonarr.Next.Metadata
         {
             int length = this.Value.Length + 22 + nameof(this.Value).Length + nameof(this.CanPipeTo).Length;
 
-            if (this.CanPipeTo.Count > 0)
+            if (this.CanPipeTo.Length > 0)
             {
-                length += this.CanPipeTo.Sum(x => x.Length) + (2 * (this.CanPipeTo.Count - 1));
+                length += this.CanPipeTo.Sum(x => x.Length) + (2 * (this.CanPipeTo.Length - 1));
             }
 
             return string.Create(length, this, (chars, state) =>
@@ -181,7 +206,7 @@ namespace MG.Sonarr.Next.Metadata
                 foreach (string s in state.CanPipeTo)
                 {
                     s.CopyToSlice(chars, ref position);
-                    if (count < state.CanPipeTo.Count - 1)
+                    if (count < state.CanPipeTo.Length - 1)
                     {
                         comma.CopyToSlice(chars, ref position);
                     }

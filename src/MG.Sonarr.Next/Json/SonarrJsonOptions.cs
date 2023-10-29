@@ -5,6 +5,7 @@ using MG.Sonarr.Next.Json.Converters.Spans;
 using MG.Sonarr.Next.Json.Modifiers;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
+using MG.Sonarr.Next.Models.Episodes;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using System.Text.Encodings.Web;
@@ -142,9 +143,10 @@ namespace MG.Sonarr.Next.Json
         private static IEnumerable<KeyValuePair<string, Type>> EnumerateConverterProperties()
         {
             yield return new("AirDate", typeof(DateOnly));
-            yield return new("Tags", typeof(SortedSet<int>));
             yield return new("EpisodeNumbers", typeof(int[]));
+            yield return new("Episodes", typeof(SortedSet<EpisodeObject>));
             yield return new("Genres", typeof(string[]));
+            yield return new("Tags", typeof(SortedSet<int>));
         }
         private static IEnumerable<KeyValuePair<string, string>> EnumerateGlobalReplaceNames()
         {
@@ -156,6 +158,7 @@ namespace MG.Sonarr.Next.Json
         private static IEnumerable<string> EnumerateIgnoreProperties()
         {
             yield return Constants.META_PROPERTY_NAME;
+            yield return Constants.PROPERTY_SHORT_OVERVIEW;
         }
 
         private static IEnumerable<Type> GetSonarrObjectTypes()

@@ -28,9 +28,13 @@ namespace MG.Sonarr.Next.PSProperties
         {
             return value is T tVal ? tVal : this.ThrowNotType<T>();
         }
-        public override PSMemberInfo Copy()
+        protected override PSPropertyInfo CopyIntoNew(string name)
         {
-            return new StructNoteProperty<T>(this.Name, this.StructValue);
+            return new StructNoteProperty<T>(name, this.StructValue);
+        }
+        protected override ReadOnlyProperty<T> CopyToReadOnly()
+        {
+            return new ReadOnlyStructProperty<T>(this.Name, this.StructValue);
         }
 
         public override bool ValueIsProper(object? value)

@@ -2,11 +2,11 @@ using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties
 {
-    public sealed class ReadOnlyPSObjectProperty : ReadOnlyProperty<PSObject>
+    public sealed class ReadOnlyPSObjectProperty<T> : ReadOnlyProperty<T> where T : PSObject
     {
-        protected override PSObject ValueAsT { get; }
+        protected override T ValueAsT { get; }
 
-        public ReadOnlyPSObjectProperty(string propertyName, PSObject pso)
+        public ReadOnlyPSObjectProperty(string propertyName, T pso)
             : base(propertyName)
         {
             this.ValueAsT = pso;
@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.PSProperties
 
         public override PSMemberInfo Copy()
         {
-            return new ReadOnlyPSObjectProperty(this.Name, this.ValueAsT.Copy());
+            return new ReadOnlyPSObjectProperty<T>(this.Name, (T)this.ValueAsT.Copy());
         }
     }
 }

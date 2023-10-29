@@ -5,6 +5,8 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Models.History;
+using MG.Sonarr.Next.Models.ManualImports;
+using MG.Sonarr.Next.Models.Qualities;
 using MG.Sonarr.Next.Models.Releases;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.PSProperties;
@@ -123,7 +125,7 @@ namespace MG.Sonarr.Next.Json.Converters
                             throw new JsonException("Unable to deserialize the value(s).");
                     }
 
-                    pso.Properties.Add(WritableProperty.ToProperty(pn, o));  //TODO: Add lookup for read-only properties.
+                    pso.Properties.Add(WritableProperty.ToProperty<T>(pn, o));  //TODO: Add lookup for read-only properties.
                 }
             }
 
@@ -195,10 +197,11 @@ namespace MG.Sonarr.Next.Json.Converters
 
         private object ReadObject<TParent>(ref Utf8JsonReader reader, JsonSerializerOptions options, string pn) where TParent : PSObject
         {
+            Type parentType = typeof(TParent);
             switch (pn)
             {
                 case Constants.PROPERTY_DATA:
-                    if (!typeof(TParent).Equals(typeof(HistoryObject)))
+                    if (!parentType.Equals(typeof(HistoryObject)))
                     {
                         goto default;
                     }
@@ -210,6 +213,20 @@ namespace MG.Sonarr.Next.Json.Converters
 
                 case Constants.PROPERTY_EPISODE_FILE:
                     return this.ReadPSObject<EpisodeFileObject>(ref reader, options);
+
+                case Constants.PROPERTY_QUALITY:
+                    if (parentType.Equals(typeof(QualityRevisionObject))
+                        ||
+                        parentType.Equals(typeof(QualityDefinitionObject)))
+                    {
+                        return this.ReadPSObject<QualityObject>(ref reader, options);
+                    }
+                    else if (parentType.Equals(typeof(ManualImportObject)))
+                    {
+                        return this.ReadPSObject<QualityRevisionObject>(ref reader, options);
+                    }
+
+                    goto default;
 
                 case Constants.PROPERTY_SERIES:
                     return this.ReadPSObject<SeriesObject>(ref reader, options);

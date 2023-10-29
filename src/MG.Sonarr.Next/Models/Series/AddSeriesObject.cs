@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Shell.Models.Series;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Management.Automation;
 using System.Text.Json.Serialization;
 
@@ -114,6 +115,10 @@ namespace MG.Sonarr.Next.Models.Series
             });
 
             this.TypeNames[0] = _typeName;  // Should overwrite 'SeriesObject'.
+        }
+        internal override bool ShouldBeReadOnly(string propertyName, Type parentType)
+        {
+            return true;
         }
         public override void Reset()
         {

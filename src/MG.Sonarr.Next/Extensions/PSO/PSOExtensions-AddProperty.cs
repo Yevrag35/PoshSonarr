@@ -101,7 +101,7 @@ namespace MG.Sonarr.Next.Extensions.PSO
             PSPropertyInfo? propInfo = pso.Properties[propertyName];
             if (propInfo is null)
             {
-                propInfo = WritableProperty.ToProperty(propertyName, value);
+                propInfo = WritableProperty.ToProperty<T>(propertyName, value);
                 pso.Properties.Add(propInfo);
             }
             else if (propInfo is ReadOnlyProperty)

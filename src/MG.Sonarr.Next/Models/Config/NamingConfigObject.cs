@@ -57,7 +57,6 @@ namespace MG.Sonarr.Next.Models.Config
             base.SetPSTypeName();
             this.TypeNames.Insert(0, _typeName);
         }
-
     }
 }
 

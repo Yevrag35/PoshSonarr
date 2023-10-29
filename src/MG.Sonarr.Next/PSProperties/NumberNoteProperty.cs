@@ -50,9 +50,13 @@ namespace MG.Sonarr.Next.PSProperties
 
             return this.ThrowNotType<T>();
         }
-        public override PSMemberInfo Copy()
+        protected override PSPropertyInfo CopyIntoNew(string name)
         {
             return new NumberNoteProperty<T>(this.Name, this.NumValue);
+        }
+        protected override ReadOnlyProperty<T> CopyToReadOnly()
+        {
+            return new ReadOnlyNumberProperty<T>(this.Name, this.NumValue);
         }
         public override bool ValueIsProper([NotNullWhen(true)] object? value)
         {

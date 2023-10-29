@@ -18,25 +18,23 @@ namespace MG.Sonarr.Next.Models
         bool _addedType;
         static readonly string _typeName = typeof(SonarrObject).GetTypeName();
 
-        protected MetadataProperty MetadataProperty { get; set; }
-        public MetadataTag MetadataTag => this.MetadataProperty.Tag;
+        protected virtual bool DisregardMetadataTag { get; }
+        public MetadataTag MetadataTag => this.GetValue<MetadataTag>() ?? MetadataTag.Empty;
 
         protected SonarrObject(int capacity)
             : base(capacity)
         {
-            this.MetadataProperty = MetadataProperty.Empty;
-            this.Properties.Add(this.MetadataProperty);
         }
 
         public virtual void Commit()
         {
-            PSPropertyInfo? meta = this.Properties[this.MetadataProperty.Name];
-            if (meta is null)
-            {
-                this.Properties.Add(this.MetadataProperty);
-            }
+            return;
         }
         protected abstract MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing);
+        internal virtual bool ShouldBeReadOnly(string propertyName, Type parentType)
+        {
+            return true;
+        }
         public virtual void OnDeserialized()
         {
             if (_addedType)
@@ -49,31 +47,18 @@ namespace MG.Sonarr.Next.Models
         }
         public virtual void Reset()
         {
-            PSPropertyInfo? meta = this.Properties[this.MetadataProperty.Name];
-            if (meta is null)
-            {
-                this.Properties.Add(this.MetadataProperty);
-            }
-
             return;
         }
         public void SetTag(IMetadataResolver resolver)
         {
             ArgumentNullException.ThrowIfNull(resolver);
-            MetadataTag tagToUse = this.GetTag(resolver, this.MetadataProperty.Tag);
-
-            this.MetadataProperty.Tag = tagToUse;
-
-            Debugger.Assert(() =>
+            if (this.DisregardMetadataTag)
             {
-                PSPropertyInfo? prop = this.Properties[this.MetadataProperty.Name];
+                return;
+            }
 
-                bool refEquals = ReferenceEquals(prop, this.MetadataProperty);
-
-                return refEquals
-                       &
-                       (prop is MetadataProperty mp && mp.Tag == this.MetadataProperty.Tag);
-            });
+            MetadataTag tagToUse = this.GetTag(resolver, MetadataTag.Empty);
+            this.Properties.Add(new MetadataProperty(tagToUse));
         }
         protected virtual void SetPSTypeName()
         {

@@ -4,7 +4,7 @@ namespace MG.Sonarr.Next.PSProperties
 {
     public sealed class StringNoteProperty : WritableProperty<string>
     {
-        const string STRING_TYPE = "System.String";
+        internal const string STRING_TYPE = "System.String";
         string _value;
 
         public string StringValue
@@ -30,10 +30,9 @@ namespace MG.Sonarr.Next.PSProperties
             _value = value ?? string.Empty;
         }
 
-        /// <exception cref="SetValueException"></exception>
-        public override PSMemberInfo Copy()
+        protected override PSPropertyInfo CopyIntoNew(string name)
         {
-            return new StringNoteProperty(this.Name, _value);
+            return new StringNoteProperty(name, _value);
         }
 
         /// <exception cref="SetValueException"></exception>
@@ -48,6 +47,10 @@ namespace MG.Sonarr.Next.PSProperties
 
                 _ => this.ThrowNotType<string>(),
             };
+        }
+        protected override ReadOnlyProperty<string> CopyToReadOnly()
+        {
+            return new ReadOnlyStringProperty(this.Name, _value);
         }
 
         public override bool ValueIsProper(object? value)

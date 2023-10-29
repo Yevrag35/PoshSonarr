@@ -25,6 +25,8 @@ namespace MG.Sonarr.Next
         internal const string PROPERTY_DATA = "Data";
         internal const string PROPERTY_EPISODE = "Episode";
         internal const string PROPERTY_EPISODE_FILE = "EpisodeFile";
+        internal const string PROPERTY_SHORT_OVERVIEW = "ShortOverview";
+        internal const string PROPERTY_QUALITY = "Quality";
         internal const string PROPERTY_SERIES = "Series";
         public static readonly string PROXY_PASSWORD = "ProxyPassword";
         public static readonly string QUALITY_PROFILE_ID = "QualityProfileId";
@@ -62,7 +64,7 @@ namespace MG.Sonarr.Next
         public static readonly string LANGUAGE = "/language";
         public static readonly string LOG = "/log";
         public static readonly string LOGFILE = LOG + "/file";
-        public static readonly string MANUALIMPORT = "/manualimport";
+        public static readonly string MANUAL_IMPORT = "/manualimport";
         public static readonly string MAPPING = "/remotepathmapping";
         public static readonly string MEDIA_MANAGEMENT = CONFIG + "/mediamanagement";
         public static readonly string METADATA = "/metadata";
@@ -115,9 +117,11 @@ namespace MG.Sonarr.Next
         public const string LANGUAGE = "#language_profile";
         public const string LOG_FILE = "#log_file";
         public const string LOG_ITEM = "#log_item";
+        public const string MANUAL_IMPORT = "#manual_import";
         public const string MEDIA_MANGEMENT = "#media_management";
         public const string NAMING_CONFIG = "#naming_config";
         public const string NOTIFICATION = "#notification";
+        public const string QUALITY = "#quality";
         public const string QUALITY_DEFINITION = "#quality_definition";
         public const string QUALITY_PROFILE = "#quality_profile";
         public const string RELEASE = "#release";

@@ -12,6 +12,41 @@
 		</Members>
 	</Type>
 	<Type>
+		<Name>MG.Sonarr.Next.Models.ManualImports.ManualImportObject</Name>
+		<Members>
+			<ScriptProperty>
+				<Name>IsRejected</Name>
+				<GetScriptBlock>
+					0 -lt $this.Rejections.Count
+				</GetScriptBlock>
+			</ScriptProperty>
+			<ScriptProperty>
+				<Name>IsReadyToPost</Name>
+				<GetScriptBlock>
+					0 -lt $this.Episodes.Count -and 0 -lt $this.Series.Id -and 0 -lt $this.Quality.Quality.Id
+				</GetScriptBlock>
+			</ScriptProperty>
+		</Members>
+	</Type>
+	<Type>
+		<Name>MG.Sonarr.Next.Models.Series.AddSeriesObject</Name>
+		<Members>
+			<AliasProperty>
+				<Name>Name</Name>
+				<ReferencedMemberName>Title</ReferencedMemberName>
+			</AliasProperty>
+		</Members>
+	</Type>
+	<Type>
+		<Name>MG.Sonarr.Next.Models.Series.SeriesObject</Name>
+		<Members>
+			<AliasProperty>
+				<Name>Name</Name>
+				<ReferencedMemberName>Title</ReferencedMemberName>
+			</AliasProperty>
+		</Members>
+	</Type>
+	<Type>
 		<Name>MG.Sonarr.Next.Models.System.Diskspace</Name>
 		<Members>
 			<ScriptProperty>

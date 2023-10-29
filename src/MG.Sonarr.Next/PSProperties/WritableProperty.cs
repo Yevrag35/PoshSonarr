@@ -1,4 +1,6 @@
 using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Models;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties
@@ -9,6 +11,16 @@ namespace MG.Sonarr.Next.PSProperties
         public sealed override bool IsSettable => true;
         public sealed override PSMemberTypes MemberType => PSMemberTypes.NoteProperty;
         protected abstract string PSTypeName { get; }
+
+        public virtual ReadOnlyProperty ConvertToReadOnly()
+        {
+            return new ReadOnlyProperty(this.Name, this.Value);
+        }
+        protected abstract PSPropertyInfo CopyIntoNew(string name);
+        public sealed override PSMemberInfo Copy()
+        {
+            return this.CopyIntoNew(this.Name);
+        }
 
         protected virtual string? GetValueAsString()
         {
@@ -22,7 +34,7 @@ namespace MG.Sonarr.Next.PSProperties
             throw new SetValueException(
                 $"The property '{this.Name}' only can be set with values of type '{this.TypeNameOfValue}'.");
         }
-        internal static PSPropertyInfo ToProperty(string name, object? value)
+        internal static PSPropertyInfo ToProperty<TParent>(string name, object? value) where TParent : PSObject
         {
             ArgumentException.ThrowIfNullOrEmpty(name);
 
@@ -39,10 +51,27 @@ namespace MG.Sonarr.Next.PSProperties
                 TimeOnly to => new StructNoteProperty<TimeOnly>(name, to),
                 DateTimeOffset offset => new StructNoteProperty<DateTimeOffset>(name, offset),
                 TimeSpan ts => new StructNoteProperty<TimeSpan>(name, ts),
-                PSObject pso => new ReadOnlyPSObjectProperty(name, pso),
+                PSObject pso => HandlePSObject<TParent>(name, pso),
                 SortedSet<int> set => new ReadOnlyTagsProperty(set),
                 _ => new PSNoteProperty(name, value),
             };
+        }
+
+        private static PSPropertyInfo HandlePSObject<TParent>(string propertyName, PSObject pso) where TParent : PSObject
+        {
+            Type parentType = typeof(TParent);
+            if (pso is SonarrObject sonarrPso
+                &&
+                typeof(SonarrObject).IsAssignableFrom(parentType)
+                &&
+                !sonarrPso.ShouldBeReadOnly(propertyName, parentType))
+            {
+                return CreateSonarrObjectProperty(propertyName, sonarrPso);
+            }
+            else
+            {
+                return new ReadOnlyPSObjectProperty<PSObject>(propertyName, pso);
+            }
         }
 
         public override string ToString()
@@ -67,6 +96,17 @@ namespace MG.Sonarr.Next.PSProperties
         }
 
         public abstract bool ValueIsProper(object? value);
+
+        static readonly Type _sonarrPropertyType = typeof(WritableSonarrProperty<>);
+        private static WritableProperty CreateSonarrObjectProperty(string propertyName, SonarrObject pso)
+        {
+            object[] ctorArgs = new object[] { propertyName, pso };
+            Type[] typeParams = new Type[] { pso.GetType() };
+
+            Type constructedClassType = _sonarrPropertyType.MakeGenericType(typeParams);
+            return (WritableProperty?)Activator.CreateInstance(constructedClassType, ctorArgs)
+                ?? throw new InvalidOperationException("Shit");
+        }
     }
 
     public abstract class WritableProperty<T> : WritableProperty
@@ -81,6 +121,15 @@ namespace MG.Sonarr.Next.PSProperties
         protected abstract T? ValueAsT { get; set; }
 
         protected abstract T? ConvertFromObject(object? value);
+        public sealed override ReadOnlyProperty ConvertToReadOnly()
+        {
+            return this.CopyToReadOnly();
+        }
+        protected abstract ReadOnlyProperty<T> CopyToReadOnly();
+        public T? GetValue()
+        {
+            return this.ValueAsT;
+        }
         protected override string? GetValueAsString()
         {
             return this.ValueAsT?.ToString();

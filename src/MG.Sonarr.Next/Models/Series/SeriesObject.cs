@@ -4,7 +4,10 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.ManualImports;
+using MG.Sonarr.Next.PSProperties;
 using System.Management.Automation;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Series
@@ -23,7 +26,6 @@ namespace MG.Sonarr.Next.Models.Series
     {
         private const string FIRST_AIRED = "FirstAired";
         private const string OVERVIEW = "Overview";
-        private const string OVERVIEW_SHORT = "ShortOverview";
         private const int SHORT_OVERVIEW_LENGTH = 90;
         static readonly string _typeName = typeof(SeriesObject).GetTypeName();
         private DateOnly _firstAired;
@@ -82,12 +84,6 @@ namespace MG.Sonarr.Next.Models.Series
                 this.QualityProfileId = profileId;
             }
 
-            if (this.TryGetNonNullProperty(nameof(this.Title), out string? title))
-            {
-                this.Title = title;
-                this.Properties.Add(new PSAliasProperty("Name", nameof(this.Title)));
-            }
-
             if (this.TryGetProperty(OVERVIEW, out string? overview))
             {
                 this.TruncateOverview(overview);
@@ -107,10 +103,19 @@ namespace MG.Sonarr.Next.Models.Series
             base.SetPSTypeName();
             this.TypeNames.Insert(0, _typeName);
         }
+        internal override bool ShouldBeReadOnly(string propertyName, Type parentType)
+        {
+            if (Constants.PROPERTY_SERIES == propertyName && parentType.Equals(typeof(ManualImportObject)))
+            {
+                return false;
+            }
+
+            return base.ShouldBeReadOnly(propertyName, parentType);
+        }
 
         private void TruncateOverview(string? overview)
         {
-            PSPropertyInfo? existing = this.Properties[OVERVIEW_SHORT];
+            PSPropertyInfo? existing = this.Properties[Constants.PROPERTY_SHORT_OVERVIEW];
             if (existing is not null)
             {
                 return;
@@ -118,12 +123,12 @@ namespace MG.Sonarr.Next.Models.Series
 
             if (string.IsNullOrWhiteSpace(overview) || overview.Length <= SHORT_OVERVIEW_LENGTH)
             {
-                this.Properties.Add(new PSAliasProperty(OVERVIEW_SHORT, OVERVIEW));
+                this.Properties.Add(new PSAliasProperty(Constants.PROPERTY_SHORT_OVERVIEW, OVERVIEW));
                 return;
             }
 
             ShortOverview shorted = ShortOverview.FromValue(overview, SHORT_OVERVIEW_LENGTH);
-            this.Properties.Add(new PSNoteProperty(OVERVIEW_SHORT, shorted.Text));
+            this.Properties.Add(new ReadOnlyStringProperty(Constants.PROPERTY_SHORT_OVERVIEW, shorted.Text));
         }
 
         const int DICT_CAPACITY = 2;

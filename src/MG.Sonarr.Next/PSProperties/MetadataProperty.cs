@@ -25,7 +25,7 @@ namespace MG.Sonarr.Next.PSProperties
 
         public override PSMemberInfo Copy()
         {
-            return this;
+            return new MetadataProperty(this.Tag);
         }
     }
 }
