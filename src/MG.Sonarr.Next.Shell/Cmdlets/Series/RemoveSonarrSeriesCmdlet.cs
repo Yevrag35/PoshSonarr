@@ -6,7 +6,7 @@ using MG.Sonarr.Next.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
-    [Cmdlet(VerbsCommon.Remove, "SonarrSeries", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsCommon.Remove, "SonarrSeries", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
     [Alias("Delete-SonarrSeries")]
     [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase

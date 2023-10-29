@@ -21,9 +21,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             base.OnCreatingScope(provider);
             this.Tag = this.GetMetadataTag(provider.GetRequiredService<IMetadataResolver>());
             this.Returner = provider.GetRequiredService<IPoolReturner>();
-            this.CreatingScopeAndCapacity(provider, this.Capacity);
+            this.CreatingScopeAndCapacity(this.Capacity);
         }
-        protected void CreatingScopeAndCapacity(IServiceProvider provider, int capacity)
+        private void CreatingScopeAndCapacity(int capacity)
         {
             _capacity = capacity >= 0 ? capacity : 0;
             _objs = _capacity > 0 ? ArrayPool<object>.Shared.Rent(capacity) : Array.Empty<object>();
