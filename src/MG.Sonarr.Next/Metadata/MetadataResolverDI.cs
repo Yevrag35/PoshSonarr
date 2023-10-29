@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Metadata
     {
         public static IServiceCollection AddMetadata(this IServiceCollection services, Assembly cmdletAssembly)
         {
-            int initialCapacity = 29;
+            int initialCapacity = 30;
             NameLookup<string> pipes = FindPipeableCmdlets(cmdletAssembly);
             MetadataResolver dict = new(initialCapacity, pipes)
             {
@@ -31,6 +31,7 @@ namespace MG.Sonarr.Next.Metadata
                 { Meta.LOG_ITEM, Constants.LOG, false },
                 { Meta.LOG_FILE, Constants.LOGFILE, false },
                 { Meta.MEDIA_MANGEMENT, Constants.MEDIA_MANAGEMENT, true },
+                { Meta.NAMING_CONFIG, Constants.NAMING_CONFIG, true },
                 { Meta.NOTIFICATION, Constants.NOTIFICATION, true },
                 { Meta.QUALITY_DEFINITION, Constants.QUALITY_DEFINITIONS, true },
                 { Meta.QUALITY_PROFILE, Constants.PROFILE, true },

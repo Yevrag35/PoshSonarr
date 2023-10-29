@@ -26,7 +26,7 @@
     <None Remove="PSFormats\SonarrProperty.Format.ps1xml" />
     <None Remove="PSFormats\SonarrTag.Format.ps1xml" />
     <None Remove="PSFormats\SystemStatus.Format.ps1xml" />
-    <None Remove="PSTypes\Diskspace.Type.ps1xml" />
+    <None Remove="PSTypes\SonarrObjects.Type.ps1xml" />
   </ItemGroup>
 
 	<Target Name="Cleanup" AfterTargets="Clean">
@@ -79,7 +79,7 @@
 	  <Content Include="PSFormats\SystemStatus.Format.ps1xml">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
-	  <Content Include="PSTypes\Diskspace.Type.ps1xml">
+	  <Content Include="PSTypes\SonarrObjects.Type.ps1xml">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>

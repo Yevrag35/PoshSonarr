@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
+using MG.Sonarr.Next.Models;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
 {
@@ -140,6 +141,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             _queue.Enqueue(this);
             SonarrResponse response = _client.SendPut(path, body, token);
             return response;
+        }
+
+        protected bool TryCommitFromResponse<T>(T sonarrObj, in SonarrResponse response) where T : SonarrObject
+        {
+            if (response.IsError)
+            {
+                sonarrObj.Reset();
+                this.WriteError(response.Error);
+                return false;
+            }
+            else
+            {
+                sonarrObj.Commit();
+                return true;
+            }
         }
     }
 }

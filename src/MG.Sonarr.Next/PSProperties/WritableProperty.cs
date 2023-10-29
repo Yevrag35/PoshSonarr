@@ -121,7 +121,6 @@ namespace MG.Sonarr.Next.PSProperties
         private static string ToStringNoSpan(ReadOnlySpan<char> typeName, T? valueAsT, ReadOnlySpan<char> name)
         {
             ReadOnlySpan<char> valueStr = valueAsT?.ToString();
-            valueStr = valueStr.Trim();
 
             int length = typeName.Length + valueStr.Length + name.Length + 2; // Magic number 2 comes from: 1 space and an equals sign.
             Span<char> chars = stackalloc char[length];

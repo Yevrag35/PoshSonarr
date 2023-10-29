@@ -39,11 +39,16 @@ namespace MG.Sonarr.Next.Models.System
         public override void OnDeserialized()
         {
             base.OnDeserialized();
+            if (this.TryGetId(out int id))
+            {
+                this.Id = id;
+            }
+
             this.Properties.Remove(nameof(this.Id));
         }
         public virtual void OnSerializing()
         {
-            this.UpdateProperty(x => x.Id);
+            this.ReplaceNumberProperty(nameof(this.Id), this.Id);
         }
         public override void Reset()
         {
