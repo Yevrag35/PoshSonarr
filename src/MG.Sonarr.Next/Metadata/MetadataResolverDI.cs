@@ -34,7 +34,7 @@ namespace MG.Sonarr.Next.Metadata
                 { Meta.MEDIA_MANGEMENT, Constants.MEDIA_MANAGEMENT, true },
                 { Meta.NAMING_CONFIG, Constants.NAMING_CONFIG, true },
                 { Meta.NOTIFICATION, Constants.NOTIFICATION, true },
-                { Meta.QUALITY, "/", false },
+                { Meta.QUALITY, Constants.QUALITY_DEFINITIONS, false },
                 { Meta.QUALITY_DEFINITION, Constants.QUALITY_DEFINITIONS, true },
                 { Meta.QUALITY_PROFILE, Constants.PROFILE, true },
                 { Meta.RELEASE, Constants.RELEASE, false },

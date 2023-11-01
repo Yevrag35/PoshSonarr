@@ -56,11 +56,21 @@ namespace MG.Sonarr.Next.Extensions.PSO
             where T : SonarrObject
             where TValue : unmanaged, INumber<TValue>
         {
+            ReplaceNumberProperty(pso, propertyName, value, isReadOnly: false);
+        }
+        public static void ReplaceNumberProperty<T, TValue>(this T pso, string propertyName, TValue value, bool isReadOnly)
+            where T : SonarrObject
+            where TValue : unmanaged, INumber<TValue>
+        {
             ArgumentNullException.ThrowIfNull(pso);
             ArgumentException.ThrowIfNullOrEmpty(propertyName);
 
             pso.Properties.Remove(propertyName);
-            pso.Properties.Add(new NumberNoteProperty<TValue>(propertyName, value));
+            PSPropertyInfo info = isReadOnly
+                ? new ReadOnlyNumberProperty<TValue>(propertyName, value)
+                : new NumberNoteProperty<TValue>(propertyName, value);
+
+            pso.Properties.Add(info);
         }
         /// <exception cref="ArgumentException"/>
         /// <exception cref="ArgumentNullException"/>
@@ -68,11 +78,21 @@ namespace MG.Sonarr.Next.Extensions.PSO
             where T : SonarrObject
             where TValue : struct
         {
+            
+        }
+        public static void ReplaceStructProperty<T, TValue>(this T pso, string propertyName, TValue value, bool isReadOnly)
+            where T : SonarrObject
+            where TValue : struct
+        {
             ArgumentNullException.ThrowIfNull(pso);
             ArgumentException.ThrowIfNullOrEmpty(propertyName);
 
             pso.Properties.Remove(propertyName);
-            pso.Properties.Add(new StructNoteProperty<TValue>(propertyName, value));
+            PSPropertyInfo info = isReadOnly
+                ? new ReadOnlyStructProperty<TValue>(propertyName, value)
+                : new StructNoteProperty<TValue>(propertyName, value);
+
+            pso.Properties.Add(info);
         }
 
         /// <exception cref="ArgumentNullException"/>

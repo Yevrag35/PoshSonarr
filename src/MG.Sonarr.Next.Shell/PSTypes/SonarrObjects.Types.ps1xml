@@ -29,16 +29,7 @@
 		</Members>
 	</Type>
 	<Type>
-		<Name>MG.Sonarr.Next.Models.Series.AddSeriesObject</Name>
-		<Members>
-			<AliasProperty>
-				<Name>Name</Name>
-				<ReferencedMemberName>Title</ReferencedMemberName>
-			</AliasProperty>
-		</Members>
-	</Type>
-	<Type>
-		<Name>MG.Sonarr.Next.Models.Series.SeriesObject</Name>
+		<Name>SeriesBase</Name>
 		<Members>
 			<AliasProperty>
 				<Name>Name</Name>

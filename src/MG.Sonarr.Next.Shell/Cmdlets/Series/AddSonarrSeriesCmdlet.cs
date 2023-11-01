@@ -77,12 +77,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
         const string WITH_FILES = "SearchEpisodesWithFiles";
         const string WITHOUT_FILES = "SearchEpisodesWithoutFiles";
+        static readonly Lazy<RuntimeDefinedParameterDictionary> _runtimeDic = new(CreateRuntimeDictionary);
         public object? GetDynamicParameters()
         {
             RuntimeDefinedParameterDictionary? dict = null;
             if (this.SearchForMissingEpisodes)
             {
-                dict = new RuntimeDefinedParameterDictionary
+                dict = _runtimeDic.Value;
+            }
+
+            return dict;
+        }
+
+        private static RuntimeDefinedParameterDictionary CreateRuntimeDictionary()
+        {
+            return new RuntimeDefinedParameterDictionary
                 {
                     {
                         WITH_FILES,
@@ -109,9 +118,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                         }
                     }
                 };
-            }
-
-            return dict;
         }
 
         protected override void OnCreatingScope(IServiceProvider provider)
@@ -193,9 +199,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         {
             if (this.SearchForMissingEpisodes)
             {
-                if (this.MyInvocation.BoundParameters.TryGetValue(WITH_FILES, out object? wf) 
-                    &&
-                    wf is SwitchParameter wfSwitch)
+                if (this.MyInvocation.BoundParameters.TryGetValueAs(WITH_FILES, out SwitchParameter wfSwitch))
                 {
                     options.IgnoreEpisodesWithFiles = !wfSwitch.ToBool();
                 }

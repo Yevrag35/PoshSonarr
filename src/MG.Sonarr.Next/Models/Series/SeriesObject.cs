@@ -7,7 +7,6 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.ManualImports;
 using MG.Sonarr.Next.PSProperties;
 using System.Management.Automation;
-using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Series
@@ -108,6 +107,7 @@ namespace MG.Sonarr.Next.Models.Series
         {
             base.SetPSTypeName();
             this.TypeNames.Insert(0, _typeName);
+            this.TypeNames.Insert(1, "SeriesBase");
         }
         internal override bool ShouldBeReadOnly(string propertyName, Type parentType)
         {

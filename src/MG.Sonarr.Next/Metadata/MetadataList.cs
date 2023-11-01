@@ -58,6 +58,11 @@ namespace MG.Sonarr.Next.Metadata
         {
             _list.CopyTo(array, index);
         }
+        public T? Find(Predicate<T> predicate)
+        {
+            ArgumentNullException.ThrowIfNull(predicate);
+            return _list.Find(predicate);
+        }
         public IEnumerator<T> GetEnumerator()
         {
             return _list.GetEnumerator();

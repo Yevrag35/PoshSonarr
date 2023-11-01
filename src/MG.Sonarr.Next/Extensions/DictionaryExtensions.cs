@@ -46,14 +46,13 @@ namespace MG.Sonarr.Next.Extensions
         ///     <see langword="true"/> and the object instance is not <see langword="null"/>
         ///     of the type <typeparamref name="TOutput"/>.
         /// </returns>
-        public static bool TryGetValueAs<TKey, TOutput>(this IReadOnlyDictionary<TKey, object?>? dictionary, TKey key, [NotNullWhen(true)] out TOutput? value) where TKey : notnull
+        public static bool TryGetValueAs<TKey, TOutput>(this IReadOnlyDictionary<TKey, object?> dictionary, TKey key, [NotNullWhen(true)] out TOutput? value) where TKey : notnull
         {
+            ArgumentNullException.ThrowIfNull(dictionary);
+            ArgumentNullException.ThrowIfNull(key);
+
             value = default;
-            if (dictionary is not null
-                &&
-                dictionary.TryGetValue(key, out object? dictVal)
-                &&
-                dictVal is TOutput tOut)
+            if (dictionary.TryGetValue(key, out object? dictVal) && dictVal is TOutput tOut)
             {
                 value = tOut;
                 return value is not null;

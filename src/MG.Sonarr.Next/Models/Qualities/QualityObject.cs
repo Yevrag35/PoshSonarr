@@ -16,7 +16,6 @@ namespace MG.Sonarr.Next.Models.Qualities
     {
         const int CAPACITY = 4;
         static readonly string _typeName = typeof(QualityObject).GetTypeName();
-        static MetadataTag? _qualityTag;
         readonly bool _wasCtored;
 
         public int Id { get; private set; }
@@ -57,28 +56,12 @@ namespace MG.Sonarr.Next.Models.Qualities
         {
             return Comparer<int?>.Default.Compare(this.Id, other?.Id);
         }
-        //public override PSObject Copy()
-        //{
-        //    //if (this.MetadataProperty.Tag.Value != Meta.QUALITY && _qualityTag is not null)
-        //    //{
-        //    //    this.MetadataProperty.Tag = _qualityTag;
-        //    //}
-
-        //    var qo = new QualityObject(this);
-        //    qo.OnDeserialized();
-        //    return qo;
-        //}
         protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
-            return _qualityTag ??= resolver[Meta.QUALITY];
+            return resolver[Meta.QUALITY];
         }
         public override void OnDeserialized()
         {
-            //if (_qualityTag is not null)
-            //{
-            //    this.MetadataProperty.Tag = _qualityTag;
-            //}
-
             if (_wasCtored)
             {
                 return;
