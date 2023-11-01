@@ -228,6 +228,14 @@ namespace MG.Sonarr.Next.Json.Converters
 
                     goto default;
 
+                case Constants.PROPERTY_REVISION:
+                    if (parentType.Equals(typeof(QualityRevisionObject)))
+                    {
+                        return this.ReadPSObject<RevisionObject>(ref reader, options);
+                    }
+
+                    goto default;
+
                 case Constants.PROPERTY_SERIES:
                     return this.ReadPSObject<SeriesObject>(ref reader, options);
 

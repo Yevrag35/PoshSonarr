@@ -24,7 +24,30 @@ namespace MG.Sonarr.Next.Models.ManualImports
 
         static readonly string _typeName = typeof(ManualImportObject).GetTypeName();
 
+        public SortedSet<EpisodeObject> Episodes { get; private set; } = null!;
         public string Name => this.GetStringOrEmpty();
+        public QualityRevisionObject? Quality
+        {
+            get => this.GetValue<QualityRevisionObject>();
+            set
+            {
+                if (value is not null)
+                {
+                    this.SetValue(value);
+                }
+            }
+        }
+        public SeriesObject? Series
+        {
+            get => this.GetValue<SeriesObject>();
+            set
+            {
+                if (value is not null)
+                {
+                    this.SetValue(value);
+                }
+            }
+        }
 
         public ManualImportObject()
             : base(CAPACITY)
@@ -43,6 +66,7 @@ namespace MG.Sonarr.Next.Models.ManualImports
         public override void OnDeserialized()
         {
             base.OnDeserialized();
+
             this.StoreAndReplaceName();
             this.AddMissingProperties();
         }
@@ -57,11 +81,14 @@ namespace MG.Sonarr.Next.Models.ManualImports
 
         private void AddMissingProperties()
         {
-            CreateIfMissing(this.Properties, EPISODES, (name) =>
+            var setProp = CreateIfMissing(this.Properties, EPISODES, (name) =>
             {
                 return new ReadOnlyCollectionProperty<EpisodeObject, SortedSet<EpisodeObject>>(
                     EPISODES, new SortedSet<EpisodeObject>());
             });
+
+            this.Episodes = (SortedSet<EpisodeObject>)setProp.Value;
+
             CreateIfMissing(this.Properties, QUALITY, (name) =>
             {
                 return new WritableSonarrProperty<QualityRevisionObject>(QUALITY);
@@ -75,14 +102,16 @@ namespace MG.Sonarr.Next.Models.ManualImports
             });
         }
 
-        private static void CreateIfMissing<T>(PSMemberInfoCollection<T> collection, string propertyName, Func<string, T> createOnMissing) where T : PSMemberInfo
+        private static T CreateIfMissing<T>(PSMemberInfoCollection<T> collection, string propertyName, Func<string, T> createOnMissing) where T : PSMemberInfo
         {
             T? prop = collection[propertyName];
             if (prop is null)
             {
-                T create = createOnMissing(propertyName);
-                collection.Add(create);
+                prop = createOnMissing(propertyName);
+                collection.Add(prop);
             }
+
+            return prop;
         }
 
         protected override void SetPSTypeName()

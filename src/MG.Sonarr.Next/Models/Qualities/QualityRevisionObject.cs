@@ -22,10 +22,30 @@ namespace MG.Sonarr.Next.Models.Qualities
             get => this.GetValue<QualityObject>() ?? QualityObject.Default;
             private set => this.UpdateProperty(nameof(this.Quality), value);
         }
+        public RevisionObject Revision
+        {
+            get => this.GetValue<RevisionObject>() ?? RevisionObject.Default;
+            private set => this.UpdateProperty(nameof(this.Revision), value);
+        }
 
         public QualityRevisionObject()
             : base(CAPACITY)
         {
+        }
+        public QualityRevisionObject(QualityObject quality)
+            : this(quality, null)
+        {
+        }
+        public QualityRevisionObject(QualityObject quality, bool isProper, bool isReal)
+            : this(quality, RevisionObject.Create(isProper, isReal))
+        {
+        }
+        private QualityRevisionObject(QualityObject quality, RevisionObject? revision)
+            : this()
+        {
+            ArgumentNullException.ThrowIfNull(quality);
+            this.Quality = quality;
+            this.Revision = revision ?? RevisionObject.Default;
         }
 
         public int CompareTo(QualityRevisionObject? other)

@@ -27,6 +27,7 @@ namespace MG.Sonarr.Next
         internal const string PROPERTY_EPISODE_FILE = "EpisodeFile";
         internal const string PROPERTY_SHORT_OVERVIEW = "ShortOverview";
         internal const string PROPERTY_QUALITY = "Quality";
+        internal const string PROPERTY_REVISION = "Revision";
         internal const string PROPERTY_SERIES = "Series";
         public static readonly string PROXY_PASSWORD = "ProxyPassword";
         public static readonly string QUALITY_PROFILE_ID = "QualityProfileId";
@@ -127,6 +128,7 @@ namespace MG.Sonarr.Next
         public const string RELEASE = "#release";
         public const string RELEASE_PROFILE = "#release_profile";
         public const string RENAMABLE = "#rename_file";
+        public const string REVISION = "#quality_revision";
         public const string ROOT_FOLDER = "#root_folder";
         public const string SERIES = "#series";
         public const string SERIES_ADD = "#add_series";
