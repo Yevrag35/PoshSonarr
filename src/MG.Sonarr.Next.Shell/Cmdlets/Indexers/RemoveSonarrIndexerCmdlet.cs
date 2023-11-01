@@ -1,3 +1,4 @@
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Indexers;
 using MG.Sonarr.Next.Shell.Attributes;
@@ -8,6 +9,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
 {
     [Cmdlet(VerbsCommon.Remove, "SonarrIndexer", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true,
         DefaultParameterSetName = "ByExplicitId")]
+    [MetadataCanPipe(Tag = Meta.INDEXER)]
     public sealed class RemoveSonarrIndexerCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
