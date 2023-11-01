@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Reflection;
 using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Shell.Components;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Shell.Extensions
 {
@@ -107,6 +108,18 @@ namespace MG.Sonarr.Next.Shell.Extensions
 
             var func = switchExpression.Compile();
             return func(cmdlet).ToBool();
+        }
+
+        public static bool HasParameter<T, TValue>(this T cmdlet, [NotNullWhen(true)] TValue? value, [CallerArgumentExpression(nameof(value))] string parameterName = "")
+            where T : PSCmdlet
+            where TValue : class
+        {
+            ArgumentNullException.ThrowIfNull(cmdlet);
+            ArgumentNullException.ThrowIfNull(parameterName);
+
+            return cmdlet.MyInvocation.BoundParameters.ContainsKey(parameterName)
+                   &&
+                   value is not null;
         }
 
         public static bool ParameterSetNameIsLike(this PSCmdlet cmdlet, Wildcard wildString)
