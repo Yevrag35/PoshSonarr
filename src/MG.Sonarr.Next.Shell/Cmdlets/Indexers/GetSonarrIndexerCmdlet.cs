@@ -12,7 +12,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
         SortedSet<int> _ids = null!;
         HashSet<Wildcard> _wcNames = null!;
 
-        [Parameter(Mandatory = true, ParameterSetName = "ByIndexerId")]
+        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByIndexerNameOrId")]

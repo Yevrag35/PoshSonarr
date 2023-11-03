@@ -5,19 +5,19 @@ using MG.Sonarr.Next.Shell.Extensions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications
 {
     [Cmdlet(VerbsCommon.Remove, "SonarrNotification", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true,
-        DefaultParameterSetName = "ByExplicitId")]
+        DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
     [MetadataCanPipe(Tag = Meta.NOTIFICATION)]
     public sealed class RemoveSonarrNotificationCmdlet : SonarrApiCmdletBase
     {
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput")]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
         public NotificationObject InputObject
         {
             get => null!;
             set => this.Id = value?.Id ?? 0;
         }
 
-        [Parameter(Mandatory = true, ParameterSetName = "ByExplicitId")]
+        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
         public int Id { get; set; }
 

@@ -1,6 +1,5 @@
 using MG.Sonarr.Next.Models;
 using System.Collections;
-using System.ComponentModel;
 
 namespace MG.Sonarr.Next.Shell.Attributes
 {

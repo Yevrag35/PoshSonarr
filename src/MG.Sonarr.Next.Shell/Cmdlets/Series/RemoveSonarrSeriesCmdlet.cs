@@ -1,7 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
-using Microsoft.Extensions.DependencyInjection;
 using MG.Sonarr.Next.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
@@ -19,7 +18,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         MetadataTag Tag { get; set; } = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ById")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
         public int[] Id
         {
@@ -35,7 +34,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput", DontShow = true)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE,
+            DontShow = true)]
         [ValidateNotNull]
         public SeriesObject[] InputObject
         {

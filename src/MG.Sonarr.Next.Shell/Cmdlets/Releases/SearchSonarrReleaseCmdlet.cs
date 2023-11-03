@@ -2,7 +2,6 @@
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Releases;
 using MG.Sonarr.Next.Shell.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 using MG.Sonarr.Next.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Releases

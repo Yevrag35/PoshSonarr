@@ -8,7 +8,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
     [MetadataCanPipe(Tag = Meta.EPISODE)]
     public sealed class UpdateSonarrEpisodeCmdlet : SonarrApiCmdletBase
     {
-        [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput")]
+        [Parameter(Mandatory = true)]
         public EpisodeObject[] InputObject { get; set; } = Array.Empty<EpisodeObject>();
 
         protected override void Process(IServiceProvider provider)

@@ -8,17 +8,17 @@ using MG.Sonarr.Next.Shell.Output;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
 {
-    [Cmdlet(VerbsCommon.Get, "SonarrCommand", DefaultParameterSetName = "ByExplicitId")]
+    [Cmdlet(VerbsCommon.Get, "SonarrCommand", DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
     [MetadataCanPipe(Tag = Meta.COMMAND)]
     [OutputType(typeof(ICommandOutput))]
     public sealed class GetSonarrCommandCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
 
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput")]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
         public ICommand[] InputObject { get; set; } = Array.Empty<ICommand>();
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByExplicitId")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
         protected override int Capacity => 1;

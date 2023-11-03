@@ -2,7 +2,6 @@
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series

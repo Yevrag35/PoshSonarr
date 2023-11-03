@@ -28,12 +28,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         public IntOrString[] Name { get; set; } = Array.Empty<IntOrString>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput", DontShow = true,
+        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, DontShow = true,
             ValueFromPipeline = true)]
         public ISeriesPipeable[] InputObject
         {

@@ -7,16 +7,16 @@ using MG.Sonarr.Next.Shell.Extensions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
 {
     [Cmdlet(VerbsCommon.Remove, "SonarrRootFolder", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true,
-        DefaultParameterSetName = "ByExplicitId")]
+        DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
     [MetadataCanPipe(Tag = Meta.ROOT_FOLDER)]
     public sealed class RemoveSonarrRootFolderCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
 
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput")]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
         public RootFolderObject[] InputObject { get; set; } = Array.Empty<RootFolderObject>();
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByExplicitId")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
         public int[] Id { get; set; } = Array.Empty<int>();
 

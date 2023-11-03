@@ -5,7 +5,6 @@ using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Exceptions;
-using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Text.Json;
 using IOFile = System.IO.File;
@@ -32,7 +31,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
         public SwitchParameter Force { get; set; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput", ValueFromPipeline = true)]
+        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
         public BackupObject InputObject
         {
             get => null!;

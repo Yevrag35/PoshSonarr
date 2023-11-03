@@ -1,5 +1,4 @@
-﻿using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.DownloadClients;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
@@ -15,7 +14,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
         HashSet<Wildcard> _wcNames = null!;
         protected override int Capacity => CAPACITY;
 
-        [Parameter(Mandatory = true, ParameterSetName = "ByExplicitId")]
+        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
         [Parameter(Position = 0, ParameterSetName = "ByNameOrId")]

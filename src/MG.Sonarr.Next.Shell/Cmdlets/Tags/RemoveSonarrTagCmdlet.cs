@@ -1,34 +1,38 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Tags;
-using Microsoft.Extensions.DependencyInjection;
+using MG.Sonarr.Next.Shell.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
-    [Cmdlet(VerbsCommon.Remove, "SonarrTag", SupportsShouldProcess = true, DefaultParameterSetName = "ByPipelineInput")]
+    [Cmdlet(VerbsCommon.Remove, "SonarrTag", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.High,
+        DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
     [Alias("Delete-SonarrTag")]
     [MetadataCanPipe(Tag = Meta.TAG)]
     public sealed class RemoveSonarrTagCmdlet : SonarrApiCmdletBase
     {
-        MetadataTag Tag { get; set; } = null!;
+        MetadataTag _tag = null!;
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ById")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
         public int Id { get; set; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput",
-            DontShow = true)]
-        public TagObject InputObject
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+        [ValidateId(ValidateRangeKind.Positive)]
+        public TagObject? InputObject
         {
-            get => null!;
-            set => this.Id = value?.Id ?? 0;
+            get => null;
+            set => this.Id = value?.Id ?? -1;
         }
+
+        [Parameter]
+        public SwitchParameter Force { get; set; }
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.TAG];
+            _tag = provider.GetRequiredService<IMetadataResolver>()[Meta.TAG];
         }
         protected override void Process(IServiceProvider provider)
         {
@@ -37,15 +41,22 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                 return;
             }
 
-            string path = this.Tag.GetUrlForId(this.Id);
-            if (this.ShouldProcess(path, "Delete Tag"))
+            string url = _tag.GetUrlForId(this.Id);
+            if (!this.Force
+                &&
+                !this.ShouldProcess(url, "Delete Tag"))
             {
-                var response = this.SendDeleteRequest(path);
-                if (response.IsError)
-                {
-                    this.WriteError(response.Error);
-                }
+                return;
             }
+
+            var response = this.SendDeleteRequest(url);
+            if (response.IsError)
+            {
+                this.WriteError(response.Error);
+                return;
+            }
+
+            this.WriteVerbose($"Deleted Tag -> {this.Id}");
         }
     }
 }

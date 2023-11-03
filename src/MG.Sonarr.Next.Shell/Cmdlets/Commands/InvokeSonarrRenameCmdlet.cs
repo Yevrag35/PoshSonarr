@@ -1,17 +1,13 @@
 ﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
-using MG.Sonarr.Next.Models.Commands;
 using MG.Sonarr.Next.Models.Renames;
 using MG.Sonarr.Next.Services.Jobs;
-using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
 {
     [Cmdlet(VerbsLifecycle.Invoke, "SonarrRename", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
-        DefaultParameterSetName = BY_EXPLICIT)]
+        DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
     [Alias("Rename-SonarrEpisodeFile")]
     [MetadataCanPipe(Tag = Meta.CALENDAR)]
     [MetadataCanPipe(Tag = Meta.EPISODE)]
@@ -19,25 +15,23 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
     [MetadataCanPipe(Tag = Meta.RENAMABLE)]
     public sealed class InvokeSonarrRenameCmdlet : SonarrCmdletBase
     {
-        const string BY_EXPLICIT = "ByExplicit";
-        const string BY_PIPELINE = "ByPipelineInput";
         List<IRenameFilePipeable> _renameables = null!;
 
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_PIPELINE)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
         [ValidateNotNull]
         public IRenameFilePipeable[] InputObject { get; set; } = Array.Empty<IRenameFilePipeable>();
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = BY_EXPLICIT)]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
         public int SeriesId { get; set; }
 
-        [Parameter(Mandatory = true, Position = 1, ParameterSetName = BY_EXPLICIT)]
+        [Parameter(Mandatory = true, Position = 1, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
         public int[] EpisodeFileId { get; set; } = Array.Empty<int>();
 
         protected override void Process(IServiceProvider provider)
         {
-            if (BY_PIPELINE == this.ParameterSetName)
+            if (PSConstants.PSET_PIPELINE == this.ParameterSetName)
             {
                 _renameables ??= new(this.InputObject.Length);
                 _renameables.AddRange(this.InputObject);

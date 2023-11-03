@@ -7,7 +7,7 @@ using MG.Sonarr.Next.Shell.Extensions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
 {
     [Cmdlet(VerbsCommon.Remove, "SonarrBackup", SupportsShouldProcess = true,
-        DefaultParameterSetName = "ByExplicitId")]
+        DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
     [Alias("Delete-SonarrBackup")]
     [MetadataCanPipe(Tag = Meta.BACKUP)]
     public sealed class RemoveSonarrBackupCmdlet : SonarrMetadataCmdlet
@@ -16,10 +16,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
         bool _yesToAll;
         bool _noToAll;
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByExplicitId")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
-        [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput", ValueFromPipeline = true)]
+        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
         public BackupObject[] InputObject { get; set; } = Array.Empty<BackupObject>();
 
         [Parameter]

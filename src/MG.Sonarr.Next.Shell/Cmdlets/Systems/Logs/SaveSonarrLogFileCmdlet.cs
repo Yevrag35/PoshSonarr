@@ -6,7 +6,6 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Shell.Attributes;
 using System.Net;
-using Microsoft.Extensions.DependencyInjection;
 using MG.Sonarr.Next.Json;
 using System.Text.Json;
 using MG.Sonarr.Next.Attributes;
@@ -31,7 +30,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
         public SwitchParameter Force { get; set; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput", ValueFromPipeline = true)]
+        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
         public LogFileObject InputObject
         {
             get => null!;

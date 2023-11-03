@@ -12,7 +12,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications
         SortedSet<int> _ids = null!;
         HashSet<Wildcard> _wcNames = null!;
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ById")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
         [Parameter(Position = 0)]

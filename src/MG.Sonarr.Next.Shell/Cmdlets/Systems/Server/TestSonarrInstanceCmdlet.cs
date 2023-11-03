@@ -1,7 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Models.System;
-using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using MG.Sonarr.Next.Services.Auth;
 

@@ -1,9 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Extensions.PSO;
-using MG.Sonarr.Next.Metadata;
-using MG.Sonarr.Next.Shell.Cmdlets.Connection;
+﻿using MG.Sonarr.Next.Extensions.PSO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Shell.Build
 {
