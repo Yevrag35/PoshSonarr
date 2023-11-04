@@ -3,9 +3,9 @@ using MG.Sonarr.Next.Shell.Components;
 
 namespace MG.Sonarr.Next.Shell.Extensions
 {
-    internal static class SetExtensions
+    public static class SetExtensions
     {
-        internal static bool AnyValueLike([ValidatedNotNull] this IReadOnlySet<Wildcard> set, string? value)
+        public static bool AnyValueLike([ValidatedNotNull] this IReadOnlySet<Wildcard> set, string? value)
         {
             foreach (Wildcard ws in set)
             {

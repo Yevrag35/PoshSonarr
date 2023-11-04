@@ -3,13 +3,14 @@ using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Models.System;
 using System.Text.Json;
 using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
 {
     [Cmdlet(VerbsDiagnostic.Test, "SonarrInstance")]
     [Alias("Ping-Sonarr", "Test-Sonarr")]
     [OutputType(typeof(PingResult), typeof(bool))]
-    public sealed class TestSonarrInstanceCmdlet : SonarrCmdletBase, IApiCmdlet
+    public sealed class TestSonarrInstanceCmdlet : PoolableCmdlet, IApiCmdlet
     {
         ISignalRClient _client = null!;
         Queue<IApiCmdlet> _queue = null!;

@@ -8,10 +8,10 @@ using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Services.Testing;
 using MG.Sonarr.Next.Services.Time;
-using MG.Sonarr.Next.Shell.Cmdlets;
-using MG.Sonarr.Next.Shell.Cmdlets.Connection;
 using MG.Sonarr.Next.Shell.Components;
+using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Shell.Pools;
+using System.Reflection;
 using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Context
@@ -22,12 +22,13 @@ namespace MG.Sonarr.Next.Shell.Context
     internal static class CmdletContextExtensions
 #endif
     {
-        internal static IServiceScope CreateScope(this SonarrCmdletBase _)
+        internal static IServiceScope CreateScope<T>(this T cmdlet) where T : PSCmdlet, IIsRunning<T>, IScopeCmdlet<T>
         {
-            return SonarrContext.GetProvider().CreateScope();
-        }
-        internal static IServiceScope CreateScope(this ConnectSonarrInstanceCmdlet _)
-        {
+            if (!T.IsRunningCommand(cmdlet))
+            {
+                throw new InvalidOperationException("Don't execute me weird.");
+            }
+
             return SonarrContext.GetProvider().CreateScope();
         }
 
@@ -45,20 +46,17 @@ namespace MG.Sonarr.Next.Shell.Context
         }
 #endif
 
-        internal static IServiceProvider GetServiceProvider(this Cmdlet _)
+        internal static IServiceScope SetContext<T>(this T cmdlet, Assembly cmdletAssembly, Action<IServiceCollection> addAdditionalServices)
+            where T : PSCmdlet, IConnectContextCmdlet, IIsRunning<T>
         {
-            return SonarrContext.GetProvider();
-        }
+            if (!T.IsRunningCommand(cmdlet))
+            {
+                throw new InvalidOperationException("Don't execute me weird.");
+            }
 
-        internal static void SetContext(this ConnectSonarrInstanceCmdlet _, IConnectionSettings settings, Func<IServiceCollection, ServiceProviderOptions, IServiceProvider> buildProvider)
-        {
-            SonarrContext.Initialize(settings, buildProvider);
+            return SonarrContext.Initialize(cmdlet.GetConnectionSettings(), cmdletAssembly, addAdditionalServices);
         }
-        internal static void UnsetContext(this DisconnectSonarrInstanceCmdlet _)
-        {
-            SonarrContext.Deinitialize();
-        }
-        internal static void UnsetContext(this ConnectSonarrInstanceCmdlet _)
+        internal static void UnsetContext<T>(this T _) where T : IDisconnectContextCmdlet, IScopeCmdlet<T>
         {
             SonarrContext.Deinitialize();
         }
@@ -68,10 +66,15 @@ namespace MG.Sonarr.Next.Shell.Context
     {
         static IServiceProvider _provider = null!;
 
-        /// <exception cref="InvalidOperationException"/>
+        /// <exception cref="ContextNotSetException"/>
         internal static IServiceProvider GetProvider()
         {
-            return _provider ?? throw new InvalidOperationException("The Sonarr context is not set.");
+            return _provider ?? throw NotSet();
+        }
+
+        private static ContextNotSetException NotSet()
+        {
+            return new ContextNotSetException(new CmdletScopeNotReadyException());
         }
 
         internal static void Deinitialize()
@@ -79,21 +82,22 @@ namespace MG.Sonarr.Next.Shell.Context
             _provider = null!;
         }
 
-        internal static void Initialize(IConnectionSettings settings, Func<IServiceCollection, ServiceProviderOptions, IServiceProvider> buildProvider)
+        internal static IServiceScope Initialize(IConnectionSettings settings, Assembly cmdletAssembly, Action<IServiceCollection> configureServices)
         {
             if (_provider is not null)
             {
-                return;
+                return _provider.CreateScope();
             }
 
             ServiceCollection services = new();
+            configureServices(services);
+
             services
                 //.AddClock(mock => mock.GetNow = c => c.Now.AddDays(-7d))
                 .AddClock()
                 .AddMemoryCache()
                 .AddSingleton<Queue<IApiCmdlet>>()
-                .AddScoped<SortedSet<SonarrProperty>>()
-                .AddSonarrClient(typeof(CmdletContextExtensions).Assembly, settings, (provider, options) =>
+                .AddSonarrClient(cmdletAssembly, settings, (provider, options) =>
                 {
                     options.WriteIndented = true;
                 })
@@ -113,7 +117,8 @@ namespace MG.Sonarr.Next.Shell.Context
 #endif
             };
 
-            _provider = buildProvider(services, providerOptions);
+            _provider = services.BuildServiceProvider(providerOptions);
+            return _provider.CreateScope();
         }
 
         private static void AddObjectPools(IServiceCollection services)

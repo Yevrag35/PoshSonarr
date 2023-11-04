@@ -7,16 +7,38 @@ namespace MG.Sonarr.Next.Shell.Extensions
     {
         const string UNDERSCORE = "_";
 
-        public static TOutput? InvokeWith<T, TOutput>(this ScriptBlock scriptBlock, T value, ActionPreference errorAction) where T : notnull
+        /// <summary>
+        /// A custom <see cref="ScriptBlock"/> invocation method that injects a stated object for '$_' and sets the 
+        /// scriptblock's global 'ErrorActionPreference' to the specified value.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TOutput"></typeparam>
+        /// <param name="scriptBlock"></param>
+        /// <param name="value"></param>
+        /// <param name="errorAction">
+        ///     The optional ErrorActionPreference that the executing scriptblock will have set. If this is
+        ///     <see langword="null"/>, then the global ActionPreference will be used.
+        /// </param>
+        /// <returns></returns>
+        public static TOutput? InvokeWith<T, TOutput>(this ScriptBlock scriptBlock, T value, ActionPreference? errorAction) where T : notnull
         {
             ArgumentNullException.ThrowIfNull(scriptBlock);
             ArgumentNullException.ThrowIfNull(value);
+            int listCount = 1;
+            if (errorAction.HasValue)
+            {
+                listCount++;
+            }
 
-            List<PSVariable> variables = new(2)
+            List<PSVariable> variables = new(listCount)
             {
                  new PSVariable(UNDERSCORE, value),
-                 new PSVariable("ErrorActionPreference", errorAction),
             };
+
+            if (errorAction.HasValue)
+            {
+                variables.Add(new PSVariable("ErrorActionPreference", errorAction.Value));
+            }
 
             Collection<PSObject> results = scriptBlock.InvokeWithContext(null, variables);
 

@@ -90,14 +90,6 @@ namespace MG.Sonarr.Next
         public static readonly string WANTEDMISSING = "/wanted/missing";
 
         public static readonly string CALENDAR_DT_FORMAT = "yyyy-MM-ddTHH:mm:ss";
-
-        public static readonly string DEBUG = "Debug";
-        public static readonly string VERBOSE = "Verbose";
-        public static readonly string PREFERENCE = "Preference";
-        public static readonly string DEBUG_PREFERENCE = DEBUG + PREFERENCE;
-        public static readonly string VERBOSE_PREFERENCE = VERBOSE + PREFERENCE;
-        public static readonly string ERROR_ACTION = "ErrorAction";
-        public static readonly string ERROR_ACTION_PREFERENCE = ERROR_ACTION + PREFERENCE;
     }
 
     public static class Meta

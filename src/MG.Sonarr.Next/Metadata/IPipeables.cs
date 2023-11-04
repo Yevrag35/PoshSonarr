@@ -12,6 +12,8 @@ namespace MG.Sonarr.Next.Metadata
         /// The series ID of the implementation.
         /// </summary>
         int SeriesId { get; }
+
+        string Title { get; }
     }
     /// <summary>
     /// An interface exposing the EpisodeId property for piping to the /episode endpoint.

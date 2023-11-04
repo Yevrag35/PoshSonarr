@@ -7,6 +7,7 @@ using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Shell.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 {
@@ -25,20 +26,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         SortedSet<int> SeriesIds { get; set; } = null!;
         MetadataTag Tag { get; set; } = null!;
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = BY_EP_ID)]
+        [ValidateRange(ValidateRangeKind.Positive)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = BY_SERIES_ID)]
+        [ValidateRange(ValidateRangeKind.Positive)]
         public int[] SeriesId { get; set; } = Array.Empty<int>();
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_EP_INPUT, DontShow = true)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_EP_INPUT)]
+        [ValidateId(ValidateRangeKind.Positive)]
         public IEpisodePipeable[] EpisodeInput { get; set; } = Array.Empty<IEpisodePipeable>();
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_SERIES_INPUT, DontShow = true)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_SERIES_INPUT)]
+        [ValidateId(ValidateRangeKind.Positive)]
         public IEpisodeBySeriesPipeable[] SeriesInput { get; set; } = Array.Empty<IEpisodeBySeriesPipeable>();
 
         [Parameter(Mandatory = false, Position = 1, ParameterSetName = BY_SERIES_ID)]

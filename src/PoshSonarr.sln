@@ -23,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tasks", "Tasks", "{026AC762
 		.tasks\publish_module.ps1 = .tasks\publish_module.ps1
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MG.Sonarr.Next.Shell.Bases", "MG.Sonarr.Next.Shell.Bases\MG.Sonarr.Next.Shell.Bases.csproj", "{54E38CA4-D12A-49D8-B4F4-029B1F7297C0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{AA685AFD-07AB-4C49-B0C9-7860EBBB4D6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA685AFD-07AB-4C49-B0C9-7860EBBB4D6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA685AFD-07AB-4C49-B0C9-7860EBBB4D6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54E38CA4-D12A-49D8-B4F4-029B1F7297C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54E38CA4-D12A-49D8-B4F4-029B1F7297C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54E38CA4-D12A-49D8-B4F4-029B1F7297C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54E38CA4-D12A-49D8-B4F4-029B1F7297C0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -59,6 +65,7 @@ Global
 		{16FD2D22-D7F4-48E1-9208-04D1939F1785} = {BF64B7EB-C988-439E-A802-87170EFFB271}
 		{579327AF-51FA-43F6-A3AD-7F91E02572AF} = {7045688D-A1C1-4EE6-94CA-877E01750D4F}
 		{AA685AFD-07AB-4C49-B0C9-7860EBBB4D6A} = {7045688D-A1C1-4EE6-94CA-877E01750D4F}
+		{54E38CA4-D12A-49D8-B4F4-029B1F7297C0} = {7045688D-A1C1-4EE6-94CA-877E01750D4F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {54E6F964-498B-4321-BD11-ECA6E150B306}

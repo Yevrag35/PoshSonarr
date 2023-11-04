@@ -12,6 +12,18 @@
 		</Members>
 	</Type>
 	<Type>
+		<Name>MG.Sonarr.Next.Models.Episodes.EpisodeObject</Name>
+		<Members>
+			<ScriptProperty>
+				<Name>SeriesIdentifier</Name>
+				<GetScriptBlock>
+					if ($null -ne $this.Series) { $this.Series.Title }
+					else { $this.SeriesId }
+				</GetScriptBlock>
+			</ScriptProperty>
+		</Members>
+	</Type>
+	<Type>
 		<Name>MG.Sonarr.Next.Models.ManualImports.ManualImportObject</Name>
 		<Members>
 			<ScriptProperty>

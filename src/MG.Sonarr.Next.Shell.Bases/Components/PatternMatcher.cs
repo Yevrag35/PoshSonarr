@@ -2,7 +2,7 @@
 
 namespace MG.Sonarr.Next.Shell.Components
 {
-    internal readonly ref struct PatternMatcher
+    public readonly ref struct PatternMatcher
     {
         const char QUESTION = '?';
         const char STAR = '*';
@@ -12,11 +12,11 @@ namespace MG.Sonarr.Next.Shell.Components
         readonly int _length;
         readonly ReadOnlySpan<char> _pattern;
 
-        internal bool ContainsWildcards => _containsWc;
-        internal bool IsEmpty => !_isNotEmpty;
-        internal int Length => _length;
+        public bool ContainsWildcards => _containsWc;
+        public bool IsEmpty => !_isNotEmpty;
+        public int Length => _length;
 
-        internal PatternMatcher(ReadOnlySpan<char> span)
+        public PatternMatcher(ReadOnlySpan<char> span)
         {
             _pattern = span;
             _isNotEmpty = !span.IsEmpty;
@@ -33,7 +33,7 @@ namespace MG.Sonarr.Next.Shell.Components
             Guard.IsSpan(pattern);
             return pattern.IndexOfAny(stackalloc char[] { STAR, QUESTION }) >= 0;
         }
-        internal bool IsMatch(ReadOnlySpan<char> input)
+        public bool IsMatch(ReadOnlySpan<char> input)
         {
             Guard.IsSpan(input);
 

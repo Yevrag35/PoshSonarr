@@ -21,6 +21,7 @@
   <ItemGroup>
     <None Remove="build_dependencies.json" />
     <None Remove="Debug.ps1" />
+    <None Remove="PSFormats\EpisodeObject.Format.ps1xml" />
     <None Remove="PSFormats\MetadataTag.Format.ps1xml" />
     <None Remove="PSFormats\SeriesObject.Format.ps1xml" />
     <None Remove="PSFormats\SonarrProperty.Format.ps1xml" />
@@ -64,6 +65,9 @@
 	  <Content Include="build_dependencies.json">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	  <Content Include="PSFormats\EpisodeObject.Format.ps1xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="PSFormats\MetadataTag.Format.ps1xml">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
@@ -101,7 +105,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MG.Sonarr.Next\MG.Sonarr.Next.csproj" />
+    <ProjectReference Include="..\MG.Sonarr.Next.Shell.Bases\MG.Sonarr.Next.Shell.Bases.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Context\" />
   </ItemGroup>
 
 </Project>

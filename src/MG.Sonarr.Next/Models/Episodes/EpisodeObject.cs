@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.Series;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Episodes
@@ -28,10 +29,32 @@ namespace MG.Sonarr.Next.Models.Episodes
         public bool HasAbsolute { get; private set; }
         public int SeasonNumber { get; private set; }
         public int SeriesId { get; private set; }
+        public IComparable Series { get; private set; } = 0;
 
         public EpisodeObject()
             : base(CAPACITY)
         {
+        }
+
+        public override int CompareTo(EpisodeObject? other)
+        {
+            int compare = this.Series.CompareTo(other?.Series);
+            if (compare != 0)
+            {
+                return compare;
+            }
+
+            compare = this.SeasonNumber.CompareTo(other?.SeasonNumber);
+            if (compare == 0)
+            {
+                compare = this.EpisodeNumber.CompareTo(other?.EpisodeNumber);
+                if (compare == 0)
+                {
+                    compare = this.AbsoluteEpisodeNumber.CompareTo(other?.AbsoluteEpisodeNumber);
+                }
+            }
+
+            return compare;
         }
 
         protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
@@ -74,11 +97,25 @@ namespace MG.Sonarr.Next.Models.Episodes
             {
                 this.SeriesId = seriesId;
             }
+
+            if (this.TryGetNonNullProperty(nameof(this.Series), out SeriesObject? so))
+            {
+                this.Series = so.Title;
+            }
+            else
+            {
+                this.Series = this.SeriesId;
+            }
         }
 
         public void OnSerializing()
         {
             this.AddProperty("AirDate", _airDate);
+        }
+
+        public void SetSeries(SeriesObject series)
+        {
+            this.Series = series.Title;
         }
 
         protected override void SetPSTypeName()

@@ -2,26 +2,38 @@
 using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http;
+using MG.Sonarr.Next.Shell.Exceptions;
 using System.Net;
 using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
 {
     [DebuggerStepThrough]
-    public abstract class TimedCmdlet : SonarrCmdletBase, IApiCmdlet
+    public abstract class TimedCmdlet : PoolableCmdlet, IApiCmdlet
     {
         Stopwatch _timer = null!;
+
+        /// <summary><inheritdoc cref="SonarrCmdletBase.CaptureVerbosePreference"/></summary>
+        /// <remarks>
+        /// Implementation in the base class always returns <see langword="true"/>.
+        /// </remarks>
+        protected sealed override bool CaptureVerbosePreference => true;
+        protected virtual int DerivedCapacity => 0;
+        protected sealed override int ReturnableCapacity => 1 + this.DerivedCapacity;
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _timer = provider.GetRequiredService<IObjectPool<Stopwatch>>().Get();
+            Span<object> span = this.GetReturnables();
+
+            _timer = this.GetPooledObject<Stopwatch>();
+            span[0] = _timer;
         }
 
         /// <summary>
         /// Starts the timer.
         /// </summary>
-        /// <exception cref="InvalidOperationException"/>
+        /// <exception cref="CmdletScopeNotReadyException"/>
         protected void StartTimer()
         {
             try
@@ -30,7 +42,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             } 
             catch (NullReferenceException e)
             {
-                ThrowNotYet(e);
+                this.ThrowNotYet(e);
             }
         }
 
@@ -40,7 +52,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         /// <remarks>
         ///     When the method returns, the underlying <see cref="Stopwatch"/> is reset.
         /// </remarks>
-        /// <exception cref="InvalidOperationException"/>
+        /// <exception cref="CmdletScopeNotReadyException"/>
         protected TimeSpan StopTimer()
         {
             try
@@ -49,7 +61,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             }
             catch (NullReferenceException e)
             {
-                ThrowNotYet(e);
+                this.ThrowNotYet(e);
             }
 
             TimeSpan elapsed = _timer.Elapsed;
@@ -58,9 +70,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         }
 
         [DoesNotReturn]
-        private static void ThrowNotYet(NullReferenceException e)
+        private void ThrowNotYet(NullReferenceException e)
         {
-            throw new InvalidOperationException("The timer has not been initialized yet.", e);
+            throw new CmdletScopeNotReadyException(this.GetType(), e);
         }
 
         public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options)
@@ -99,9 +111,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             return new string(span.Slice(0, position + codeWritten));
         }
 
-        public virtual void WriteVerboseBefore(IHttpRequestDetails request)
+        public void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            this.WriteVerbose($"Sending {request.RequestMethod} request -> {request.RequestUrl}");
+            string? msg = this.GenerateBeforeMessage(request);
+            if (msg is not null)
+            {
+                this.WriteVerbose(msg);
+            }
+        }
+        protected virtual string? GenerateBeforeMessage(IHttpRequestDetails request)
+        {
+            return $"Sending {request.RequestMethod} request -> {request.RequestUrl}";
         }
 
         private readonly struct TimedResponse : ISonarrTimedResponse
@@ -127,26 +147,39 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
 
         #region DISPOSAL
         bool _disposed;
-        protected override void Dispose(bool disposing, IServiceScopeFactory? scopeFactory)
+        //protected override void Dispose(bool disposing, IServiceScopeFactory? scopeFactory)
+        //{
+        //    //if (!_disposed)
+        //    //{
+        //    //    if (disposing && scopeFactory is not null)
+        //    //    {
+        //    //        using var scope = scopeFactory.CreateScope();
+
+        //    //        //var pool = scope.ServiceProvider.GetService<IObjectPool<Stopwatch>>();
+        //    //        //pool?.Return(_timer);
+        //    //    }
+
+        //    //    _timer = null!;
+        //    //    _disposed = true;
+        //    //}
+
+        //    //base.Dispose(disposing, scopeFactory);
+        //}
+
+        protected sealed override void Dispose(bool disposing)
         {
             if (!_disposed)
             {
-                if (disposing && scopeFactory is not null)
+                if (disposing && this.IsScopeInitialized)
                 {
-                    using var scope = scopeFactory.CreateScope();
-                    var pool = scope.ServiceProvider.GetService<IObjectPool<Stopwatch>>();
-                    pool?.Return(_timer);
+                    this.ReturnPooledObject(_timer);
                 }
 
                 _timer = null!;
                 _disposed = true;
             }
 
-            base.Dispose(disposing, scopeFactory);
-        }
-
-        protected sealed override void Dispose(bool disposing)
-        {
+            this.Dispose(disposing, this.Services?.GetService<IServiceScopeFactory>());
             base.Dispose(disposing);
         }
 

@@ -2,11 +2,11 @@
 {
     [Cmdlet(VerbsCommunications.Disconnect, "SonarrInstance")]
     [Alias("Disconnect-Sonarr")]
-    public sealed class DisconnectSonarrInstanceCmdlet : Cmdlet
+    public sealed class DisconnectSonarrInstanceCmdlet : DisconnectCmdlet
     {
         protected override void ProcessRecord()
         {
-            this.UnsetContext();
+            this.DisconnectContext();
             this.WriteVerbose("Service Provider was unset.");
         }
     }

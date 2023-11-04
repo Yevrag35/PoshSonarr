@@ -2,6 +2,7 @@
 using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http;
+using MG.Sonarr.Next.Shell.Context;
 using MG.Sonarr.Next.Shell.Extensions;
 using System.Collections;
 using System.Text.Json;
@@ -21,15 +22,53 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
     ///     It implements <see cref="IDisposable"/> only for visibility.  This and derived classes will manage
     ///     their own resources.
     /// </remarks>
-    public abstract class SonarrCmdletBase : PSCmdlet, IDisposable
+    //[DebuggerStepThrough]
+    public abstract class SonarrCmdletBase : PSCmdlet,
+        IDisposable,
+        IIsRunning<SonarrCmdletBase>,
+        IScopeCmdlet<SonarrCmdletBase>
     {
         static readonly Type _enumerableType = typeof(IEnumerable);
         static readonly Type _stringType = typeof(string);
 
+        internal static bool HasChecked;
+        static bool IScopeCmdlet<SonarrCmdletBase>.HasChecked()
+        {
+            return HasChecked;
+        }
+
+        static void IScopeCmdlet<SonarrCmdletBase>.SetChecked(bool toggle)
+        {
+            HasChecked = toggle;
+        }
+
         bool _disposed;
         ErrorRecord? _error;
+        bool _isInitialized;
         IServiceScope? _scope;
         bool _isStopped;
+
+        [MemberNotNullWhen(true, nameof(Services), nameof(_scope))]
+        protected private bool IsScopeInitialized => _isInitialized;
+        protected private IServiceProvider? Services => _scope?.ServiceProvider;
+
+        /// <summary>
+        /// Specifies whether derived cmdlets should capture the current Debug <see cref="ActionPreference"/> value
+        /// before cmdlet processing begins.
+        /// </summary>
+        /// <remarks>
+        ///     Default implementation in the base class always returns <see langword="false"/>.
+        /// </remarks>
+        protected virtual bool CaptureDebugPreference { get; }
+
+        /// <summary>
+        /// Specifies whether derived cmdlets should capture the current Verbose <see cref="ActionPreference"/> value
+        /// before cmdlet processing begins.
+        /// </summary>
+        /// <remarks>
+        ///     Default implementation in the base class always returns <see langword="false"/>.
+        /// </remarks>
+        protected virtual bool CaptureVerbosePreference { get; }
 
         /// <summary>
         /// The current Debug preference either set from the "-Debug" <see cref="SwitchParameter"/>
@@ -87,10 +126,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
 
         #region PROCESSING
 
-        [DebuggerStepThrough]
+        //[DebuggerStepThrough]
         protected sealed override void BeginProcessing()
         {
             _scope = this.CreateScope();
+            _isInitialized = true;
             try
             {
                 this.OnCreatingScope(_scope.ServiceProvider);
@@ -102,7 +142,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
 
             if (this.HasError)
             {
-                this.Dispose();
+                this.Cleanup();
                 this.ThrowTerminatingError(this.Error);
                 return;
             }
@@ -113,16 +153,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
 
             try
             {
-                this.StoreVerbosePreference();
-                this.StoreDebugPreference();
+                this.StoreVerbosePreference(this.CaptureVerbosePreference);
+                this.StoreDebugPreference(this.CaptureDebugPreference);
                 this.ErrorPreference = this
                     .GetCurrentActionPreferenceFromParam(
-                        Constants.ERROR_ACTION, Constants.ERROR_ACTION_PREFERENCE);
+                        PSConstants.ERROR_ACTION, PSConstants.ERROR_ACTION_PREFERENCE);
             }
             catch (Exception e)
             {
                 this.Error = e.ToRecord();
-                this.Dispose();
+                this.Cleanup();
                 return;
             }
 
@@ -133,13 +173,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             catch (PipelineStoppedException)
             {
                 Debug.WriteLine("Pipeline stopped.");
-                this.Dispose();
+                this.Cleanup();
                 throw;
             }
             catch (Exception e)
             {
                 this.Error = e.ToRecord();
-                this.Dispose();
+                this.Cleanup();
                 return;
             }
         }
@@ -174,13 +214,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             catch (PipelineStoppedException)
             {
                 Debug.WriteLine("Pipeline stopped.");
-                this.Dispose();
+                this.Cleanup();
                 throw;
             }
             catch (Exception e)
             {
                 this.Error = e.ToRecord();
-                this.Dispose();
+                this.Cleanup();
                 return;
             }
         }
@@ -225,7 +265,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             finally
             {
                 queue?.Clear();
-                this.Dispose();
+                this.Cleanup();
             }
 
             if (this.HasError)
@@ -260,7 +300,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             }
             finally
             {
-                this.Dispose();
+                this.Cleanup();
             }
         }
         /// <summary>
@@ -328,43 +368,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
 
         #endregion
 
-        /// <summary>
-        /// Retrieves a pooled item from the one of the <see cref="IObjectPool{T}"/> instances
-        /// registered.
-        /// </summary>
-        /// <remarks>
-        ///     This method should only be called once execution of the cmdlet has started.
-        /// </remarks>
-        /// <typeparam name="T"></typeparam>
-        /// <exception cref="InvalidOperationException"/>
-        /// <exception cref="PipelineStoppedException"/>
-        [DebuggerStepThrough]
-        protected T GetPooledObject<T>() where T : notnull
-        {
-            try
-            {
-                return _scope!.ServiceProvider.GetRequiredService<IObjectPool<T>>().Get();
-            }
-            catch (NullReferenceException e)
-            {
-                throw new PipelineStoppedException("Cannot use the scope before it's been initialized.", e);
-            }
-        }
+        //[DebuggerStepThrough]
+        //public object? GetService(Type serviceType)
+        //{
+        //    return _scope?.ServiceProvider.GetService(serviceType);
+        //}
 
         private static bool IsEnumerableType(Type type)
         {
             return _enumerableType.IsAssignableFrom(type) && !_stringType.IsAssignableFrom(type);
-        }
-
-        /// <summary>
-        /// Returns an previously retrieved item back into its <see cref="IObjectPool{T}"/>.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="item">The item to return to the pool.</param>
-        [DebuggerStepThrough]
-        protected void ReturnPooledObject<T>(T item) where T : notnull
-        {
-            _scope?.ServiceProvider.GetService<IObjectPool<T>>()?.Return(item);
         }
 
         /// <summary>
@@ -396,16 +408,26 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         }
 
         [DebuggerStepThrough]
-        private void StoreDebugPreference()
+        private void StoreDebugPreference(bool wantsCapture)
         {
+            if (!wantsCapture)
+            {
+                return;
+            }
+
             this.DebugPreference = this
-                .GetCurrentActionPreferenceFromSwitch(Constants.DEBUG, Constants.DEBUG_PREFERENCE);
+                .GetCurrentActionPreferenceFromSwitch(PSConstants.DEBUG, PSConstants.DEBUG_PREFERENCE);
         }
         [DebuggerStepThrough]
-        private void StoreVerbosePreference()
+        private void StoreVerbosePreference(bool wantsCapture)
         {
+            if (!wantsCapture)
+            {
+                return;
+            }
+
             this.VerbosePreference = this
-                .GetCurrentActionPreferenceFromSwitch(Constants.VERBOSE, Constants.VERBOSE_PREFERENCE);
+                .GetCurrentActionPreferenceFromSwitch(PSConstants.VERBOSE, PSConstants.VERBOSE_PREFERENCE);
         }
 
         [DebuggerStepThrough]
@@ -474,6 +496,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             this.WriteError(error);
         }
 
+        #region CLEANUP
+
+        protected virtual void Cleanup()
+        {
+            this.Dispose();
+        }
+
         #region DISPOSAL
         /// <summary>
         /// When overriden in derived classes, it should dispose of any resources when the cmdlet's execution
@@ -504,7 +533,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 IServiceProvider? provider = null;
                 try
                 {
-                    provider = this.GetServiceProvider();
+                    provider = this.CreateScope().ServiceProvider;
                 }
                 catch (InvalidOperationException)
                 {
@@ -526,6 +555,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             this.Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+
+        #endregion
 
         #endregion
     }
