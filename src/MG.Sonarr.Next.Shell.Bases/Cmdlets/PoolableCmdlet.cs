@@ -4,7 +4,7 @@ using System.Buffers;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
 {
-    [DebuggerStepThrough]
+    //[DebuggerStepThrough]
     public abstract class PoolableCmdlet : SonarrCmdletBase
     {
         bool _isRented;
@@ -57,7 +57,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             }
         }
 
-        protected Span<object> GetReturnables()
+        protected virtual Span<object> GetReturnables()
+        {
+            return this.GetAllReturnables();
+        }
+        private Span<object> GetAllReturnables()
         {
             return _isRented ? _rented.AsSpan(0, this.ReturnableCapacity) : Span<object>.Empty;
         }
@@ -81,7 +85,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
                 if (disposing && this.IsScopeInitialized && _isRented)
                 {
                     var returner = this.Services.GetService<IPoolReturner>();
-                    returner?.Return(this.GetReturnables());
+                    returner?.Return(this.GetAllReturnables());
                     ArrayPool<object>.Shared.Return(_rented);
                 }
 

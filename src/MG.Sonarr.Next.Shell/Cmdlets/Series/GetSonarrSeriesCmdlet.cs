@@ -53,9 +53,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
             _names = this.GetPooledObject<HashSet<Wildcard>>();
-            this.Returnables[1] = _names;
+            var span = this.GetReturnables();
+            span[0] = _ids;
+            span[1] = _names;
         }
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {

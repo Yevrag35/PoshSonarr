@@ -46,9 +46,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             base.OnCreatingScope(provider);
             var pool = provider.GetRequiredService<IObjectPool<SortedSet<int>>>();
             _ids = pool.Get();
-            this.Returnables[0] = _ids;
             _seriesIds = pool.Get();
-            this.Returnables[1] = _seriesIds;
+            //this.Returnables[0] = _ids;
+            //this.Returnables[1] = _seriesIds;
+
+            var span = this.GetReturnables();
+            span[0] = _ids;
+            span[1] = _seriesIds;
         }
 
         private bool HasNoParameters()

@@ -34,7 +34,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
+            this.GetReturnables()[0] = _ids;
         }
 
         protected override void Begin(IServiceProvider provider)

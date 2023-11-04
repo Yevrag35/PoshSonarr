@@ -29,8 +29,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications
             _ids = this.GetPooledObject<SortedSet<int>>();
             _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
 
-            this.Returnables[0] = _ids;
-            this.Returnables[1] = _wcNames;
+            var span = this.GetReturnables();
+            span[0] = _ids;
+            span[1] = _wcNames;
         }
 
         protected override void Begin(IServiceProvider provider)

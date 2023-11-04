@@ -38,9 +38,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
             _resolveNames = this.GetPooledObject<HashSet<Wildcard>>();
-            this.Returnables[1] = _resolveNames;
+            var span = this.GetReturnables();
+            span[0] = _ids;
+            span[1] = _resolveNames;
             _updates = new(1, StringComparer.InvariantCultureIgnoreCase);
         }
 

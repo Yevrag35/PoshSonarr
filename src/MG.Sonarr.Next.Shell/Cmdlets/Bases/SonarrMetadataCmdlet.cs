@@ -1,33 +1,31 @@
-﻿using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
-using System.Buffers;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
 {
     [DebuggerStepThrough]
     public abstract class SonarrMetadataCmdlet : SonarrApiCmdletBase
     {
-        object[]? _objs;
-        int _capacity;
-        protected abstract int Capacity { get; }
-        protected object[] Returnables => _objs ?? Array.Empty<object>();
-        protected IPoolReturner Returner { get; private set; } = null!;
+        //object[]? _objs;
+        //int _capacity;
+        //protected abstract int Capacity { get; }
+        //protected object[] Returnables => _objs ?? Array.Empty<object>();
+        //protected IPoolReturner Returner { get; private set; } = null!;
         protected MetadataTag Tag { get; private set; } = MetadataTag.Empty;
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
             this.Tag = this.GetMetadataTag(provider.GetRequiredService<IMetadataResolver>());
-            this.Returner = provider.GetRequiredService<IPoolReturner>();
-            this.CreatingScopeAndCapacity(this.Capacity);
+            //this.Returner = provider.GetRequiredService<IPoolReturner>();
+            //this.CreatingScopeAndCapacity(this.Capacity);
         }
-        private void CreatingScopeAndCapacity(int capacity)
-        {
-            _capacity = capacity >= 0 ? capacity : 0;
-            _objs = _capacity > 0 ? ArrayPool<object>.Shared.Rent(capacity) : Array.Empty<object>();
-        }
+        //private void CreatingScopeAndCapacity(int capacity)
+        //{
+        //    _capacity = capacity >= 0 ? capacity : 0;
+        //    _objs = _capacity > 0 ? ArrayPool<object>.Shared.Rent(capacity) : Array.Empty<object>();
+        //}
 
         protected abstract MetadataTag GetMetadataTag(IMetadataResolver resolver);
         protected MetadataList<T> GetAll<T>() where T : PSObject, IComparable<T>, IJsonMetadataTaggable
@@ -63,22 +61,22 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             }
         }
 
-        bool _disposed;
-        protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
-        {
-            if (disposing && !_disposed && _objs is not null)
-            {
-                if (_objs.Length > 0)
-                {
-                    this.Returner.Return(this.Returnables.AsSpan(0, _capacity));
-                    ArrayPool<object>.Shared.Return(_objs);
-                }
+        //bool _disposed;
+        //protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
+        //{
+        //    if (disposing && !_disposed && _objs is not null)
+        //    {
+        //        if (_objs.Length > 0)
+        //        {
+        //            this.Returner.Return(this.Returnables.AsSpan(0, _capacity));
+        //            ArrayPool<object>.Shared.Return(_objs);
+        //        }
 
-                _objs = null;
-                _disposed = true;
-            }
+        //        _objs = null;
+        //        _disposed = true;
+        //    }
 
-            base.Dispose(disposing, factory);
-        }
+        //    base.Dispose(disposing, factory);
+        //}
     }
 }

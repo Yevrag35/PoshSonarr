@@ -29,9 +29,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
             _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
-            this.Returnables[1] = _wcNames;
+            var span = this.GetReturnables();
+            span[0] = _ids;
+            span[1] = _wcNames;
         }
 
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
@@ -82,20 +83,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
             }
 
             return response.Data;
-        }
-
-        bool _disposed;
-        protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
-        {
-            if (disposing && !_disposed)
-            {
-                this.Returner.Return(this.Returnables.AsSpan(0, 2));
-                _ids = null!;
-                _wcNames = null!;
-                _disposed = true;
-            }
-
-            base.Dispose(disposing, factory);
         }
     }
 }

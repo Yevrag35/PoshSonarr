@@ -41,7 +41,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
             base.OnCreatingScope(provider);
             _paging = this.GetPooledObject<PagingParameter>();
             _paging.SortKey = "Time";
-            this.Returnables[0] = _paging;
+            this.GetReturnables()[0] = _paging;
             _parameters = new(2);
         }
         protected override void Begin(IServiceProvider provider)

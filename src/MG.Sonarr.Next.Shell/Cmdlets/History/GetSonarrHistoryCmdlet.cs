@@ -99,10 +99,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
         {
             base.OnCreatingScope(provider);
             _paging = this.GetPooledObject<PagingParameter>();
-            this.Returnables[0] = _paging;
-
             _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[1] = _ids;
+            //this.Returnables[0] = _paging;
+            //this.Returnables[1] = _ids;
+
+            var span = this.GetReturnables();
+            span[0] = _paging;
+            span[1] = _ids;
 
             _parameters = new(4);
         }

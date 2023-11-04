@@ -1,5 +1,4 @@
-﻿using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Exceptions;
+﻿using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Exceptions;
@@ -8,7 +7,7 @@ using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
 {
-    [DebuggerStepThrough]
+    //[DebuggerStepThrough]
     public abstract class TimedCmdlet : PoolableCmdlet, IApiCmdlet
     {
         Stopwatch _timer = null!;
@@ -18,13 +17,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         /// Implementation in the base class always returns <see langword="true"/>.
         /// </remarks>
         protected sealed override bool CaptureVerbosePreference => true;
-        protected virtual int DerivedCapacity => 0;
-        protected sealed override int ReturnableCapacity => 1 + this.DerivedCapacity;
+        protected virtual int Capacity => 0;
+        protected sealed override int ReturnableCapacity => 1 + this.Capacity;
+
+        protected override Span<object> GetReturnables()
+        {
+            Span<object> span = base.GetReturnables();
+            return span.Slice(1);
+        }
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            Span<object> span = this.GetReturnables();
+            Span<object> span = base.GetReturnables();
 
             _timer = this.GetPooledObject<Stopwatch>();
             span[0] = _timer;
