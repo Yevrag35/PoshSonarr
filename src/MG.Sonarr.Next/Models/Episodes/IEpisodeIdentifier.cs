@@ -2,7 +2,7 @@ namespace MG.Sonarr.Next.Models.Episodes
 {
     public interface IEpisodeIdentifier
     {
-        int Episode { get; }
+        EpisodeRange EpisodeRange { get; }
         bool IsAbsolute { get; }
         int Season { get; }
 

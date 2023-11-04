@@ -3,14 +3,15 @@ using MG.Sonarr.Next.Models.Episodes;
 
 namespace MG.Sonarr.Next.Shell.Components
 {
+    [DebuggerDisplay(@"{GetDebugString()}")]
     public readonly struct SeasonEpisodeId : IEpisodeIdentifier
     {
         readonly int _season;
-        readonly int _episode;
         readonly bool _isAbsolute;
         readonly bool _isNotEmpty;
+        readonly EpisodeRange _range;
 
-        public int Episode => _episode;
+        public EpisodeRange EpisodeRange => _range;
         public bool IsAbsolute => _isAbsolute;
         public bool IsEmpty => !_isNotEmpty;
         public int Season => _season;
@@ -18,16 +19,23 @@ namespace MG.Sonarr.Next.Shell.Components
         private SeasonEpisodeId(in int absoluteNumber)
         {
             _season = -1;
-            _episode = absoluteNumber;
             _isAbsolute = true;
             _isNotEmpty = true;
+            _range = new(in absoluteNumber, in absoluteNumber);
         }
         private SeasonEpisodeId(in int season, in int episode, bool isAbsolute)
         {
             _season = season;
-            _episode = episode;
             _isAbsolute = isAbsolute;
             _isNotEmpty = season > 0 || episode > 0;
+            _range = new(in episode, in episode);
+        }
+        private SeasonEpisodeId(in int season, EpisodeRange epRange, bool isAbsolute)
+        {
+            _season = season;
+            _isAbsolute = isAbsolute;
+            _isNotEmpty = season > 0 || epRange.IsValid();
+            _range = epRange;
         }
 
         bool IEpisodeIdentifier.IsValid()
@@ -44,12 +52,24 @@ namespace MG.Sonarr.Next.Shell.Components
             }
 
             char e = 'e';
-            int episode = 0;
+            int endEp = -1;
+            int episode = -1;
             int index = value.IndexOf(new ReadOnlySpan<char>(in e), StringComparison.InvariantCultureIgnoreCase);
 
             if (index > -1)
             {
                 var epSlice = value.Slice(index + 1);
+                int dashIndex = epSlice.IndexOf('-');
+                if (dashIndex > -1)
+                {
+                    var endSlice = epSlice.Slice(dashIndex + 1);
+                    if (int.TryParse(endSlice, Statics.DefaultProvider, out int endEpNum))
+                    {
+                        endEp = endEpNum;
+                        epSlice = epSlice.Slice(0, dashIndex);
+                    }
+                }
+
                 if (int.TryParse(epSlice, Statics.DefaultProvider, out int epNum))
                 {
                     episode = epNum;
@@ -62,7 +82,9 @@ namespace MG.Sonarr.Next.Shell.Components
             int season = 0;
             if (value.IsWhiteSpace())
             {
-                result = new(in season, in episode, true);
+                result = endEp > -1
+                    ? new(in season, new EpisodeRange(in episode, in endEp), true)
+                    : new(in season, in episode, true);
                 return true;
             }
 
@@ -73,13 +95,21 @@ namespace MG.Sonarr.Next.Shell.Components
 
                 if (int.TryParse(sSlice, Statics.DefaultProvider, out season))
                 {
-                    result = new(in season, in episode, false);
+                    //result = new(in season, in episode, false);
+                    result = endEp > -1
+                        ? new(in season, new EpisodeRange(in episode, in endEp), false)
+                        : new(in season, in episode, false);
+
                     return true;
                 }
             }
             else if (int.TryParse(value, Statics.DefaultProvider, out int absolute))
             {
-                result = new(in season, in absolute, true);
+                //result = new(in season, in absolute, true);
+                result = endEp > -1
+                    ? new(in season, new EpisodeRange(in absolute, in endEp), true)
+                    : new(in season, in absolute, true);
+
                 return true;
             }
 
@@ -131,6 +161,27 @@ namespace MG.Sonarr.Next.Shell.Components
             }
 
             return copyTo;
+        }
+
+        private string GetDebugString()
+        {
+            Span<char> span = stackalloc char[3 + (LengthConstants.INT_MAX * 2)];
+            span[0] = 'S';
+            this.Season.TryFormat(span.Slice(1), out int written);
+            int pos = 1 + written;
+
+            span[pos++] = 'E';
+            _ = this.EpisodeRange.Start.TryFormat(span.Slice(pos), out written);
+            pos += written;
+
+            if (!this.EpisodeRange.IsSingle)
+            {
+                span[pos++] = '-';
+                _ = this.EpisodeRange.End.TryFormat(span.Slice(pos), out written);
+                pos += written;
+            }
+
+            return new string(span.Slice(0, pos));
         }
 
         public static implicit operator SeasonEpisodeId(string? value)

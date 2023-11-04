@@ -66,8 +66,8 @@ namespace MG.Sonarr.Next.Models.Episodes
         public bool Matches(IEpisodeIdentifier identifier)
         {
             return identifier.IsAbsolute
-                ? this.HasAbsolute && this.AbsoluteEpisodeNumber == identifier.Episode
-                : this.EpisodeNumber == identifier.Episode && this.SeasonNumber == identifier.Season;
+                ? this.HasAbsolute && identifier.EpisodeRange.IsInRange(this.AbsoluteEpisodeNumber)
+                : identifier.EpisodeRange.IsInRange(this.EpisodeNumber) && this.SeasonNumber == identifier.Season;
         }
 
         public override void OnDeserialized()

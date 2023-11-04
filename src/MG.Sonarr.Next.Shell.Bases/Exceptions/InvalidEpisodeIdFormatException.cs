@@ -58,19 +58,19 @@ namespace MG.Sonarr.Next.Shell.Exceptions
         [Serializable]
         private readonly struct StoredId : IEpisodeIdentifier, ISerializable
         {
-            readonly int _ep;
+            readonly EpisodeRange _ep;
             readonly int _season;
             readonly bool _isAb;
             readonly bool _isNotEmpty;
 
-            public int Episode => _ep;
+            public EpisodeRange EpisodeRange => _ep;
             public bool IsAbsolute => _isAb;
             internal bool IsEmpty => !_isNotEmpty;
             public int Season => _season;
 
             internal StoredId(IEpisodeIdentifier other)
             {
-                _ep = other.Episode;
+                _ep = other.EpisodeRange;
                 _season = other.Season;
                 _isNotEmpty = other.IsValid();
                 _isAb = other.IsAbsolute;
@@ -78,21 +78,19 @@ namespace MG.Sonarr.Next.Shell.Exceptions
             private StoredId(SerializationInfo info, StreamingContext context)
             {
                 ArgumentNullException.ThrowIfNull(info);
-                int ep = info.GetInt32(nameof(this.Episode));
                 bool isAbsolute = info.GetBoolean(nameof(this.IsAbsolute));
                 int season = info.GetInt32(nameof(this.Season));
 
-                _ep = ep;
                 _season = season;
                 _isAb = isAbsolute;
-                _isNotEmpty = isAbsolute || season > 0 || ep > 0;
+                _isNotEmpty = true;
             }
 
             public void GetObjectData(SerializationInfo info, StreamingContext context)
             {
                 ArgumentNullException.ThrowIfNull(info);
 
-                info.AddValue(nameof(this.Episode), this.Episode);
+                info.AddValue(nameof(this.EpisodeRange), this.EpisodeRange, typeof(EpisodeRange));
                 info.AddValue(nameof(this.IsAbsolute), this.IsAbsolute);
                 info.AddValue(nameof(this.Season), this.Season);
             }
