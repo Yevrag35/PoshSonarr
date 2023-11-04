@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Collections;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http;
@@ -328,6 +329,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         protected void StopCmdlet()
         {
             _isStopped = true;
+            this.OnErrorStopping(_scope!.ServiceProvider, null, errorWasProvided: false);
         }
         /// <summary>
         /// Sets the internal "IsStopped" flag in the base cmdlet and writes the supplied 
@@ -340,10 +342,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// should be skipped.
         /// </remarks>
         [DebuggerStepThrough]
-        protected void StopCmdlet(ErrorRecord record)
+        protected void StopCmdlet(ErrorRecord? record)
         {
+            if (record is null)
+            {
+                this.StopCmdlet();
+                return;
+            }
+
+            _isStopped = true;
+            this.OnErrorStopping(_scope!.ServiceProvider, record, errorWasProvided: true);
             this.WriteError(record);
-            this.StopCmdlet();
         }
 
         /// <summary>
@@ -366,13 +375,23 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             return;
         }
 
-        #endregion
+        /// <summary>
+        /// When overriden in derived cmdlets, will run any logic when the <see cref="StopCmdlet()"/> methods
+        /// are called but before any errors/exceptions are thrown. In the case that <see cref="StopCmdlet(ErrorRecord)"/>
+        /// was called, the <see cref="ErrorRecord"/> is passed on to this method; otherwise it will be 
+        /// <see langword="null"/>.
+        /// </summary>
+        /// <remarks>
+        ///     Default implementation in the base class just returns.
+        /// </remarks>
+        /// <param name="provider"></param>
+        [DebuggerStepThrough]
+        protected virtual void OnErrorStopping(IServiceProvider provider, [NotNullWhenTrue(nameof(errorWasProvided))] ErrorRecord? error, bool errorWasProvided)
+        {
+            return;
+        }
 
-        //[DebuggerStepThrough]
-        //public object? GetService(Type serviceType)
-        //{
-        //    return _scope?.ServiceProvider.GetService(serviceType);
-        //}
+        #endregion
 
         private static bool IsEnumerableType(Type type)
         {

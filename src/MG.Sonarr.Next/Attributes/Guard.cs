@@ -5,7 +5,7 @@
     /// being null.
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
-    public sealed class ValidatedNotNullAttribute : Attribute
+    public sealed class ValidatedNotNullAttribute : AnalysisAttribute
     {
     }
 
