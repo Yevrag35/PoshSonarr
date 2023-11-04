@@ -14,13 +14,18 @@
 	<Type>
 		<Name>MG.Sonarr.Next.Models.Episodes.EpisodeObject</Name>
 		<Members>
-			<ScriptProperty>
-				<Name>SeriesIdentifier</Name>
-				<GetScriptBlock>
-					if ($null -ne $this.Series) { $this.Series.Title }
-					else { $this.SeriesId }
-				</GetScriptBlock>
-			</ScriptProperty>
+			<AliasProperty>
+				<Name>Season</Name>
+				<ReferencedMemberName>SeasonNumber</ReferencedMemberName>
+			</AliasProperty>
+			<AliasProperty>
+				<Name>Episode</Name>
+				<ReferencedMemberName>EpisodeNumber</ReferencedMemberName>
+			</AliasProperty>
+			<AliasProperty>
+				<Name>Absolute</Name>
+				<ReferencedMemberName>AbsoluteEpisodeNumber</ReferencedMemberName>
+			</AliasProperty>
 		</Members>
 	</Type>
 	<Type>

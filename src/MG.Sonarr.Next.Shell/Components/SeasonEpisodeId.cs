@@ -1,8 +1,9 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Models.Episodes;
 
 namespace MG.Sonarr.Next.Shell.Components
 {
-    public readonly struct SeasonEpisodeId
+    public readonly struct SeasonEpisodeId : IEpisodeIdentifier
     {
         readonly int _season;
         readonly int _episode;
@@ -27,6 +28,11 @@ namespace MG.Sonarr.Next.Shell.Components
             _episode = episode;
             _isAbsolute = isAbsolute;
             _isNotEmpty = season > 0 || episode > 0;
+        }
+
+        bool IEpisodeIdentifier.IsValid()
+        {
+            return _isNotEmpty;
         }
 
         public static bool TryParse([ValidatedNotNull] ReadOnlySpan<char> value, out SeasonEpisodeId result)
@@ -78,6 +84,53 @@ namespace MG.Sonarr.Next.Shell.Components
             }
 
             return false;
+        }
+
+        public static SeasonEpisodeId[] FromArray(object[] array)
+        {
+            ArgumentNullException.ThrowIfNull(array);
+            if (array.Length <= 0)
+            {
+                return Array.Empty<SeasonEpisodeId>();
+            }
+
+            SeasonEpisodeId[] copyTo = new SeasonEpisodeId[array.Length];
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                object o = array[i];
+                switch (o)
+                {
+                    case SeasonEpisodeId sei:
+                        copyTo[i] = sei;
+                        break;
+
+                    case int intVal:
+                        copyTo[i] = intVal;
+                        break;
+
+                    case long longVal:
+                        if (longVal <= int.MaxValue)
+                        {
+                            copyTo[i] = Convert.ToInt32(longVal);
+                            break;
+                        }
+                        else
+                        {
+                            goto default;
+                        }
+
+                    case string strVal:
+                        copyTo[i] = strVal;
+                        break;
+
+                    default:
+                        copyTo[i] = default;
+                        break;
+                }
+            }
+
+            return copyTo;
         }
 
         public static implicit operator SeasonEpisodeId(string? value)

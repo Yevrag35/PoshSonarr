@@ -21,6 +21,7 @@ namespace MG.Sonarr.Next.Models.Episodes
         const int CAPACITY = 25;
         static readonly string _typeName = typeof(EpisodeObject).GetTypeName();
         private DateOnly _airDate;
+        private IComparable? _manuallySetSeries;
 
         public int AbsoluteEpisodeNumber { get; private set; }
         int IReleasePipeableByEpisode.EpisodeId => this.Id;
@@ -28,8 +29,8 @@ namespace MG.Sonarr.Next.Models.Episodes
         public int EpisodeNumber { get; private set; }
         public bool HasAbsolute { get; private set; }
         public int SeasonNumber { get; private set; }
+        public IComparable Series => _manuallySetSeries ?? this.SeriesId;
         public int SeriesId { get; private set; }
-        public IComparable Series { get; private set; } = 0;
 
         public EpisodeObject()
             : base(CAPACITY)
@@ -60,6 +61,13 @@ namespace MG.Sonarr.Next.Models.Episodes
         protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.EPISODE];
+        }
+
+        public bool Matches(IEpisodeIdentifier identifier)
+        {
+            return identifier.IsAbsolute
+                ? this.HasAbsolute && this.AbsoluteEpisodeNumber == identifier.Episode
+                : this.EpisodeNumber == identifier.Episode && this.SeasonNumber == identifier.Season;
         }
 
         public override void OnDeserialized()
@@ -100,11 +108,11 @@ namespace MG.Sonarr.Next.Models.Episodes
 
             if (this.TryGetNonNullProperty(nameof(this.Series), out SeriesObject? so))
             {
-                this.Series = so.Title;
+                _manuallySetSeries = so.Title;
             }
             else
             {
-                this.Series = this.SeriesId;
+                _manuallySetSeries = this.SeriesId;
             }
         }
 
@@ -113,9 +121,16 @@ namespace MG.Sonarr.Next.Models.Episodes
             this.AddProperty("AirDate", _airDate);
         }
 
-        public void SetSeries(SeriesObject series)
+        public void SetSeries(IEpisodeBySeriesPipeable series)
         {
-            this.Series = series.Title;
+            if (!string.IsNullOrWhiteSpace(series.Title))
+            {
+                _manuallySetSeries = series.Title;
+            }
+            else if (series.SeriesId > 0)
+            {
+                _manuallySetSeries = series.SeriesId;
+            }
         }
 
         protected override void SetPSTypeName()

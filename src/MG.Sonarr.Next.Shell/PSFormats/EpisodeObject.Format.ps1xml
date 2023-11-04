@@ -7,30 +7,54 @@
 				<TypeName>MG.Sonarr.Next.Models.Episodes.EpisodeObject</TypeName>
 			</ViewSelectedBy>
 			<GroupBy>
-				<ScriptBlock>$_.SeriesIdentifier</ScriptBlock>
+				<ScriptBlock>$_.psobject.Series</ScriptBlock>
 				<Label>Series</Label>
 			</GroupBy>
 			<TableControl>
 				<TableHeaders>
-					<TableColumnHeader></TableColumnHeader>
-					<TableColumnHeader></TableColumnHeader>
-					<TableColumnHeader></TableColumnHeader>
+					<TableColumnHeader>
+						<Alignment>Center</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Alignment>Center</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Alignment>Center</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Alignment>Center</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Alignment>Center</Alignment>
+					</TableColumnHeader>
+					<TableColumnHeader>
+						<Alignment>Center</Alignment>
+					</TableColumnHeader>
 					<TableColumnHeader></TableColumnHeader>
 				</TableHeaders>
 				<TableRowEntries>
 					<TableRowEntry>
 						<TableColumnItems>
 							<TableColumnItem>
-								<PropertyName>SeasonNumber</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>EpisodeNumber</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
-								<PropertyName>AbsoluteEpisodeNumber</PropertyName>
-							</TableColumnItem>
-							<TableColumnItem>
 								<PropertyName>Id</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Season</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Episode</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Absolute</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>HasFile</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>IsMonitored</PropertyName>
+							</TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>Title</PropertyName>
 							</TableColumnItem>
 						</TableColumnItems>
 					</TableRowEntry>
