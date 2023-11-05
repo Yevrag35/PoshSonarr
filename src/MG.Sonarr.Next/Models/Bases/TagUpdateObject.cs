@@ -74,5 +74,10 @@ namespace MG.Sonarr.Next.Models
 
             base.Reset();
         }
+
+        int? IPipeable<ITagPipeable>.GetId()
+        {
+            return this.Id;
+        }
     }
 }

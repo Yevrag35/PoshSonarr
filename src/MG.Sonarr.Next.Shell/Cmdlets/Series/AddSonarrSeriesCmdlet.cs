@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Models.Series;
 using System.Runtime.InteropServices;
@@ -21,6 +22,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
+        [ValidateIds(ValidateRangeKind.Positive, InputNullBehavior.EnforceNull)]
         public AddSeriesObject[] InputObject
         {
             get => Array.Empty<AddSeriesObject>();

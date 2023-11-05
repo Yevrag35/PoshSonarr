@@ -21,7 +21,8 @@ namespace MG.Sonarr.Next.Models.Series
         IQualityProfilePipeable,
         IReleasePipeableBySeries,
         ISerializableNames<SeriesObject>,
-        ISeriesPipeable
+        ISeriesPipeable,
+        IValidatableId<IEpisodeBySeriesPipeable>
     {
         const int CAPACITY = 46;
         private const string FIRST_AIRED = "FirstAired";
@@ -165,6 +166,35 @@ namespace MG.Sonarr.Next.Models.Series
         public static IReadOnlyDictionary<string, string> GetSerializedNames()
         {
             return _names.Value.SerializationNames;
+        }
+
+        private protected virtual int? GetSeriesId()
+        {
+            return this.Id;
+        }
+        int? IPipeable<IEpisodeBySeriesPipeable>.GetId()
+        {
+            return this.GetSeriesId();
+        }
+        int? IPipeable<IEpisodeFileBySeriesPipeable>.GetId()
+        {
+            return this.GetSeriesId();
+        }
+        int? IPipeable<ILanguageProfilePipeable>.GetId()
+        {
+            return this.LanguageProfileId;
+        }
+        int? IPipeable<IQualityProfilePipeable>.GetId()
+        {
+            return this.QualityProfileId;
+        }
+        int? IPipeable<IReleasePipeableBySeries>.GetId()
+        {
+            return this.GetSeriesId();
+        }
+        int? IPipeable<ISeriesPipeable>.GetId()
+        {
+            return this.GetSeriesId();
         }
     }
 }

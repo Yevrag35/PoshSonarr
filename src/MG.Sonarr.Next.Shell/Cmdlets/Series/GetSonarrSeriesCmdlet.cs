@@ -8,6 +8,7 @@ using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Shell.Output;
+using MG.Sonarr.Next.Shell.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
@@ -35,6 +36,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, DontShow = true,
             ValueFromPipeline = true)]
+        [ValidateIds(ValidateRangeKind.Positive, typeof(ISeriesPipeable))]
         public ISeriesPipeable[] InputObject
         {
             get => Array.Empty<ISeriesPipeable>();

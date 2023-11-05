@@ -2,6 +2,7 @@
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Testing;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
@@ -18,6 +19,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
 
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
         [ValidateNotNull]
+        [ValidateIds(ValidateRangeKind.Positive, typeof(ITestPipeable))]
         public ITestPipeable[] InputObject { get; set; } = Array.Empty<ITestPipeable>();
 
         protected override void OnCreatingScope(IServiceProvider provider)

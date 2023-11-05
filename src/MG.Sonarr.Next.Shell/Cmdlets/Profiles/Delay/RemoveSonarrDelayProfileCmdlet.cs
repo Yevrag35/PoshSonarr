@@ -17,7 +17,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delay
         public int[] Id { get; set; } = Array.Empty<int>();
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
-        [ValidateId(ValidateRangeKind.Positive)]
+        [ValidateIds(ValidateRangeKind.Positive)]
         public DelayProfileObject[] InputObject { get; set; } = Array.Empty<DelayProfileObject>();
 
         [Parameter]

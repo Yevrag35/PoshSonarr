@@ -35,5 +35,10 @@ namespace MG.Sonarr.Next.Models.DownloadClients
             base.SetPSTypeName();
             this.TypeNames.Insert(0, _typeName);
         }
+
+        int? IPipeable<ITestPipeable>.GetId()
+        {
+            return this.Id;
+        }
     }
 }

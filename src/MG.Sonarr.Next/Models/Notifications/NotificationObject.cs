@@ -82,5 +82,10 @@ namespace MG.Sonarr.Next.Models.Notifications
             result = properties[propertyName];
             return result is not null;
         }
+
+        public int? GetId()
+        {
+            return this.Id;
+        }
     }
 }

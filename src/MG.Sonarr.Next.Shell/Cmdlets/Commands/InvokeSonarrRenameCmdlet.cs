@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Renames;
 using MG.Sonarr.Next.Services.Jobs;
+using MG.Sonarr.Next.Shell.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
 {
@@ -18,6 +19,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
         List<IRenameFilePipeable> _renameables = null!;
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+        [ValidateIds(ValidateRangeKind.Positive, typeof(IRenameFilePipeable))]
         [ValidateNotNull]
         public IRenameFilePipeable[] InputObject { get; set; } = Array.Empty<IRenameFilePipeable>();
 

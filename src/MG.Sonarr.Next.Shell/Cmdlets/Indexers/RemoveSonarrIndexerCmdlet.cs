@@ -19,7 +19,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
         public int[] Id { get; set; } = Array.Empty<int>();
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
-        [ValidateId(ValidateRangeKind.Positive)]
+        [ValidateIds(ValidateRangeKind.Positive)]
         public IndexerObject[] InputObject { get; set; } = Array.Empty<IndexerObject>();
 
         [Parameter]

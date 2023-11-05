@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
+using MG.Sonarr.Next.Shell.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 {
@@ -8,12 +9,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
     [MetadataCanPipe(Tag = Meta.EPISODE)]
     public sealed class UpdateSonarrEpisodeCmdlet : SonarrApiCmdletBase
     {
-        [Parameter(Mandatory = true)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true)]
+        [ValidateIds(ValidateRangeKind.Positive)]
         public EpisodeObject[] InputObject { get; set; } = Array.Empty<EpisodeObject>();
 
         protected override void Process(IServiceProvider provider)
         {
-            this.InputObject ??= Array.Empty<EpisodeObject>();
+            if (this.InputObject.Length <= 0)
+            {
+                return;
+            }
 
             foreach (var ep in this.InputObject)
             {

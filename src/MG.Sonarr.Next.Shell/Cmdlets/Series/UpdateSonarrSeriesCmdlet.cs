@@ -2,6 +2,7 @@
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
@@ -14,6 +15,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         List<SeriesObject> _list = null!;
 
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
+        [ValidateIds(ValidateRangeKind.Positive)]
         public SeriesObject[] InputObject { get; set; } = Array.Empty<SeriesObject>();
 
         protected override void OnCreatingScope(IServiceProvider provider)

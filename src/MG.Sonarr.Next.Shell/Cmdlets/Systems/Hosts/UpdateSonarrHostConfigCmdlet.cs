@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.System;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Hosts
@@ -12,6 +13,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Hosts
     {
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
         [ValidateNotNull]
+        [ValidateId(ValidateRangeKind.Positive)]
         public HostObject InputObject { get; set; } = null!;
 
         protected override void Process(IServiceProvider provider)

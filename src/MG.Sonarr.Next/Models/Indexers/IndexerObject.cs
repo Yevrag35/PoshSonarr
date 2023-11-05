@@ -84,5 +84,10 @@ namespace MG.Sonarr.Next.Models.Indexers
             base.SetPSTypeName();
             this.TypeNames.Insert(0, _typeName);
         }
+
+        public int? GetId()
+        {
+            return this.Id;
+        }
     }
 }

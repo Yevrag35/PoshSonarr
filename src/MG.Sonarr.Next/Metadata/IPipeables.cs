@@ -3,10 +3,25 @@ using MG.Sonarr.Next.Json;
 
 namespace MG.Sonarr.Next.Metadata
 {
+    public interface IPipeable<TSelf> : IJsonSonarrMetadata
+    {
+        int? GetId();
+    }
+
+    public interface IValidatableId<TPipeable> where TPipeable : IPipeable<TPipeable>
+    {
+        static virtual int? GetValidatableId(TPipeable pipeable)
+        {
+            return pipeable.GetId();
+        }
+    }
+
     /// <summary>
     /// An interface exposing the SeriesId property for piping to the /episode endpoint.
     /// </summary>
-    public interface IEpisodeBySeriesPipeable : IJsonSonarrMetadata
+    public interface IEpisodeBySeriesPipeable : IJsonSonarrMetadata,
+        IPipeable<IEpisodeBySeriesPipeable>,
+        IValidatableId<IEpisodeBySeriesPipeable>
     {
         /// <summary>
         /// The series ID of the implementation.
@@ -18,7 +33,9 @@ namespace MG.Sonarr.Next.Metadata
     /// <summary>
     /// An interface exposing the EpisodeId property for piping to the /episode endpoint.
     /// </summary>
-    public interface IEpisodePipeable : IJsonSonarrMetadata
+    public interface IEpisodePipeable : IJsonSonarrMetadata,
+        IPipeable<IEpisodePipeable>,
+        IValidatableId<IEpisodePipeable>
     {
         /// <summary>
         /// The episode ID of the implementation.
@@ -28,7 +45,9 @@ namespace MG.Sonarr.Next.Metadata
     /// <summary>
     /// An interface exposing the EpisodeFileId property for piping to the /episodefile endpoint.
     /// </summary>
-    public interface IEpisodeFilePipeable : IJsonSonarrMetadata
+    public interface IEpisodeFilePipeable : IJsonSonarrMetadata,
+        IPipeable<IEpisodeFilePipeable>,
+        IValidatableId<IEpisodeFilePipeable>
     {
         /// <summary>
         /// The episode file ID of the implementation.
@@ -38,7 +57,9 @@ namespace MG.Sonarr.Next.Metadata
     /// <summary>
     /// An interface exposing the SeriesId property for piping to the /episodefile endpoint.
     /// </summary>
-    public interface IEpisodeFileBySeriesPipeable : IJsonSonarrMetadata
+    public interface IEpisodeFileBySeriesPipeable : IJsonSonarrMetadata,
+        IPipeable<IEpisodeFileBySeriesPipeable>,
+        IValidatableId<IEpisodeFileBySeriesPipeable>
     {
         /// <summary>
         /// The series ID of the implementation.
@@ -48,7 +69,9 @@ namespace MG.Sonarr.Next.Metadata
     /// <summary>
     /// An interface exposing the LanguageProfileId property for piping to the /languageprofile endpoint.
     /// </summary>
-    public interface ILanguageProfilePipeable : IJsonMetadataTaggable
+    public interface ILanguageProfilePipeable : IJsonMetadataTaggable,
+        IPipeable<ILanguageProfilePipeable>,
+        IValidatableId<ILanguageProfilePipeable>
     {
         /// <summary>
         /// The language profile ID of the implementation.
@@ -58,7 +81,9 @@ namespace MG.Sonarr.Next.Metadata
     /// <summary>
     /// An interface exposing the QualityProfileId property for piping to the /qualityprofile endpoint.
     /// </summary>
-    public interface IQualityProfilePipeable : IJsonMetadataTaggable
+    public interface IQualityProfilePipeable : IJsonMetadataTaggable,
+        IPipeable<IQualityProfilePipeable>,
+        IValidatableId<IQualityProfilePipeable>
     {
         /// <summary>
         /// The quality profile ID of the implementation.
@@ -68,7 +93,9 @@ namespace MG.Sonarr.Next.Metadata
     /// <summary>
     /// An interface exposing the EpisodeId property for piping to the /release endpoint.
     /// </summary>
-    public interface IReleasePipeableByEpisode : IJsonMetadataTaggable
+    public interface IReleasePipeableByEpisode : IJsonMetadataTaggable,
+        IPipeable<IReleasePipeableByEpisode>,
+        IValidatableId<IReleasePipeableByEpisode>
     {
         /// <summary>
         /// The episode ID of the implementation.
@@ -78,14 +105,18 @@ namespace MG.Sonarr.Next.Metadata
     /// <summary>
     /// An inteface exposing the SeriesId property for piping to the /release endpoint.
     /// </summary>
-    public interface IReleasePipeableBySeries : IJsonMetadataTaggable
+    public interface IReleasePipeableBySeries : IJsonMetadataTaggable,
+        IPipeable<IReleasePipeableBySeries>,
+        IValidatableId<IReleasePipeableBySeries>
     {
         /// <summary>
         /// The series ID of the implementation.
         /// </summary>
         int SeriesId { get; }
     }
-    public interface IRenameFilePipeable : IJsonMetadataTaggable
+    public interface IRenameFilePipeable : IJsonMetadataTaggable,
+        IPipeable<IRenameFilePipeable>,
+        IValidatableId<IRenameFilePipeable>
     {
         int EpisodeFileId { get; }
         int SeriesId { get; }
@@ -93,7 +124,9 @@ namespace MG.Sonarr.Next.Metadata
     /// <summary>
     /// An interface exposing the SeriesId property for piping to the /series endpoint.
     /// </summary>
-    public interface ISeriesPipeable : IJsonSonarrMetadata
+    public interface ISeriesPipeable : IJsonSonarrMetadata,
+        IPipeable<ISeriesPipeable>,
+        IValidatableId<ISeriesPipeable>
     {
         /// <summary>
         /// The series ID of the implementation.
@@ -103,7 +136,9 @@ namespace MG.Sonarr.Next.Metadata
     /// <summary>
     /// An interface exposing properties and methods for piping to the /tag endpoint.
     /// </summary>
-    public interface ITagPipeable : IHasId, IJsonSonarrMetadata
+    public interface ITagPipeable : IHasId, IJsonSonarrMetadata,
+        IPipeable<ITagPipeable>,
+        IValidatableId<ITagPipeable>
     {
         /// <summary>
         /// Indicates that tag changes must be saved via a Sonarr API request.
@@ -137,7 +172,9 @@ namespace MG.Sonarr.Next.Metadata
         void Reset();
     }
 
-    public interface ITestPipeable : IJsonSonarrMetadata
+    public interface ITestPipeable : IJsonSonarrMetadata,
+        IPipeable<ITestPipeable>,
+        IValidatableId<ITestPipeable>
     {
         int Id { get; }
     }

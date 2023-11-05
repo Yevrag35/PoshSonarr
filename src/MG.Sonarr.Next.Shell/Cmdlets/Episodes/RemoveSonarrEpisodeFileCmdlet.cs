@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
 
@@ -15,9 +16,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         SortedSet<int> _ids = null!;
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByEpisodeId")]
+        [ValidateRange(ValidateRangeKind.Positive)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput")]
+        [ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodeFilePipeable))]
         public IEpisodeFilePipeable[] InputObject { get; set; } = Array.Empty<IEpisodeFilePipeable>();
 
         [Parameter]
@@ -32,7 +35,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            //this.Returnables[0] = _ids;
             this.GetReturnables()[0] = _ids;
         }
 

@@ -19,6 +19,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
         public ICommand[] InputObject { get; set; } = Array.Empty<ICommand>();
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+        [ValidateRange(ValidateRangeKind.Positive)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
         protected override int Capacity => 1;

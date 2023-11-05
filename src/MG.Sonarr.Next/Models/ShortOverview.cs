@@ -39,17 +39,28 @@ namespace MG.Sonarr.Next.Models
             text.Slice(0, shortenedLength).CopyTo(span);
             int position = shortenedLength;
 
-            while (!char.IsWhiteSpace(span[position - 1]))
+            while (!char.IsWhiteSpace(span[position - 1]) && position < text.Length)
             {
                 int current = position;
                 span[current] = text[current];
                 position++;
             }
 
+            if (!char.IsWhiteSpace(span[position - 1]))
+            {
+                position++;
+            }
+
             threeDots.CopyTo(span.Slice(position - 1));
             position += threeDots.Length - 1;
 
-            return new string(span.Slice(0, position).Trim());
+            string s = new string(span.Slice(0, position).Trim());
+            if (isRented)
+            {
+                ArrayPool<char>.Shared.Return(array!);
+            }
+
+            return s;
         }
         private static Span<char> RentArray(int length, ref bool isRented, ref char[]? array)
         {

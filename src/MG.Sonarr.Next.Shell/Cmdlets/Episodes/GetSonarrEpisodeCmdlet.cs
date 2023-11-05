@@ -36,11 +36,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         public int[] SeriesId { get; set; } = Array.Empty<int>();
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_EP_INPUT)]
-        [ValidateId(ValidateRangeKind.Positive)]
+        [ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodePipeable))]
         public IEpisodePipeable[] EpisodeInput { get; set; } = Array.Empty<IEpisodePipeable>();
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_SERIES_INPUT)]
-        [ValidateId(ValidateRangeKind.Positive)]
+        [ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodeBySeriesPipeable))]
         public IEpisodeBySeriesPipeable[] SeriesInput { get; set; } = Array.Empty<IEpisodeBySeriesPipeable>();
 
         [Parameter(Mandatory = false, Position = 1, ParameterSetName = BY_SERIES_ID)]
@@ -64,11 +64,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             {
                 this.WriteError(error);
             }
-            //if (this.HasParameter(x => x.EpisodeIdentifier) && this.EpisodeIdentifier.IsEmpty)
-            //{
-            //    this.WriteError(new ArgumentException("Episode identifiers should be either be in \"S<seasonNumber>E<episodeNumber>\" format or a number.")
-            //        .ToRecord(ErrorCategory.InvalidArgument, this.EpisodeIdentifier));
-            //}
         }
 
         protected override void Process(IServiceProvider provider)
@@ -200,6 +195,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             public void SetTag(IMetadataResolver resolver)
             {
                 return;
+            }
+
+            int? IPipeable<IEpisodeBySeriesPipeable>.GetId()
+            {
+                return null;
             }
 
             internal static readonly EmptySeries Default = default;

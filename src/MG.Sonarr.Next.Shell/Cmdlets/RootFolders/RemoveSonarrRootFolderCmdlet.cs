@@ -1,6 +1,7 @@
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.RootFolders;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
 
@@ -14,6 +15,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
         SortedSet<int> _ids = null!;
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+        [ValidateIds(ValidateRangeKind.Positive)]
         public RootFolderObject[] InputObject { get; set; } = Array.Empty<RootFolderObject>();
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]

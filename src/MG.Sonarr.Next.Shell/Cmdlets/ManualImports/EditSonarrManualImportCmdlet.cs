@@ -21,10 +21,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
         [Alias("Record")]
         [ValidateNotNull]
+        [ValidateId(ValidateRangeKind.Positive)]
         public ManualImportObject InputObject { get; set; } = null!;
 
         [Parameter]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [ValidateId(ValidateRangeKind.Positive, InputNullBehavior.PassAsZero)]
         [ValidateType(typeof(int), typeof(SeriesObject))]
         public object Series
         {
@@ -36,6 +38,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
 
         [Parameter]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [ValidateId(ValidateRangeKind.Positive, InputNullBehavior.PassAsZero)]
         [ValidateType(typeof(int), typeof(EpisodeObject))]
         public object Episode
         {
@@ -47,6 +50,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
 
         [Parameter]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [ValidateId(ValidateRangeKind.Positive, InputNullBehavior.PassAsZero)]
         [ValidateType(typeof(int), typeof(QualityRevisionObject))]
         public object Quality
         {

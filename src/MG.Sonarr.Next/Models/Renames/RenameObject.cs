@@ -64,5 +64,14 @@ namespace MG.Sonarr.Next.Models.Renames
             base.SetPSTypeName();
             this.TypeNames.Insert(0, _typeName);
         }
+
+        int? IPipeable<ISeriesPipeable>.GetId()
+        {
+            return this.SeriesId;
+        }
+        int? IPipeable<IRenameFilePipeable>.GetId()
+        {
+            return this.EpisodeFileId;
+        }
     }
 }

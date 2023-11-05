@@ -78,5 +78,22 @@ namespace MG.Sonarr.Next.Models.Calendar
             base.SetPSTypeName();
             this.TypeNames.Insert(0, _typeName);
         }
+
+        int? IPipeable<IEpisodePipeable>.GetId()
+        {
+            return this.Id;
+        }
+        int? IPipeable<IEpisodeFilePipeable>.GetId()
+        {
+            return this.EpisodeFileId;
+        }
+        int? IPipeable<ISeriesPipeable>.GetId()
+        {
+            return this.SeriesId;
+        }
+        int? IPipeable<IRenameFilePipeable>.GetId()
+        {
+            return this.EpisodeFileId;
+        }
     }
 }

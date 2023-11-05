@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.Indexers;
+using MG.Sonarr.Next.Shell.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
 {
@@ -10,6 +11,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
     public sealed class UpdateSonarrIndexerCmdlet : SonarrApiCmdletBase
     {
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
+        [ValidateId(ValidateRangeKind.Positive)]
         [ValidateNotNull]
         public IndexerObject InputObject { get; set; } = null!;
 

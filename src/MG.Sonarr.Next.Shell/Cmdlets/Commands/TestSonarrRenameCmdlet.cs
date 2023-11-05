@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Renames;
 using MG.Sonarr.Next.Services.Http.Queries;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
@@ -17,6 +18,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
         QueryParameterCollection _params = null!;
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "BySeriesInput")]
+        [ValidateId(ValidateRangeKind.Positive, typeof(ISeriesPipeable))]
         public ISeriesPipeable InputObject
         {
             get => null!;

@@ -1,6 +1,5 @@
 ﻿using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Models.Episodes;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Next.Shell.Exceptions

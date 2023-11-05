@@ -2,6 +2,7 @@
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Shell.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
@@ -37,6 +38,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE,
             DontShow = true)]
         [ValidateNotNull]
+        [ValidateIds(ValidateRangeKind.Positive)]
         public SeriesObject[] InputObject
         {
             get => Array.Empty<SeriesObject>();

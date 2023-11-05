@@ -46,5 +46,18 @@ namespace MG.Sonarr.Next.Models.Episodes
             base.SetPSTypeName();
             this.TypeNames.Insert(0, _typeName);
         }
+
+        int? IPipeable<IEpisodeFilePipeable>.GetId()
+        {
+            return this.Id;
+        }
+        int? IPipeable<IRenameFilePipeable>.GetId()
+        {
+            return this.Id;
+        }
+        int? IPipeable<ISeriesPipeable>.GetId()
+        {
+            return this.SeriesId;
+        }
     }
 }

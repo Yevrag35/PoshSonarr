@@ -1,4 +1,5 @@
 using MG.Sonarr.Next.Models.Config;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.NamingConfig
@@ -8,6 +9,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.NamingConfig
     {
         [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0)]
         [ValidateNotNull]
+        [ValidateId(ValidateRangeKind.Positive)]
         public NamingConfigObject InputObject { get; set; } = null!;
 
         protected override void Process(IServiceProvider provider)

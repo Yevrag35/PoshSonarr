@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Releases;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Shell.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
 {
@@ -20,6 +21,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByEpisodeInput")]
+        [ValidateId(ValidateRangeKind.Positive, typeof(IReleasePipeableByEpisode))]
         public IReleasePipeableByEpisode Episode
         {
             get => null!;
@@ -32,6 +34,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "BySeriesInput")]
+        [ValidateId(ValidateRangeKind.Positive, typeof(IReleasePipeableBySeries))]
         public IReleasePipeableBySeries Series
         {
             get => null!;

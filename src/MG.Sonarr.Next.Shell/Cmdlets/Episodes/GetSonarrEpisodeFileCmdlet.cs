@@ -5,6 +5,7 @@ using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
+using MG.Sonarr.Next.Shell.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 {
@@ -20,11 +21,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         SortedSet<int> _seriesIds = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByEpisodeFileInput", DontShow = true)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByEpisodeFileInput")]
+        [ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodeFilePipeable))]
         public IEpisodeFilePipeable[] InputObject { get; set; } = Array.Empty<IEpisodeFilePipeable>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "BySeriesInput", DontShow = true)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "BySeriesInput")]
+        [ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodeFileBySeriesPipeable))]
         public IEpisodeFileBySeriesPipeable[] SeriesInput { get; set; } = Array.Empty<IEpisodeFileBySeriesPipeable>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]

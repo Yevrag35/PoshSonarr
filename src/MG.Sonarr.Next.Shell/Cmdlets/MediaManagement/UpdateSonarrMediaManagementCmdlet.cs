@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Models.Media;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.MediaManagement
@@ -10,6 +11,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.MediaManagement
     {
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
         [ValidateNotNull]
+        [ValidateId(ValidateRangeKind.Positive)]
         public MediaManagementObject InputObject { get; set; } = null!;
 
         [Parameter]

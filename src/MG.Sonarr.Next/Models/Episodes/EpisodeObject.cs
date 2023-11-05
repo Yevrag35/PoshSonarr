@@ -11,7 +11,6 @@ namespace MG.Sonarr.Next.Models.Episodes
     [SonarrObject]
     public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
         IEpisodeFilePipeable,
-        IHasId,
         IJsonOnSerializing,
         IReleasePipeableByEpisode,
         IRenameFilePipeable,
@@ -137,6 +136,23 @@ namespace MG.Sonarr.Next.Models.Episodes
         {
             base.SetPSTypeName();
             this.TypeNames.Insert(0, _typeName);
+        }
+
+        int? IPipeable<IEpisodeFilePipeable>.GetId()
+        {
+            return this.Id;
+        }
+        int? IPipeable<IReleasePipeableByEpisode>.GetId()
+        {
+            return this.Id;
+        }
+        int? IPipeable<IRenameFilePipeable>.GetId()
+        {
+            return this.EpisodeFileId;
+        }
+        int? IPipeable<ISeriesPipeable>.GetId()
+        {
+            return this.SeriesId;
         }
     }
 }

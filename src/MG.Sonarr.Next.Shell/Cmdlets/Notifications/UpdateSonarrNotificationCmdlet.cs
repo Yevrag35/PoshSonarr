@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Models.Notifications;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications
@@ -9,6 +10,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications
     public sealed class UpdateSonarrNotificationCmdlet : SonarrApiCmdletBase
     {
         [Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0)]
+        [ValidateIds(ValidateRangeKind.Positive)]
         public NotificationObject[] InputObject { get; set; } = Array.Empty<NotificationObject>();
 
         [Parameter]

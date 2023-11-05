@@ -17,11 +17,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
         [ValidateRange(ValidateRangeKind.Positive)]
         public int Id { get; set; }
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
         [ValidateId(ValidateRangeKind.Positive)]
-        public ReleaseProfileObject? InputObject
+        public ReleaseProfileObject InputObject
         {
-            get => null;
+            get => null!;
             set => this.Id = value?.Id ?? -1;
         }
 

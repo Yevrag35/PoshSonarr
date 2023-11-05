@@ -63,7 +63,10 @@ namespace MG.Sonarr.Next.Models.Series
         {
             return StringComparer.InvariantCultureIgnoreCase.Compare(this.Title, other?.Title);
         }
-
+        private protected override int? GetSeriesId()
+        {
+            return null;
+        }
         protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.SERIES_ADD];
@@ -72,7 +75,6 @@ namespace MG.Sonarr.Next.Models.Series
         public override void OnDeserialized()
         {
             base.OnDeserialized();
-            this.Properties.Add(new PSAliasProperty(Constants.NAME, Constants.TITLE));
             this.Properties.RemoveMany(Constants.ID, "Added");
 
             if (this.TryGetNonNullProperty(Constants.SERIES_TYPE, out string? seriesType))
