@@ -137,23 +137,25 @@ namespace MG.Sonarr.Next.Shell.Extensions
             ArgumentNullException.ThrowIfNull(getSetting);
             ArgumentNullException.ThrowIfNull(setValue);
 
-            if (value is not null)
+            if (value is null)
             {
-                var func = getSetting.Compile();
-                TObj? obj = func(cmdlet);
-                if (obj is null)
-                {
-                    if (!getSetting.TryGetAsSetter(out FieldOrPropertyInfoSetter setter))
-                    {
-                        throw new InvalidOperationException("TObj must resolve to a field or property.");
-                    }
+                return;
+            }
 
-                    obj = new();
-                    setter.SetValue(cmdlet, obj);
+            var func = getSetting.Compile();
+            TObj? obj = func(cmdlet);
+            if (obj is null)
+            {
+                if (!getSetting.TryGetAsSetter(out IMemberSetter? setter))
+                {
+                    throw new InvalidOperationException("TObj must resolve to a field or property.");
                 }
 
-                setValue.Invoke(value, obj);
+                obj = new();
+                setter.SetValue(cmdlet, obj);
             }
+
+            setValue.Invoke(value, obj);
         }
         
         public static void WriteCollection<T>(this Cmdlet cmdlet, IEnumerable<T> collection)
