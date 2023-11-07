@@ -1,4 +1,4 @@
-using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Shell.Exceptions;
 using System.Buffers;
 
@@ -9,23 +9,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
     {
         bool _isRented;
         object[] _rented = Array.Empty<object>();
-        protected virtual int ReturnableCapacity => 0;
+        int _capacity;
+        protected virtual int Capacity => 0;
+        private protected virtual int InternalCapacity => 0;
 
-        private void SetReturnables()
+        private static int CalculateCapacity(int capacity, int internalCapacity)
         {
-            if (this.ReturnableCapacity <= 0)
-            {
-                return;
-            }
-
-            _rented = ArrayPool<object>.Shared.Rent(this.ReturnableCapacity);
-            _isRented = true;
+            capacity += internalCapacity;
+            return capacity >= internalCapacity ? capacity : internalCapacity;
         }
 
-        protected override void OnCreatingScope(IServiceProvider provider)
+        private protected override void OnCreatingScopeInternal(IServiceProvider provider)
         {
-            base.OnCreatingScope(provider);
-            this.SetReturnables();
+            base.OnCreatingScopeInternal(provider);
+            _capacity = this.Capacity;
+            _rented = SetReturnables(this.InternalCapacity, ref _capacity, ref _isRented);
         }
 
         /// <summary>
@@ -37,7 +35,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         /// </remarks>
         /// <typeparam name="T"></typeparam>
         /// <exception cref="PipelineStoppedException"/>
-        [DebuggerStepThrough]
         protected T GetPooledObject<T>() where T : notnull
         {
             if (!this.IsScopeInitialized)
@@ -63,7 +60,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         }
         private Span<object> GetAllReturnables()
         {
-            return _isRented ? _rented.AsSpan(0, this.ReturnableCapacity) : Span<object>.Empty;
+            return _isRented ? _rented.AsSpan(0, _capacity) : Span<object>.Empty;
         }
 
         /// <summary>
@@ -71,10 +68,23 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="item">The item to return to the pool.</param>
-        [DebuggerStepThrough]
         protected void ReturnPooledObject<T>(T item) where T : notnull
         {
             this.Services?.GetService<IObjectPool<T>>()?.Return(item);
+        }
+        private static object[] SetReturnables(int internalCapacity, ref int capacity, ref bool isRented)
+        {
+            capacity = CalculateCapacity(capacity, internalCapacity);
+            if (capacity <= 0)
+            {
+                capacity = 0;
+                return Array.Empty<object>();
+            }
+
+            object[] array = ArrayPool<object>.Shared.Rent(capacity);
+            isRented = true;
+
+            return array;
         }
 
         bool _disposed;

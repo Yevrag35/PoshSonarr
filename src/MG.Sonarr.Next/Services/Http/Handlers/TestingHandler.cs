@@ -16,6 +16,12 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            string str = string.Empty;
+            if (request.Content is not null)
+            {
+                str = await request.Content.ReadAsStringAsync();
+            }
+
             var respTask = base.SendAsync(request, cancellationToken);
             if (!IsTesting(request))
             {

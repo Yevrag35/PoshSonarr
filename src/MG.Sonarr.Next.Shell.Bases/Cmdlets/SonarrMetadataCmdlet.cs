@@ -7,11 +7,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
     [DebuggerStepThrough]
     public abstract class SonarrMetadataCmdlet : SonarrApiCmdletBase
     {
-        protected MetadataTag Tag { get; private set; } = MetadataTag.Empty;
+        MetadataTag? _tag;
 
-        protected override void OnCreatingScope(IServiceProvider provider)
+        protected MetadataTag Tag
         {
-            base.OnCreatingScope(provider);
+            get => _tag ??= MetadataTag.Empty;
+            private set => _tag = value;
+        }
+
+        private protected sealed override void OnCreatingScopeInternal(IServiceProvider provider)
+        {
+            base.OnCreatingScopeInternal(provider);
             this.Tag = this.GetMetadataTag(provider.GetRequiredService<IMetadataResolver>());
         }
 

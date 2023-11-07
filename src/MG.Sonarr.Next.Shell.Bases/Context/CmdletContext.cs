@@ -1,4 +1,4 @@
-using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Services.Auth;
@@ -24,10 +24,10 @@ namespace MG.Sonarr.Next.Shell.Context
     {
         internal static IServiceScope CreateScope<T>(this T cmdlet) where T : PSCmdlet, IIsRunning<T>, IScopeCmdlet<T>
         {
-            if (!T.IsRunningCommand(cmdlet))
-            {
-                throw new InvalidOperationException("Don't execute me weird.");
-            }
+            //if (!T.IsRunningCommand(cmdlet))
+            //{
+            //    throw new InvalidOperationException("Don't execute me weird.");
+            //}
 
             return SonarrContext.GetProvider().CreateScope();
         }
@@ -49,10 +49,10 @@ namespace MG.Sonarr.Next.Shell.Context
         internal static IServiceScope SetContext<T>(this T cmdlet, Assembly cmdletAssembly, Action<IServiceCollection> addAdditionalServices)
             where T : PSCmdlet, IConnectContextCmdlet, IIsRunning<T>
         {
-            if (!T.IsRunningCommand(cmdlet))
-            {
-                throw new InvalidOperationException("Don't execute me weird.");
-            }
+            //if (!T.IsRunningCommand(cmdlet))
+            //{
+            //    throw new InvalidOperationException("Don't execute me weird.");
+            //}
 
             return SonarrContext.Initialize(cmdlet.GetConnectionSettings(), cmdletAssembly, addAdditionalServices);
         }
@@ -123,7 +123,16 @@ namespace MG.Sonarr.Next.Shell.Context
 
         private static void AddObjectPools(IServiceCollection services)
         {
-            services.AddObjectPoolReturner();
+            services.AddObjectPoolReturner()
+                    .AddGenericObjectPool<QueryParameterCollection>(builder =>
+                    {
+                        builder.SetConstructor(() => new QueryParameterCollection(10))
+                               .SetDeconstructor(col =>
+                               {
+                                   col.Clear();
+                                   return true;
+                               });
+                    });
 
             AddPool<HashSet<Wildcard>, HashSetWildcardPool>(services);
             AddPool<SortedSet<int>, SortedIntSetPool>(services);

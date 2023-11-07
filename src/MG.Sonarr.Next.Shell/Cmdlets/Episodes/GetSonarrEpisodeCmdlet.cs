@@ -1,5 +1,4 @@
-﻿using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
@@ -8,24 +7,26 @@ using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Shell.Attributes;
+using MG.Sonarr.Next.Collections.Pools;
+using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 {
     [Cmdlet(VerbsCommon.Get, "SonarrEpisode", DefaultParameterSetName = BY_EP_ID)]
     [MetadataCanPipe(Tag = Meta.CALENDAR)]
     [MetadataCanPipe(Tag = Meta.SERIES)]
-    public sealed class GetSonarrEpisodeCmdlet : SonarrApiCmdletBase
+    public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
     {
         const string BY_EP_ID = "ByEpisodeId";
         const string BY_EP_INPUT = "ByEpisodeInput";
         const string BY_SERIES_ID = "BySeriesId";
         const string BY_SERIES_INPUT = "BySeriesInput";
-        bool _disposed;
+        const int CAPACITY = 3;
 
         SortedSet<int> _epIds = null!;
-        //SortedSet<int> _seriesIds = null!;
+        QueryParameterCollection _params = null!;
         Dictionary<int, IEpisodeBySeriesPipeable> _seriesIds = null!;
-        MetadataTag _tag = null!;
+        protected override int Capacity => CAPACITY;
 
         [Parameter(Mandatory = true, ParameterSetName = BY_EP_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
@@ -48,14 +49,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         [Alias("SeasonEpId")]
         public SeasonEpisodeId[] EpisodeIdentifier { get; set; } = Array.Empty<SeasonEpisodeId>();
 
+        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
+        {
+            return resolver[Meta.EPISODE];
+        }
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _tag = provider.GetRequiredService<IMetadataResolver>()[Meta.EPISODE];
-            var pool = provider.GetRequiredService<IObjectPool<SortedSet<int>>>();
-            _epIds = pool.Get();
-            //_seriesIds = pool.Get();
-            _seriesIds = new(1);
+            _epIds = this.GetPooledObject<SortedSet<int>>();
+            _seriesIds = this.GetPooledObject<Dictionary<int, IEpisodeBySeriesPipeable>>();
+            _params = this.GetPooledObject<QueryParameterCollection>();
+            var span = this.GetReturnables();
+            span[0] = _epIds;
+            span[1] = _seriesIds;
+            span[2] = _params;
         }
 
         protected override void Begin(IServiceProvider provider)
@@ -109,7 +116,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 
         private static void AddSeries(IEpisodeBySeriesPipeable[] input, IDictionary<int, IEpisodeBySeriesPipeable> dict)
         {
-            foreach (var series in input)
+            foreach (IEpisodeBySeriesPipeable series in input)
             {
                 _ = dict.TryAdd(series.SeriesId, series);
             }
@@ -126,7 +133,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         {
             foreach (int id in episodeIds)
             {
-                string url = _tag.GetUrlForId(id);
+                string url = this.Tag.GetUrlForId(id);
                 var response = this.SendGetRequest<T>(url);
                 if (response.IsError)
                 {
@@ -140,11 +147,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         }
         private IEnumerable<EpisodeObject> GetEpisodesBySeries(IReadOnlyDictionary<int, IEpisodeBySeriesPipeable> series)
         {
-            QueryParameterCollection queryCol = new();
             foreach (int id in series.Keys)
             {
-                queryCol.Add(Constants.SERIES_ID, id);
-                string url = _tag.GetUrl(queryCol);
+                _params.Add(Constants.SERIES_ID, id);
+                string url = this.Tag.GetUrl(_params);
                 var response = this.SendGetRequest<MetadataList<EpisodeObject>>(url);
                 if (response.IsError)
                 {
@@ -162,27 +168,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                     yield return obj;
                 }
 
-                queryCol.Clear();
+                _params.Clear();
             }
-        }
-
-        protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
-        {
-            if (disposing && !_disposed)
-            {
-                if (factory is not null)
-                {
-                    using var scope = factory.CreateScope();
-                    var pool = scope.ServiceProvider.GetService<IObjectPool<SortedSet<int>>>();
-                    pool?.Return(_epIds);
-                }
-
-                _epIds = null!;
-                _seriesIds = null!;
-                _disposed = true;
-            }
-
-            base.Dispose(disposing, factory);
         }
 
         private readonly struct EmptySeries : IEpisodeBySeriesPipeable

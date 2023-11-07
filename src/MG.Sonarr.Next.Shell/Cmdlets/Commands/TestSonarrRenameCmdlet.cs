@@ -35,18 +35,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
         [ValidateRange(ValidateRangeKind.NonNegative)]
         public int SeasonNumber { get; set; }
 
+        protected override int Capacity => 1;
+
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            _params = this.GetPooledObject<QueryParameterCollection>();
+            this.GetReturnables()[0] = _params;
+        }
+
         protected override void Begin(IServiceProvider provider)
         {
             if (this.HasParameter(x => x.SeasonNumber))
             {
-                _params = new(2)
-                {
-                    { nameof(this.SeasonNumber), this.SeasonNumber },
-                };
-            }
-            else
-            {
-                _params = new();
+                _params.Add(nameof(this.SeasonNumber), this.SeasonNumber);
             }
         }
 

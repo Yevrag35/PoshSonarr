@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace MG.Sonarr.Next.Collections
+namespace MG.Sonarr.Next.Collections.Pools
 {
     /// <summary>
     /// An interface exposing a property and method of an <see cref="IObjectPool{T}"/> to be able to return

@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Management.Automation;
 using System.Net.Http.Json;
 using MG.Sonarr.Next.Json;
+using MG.Sonarr.Next.Collections.Pools;
 
 namespace MG.Sonarr.Next.Services.Http.Clients
 {
@@ -17,28 +18,26 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         SonarrResponse<PingResponse> SendPing(CancellationToken token = default);
     }
 
-    file sealed class SignalRClient : ISignalRClient
+    file sealed class SignalRClient : ISignalRClient, IDisposable
     {
         const long MIN_RNG = 100_000_000L;
         const string SIGNAL_R = "/signalr";
         const string PING = SIGNAL_R + "/ping";
         const string UNDERSCORE = "_";
 
+        bool _disposed;
         readonly HttpClient _client;
-        readonly QueryParameterCollection _queryParams;
+        QueryParameterCollection _queryParams;
         readonly JsonSerializerOptions? _options;
         readonly Random _rng;   // this is *NOT* meant to be cryptographically secure.
         readonly IServiceScopeFactory _scopeFactory;
 
-        public SignalRClient(HttpClient client, Random random, IConnectionSettings settings, ISonarrJsonOptions options, IServiceScopeFactory scopeFactory)
+        public SignalRClient(HttpClient client, Random random, IConnectionSettings settings, ISonarrJsonOptions options, IObjectPool<QueryParameterCollection> pool, IServiceScopeFactory scopeFactory)
         {
             _client = client;
             _options = options.ForDeserializing;
-            int initialCapacity = 2;
-            _queryParams = new(initialCapacity)
-            {
-                { nameof(IConnectionSettings.ApiKey), settings.ApiKey.GetValue() }
-            };
+            _queryParams = pool.Get();
+            _queryParams.Add(nameof(IConnectionSettings.ApiKey), settings.ApiKey.GetValue());
 
             _rng = random;
             _scopeFactory = scopeFactory;
@@ -119,6 +118,27 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                 error = new SonarrErrorRecord(ex, ex.GetTypeName(), ErrorCategory.ParserError, response);
                 return false;
             }
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    using var scope = _scopeFactory.CreateScope();
+                    var returner = scope.ServiceProvider.GetRequiredService<IObjectPool<QueryParameterCollection>>();
+                    returner.Return(_queryParams);
+                }
+
+                _queryParams = null!;
+                _disposed = true;
+            }
+        }
+        public void Dispose()
+        {
+            this.Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 

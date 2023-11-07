@@ -1,7 +1,7 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace MG.Sonarr.Next.Collections
+namespace MG.Sonarr.Next.Collections.Pools
 {
     /// <summary>
     /// An interface exposing methods for returning objects back into their respective
@@ -40,13 +40,17 @@ namespace MG.Sonarr.Next.Collections
         {
             if (obj is null)
             {
+                Debug.Fail("Should this really be null?");
                 return;
             }
 
-            if (_dict.TryGetValue(obj.GetType(), out var pool))
+            if (!_dict.TryGetValue(obj.GetType(), out IObjectPoolReturnable? pool))
             {
-                pool.Return(obj);
+                Debug.Fail("Couldn't find an object returner.");
+                return;
             }
+
+            pool.Return(obj);
         }
         public void Return(ReadOnlySpan<object> span)
         {
@@ -54,11 +58,13 @@ namespace MG.Sonarr.Next.Collections
 
             if (span.IsEmpty)
             {
+                Debug.Fail("Should this really be empty?");
                 return;
             }
 
             foreach (object? obj in span)
             {
+                Debug.Assert(obj is not null);
                 this.Return(obj);
             }
         }

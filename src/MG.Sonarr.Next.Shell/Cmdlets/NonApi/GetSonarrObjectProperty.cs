@@ -1,4 +1,5 @@
 using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 
@@ -6,13 +7,23 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.NonApi
 {
     [Cmdlet(VerbsCommon.Get, "SonarrObjectProperty")]
     [Alias("Get-SonarrObjectProperties", "Get-SonarrProperties")]
-    public sealed class GetSonarrObjectProperty : SonarrCmdletBase
+    public sealed class GetSonarrObjectProperty : PoolableCmdlet
     {
+        SortedSet<SonarrProperty> _set = null!;
+
+        protected override int Capacity => 1;
+
         [Parameter(Position = 0, ValueFromPipeline = true)]
         public PSObject[] InputObject { get; set; } = Array.Empty<PSObject>();
 
         [Parameter]
         public SwitchParameter IncludeReadOnly { get; set; }
+
+        protected override void OnCreatingScope(IServiceProvider provider)
+        {
+            _set = this.GetPooledObject<SortedSet<SonarrProperty>>();
+            this.GetReturnables()[0] = _set;
+        }
 
         protected override void Process(IServiceProvider provider)
         {
@@ -23,14 +34,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.NonApi
 
             bool includeRo = this.IncludeReadOnly.ToBool();
 
-            var set = provider.GetRequiredService<SortedSet<SonarrProperty>>();
-            foreach (var pso in this.InputObject)
+            foreach (PSObject pso in this.InputObject)
             {
-                foreach (var property in pso.Properties)
+                foreach (PSPropertyInfo property in pso.Properties)
                 {
                     if (includeRo || property.IsSettable)
                     {
-                        set.Add(new()
+                        _set.Add(new()
                         {
                             CurrentValue = property.Value,
                             IsReadOnly = !property.IsSettable,
@@ -45,13 +55,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.NonApi
 
         protected override void End(IServiceProvider provider)
         {
-            var set = provider.GetRequiredService<SortedSet<SonarrProperty>>();
-            if (set.Count <= 0)
+            if (_set.Count <= 0)
             {
                 return;
             }
 
-            this.WriteCollection(set);
+            this.WriteCollection(_set);
         }
     }
 }

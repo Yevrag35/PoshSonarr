@@ -23,6 +23,7 @@
     <None Remove="Debug.ps1" />
     <None Remove="PSFormats\EpisodeObject.Format.ps1xml" />
     <None Remove="PSFormats\MetadataTag.Format.ps1xml" />
+    <None Remove="PSFormats\RenameObject.Format.ps1xml" />
     <None Remove="PSFormats\SeriesObject.Format.ps1xml" />
     <None Remove="PSFormats\SonarrProperty.Format.ps1xml" />
     <None Remove="PSFormats\SonarrTag.Format.ps1xml" />
@@ -69,6 +70,9 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="PSFormats\MetadataTag.Format.ps1xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="PSFormats\RenameObject.Format.ps1xml">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="PSFormats\SonarrProperty.Format.ps1xml">

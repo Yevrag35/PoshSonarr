@@ -10,6 +10,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
     //[DebuggerStepThrough]
     public abstract class TimedCmdlet : PoolableCmdlet, IApiCmdlet
     {
+        const int TIMED_CAPACITY = 1;
         Stopwatch _timer = null!;
 
         /// <summary><inheritdoc cref="SonarrCmdletBase.CaptureVerbosePreference"/></summary>
@@ -17,18 +18,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         /// Implementation in the base class always returns <see langword="true"/>.
         /// </remarks>
         protected sealed override bool CaptureVerbosePreference => true;
-        protected virtual int Capacity => 0;
-        protected sealed override int ReturnableCapacity => 1 + this.Capacity;
+        private protected sealed override int InternalCapacity => 1;
 
-        protected override Span<object> GetReturnables()
+        protected sealed override Span<object> GetReturnables()
         {
             Span<object> span = base.GetReturnables();
             return span.Slice(1);
         }
-
-        protected override void OnCreatingScope(IServiceProvider provider)
+        protected virtual Span<object> GetReturnableSpan()
         {
-            base.OnCreatingScope(provider);
+            return this.GetReturnables();
+        }
+
+        private protected override void OnCreatingScopeInternal(IServiceProvider provider)
+        {
+            base.OnCreatingScopeInternal(provider);
             Span<object> span = base.GetReturnables();
 
             _timer = this.GetPooledObject<Stopwatch>();

@@ -10,22 +10,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
     /// An <see langword="abstract"/>, base class for Sonarr cmdlets that issue HTTP requests to Sonarr API
     /// endpoints.
     /// </summary>
-    [DebuggerStepThrough]
+    //[DebuggerStepThrough]
     public abstract class SonarrApiCmdletBase : TimedCmdlet
     {
         ISonarrClient _client = null!;
         Queue<IApiCmdlet> _queue = null!;
 
-        /// <summary>
-        /// Overridden to retrieve a scoped <see cref="ISonarrClient"/> instance to be used for any API
-        /// requests.
-        /// </summary>
-        /// <param name="provider">The scoped service provider for use by derived cmdlets.</param>
-        /// <exception cref="Exception"/>
-        /// <exception cref="InvalidOperationException"/>
-        protected override void OnCreatingScope(IServiceProvider provider)
+        private protected override void OnCreatingScopeInternal(IServiceProvider provider)
         {
-            base.OnCreatingScope(provider);
+            base.OnCreatingScopeInternal(provider);
             _client = provider.GetRequiredService<ISonarrClient>();
             _queue = provider.GetRequiredService<Queue<IApiCmdlet>>();
         }

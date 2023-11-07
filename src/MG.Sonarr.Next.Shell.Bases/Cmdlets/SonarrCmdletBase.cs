@@ -32,15 +32,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         static readonly Type _enumerableType = typeof(IEnumerable);
         static readonly Type _stringType = typeof(string);
 
-        internal static bool HasChecked;
+        private static bool _hasChecked;
         static bool IScopeCmdlet<SonarrCmdletBase>.HasChecked()
         {
-            return HasChecked;
+            return _hasChecked;
         }
 
         static void IScopeCmdlet<SonarrCmdletBase>.SetChecked(bool toggle)
         {
-            HasChecked = toggle;
+            _hasChecked = toggle;
         }
 
         bool _disposed;
@@ -134,6 +134,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             _isInitialized = true;
             try
             {
+                this.OnCreatingScopeInternal(_scope.ServiceProvider);
                 this.OnCreatingScope(_scope.ServiceProvider);
             }
             catch (Exception e)
@@ -371,6 +372,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <exception cref="Exception"/>
         [DebuggerStepThrough]
         protected virtual void OnCreatingScope(IServiceProvider provider)
+        {
+            return;
+        }
+
+        private protected virtual void OnCreatingScopeInternal(IServiceProvider provider)
         {
             return;
         }

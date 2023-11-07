@@ -9,6 +9,8 @@ using System.Text.Json;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Shell.Components;
+using MG.Sonarr.Next.Collections.Pools;
+using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 {
@@ -79,11 +81,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
                 _settings.Timeout = TimeSpan.FromMinutes(5d);
             }
 
-            using IServiceScope scope = this.ConnectContext(services =>
-            {
-                services.AddScoped<SortedSet<SonarrProperty>>()
-                        .AddScoped<ManualImportEdit>();
-            });
+            using IServiceScope scope = this.ConnectContext(ConfigureServices);
 
             var queue = scope.ServiceProvider.GetService<Queue<IApiCmdlet>>();
             queue?.Enqueue(this);
@@ -96,6 +94,39 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
                 this.DisconnectContext();
                 this.ThrowTerminatingError(result.Error);
             }
+        }
+
+        private static void ConfigureServices(IServiceCollection services)
+        {
+            services.AddScoped<ManualImportEdit>()
+                    .AddGenericObjectPool<Dictionary<int, IEpisodeBySeriesPipeable>>(builder =>
+                    {
+                        builder.SetConstructor(() => new Dictionary<int, IEpisodeBySeriesPipeable>(50))
+                               .SetDeconstructor(dict =>
+                               {
+                                   dict.Clear();
+                                   int cap = dict.EnsureCapacity(50);
+                                   if (cap >= 1000)
+                                   {
+                                       dict.TrimExcess(50);
+                                   }
+
+                                   return true;
+                               });
+                    })
+                    .AddGenericObjectPool<HashSet<DayOfWeek>>(set =>
+                    {
+                        int count = set.Count;
+                        set.Clear();
+                        return count <= 1000;
+                    })
+                    .AddGenericObjectPool<SortedSet<SonarrProperty>>(set =>
+                    {
+                        int count = set.Count;
+                        set.Clear();
+
+                        return count <= 3000;
+                    });
         }
 
         private ISonarrResponse SendTest(ISonarrClient client, IServiceProvider provider, bool passThru)

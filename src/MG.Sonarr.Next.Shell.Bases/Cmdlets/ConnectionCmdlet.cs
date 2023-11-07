@@ -38,6 +38,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         IIsRunning<DisconnectCmdlet>,
         IScopeCmdlet<DisconnectCmdlet>
     {
+        protected void DisconnectContext()
+        {
+            this.UnsetContext();
+        }
         static bool IScopeCmdlet<DisconnectCmdlet>.HasChecked()
         {
             return true;
@@ -49,12 +53,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         static void IScopeCmdlet<DisconnectCmdlet>.SetChecked(bool toggle)
         {
             return;
-        }
-
-        protected void DisconnectContext()
-        {
-            SonarrCmdletBase.HasChecked = false;
-            this.UnsetContext();
         }
     }
 }
