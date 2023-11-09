@@ -92,9 +92,9 @@ namespace MG.Sonarr.Next.Models.Commands
         {
             return resolver[Meta.COMMAND];
         }
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
+            base.OnDeserialized(alreadyCalled);
             if (this.TryGetProperty(BODY, out PSObject? body))
             {
                 _body = body;

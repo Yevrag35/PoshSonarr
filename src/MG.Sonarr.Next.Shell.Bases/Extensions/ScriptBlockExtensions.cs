@@ -6,6 +6,7 @@ namespace MG.Sonarr.Next.Shell.Extensions
     public static class ScriptBlockExtensions
     {
         const string UNDERSCORE = "_";
+        const string THIS = "this";
 
         /// <summary>
         /// A custom <see cref="ScriptBlock"/> invocation method that injects a stated object for '$_' and sets the 
@@ -33,6 +34,7 @@ namespace MG.Sonarr.Next.Shell.Extensions
             List<PSVariable> variables = new(listCount)
             {
                  new PSVariable(UNDERSCORE, value),
+                 new PSVariable(THIS, value),
             };
 
             if (errorAction.HasValue)
@@ -40,7 +42,7 @@ namespace MG.Sonarr.Next.Shell.Extensions
                 variables.Add(new PSVariable("ErrorActionPreference", errorAction.Value));
             }
 
-            Collection<PSObject> results = scriptBlock.InvokeWithContext(null, variables);
+            Collection<PSObject> results = scriptBlock.InvokeWithContext(null, variables, Array.Empty<object>());
 
             return results.Count > 0 && results[0].ImmediateBaseObject is TOutput tRes
                 ? tRes

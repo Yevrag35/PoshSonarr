@@ -88,9 +88,9 @@ namespace MG.Sonarr.Next.Models.System
             return resolver[Meta.LOG_FILE];
         }
 
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
+            base.OnDeserialized(alreadyCalled);
             this.Properties.Remove(nameof(this.Id));
 
             if (this.TryGetNonNullProperty(nameof(this.ContentsUrl), out string? cl))

@@ -2,20 +2,43 @@
 {
     public static class PSIntrinsicsExtensions
     {
-        public static bool TryGetVariableValue<T>(this PSVariableIntrinsics? intrinsics, string variableName, [NotNullWhen(true)] out T? value)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="intrinsics"></param>
+        /// <param name="variableName"></param>
+        /// <param name="value"></param>
+        /// <exception cref="ArgumentException"/>
+        /// <exception cref="ArgumentNullException"/>
+        /// <returns></returns>
+        public static bool TryGetVariableValue<T>(this PSVariableIntrinsics intrinsics, string variableName, [NotNullWhen(true)] out T? value)
         {
-            if (intrinsics is not null)
+            ArgumentNullException.ThrowIfNull(intrinsics);
+            ArgumentException.ThrowIfNullOrEmpty(variableName);
+
+            object? val;
+            try
             {
-                object? val = intrinsics.GetValue(variableName);
-                if (val is T tVal)
-                {
-                    value = tVal;
-                    return true;
-                }
+                val = intrinsics.GetValue(variableName);
+            }
+            catch (Exception e)
+            {
+                Debug.Fail(e.Message);
+                value = default;
+                return false;
             }
 
-            value = default;
-            return false;
+            if (val is T tVal)
+            {
+                value = tVal;
+                return true;
+            }
+            else
+            {
+                value = default;
+                return false;
+            }
         }
     }
 }

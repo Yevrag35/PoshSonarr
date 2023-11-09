@@ -25,9 +25,9 @@ namespace MG.Sonarr.Next.Models.Qualities
             return resolver[Meta.QUALITY_PROFILE];
         }
 
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
+            base.OnDeserialized(alreadyCalled);
             if (this.TryGetNonNullProperty(nameof(this.Name), out string? name))
             {
                 this.Name = name;

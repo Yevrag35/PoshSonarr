@@ -11,6 +11,7 @@ namespace MG.Sonarr.Next.Models
     /// <summary>
     /// Dangerous object.
     /// </summary>
+    /// <remarks><inheritdoc cref="PSObject"/></remarks>
     public abstract class SonarrObject : PSObject,
         IJsonSonarrMetadata,
         IJsonOnDeserialized
@@ -37,6 +38,7 @@ namespace MG.Sonarr.Next.Models
         }
         public virtual void OnDeserialized()
         {
+            this.OnDeserialized(_addedType);
             if (_addedType)
             {
                 return;
@@ -44,6 +46,10 @@ namespace MG.Sonarr.Next.Models
 
             this.SetPSTypeName();
             _addedType = true;
+        }
+        protected virtual void OnDeserialized(bool alreadyCalled)
+        {
+            return;
         }
         public virtual void Reset()
         {

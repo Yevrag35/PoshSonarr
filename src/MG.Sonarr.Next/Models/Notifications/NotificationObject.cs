@@ -37,9 +37,9 @@ namespace MG.Sonarr.Next.Models.Notifications
             return resolver[Meta.NOTIFICATION];
         }
 
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
+            base.OnDeserialized(alreadyCalled);
             this.MustUpdateViaApi = false;
             bool isEnabled = CalculateIsEnabled(this.Properties);
             this.Properties.Add(new PSNoteProperty("IsEnabled", isEnabled));

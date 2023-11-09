@@ -7,12 +7,7 @@ namespace MG.Sonarr.Next.Models
         IHasId
         where TSelf : IdSonarrObject<TSelf>
     {
-        static readonly Dictionary<Type, string> _typeNames = new(20);
-
-        public virtual int Id
-        {
-            get => this.GetValue<int>();
-        }
+        public int Id { get; private set; }
         protected IdSonarrObject(int capacity)
             : base(capacity)
         {
@@ -21,6 +16,15 @@ namespace MG.Sonarr.Next.Models
         public virtual int CompareTo(TSelf? other)
         {
             return Comparer<int?>.Default.Compare(this.Id, other?.Id);
+        }
+        public sealed override void OnDeserialized()
+        {
+            if (this.TryGetId(out int id))
+            {
+                this.Id = id;
+            }
+
+            base.OnDeserialized();
         }
     }
 }

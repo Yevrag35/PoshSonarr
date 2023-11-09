@@ -63,9 +63,9 @@ namespace MG.Sonarr.Next.Models.ManualImports
         {
             return resolver[Meta.MANUAL_IMPORT];
         }
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
+            base.OnDeserialized(alreadyCalled);
 
             this.StoreAndReplaceName();
             this.AddMissingProperties();

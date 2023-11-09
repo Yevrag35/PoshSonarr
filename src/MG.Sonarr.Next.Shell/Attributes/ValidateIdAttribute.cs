@@ -342,11 +342,11 @@ namespace MG.Sonarr.Next.Shell.Attributes
 
         internal static bool TryGetMethodInfo(Type parameterType)
         {
-            if (_getIds.TryGetValue(parameterType, out _))
+            if (_getIds.ContainsKey(parameterType))
             {
                 return true;
             }
-            else if (!TryGetMatchingPipeableInterface(parameterType, out Type? pipeableInterface, out Type? validatable))
+            else if (!TryGetMatchingPipeableInterface(parameterType))
             {
                 return false;
             }
@@ -354,36 +354,60 @@ namespace MG.Sonarr.Next.Shell.Attributes
             MethodInfo genMeth = _getIdMethod.MakeGenericMethod(parameterType);
             return _getIds.TryAdd(parameterType, genMeth);
         }
-        private static bool TryGetMatchingPipeableInterface(Type parameterType, [NotNullWhen(true)] out Type? pipeableInterface, [NotNullWhen(true)] out Type? validatableInterface)
+        private static bool TryGetMatchingPipeableInterface(Type parameterType)
         {
-            pipeableInterface = null;
-            validatableInterface = null;
-
             Type[] interfaces = parameterType.GetInterfaces();
             if (interfaces.Length <= 0)
             {
-
                 return false;
             }
 
-            foreach (Type @interface in interfaces)
+            DoubleBool dub = DoubleBool.InitializeNew();
+
+            foreach (Type @interface in interfaces.OrderByDescending(x => x.Name))
             {
-                if (@interface.GenericTypeArguments.Length > 0
-                    &&
-                    parameterType.Equals(@interface.GenericTypeArguments[0]))
+                if (InterfaceGenericsEqual(@interface, parameterType))
                 {
-                    if (@interface.Name.StartsWith("IPipeable", StringComparison.Ordinal))
+                    if (@interface.Name.StartsWith("IValidatableId", StringComparison.Ordinal))
                     {
-                        pipeableInterface = @interface;
+                        dub.Bool1 = true;
                     }
-                    else if (@interface.Name.StartsWith("IValidatableId", StringComparison.Ordinal))
+                    else if (@interface.Name.StartsWith("IPipeable", StringComparison.Ordinal))
                     {
-                        validatableInterface = @interface;
+                        dub.Bool2 = true;
                     }
+                }
+
+                if (dub)
+                {
+                    break;
                 }
             }
 
-            return pipeableInterface is not null && validatableInterface is not null;
+            return dub;
+        }
+
+        private static bool InterfaceGenericsEqual(Type interfaceType, Type parameterType)
+        {
+            return interfaceType.GenericTypeArguments.Length > 0
+                   &&
+                   parameterType.Equals(interfaceType.GenericTypeArguments[0]);
+        }
+
+        private ref struct DoubleBool
+        {
+            public bool Bool1;
+            public bool Bool2;
+
+            private DoubleBool(bool initialize)
+            {
+                Bool1 = initialize;
+                Bool2 = initialize;
+            }
+
+            internal static DoubleBool InitializeNew() => new(false);
+
+            public static implicit operator bool(DoubleBool dub) => dub.Bool1 && dub.Bool2;
         }
     }
 }

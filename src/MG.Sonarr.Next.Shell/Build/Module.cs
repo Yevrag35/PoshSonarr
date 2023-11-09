@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Shell.Build
             List<Type> list = GetCmdletTypes();
 
             List<string> names = new(list.Count);
-            List<string> aliases = new(list.Count / 4);
+            List<string> aliases = new(list.Count / 2);
 
             foreach (Type type in list)
             {
@@ -29,7 +29,7 @@ namespace MG.Sonarr.Next.Shell.Build
         private static void AddCmdletData(Type type, List<string> names, List<string> aliases)
         {
             CmdletAttribute cmdletAtt = type.GetCustomAttributes<CmdletAttribute>().First();
-            names.Add($"{cmdletAtt.VerbName}-{cmdletAtt.NounName}");
+            names.Add(GetCmdletName(cmdletAtt));
 
             if (type.IsDefined(typeof(AliasAttribute), false))
             {
@@ -51,6 +51,20 @@ namespace MG.Sonarr.Next.Shell.Build
                     .Where(IsCmdlet);
 
             return new(cmdletTypes);
+        }
+        const char DASH = '-';
+        private static string GetCmdletName(CmdletAttribute cmdletAttribute)
+        {
+            int length = cmdletAttribute.VerbName.Length + cmdletAttribute.NounName.Length + 1;
+            return string.Create(length, cmdletAttribute, (chars, state) =>
+            {
+                state.VerbName.CopyTo(chars);
+                int position = state.VerbName.Length;
+
+                chars[position++] = DASH;
+
+                state.NounName.CopyTo(chars.Slice(position));
+            });
         }
         private static bool IsCmdlet(Type type)
         {

@@ -23,7 +23,6 @@ namespace MG.Sonarr.Next.Models.Series
         private string? _pathProp;
 
         public SeriesAddOptions? AddOptions { get; set; }
-        public override int Id => -1;
         public bool IsFullPath { get; set; }
         public bool IsMonitored
         {
@@ -72,9 +71,9 @@ namespace MG.Sonarr.Next.Models.Series
             return resolver[Meta.SERIES_ADD];
         }
 
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
+            base.OnDeserialized(alreadyCalled);
             this.Properties.RemoveMany(Constants.ID, "Added");
 
             if (this.TryGetNonNullProperty(Constants.SERIES_TYPE, out string? seriesType))
@@ -122,7 +121,7 @@ namespace MG.Sonarr.Next.Models.Series
         {
             return true;
         }
-        public override void Reset()
+        protected override void OnReset()
         {
             if (!string.IsNullOrEmpty(_pathProp))
             {
@@ -131,7 +130,7 @@ namespace MG.Sonarr.Next.Models.Series
             }
 
             this.AddOptions = null;
-            base.Reset();
+            base.OnReset();
         }
     }
 }

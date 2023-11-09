@@ -53,9 +53,9 @@ namespace MG.Sonarr.Next.Models.Calendar
             return resolver[Meta.CALENDAR];
         }
 
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
+            base.OnDeserialized(alreadyCalled);
             this.Properties.Remove("AirDate");
 
             if (this.TryGetProperty(nameof(this.SeriesId), out int seriesId))

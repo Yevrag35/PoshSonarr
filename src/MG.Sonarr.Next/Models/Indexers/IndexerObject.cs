@@ -46,15 +46,15 @@ namespace MG.Sonarr.Next.Models.Indexers
             return resolver[Meta.INDEXER];
         }
 
-        public override void Commit()
+        protected override void OnCommit()
         {
-            base.Commit();
             this.Name = this.GetValue<string>() ?? string.Empty;
             this.Protocol = this.GetValue<string>() ?? string.Empty;
+            base.OnCommit();
         }
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
+            base.OnDeserialized(alreadyCalled);
             if (this.TryGetNonNullProperty(nameof(this.Name), out string? name))
             {
                 this.Name = name;

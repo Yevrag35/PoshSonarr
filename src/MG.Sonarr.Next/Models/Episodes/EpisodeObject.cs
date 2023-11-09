@@ -69,9 +69,9 @@ namespace MG.Sonarr.Next.Models.Episodes
                 : identifier.EpisodeRange.IsInRange(this.EpisodeNumber) && this.SeasonNumber == identifier.Season;
         }
 
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
+            base.OnDeserialized(alreadyCalled);
             if (this.TryGetProperty("AirDate", out DateOnly airDate))
             {
                 _airDate = airDate;

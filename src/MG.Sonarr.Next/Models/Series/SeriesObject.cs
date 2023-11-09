@@ -58,10 +58,10 @@ namespace MG.Sonarr.Next.Models.Series
         {
         }
 
-        public override void Commit()
+        protected override void OnCommit()
         {
             this.Properties.Remove(FIRST_AIRED);
-            base.Commit();
+            base.OnCommit();
         }
 
         protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
@@ -69,9 +69,9 @@ namespace MG.Sonarr.Next.Models.Series
             return resolver[Meta.SERIES];
         }
 
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
+            base.OnDeserialized(alreadyCalled);
 
             PSPropertyInfo? property = this.Properties[FIRST_AIRED];
             if (property is not null && property.Value is DateOnly dateOnly)
@@ -99,10 +99,10 @@ namespace MG.Sonarr.Next.Models.Series
         {
             this.SetValue(_firstAired, FIRST_AIRED);
         }
-        public override void Reset()
+        protected override void OnReset()
         {
             this.Properties.Remove(FIRST_AIRED);
-            base.Reset();
+            base.OnReset();
         }
         protected override void SetPSTypeName()
         {

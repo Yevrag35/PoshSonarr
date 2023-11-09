@@ -41,9 +41,8 @@ namespace MG.Sonarr.Next.Models.Renames
             return resolver[Meta.RENAMABLE];
         }
 
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
             if (this.TryGetProperty(nameof(this.SeriesId), out int seriesId))
             {
                 this.SeriesId = seriesId;

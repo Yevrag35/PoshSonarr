@@ -26,9 +26,9 @@ namespace MG.Sonarr.Next.Models.History
         {
             return resolver[Meta.HISTORY];
         }
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
+            base.OnDeserialized(alreadyCalled);
             if (this.TryGetNonNullProperty(nameof(this.DownloadId), out string? dlId))
             {
                 this.DownloadId = dlId;

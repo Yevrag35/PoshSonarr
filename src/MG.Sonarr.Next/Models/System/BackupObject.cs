@@ -38,9 +38,9 @@ namespace MG.Sonarr.Next.Models.System
             return resolver[Meta.BACKUP];
         }
 
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
+            base.OnDeserialized(alreadyCalled);
 
             if (this.TryGetNonNullProperty(nameof(this.Name), out string? name))
             {

@@ -29,12 +29,12 @@ namespace MG.Sonarr.Next.Models
         {
         }
 
-        public override void Commit()
+        public sealed override void Commit()
         {
-            base.Commit();
-            this.CommitTags();
+            ((ITagPipeable)this).CommitTags();
+            this.OnCommit();
         }
-        public void CommitTags()
+        void ITagPipeable.CommitTags()
         {
             if (_originalTags is not null)
             {
@@ -47,21 +47,19 @@ namespace MG.Sonarr.Next.Models
                 this.Tags.CopyTo(_originalTags);
             }
         }
-        public override void OnDeserialized()
+        protected virtual void OnCommit()
         {
-            base.OnDeserialized();
+            return;
+        }
+        protected override void OnDeserialized(bool alreadyCalled)
+        {
             this.MustUpdateViaApi = true;
             if (this.Properties[Constants.TAGS] is ReadOnlyTagsProperty tagsProp)
             {
                 this.Tags = tagsProp.Tags;
             }
-
-            //if (this.TryGetNonNullProperty(nameof(this.Tags), out SortedSet<int>? tags))
-            //{
-            //    this.Tags = tags;
-            //}
         }
-        public override void Reset()
+        public sealed override void Reset()
         {
             if (_tags is not null)
             {
@@ -72,7 +70,11 @@ namespace MG.Sonarr.Next.Models
                 }
             }
 
-            base.Reset();
+            this.OnReset();
+        }
+        protected virtual void OnReset()
+        {
+            return;
         }
 
         int? IPipeable<ITagPipeable>.GetId()

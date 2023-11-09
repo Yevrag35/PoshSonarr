@@ -31,9 +31,9 @@ namespace MG.Sonarr.Next.Models.Episodes
             return resolver[Meta.EPISODE_FILE];
         }
 
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
+            base.OnDeserialized(alreadyCalled);
 
             if (this.TryGetProperty(nameof(this.SeriesId), out int seriesId))
             {

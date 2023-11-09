@@ -14,7 +14,6 @@ namespace MG.Sonarr.Next.Models.Notifications
     {
         const int CAPACITY = 38;
         static readonly string _typeName = typeof(NotificationSchemaObject).GetTypeName();
-        public override int Id => -1;
         public bool IsTaggable => true;
 
         public NotificationSchemaObject()
@@ -26,9 +25,9 @@ namespace MG.Sonarr.Next.Models.Notifications
         {
             return resolver[Meta.NOTIFICATION];
         }
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
+            base.OnDeserialized(alreadyCalled);
             this.Properties.Remove(nameof(this.Id));
         }
         public void OnSerializing()
