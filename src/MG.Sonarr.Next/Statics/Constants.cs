@@ -77,6 +77,7 @@ namespace MG.Sonarr.Next
         public static readonly string QUEUE = "/queue";
         public static readonly string RELEASE = "/release";
         public static readonly string RELEASE_PROFILE = RELEASE + "profile";
+        public static readonly string REMOTE_PATH = "/remotepathmapping";
         public static readonly string RENAME = "/rename";
         public static readonly string RESTART;
         public static readonly string RESTRICTION = "/restriction";
@@ -119,6 +120,7 @@ namespace MG.Sonarr.Next
         public const string QUALITY_PROFILE = "#quality_profile";
         public const string RELEASE = "#release";
         public const string RELEASE_PROFILE = "#release_profile";
+        public const string REMOTE_PATH_MAPPING = "#remote_path_mapping";
         public const string RENAMABLE = "#rename_file";
         public const string REVISION = "#quality_revision";
         public const string ROOT_FOLDER = "#root_folder";

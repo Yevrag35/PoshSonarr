@@ -21,7 +21,7 @@
 					</TableColumnHeader>
 					<TableColumnHeader>
 						<!-- Type -->
-						<Alignment>Right</Alignment>
+						<Alignment>Left</Alignment>
 					</TableColumnHeader>
 				</TableHeaders>
 				<TableRowEntries>

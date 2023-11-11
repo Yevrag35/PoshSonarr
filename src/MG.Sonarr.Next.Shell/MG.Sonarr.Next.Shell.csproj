@@ -112,8 +112,4 @@
     <ProjectReference Include="..\MG.Sonarr.Next.Shell.Bases\MG.Sonarr.Next.Shell.Bases.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Context\" />
-  </ItemGroup>
-
 </Project>

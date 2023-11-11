@@ -414,7 +414,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <param name="message">An optional message to display before the serialization.</param>
         /// <param name="options">Options to provide the <see cref="JsonSerializer"/>.</param>
         [DebuggerStepThrough]
-        protected void SerializeIfDebug<T>(T value, string? message = null, JsonSerializerOptions? options = null)
+        protected void SerializeIfDebug<T>(T value, string? message = null, bool includeType = true, JsonSerializerOptions? options = null)
         {
             if (this.DebugPreference != ActionPreference.SilentlyContinue)
             {
@@ -427,7 +427,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                     ? typeof(T)
                     : typeof(object);
 
-                this.WriteDebug($"Serializing 'value' of type: {type.FullName ?? type.Name}");
+                if (includeType)
+                {
+                    this.WriteDebug($"Serializing 'value' of type: {type.FullName ?? type.Name}");
+                }
+
                 this.WriteDebug(JsonSerializer.Serialize(value, type, options));
             }
         }
