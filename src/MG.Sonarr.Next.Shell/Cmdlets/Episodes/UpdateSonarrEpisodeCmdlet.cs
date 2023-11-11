@@ -42,14 +42,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         private void SendUpdate(EpisodeObject episode)
         {
             string url = episode.MetadataTag.GetUrlForId(episode.Id);
-            if (this.ShouldProcess(url, "Update Episode"))
+            if (!this.ShouldProcess(url, "Update Episode"))
             {
-                var response = this.SendPutRequest(url, episode);
-                if (response.IsError)
-                {
-
-                }
+                return;   
             }
+
+            var response = this.SendPutRequest(url, episode);
+            this.TryCommitFromResponse(episode, in response);
         }
     }
 }

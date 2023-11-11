@@ -5,6 +5,7 @@ using MG.Sonarr.Next.Models.History;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Time;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Completers;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -21,7 +22,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
         const string BY_SERIES_PIPE = "BySeriesPipelineInput";
         const string SINCE_DATE = "SinceDate";
 
-        const int CAPACITY = 2;
+        const int CAPACITY = 3;
 
         int _eventType = -1;
         SortedSet<int> _ids = null!;
@@ -67,6 +68,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
         public DateTime Since { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = BY_SERIES_PIPE, ValueFromPipeline = true)]
+        [ValidateIds(ValidateRangeKind.Positive)]
         public SeriesObject[] Series { get; set; } = Array.Empty<SeriesObject>();
 
         [Parameter(Mandatory = true, ParameterSetName = BY_SERIES_ID)]
@@ -75,6 +77,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
 
         #endregion
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter]
         [ArgumentCompleter(typeof(EventTypeCompleter))]
         [ValidateNotNullOrEmpty]
@@ -100,14 +103,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
             base.OnCreatingScope(provider);
             _paging = this.GetPooledObject<PagingParameter>();
             _ids = this.GetPooledObject<SortedSet<int>>();
-            //this.Returnables[0] = _paging;
-            //this.Returnables[1] = _ids;
+            _parameters = this.GetPooledObject<QueryParameterCollection>();
 
             var span = this.GetReturnables();
             span[0] = _paging;
             span[1] = _ids;
-
-            _parameters = new(4);
+            span[2] = _parameters;
         }
 
         protected override void Begin(IServiceProvider provider)
@@ -147,9 +148,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
             {
                 _ids.UnionWith(this.Series.Select(x => x.Id));
             }
-
-            //var response = this.SendGetRequest<RecordResult<HistoryObject>>(Constants.HISTORY + "/since?date=" + DateTime.Today.AddDays(-7d).ToString(Constants.CALENDAR_DT_FORMAT));
-            //_ = this.TryWriteObject(in response);
         }
 
         protected override void End(IServiceProvider provider)
