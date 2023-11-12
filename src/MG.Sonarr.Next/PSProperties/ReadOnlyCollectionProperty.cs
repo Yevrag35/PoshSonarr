@@ -2,6 +2,23 @@ using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties
 {
+    public sealed class ReadOnlyCollectionProperty<T> : ReadOnlyProperty<IReadOnlyList<T>>
+    {
+        public IReadOnlyList<T> Collection { get; }
+        protected override IReadOnlyList<T> ValueAsT => this.Collection;
+
+        public ReadOnlyCollectionProperty(string propertyName, IReadOnlyList<T>? list)
+            : base(propertyName)
+        {
+            this.Collection = list ?? Array.Empty<T>();
+        }
+
+        public override PSMemberInfo Copy()
+        {
+            return this;
+        }
+    }
+
     public sealed class ReadOnlyCollectionProperty<T, TCol> : ReadOnlyProperty<TCol>
         where TCol : IEnumerable<T>, new()
     {
