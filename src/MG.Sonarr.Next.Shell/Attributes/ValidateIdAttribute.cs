@@ -1,3 +1,4 @@
+using MG.Sonarr.Next.Components;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
@@ -392,22 +393,6 @@ namespace MG.Sonarr.Next.Shell.Attributes
             return interfaceType.GenericTypeArguments.Length > 0
                    &&
                    parameterType.Equals(interfaceType.GenericTypeArguments[0]);
-        }
-
-        private ref struct DoubleBool
-        {
-            public bool Bool1;
-            public bool Bool2;
-
-            private DoubleBool(bool initialize)
-            {
-                Bool1 = initialize;
-                Bool2 = initialize;
-            }
-
-            internal static DoubleBool InitializeNew() => new(false);
-
-            public static implicit operator bool(DoubleBool dub) => dub.Bool1 && dub.Bool2;
         }
     }
 }
