@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.System;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server

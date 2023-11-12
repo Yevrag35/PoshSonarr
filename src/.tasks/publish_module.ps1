@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 param (
 	[Parameter()]
 	[string] $LibraryName = 'MG.Sonarr.Next.Shell',

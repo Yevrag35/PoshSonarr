@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Shell.Extensions
+namespace MG.Sonarr.Next.Shell.Extensions
 {
     public static class SetExtensions
     {

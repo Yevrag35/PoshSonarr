@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Auth;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
 {

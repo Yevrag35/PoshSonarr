@@ -1,4 +1,6 @@
-﻿namespace MG.Sonarr.Next.Models
+﻿using MG.Sonarr.Next.Extensions.PSO;
+
+namespace MG.Sonarr.Next.Models
 {
     public abstract class IdSonarrObject<TSelf> : SonarrObject,
         IComparable<TSelf>,

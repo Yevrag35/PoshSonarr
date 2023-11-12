@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Calendar;
 using MG.Sonarr.Next.Models.Tags;
@@ -44,6 +44,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 
         [Parameter(Mandatory = true, ParameterSetName = "ShowTomorrow")]
         public SwitchParameter Tomorrow { get; set; }
+
+        // Possibly coming in v4
+        //[Parameter]
+        //public IntOrString[] Tag { get; set; } = Array.Empty<IntOrString>();
 
         [Parameter]
         public SwitchParameter IncludeEpisodeFile { get; set; }

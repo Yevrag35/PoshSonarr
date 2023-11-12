@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Services.Http.Requests;
 using Microsoft.Extensions.Caching.Memory;

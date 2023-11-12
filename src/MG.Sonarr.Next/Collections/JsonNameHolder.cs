@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions;
 
 namespace MG.Sonarr.Next.Collections
 {

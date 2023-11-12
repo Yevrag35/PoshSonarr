@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Models.Episodes;
 
 namespace MG.Sonarr.Next.Shell.Components

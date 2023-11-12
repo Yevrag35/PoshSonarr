@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Extensions.Reflection;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Extensions.Strings;
 using System.Management.Automation;
 

@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Http.Clients;
+using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Http;
 using IOFile = System.IO.File;
 using IOPath = System.IO.Path;

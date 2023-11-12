@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Shell.Components;
+using MG.Sonarr.Next.Shell.Components;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Frozen;

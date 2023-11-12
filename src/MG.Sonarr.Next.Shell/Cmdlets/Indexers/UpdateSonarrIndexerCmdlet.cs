@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.Indexers;
 using MG.Sonarr.Next.Shell.Attributes;

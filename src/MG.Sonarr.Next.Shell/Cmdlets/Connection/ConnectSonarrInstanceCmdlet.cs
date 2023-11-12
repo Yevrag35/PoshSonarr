@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Http;
+using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Shell.Attributes;

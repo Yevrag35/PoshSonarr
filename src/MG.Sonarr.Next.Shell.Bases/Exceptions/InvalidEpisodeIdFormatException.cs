@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Exceptions;
+using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Models.Episodes;
 using System.Runtime.Serialization;
 

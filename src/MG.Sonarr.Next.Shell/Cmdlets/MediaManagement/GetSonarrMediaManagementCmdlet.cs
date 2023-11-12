@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Models.Media;
+using MG.Sonarr.Next.Models.Media;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.MediaManagement

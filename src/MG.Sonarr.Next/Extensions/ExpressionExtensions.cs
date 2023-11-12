@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Enums;
+using MG.Sonarr.Next.Enums;
 using MG.Sonarr.Next.Reflection;
 using System.Reflection;
 

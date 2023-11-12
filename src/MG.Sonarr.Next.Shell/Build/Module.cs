@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Extensions.Strings;
 using System.Collections.Immutable;
 using System.Reflection;

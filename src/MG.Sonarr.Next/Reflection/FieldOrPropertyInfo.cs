@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Unions;
+using MG.Sonarr.Next.Unions;
 using System.Reflection;
 using System.Runtime.InteropServices;
 

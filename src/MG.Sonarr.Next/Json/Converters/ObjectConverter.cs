@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Components;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Json.Converters.Spans;
@@ -148,19 +148,14 @@ namespace MG.Sonarr.Next.Json.Converters
             ReadOnlySpan<char> backs = ['\\', '\\'];
             Span<char> scratch = stackalloc char[chars.Length];
 
-            foreach (SplitEntry section in chars.SpanSplit(quotes, backs))
+            if (reader.ValueIsEscaped)
             {
-                section.Chars.CopyTo(scratch.Slice(position));
-                position += section.Chars.Length;
-
-                if (!section.Separator.IsEmpty)
-                {
-                    scratch[position++] = section.Separator[1];
-                }
+                return reader.GetString() ?? string.Empty;
             }
 
-            return new string(scratch.Slice(0, position));
-        }
+            Span<char> span = reader.ValueSpan.Length < 1001
+                ? stackalloc char[reader.ValueSpan.Length]
+                : RentArray(reader.ValueSpan.Length, ref isRented, ref array);
 
         private static bool ReadBoolean(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
@@ -178,24 +173,33 @@ namespace MG.Sonarr.Next.Json.Converters
             chars = chars.Slice(0, written);
             if (int.TryParse(chars, Statics.DefaultProvider, out int intNum))
             {
-                return intNum;
+                firstChar = char.ToUpper(firstChar);
             }
             else if (long.TryParse(chars, Statics.DefaultProvider, out long longNum))
             {
-                return longNum;
+                result = converter.ConvertSpan(span, propertyName);
             }
             else if (double.TryParse(chars, Statics.DefaultProvider, out double dubNum))
             {
-                return dubNum;
+                result = asValueType;
             }
             else if (decimal.TryParse(chars, Statics.DefaultProvider, out decimal decNum))
             {
-                return decNum;
+                result = this.ReadString(span, propertyName);
             }
-            else
+
+            if (isRented)
             {
-                return int.MinValue;
+                ArrayPool<char>.Shared.Return(array!);
             }
+
+            return result;
+        }
+        private static Span<T> RentArray<T>(in int length, ref bool isRented, ref T[]? array)
+        {
+            array = ArrayPool<T>.Shared.Rent(length);
+            isRented = true;
+            return array.AsSpan(0, length);
         }
 
         private object ReadObject<TParent>(ref Utf8JsonReader reader, JsonSerializerOptions options, string pn) where TParent : PSObject
@@ -262,24 +266,33 @@ namespace MG.Sonarr.Next.Json.Converters
             Span<char> chars = stackalloc char[length];
             int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
 
-            chars = chars.Slice(0, written);
-            ref char first = ref chars[0];
-            if (char.IsLower(first))
+        private static bool TryReadAsNumber(Span<char> chars, [NotNullWhen(true)] out ValueType? result)
+        {
+            bool returnVal = false;
+            result = default;
+
+            if (int.TryParse(chars, Statics.DefaultProvider, out int intNum))
             {
-                first = char.ToUpper(first);
+                result = intNum;
+                returnVal = true;
+            }
+            else if (long.TryParse(chars, Statics.DefaultProvider, out long longNum))
+            {
+                result = longNum;
+                returnVal = true;
+            }
+            else if (double.TryParse(chars, Statics.DefaultProvider, out double dubNum))
+            {
+                result = dubNum;
+                returnVal = true;
+            }
+            else if (decimal.TryParse(chars, Statics.DefaultProvider, out decimal decNum))
+            {
+                result = decNum;
+                returnVal = true;
             }
 
-            string propertyName = new(chars);
-            if (replaceNames.TryGetValue(propertyName, out string? replacement))
-            {
-                return replacement;
-            }
-            else if (globalReplace.TryGetValue(propertyName, out string? gbReplacement))
-            {
-                return gbReplacement;
-            }
-
-            return propertyName;
+            return returnVal;
         }
         private static object ReadString(ReadOnlySpan<char> chars, string propertyName)
         {

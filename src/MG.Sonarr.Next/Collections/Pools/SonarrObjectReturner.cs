@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Collections.Pools
 {
@@ -42,6 +42,7 @@ namespace MG.Sonarr.Next.Collections.Pools
         {
             if (obj is null || !_dict.TryGetValue(obj.GetType(), out IObjectPoolReturnable? pool))
             {
+                Debug.Fail("Should this really be null?");
                 return;
             }
 
@@ -51,6 +52,7 @@ namespace MG.Sonarr.Next.Collections.Pools
         {
             if (span.IsEmpty)
             {
+                Debug.Fail("Should this really be empty?");
                 return;
             }
 

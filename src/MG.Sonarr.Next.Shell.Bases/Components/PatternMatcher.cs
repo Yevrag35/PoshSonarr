@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Shell.Components
+namespace MG.Sonarr.Next.Shell.Components
 {
     public readonly ref struct PatternMatcher
     {
