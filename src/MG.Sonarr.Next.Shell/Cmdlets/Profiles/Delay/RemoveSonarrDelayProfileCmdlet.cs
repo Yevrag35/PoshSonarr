@@ -1,3 +1,4 @@
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Shell.Attributes;
@@ -7,6 +8,7 @@ using MG.Sonarr.Next.Shell.Extensions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delay
 {
     [Cmdlet(VerbsCommon.Remove, "SonarrDelayProfile", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
+    [MetadataCanPipe(Tag = Meta.DELAY_PROFILE)]
     public sealed class RemoveSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
