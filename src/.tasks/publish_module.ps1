@@ -100,6 +100,8 @@ Import-Module $dllPath -ErrorAction Stop
 $fileInfo = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($dllPath)
 $productVers = [version]::new($fileInfo.ProductMajorPart, $fileInfo.ProductMinorPart, $fileInfo.ProductBuildPart)
 
+$typesAndFormats = [MG.Sonarr.Next.Shell.Build.Module]::GetFormatsAndTypePaths($OutputPath)
+
 $info = [MG.Sonarr.Next.Shell.Build.Module]::ReadAllAssemblyCmdlets()
 $manifestArgs = @{
 	Path                 = "$OutputPath\$($ModuleName).psd1"
@@ -120,6 +122,8 @@ $manifestArgs = @{
 	AliasesToExport      = $info.Aliases
 	FunctionsToExport    = @()
 	VariablesToExport    = @()
+	TypesToProcess		 = $typesAndFormats.Types
+	FormatsToProcess     = $typesAndFormats.Formats
 	Tags                 = @('Anime', 'Api', 'Backup', 'Calendar', 'Connect', 'dll', 'Episode', 'Json', '.NET',
 							 'Manage', 'PVR', 'Quality', 'Rss', 'Series', 'Sonarr',
 							 'Status', 'Sync', 'Website')
