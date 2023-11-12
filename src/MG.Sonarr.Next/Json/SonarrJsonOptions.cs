@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json.Converters;
 using MG.Sonarr.Next.Json.Converters.Spans;
@@ -146,6 +147,9 @@ namespace MG.Sonarr.Next.Json
             yield return new("EpisodeNumbers", typeof(int[]));
             yield return new("Episodes", typeof(SortedSet<EpisodeObject>));
             yield return new("Genres", typeof(string[]));
+            yield return new("Ignored", typeof(StringSet));
+            yield return new("Preferred", typeof(StringKeyValueSet<int>));
+            yield return new("Required", typeof(StringSet));
             yield return new("Tags", typeof(SortedSet<int>));
         }
         private static IEnumerable<KeyValuePair<string, string>> EnumerateGlobalReplaceNames()

@@ -1,3 +1,4 @@
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Models;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -52,7 +53,9 @@ namespace MG.Sonarr.Next.PSProperties
                 DateTimeOffset offset => new StructNoteProperty<DateTimeOffset>(name, offset),
                 TimeSpan ts => new StructNoteProperty<TimeSpan>(name, ts),
                 PSObject pso => HandlePSObject<TParent>(name, pso),
-                SortedSet<int> set => new ReadOnlyTagsProperty(set),
+                SortedSet<int> iSet => new ReadOnlyTagsProperty(iSet),
+                SortedSet<string> sSet => new ReadOnlySetProperty<string>(name, sSet),
+                StringKeyValueSet<int> sKvp => new ReadOnlySetProperty<KeyValuePair<string, int>>(name, sKvp),
                 _ => new PSNoteProperty(name, value),
             };
         }
