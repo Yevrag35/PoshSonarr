@@ -1,19 +1,25 @@
-﻿using MG.Sonarr.Next.Json;
+﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Models
 {
-    public class RecordResult<T> : IJsonMetadataTaggable
+    public sealed class RecordResult<T> : IJsonMetadataTaggable, ISortable
         where T : IComparable<T>, IJsonMetadataTaggable
     {
-        public required int Page { get; init; }
-        public required int PageSize { get; init; }
-        public required int TotalRecords { get; init; }
+        int ISortable.Count => this.Records.Count;
+        public int Page { get; init; }
+        public int PageSize { get; init; }
+        public int TotalRecords { get; init; }
         public required MetadataList<T> Records { get; init; }
 
-        void IJsonMetadataTaggable.SetTag(IMetadataResolver resolver)
+        public void SetTag(IMetadataResolver resolver)
         {
             this.Records.SetTag(resolver);
+        }
+        void ISortable.Sort()
+        {
+            this.Records.Sort();
         }
     }
 }

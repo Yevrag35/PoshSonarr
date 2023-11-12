@@ -17,8 +17,6 @@ namespace MG.Sonarr.Next.Metadata
 
         public int Count => _list.Count;
         bool ICollection<T>.IsReadOnly => false;
-        bool ICollection.IsSynchronized => false;
-        object ICollection.SyncRoot => _list;
 
         public MetadataList()
             : this(0)
@@ -36,7 +34,10 @@ namespace MG.Sonarr.Next.Metadata
 
         public void Add(T item)
         {
-            _list.Add(item);
+            if (item is not null)
+            {
+                _list.Add(item);
+            }
         }
 
         /// <inheritdoc cref="List{T}.AddRange(IEnumerable{T})"/>
@@ -57,10 +58,10 @@ namespace MG.Sonarr.Next.Metadata
         {
             _list.CopyTo(array, index);
         }
-        void ICollection.CopyTo(Array array, int index)
+        public T? Find(Predicate<T> predicate)
         {
-            ArgumentNullException.ThrowIfNull(array);
-            ((ICollection)_list).CopyTo(array, index);
+            ArgumentNullException.ThrowIfNull(predicate);
+            return _list.Find(predicate);
         }
         public IEnumerator<T> GetEnumerator()
         {

@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Services.Http.Requests;
 
 namespace MG.Sonarr.Next.Services.Http.Handlers
 {
@@ -16,7 +17,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
         protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            if (!request.Options.TryGetValue(AuthHandler.CredentialKey, out _))
+            if (request is not AuthedRequestMessage)
             {
                 this.SetPath(request);
             }
@@ -27,7 +28,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
 
-            if (!request.Options.TryGetValue(AuthHandler.CredentialKey, out _))
+            if (request is not AuthedRequestMessage)
             {
                 this.SetPath(request);
             }

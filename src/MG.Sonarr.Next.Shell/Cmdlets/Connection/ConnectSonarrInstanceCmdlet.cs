@@ -5,19 +5,22 @@ using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Settings;
-using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
+using MG.Sonarr.Next.Models.System;
+using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Shell.Components;
+using MG.Sonarr.Next.Collections.Pools;
+using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 {
     [Cmdlet(VerbsCommunications.Connect, "SonarrInstance")]
     [Alias("Connect-Sonarr")]
-    public sealed class ConnectSonarrInstanceCmdlet : PSCmdlet, IApiCmdlet
+    public sealed class ConnectSonarrInstanceCmdlet : ConnectCmdlet, IApiCmdlet
     {
         ConnectionSettings _settings = null!;
-        private ConnectionSettings Settings => _settings;
 
-        private ActionPreference VerbosePreference { get; set; }
+        private ActionPreference _verbosePreference;
 
         [Parameter(Mandatory = true, Position = 1)]
         [Alias("Key")]
@@ -45,6 +48,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             get => _settings?.NoApiInPath ?? default;
             set => this.SetConnectionSetting(value.ToBool(), (x, settings) => settings.NoApiInPath = x);
         }
+
+        [Parameter]
+        public SwitchParameter PassThru { get; set; }
 
         [Parameter]
         public SwitchParameter SkipCertificateCheck
@@ -75,22 +81,72 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
                 _settings.Timeout = TimeSpan.FromMinutes(5d);
             }
 
-            this.SetContext(this.Settings, (services, options) =>
-            {
-                return services.BuildServiceProvider(options);
-            });
-            using IServiceScope scope = this.CreateScope();
+            using IServiceScope scope = this.ConnectContext(ConfigureServices);
 
             var queue = scope.ServiceProvider.GetService<Queue<IApiCmdlet>>();
             queue?.Enqueue(this);
             var client = scope.ServiceProvider.GetRequiredService<ISonarrClient>();
-            var result = client.SendTest();
+
+            ISonarrResponse result = this.SendTest(client, scope.ServiceProvider, this.PassThru);
 
             if (result.IsError)
             {
-                this.UnsetContext();
+                this.DisconnectContext();
                 this.ThrowTerminatingError(result.Error);
             }
+        }
+
+        private static void ConfigureServices(IServiceCollection services)
+        {
+            services.AddScoped<ManualImportEdit>()
+                    .AddGenericObjectPool<Dictionary<int, IEpisodeBySeriesPipeable>>(builder =>
+                    {
+                        builder.SetConstructor(() => new Dictionary<int, IEpisodeBySeriesPipeable>(50))
+                               .SetDeconstructor(dict =>
+                               {
+                                   dict.Clear();
+                                   int cap = dict.EnsureCapacity(50);
+                                   if (cap >= 1000)
+                                   {
+                                       dict.TrimExcess(50);
+                                   }
+
+                                   return true;
+                               });
+                    })
+                    .AddGenericObjectPool<HashSet<DayOfWeek>>(set =>
+                    {
+                        int count = set.Count;
+                        set.Clear();
+                        return count <= 1000;
+                    })
+                    .AddGenericObjectPool<SortedSet<SonarrProperty>>(set =>
+                    {
+                        int count = set.Count;
+                        set.Clear();
+
+                        return count <= 3000;
+                    });
+        }
+
+        private ISonarrResponse SendTest(ISonarrClient client, IServiceProvider provider, bool passThru)
+        {
+            if (!passThru)
+            {
+                return client.SendTest();
+            }
+
+            var tag = provider.GetMetadataTag(Meta.STATUS);
+            var response = client.SendGet<SystemStatusObject>(tag.UrlBase);
+            if (!response.IsError)
+            {
+                var settings = provider.GetRequiredService<IConnectionSettings>();
+                settings.AuthType = response.Data.Authentication;
+
+                this.WriteObject(response.Data);
+            }
+
+            return response;
         }
 
         /// <exception cref="SonarrParameterException"/>
@@ -130,6 +186,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             _settings = null!;
         }
 
+        protected override IConnectionSettings GetConnectionSettings()
+        {
+            return _settings;
+        }
         private void SetConnectionSetting<T>(T? value, Action<T, ConnectionSettings> setValue)
         {
             if (value is not null)
@@ -141,26 +201,26 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 
         private void StoreVerbosePreference()
         {
-            if (this.MyInvocation.BoundParameters.TryGetValue(Constants.VERBOSE, out object? oVal)
+            if (this.MyInvocation.BoundParameters.TryGetValue(PSConstants.VERBOSE, out object? oVal)
                             &&
               ((oVal is SwitchParameter sw && sw.ToBool()) || (oVal is bool justBool && justBool)))
             {
-                this.VerbosePreference = ActionPreference.Continue;
+                _verbosePreference = ActionPreference.Continue;
             }
-            else if (this.SessionState.PSVariable.TryGetVariableValue(Constants.VERBOSE_PREFERENCE, out ActionPreference pref))
+            else if (this.SessionState.PSVariable.TryGetVariableValue(PSConstants.VERBOSE_PREFERENCE, out ActionPreference pref))
             {
-                this.VerbosePreference = pref;
+                _verbosePreference = pref;
             }
         }
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            this.WriteVerbose($"Sending {request.Method}  request ->  {request.RequestUri}");
+            this.WriteVerbose($"Sending {request.RequestMethod}  request ->  {request.RequestUrl}");
         }
         public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
         {
-            if (this.VerbosePreference != ActionPreference.SilentlyContinue)
+            if (_verbosePreference != ActionPreference.SilentlyContinue)
             {
-                options ??= provider.GetService<ISonarrJsonOptions>()?.GetForSerializing();
+                options ??= provider.GetService<ISonarrJsonOptions>()?.ForSerializing;
                 this.WriteVerbose(JsonSerializer.Serialize(response, options));
             }
         }

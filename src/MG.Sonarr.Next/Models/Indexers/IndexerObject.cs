@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
@@ -13,6 +14,7 @@ namespace MG.Sonarr.Next.Models.Indexers
         ITestPipeable
     {
         const int CAPACITY = 17;
+        static readonly string _typeName = typeof(IndexerObject).GetTypeName();
 
         public bool EnableRss
         {
@@ -44,15 +46,15 @@ namespace MG.Sonarr.Next.Models.Indexers
             return resolver[Meta.INDEXER];
         }
 
-        public override void Commit()
+        protected override void OnCommit()
         {
-            base.Commit();
             this.Name = this.GetValue<string>() ?? string.Empty;
             this.Protocol = this.GetValue<string>() ?? string.Empty;
+            base.OnCommit();
         }
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
+            base.OnDeserialized(alreadyCalled);
             if (this.TryGetNonNullProperty(nameof(this.Name), out string? name))
             {
                 this.Name = name;
@@ -76,6 +78,16 @@ namespace MG.Sonarr.Next.Models.Indexers
             {
                 this.UpdateProperty(nameof(this.Name), this.Name);
             }
+        }
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            this.TypeNames.Insert(0, _typeName);
+        }
+
+        public int? GetId()
+        {
+            return this.Id;
         }
     }
 }

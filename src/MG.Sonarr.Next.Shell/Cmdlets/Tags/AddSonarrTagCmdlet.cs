@@ -1,12 +1,21 @@
-﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Tags;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
-    [Cmdlet(VerbsCommon.Add, "SonarrTag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsCommon.Add, "SonarrTag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true, 
+        DefaultParameterSetName = "None")]
+    [MetadataCanPipe(Tag = Meta.DELAY_PROFILE)]
+    [MetadataCanPipe(Tag = Meta.DOWNLOAD_CLIENT)]
+    [MetadataCanPipe(Tag = Meta.INDEXER)]
+    [MetadataCanPipe(Tag = Meta.RELEASE_PROFILE)]
+    [MetadataCanPipe(Tag = Meta.SERIES)]
+    [MetadataCanPipe(Tag = Meta.SERIES_ADD)]
     public sealed class AddSonarrTagCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
@@ -14,15 +23,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         Dictionary<string, ITagPipeable> _updates = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+        [ValidateIds(ValidateRangeKind.Positive, typeof(ITagPipeable))]
         public ITagPipeable[] InputObject { get; set; } = Array.Empty<ITagPipeable>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ParameterSetName = "ById")]
+        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByName")]
+        [Parameter(Position = 0)]
         public IntOrString[] Name { get; set; } = Array.Empty<IntOrString>();
 
         protected override int Capacity => 2;
@@ -30,9 +40,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
             _resolveNames = this.GetPooledObject<HashSet<Wildcard>>();
-            this.Returnables[1] = _resolveNames;
+            var span = this.GetReturnables();
+            span[0] = _ids;
+            span[1] = _resolveNames;
             _updates = new(1, StringComparer.InvariantCultureIgnoreCase);
         }
 
@@ -87,7 +98,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                 return;
             }
 
-            foreach (var kvp in _updates)
+            foreach (KeyValuePair<string, ITagPipeable> kvp in _updates)
             {
                 if (kvp.Value.Tags.IsSupersetOf(_ids))
                 {
@@ -101,20 +112,34 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                         "Adding tags: ({0})",
                         string.Join(", ", _ids.Where(x => !kvp.Value.Tags.Contains(x))))))
                 {
-                    kvp.Value.Tags.UnionWith(_ids);
-
-                    var response = this.SendPutRequest(path: kvp.Key, body: kvp.Value);
-                    if (response.IsError)
+                    if (!this.PerformTagUpdate(in kvp))
                     {
-                        kvp.Value.Reset();
-                        this.WriteConditionalError(response.Error);
                         continue;
                     }
-                    else
-                    {
-                        kvp.Value.CommitTags();
-                    }
                 }
+            }
+        }
+
+        private bool PerformTagUpdate(in KeyValuePair<string, ITagPipeable> kvp)
+        {
+            kvp.Value.Tags.UnionWith(_ids);
+
+            if (!kvp.Value.MustUpdateViaApi)
+            {
+                return true;
+            }
+
+            var response = this.SendPutRequest(path: kvp.Key, body: kvp.Value);
+            if (response.IsError)
+            {
+                kvp.Value.Reset();
+                this.WriteConditionalError(response.Error);
+                return false;
+            }
+            else
+            {
+                kvp.Value.CommitTags();
+                return true;
             }
         }
 

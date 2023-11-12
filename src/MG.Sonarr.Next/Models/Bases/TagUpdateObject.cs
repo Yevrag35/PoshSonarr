@@ -1,5 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
-using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.PSProperties;
 
 namespace MG.Sonarr.Next.Models
 {
@@ -10,6 +10,7 @@ namespace MG.Sonarr.Next.Models
         private SortedSet<int>? _tags;
         private int[]? _originalTags;
 
+        public virtual bool MustUpdateViaApi { get; protected set; }
         public SortedSet<int> Tags
         {
             get => _tags ??= new();
@@ -28,12 +29,12 @@ namespace MG.Sonarr.Next.Models
         {
         }
 
-        public override void Commit()
+        public sealed override void Commit()
         {
-            base.Commit();
-            this.CommitTags();
+            ((ITagPipeable)this).CommitTags();
+            this.OnCommit();
         }
-        public void CommitTags()
+        void ITagPipeable.CommitTags()
         {
             if (_originalTags is not null)
             {
@@ -46,20 +47,39 @@ namespace MG.Sonarr.Next.Models
                 this.Tags.CopyTo(_originalTags);
             }
         }
-        public override void OnDeserialized()
+        protected virtual void OnCommit()
         {
-            base.OnDeserialized();
-
-            if (this.TryGetNonNullProperty(nameof(this.Tags), out SortedSet<int>? tags))
+            return;
+        }
+        protected override void OnDeserialized(bool alreadyCalled)
+        {
+            this.MustUpdateViaApi = true;
+            if (this.Properties[Constants.TAGS] is ReadOnlyTagsProperty tagsProp)
             {
-                this.Tags = tags;
+                this.Tags = tagsProp.Tags;
             }
         }
-        public override void Reset()
+        public sealed override void Reset()
         {
-            _tags?.Clear();
-            _tags?.UnionWith(_originalTags ?? Array.Empty<int>());
-            base.Reset();
+            if (_tags is not null)
+            {
+                _tags.Clear();
+                if (_originalTags is not null)
+                {
+                    _tags.UnionWith(_originalTags);
+                }
+            }
+
+            this.OnReset();
+        }
+        protected virtual void OnReset()
+        {
+            return;
+        }
+
+        int? IPipeable<ITagPipeable>.GetId()
+        {
+            return this.Id;
         }
     }
 }

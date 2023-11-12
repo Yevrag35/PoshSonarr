@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
+﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions.PSO;
 using System.Collections;
 using System.Management.Automation;
 
@@ -26,6 +27,7 @@ namespace MG.Sonarr.Next.Metadata
         public static readonly string META_PROPERTY_NAME = "MetadataTag";
         public const char META_PREFIX = '#';
         readonly Dictionary<string, MetadataTag> _dict;
+        readonly NameLookup<string> _pipesTo;
 
         /// <summary>
         /// Gets the <see cref="MetadataTag"/> associated with the specified key.
@@ -42,48 +44,21 @@ namespace MG.Sonarr.Next.Metadata
 
         public int Count => _dict.Count;
 
-        public MetadataResolver(int capacity)
+        public MetadataResolver(int capacity, NameLookup<string> pipesTo)
         {
             _dict = new(capacity, StringComparer.InvariantCultureIgnoreCase);
+            _pipesTo = pipesTo;
         }
 
-        public bool Add(string tag, string baseUrl, bool supportsId)
-        {
-            return this.Add(tag, baseUrl, supportsId, Array.Empty<string>());
-        }
-        public bool Add(string tag, string baseUrl, bool supportsId, string[] canPipeTo)
+        internal bool Add(string tag, string baseUrl, bool supportsId)
         {
             ArgumentException.ThrowIfNullOrEmpty(tag);
             ArgumentException.ThrowIfNullOrEmpty(baseUrl);
-            canPipeTo ??= Array.Empty<string>();
 
-            return _dict.TryAdd(tag, new MetadataTag(baseUrl, tag, supportsId, canPipeTo));
-        }
+            MetadataTag metadataTag = new(baseUrl, tag, supportsId, _pipesTo[tag]);
 
-        public bool AddToObject([ConstantExpected] string tag, [NotNullWhen(true)] object? obj)
-        {
-            ArgumentNullException.ThrowIfNull(tag);
+            return _dict.TryAdd(tag, metadataTag);
 
-            if (!_dict.ContainsKey(tag) || obj is null || obj is not PSObject pso)
-            {
-                return false;
-            }
-
-            return this.AddToObject(tag, pso);
-        }
-        public bool AddToObject([ConstantExpected] string tag, PSObject pso)
-        {
-            ArgumentNullException.ThrowIfNull(tag);
-            ArgumentNullException.ThrowIfNull(pso);
-
-            bool added = false;
-            if (_dict.TryGetValue(tag, out MetadataTag? meta))
-            {
-                pso.Properties.Add(new MetadataProperty(meta));
-                added = true;
-            }
-
-            return added;
         }
         public bool ContainsKey([NotNullWhen(true)] string? key)
         {

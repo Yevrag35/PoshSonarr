@@ -21,6 +21,14 @@
   <ItemGroup>
     <None Remove="build_dependencies.json" />
     <None Remove="Debug.ps1" />
+    <None Remove="PSFormats\EpisodeObject.Format.ps1xml" />
+    <None Remove="PSFormats\MetadataTag.Format.ps1xml" />
+    <None Remove="PSFormats\RenameObject.Format.ps1xml" />
+    <None Remove="PSFormats\SeriesObject.Format.ps1xml" />
+    <None Remove="PSFormats\SonarrProperty.Format.ps1xml" />
+    <None Remove="PSFormats\SonarrTag.Format.ps1xml" />
+    <None Remove="PSFormats\SystemStatus.Format.ps1xml" />
+    <None Remove="PSTypes\SonarrObjects.Type.ps1xml" />
   </ItemGroup>
 
 	<Target Name="Cleanup" AfterTargets="Clean">
@@ -58,6 +66,30 @@
 	  <Content Include="build_dependencies.json">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	  <Content Include="PSFormats\EpisodeObject.Format.ps1xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="PSFormats\MetadataTag.Format.ps1xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="PSFormats\RenameObject.Format.ps1xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="PSFormats\SonarrProperty.Format.ps1xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="PSFormats\SonarrTag.Format.ps1xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="PSFormats\SeriesObject.Format.ps1xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="PSFormats\SystemStatus.Format.ps1xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="PSTypes\SonarrObjects.Type.ps1xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -72,12 +104,12 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.3.7" />
-    <PackageReference Include="System.Management.Automation" Version="7.3.7" />
+    <PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.3.9" />
+    <PackageReference Include="System.Management.Automation" Version="7.3.9" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MG.Sonarr.Next\MG.Sonarr.Next.csproj" />
+    <ProjectReference Include="..\MG.Sonarr.Next.Shell.Bases\MG.Sonarr.Next.Shell.Bases.csproj" />
   </ItemGroup>
 
 </Project>

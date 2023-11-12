@@ -5,16 +5,17 @@ using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Exceptions;
-using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Text.Json;
 using IOFile = System.IO.File;
 using IOPath = System.IO.Path;
+using MG.Sonarr.Next.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
 {
     [Cmdlet(VerbsData.Save, "SonarrBackup", DefaultParameterSetName = "ByExplicitUrl", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
     [Alias("Download-SonarrBackup")]
+    [MetadataCanPipe(Tag = Meta.BACKUP)]
     [OutputType(typeof(FileInfo))]
     public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
     {
@@ -30,7 +31,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
         public SwitchParameter Force { get; set; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput", ValueFromPipeline = true)]
+        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
         public BackupObject InputObject
         {
             get => null!;
@@ -143,13 +144,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
         }
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            this.WriteVerbose($"Sending {request.Method} request -> {request.RequestUri}");
+            this.WriteVerbose($"Sending {request.RequestMethod} request -> {request.RequestUrl}");
         }
         public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
         {
             if (this.VerbosePreference != ActionPreference.SilentlyContinue)
             {
-                options ??= provider.GetService<ISonarrJsonOptions>()?.GetForSerializing();
+                options ??= provider.GetService<ISonarrJsonOptions>()?.ForSerializing;
                 this.WriteVerbose(JsonSerializer.Serialize(response, options));
             }
         }

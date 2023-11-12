@@ -1,11 +1,15 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Testing;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
 {
     [Cmdlet(VerbsDiagnostic.Test, "SonarrResource")]
+    [MetadataCanPipe(Tag = Meta.DOWNLOAD_CLIENT)]
+    [MetadataCanPipe(Tag = Meta.INDEXER)]
     public sealed class TestSonarrResourceCmdlet : TimedCmdlet
     {
         const string TEST = "/test";
@@ -15,6 +19,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
 
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
         [ValidateNotNull]
+        [ValidateIds(ValidateRangeKind.Positive, typeof(ITestPipeable))]
         public ITestPipeable[] InputObject { get; set; } = Array.Empty<ITestPipeable>();
 
         protected override void OnCreatingScope(IServiceProvider provider)
@@ -26,11 +31,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
 
         protected override void Process(IServiceProvider provider)
         {
-            foreach (ITestPipeable testable in InputObject)
+            foreach (ITestPipeable testable in this.InputObject)
             {
                 _queue.Enqueue(this);
-                StartTimer();
-                var response = SendSingleTest(testable);
+                this.StartTimer();
+                var response = this.SendSingleTest(testable);
                 var obj = new
                 {
                     testable.Id,
@@ -39,7 +44,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
                     Error = response.Error?.Exception,
                 };
 
-                WriteObject(obj);
+                this.WriteObject(obj);
             }
         }
 

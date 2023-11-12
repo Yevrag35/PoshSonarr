@@ -17,15 +17,17 @@ namespace MG.Sonarr.Next.Services.Http.Clients
     file sealed class SonarrDownloadClient : ISonarrDownloadClient
     {
         readonly HttpClient _client;
+        readonly IServiceScopeFactory _scopeFactory;
 
-        public SonarrDownloadClient(HttpClient client)
+        public SonarrDownloadClient(HttpClient client, IServiceScopeFactory scopeFactory)
         {
             _client = client;
+            _scopeFactory = scopeFactory;
         }
 
         public SonarrResponse<string> DownloadToPath(string url, string path, CancellationToken token = default)
         {
-            using ApiKeyRequestMessage msg = new(HttpMethod.Get, url);
+            using ApiKeyRequestMessage msg = new(HttpMethod.Get, url, _scopeFactory);
 
             HttpResponseMessage response = null!;
             try
@@ -46,8 +48,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         }
         public SonarrResponse<string> DownloadToPath(string url, string path, NetworkCredential? credential, CancellationToken token = default)
         {
-            using AuthedRequestMessage msg = new(HttpMethod.Get, url);
-            msg.Options.Set(AuthHandler.CredentialKey, credential);
+            using AuthedRequestMessage msg = new(HttpMethod.Get, url, credential, _scopeFactory);
 
             HttpResponseMessage response = null!;
             try

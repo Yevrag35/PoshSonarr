@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<RootNamespace>MG.Sonarr.Next.Shell</RootNamespace>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<Using Include="Microsoft.Extensions.DependencyInjection" />
+		<Using Include="OneOf" />
+		<Using Include="System.Diagnostics" />
+		<Using Include="System.Diagnostics.CodeAnalysis" />
+		<Using Include="System.Globalization" />
+		<Using Include="System.Linq.Expressions" />
+		<Using Include="System.Management.Automation" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MG.Sonarr.Next\MG.Sonarr.Next.csproj" />
+  </ItemGroup>
+
+</Project>

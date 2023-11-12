@@ -1,8 +1,10 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Shell.Models.Series;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Management.Automation;
 using System.Text.Json.Serialization;
 
@@ -14,9 +16,11 @@ namespace MG.Sonarr.Next.Models.Series
         IJsonOnSerializing,
         ISerializableNames<AddSeriesObject>
     {
+        const int CAPACITY = 50;
+        const string ROOT_FOLDER_PATH = "RootFolderPath";
+        static readonly string _typeName = typeof(AddSeriesObject).GetTypeName();
         private string? _path;
         private string? _pathProp;
-        const int CAPACITY = 50;
 
         public SeriesAddOptions? AddOptions { get; set; }
         public bool IsFullPath { get; set; }
@@ -27,7 +31,6 @@ namespace MG.Sonarr.Next.Models.Series
         }
         public int ProfileId
         {
-            get => this.GetValue<int>();
             set => this.SetValue(value);
         }
         public string Path
@@ -59,16 +62,18 @@ namespace MG.Sonarr.Next.Models.Series
         {
             return StringComparer.InvariantCultureIgnoreCase.Compare(this.Title, other?.Title);
         }
-
+        private protected override int? GetSeriesId()
+        {
+            return null;
+        }
         protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
         {
             return resolver[Meta.SERIES_ADD];
         }
 
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
-            this.Properties.Add(new PSAliasProperty(Constants.NAME, Constants.TITLE));
+            base.OnDeserialized(alreadyCalled);
             this.Properties.RemoveMany(Constants.ID, "Added");
 
             if (this.TryGetNonNullProperty(Constants.SERIES_TYPE, out string? seriesType))
@@ -89,8 +94,6 @@ namespace MG.Sonarr.Next.Models.Series
             this.SetPath();
             base.OnSerializing();
         }
-
-        const string ROOT_FOLDER_PATH = "RootFolderPath";
         private void SetPath()
         {
             if (this.IsFullPath)
@@ -104,8 +107,21 @@ namespace MG.Sonarr.Next.Models.Series
                 _pathProp = ROOT_FOLDER_PATH;
             }
         }
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            Debugger.Assert(() =>
+            {
+                return this.TypeNames.Count > 0 && this.TypeNames[0] == typeof(SeriesObject).GetTypeName();
+            });
 
-        public override void Reset()
+            this.TypeNames[0] = _typeName;  // Should overwrite 'SeriesObject'.
+        }
+        internal override bool ShouldBeReadOnly(string propertyName, Type parentType)
+        {
+            return true;
+        }
+        protected override void OnReset()
         {
             if (!string.IsNullOrEmpty(_pathProp))
             {
@@ -114,7 +130,7 @@ namespace MG.Sonarr.Next.Models.Series
             }
 
             this.AddOptions = null;
-            base.Reset();
+            base.OnReset();
         }
     }
 }

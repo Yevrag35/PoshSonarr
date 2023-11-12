@@ -12,37 +12,37 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
     public sealed class GetSonarrLogCmdlet : SonarrMetadataCmdlet
     {
         protected override int Capacity => 1;
-        QueryParameterCollection Parameters { get; set; } = null!;
-        PagingParameter Paging { get; set; } = null!;
+        QueryParameterCollection _parameters = null!;
+        PagingParameter _paging = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter]
         [ValidateRange(ValidateRangeKind.Positive)]
-        [DefaultValue(10)]
+        [PSDefaultValue(Value = 10)]
         public int PageSize { get; set; }
 
         [Parameter]
         [Alias("Page")]
         [ValidateRange(ValidateRangeKind.Positive)]
-        [DefaultValue(1)]
+        [PSDefaultValue(Value = 1)]
         public int PageNumber { get; set; }
 
         [Parameter]
         [Alias("Direction")]
-        [DefaultValue(ListSortDirection.Descending)]
+        [PSDefaultValue(Value = ListSortDirection.Descending)]
         public ListSortDirection SortDirection { get; set; }
 
         [Parameter]
-        [DefaultValue("Time")]
+        [PSDefaultValue(Value = "Time")]
         public string SortKey { get; set; } = string.Empty;
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            this.Paging = this.GetPooledObject<PagingParameter>();
-            this.Paging.SortKey = "Time";
-            this.Returnables[0] = this.Paging;
-            this.Parameters = new(2);
+            _paging = this.GetPooledObject<PagingParameter>();
+            _paging.SortKey = "Time";
+            this.GetReturnables()[0] = _paging;
+            _parameters = new(2);
         }
         protected override void Begin(IServiceProvider provider)
         {
@@ -52,31 +52,31 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
         {
             if (this.HasParameter(x => x.PageNumber))
             {
-                this.Paging.Page = this.PageNumber;
+                _paging.Page = this.PageNumber;
             }
 
             if (this.HasParameter(x => x.PageSize))
             {
-                this.Paging.PageSize = this.PageSize;
+                _paging.PageSize = this.PageSize;
             }
 
             if (this.HasParameter(x => x.SortDirection))
             {
-                this.Paging.SortDirection = this.SortDirection;
+                _paging.SortDirection = this.SortDirection;
             }
 
             if (this.HasParameter(x => x.SortKey))
             {
-                this.Paging.SortKey = this.SortKey;
+                _paging.SortKey = this.SortKey;
             }
 
-            this.Parameters.AddOrUpdate(this.Paging);
+            _parameters.AddOrUpdate(_paging);
         }
 
         protected override void Process(IServiceProvider provider)
         {
-            this.WriteDebug(this.Paging.ToString(null, null));
-            string url = this.Tag.GetUrl(this.Parameters);
+            this.WriteDebug(_paging.ToString(null, null));
+            string url = this.Tag.GetUrl(_parameters);
             if (this.GetLogs(url, out var result))
             {
                 this.WriteCollection(result.Records);
@@ -101,16 +101,5 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
         {
             return resolver[Meta.LOG_ITEM];
         }
-
-        //bool _disposed;
-        //protected override void Dispose(bool disposing)
-        //{
-        //    if (disposing && !_disposed)
-        //    {
-
-        //    }
-
-        //    base.Dispose(disposing);
-        //}
     }
 }

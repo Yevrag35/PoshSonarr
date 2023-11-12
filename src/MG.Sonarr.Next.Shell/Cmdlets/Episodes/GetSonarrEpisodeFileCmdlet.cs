@@ -1,26 +1,33 @@
-﻿using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Services.Http.Queries;
+﻿using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Shell.Extensions;
-using Microsoft.Extensions.DependencyInjection;
+using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Shell.Cmdlets.Bases;
+using MG.Sonarr.Next.Shell.Attributes;
+using MG.Sonarr.Next.Collections.Pools;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 {
     [Cmdlet(VerbsCommon.Get, "SonarrEpisodeFile")]
-    public sealed class GetSonarrEpisodeFileCmdlet : SonarrApiCmdletBase
+    [MetadataCanPipe(Tag = Meta.CALENDAR)]
+    [MetadataCanPipe(Tag = Meta.EPISODE)]
+    public sealed class GetSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
     {
         bool _disposed;
-        SortedSet<int> Ids { get; set; } = null!;
-        SortedSet<int> SeriesIds { get; set; } = null!;
-        MetadataTag Tag { get; set; } = null!;
+        const int CAPACITY = 2;
+        protected override int Capacity => CAPACITY;
+        SortedSet<int> _ids = null!;
+        SortedSet<int> _seriesIds = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByEpisodeFileInput", DontShow = true)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByEpisodeFileInput")]
+        [ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodeFilePipeable))]
         public IEpisodeFilePipeable[] InputObject { get; set; } = Array.Empty<IEpisodeFilePipeable>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "BySeriesInput", DontShow = true)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "BySeriesInput")]
+        [ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodeFileBySeriesPipeable))]
         public IEpisodeFileBySeriesPipeable[] SeriesInput { get; set; } = Array.Empty<IEpisodeFileBySeriesPipeable>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -33,39 +40,48 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         [ValidateRange(ValidateRangeKind.Positive)]
         public int[] SeriesId { get; set;  } = Array.Empty<int>();
 
+        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
+        {
+            return resolver[Meta.EPISODE_FILE];
+        }
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.EPISODE_FILE];
             var pool = provider.GetRequiredService<IObjectPool<SortedSet<int>>>();
-            this.Ids = pool.Get();
-            this.SeriesIds = pool.Get();
+            _ids = pool.Get();
+            _seriesIds = pool.Get();
+            //this.Returnables[0] = _ids;
+            //this.Returnables[1] = _seriesIds;
+
+            var span = this.GetReturnables();
+            span[0] = _ids;
+            span[1] = _seriesIds;
         }
 
         private bool HasNoParameters()
         {
-            return this.Ids.Count <= 0
+            return _ids.Count <= 0
                    &&
-                   this.SeriesIds.Count <= 0;
+                   _seriesIds.Count <= 0;
         }
 
         protected override void Begin(IServiceProvider provider)
         {
-            this.Ids.UnionWith(this.Id);
-            this.SeriesIds.UnionWith(this.SeriesId);
+            _ids.UnionWith(this.Id);
+            _seriesIds.UnionWith(this.SeriesId);
         }
         protected override void Process(IServiceProvider provider)
         {
             if (this.HasParameter(x => x.InputObject))
             {
-                this.Ids.UnionWith(
+                _ids.UnionWith(
                     this.InputObject
                         .Where(x => x.EpisodeFileId > 0)
                             .Select(x => x.EpisodeFileId));
             }
             else if (this.HasParameter(x => x.SeriesInput))
             {
-                this.SeriesIds.UnionWith(
+                _seriesIds.UnionWith(
                     this.SeriesInput
                         .Where(x => x.SeriesId > 0)
                             .Select(x => x.SeriesId));
@@ -79,8 +95,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             }
 
             IEnumerable<EpisodeFileObject> files = ParameterNameStartsWithSeries(this.ParameterSetName)
-                ? this.GetEpFilesBySeriesId(this.SeriesIds)
-                : this.GetEpFilesById(this.Ids);
+                ? this.GetEpFilesBySeriesId(_seriesIds)
+                : this.GetEpFilesById(_ids);
 
             this.WriteCollection(files);
         }
@@ -147,12 +163,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 {
                     using var scope = factory.CreateScope();
                     var pool = scope.ServiceProvider.GetService<IObjectPool<SortedSet<int>>>();
-                    pool?.Return(this.Ids);
-                    pool?.Return(this.SeriesIds);
+                    pool?.Return(_ids);
+                    pool?.Return(_seriesIds);
                 }
                 
-                this.Ids = null!;
-                this.SeriesIds = null!;
+                _ids = null!;
+                _seriesIds = null!;
                 _disposed = true;
             }
 

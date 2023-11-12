@@ -1,36 +1,29 @@
-﻿namespace MG.Sonarr.Next.Extensions
+﻿using System.Collections.ObjectModel;
+
+namespace MG.Sonarr.Next.Extensions
 {
     /// <summary>
     /// Custom extension methods for specific types of <see cref="Dictionary{TKey, TValue}"/>.
     /// </summary>
     public static class DictionaryExtensions
     {
-        ///// <summary>
-        ///// Enumerates through a collection of <see cref="KeyValuePair{TKey, TValue}"/> instances
-        ///// and copies them to a new <see cref="ReadOnlyDictionary{TKey, TValue}"/>.
-        ///// </summary>
-        ///// <typeparam name="TKey"></typeparam>
-        ///// <typeparam name="TValue"></typeparam>
-        ///// <param name="items"></param>
-        ///// <param name="comparer"></param>
-        ///// <returns></returns>
-        //public static ReadOnlyDictionary<TKey, TValue> ToReadOnly<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>>? items, IEqualityComparer<TKey>? comparer = null) where TKey : notnull
-        //{
-        //    if (items is null)
-        //    {
-        //        return new(new Dictionary<TKey, TValue>());
-        //    }
+        public static string GetValue<T>(this IReadOnlyDictionary<T, string>? dictionary, T key) where T : notnull
+        {
+            return dictionary is not null && dictionary.TryGetValue(key, out string? value)
+                ? value
+                : string.Empty;
+        }
 
-        //    int capacity = items.TryGetNonEnumeratedCount(out int count) ? count : 0;
-        //    Dictionary<TKey, TValue> dict = new(capacity, comparer);
+        [return: NotNullIfNotNull(nameof(dictionary))]
+        public static ReadOnlyDictionary<TKey, TValue>? ToReadOnly<TKey, TValue>(this Dictionary<TKey, TValue>? dictionary) where TKey : notnull
+        {
+            if (dictionary is null)
+            {
+                return null;
+            }
 
-        //    foreach (var kvp in items)
-        //    {
-        //        _ = dict.TryAdd(kvp.Key, kvp.Value);
-        //    }
-
-        //    return new(dict);
-        //}
+            return new ReadOnlyDictionary<TKey, TValue>(dictionary);
+        }
 
         /// <summary>
         /// Extends <see cref="Dictionary{TKey, TValue}.TryGetValue(TKey, out TValue)"/> and 
@@ -53,14 +46,13 @@
         ///     <see langword="true"/> and the object instance is not <see langword="null"/>
         ///     of the type <typeparamref name="TOutput"/>.
         /// </returns>
-        public static bool TryGetValueAs<TKey, TOutput>(this IReadOnlyDictionary<TKey, object?>? dictionary, TKey key, [NotNullWhen(true)] out TOutput? value) where TKey : notnull
+        public static bool TryGetValueAs<TKey, TOutput>(this IReadOnlyDictionary<TKey, object?> dictionary, TKey key, [NotNullWhen(true)] out TOutput? value) where TKey : notnull
         {
+            ArgumentNullException.ThrowIfNull(dictionary);
+            ArgumentNullException.ThrowIfNull(key);
+
             value = default;
-            if (dictionary is not null
-                &&
-                dictionary.TryGetValue(key, out object? dictVal)
-                &&
-                dictVal is TOutput tOut)
+            if (dictionary.TryGetValue(key, out object? dictVal) && dictVal is TOutput tOut)
             {
                 value = tOut;
                 return value is not null;

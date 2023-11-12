@@ -1,27 +1,49 @@
-﻿namespace MG.Sonarr.Next.Services.Http.Requests
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace MG.Sonarr.Next.Services.Http.Requests
 {
     public abstract class SonarrRequestMessage : HttpRequestMessage, IHttpRequestDetails
     {
+        bool _disposed;
+        readonly IServiceScope _scope;
+
         public abstract bool IsTest { get; }
-        string IHttpRequestDetails.Method => this.Method.Method;
+        public string RequestMethod => this.Method.Method;
         public string OriginalRequestUri { get; }
-        string IHttpRequestDetails.RequestUri => this.GetRequestUri();
+        public string RequestUrl => this.RequestUri?.ToString() ?? this.OriginalRequestUri;
         public abstract bool CanUseCookieAuthentication { get; }
 
-        public SonarrRequestMessage(HttpMethod method, string requestUri)
+        protected SonarrRequestMessage(HttpMethod method, string requestUri, IServiceScopeFactory scopeFactory)
             : base(method, requestUri)
         {
             this.OriginalRequestUri = requestUri ?? string.Empty;
+            _scope = scopeFactory.CreateScope();
         }
-        public SonarrRequestMessage(HttpMethod method, Uri requestUri)
+        protected SonarrRequestMessage(HttpMethod method, Uri requestUri, IServiceScopeFactory scopeFactory)
             : base(method, requestUri)
         {
             this.OriginalRequestUri = requestUri.OriginalString;
+            _scope = scopeFactory.CreateScope();
         }
 
-        protected virtual string GetRequestUri()
+        public object? GetService(Type serviceType)
         {
-            return this.RequestUri?.ToString() ?? this.OriginalRequestUri;
+            return _scope.ServiceProvider.GetService(serviceType);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _scope.Dispose();
+                }
+
+                _disposed = true;
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

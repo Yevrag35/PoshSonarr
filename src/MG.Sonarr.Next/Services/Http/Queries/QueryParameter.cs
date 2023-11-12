@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Next.Extensions;
-using OneOf;
 
 namespace MG.Sonarr.Next.Services.Http.Queries
 {
@@ -139,6 +138,7 @@ namespace MG.Sonarr.Next.Services.Http.Queries
         readonly int _maxLength;
         readonly bool _isNotEmpty;
 
+        public bool IsEmpty => !_isNotEmpty;
         public string Key => _key ?? string.Empty;
         public int MaxLength => _maxLength;
         public bool Value => _value;
@@ -149,6 +149,7 @@ namespace MG.Sonarr.Next.Services.Http.Queries
             _key = key;
             _value = value;
             _maxLength = key.Length + 1 + bool.FalseString.Length;
+            _isNotEmpty = true;
         }
 
         public bool Equals(IQueryParameter? other)

@@ -20,7 +20,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
+            this.GetReturnables()[0] = _ids;
         }
 
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)

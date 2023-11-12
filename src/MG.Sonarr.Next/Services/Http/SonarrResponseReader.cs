@@ -3,7 +3,6 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.Errors;
 using Microsoft.Extensions.DependencyInjection;
-using OneOf;
 using System.Management.Automation;
 using System.Net;
 using System.Net.Http.Json;
@@ -22,7 +21,7 @@ namespace MG.Sonarr.Next.Services.Http
 
         public SonarrResponseReader(ISonarrJsonOptions options)
         {
-            _options = options.GetForDeserializing();
+            _options = options.ForDeserializing;
         }
 
         public async Task<SonarrResponse> ReadNoResultAsync(HttpCall call, object? targetObj = null, CancellationToken token = default)

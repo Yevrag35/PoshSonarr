@@ -12,7 +12,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
         SortedSet<int> _ids = null!;
         HashSet<Wildcard> _wcNames = null!;
 
-        [Parameter(Mandatory = true, ParameterSetName = "ByIndexerId")]
+        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByIndexerNameOrId")]
@@ -28,8 +28,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
             _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
-            this.Returnables[0] = _ids;
-            this.Returnables[1] = _wcNames;
+            var span = this.GetReturnables();
+            //this.Returnables[1] = _wcNames; 
+
+            span[0] = _ids;
+            span[1] = _wcNames;
         }
 
         protected override void Begin(IServiceProvider provider)

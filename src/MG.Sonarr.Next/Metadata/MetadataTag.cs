@@ -1,35 +1,95 @@
-﻿using MG.Collections;
+﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http.Queries;
 
 namespace MG.Sonarr.Next.Metadata
 {
     [DebuggerDisplay(@"\{{Value}, {UrlBase}\}")]
-    public sealed record MetadataTag : ICloneable
+    public sealed class MetadataTag : ICloneable, IEquatable<MetadataTag>
     {
-        static readonly IReadOnlySet<string> _empty = new ReadOnlySet<string>(Array.Empty<string>());
-
-        public IReadOnlySet<string> CanPipeTo { get; }
+        public string[] CanPipeTo { get; }
         public bool SupportsId { get; }
         public string UrlBase { get; }
         public string Value { get; }
 
-        public MetadataTag(string urlBase, string value, bool supportsId, string[]? supportedPipes)
+        private MetadataTag()
+        {
+            this.CanPipeTo = Array.Empty<string>();
+            this.SupportsId = false;
+            this.UrlBase = string.Empty;
+            this.Value = string.Empty;
+        }
+        private MetadataTag(MetadataTag copyFrom)
+        {
+            ArgumentNullException.ThrowIfNull(copyFrom);
+            this.CanPipeTo = CopyOriginal(copyFrom.CanPipeTo);
+            this.SupportsId = copyFrom.SupportsId;
+            this.UrlBase = copyFrom.UrlBase;
+            this.Value = copyFrom.Value;
+        }
+        internal MetadataTag(string urlBase, string value, bool supportsId, IReadOnlySet<string> pipesTo)
         {
             this.UrlBase = urlBase.TrimEnd('/');
             this.Value = value;
             this.SupportsId = supportsId;
-            if (supportedPipes is null || supportedPipes.Length <= 0)
+            this.CanPipeTo = CopyFromSet(pipesTo);
+        }
+
+        private static string[] CopyFromSet(IReadOnlySet<string> pipesTo)
+        {
+            string[] canPipeTo;
+            if (pipesTo.Count <= 0)
             {
-                this.CanPipeTo = _empty;
+                canPipeTo = Array.Empty<string>();
             }
             else
             {
-                this.CanPipeTo = new ReadOnlySet<string>(supportedPipes, StringComparer.InvariantCultureIgnoreCase);
+                canPipeTo = new string[pipesTo.Count];
+                int i = 0;
+                foreach (string s in pipesTo)
+                {
+                    canPipeTo[i++] = s;
+                }
             }
+
+            return canPipeTo;
         }
-        object ICloneable.Clone() => Copy(this);
-        public static MetadataTag Copy(MetadataTag tag) => new(tag);
+
+        private static string[] CopyOriginal(ReadOnlySpan<string> canPipeTo)
+        {
+            if (canPipeTo.Length <= 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            string[] copyInto = new string[canPipeTo.Length];
+            canPipeTo.CopyTo(copyInto);
+            return copyInto;
+        }
+
+        object ICloneable.Clone() => this.Clone();
+        public MetadataTag Clone() => new(this);
+
+        public static readonly MetadataTag Empty = new();
+
+        public bool Equals(MetadataTag? other)
+        {
+            return ReferenceEquals(this, other)
+                   ||
+                   (this.UrlBase == other?.UrlBase
+                    &&
+                    this.Value == other?.Value
+                    &&
+                    this.SupportsId == other?.SupportsId);
+        }
+        public override bool Equals(object? obj)
+        {
+            return obj is MetadataTag tag && this.Equals(tag);
+        }
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(this.UrlBase, this.Value, this.SupportsId);
+        }
         public string GetUrl(QueryParameterCollection? parameters)
         {
             if (parameters.IsNullOrEmpty())
@@ -117,15 +177,11 @@ namespace MG.Sonarr.Next.Metadata
 
         public override string ToString()
         {
-            int length = this.UrlBase.Length + this.SupportsId.GetLength() + this.Value.Length + 24;
-            length += nameof(this.UrlBase).Length +
-                nameof(this.SupportsId).Length +
-                nameof(this.Value).Length +
-                nameof(this.CanPipeTo).Length;
+            int length = this.Value.Length + 22 + nameof(this.Value).Length + nameof(this.CanPipeTo).Length;
 
-            if (this.CanPipeTo.Count > 0)
+            if (this.CanPipeTo.Length > 0)
             {
-                length += this.CanPipeTo.Sum(x => x.Length) + (2 * (this.CanPipeTo.Count - 1));
+                length += this.CanPipeTo.Sum(x => x.Length) + (2 * (this.CanPipeTo.Length - 1));
             }
 
             return string.Create(length, this, (chars, state) =>
@@ -136,22 +192,10 @@ namespace MG.Sonarr.Next.Metadata
                 ReadOnlySpan<char> comma = stackalloc char[2] { ',', space };
 
                 chars[position++] = '{';
-                chars[position++] = space;
-
-                nameof(state.UrlBase).CopyToSlice(chars, ref position);
-                sep.CopyToSlice(chars, ref position);
-                state.UrlBase.CopyToSlice(chars, ref position);
-                comma.CopyToSlice(chars, ref position);
 
                 nameof(state.Value).CopyToSlice(chars, ref position);
                 sep.CopyToSlice(chars, ref position);
                 state.Value.CopyToSlice(chars, ref position);
-                comma.CopyToSlice(chars, ref position);
-
-                nameof(state.SupportsId).CopyToSlice(chars, ref position);
-                sep.CopyToSlice(chars, ref position);
-                state.SupportsId.TryFormat(chars.Slice(position), out int written);
-                position += written;
                 comma.CopyToSlice(chars, ref position);
 
                 nameof(state.CanPipeTo).CopyToSlice(chars, ref position);
@@ -162,7 +206,7 @@ namespace MG.Sonarr.Next.Metadata
                 foreach (string s in state.CanPipeTo)
                 {
                     s.CopyToSlice(chars, ref position);
-                    if (count < state.CanPipeTo.Count - 1)
+                    if (count < state.CanPipeTo.Length - 1)
                     {
                         comma.CopyToSlice(chars, ref position);
                     }
@@ -171,11 +215,17 @@ namespace MG.Sonarr.Next.Metadata
                 }
 
                 chars[position++] = '}';
-                chars[position++] = space;
                 chars[position++] = '}';
             });
         }
 
-        public static readonly MetadataTag Empty = new(string.Empty, string.Empty, false, null);
+        public static bool operator ==(MetadataTag? x, MetadataTag? y)
+        {
+            return x.IsEqualTo<MetadataTag>(y);
+        }
+        public static bool operator !=(MetadataTag? x, MetadataTag? y)
+        {
+            return !(x == y);
+        }
     }
 }

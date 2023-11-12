@@ -3,16 +3,18 @@ using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Json.Converters
 {
-    public class SonarrObjectConverter<T> : JsonConverter<T> where T : SonarrObject, ISerializableNames<T>, new()
+    public sealed class SonarrObjectConverter<T> : JsonConverter<T> where T : SonarrObject, ISerializableNames<T>, new()
     {
         readonly ObjectConverter _converter;
         readonly IReadOnlyDictionary<string, string> _deserializedNames;
+        readonly IReadOnlySet<string> _capitalizeProperties;
         readonly IReadOnlyDictionary<string, string> _serializedNames;
 
         public SonarrObjectConverter(ObjectConverter converter)
         {
             _converter = converter;
             _deserializedNames = T.GetDeserializedNames();
+            _capitalizeProperties = T.GetPropertiesToCapitalize();
             _serializedNames = T.GetSerializedNames();
         }
 
@@ -23,7 +25,7 @@ namespace MG.Sonarr.Next.Json.Converters
                 throw new JsonException($"Converter expected a JSON object but got {reader.TokenType}.");
             }
 
-            T obj = _converter.ConvertToObject<T>(ref reader, options, _deserializedNames);
+            T obj = _converter.ConvertToObject<T>(ref reader, options, _deserializedNames, _capitalizeProperties);
             obj.OnDeserialized();
             return obj;
         }

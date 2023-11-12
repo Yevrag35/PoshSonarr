@@ -100,6 +100,8 @@ Import-Module $dllPath -ErrorAction Stop
 $fileInfo = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($dllPath)
 $productVers = [version]::new($fileInfo.ProductMajorPart, $fileInfo.ProductMinorPart, $fileInfo.ProductBuildPart)
 
+$typesAndFormats = [MG.Sonarr.Next.Shell.Build.Module]::GetFormatsAndTypePaths($OutputPath)
+
 $info = [MG.Sonarr.Next.Shell.Build.Module]::ReadAllAssemblyCmdlets()
 $manifestArgs = @{
 	Path                 = "$OutputPath\$($ModuleName).psd1"
@@ -115,12 +117,14 @@ $manifestArgs = @{
 	ProjectUri           = 'https://github.com/Yevrag35/PoshSonarr'
 	IconUri              = 'https://images.yevrag35.com/icons/sonarr_powershell.png'
 	HelpInfoURI          = 'https://github.com/Yevrag35/PoshSonarr/issues'
-	RootModule           = $LibraryName
+	RootModule           = "$($LibraryName).dll"
 	CmdletsToExport      = $info.Cmdlets
 	AliasesToExport      = $info.Aliases
 	FunctionsToExport    = @()
 	VariablesToExport    = @()
-	Tags                 = @('Api', 'Backup', 'Calendar', 'Connect', 'dll', 'Episode', 'Json', '.NET',
+	TypesToProcess		 = $typesAndFormats.Types
+	FormatsToProcess     = $typesAndFormats.Formats
+	Tags                 = @('Anime', 'Api', 'Backup', 'Calendar', 'Connect', 'dll', 'Episode', 'Json', '.NET',
 							 'Manage', 'PVR', 'Quality', 'Rss', 'Series', 'Sonarr',
 							 'Status', 'Sync', 'Website')
 }

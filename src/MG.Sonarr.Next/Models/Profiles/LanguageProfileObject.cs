@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
@@ -10,6 +11,7 @@ namespace MG.Sonarr.Next.Models.Profiles
         ISerializableNames<LanguageProfileObject>
     {
         const int CAPACITY = 6;
+        static readonly string _typeName = typeof(LanguageProfileObject).GetTypeName();
 
         public string Name
         {
@@ -26,6 +28,12 @@ namespace MG.Sonarr.Next.Models.Profiles
             ArgumentNullException.ThrowIfNull(resolver);
 
             return resolver[Meta.LANGUAGE];
+        }
+
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            this.TypeNames.Insert(0, _typeName);
         }
     }
 }

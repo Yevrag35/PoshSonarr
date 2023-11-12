@@ -1,11 +1,12 @@
 ﻿using MG.Sonarr.Next.Services.Http.Requests;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Services.Http.Handlers
 {
     internal sealed class PingRequestMessage : SonarrRequestMessage
     {
-        public PingRequestMessage(string requestUri)
-            : base(HttpMethod.Get, requestUri)
+        public PingRequestMessage(string requestUri, IServiceScopeFactory scopeFactory)
+            : base(HttpMethod.Get, requestUri, scopeFactory)
         {
         }
 

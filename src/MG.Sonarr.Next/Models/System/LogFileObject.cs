@@ -2,7 +2,6 @@ using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
-using System.Buffers;
 
 namespace MG.Sonarr.Next.Models.System
 {
@@ -89,9 +88,9 @@ namespace MG.Sonarr.Next.Models.System
             return resolver[Meta.LOG_FILE];
         }
 
-        public override void OnDeserialized()
+        protected override void OnDeserialized(bool alreadyCalled)
         {
-            base.OnDeserialized();
+            base.OnDeserialized(alreadyCalled);
             this.Properties.Remove(nameof(this.Id));
 
             if (this.TryGetNonNullProperty(nameof(this.ContentsUrl), out string? cl))

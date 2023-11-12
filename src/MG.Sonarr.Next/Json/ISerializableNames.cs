@@ -7,12 +7,15 @@ namespace MG.Sonarr.Next.Json
     {
         static virtual IReadOnlyDictionary<string, string> GetDeserializedNames()
         {
-            return EmptyNameDictionary.Default;
+            return EmptyNameDictionary<string>.Default;
         }
-
+        static virtual IReadOnlySet<string> GetPropertiesToCapitalize()
+        {
+            return EmptyNameDictionary<string>.Default;
+        }
         static virtual IReadOnlyDictionary<string, string> GetSerializedNames()
         {
-            return EmptyNameDictionary.Default;
+            return EmptyNameDictionary<string>.Default;
         }
     }
 }

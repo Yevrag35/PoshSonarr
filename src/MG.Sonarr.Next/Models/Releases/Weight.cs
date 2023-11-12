@@ -38,7 +38,12 @@ namespace MG.Sonarr.Next.Models.Releases
         private static int GetValueOrDefault(ReleaseObject release, string propertyName)
         {
             PSPropertyInfo? prop = release.Properties[propertyName];
-            return (int?)prop?.Value ?? 0;
+            return prop?.Value switch
+            {
+                int i => i,
+                string s => int.TryParse(s, out int isNum) ? isNum : 0,
+                _ => 0,
+            };
         }
 
         public void SetRelease(ReleaseObject release)

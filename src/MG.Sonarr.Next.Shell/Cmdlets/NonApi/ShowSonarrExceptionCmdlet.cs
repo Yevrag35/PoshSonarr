@@ -9,7 +9,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.NonApi
 {
     [Cmdlet(VerbsCommon.Show, "SonarrException")]
     [Alias("Show-SonarrError")]
-    public sealed class ShowSonarrExceptionCmdlet : SonarrCmdletBase
+    public sealed class ShowSonarrExceptionCmdlet : PSCmdlet
     {
         const string ERROR = "error";
         bool _processedPipeline;
@@ -18,7 +18,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.NonApi
         [Alias("Exception")]
         public SonarrHttpException InputObject { get; set; } = null!;
 
-        protected override void Process(IServiceProvider provider)
+        protected override void ProcessRecord()
         {
             if (this.InputObject is not null)
             {
@@ -26,7 +26,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.NonApi
                 this.WriteDetails(this.InputObject);
             }
         }
-        protected override void End(IServiceProvider provider)
+        protected override void EndProcessing()
         {
             if (!_processedPipeline)
             {

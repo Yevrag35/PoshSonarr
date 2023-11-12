@@ -6,6 +6,7 @@ using Microsoft.Extensions.Caching.Memory;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Services.Http.Handlers
 {
@@ -15,11 +16,13 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
         readonly SonarrAuthType _authType;
         readonly IMemoryCache _cache;
+        readonly IServiceScopeFactory _scopeFactory;
 
-        public AuthHandler(IConnectionSettings settings, IMemoryCache cache)
+        public AuthHandler(IConnectionSettings settings, IMemoryCache cache, IServiceScopeFactory scopeFactory)
         {
             _authType = settings.AuthType;
             _cache = cache;
+            _scopeFactory = scopeFactory;
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -54,7 +57,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
         }
 
         #region BASIC AUTH
-        const string AUTHORIZATION = "Authorization";
+        const string BASIC = "Basic";
 
         private Task<HttpResponseMessage> DoBasicAuthProcedure(HttpRequestMessage request, CancellationToken token)
         {
@@ -81,7 +84,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
             });
 
             string base64Auth = Convert.ToBase64String(Encoding.UTF8.GetBytes(coupled));
-            request.Headers.Authorization = new AuthenticationHeaderValue(AUTHORIZATION, base64Auth);
+            request.Headers.Authorization = new AuthenticationHeaderValue(BASIC, base64Auth);
         }
 
         #endregion
@@ -118,7 +121,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
         private async Task<string> PerformLogin(AuthedRequestMessage original, CancellationToken token)
         {
             Uri loginUrl = original.GetLoginUrl();
-            ApiKeyRequestMessage request = new(HttpMethod.Post, loginUrl);
+            ApiKeyRequestMessage request = new(HttpMethod.Post, loginUrl, _scopeFactory);
             try
             {
                 request.Content = original.GetLoginFormContent();

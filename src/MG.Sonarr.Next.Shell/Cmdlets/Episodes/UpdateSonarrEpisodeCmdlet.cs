@@ -1,18 +1,24 @@
-﻿using MG.Sonarr.Next.Models;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
-using System.Management.Automation.Language;
+using MG.Sonarr.Next.Shell.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 {
     [Cmdlet(VerbsData.Update, "SonarrEpisode", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Low)]
+    [MetadataCanPipe(Tag = Meta.EPISODE)]
     public sealed class UpdateSonarrEpisodeCmdlet : SonarrApiCmdletBase
     {
-        [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput")]
+        [Parameter(Mandatory = true, ValueFromPipeline = true)]
+        [ValidateIds(ValidateRangeKind.Positive)]
         public EpisodeObject[] InputObject { get; set; } = Array.Empty<EpisodeObject>();
 
         protected override void Process(IServiceProvider provider)
         {
-            this.InputObject ??= Array.Empty<EpisodeObject>();
+            if (this.InputObject.Length <= 0)
+            {
+                return;
+            }
 
             foreach (var ep in this.InputObject)
             {
@@ -36,14 +42,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         private void SendUpdate(EpisodeObject episode)
         {
             string url = episode.MetadataTag.GetUrlForId(episode.Id);
-            if (this.ShouldProcess(url, "Update Episode"))
+            if (!this.ShouldProcess(url, "Update Episode"))
             {
-                var response = this.SendPutRequest(url, episode);
-                if (response.IsError)
-                {
-
-                }
+                return;   
             }
+
+            var response = this.SendPutRequest(url, episode);
+            this.TryCommitFromResponse(episode, in response);
         }
     }
 }

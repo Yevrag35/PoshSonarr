@@ -10,6 +10,7 @@ namespace MG.Sonarr.Next.Services.Jobs
 
         bool Add([NotNullWhen(true)] ICommand? command);
         bool Remove(int id);
+        bool TryGetValue(int id, [NotNullWhen(true)] out ICommand? value);
     }
     file sealed class CommandHistory : ICommandHistory
     {

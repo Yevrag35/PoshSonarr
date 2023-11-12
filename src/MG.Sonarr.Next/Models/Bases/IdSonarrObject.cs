@@ -1,4 +1,6 @@
-﻿namespace MG.Sonarr.Next.Models
+﻿using MG.Sonarr.Next.Extensions.PSO;
+
+namespace MG.Sonarr.Next.Models
 {
     public abstract class IdSonarrObject<TSelf> : SonarrObject,
         IComparable<TSelf>,
@@ -15,12 +17,14 @@
         {
             return Comparer<int?>.Default.Compare(this.Id, other?.Id);
         }
-        public override void OnDeserialized()
+        public sealed override void OnDeserialized()
         {
             if (this.TryGetId(out int id))
             {
                 this.Id = id;
             }
+
+            base.OnDeserialized();
         }
     }
 }

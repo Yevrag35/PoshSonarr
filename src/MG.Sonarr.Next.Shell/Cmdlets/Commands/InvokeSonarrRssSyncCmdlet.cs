@@ -2,7 +2,6 @@
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
 {

@@ -51,7 +51,7 @@ namespace MG.Sonarr.Next.Metadata
         }
         public readonly override int GetHashCode()
         {
-            return _value.GetHashCode();
+            return base.GetHashCode();
         }
 
         public static implicit operator NumericHolder<T>(int value)

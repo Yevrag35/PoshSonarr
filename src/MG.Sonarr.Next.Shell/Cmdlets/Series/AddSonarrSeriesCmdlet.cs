@@ -1,17 +1,18 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Models.Series;
-using Microsoft.Extensions.DependencyInjection;
 using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
     [Cmdlet(VerbsCommon.Add, "SonarrSeries", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
         DefaultParameterSetName = "RootFolderPath")]
-    [CmdletBinding(DefaultParameterSetName = "RootFolderPath")]
+    [MetadataCanPipe(Tag = Meta.SERIES_ADD)]
     public sealed class AddSonarrSeriesCmdlet : SonarrApiCmdletBase, IDynamicParameters
     {
         List<AddSeriesObject> _list = null!;
@@ -21,6 +22,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
+        [ValidateIds(ValidateRangeKind.Positive, InputNullBehavior.EnforceNull)]
         public AddSeriesObject[] InputObject
         {
             get => Array.Empty<AddSeriesObject>();
@@ -77,12 +79,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
         const string WITH_FILES = "SearchEpisodesWithFiles";
         const string WITHOUT_FILES = "SearchEpisodesWithoutFiles";
+        static readonly Lazy<RuntimeDefinedParameterDictionary> _runtimeDic = new(CreateRuntimeDictionary);
         public object? GetDynamicParameters()
         {
             RuntimeDefinedParameterDictionary? dict = null;
             if (this.SearchForMissingEpisodes)
             {
-                dict = new RuntimeDefinedParameterDictionary
+                dict = _runtimeDic.Value;
+            }
+
+            return dict;
+        }
+
+        private static RuntimeDefinedParameterDictionary CreateRuntimeDictionary()
+        {
+            return new RuntimeDefinedParameterDictionary
                 {
                     {
                         WITH_FILES,
@@ -109,9 +120,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                         }
                     }
                 };
-            }
-
-            return dict;
         }
 
         protected override void OnCreatingScope(IServiceProvider provider)
@@ -168,7 +176,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
             foreach (AddSeriesObject pso in _list)
             {
-                this.SerializeIfDebug(pso, options: provider.GetService<ISonarrJsonOptions>()?.GetForDebugging());
+                this.SerializeIfDebug(
+                    value: pso,
+                    options: provider.GetService<ISonarrJsonOptions>()?.ForDebugging);
 
                 if (this.ShouldProcess(pso.Title, "Adding Series"))
                 {
@@ -191,9 +201,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         {
             if (this.SearchForMissingEpisodes)
             {
-                if (this.MyInvocation.BoundParameters.TryGetValue(WITH_FILES, out object? wf) 
-                    &&
-                    wf is SwitchParameter wfSwitch)
+                if (this.MyInvocation.BoundParameters.TryGetValueAs(WITH_FILES, out SwitchParameter wfSwitch))
                 {
                     options.IgnoreEpisodesWithFiles = !wfSwitch.ToBool();
                 }

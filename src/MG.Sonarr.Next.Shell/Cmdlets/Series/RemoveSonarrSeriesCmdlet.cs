@@ -1,13 +1,14 @@
 ﻿using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
-using Microsoft.Extensions.DependencyInjection;
+using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Shell.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
-    [Cmdlet(VerbsCommon.Remove, "SonarrSeries", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [Cmdlet(VerbsCommon.Remove, "SonarrSeries", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
     [Alias("Delete-SonarrSeries")]
-    [CmdletBinding(PositionalBinding = false, ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
     {
         static readonly IQueryParameter FALSE = QueryParameter.Create("deleteFiles", false);
@@ -18,7 +19,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         MetadataTag Tag { get; set; } = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ById")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
         public int[] Id
         {
@@ -34,8 +35,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput", DontShow = true)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE,
+            DontShow = true)]
         [ValidateNotNull]
+        [ValidateIds(ValidateRangeKind.Positive)]
         public SeriesObject[] InputObject
         {
             get => Array.Empty<SeriesObject>();

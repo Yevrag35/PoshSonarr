@@ -2,13 +2,15 @@
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Calendar;
 using MG.Sonarr.Next.Shell.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Shell.Output;
+using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 {
     [Cmdlet(VerbsCommon.Get, "SonarrCalendar", DefaultParameterSetName = "None")]
-    public sealed class GetSonarrCalendarCmdlet : SonarrApiCmdletBase
+    [OutputType(typeof(ICalendarOutput))]
+    public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
     {
         const string START = "start";
         const string END = "end";
@@ -16,7 +18,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 
         DateTime? _end;
         HashSet<DayOfWeek> _dows = null!;
-        MetadataTag Tag { get; set; } = null!;
+        QueryParameterCollection _queryCol = null!;
 
         [Parameter(Position = 0)]
         public DateTime StartDate { get; set; } = DateTime.Now;
@@ -43,14 +45,36 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         [Parameter(Mandatory = true, ParameterSetName = "ShowTomorrow")]
         public SwitchParameter Tomorrow { get; set; }
 
+        // Possibly coming in v4
+        //[Parameter]
+        //public IntOrString[] Tag { get; set; } = Array.Empty<IntOrString>();
+
+        [Parameter]
+        public SwitchParameter IncludeEpisodeFile { get; set; }
+
+        [Parameter]
+        public SwitchParameter IncludeEpisodeImages { get; set; }
+
+        [Parameter]
+        public SwitchParameter IncludeSeries { get; set; }
+
         [Parameter]
         public SwitchParameter IncludeUnmonitored { get; set; }
 
+        protected override int Capacity => 2;
+        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
+        {
+            return resolver[Meta.CALENDAR];
+        }
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _dows = new(1);
-            this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.CALENDAR];
+            _dows = this.GetPooledObject<HashSet<DayOfWeek>>();
+            _queryCol = this.GetPooledObject<QueryParameterCollection>();
+
+            var span = this.GetReturnables();
+            span[0] = _dows;
+            span[1] = _queryCol;
         }
 
         protected override void Begin(IServiceProvider provider)
@@ -69,8 +93,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 
         protected override void Process(IServiceProvider provider)
         {
-            var parameters = GetParameters(this.StartDate, this.EndDate, this.IncludeUnmonitored);
-            string url = this.Tag.GetUrl(parameters);
+            this.GetParameters(this.StartDate, this.EndDate, this.IncludeUnmonitored, this.IncludeEpisodeFile, this.IncludeEpisodeImages, this.IncludeSeries);
+            string url = this.Tag.GetUrl(_queryCol);
 
             var response = this.SendGetRequest<MetadataList<CalendarObject>>(url);
             if (response.IsError)
@@ -95,15 +119,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 
             Debug.WriteLine($"Filtered {removed} items from {nameof(list)}.");
         }
-        private static QueryParameterCollection GetParameters(DateTime start, DateTime end, bool unmonitored)
+        private void GetParameters(DateTime start, DateTime end, bool unmonitored, bool includeEpisodeFile, bool includeEpisodeImages, bool includeSeries)
         {
-            int numberOfParameters = 3;
-            return new(numberOfParameters)
-            {
-                { nameof(unmonitored), unmonitored },
-                { START, start, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT },
-                { END, end, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT },
-            };
+            _queryCol.Add(nameof(unmonitored), unmonitored);
+            _queryCol.Add(nameof(includeEpisodeFile), includeEpisodeFile);
+            _queryCol.Add(nameof(includeSeries), includeSeries);
+            _queryCol.Add(nameof(includeEpisodeImages), includeEpisodeImages);
+            _queryCol.Add(START, start, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT);
+            _queryCol.Add(END, end, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT);
         }
     }
 }

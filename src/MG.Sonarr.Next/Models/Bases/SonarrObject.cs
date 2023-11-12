@@ -1,6 +1,8 @@
-﻿using MG.Sonarr.Next.Extensions.PSO;
+﻿using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.PSProperties;
 using System.Management.Automation;
 using System.Text.Json.Serialization;
 
@@ -9,21 +11,43 @@ namespace MG.Sonarr.Next.Models
     /// <summary>
     /// Dangerous object.
     /// </summary>
-    public abstract class SonarrObject : PSObject, IJsonSonarrMetadata, IJsonOnDeserialized
+    /// <remarks><inheritdoc cref="PSObject"/></remarks>
+    public abstract class SonarrObject : PSObject,
+        IJsonSonarrMetadata,
+        IJsonOnDeserialized
     {
-        public MetadataTag MetadataTag { get; private set; }
+        bool _addedType;
+        static readonly string _typeName = typeof(SonarrObject).GetTypeName();
+
+        protected virtual bool DisregardMetadataTag { get; }
+        public MetadataTag MetadataTag => this.GetValue<MetadataTag>() ?? MetadataTag.Empty;
 
         protected SonarrObject(int capacity)
             : base(capacity)
         {
-            this.MetadataTag = MetadataTag.Empty;
         }
+
         public virtual void Commit()
         {
             return;
         }
         protected abstract MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing);
+        internal virtual bool ShouldBeReadOnly(string propertyName, Type parentType)
+        {
+            return true;
+        }
         public virtual void OnDeserialized()
+        {
+            this.OnDeserialized(_addedType);
+            if (_addedType)
+            {
+                return;
+            }
+
+            this.SetPSTypeName();
+            _addedType = true;
+        }
+        protected virtual void OnDeserialized(bool alreadyCalled)
         {
             return;
         }
@@ -34,17 +58,17 @@ namespace MG.Sonarr.Next.Models
         public void SetTag(IMetadataResolver resolver)
         {
             ArgumentNullException.ThrowIfNull(resolver);
+            if (this.DisregardMetadataTag)
+            {
+                return;
+            }
 
-            this.MetadataTag = this.GetTag(resolver, this.MetadataTag);
-            PSPropertyInfo? prop = this.Properties[Constants.META_PROPERTY_NAME];
-            if (prop is not null)
-            {
-                prop.Value = this.MetadataTag;
-            }
-            else
-            {
-                this.Properties.Add(new PSNoteProperty(Constants.META_PROPERTY_NAME, this.MetadataTag));
-            }
+            MetadataTag tagToUse = this.GetTag(resolver, MetadataTag.Empty);
+            this.Properties.Add(new MetadataProperty(tagToUse));
+        }
+        protected virtual void SetPSTypeName()
+        {
+            this.TypeNames.Insert(0, _typeName);
         }
         public bool TryGetId(out int id)
         {

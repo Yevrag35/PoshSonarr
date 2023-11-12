@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -6,18 +7,19 @@ using MG.Sonarr.Next.Shell.Extensions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
 {
     [Cmdlet(VerbsCommon.Remove, "SonarrBackup", SupportsShouldProcess = true,
-        DefaultParameterSetName = "ByExplicitId")]
+        DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
     [Alias("Delete-SonarrBackup")]
+    [MetadataCanPipe(Tag = Meta.BACKUP)]
     public sealed class RemoveSonarrBackupCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
         bool _yesToAll;
         bool _noToAll;
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByExplicitId")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
-        [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput", ValueFromPipeline = true)]
+        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
         public BackupObject[] InputObject { get; set; } = Array.Empty<BackupObject>();
 
         [Parameter]
@@ -33,7 +35,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
+            this.GetReturnables()[0] = _ids;
         }
 
         protected override void Process(IServiceProvider provider)

@@ -1,20 +1,25 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.System
 {
     [SonarrObject]
-    public class HostObject : IdSonarrObject<HostObject>,
+    public class HostObject : SonarrObject,
+        IHasId,
         IJsonOnSerializing,
         ISerializableNames<HostObject>
     {
         const int CAPACITY = 32;
         const int CONDITIONAL_CAPACITY = 3;
+        static readonly string _typeName = typeof(HostObject).GetTypeName();
+
         private protected Dictionary<string, object?> Conditionals { get; }
+
+        public int Id { get; private set; }
 
         public HostObject()
             : base(CAPACITY)
@@ -34,16 +39,35 @@ namespace MG.Sonarr.Next.Models.System
         public override void OnDeserialized()
         {
             base.OnDeserialized();
+            if (this.TryGetId(out int id))
+            {
+                this.Id = id;
+            }
+
             this.Properties.Remove(nameof(this.Id));
         }
         public virtual void OnSerializing()
         {
-            this.UpdateProperty(x => x.Id);
+            this.ReplaceNumberProperty(nameof(this.Id), this.Id);
         }
         public override void Reset()
         {
             base.Reset();
             this.Properties.Remove(nameof(this.Id));
+        }
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            this.TypeNames.Insert(0, _typeName);
+        }
+
+        static readonly HashSet<string> _capitalProps = new(5)
+        {
+            "AuthenticationMethod", "CertificateValidation", "LogLevel", "ProxyType", "UpdateMechanism",
+        };
+        public static IReadOnlySet<string> GetPropertiesToCapitalize()
+        {
+            return _capitalProps;
         }
     }
 
@@ -56,6 +80,7 @@ namespace MG.Sonarr.Next.Models.System
         {
             Constants.API_KEY, Constants.PASSWORD, Constants.PROXY_PASSWORD,
         };
+        static readonly string _typeName = typeof(NoKeyHostObject).GetTypeName();
 
         public int CompareTo(NoKeyHostObject? other)
         {
@@ -72,6 +97,14 @@ namespace MG.Sonarr.Next.Models.System
         {
             base.OnDeserialized();
             this.StoreConditionals();
+        }
+        public override void OnSerializing()
+        {
+            base.OnSerializing();
+            foreach (var kvp in this.Conditionals)
+            {
+                this.UpdateProperty(kvp.Key, kvp.Value);
+            }
         }
         public override void Reset()
         {
@@ -90,14 +123,12 @@ namespace MG.Sonarr.Next.Models.System
 
             this.Properties.RemoveMany(_removeProperties);
         }
-
-        public override void OnSerializing()
+        protected override void SetPSTypeName()
         {
-            base.OnSerializing();
-            foreach (var kvp in this.Conditionals)
-            {
-                this.UpdateProperty(kvp.Key, kvp.Value);
-            }
+            base.SetPSTypeName();
+
+            Debug.Assert(this.TypeNames.Count > 0 && this.TypeNames[0] == typeof(HostObject).GetTypeName());
+            this.TypeNames[0] = _typeName;
         }
     }
 }

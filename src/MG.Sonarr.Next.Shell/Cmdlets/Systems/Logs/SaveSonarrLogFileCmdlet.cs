@@ -6,14 +6,15 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Shell.Attributes;
 using System.Net;
-using Microsoft.Extensions.DependencyInjection;
 using MG.Sonarr.Next.Json;
 using System.Text.Json;
+using MG.Sonarr.Next.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
 {
     [Cmdlet(VerbsData.Save, "SonarrLogFile", DefaultParameterSetName = "ByExplicitUrl")]
     [Alias("Download-SonarrLogFile")]
+    [MetadataCanPipe(Tag = Meta.LOG_FILE)]
     [OutputType(typeof(FileInfo))]
     public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
     {
@@ -29,7 +30,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
         public SwitchParameter Force { get; set; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput", ValueFromPipeline = true)]
+        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
         public LogFileObject InputObject
         {
             get => null!;
@@ -143,13 +144,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
         }
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            this.WriteVerbose($"Sending {request.Method} request -> {request.RequestUri}");
+            this.WriteVerbose($"Sending {request.RequestMethod} request -> {request.RequestUrl}");
         }
         public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
         {
             if (this.VerbosePreference != ActionPreference.SilentlyContinue)
             {
-                options ??= provider.GetService<ISonarrJsonOptions>()?.GetForSerializing();
+                options ??= provider.GetService<ISonarrJsonOptions>()?.ForSerializing;
                 this.WriteVerbose(JsonSerializer.Serialize(response, options));
             }
         }

@@ -11,13 +11,13 @@ namespace MG.Sonarr.Next.Services.Http.Clients
     {
         public Task<SonarrResponse> SendDeleteAsync(string path, CancellationToken token = default)
         {
-            using ApiKeyRequestMessage request = new(HttpMethod.Delete, path);
+            using ApiKeyRequestMessage request = new(HttpMethod.Delete, path, _scopeFactory);
 
             return this.SendNoResultRequestAsync(request, path, token);
         }
         public async Task<SonarrResponse<T>> SendGetAsync<T>(string path, CancellationToken token = default)
         {
-            using ApiKeyRequestMessage request = new(HttpMethod.Get, path);
+            using ApiKeyRequestMessage request = new(HttpMethod.Get, path, _scopeFactory);
 
             var response = await this.SendResultRequestAsync<T>(request, path, token);
             if (response.IsDataTaggable(out IJsonMetadataTaggable? taggable))
@@ -34,16 +34,16 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         }
         public Task<SonarrResponse> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
         {
-            using ApiKeyRequestMessage request = new(HttpMethod.Post, path);
-            request.Content = JsonContent.Create(body, body.GetType(), options: _serializingOptions);
+            using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
+            request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
 
             return this.SendNoResultRequestAsync(request, path, token);
         }
         public async Task<SonarrResponse<TOutput>> SendPostAsync<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull
         {
-            using ApiKeyRequestMessage request = new(HttpMethod.Post, path);
+            using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
 
-            request.Content = JsonContent.Create(body, body.GetType(), options: _serializingOptions);
+            request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
 
             var response = await this.SendResultRequestAsync<TOutput>(request, path, token);
             if (response.IsDataTaggable(out IJsonMetadataTaggable? taggable))
@@ -55,8 +55,8 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         }
         public Task<SonarrResponse> SendPutAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
         {
-            using ApiKeyRequestMessage request = new(HttpMethod.Put, path);
-            request.Content = JsonContent.Create(body, body.GetType(), options: _serializingOptions);
+            using ApiKeyRequestMessage request = new(HttpMethod.Put, path, _scopeFactory);
+            request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
 
             return this.SendNoResultRequestAsync(request, path, token);
         }
@@ -71,7 +71,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             }
             catch (HttpRequestException httpEx)
             {
-                var pso = ParseResponseForError(response, _deserializingOptions, token);
+                var pso = ParseResponseForError(response, _options.ForDeserializing, token);
                 SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
 
                 var result = SonarrResponse.FromException(path, sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);
@@ -100,7 +100,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             }
             catch (HttpRequestException httpEx)
             {
-                var pso = ParseResponseForError(response, _deserializingOptions, token);
+                var pso = ParseResponseForError(response, _options.ForDeserializing, token);
                 SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
 
                 var result = SonarrResponse.FromException<T>(path, sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);

@@ -4,10 +4,18 @@ using MG.Sonarr.Next.Models.Tags;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Shell.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
     [Cmdlet(VerbsCommon.Get, "SonarrTag", DefaultParameterSetName = "ByName")]
+    [MetadataCanPipe(Tag = Meta.DELAY_PROFILE)]
+    [MetadataCanPipe(Tag = Meta.DOWNLOAD_CLIENT)]
+    [MetadataCanPipe(Tag = Meta.INDEXER)]
+    [MetadataCanPipe(Tag = Meta.RELEASE_PROFILE)]
+    [MetadataCanPipe(Tag = Meta.SERIES)]
+    [MetadataCanPipe(Tag = Meta.SERIES_ADD)]
     public sealed class GetSonarrTagCmdlet : SonarrMetadataCmdlet
     {
         const string BY_PIPELINE = "ByPipelineInput";
@@ -17,10 +25,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_PIPELINE)]
+        [ValidateIds(ValidateRangeKind.Positive, typeof(ITagPipeable))]
         public ITagPipeable[] InputObject { get; set; } = Array.Empty<ITagPipeable>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ById")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -33,9 +42,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
             _names = this.GetPooledObject<HashSet<Wildcard>>();
-            this.Returnables[1] = _names;
+            var span = this.GetReturnables();
+            span[0] = _ids;
+            span[1] = _names;
         }
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {

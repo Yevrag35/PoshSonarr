@@ -128,12 +128,16 @@ if ($PSCmdlet.ShouldProcess($dllPath, "Importing Module")) {
 	Push-Location $myDesktop
 }
 
+Get-ChildItem -Path "$PSScriptRoot\PSFormats" -File *.ps1xml -Recurse -ea Stop | %{ Update-FormatData -PrependPath $_.FullName }
+Get-ChildItem -Path "$PSScriptRoot\PSTypes" -File *.ps1xml -Recurse -ea Stop | %{ Update-TypeData -AppendPath $_.FullName }
+
 Write-Host ""
 Write-Host "Debugging PoshSonarr PowerShell Module" -ForegroundColor Cyan
 Write-Host "`n"
 $VerbosePreference = "Continue"
 if (-not ([string]::IsNullOrWhitespace($SonarrUrl) -or [string]::IsNullOrWhitespace($ApiKey))) {
 
-	Connect-SonarrInstance -Url $SonarrUrl -ApiKey $ApiKey
-	$s = Get-SonarrSeries asdfm*
+	$status = Connect-SonarrInstance -Url $SonarrUrl -ApiKey $ApiKey -PassThru
+	$status
+	#$s = Get-SonarrSeries asdfm*
 }

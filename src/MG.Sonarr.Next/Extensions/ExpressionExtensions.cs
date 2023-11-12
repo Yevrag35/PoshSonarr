@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Next.Reflection;
-using OneOf;
 using System.Reflection;
 
 namespace MG.Sonarr.Next.Extensions
@@ -56,9 +55,9 @@ namespace MG.Sonarr.Next.Extensions
         /// </summary>
         /// <param name="expression">The expression to check.</param>
         /// <param name="setter">
-        ///     When this method returns, the <see cref="FieldOrPropertyInfoSetter"/>
+        ///     When this method returns, the <see cref="FieldOrPropertyInfo"/>
         ///     of the expression's <see cref="MemberExpression.Member"/>; otherwise, the
-        ///     default instance of <see cref="FieldOrPropertyInfoSetter"/>.
+        ///     default instance of <see cref="FieldOrPropertyInfo"/>.
         /// </param>
         /// <returns>
         ///     <see langword="true"/> if <paramref name="expression"/>'s body is a valid 
@@ -66,11 +65,12 @@ namespace MG.Sonarr.Next.Extensions
         ///     settable <see cref="PropertyInfo"/> or <see cref="FieldInfo"/>; otherwise,
         ///     <see langword="false"/>.
         /// </returns>
-        public static bool TryGetAsSetter(this LambdaExpression expression, out FieldOrPropertyInfoSetter setter)
+        public static bool TryGetAsSetter(this LambdaExpression expression, [NotNullWhen(true)] out IMemberSetter? setter)
         {
             ArgumentNullException.ThrowIfNull(expression);
 
             setter = default;
+            
             OneOf<FieldInfo, PropertyInfo, object?> tempOne;
             if (expression.Body is MemberExpression memEx)
             {
@@ -85,14 +85,17 @@ namespace MG.Sonarr.Next.Extensions
                 tempOne = OneOf<FieldInfo, PropertyInfo, object?>.FromT2(null);
             }
 
+            FieldOrPropertyInfo info = default;
             if (!tempOne.IsT2)
             {
-                setter = tempOne.IsT0
-                    ? new FieldOrPropertyInfoSetter(tempOne.AsT0)
-                    : new FieldOrPropertyInfoSetter(tempOne.AsT1);
+                info = tempOne.IsT0
+                    ? new FieldOrPropertyInfo(tempOne.AsT0)
+                    : new FieldOrPropertyInfo(tempOne.AsT1);
+
+                setter = info;
             }
 
-            return !setter.IsEmpty;
+            return !info.IsEmpty;
         }
 
         private static OneOf<FieldInfo, PropertyInfo, object?> GetAsEitherInfo(MemberExpression memberExpression)

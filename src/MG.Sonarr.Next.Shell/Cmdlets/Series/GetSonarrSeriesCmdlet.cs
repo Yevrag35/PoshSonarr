@@ -6,10 +6,18 @@ using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Shell.Output;
+using MG.Sonarr.Next.Shell.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
     [Cmdlet(VerbsCommon.Get, "SonarrSeries", DefaultParameterSetName = "BySeriesName")]
+    [MetadataCanPipe(Tag = Meta.CALENDAR)]
+    [MetadataCanPipe(Tag = Meta.EPISODE)]
+    [MetadataCanPipe(Tag = Meta.EPISODE_FILE)]
+    [MetadataCanPipe(Tag = Meta.RENAMABLE)]
+    [OutputType(typeof(ISeriesOutput))]
     public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
@@ -21,13 +29,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         public IntOrString[] Name { get; set; } = Array.Empty<IntOrString>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesId")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ParameterSetName = "ByPipelineInput", DontShow = true,
+        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, DontShow = true,
             ValueFromPipeline = true)]
+        [ValidateIds(ValidateRangeKind.Positive, typeof(ISeriesPipeable))]
         public ISeriesPipeable[] InputObject
         {
             get => Array.Empty<ISeriesPipeable>();
@@ -46,9 +55,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            this.Returnables[0] = _ids;
             _names = this.GetPooledObject<HashSet<Wildcard>>();
-            this.Returnables[1] = _names;
+            var span = this.GetReturnables();
+            span[0] = _ids;
+            span[1] = _names;
         }
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {

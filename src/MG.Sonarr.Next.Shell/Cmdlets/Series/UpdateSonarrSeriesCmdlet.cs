@@ -1,16 +1,21 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Json;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
     [Cmdlet(VerbsData.Update, "SonarrSeries", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
     [Alias("Set-SonarrSeries")]
+    [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class UpdateSonarrSeriesCmdlet : SonarrApiCmdletBase
     {
         List<SeriesObject> _list = null!;
 
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
+        [ValidateIds(ValidateRangeKind.Positive)]
         public SeriesObject[] InputObject { get; set; } = Array.Empty<SeriesObject>();
 
         protected override void OnCreatingScope(IServiceProvider provider)
@@ -43,7 +48,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
             foreach (SeriesObject item in _list)
             {
-                this.SerializeIfDebug(item, options: this.Options?.GetForSerializing());
+                this.SerializeIfDebug(
+                    value: item,
+                    options: provider.GetService<ISonarrJsonOptions>()?.ForSerializing);
 
                 string path = tag.GetUrlForId(item.Id);
                 if (this.ShouldProcess(path, "Update Series"))
