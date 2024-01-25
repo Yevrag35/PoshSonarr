@@ -1,5 +1,7 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Http.Urls.Queries;
+using MG.Sonarr.Next.Extensions;
 using System.ComponentModel;
+using System.Numerics;
 
 namespace MG.Sonarr.Next.Services.Http.Queries
 {
@@ -135,7 +137,7 @@ namespace MG.Sonarr.Next.Services.Http.Queries
             _maxLength = GetStartingLength(_direction);
         }
 
-        private static string SetStringField(string? incoming, string current, [ConstantExpected] string defaultValue, ref int maxLength)
+        private static string SetStringField(string? incoming, string current, string defaultValue, ref int maxLength)
         {
             if (string.IsNullOrWhiteSpace(incoming))
             {
@@ -195,6 +197,12 @@ namespace MG.Sonarr.Next.Services.Http.Queries
             WriteStringSection(destination, nameof(this.SortKey), _sortKey, ref charsWritten);
 
             return true;
+        }
+
+        bool IQueryParameter.TryValueAsNumber<T>(out T value)
+        {
+            value = default;
+            return false;
         }
 
         private static void WriteKey(Span<char> span, ReadOnlySpan<char> key, ref int position)

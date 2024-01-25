@@ -19,6 +19,15 @@
 	<RepositoryType>Git</RepositoryType>
   </PropertyGroup>
 
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>MG.Sonarr.Next.Shell.Bases</_Parameter1>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>MG.Sonarr.Next.Shell</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
+
   <ItemGroup>
     <Compile Remove="Json\Converters\Spans\UtcTimeToLocalConverter.cs" />
   </ItemGroup>
@@ -29,6 +38,7 @@
 
   <ItemGroup>
     <PackageReference Include="MG.Collections" Version="1.2.0" />
+    <PackageReference Include="MG.Http.Urls" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />

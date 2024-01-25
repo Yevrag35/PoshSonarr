@@ -1,9 +1,9 @@
-﻿using MG.Sonarr.Next.Services.Auth;
+﻿using MG.Http.Urls.Queries;
+using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Services.Http.Handlers;
-using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Http.Requests;
 using Microsoft.Extensions.DependencyInjection;
 using System.Management.Automation;
@@ -13,12 +13,12 @@ using MG.Sonarr.Next.Collections.Pools;
 
 namespace MG.Sonarr.Next.Services.Http.Clients
 {
-    public interface ISignalRClient
+    public interface ISignalRClient : IDisposable
     {
         SonarrResponse<PingResponse> SendPing(CancellationToken token = default);
     }
 
-    file sealed class SignalRClient : ISignalRClient, IDisposable
+    file sealed class SignalRClient : ISignalRClient
     {
         const long MIN_RNG = 100_000_000L;
         const string SIGNAL_R = "/signalr";
