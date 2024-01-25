@@ -79,7 +79,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
         {
             if (this.ParameterSetNameIsLike("ByEpisode*"))
             {
-                this.QueryParams.Add(this, LengthConstants.INT_MAX, x => x.EpisodeId);
+                this.QueryParams.Add(nameof(this.EpisodeId), this.EpisodeId);
             }
             else
             {

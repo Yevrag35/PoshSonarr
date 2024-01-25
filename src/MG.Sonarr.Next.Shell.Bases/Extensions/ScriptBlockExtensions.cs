@@ -25,7 +25,7 @@ namespace MG.Sonarr.Next.Shell.Extensions
         {
             ArgumentNullException.ThrowIfNull(scriptBlock);
             ArgumentNullException.ThrowIfNull(value);
-            int listCount = 1;
+            int listCount = 2;
             if (errorAction.HasValue)
             {
                 listCount++;

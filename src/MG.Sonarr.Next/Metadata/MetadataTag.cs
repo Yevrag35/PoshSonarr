@@ -1,6 +1,5 @@
-﻿using MG.Sonarr.Next.Collections;
+﻿using MG.Http.Urls.Queries;
 using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Services.Http.Queries;
 
 namespace MG.Sonarr.Next.Metadata
 {
@@ -187,9 +186,10 @@ namespace MG.Sonarr.Next.Metadata
             return string.Create(length, this, (chars, state) =>
             {
                 int position = 0;
-                Span<char> sep = stackalloc char[3] { ' ', '=', ' ' };
+                Span<char> sep = [' ', '=', ' '];
                 ref char space = ref sep[0];
-                ReadOnlySpan<char> comma = stackalloc char[2] { ',', space };
+
+                Span<char> comma = [',', space];
 
                 chars[position++] = '{';
 

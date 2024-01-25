@@ -111,7 +111,7 @@ namespace MG.Sonarr.Next.Collections
         {
             if (this.IsEmpty)
             {
-                return false;
+                return !other.Any();
             }
 
             foreach (string s in other)

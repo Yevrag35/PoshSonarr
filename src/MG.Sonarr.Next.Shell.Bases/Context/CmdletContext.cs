@@ -1,3 +1,4 @@
+using MG.Http.Urls.Queries;
 using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
@@ -69,12 +70,14 @@ namespace MG.Sonarr.Next.Shell.Context
         /// <exception cref="ContextNotSetException"/>
         internal static IServiceProvider GetProvider()
         {
-            return _provider ?? throw NotSet();
+            return _provider ?? ThrowNotSet();
         }
 
-        private static ContextNotSetException NotSet()
+        /// <exception cref="ContextNotSetException"></exception>
+        [DoesNotReturn]
+        private static IServiceProvider ThrowNotSet()
         {
-            return new ContextNotSetException(new CmdletScopeNotReadyException());
+            throw new ContextNotSetException(new CmdletScopeNotReadyException());
         }
 
         internal static void Deinitialize()
