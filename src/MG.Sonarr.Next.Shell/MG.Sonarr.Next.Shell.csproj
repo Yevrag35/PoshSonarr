@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<Version>2.0.0</Version>
@@ -9,7 +9,7 @@
 	<FileVersion>2.0.0</FileVersion>
 	<Authors>Mike Garvey</Authors>
 	<Company>Yevrag35, LLC.</Company>
-	<Product>PoshSonarr .NET 7</Product>
+	<Product>PoshSonarr .NET 8</Product>
 	<Description>The binary library of the PoshSonarr PowerShell module.</Description>
 	<Copyright>Copyright © 2018-2023 Yevrag35, LLC.</Copyright>
 	<PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
@@ -104,8 +104,8 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.3.9" />
-    <PackageReference Include="System.Management.Automation" Version="7.3.9" />
+    <PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.4.1" />
+    <PackageReference Include="System.Management.Automation" Version="7.4.1" />
   </ItemGroup>
 
   <ItemGroup>

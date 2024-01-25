@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<RootNamespace>MG.Sonarr.Next</RootNamespace>
@@ -10,7 +10,7 @@
 	<FileVersion>2.0.0</FileVersion>
 	<Authors>Mike Garvey</Authors>
 	<Company>Yevrag35, LLC.</Company>
-	<Product>PoshSonarr Services Library .NET 7</Product>
+	<Product>PoshSonarr Services Library .NET 8</Product>
 	<Description>The service library for the PoshSonarr PowerShell module.</Description>
 	<Copyright>Copyright © 2018-2023 Yevrag35, LLC.</Copyright>
 	<PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
@@ -29,13 +29,13 @@
 
   <ItemGroup>
     <PackageReference Include="MG.Collections" Version="1.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
-    <PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.3.9" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.4.1" />
     <PackageReference Include="OneOf" Version="3.0.263" />
-    <PackageReference Include="System.Management.Automation" Version="7.3.9" />
-    <PackageReference Include="System.Text.Json" Version="7.0.3" />
+    <PackageReference Include="System.Management.Automation" Version="7.4.1" />
+    <PackageReference Include="System.Text.Json" Version="8.0.1" />
   </ItemGroup>
 
 	<ItemGroup>
