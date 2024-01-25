@@ -1,7 +1,8 @@
-﻿using MG.Sonarr.Next.Services.Http.Queries;
+﻿using MG.Http.Urls.Queries;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.System;
+using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
 using System.ComponentModel;

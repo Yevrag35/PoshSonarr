@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Http.Queries;
+﻿using MG.Http.Urls.Queries;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Calendar;
 using MG.Sonarr.Next.Shell.Extensions;

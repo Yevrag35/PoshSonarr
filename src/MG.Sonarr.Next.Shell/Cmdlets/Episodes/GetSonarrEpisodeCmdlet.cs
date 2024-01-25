@@ -1,14 +1,13 @@
-﻿using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Services.Http.Queries;
+﻿using MG.Http.Urls.Queries;
+using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Episodes;
+using MG.Sonarr.Next.Shell.Attributes;
+using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
-using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Shell.Attributes;
-using MG.Sonarr.Next.Collections.Pools;
-using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 {

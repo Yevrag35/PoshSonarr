@@ -1,9 +1,9 @@
-﻿using MG.Sonarr.Next.Services.Http.Queries;
+﻿using MG.Http.Urls.Queries;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Releases;
-using MG.Sonarr.Next.Shell.Extensions;
-using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Shell.Attributes;
+using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
 {
