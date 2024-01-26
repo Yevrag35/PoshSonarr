@@ -1,7 +1,7 @@
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.DownloadClients;
-using MG.Sonarr.Next.Models.Profiles;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
@@ -11,6 +11,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
     public sealed class UpdateSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
     {
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
+        [ValidateIds(ValidateRangeKind.Positive)]
         public DownloadClientObject[] InputObject { get; set; } = Array.Empty<DownloadClientObject>();
 
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)

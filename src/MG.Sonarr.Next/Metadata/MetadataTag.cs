@@ -1,19 +1,40 @@
 ﻿using MG.Http.Urls.Queries;
 using MG.Sonarr.Next.Extensions;
+using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Metadata
 {
+    /// <summary>
+    /// A class that represents an identifier for organizing the output data returned from Sonarr API 
+    /// endpoints.
+    /// </summary>
+    /// <remarks>
+    /// Instances of this class are immutable and should be retrieved from an 
+    /// <see cref="IMetadataResolver"/> implementing service.
+    /// </remarks>
     [DebuggerDisplay(@"\{{Value}, {UrlBase}\}")]
     public sealed class MetadataTag : ICloneable, IEquatable<MetadataTag>
     {
+        /// <summary>
+        /// Gets the array of cmdlet names that data tagged with this instance can be piped to in PowerShell.
+        /// </summary>
         public string[] CanPipeTo { get; }
+        /// <summary>
+        /// Indicates whether the API endpoint this tag represents supports an ID in the URL path.
+        /// </summary>
         public bool SupportsId { get; }
+        /// <summary>
+        /// Gets the URI path of the Sonarr API endpoint that this tag represents.
+        /// </summary>
         public string UrlBase { get; }
+        /// <summary>
+        /// Gets the identifier of the tag that is easily visible in the PowerShell console.
+        /// </summary>
         public string Value { get; }
 
         private MetadataTag()
         {
-            this.CanPipeTo = Array.Empty<string>();
+            this.CanPipeTo = [];
             this.SupportsId = false;
             this.UrlBase = string.Empty;
             this.Value = string.Empty;
@@ -69,6 +90,10 @@ namespace MG.Sonarr.Next.Metadata
         object ICloneable.Clone() => this.Clone();
         public MetadataTag Clone() => new(this);
 
+        /// <summary>
+        /// An empty <see cref="MetadataTag"/> instance that has no value and cannot used in the
+        /// PowerShell pipeline. It may also represent data from an unknown Sonarr API endpoint.
+        /// </summary>
         public static readonly MetadataTag Empty = new();
 
         public bool Equals(MetadataTag? other)
@@ -89,6 +114,17 @@ namespace MG.Sonarr.Next.Metadata
         {
             return HashCode.Combine(this.UrlBase, this.Value, this.SupportsId);
         }
+
+        /// <summary>
+        /// Constructs a new URL for an API request using <see cref="UrlBase"/> and appending the
+        /// provided query parameters.
+        /// </summary>
+        /// <param name="parameters">The collection of query parameters to append as the URL
+        /// query string.</param>
+        /// <returns>
+        /// The constructed URL string to the endpoint defined by this tag with the appended query 
+        /// parameters.
+        /// </returns>
         public string GetUrl(QueryParameterCollection? parameters)
         {
             if (parameters.IsNullOrEmpty())
@@ -149,6 +185,7 @@ namespace MG.Sonarr.Next.Metadata
         {
             this.ThrowIfNotSupportId();
             Span<char> span = stackalloc char[this.UrlBase.Length + 2 + parameters.MaxLength + LengthConstants.INT128_MAX];
+
             int position = 0;
             this.UrlBase.CopyToSlice(span, ref position);
 
