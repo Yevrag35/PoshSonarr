@@ -57,29 +57,26 @@ namespace MG.Sonarr.Next.Metadata
 
         private static string[] CopyFromSet(IReadOnlySet<string> pipesTo)
         {
-            string[] canPipeTo;
             if (pipesTo.Count <= 0)
             {
-                canPipeTo = Array.Empty<string>();
+                return [];
             }
-            else
+
+            string[] canPipeTo = new string[pipesTo.Count];
+            int i = 0;
+            foreach (string s in pipesTo)
             {
-                canPipeTo = new string[pipesTo.Count];
-                int i = 0;
-                foreach (string s in pipesTo)
-                {
-                    canPipeTo[i++] = s;
-                }
+                canPipeTo[i++] = s;
             }
 
             return canPipeTo;
         }
 
-        private static string[] CopyOriginal(ReadOnlySpan<string> canPipeTo)
+        private static string[] CopyOriginal(scoped Span<string> canPipeTo)
         {
             if (canPipeTo.Length <= 0)
             {
-                return Array.Empty<string>();
+                return [];
             }
 
             string[] copyInto = new string[canPipeTo.Length];
