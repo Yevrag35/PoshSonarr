@@ -5,12 +5,29 @@ using System.Buffers;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
 {
     //[DebuggerStepThrough]
+    /// <summary>
+    /// An <see langword="abstract"/>, <see cref="SonarrCmdletBase"/> class that allows for retrieving 
+    /// and returning objects from an <see cref="IObjectPool{T}"/> instance.
+    /// </summary>
+    /// <remarks>
+    ///     Objects pulled from pools can either be defined up-front and automatically returned, or can 
+    ///     be created on-demand and returned manually.
+    /// </remarks>
     public abstract class PoolableCmdlet : SonarrCmdletBase
     {
-        bool _isRented;
-        object[] _rented = Array.Empty<object>();
-        int _capacity;
+        private bool _isRented;
+        private object[] _rented = [];
+        private int _capacity;
+
+        /// <summary>
+        /// In dervied cmdlets, gets the capacity of the number of rented objects that will be allocated
+        /// and disposed.
+        /// </summary>
+        /// <remarks>
+        ///     Default implementation returns 0.
+        /// </remarks>
         protected virtual int Capacity => 0;
+
         private protected virtual int InternalCapacity => 0;
 
         private static int CalculateCapacity(int capacity, int internalCapacity)
@@ -31,16 +48,33 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         /// registered.
         /// </summary>
         /// <remarks>
-        ///     This method should only be called once execution of the cmdlet has started.
+        /// <para>
+        ///     This method should only be called once execution of the cmdlet has started (i.e. - in either
+        ///     the <see cref="Cmdlet.BeginProcessing"/>, <see cref="Cmdlet.ProcessRecord"/>, or
+        ///     <see cref="Cmdlet.EndProcessing"/> invocations). Calling it at any other time will throw a 
+        ///     <see cref="PipelineStoppedException"/>.
+        /// </para>
+        /// <para>
+        ///     The caller is responsible for returning the object back to the pool by calling
+        ///     <see cref="ReturnPooledObject{T}(T)"/>.
+        /// </para>
         /// </remarks>
-        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T">
+        ///     The type of object that is pulled from an <see cref="IObjectPool{T}"/>.
+        /// </typeparam>
+        /// <returns>
+        ///     An object of type <typeparamref name="T"/> that has been pulled from one of the registered
+        ///     <see cref="IObjectPool{T}"/> instances.
+        /// </returns>
         /// <exception cref="PipelineStoppedException"/>
         protected T GetPooledObject<T>() where T : notnull
         {
             if (!this.IsScopeInitialized)
             {
-                var ex = new CmdletScopeNotReadyException(this.GetType());
-                throw new PipelineStoppedException(ex.Message, ex);
+                return CmdletScopeNotReadyException.ThrowAsInnerTo<T>(this, ex =>
+                {
+                    return new PipelineStoppedException(ex.Message, ex);
+                });
             }
 
             try
@@ -49,11 +83,24 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             }
             catch (InvalidOperationException e)
             {
-                var pipelineStopped = new PipelineStoppedException("Unable to find the required service.", e);
-                throw pipelineStopped;
+                return ThrowPipelineStopped<T>("Unable to find the required service.", e);
             }
         }
 
+        /// <summary>
+        /// Returns a span of all the returnable objects that were pre-defined and allocated 
+        /// during the execution of <see cref="SonarrCmdletBase.OnCreatingScope(IServiceProvider)"/>.
+        /// </summary>
+        /// <returns>
+        /// <para>
+        ///     A <see cref="Span{T}"/> of <see cref="object"/> instances that were pre-defined and allocated
+        ///     and will be returned to their respective <see cref="IObjectPool{T}"/> instances when this
+        ///     cmdlet finishes execution whose length is equal to <see cref="Capacity"/>.
+        /// </para>
+        /// <para>
+        ///     If <see cref="Capacity"/> is equal to 0, then <see cref="Span{T}.Empty"/> is returned.
+        /// </para>
+        /// </returns>
         protected virtual Span<object> GetReturnables()
         {
             return this.GetAllReturnables();
@@ -78,7 +125,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             if (capacity <= 0)
             {
                 capacity = 0;
-                return Array.Empty<object>();
+                return [];
             }
 
             object[] array = ArrayPool<object>.Shared.Rent(capacity);

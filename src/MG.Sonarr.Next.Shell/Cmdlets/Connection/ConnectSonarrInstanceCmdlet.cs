@@ -11,6 +11,7 @@ using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.Profiles;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 {
@@ -99,6 +100,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
         private static void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<ManualImportEdit>()
+                    .AddScoped<ReleaseProfileObject>()
                     .AddGenericObjectPool<Dictionary<int, IEpisodeBySeriesPipeable>>(builder =>
                     {
                         builder.SetConstructor(() => new Dictionary<int, IEpisodeBySeriesPipeable>(50))

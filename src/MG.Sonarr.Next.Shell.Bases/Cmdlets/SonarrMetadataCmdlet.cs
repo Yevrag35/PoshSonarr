@@ -4,11 +4,20 @@ using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
 {
+    /// <summary>
+    /// An <see langword="abstract"/>, <see cref="SonarrApiCmdletBase"/> class that provides an 
+    /// implementation for cmdlets that query/manipulate specific metadata types returned from or provided to
+    /// the Sonarr APIs.
+    /// </summary>
     [DebuggerStepThrough]
     public abstract class SonarrMetadataCmdlet : SonarrApiCmdletBase
     {
         MetadataTag? _tag;
 
+        /// <summary>
+        /// Gets the defined <see cref="MetadataTag"/> that this cmdlet deals with when querying
+        /// Sonarr APIs.
+        /// </summary>
         protected MetadataTag Tag
         {
             get => _tag ??= MetadataTag.Empty;

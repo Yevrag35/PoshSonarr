@@ -10,11 +10,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
     /// An <see langword="abstract"/>, base class for Sonarr cmdlets that issue HTTP requests to Sonarr API
     /// endpoints.
     /// </summary>
-    //[DebuggerStepThrough]
+    [DebuggerStepThrough]
     public abstract class SonarrApiCmdletBase : TimedCmdlet
     {
-        ISonarrClient _client = null!;
-        Queue<IApiCmdlet> _queue = null!;
+        private ISonarrClient _client = null!;
+        private Queue<IApiCmdlet> _queue = null!;
 
         private protected override void OnCreatingScopeInternal(IServiceProvider provider)
         {
@@ -135,6 +135,24 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             return response;
         }
 
+        /// <summary>
+        /// Attempts to commit or reset properties of the <typeparamref name="T"/> object depending on if
+        /// the accompanying <see cref="SonarrResponse"/> indicates an error occurred.
+        /// </summary>
+        /// <typeparam name="T">The type of <see cref="SonarrObject"/> to process.</typeparam>
+        /// <param name="sonarrObj">
+        /// The <see cref="SonarrObject"/> whose properties can be
+        /// either committed or reset.
+        /// </param>
+        /// <param name="response">
+        /// The response from the Sonarr API call and whose
+        /// <see cref="SonarrResponse.IsError"/> property determines the action taken on 
+        /// the properties of <paramref name="sonarrObj"/>.
+        /// </param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="sonarrObj"/> had it properties committed, indicating
+        /// a successful operation; otherwise, <see langword="false"/> indicating an error occurred.
+        /// </returns>
         protected bool TryCommitFromResponse<T>(T sonarrObj, in SonarrResponse response) where T : SonarrObject
         {
             if (response.IsError)

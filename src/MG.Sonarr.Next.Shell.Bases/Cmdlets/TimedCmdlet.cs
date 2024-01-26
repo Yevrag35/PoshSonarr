@@ -7,6 +7,10 @@ using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
 {
+    /// <summary>
+    /// An <see langword="abstract"/>, <see cref="PoolableCmdlet"/> that implements 
+    /// <see cref="IApiCmdlet"/> and provides methods for timing the execution of Sonarr API requests.
+    /// </summary>
     //[DebuggerStepThrough]
     public abstract class TimedCmdlet : PoolableCmdlet, IApiCmdlet
     {
@@ -20,11 +24,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         protected sealed override bool CaptureVerbosePreference => true;
         private protected sealed override int InternalCapacity => 1;
 
+
         protected sealed override Span<object> GetReturnables()
         {
             Span<object> span = base.GetReturnables();
             return span.Slice(1);
         }
+        /// <inheritdoc cref="PoolableCmdlet.GetReturnables"/>
         protected virtual Span<object> GetReturnableSpan()
         {
             return this.GetReturnables();
@@ -91,7 +97,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             this.WriteVerbose(msg ?? string.Empty);
         }
 
-        protected virtual string GenerateVerboseAfter(ISonarrTimedResponse response)
+        private string GenerateVerboseAfter(ISonarrTimedResponse response)
         {
             double rounded = Math.Round(response.Elapsed.TotalMilliseconds, 2, MidpointRounding.AwayFromZero);
             return GetAfterMessage(in rounded, response.StatusCode);
@@ -128,14 +134,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
                 this.WriteVerbose(msg);
             }
         }
-        protected virtual string? GenerateBeforeMessage(IHttpRequestDetails request)
+        private string? GenerateBeforeMessage(IHttpRequestDetails request)
         {
             return $"Sending {request.RequestMethod} request -> {request.RequestUrl}";
         }
 
         private readonly struct TimedResponse : ISonarrTimedResponse
         {
-            readonly ISonarrResponse _response;
+            readonly ISonarrResponse? _response;
             readonly TimeSpan _timeSpan;
             readonly IServiceProvider _provider;
 
@@ -156,24 +162,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
 
         #region DISPOSAL
         bool _disposed;
-        //protected override void Dispose(bool disposing, IServiceScopeFactory? scopeFactory)
-        //{
-        //    //if (!_disposed)
-        //    //{
-        //    //    if (disposing && scopeFactory is not null)
-        //    //    {
-        //    //        using var scope = scopeFactory.CreateScope();
-
-        //    //        //var pool = scope.ServiceProvider.GetService<IObjectPool<Stopwatch>>();
-        //    //        //pool?.Return(_timer);
-        //    //    }
-
-        //    //    _timer = null!;
-        //    //    _disposed = true;
-        //    //}
-
-        //    //base.Dispose(disposing, scopeFactory);
-        //}
 
         protected sealed override void Dispose(bool disposing)
         {
