@@ -12,7 +12,7 @@
 	<Company>Yevrag35, LLC.</Company>
 	<Product>PoshSonarr Services Library .NET 8</Product>
 	<Description>The service library for the PoshSonarr PowerShell module.</Description>
-	<Copyright>Copyright © 2018-2023 Yevrag35, LLC.</Copyright>
+	<Copyright>Copyright © 2018-2024 Yevrag35, LLC.</Copyright>
 	<PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
 	<PackageProjectUrl>https://github.com/Yevrag35/PoshSonarr</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/Yevrag35/PoshSonarr</RepositoryUrl>

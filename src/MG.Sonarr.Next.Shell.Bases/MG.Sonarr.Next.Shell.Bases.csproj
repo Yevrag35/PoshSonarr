@@ -5,6 +5,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<RootNamespace>MG.Sonarr.Next.Shell</RootNamespace>
+	<Version>2.0.0</Version>
+	<AssemblyVersion>2.0.0</AssemblyVersion>
+	<FileVersion>2.0.0</FileVersion>
+	<Authors>Mike Garvey</Authors>
+	<Company>Yevrag35, LLC.</Company>
+	<Product>PoshSonarr Bases .NET 8</Product>
+	<Description>The binary library of the PoshSonarr PowerShell module containing the base modules.</Description>
+	<Copyright>Copyright © 2018-2024 Yevrag35, LLC.</Copyright>
   </PropertyGroup>
 
 	<ItemGroup>
