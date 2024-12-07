@@ -9,7 +9,7 @@ using System.Text.Json.Serialization;
 namespace MG.Sonarr.Next.Models
 {
     /// <summary>
-    /// Dangerous object.
+    /// "Dangerous" object.
     /// </summary>
     /// <remarks><inheritdoc cref="PSObject"/></remarks>
     public abstract class SonarrObject : PSObject,
