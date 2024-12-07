@@ -20,12 +20,13 @@
   </PropertyGroup>
 
 	<ItemGroup>
-		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+		<InternalsVisibleTo Include="MG.Sonarr.Next.Shell;MG.Sonarr.Next.Shell.Bases" />
+		<!--<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
 			<_Parameter1>MG.Sonarr.Next.Shell.Bases</_Parameter1>
 		</AssemblyAttribute>
 		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
 			<_Parameter1>MG.Sonarr.Next.Shell</_Parameter1>
-		</AssemblyAttribute>
+		</AssemblyAttribute>-->
 	</ItemGroup>
 
   <ItemGroup>
@@ -58,6 +59,10 @@
 
 	<ItemGroup>
 	  <Folder Include="Services\Time\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\MG.Sonarr.Next.Standard\MG.Sonarr.Next.Standard.csproj" />
 	</ItemGroup>
 
 </Project>

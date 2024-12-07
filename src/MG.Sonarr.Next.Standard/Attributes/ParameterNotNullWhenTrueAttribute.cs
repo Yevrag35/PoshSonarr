@@ -1,3 +1,5 @@
+using System;
+
 namespace MG.Sonarr.Next.Attributes
 {
     /// <summary>
@@ -8,11 +10,11 @@ namespace MG.Sonarr.Next.Attributes
     ///     This attribute has no effect on the complier or C# analyzers.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
-    public sealed class NotNullWhenTrueAttribute : AnalysisAttribute
+    public sealed class ParameterNotNullWhenTrueAttribute : AnalysisAttribute
     {
         public string ParameterName { get; }
 
-        public NotNullWhenTrueAttribute(string parameterName)
+        public ParameterNotNullWhenTrueAttribute(string parameterName)
         {
             this.ParameterName = parameterName;
         }

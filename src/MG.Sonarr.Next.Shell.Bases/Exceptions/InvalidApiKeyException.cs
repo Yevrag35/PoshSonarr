@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Next.Exceptions;
-using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Next.Shell.Exceptions
 {
@@ -7,7 +6,6 @@ namespace MG.Sonarr.Next.Shell.Exceptions
     /// An exception thrown when a blank, <see langword="null"/>, or invalid API key is supplied during 
     /// the initial connection to the Sonarr server.
     /// </summary>
-    [Serializable]
     public sealed class InvalidApiKeyException : PoshSonarrException
     {
         const string DEF_MSG = "The supplied Sonarr API key is null, blank, or invalid.";
@@ -17,10 +15,6 @@ namespace MG.Sonarr.Next.Shell.Exceptions
         /// </summary>
         public InvalidApiKeyException()
             : base(DEF_MSG)
-        {
-        }
-        private InvalidApiKeyException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
         {
         }
     }

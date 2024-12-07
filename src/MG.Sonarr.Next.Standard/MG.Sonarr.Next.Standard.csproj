@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>8</LangVersion>
+		<Version>2.0.0</Version>
+		<AssemblyVersion>2.0.0</AssemblyVersion>
+		<FileVersion>2.0.0</FileVersion>
+		<Authors>Mike Garvey</Authors>
+		<Company>Yevrag35, LLC.</Company>
+		<RootNamespace>MG.Sonarr.Next</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="MG.Sonarr.Next" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="System.Memory" Version="4.6.0" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <ProjectReference Include="..\SharedNullable\SharedNullable.csproj" />
+	</ItemGroup>
+
+</Project>

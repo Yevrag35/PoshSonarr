@@ -1,12 +1,14 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions.Strings;
 using System.Collections;
+using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Strings;
 
 /// <summary>
 /// A read-only <see cref="string"/> that can be used for checking equality and pattern matching based on traditional wildcard characters.
 /// </summary>
+[StructLayout(LayoutKind.Auto)]
 public readonly struct Wildcard : IEquatable<Wildcard>, IEquatable<string>, IEnumerable<char>, ISpanFormattable, ISpanParsable<Wildcard>
 {
     const char QUESTION = '?';
@@ -23,7 +25,13 @@ public readonly struct Wildcard : IEquatable<Wildcard>, IEquatable<string>, IEnu
     /// </summary>
     /// <param name="index">The position in the current string.</param>
     /// <returns>The char object at the specified index.</returns>
-    public char this[int index] => _pattern?[index] ?? default;
+    public char this[int index]
+    {
+        get
+        {
+
+        }
+    }
 
     /// <summary>
     /// Indicates whether the <see cref="Wildcard"/> contains any wildcard characters ('?' or '*') in

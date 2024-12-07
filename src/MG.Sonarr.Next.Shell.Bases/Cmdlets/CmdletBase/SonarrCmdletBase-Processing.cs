@@ -343,7 +343,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// </remarks>
         /// <param name="provider"></param>
         [DebuggerStepThrough]
-        protected virtual void OnErrorStopping(IServiceProvider provider, [NotNullWhenTrue(nameof(errorWasProvided))] ErrorRecord? error, bool errorWasProvided)
+        protected virtual void OnErrorStopping(IServiceProvider provider, [ParameterNotNullWhenTrue(nameof(errorWasProvided))] ErrorRecord? error, bool errorWasProvided)
         {
             return;
         }

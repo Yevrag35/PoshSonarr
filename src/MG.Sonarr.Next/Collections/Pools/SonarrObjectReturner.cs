@@ -54,8 +54,6 @@ namespace MG.Sonarr.Next.Collections.Pools
         }
         public void Return(ReadOnlySpan<object> span)
         {
-            Guard.IsSpan(span);
-
             if (span.IsEmpty)
             {
                 Debug.Fail("Should this really be empty?");

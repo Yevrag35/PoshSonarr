@@ -124,7 +124,6 @@ namespace MG.Sonarr.Next.Shell.Extensions
         public static bool ParameterSetNameIsLike(this PSCmdlet cmdlet, Wildcard wildString)
         {
             ArgumentNullException.ThrowIfNull(cmdlet);
-            Guard.NotNull(in wildString);
 
             return wildString.IsMatch(cmdlet.ParameterSetName);
         }
