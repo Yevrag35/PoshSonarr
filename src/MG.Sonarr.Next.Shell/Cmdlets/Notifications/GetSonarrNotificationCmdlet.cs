@@ -1,8 +1,8 @@
 ﻿using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Notifications;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Strings;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications
 {

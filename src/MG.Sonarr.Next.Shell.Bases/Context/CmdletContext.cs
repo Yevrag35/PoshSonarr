@@ -1,4 +1,3 @@
-using MG.Http.Urls.Queries;
 using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
@@ -9,7 +8,6 @@ using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Services.Testing;
 using MG.Sonarr.Next.Services.Time;
-using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Shell.Pools;
 using System.Reflection;

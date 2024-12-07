@@ -1,5 +1,5 @@
-﻿using MG.Http.Urls.Queries;
-using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Strings;
 using System.ComponentModel;
 
 namespace MG.Sonarr.Next.Services.Http.Queries

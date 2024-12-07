@@ -1,5 +1,5 @@
 ﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Shell.Components;
+using MG.Sonarr.Next.Strings;
 
 namespace MG.Sonarr.Next.Shell.Extensions
 {

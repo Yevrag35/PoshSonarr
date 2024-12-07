@@ -1,5 +1,5 @@
 ﻿using MG.Sonarr.Next.Collections.Pools;
-using MG.Sonarr.Next.Shell.Components;
+using MG.Sonarr.Next.Strings;
 
 namespace MG.Sonarr.Next.Shell.Pools
 {
