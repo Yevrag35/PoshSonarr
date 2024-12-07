@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.PSProperties;
+using System.Collections.Immutable;
 
 namespace MG.Sonarr.Next.Models.Fields
 {
@@ -48,7 +49,7 @@ namespace MG.Sonarr.Next.Models.Fields
             }
             else
             {
-                this.Properties.Add(new ReadOnlyCollectionProperty<SelectOptionObject>(nameof(this.SelectOptions), null));
+                this.Properties.Add(new ReadOnlyCollectionProperty<SelectOptionObject>(nameof(this.SelectOptions), ImmutableArray<SelectOptionObject>.Empty));
             }
         }
 
