@@ -1,5 +1,3 @@
-using MG.Sonarr.Next.Shell.Cmdlets;
-
 namespace MG.Sonarr.Next.Shell.Context
 {
     internal interface IScopeCmdlet<T>

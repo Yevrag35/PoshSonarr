@@ -1,6 +1,3 @@
-using System.ComponentModel;
-using System.Management.Automation;
-
 namespace MG.Sonarr.Next.Models.System
 {
     public readonly struct Size : IComparable, IComparable<Size>, IEquatable<Size>,

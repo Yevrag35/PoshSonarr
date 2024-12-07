@@ -1,7 +1,5 @@
 using MG.Sonarr.Next.Extensions;
 using System.Collections;
-using System.IO;
-using System.Text.RegularExpressions;
 
 namespace MG.Sonarr.Next.Shell.Attributes
 {

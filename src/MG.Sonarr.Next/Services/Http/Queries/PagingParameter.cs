@@ -1,7 +1,6 @@
 ﻿using MG.Http.Urls.Queries;
 using MG.Sonarr.Next.Extensions;
 using System.ComponentModel;
-using System.Numerics;
 
 namespace MG.Sonarr.Next.Services.Http.Queries
 {

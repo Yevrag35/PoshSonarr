@@ -1,5 +1,4 @@
-﻿using MG.Collections;
-using MG.Sonarr.Next.Attributes;
+﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json.Converters;
@@ -10,6 +9,7 @@ using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Models.Fields;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Immutable;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
@@ -113,9 +113,14 @@ namespace MG.Sonarr.Next.Json
                       });
             });
 
-            options.Converters.AddMany(objCon, new PostCommandWriter(), new SonarrResponseConverter(),
-                new ReadOnlyListConverter<FieldObject>(),
-                new ReadOnlyListConverter<SelectOptionObject>());
+            options.Converters.AddMany(
+                objCon,
+                new PostCommandWriter(),
+                new SonarrResponseConverter(),
+                new ImmutableArrayConverter<FieldObject>(),
+                new ImmutableArrayConverter<SelectOptionObject>());
+                //new ReadOnlyListConverter<FieldObject>(),
+                //new ReadOnlyListConverter<SelectOptionObject>());
 
             IEnumerable<JsonConverter> sonarrConverters = ConstructSonarrObjectConverters(objCon);
             options.Converters.AddMany(sonarrConverters);
@@ -150,12 +155,12 @@ namespace MG.Sonarr.Next.Json
             yield return new("AirDate", typeof(DateOnly));
             yield return new("EpisodeNumbers", typeof(int[]));
             yield return new("Episodes", typeof(SortedSet<EpisodeObject>));
-            yield return new("Fields", typeof(ReadOnlyList<FieldObject>));
+            yield return new("Fields", typeof(ImmutableArray<FieldObject>));
             yield return new("Genres", typeof(string[]));
             yield return new("Ignored", typeof(StringSet));
             yield return new("Preferred", typeof(StringKeyValueSet<int>));
             yield return new("Required", typeof(StringSet));
-            yield return new("SelectOptions", typeof(ReadOnlyList<SelectOptionObject>));
+            yield return new("SelectOptions", typeof(ImmutableArray<SelectOptionObject>));
             yield return new("Tags", typeof(SortedSet<int>));
         }
         private static IEnumerable<KeyValuePair<string, string>> EnumerateGlobalReplaceNames()

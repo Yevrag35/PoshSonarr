@@ -3,7 +3,6 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using System.Reflection;
-using System.Xml.Linq;
 
 namespace MG.Sonarr.Next.Shell.Attributes
 {

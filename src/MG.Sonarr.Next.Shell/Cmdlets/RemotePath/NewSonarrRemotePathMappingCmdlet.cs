@@ -1,11 +1,8 @@
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.RemotePaths;
-using MG.Sonarr.Next.Services.Http;
-using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
-using System.CodeDom;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.RemotePath
 {

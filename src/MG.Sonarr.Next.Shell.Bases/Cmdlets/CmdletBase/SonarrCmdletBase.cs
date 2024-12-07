@@ -1,12 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Exceptions;
-using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Services.Http;
-using MG.Sonarr.Next.Shell.Context;
-using MG.Sonarr.Next.Shell.Extensions;
-using System.Collections;
-using System.Text.Json;
+﻿using MG.Sonarr.Next.Shell.Context;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
 {

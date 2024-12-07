@@ -1,6 +1,5 @@
 ﻿using MG.Http.Urls.Queries;
 using MG.Sonarr.Next.Extensions;
-using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Metadata
 {

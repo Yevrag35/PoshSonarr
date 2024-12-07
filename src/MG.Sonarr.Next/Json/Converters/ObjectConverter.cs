@@ -289,7 +289,7 @@ namespace MG.Sonarr.Next.Json.Converters
             }
             else if (DateTimeOffset.TryParse(chars, Statics.DefaultProvider, DateTimeStyles.AssumeUniversal, out DateTimeOffset offset))
             {
-                return propertyName.AsSpan().EndsWith(stackalloc char[] { 'U', 'T', 'C' }, StringComparison.InvariantCultureIgnoreCase)
+                return propertyName.AsSpan().EndsWith(stackalloc char[] { 'U', 'T', 'C' }, StringComparison.OrdinalIgnoreCase)
                     ? offset
                     : offset.ToLocalTime();
             }

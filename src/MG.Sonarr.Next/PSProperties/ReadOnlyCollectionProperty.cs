@@ -1,16 +1,17 @@
+using System.Collections.Immutable;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties
 {
-    public sealed class ReadOnlyCollectionProperty<T> : ReadOnlyProperty<IReadOnlyList<T>>
+    public sealed class ReadOnlyCollectionProperty<T> : ReadOnlyProperty<ImmutableArray<T>>
     {
-        public IReadOnlyList<T> Collection { get; }
-        protected override IReadOnlyList<T> ValueAsT => this.Collection;
+        public ImmutableArray<T> Collection { get; }
+        protected override ImmutableArray<T> ValueAsT => this.Collection;
 
-        public ReadOnlyCollectionProperty(string propertyName, IReadOnlyList<T>? list)
+        public ReadOnlyCollectionProperty(string propertyName, ImmutableArray<T> list)
             : base(propertyName)
         {
-            this.Collection = list ?? Array.Empty<T>();
+            this.Collection = list;
         }
 
         public override PSMemberInfo Copy()
