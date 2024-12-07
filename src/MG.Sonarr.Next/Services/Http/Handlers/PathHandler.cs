@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Services.Auth;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http.Requests;
+using MG.Sonarr.Next.Extensions.Strings;
 
 namespace MG.Sonarr.Next.Services.Http.Handlers
 {

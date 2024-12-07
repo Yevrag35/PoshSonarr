@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Json.Attributes;
 using System.Collections.ObjectModel;
 using System.Reflection;
@@ -71,7 +72,7 @@ namespace MG.Sonarr.Next.Json.Modifiers
             bool changed = false;
             char underscore = '_';
 
-            if (scratch.StartsWith(in underscore))
+            if (scratch.StartsWith(underscore))
             {
                 int index = scratch.IndexOfAnyExcept(underscore);
                 scratch = scratch.Slice(index);

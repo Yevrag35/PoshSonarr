@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.Strings;
 
-namespace MG.Sonarr.Next.Extensions
+namespace MG.Sonarr.Next.Extensions.Strings
 {
     /// <summary>
     /// Custom extension methods for <see cref="Span{T}"/> and <see cref="ReadOnlySpan{T}"/> instances
@@ -22,8 +23,7 @@ namespace MG.Sonarr.Next.Extensions
         [DebuggerStepThrough]
         public static void CopyToSlice(this string? value, Span<char> span, scoped ref int position)
         {
-            Guard.IsSpan(span);
-            CopyToSlice(spanValue: Guard.AsSpan(value), span, ref position);
+            CopyToSlice(spanValue: value, span, ref position);
         }
         /// <summary>
         /// Copies the contents of this <see cref="ReadOnlySpan{T}"/> into a destination 
@@ -38,9 +38,7 @@ namespace MG.Sonarr.Next.Extensions
         /// </param>
         public static void CopyToSlice(this ReadOnlySpan<char> spanValue, Span<char> span, scoped ref int position)
         {
-            Guard.IsSpan(spanValue, span);
-
-            if (!spanValue.IsEmpty && spanValue.TryCopyTo(span.Slice(position)))
+            if (spanValue.TryCopyTo(span.Slice(position)))
             {
                 position += spanValue.Length;
             }
@@ -59,7 +57,6 @@ namespace MG.Sonarr.Next.Extensions
         [DebuggerStepThrough]
         public static void CopyToSlice(this Span<char> writtableSpan, Span<char> span, scoped ref int position)
         {
-            Guard.IsSpan(writtableSpan, span);
             CopyToSlice(spanValue: writtableSpan, span, ref position);
         }
 
@@ -81,10 +78,9 @@ namespace MG.Sonarr.Next.Extensions
         /// </returns>
         public static bool TryCopyToSlice(this ReadOnlySpan<char> spanValue, Span<char> span, scoped ref int position)
         {
-            Guard.IsSpan(spanValue, span);
             bool result = false;
 
-            if (!spanValue.IsEmpty && spanValue.TryCopyTo(span.Slice(position)))
+            if (spanValue.TryCopyTo(span.Slice(position)))
             {
                 position += spanValue.Length;
                 result = true;
@@ -111,50 +107,40 @@ namespace MG.Sonarr.Next.Extensions
         [DebuggerStepThrough]
         public static bool TryCopyToSlice(this Span<char> writtableSpan, Span<char> span, scoped ref int position)
         {
-            Guard.IsSpan(writtableSpan, span);
             return TryCopyToSlice(spanValue: writtableSpan, span, ref position);
         }
         /// <summary>
-        /// Determines whether the beginning of the <paramref name="span"/> matches the specified <paramref name="value"/> when compared ignoring case.
+        /// Determines whether the beginning of the <paramref name="readOnlySpan"/> matches the specified <paramref name="value"/> when compared ignoring case.
         /// </summary>
-        /// <param name="span">The source span.</param>
+        /// <param name="readOnlySpan">The source span.</param>
         /// <param name="value">The character to compare to the beginning of the source span.</param>
         /// <returns>
         ///     <see langword="true"/> if <paramref name="value"/> matches the beginning of 
-        ///     <paramref name="span"/>; otherwise, <see langword="false"/>.
+        ///     <paramref name="readOnlySpan"/>; otherwise, <see langword="false"/>.
         /// </returns>
         [DebuggerStepThrough]
-        public static bool StartsWith(this ReadOnlySpan<char> span, in char value)
+        public static bool StartsWith(this ReadOnlySpan<char> readOnlySpan, char value)
         {
-            Guard.IsSpan(span);
-
-            return span.StartsWith(
-                new ReadOnlySpan<char>(in value),
-                StringComparison.InvariantCultureIgnoreCase);
+            return FirstCharEquals(readOnlySpan, in value);
         }
         /// <summary>
-        /// Determines whether the beginning of the <paramref name="span"/> matches the specified <paramref name="value"/> when compared using the specified 
+        /// Determines whether the beginning of the <paramref name="readOnlySpan"/> matches the specified <paramref name="value"/> when compared using the specified 
         /// <paramref name="comparisonType"/> option.
         /// </summary>
-        /// <param name="span">The source span.</param>
+        /// <param name="readOnlySpan">The source span.</param>
         /// <param name="value">The character to compare to the beginning of the source span.</param>
         /// <param name="comparisonType">
         ///     One of the enumeration values that determines how the 
-        ///     <paramref name="span"/> and <paramref name="value"/> are compared.
+        ///     <paramref name="readOnlySpan"/> and <paramref name="value"/> are compared.
         /// </param>
         /// <returns>
         ///     <see langword="true"/> if <paramref name="value"/> matches the beginning of 
-        ///     <paramref name="span"/>; otherwise, <see langword="false"/>.
+        ///     <paramref name="readOnlySpan"/>; otherwise, <see langword="false"/>.
         /// </returns>
         [DebuggerStepThrough]
-        public static bool StartsWith(this ReadOnlySpan<char> span, in char value, StringComparison comparisonType)
+        public static bool StartsWith(this ReadOnlySpan<char> readOnlySpan, char value, StringComparison comparisonType)
         {
-            Guard.NotNull(comparisonType);
-            Guard.IsSpan(span);
-
-            return span.StartsWith(
-                new ReadOnlySpan<char>(in value),
-                comparisonType);
+            return readOnlySpan.StartsWith(new ReadOnlySpan<char>(in value), comparisonType);
         }
         /// <summary>
         /// Determines whether the specified sequence appears at the start of the span.
@@ -166,10 +152,9 @@ namespace MG.Sonarr.Next.Extensions
         ///     <paramref name="span"/>; otherwise, <see langword="false"/>.
         /// </returns>
         [DebuggerStepThrough]
-        public static bool StartsWith(this Span<char> span, in char value)
+        public static bool StartsWith(this Span<char> span, char value)
         {
-            Guard.IsSpan(span);
-            return span.StartsWith(new ReadOnlySpan<char>(in value));
+            return FirstCharEquals(span, in value);
         }
         /// <summary>
         /// Determines whether the specified sequence appears at the start of the span.
@@ -181,21 +166,25 @@ namespace MG.Sonarr.Next.Extensions
         ///     <see langword="true"/> if <paramref name="value"/> matches the beginning of 
         ///     <paramref name="span"/>; otherwise, <see langword="false"/>.
         /// </returns>
-        public static bool StartsWith(this Span<char> span, in char value, bool ignoreCase)
+        public static bool StartsWith(this Span<char> span, char value, StringComparison comparisonType)
         {
-            Guard.IsSpan(span);
-
-            bool startsWith = StartsWith(span, in value);
-            if (!startsWith && ignoreCase)
+            return comparisonType switch
             {
-                char other = char.IsUpper(value)
-                    ? char.ToLower(value)
-                    : char.ToUpper(value);
+                StringComparison.Ordinal => FirstCharEquals(span, in value),
+                _ => ((ReadOnlySpan<char>)span).StartsWith(new ReadOnlySpan<char>(in value), comparisonType),
+            };
+        }
 
-                return value != other && StartsWith(span, in other);
+        private static bool FirstCharEquals(ReadOnlySpan<char> span, in char value)
+        {
+            bool result = false;
+            if (!span.IsEmpty)
+            {
+                ref readonly char c = ref span[0];
+                result = c == value;
             }
 
-            return startsWith;
+            return result;
         }
     }
 }

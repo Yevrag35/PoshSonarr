@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Attributes;
 
-namespace MG.Sonarr.Next.Extensions
+namespace MG.Sonarr.Next.Extensions.Strings
 {
     [DebuggerStepThrough]
     public ref struct SplitEnumerator

@@ -1,5 +1,5 @@
 ﻿using MG.Sonarr.Next.Exceptions;
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Strings;
 
 namespace MG.Sonarr.Next.Shell.Exceptions
 {

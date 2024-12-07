@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Exceptions;
 using System.Net;

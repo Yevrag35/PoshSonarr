@@ -1,5 +1,6 @@
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Fields;
 using System.Collections.Immutable;
