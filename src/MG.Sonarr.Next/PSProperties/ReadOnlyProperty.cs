@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Extensions.Strings;
 using System.Management.Automation;
 
@@ -12,7 +12,7 @@ namespace MG.Sonarr.Next.PSProperties
         public sealed override PSMemberTypes MemberType => PSMemberTypes.NoteProperty;
         public sealed override bool IsGettable => true;
         public sealed override bool IsSettable => false;
-        public override string TypeNameOfValue => this.Value?.GetType().GetTypeName() ?? DEFAULT_TYPE;
+        public override string TypeNameOfValue => this.Value?.GetType().GetName() ?? DEFAULT_TYPE;
         /// <summary>
         ///     Gets the value of the <see cref="ReadOnlyProperty"/>.
         /// </summary>
@@ -65,8 +65,8 @@ namespace MG.Sonarr.Next.PSProperties
     public abstract class ReadOnlyProperty<T> : ReadOnlyProperty
     {
         protected virtual int MaxValueCharacterLength { get; }
-        protected virtual string PSTypeName => typeof(T).GetPSTypeName();
-        public override string TypeNameOfValue => typeof(T).GetTypeName();
+        protected virtual string PSTypeName => typeof(T).GetPSTypeNameOrNull();
+        public override string TypeNameOfValue => typeof(T).GetName();
 
         /// <summary>
         ///     Gets the value of the <see cref="ReadOnlyProperty{T}"/>.

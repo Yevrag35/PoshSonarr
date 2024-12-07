@@ -1,4 +1,4 @@
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Reflection;
 using System.Collections;
 
 namespace MG.Sonarr.Next.Shell.Attributes
@@ -74,7 +74,7 @@ namespace MG.Sonarr.Next.Shell.Attributes
         [DoesNotReturn]
         protected static void ThrowIncorrectType(object? arguments, Exception? innerException)
         {
-            string typeName = arguments?.GetType().GetTypeName() ?? "null";
+            string typeName = arguments?.GetType().GetName() ?? "null";
             throw new ValidationMetadataException($"The parameter argument is NOT of type 'string'. Instead, we got '{typeName}'.", innerException);
         }
         private static void ValidateStringIsNotEmpty(object? element, out string path)

@@ -1,6 +1,6 @@
 using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.PSProperties;
@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.Models.Fields
         ISerializableNames<FieldObject>
     {
         const int CAPACITY = 8;
-        static readonly string _typeName = typeof(FieldObject).GetTypeName();
+        static readonly string _typeName = typeof(FieldObject).GetName();
         protected override bool DisregardMetadataTag => true;
         public int Order { get; private set; }
         public IReadOnlyList<SelectOptionObject> SelectOptions { get; private set; }

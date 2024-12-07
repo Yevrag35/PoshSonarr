@@ -1,6 +1,7 @@
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Episodes;
@@ -22,7 +23,7 @@ namespace MG.Sonarr.Next.Models.ManualImports
         const string RELEASE_GROUP = "ReleaseGroup";
         const string SERIES = "Series";
 
-        static readonly string _typeName = typeof(ManualImportObject).GetTypeName();
+        static readonly string _typeName = typeof(ManualImportObject).GetName();
 
         public SortedSet<EpisodeObject> Episodes { get; private set; } = null!;
         public string Name => this.GetStringOrEmpty();

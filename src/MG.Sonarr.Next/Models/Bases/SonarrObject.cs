@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.PSProperties;
@@ -17,7 +18,7 @@ namespace MG.Sonarr.Next.Models
         IJsonOnDeserialized
     {
         bool _addedType;
-        static readonly string _typeName = typeof(SonarrObject).GetTypeName();
+        static readonly string _typeName = typeof(SonarrObject).GetName();
 
         protected virtual bool DisregardMetadataTag { get; }
         public MetadataTag MetadataTag => this.GetValue<MetadataTag>() ?? MetadataTag.Empty;

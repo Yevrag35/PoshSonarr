@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Extensions.Strings;
 
 namespace MG.Sonarr.Next.Shell.Attributes
@@ -64,7 +64,7 @@ namespace MG.Sonarr.Next.Shell.Attributes
         [DoesNotReturn]
         private static void ThrowIncorrectType(object arguments)
         {
-            string typeName = arguments?.GetType().GetTypeName() ?? "null";
+            string typeName = arguments?.GetType().GetName() ?? "null";
             throw new ValidationMetadataException($"The parameter argument is NOT of 1 of 2 types: 'string' or 'System.Uri'. Instead, we got '{typeName}'.");
         }
 

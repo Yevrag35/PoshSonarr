@@ -1,4 +1,4 @@
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Reflection;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties
@@ -17,7 +17,7 @@ namespace MG.Sonarr.Next.PSProperties
             : base(propertyName)
         {
             this.SetValues = set;
-            _genName = typeof(T).GetPSTypeName();
+            _genName = typeof(T).GetPSTypeNameOrNull();
         }
 
         public override PSMemberInfo Copy()

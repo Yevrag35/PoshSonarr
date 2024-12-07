@@ -20,7 +20,7 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-	  <ProjectReference Include="..\SharedNullable\SharedNullable.csproj" />
+	  <ProjectReference Include="..\MG.Sonarr.Resources\MG.Sonarr.Resources.csproj" />
 	</ItemGroup>
 
 </Project>

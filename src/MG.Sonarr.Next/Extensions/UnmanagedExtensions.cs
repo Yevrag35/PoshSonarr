@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Guarding;
 using System.Numerics;
 
 namespace MG.Sonarr.Next.Extensions

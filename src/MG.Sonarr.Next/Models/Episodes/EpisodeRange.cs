@@ -1,4 +1,4 @@
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Extensions.Strings;
 
 namespace MG.Sonarr.Next.Models.Episodes
@@ -58,7 +58,7 @@ namespace MG.Sonarr.Next.Models.Episodes
         {
             if (!_isNotEmpty)
             {
-                return this.GetType().GetTypeName();
+                return this.GetType().GetName();
             }
             else if (this.AllMatch)
             {

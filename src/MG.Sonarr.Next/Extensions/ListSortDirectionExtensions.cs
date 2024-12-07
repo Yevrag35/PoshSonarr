@@ -21,8 +21,6 @@ namespace MG.Sonarr.Next.Extensions
         /// </returns>
         public static int GetLength(this ListSortDirection direction)
         {
-            Guard.NotNull(in direction);
-
             return direction switch
             {
                 ListSortDirection.Ascending => ASCENDING_LENGTH,

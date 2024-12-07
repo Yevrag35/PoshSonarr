@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json.Converters;
 using MG.Sonarr.Next.Json.Converters.Spans;
 using MG.Sonarr.Next.Json.Modifiers;
@@ -145,7 +146,7 @@ namespace MG.Sonarr.Next.Json
         {
             Type constructedClassType = genericClassType.MakeGenericType(typeParams);
             JsonConverter constructed = (JsonConverter?)Activator.CreateInstance(constructedClassType, activatorArgs)
-                ?? throw new InvalidOperationException($"Unable to construct {constructedClassType.GetTypeName()}.");
+                ?? throw new InvalidOperationException($"Unable to construct {constructedClassType.GetName()}.");
 
             return constructed;
         }

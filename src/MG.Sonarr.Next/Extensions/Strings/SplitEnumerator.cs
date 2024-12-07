@@ -1,8 +1,9 @@
-﻿using MG.Sonarr.Next.Attributes;
+﻿using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Extensions.Strings
 {
     [DebuggerStepThrough]
+    [StructLayout(LayoutKind.Auto)]
     public ref struct SplitEnumerator
     {
         ReadOnlySpan<char> _str;
@@ -12,8 +13,6 @@ namespace MG.Sonarr.Next.Extensions.Strings
 
         public SplitEnumerator(ReadOnlySpan<char> str, ReadOnlySpan<char> splitBy)
         {
-            Guard.IsSpan(str, splitBy);
-
             _str = str;
             _splitBy = splitBy;
         }
@@ -43,6 +42,7 @@ namespace MG.Sonarr.Next.Extensions.Strings
     }
 
     [DebuggerStepThrough]
+    [StructLayout(LayoutKind.Auto)]
     public readonly ref struct SplitEntry
     {
         public ReadOnlySpan<char> Chars { get; }
@@ -50,7 +50,6 @@ namespace MG.Sonarr.Next.Extensions.Strings
 
         public SplitEntry(ReadOnlySpan<char> chars, ReadOnlySpan<char> separator)
         {
-            Guard.IsSpan(chars, separator);
             this.Chars = chars;
             this.Separator = separator;
         }
@@ -59,7 +58,6 @@ namespace MG.Sonarr.Next.Extensions.Strings
         {
             chars = this.Chars;
             separator = this.Separator;
-            Guard.IsSpan(chars, separator);
         }
 
         public static implicit operator ReadOnlySpan<char>(SplitEntry entry)
@@ -69,6 +67,7 @@ namespace MG.Sonarr.Next.Extensions.Strings
     }
 
     [DebuggerStepThrough]
+    [StructLayout(LayoutKind.Auto)]
     public ref struct DoubleSplitEnumerator
     {
         ReadOnlySpan<char> _str;
@@ -79,7 +78,6 @@ namespace MG.Sonarr.Next.Extensions.Strings
 
         public DoubleSplitEnumerator(ReadOnlySpan<char> str, ReadOnlySpan<char> splitBy1, ReadOnlySpan<char> splitBy2)
         {
-            Guard.IsSpan(str, splitBy1, splitBy2);
             _str = str;
             _splitBy1 = splitBy1;
             _splitBy2 = splitBy2;

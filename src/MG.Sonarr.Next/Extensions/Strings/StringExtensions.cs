@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Guarding;
 
 namespace MG.Sonarr.Next.Extensions.Strings
 {
@@ -29,7 +30,6 @@ namespace MG.Sonarr.Next.Extensions.Strings
         [DebuggerStepThrough]
         public static SplitEnumerator SpanSplit(this ReadOnlySpan<char> value, ReadOnlySpan<char> splitBy)
         {
-            Guard.IsSpan(value, splitBy);
             return new SplitEnumerator(value, splitBy);
         }
         /// <summary>
@@ -55,7 +55,6 @@ namespace MG.Sonarr.Next.Extensions.Strings
         [DebuggerStepThrough]
         public static DoubleSplitEnumerator SpanSplit(this ReadOnlySpan<char> value, ReadOnlySpan<char> splitBy1, ReadOnlySpan<char> splitBy2)
         {
-            Guard.IsSpan(value, splitBy1, splitBy2);
             return new DoubleSplitEnumerator(value, splitBy1, splitBy2);
         }
     }

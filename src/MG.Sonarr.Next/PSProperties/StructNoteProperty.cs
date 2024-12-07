@@ -1,11 +1,11 @@
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Reflection;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties
 {
     public sealed class StructNoteProperty<T> : WritableProperty<T> where T : struct
     {
-        public override string TypeNameOfValue => typeof(T).GetTypeName();
+        public override string TypeNameOfValue => typeof(T).GetName();
         public T StructValue { get; set; }
 
         protected override T ValueAsT

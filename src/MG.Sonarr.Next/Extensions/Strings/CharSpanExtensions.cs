@@ -59,6 +59,19 @@ namespace MG.Sonarr.Next.Extensions.Strings
             CopyToSlice(spanValue: writtableSpan, span, ref position);
         }
 
+        public static bool EnclosedIn([NotNullWhen(true)] this string? value, char openingChar, char closingChar)
+        {
+            return EnclosedInCore(value.AsSpan(), in openingChar, in closingChar);
+        }
+        public static bool EnclosedIn(this ReadOnlySpan<char> readOnlySpan, char openingChar, char closingChar)
+        {
+            return EnclosedInCore(readOnlySpan, in openingChar, in closingChar);
+        }
+        public static bool EnclosedIn(this Span<char> span, char openingChar, char closingChar)
+        {
+            return EnclosedInCore(span, in openingChar, in closingChar);
+        }
+
         /// <summary>
         /// Attemps to copy the contents of this <see cref="ReadOnlySpan{T}"/> into a 
         /// <see cref="Span{T}"/> and advancing the given ref <see cref="int"/> the number 
@@ -174,6 +187,18 @@ namespace MG.Sonarr.Next.Extensions.Strings
             };
         }
 
+        #region PRIVATE METHODS
+        private static bool EnclosedInCore(ReadOnlySpan<char> readOnlySpan, in char opening, in char closing)
+        {
+            if (readOnlySpan.Length < 2)
+            {
+                return false;
+            }
+
+            ref readonly char first = ref readOnlySpan[0];
+            return first == opening && closing == readOnlySpan[^1];
+        }
+
         private static bool FirstCharEquals(ReadOnlySpan<char> span, in char value)
         {
             bool result = false;
@@ -185,5 +210,7 @@ namespace MG.Sonarr.Next.Extensions.Strings
 
             return result;
         }
+
+        #endregion
     }
 }

@@ -1,12 +1,12 @@
 ﻿using System.Management.Automation;
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.PSProperties
 {
     public sealed class MetadataProperty : ReadOnlyProperty<MetadataTag>
     {
-        static readonly string _typeName = typeof(MetadataTag).GetTypeName();
+        static readonly string _typeName = typeof(MetadataTag).GetName();
         public MetadataTag Tag { get; internal set; }
         public override string TypeNameOfValue => _typeName;
         protected override MetadataTag ValueAsT => this.Tag;

@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Extensions.Reflection;
 using System.Management.Automation;
 using System.Numerics;
 
@@ -8,7 +8,7 @@ namespace MG.Sonarr.Next.PSProperties
     {
         protected override int MaxValueCharacterLength => LengthConstants.INT128_MAX;
         public T NumberValue { get; }
-        public override string TypeNameOfValue => typeof(T).GetTypeName();
+        public override string TypeNameOfValue => typeof(T).GetName();
         protected override T ValueAsT => this.NumberValue;
 
         public ReadOnlyNumberProperty(string propertyName, T value)

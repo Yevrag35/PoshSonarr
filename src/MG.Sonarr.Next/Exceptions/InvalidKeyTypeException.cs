@@ -1,4 +1,4 @@
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Reflection;
 
 namespace MG.Sonarr.Next.Exceptions
 {
@@ -18,9 +18,9 @@ namespace MG.Sonarr.Next.Exceptions
             keyType ??= typeof(object);
             actualType = key?.GetType();
 
-            string actual = actualType?.GetTypeName() ?? "null";
+            string actual = actualType?.GetName() ?? "null";
 
-            return string.Format(msgFormat, keyType.GetTypeName(), actual);
+            return string.Format(msgFormat, keyType.GetName(), actual);
         }
     }
 

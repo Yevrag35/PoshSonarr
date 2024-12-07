@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
@@ -15,7 +15,7 @@ namespace MG.Sonarr.Next.Models.System
     {
         const int CAPACITY = 32;
         const int CONDITIONAL_CAPACITY = 3;
-        static readonly string _typeName = typeof(HostObject).GetTypeName();
+        static readonly string _typeName = typeof(HostObject).GetName();
 
         private protected Dictionary<string, object?> Conditionals { get; }
 
@@ -80,7 +80,7 @@ namespace MG.Sonarr.Next.Models.System
         {
             Constants.API_KEY, Constants.PASSWORD, Constants.PROXY_PASSWORD,
         };
-        static readonly string _typeName = typeof(NoKeyHostObject).GetTypeName();
+        static readonly string _typeName = typeof(NoKeyHostObject).GetName();
 
         public int CompareTo(NoKeyHostObject? other)
         {
@@ -127,7 +127,7 @@ namespace MG.Sonarr.Next.Models.System
         {
             base.SetPSTypeName();
 
-            Debug.Assert(this.TypeNames.Count > 0 && this.TypeNames[0] == typeof(HostObject).GetTypeName());
+            Debug.Assert(this.TypeNames.Count > 0 && this.TypeNames[0] == typeof(HostObject).GetName());
             this.TypeNames[0] = _typeName;
         }
     }

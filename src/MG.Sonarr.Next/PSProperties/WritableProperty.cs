@@ -1,5 +1,5 @@
 using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Fields;
@@ -119,7 +119,7 @@ namespace MG.Sonarr.Next.PSProperties
     public abstract class WritableProperty<T> : WritableProperty
     {
         protected virtual int MaxValueCharacterLength { get; }
-        protected override string PSTypeName => typeof(T).GetPSTypeName();
+        protected override string PSTypeName => typeof(T).GetPSTypeNameOrNull();
         public sealed override object? Value
         {
             get => this.ValueAsT;

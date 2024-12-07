@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Next.Guarding;
 using System.Collections.ObjectModel;
 using System.Net;
 
@@ -11,8 +12,8 @@ namespace MG.Sonarr.Next.Extensions
     public static class HttpStatusCodeExtensions
     {
         #region CACHING
-        static readonly Lazy<IReadOnlyDictionary<int, string>> _codes = new(GetLookupCodes);
-        static IReadOnlyDictionary<int, string> GetLookupCodes()
+        static readonly Lazy<ReadOnlyDictionary<int, string>> _codes = new(GetLookupCodes);
+        static ReadOnlyDictionary<int, string> GetLookupCodes()
         {
             HttpStatusCode[] codes = Enum.GetValues<HttpStatusCode>();
             Dictionary<int, string> dict = new(codes.Length);
@@ -26,17 +27,17 @@ namespace MG.Sonarr.Next.Extensions
         }
         static string ToResponseStringFormat(in HttpStatusCode statusCode)
         {
-            Guard.NotNull(in statusCode);
-            string codeStr = statusCode.ToString();
 
-            return string.Create(codeStr.Length + 6, (codeStr, statusCode), (chars, state) =>
-            {
-                _ = ((int)state.statusCode).TryFormat(chars, out int written, default, Statics.DefaultProvider);
-                (stackalloc char[] { ' ', '(' }).CopyToSlice(chars, ref written);
+            //string codeStr = statusCode.ToString();
 
-                state.codeStr.CopyToSlice(chars, ref written);
-                chars[written] = ')';
-            });
+            //return string.Create(codeStr.Length + 6, (codeStr, statusCode), (chars, state) =>
+            //{
+            //    _ = ((int)state.statusCode).TryFormat(chars, out int written, default, Statics.DefaultProvider);
+            //    (stackalloc char[] { ' ', '(' }).CopyToSlice(chars, ref written);
+
+            //    state.codeStr.CopyToSlice(chars, ref written);
+            //    chars[written] = ')';
+            //});
         }
 
         #endregion
@@ -56,7 +57,6 @@ namespace MG.Sonarr.Next.Extensions
         /// </returns>
         public static string ToResponseString(this HttpStatusCode statusCode)
         {
-            Guard.NotNull(in statusCode);
             return _codes.Value.TryGetValue((int)statusCode, out string? value)
                 ? value
                 : statusCode.ToString();
@@ -85,9 +85,6 @@ namespace MG.Sonarr.Next.Extensions
         /// </returns>
         public static bool TryFormatAsResponse(this HttpStatusCode statusCode, Span<char> destination, out int charsWritten)
         {
-            Guard.NotNull(in statusCode);
-            Guard.IsSpan(destination);
-
             charsWritten = 0;
             bool result = false;
             if (_codes.Value.TryGetValue((int)statusCode, out string? value))

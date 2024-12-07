@@ -1,7 +1,7 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Management.Automation;
@@ -16,7 +16,7 @@ namespace MG.Sonarr.Next.Models.Media
         ISerializableNames<MediaManagementObject>
     {
         static readonly PSAliasProperty _pathAlias = new("Path", "RecycleBinPath");
-        static readonly string _typeName = typeof(MediaManagementObject).GetTypeName();
+        static readonly string _typeName = typeof(MediaManagementObject).GetName();
         const int CAPACITY = 21;
 
         public int Id { get; private set; }

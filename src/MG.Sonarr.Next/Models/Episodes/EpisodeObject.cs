@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
@@ -18,7 +18,7 @@ namespace MG.Sonarr.Next.Models.Episodes
         ISerializableNames<EpisodeObject>
     {
         const int CAPACITY = 25;
-        static readonly string _typeName = typeof(EpisodeObject).GetTypeName();
+        static readonly string _typeName = typeof(EpisodeObject).GetName();
         private DateOnly _airDate;
         private IComparable? _manuallySetSeries;
 

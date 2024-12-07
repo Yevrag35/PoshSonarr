@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Shell.Models.Series;
@@ -16,7 +17,7 @@ namespace MG.Sonarr.Next.Models.Series
     {
         const int CAPACITY = 50;
         const string ROOT_FOLDER_PATH = "RootFolderPath";
-        static readonly string _typeName = typeof(AddSeriesObject).GetTypeName();
+        static readonly string _typeName = typeof(AddSeriesObject).GetName();
         private string? _path;
         private string? _pathProp;
 
@@ -110,7 +111,7 @@ namespace MG.Sonarr.Next.Models.Series
             base.SetPSTypeName();
             Debugger.Assert(() =>
             {
-                return this.TypeNames.Count > 0 && this.TypeNames[0] == typeof(SeriesObject).GetTypeName();
+                return this.TypeNames.Count > 0 && this.TypeNames[0] == typeof(SeriesObject).GetName();
             });
 
             this.TypeNames[0] = _typeName;  // Should overwrite 'SeriesObject'.

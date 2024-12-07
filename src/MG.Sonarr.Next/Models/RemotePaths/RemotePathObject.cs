@@ -1,7 +1,7 @@
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
@@ -12,7 +12,7 @@ namespace MG.Sonarr.Next.Models.RemotePaths
         ISerializableNames<RemotePathObject>
     {
         const int CAPACITY = 5;
-        static readonly string _typeName = typeof(RemotePathObject).GetTypeName();
+        static readonly string _typeName = typeof(RemotePathObject).GetName();
 
         public string HostName { get; private set; } = string.Empty;
         public string LocalPath { get; private set; } = string.Empty;
