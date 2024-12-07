@@ -39,13 +39,13 @@
   <ItemGroup>
     <PackageReference Include="MG.Collections" Version="1.2.0" />
     <PackageReference Include="MG.Http.Urls" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-    <PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.4.1" />
-    <PackageReference Include="OneOf" Version="3.0.263" />
-    <PackageReference Include="System.Management.Automation" Version="7.4.1" />
-    <PackageReference Include="System.Text.Json" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
+    <PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.4.6" />
+    <PackageReference Include="OneOf" Version="3.0.271" />
+    <PackageReference Include="System.Management.Automation" Version="7.4.6" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
 
 	<ItemGroup>
