@@ -17,7 +17,7 @@ namespace MG.Sonarr.Next.PSProperties
             : base(propertyName)
         {
             this.SetValues = set;
-            _genName = typeof(T).GetPSTypeNameOrNull();
+            _genName = typeof(T).GetPSTypeName();
         }
 
         public override PSMemberInfo Copy()

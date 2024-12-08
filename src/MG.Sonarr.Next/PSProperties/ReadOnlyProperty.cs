@@ -65,7 +65,7 @@ namespace MG.Sonarr.Next.PSProperties
     public abstract class ReadOnlyProperty<T> : ReadOnlyProperty
     {
         protected virtual int MaxValueCharacterLength { get; }
-        protected virtual string PSTypeName => typeof(T).GetPSTypeNameOrNull();
+        protected virtual string PSTypeName => typeof(T).GetPSTypeName();
         public override string TypeNameOfValue => typeof(T).GetName();
 
         /// <summary>

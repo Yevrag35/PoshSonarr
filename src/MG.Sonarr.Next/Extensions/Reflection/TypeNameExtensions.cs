@@ -1,6 +1,6 @@
-﻿using MG.Sonarr.Next.Extensions.Strings;
+﻿using MG.Sonarr.Next.Components;
+using MG.Sonarr.Next.Extensions.Strings;
 using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Reflection;
 
@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Extensions.Reflection
     /// </summary>
     public static class TypeNameExtensions
     {
-        private static readonly ConcurrentDictionary<Type, string> _typeNameCache = [];
+        private static readonly ConcurrentDictionary<PSTypeKey, string> _typeNameCache = [];
 
         /// <summary>
         /// Returns the <see cref="Type"/> class's name for display or logging purposes.
@@ -63,27 +63,24 @@ namespace MG.Sonarr.Next.Extensions.Reflection
             return type.GetNameOr(otherValue: null);
         }
 
-        [return: NotNullIfNotNull(nameof(type))]
-        public static string? GetPSTypeNameOrNull(this Type? type)
+        public static string GetPSTypeName(this Type type)
         {
-            return type.GetPSTypeNameOrNull(removeBrackets: false);
+            return GetPSTypeName(type, removeBrackets: false);
         }
-
-        [return: NotNullIfNotNull(nameof(type))]
-        public static string? GetPSTypeNameOrNull(this Type? type, bool removeBrackets)
+        public static string GetPSTypeName(this Type type, bool removeBrackets)
         {
-            if (type is null)
-            {
-                return null;
-            }
-
             if (PSTypeAcceleratorNames.Shared.TryGetName(type, includeBrackets: !removeBrackets, out string? acceleratedName))
             {
                 return acceleratedName;
             }
 
-            string name = LanguagePrimitives.ConvertTypeNameToPSTypeName(type.FullName);
-            if (removeBrackets && name.EnclosedIn('[', ']'))
+            return _typeNameCache.GetOrAdd(new PSTypeKey(type, includeBrackets: !removeBrackets), GetTypeName);
+        }
+
+        private static string GetTypeName(PSTypeKey key)
+        {
+            string name = LanguagePrimitives.ConvertTypeNameToPSTypeName(key.KeyedType!.FullName);
+            if (!key.IncludeBrackets && name.EnclosedIn('[', ']'))
             {
                 name = name.AsSpan(1, name.Length - 2)
                            .TrimStart('[')
@@ -93,11 +90,6 @@ namespace MG.Sonarr.Next.Extensions.Reflection
             }
 
             return name;
-        }
-
-        private static string GetOrAddTypeName(Type type)
-        {
-
         }
     }
 }

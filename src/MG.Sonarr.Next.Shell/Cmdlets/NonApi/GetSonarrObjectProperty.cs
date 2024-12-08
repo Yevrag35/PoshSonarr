@@ -45,7 +45,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.NonApi
                             CurrentValue = property.Value,
                             IsReadOnly = !property.IsSettable,
                             Name = property.Name,
-                            ObjectType = pso.GetType().GetPSTypeNameOrNull(removeBrackets: true),
+                            ObjectType = pso.GetType().GetPSTypeName(removeBrackets: true),
                             Type = property.TypeNameOfValue,
                         });
                     }

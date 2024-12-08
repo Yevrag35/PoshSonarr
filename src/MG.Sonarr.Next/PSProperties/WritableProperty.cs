@@ -119,7 +119,7 @@ namespace MG.Sonarr.Next.PSProperties
     public abstract class WritableProperty<T> : WritableProperty
     {
         protected virtual int MaxValueCharacterLength { get; }
-        protected override string PSTypeName => typeof(T).GetPSTypeNameOrNull();
+        protected override string PSTypeName => typeof(T).GetPSTypeName();
         public sealed override object? Value
         {
             get => this.ValueAsT;
