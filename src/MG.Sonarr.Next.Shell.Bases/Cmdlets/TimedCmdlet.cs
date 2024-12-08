@@ -21,6 +21,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
     {
         private long _timestamp;
 
+        protected override bool CaptureDebugPreference => true;
         /// <summary><inheritdoc cref="SonarrCmdletBase.CaptureVerbosePreference"/></summary>
         /// <remarks>
         /// Implementation in the base class always returns <see langword="true"/>.

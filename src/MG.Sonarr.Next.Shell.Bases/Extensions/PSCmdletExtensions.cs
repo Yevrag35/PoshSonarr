@@ -144,13 +144,10 @@ namespace MG.Sonarr.Next.Shell.Extensions
             in ActionPreference defaultIfNotPresent,
             ResolveFromBoundValue resolution)
         {
-            if (cmdlet.MyInvocation?.BoundParameters is null || cmdlet.MyInvocation.BoundParameters.Count == 0)
-            {
-                return defaultIfNotPresent;
-            }
+            object? boundValue = null;
 
-            if (!cmdlet.MyInvocation.BoundParameters.TryGetValue(parameterName, out object? boundValue)
-            &&
+            if (false == cmdlet.MyInvocation?.BoundParameters?.TryGetValue(parameterName, out boundValue)
+                &&
                 cmdlet.SessionState.PSVariable.TryGetVariableValue(variableName, out ActionPreference variablePref))
             {
                 return variablePref;
