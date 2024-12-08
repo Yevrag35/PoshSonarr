@@ -23,9 +23,5 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\MG.Sonarr.Resources\MG.Sonarr.Resources.csproj" />
 	</ItemGroup>
-	
-	<ItemGroup>
-	  <Folder Include="Cmdlets\" />
-	</ItemGroup>
 
 </Project>

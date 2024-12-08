@@ -3,45 +3,42 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Reflection;
 using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Strings;
+using System.Management.Automation;
 using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Shell.Extensions
 {
     public static class PSCmdletExtensions
     {
-        public static ActionPreference GetCurrentActionPreferenceFromParam(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName)
+        public static ActionPreference GetActionPreferenceFromParam(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName, ActionPreference defaultIfNotPresent = ActionPreference.SilentlyContinue)
         {
-            if (cmdlet.MyInvocation?.BoundParameters is null || cmdlet.MyInvocation.BoundParameters.Count == 0)
-            {
-                return ActionPreference.SilentlyContinue;
-            }
-
-            if (cmdlet.MyInvocation.BoundParameters.TryGetValueAs(parameterName, out ActionPreference actionPref))
-            {
-                return actionPref;
-            }
-            else if (cmdlet.SessionState.PSVariable.TryGetVariableValue(variableName, out actionPref))
-            {
-                return actionPref;
-            }
-
-            return ActionPreference.SilentlyContinue;
+            return ResolveActionPreferenceFromPSCmdlet(
+                cmdlet,
+                parameterName,
+                variableName,
+                in defaultIfNotPresent,
+                resolution: (object? boundValue, in ActionPreference defValue) => boundValue switch
+                {
+                    ActionPreference preference when Enum.IsDefined(preference) => preference,
+                    int numberValue when Enum.IsDefined((ActionPreference)numberValue) => (ActionPreference)numberValue,
+                    string strValue when Enum.TryParse(strValue, ignoreCase: true, out ActionPreference pref) => pref,
+                    _ => defValue,
+                });
         }
 
-        public static ActionPreference GetCurrentActionPreferenceFromSwitch(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName)
+        public static ActionPreference GetActionPreferenceFromSwitch(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName, ActionPreference defaultIfNotPresent = ActionPreference.SilentlyContinue)
         {
-            if (cmdlet.MyInvocation.BoundParameters.TryGetValueAs(parameterName, out SwitchParameter result)
-                &&
-                result.ToBool())
-            {
-                return ActionPreference.Continue;
-            }
-            else if (cmdlet.SessionState.PSVariable.TryGetVariableValue(variableName, out ActionPreference actionPref))
-            {
-                return actionPref;
-            }
-
-            return ActionPreference.SilentlyContinue;
+            return ResolveActionPreferenceFromPSCmdlet(
+                cmdlet,
+                parameterName,
+                variableName,
+                in defaultIfNotPresent,
+                resolution: (object? boundValue, in ActionPreference defValue) => boundValue switch
+                {
+                    SwitchParameter swParam when swParam.ToBool() => ActionPreference.Continue,
+                    bool justBool when justBool => ActionPreference.Continue,
+                    _ => defValue,
+                });
         }
 
         [return: NotNullIfNotNull(nameof(path))]
@@ -137,6 +134,29 @@ namespace MG.Sonarr.Next.Shell.Extensions
         public static void WriteCollection<T>(this Cmdlet cmdlet, IEnumerable<T> collection)
         {
             cmdlet.WriteObject(collection, enumerateCollection: true);
+        }
+
+        private delegate ActionPreference ResolveFromBoundValue(object? boundValue, in ActionPreference defaultIfNotPresent);
+        private static ActionPreference ResolveActionPreferenceFromPSCmdlet(
+            PSCmdlet cmdlet,
+            string parameterName,
+            string variableName,
+            in ActionPreference defaultIfNotPresent,
+            ResolveFromBoundValue resolution)
+        {
+            if (cmdlet.MyInvocation?.BoundParameters is null || cmdlet.MyInvocation.BoundParameters.Count == 0)
+            {
+                return defaultIfNotPresent;
+            }
+
+            if (!cmdlet.MyInvocation.BoundParameters.TryGetValue(parameterName, out object? boundValue)
+            &&
+                cmdlet.SessionState.PSVariable.TryGetVariableValue(variableName, out ActionPreference variablePref))
+            {
+                return variablePref;
+            }
+
+            return resolution(boundValue, in defaultIfNotPresent);
         }
     }
 }

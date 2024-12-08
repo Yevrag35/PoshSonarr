@@ -15,6 +15,8 @@ using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Shell.Services;
 using System.Collections.Concurrent;
 using MG.Sonarr.Next.Services.Jobs;
+using MG.Sonarr.Resources;
+using System.Management.Automation.Host;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 {
@@ -161,6 +163,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
         {
             return _settings;
         }
+
+        private bool IsVerboseNotSilentAndUICanWrite([NotNullWhen(true)] out PSHostUserInterface? hostInterface)
+        {
+            hostInterface = this.Host?.UI;
+            return ActionPreference.SilentlyContinue != _verbosePreference && hostInterface is not null;
+        }
+
         private void SetConnectionSetting<T>(T? value, Action<T, ConnectionSettings> setValue)
         {
             if (value is not null)
@@ -172,31 +181,39 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 
         private void StoreVerbosePreference()
         {
-            if (this.MyInvocation.BoundParameters.TryGetValue(PSConstants.VERBOSE, out object? oVal)
-                            &&
-              ((oVal is SwitchParameter sw && sw.ToBool()) || (oVal is bool justBool && justBool)))
+            if (!this.MyInvocation.BoundParameters.TryGetValue(PSConstants.VERBOSE, out object? boundValue)
+                &&
+                this.SessionState.PSVariable.TryGetVariableValue(PSConstants.VERBOSE_PREFERENCE, out ActionPreference variablePref))
             {
-                _verbosePreference = ActionPreference.Continue;
+                _verbosePreference = variablePref;
+                return;
             }
-            else if (this.SessionState.PSVariable.TryGetVariableValue(PSConstants.VERBOSE_PREFERENCE, out ActionPreference pref))
+
+            _verbosePreference = boundValue switch
             {
-                _verbosePreference = pref;
-            }
+                SwitchParameter swParam when swParam.ToBool() => ActionPreference.Continue,
+                bool justBool when justBool => ActionPreference.Continue,
+                _ => ActionPreference.SilentlyContinue,
+            };
         }
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            if (_verbosePreference != ActionPreference.SilentlyContinue)
+            if (this.IsVerboseNotSilentAndUICanWrite(out PSHostUserInterface? hostUI))
             {
-                this.Host?.UI?.WriteVerboseLine($"Sending {request.RequestMethod} request -> {request.RequestUrl}");
+                string msg = Messenger.Format(
+                    format: Messages.Verbose_SendingRequest_Format,
+                    [request.RequestMethod, request.RequestUrl]);
+
+                hostUI.WriteVerboseLine(msg);
             }
         }
         public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
         {
-            if (_verbosePreference != ActionPreference.SilentlyContinue)
+            if (this.IsVerboseNotSilentAndUICanWrite(out PSHostUserInterface? hostUI))
             {
                 options ??= provider.GetService<ISonarrJsonOptions>()?.ForSerializing;
                 string json = JsonSerializer.Serialize(response, options);
-                this.Host?.UI?.WriteVerboseLine(json);
+                hostUI.WriteVerboseLine(json);
             }
         }
     }
