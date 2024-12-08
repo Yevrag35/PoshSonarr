@@ -3,8 +3,11 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Exceptions;
+using MG.Sonarr.Next.Strings;
+using MG.Sonarr.Resources;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
@@ -56,30 +59,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
 
         private static string GenerateVerboseAfter(ISonarrTimedResponse response)
         {
-            double rounded = Math.Round(response.Elapsed.TotalMilliseconds, 2, MidpointRounding.AwayFromZero);
-            return GetAfterMessage(in rounded, response.StatusCode);
+            TimedValue elapsedTime = response.Elapsed;
+            return GetAfterMessage(in elapsedTime, response.StatusCode);
         }
 
-        const string AFTER_MSG_FORMAT_1 = "Received response after ";
-        const string AFTER_MSG_FORMAT_2 = "ms -> ";
-        private static string GetAfterMessage(in double elapsedMilliseconds, HttpStatusCode statusCode)
+        private static string GetAfterMessage(in TimedValue elapsedTime, HttpStatusCode statusCode)
         {
-            int length = AFTER_MSG_FORMAT_1.Length + AFTER_MSG_FORMAT_2.Length
-                         +
-                         LengthConstants.DOUBLE_MAX + LengthConstants.HTTP_STATUS_CODE_MAX;
-
-            Span<char> span = stackalloc char[length];
-            int position = 0;
-
-            AFTER_MSG_FORMAT_1.CopyToSlice(span, ref position);
-            _ = elapsedMilliseconds.TryFormat(span.Slice(position), out int written);
-
-            position += written;
-            AFTER_MSG_FORMAT_2.CopyToSlice(span, ref position);
-
-            _ = statusCode.TryFormatAsResponse(span.Slice(position), out int codeWritten);
-
-            return new string(span.Slice(0, position + codeWritten));
+            return Messenger.Format(
+                provider: CultureInfo.CurrentCulture,
+                format: Messages.Verbose_ReceivedResponse_Timed_Format,
+                arguments: [elapsedTime, (int)statusCode, statusCode]);
         }
 
         public void WriteVerboseBefore(IHttpRequestDetails request)
