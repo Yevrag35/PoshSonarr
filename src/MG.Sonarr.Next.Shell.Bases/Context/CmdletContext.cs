@@ -63,7 +63,7 @@ namespace MG.Sonarr.Next.Shell.Context
 
     file static class SonarrContext
     {
-        static IServiceProvider _provider = null!;
+        static ServiceProvider _provider = null!;
 
         /// <exception cref="ContextNotSetException"/>
         internal static IServiceProvider GetProvider()
@@ -80,6 +80,7 @@ namespace MG.Sonarr.Next.Shell.Context
 
         internal static void Deinitialize()
         {
+            _provider.Dispose();
             _provider = null!;
         }
 

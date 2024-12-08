@@ -113,7 +113,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         [DoesNotReturn]
         protected static T ThrowPipelineStopped<T>()
         {
-            throw new PipelineStoppedException();
+            throw new PipelineStoppedException(PIPELINE_STOPPED);
         }
 
         /// <inheritdoc cref="ThrowPipelineStopped{T}()"/>

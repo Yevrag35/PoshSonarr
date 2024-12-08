@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Strings;
+using System.Collections.Immutable;
 
 namespace MG.Sonarr.Next.Metadata
 {
@@ -17,7 +18,7 @@ namespace MG.Sonarr.Next.Metadata
         /// <summary>
         /// Gets the array of cmdlet names that data tagged with this instance can be piped to in PowerShell.
         /// </summary>
-        public string[] CanPipeTo { get; }
+        public ImmutableArray<string> CanPipeTo { get; }
         /// <summary>
         /// Indicates whether the API endpoint this tag represents supports an ID in the URL path.
         /// </summary>
@@ -40,8 +41,7 @@ namespace MG.Sonarr.Next.Metadata
         }
         private MetadataTag(MetadataTag copyFrom)
         {
-            ArgumentNullException.ThrowIfNull(copyFrom);
-            this.CanPipeTo = CopyOriginal(copyFrom.CanPipeTo);
+            this.CanPipeTo = copyFrom.CanPipeTo;
             this.SupportsId = copyFrom.SupportsId;
             this.UrlBase = copyFrom.UrlBase;
             this.Value = copyFrom.Value;
@@ -51,38 +51,10 @@ namespace MG.Sonarr.Next.Metadata
             this.UrlBase = urlBase.TrimEnd('/');
             this.Value = value;
             this.SupportsId = supportsId;
-            this.CanPipeTo = CopyFromSet(pipesTo);
+            this.CanPipeTo = [.. pipesTo];
         }
 
-        private static string[] CopyFromSet(IReadOnlySet<string> pipesTo)
-        {
-            if (pipesTo.Count <= 0)
-            {
-                return [];
-            }
-
-            string[] canPipeTo = new string[pipesTo.Count];
-            int i = 0;
-            foreach (string s in pipesTo)
-            {
-                canPipeTo[i++] = s;
-            }
-
-            return canPipeTo;
-        }
-
-        private static string[] CopyOriginal(scoped Span<string> canPipeTo)
-        {
-            if (canPipeTo.Length <= 0)
-            {
-                return [];
-            }
-
-            string[] copyInto = new string[canPipeTo.Length];
-            canPipeTo.CopyTo(copyInto);
-            return copyInto;
-        }
-
+        [DebuggerStepThrough]
         object ICloneable.Clone() => this.Clone();
         public MetadataTag Clone() => new(this);
 

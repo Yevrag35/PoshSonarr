@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using System.Management.Automation;
 using System.Net;
+using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Services.Http
 {
@@ -196,6 +197,7 @@ namespace MG.Sonarr.Next.Services.Http
     /// response as <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T">The type of the deserialized data returned in the response.</typeparam>
+    [StructLayout(LayoutKind.Auto)]
     public readonly struct SonarrResponse<T> : ISonarrResponse
     {
         readonly T? _data;

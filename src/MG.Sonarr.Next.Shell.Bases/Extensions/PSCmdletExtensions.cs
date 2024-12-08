@@ -11,13 +11,9 @@ namespace MG.Sonarr.Next.Shell.Extensions
     {
         public static ActionPreference GetCurrentActionPreferenceFromParam(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName)
         {
-            ArgumentNullException.ThrowIfNull(cmdlet);
-            ArgumentException.ThrowIfNullOrEmpty(parameterName);
-            ArgumentException.ThrowIfNullOrEmpty(variableName);
-
-            if (cmdlet?.MyInvocation?.BoundParameters is null)
+            if (cmdlet.MyInvocation?.BoundParameters is null || cmdlet.MyInvocation.BoundParameters.Count == 0)
             {
-                return default;
+                return ActionPreference.SilentlyContinue;
             }
 
             if (cmdlet.MyInvocation.BoundParameters.TryGetValueAs(parameterName, out ActionPreference actionPref))
@@ -29,15 +25,11 @@ namespace MG.Sonarr.Next.Shell.Extensions
                 return actionPref;
             }
 
-            return default;
+            return ActionPreference.SilentlyContinue;
         }
 
         public static ActionPreference GetCurrentActionPreferenceFromSwitch(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName)
         {
-            ArgumentNullException.ThrowIfNull(cmdlet);
-            ArgumentException.ThrowIfNullOrEmpty(parameterName);
-            ArgumentException.ThrowIfNullOrEmpty(variableName);
-
             if (cmdlet.MyInvocation.BoundParameters.TryGetValueAs(parameterName, out SwitchParameter result)
                 &&
                 result.ToBool())
@@ -49,7 +41,7 @@ namespace MG.Sonarr.Next.Shell.Extensions
                 return actionPref;
             }
 
-            return default; // silently continue
+            return ActionPreference.SilentlyContinue;
         }
 
         [return: NotNullIfNotNull(nameof(path))]
@@ -80,18 +72,12 @@ namespace MG.Sonarr.Next.Shell.Extensions
 
         public static bool HasParameter<T>(this T cmdlet, Expression<Func<T, object?>> parameter) where T : PSCmdlet
         {
-            ArgumentNullException.ThrowIfNull(cmdlet);
-            ArgumentNullException.ThrowIfNull(parameter);
-
             return parameter.TryGetAsMember(out MemberExpression? memEx)
                    && 
                    cmdlet.MyInvocation.BoundParameters.ContainsKey(memEx.Member.Name);
         }
         public static bool HasParameter<T>(this T cmdlet, Expression<Func<T, SwitchParameter>> switchExpression, bool onlyIfPresent) where T : PSCmdlet
         {
-            ArgumentNullException.ThrowIfNull(cmdlet);
-            ArgumentNullException.ThrowIfNull(switchExpression);
-
             if (!switchExpression.TryGetAsMember(out MemberExpression? memEx))
             {
                 return false;
@@ -113,9 +99,6 @@ namespace MG.Sonarr.Next.Shell.Extensions
             where T : PSCmdlet
             where TValue : class
         {
-            ArgumentNullException.ThrowIfNull(cmdlet);
-            ArgumentNullException.ThrowIfNull(parameterName);
-
             return cmdlet.MyInvocation.BoundParameters.ContainsKey(parameterName)
                    &&
                    value is not null;
@@ -123,8 +106,6 @@ namespace MG.Sonarr.Next.Shell.Extensions
 
         public static bool ParameterSetNameIsLike(this PSCmdlet cmdlet, Wildcard wildString)
         {
-            ArgumentNullException.ThrowIfNull(cmdlet);
-
             return wildString.IsMatch(cmdlet.ParameterSetName);
         }
 
@@ -132,10 +113,6 @@ namespace MG.Sonarr.Next.Shell.Extensions
             where TCmdlet : SonarrCmdletBase
             where TObj : class, new()
         {
-            ArgumentNullException.ThrowIfNull(cmdlet);
-            ArgumentNullException.ThrowIfNull(getSetting);
-            ArgumentNullException.ThrowIfNull(setValue);
-
             if (value is null)
             {
                 return;
@@ -159,7 +136,6 @@ namespace MG.Sonarr.Next.Shell.Extensions
         
         public static void WriteCollection<T>(this Cmdlet cmdlet, IEnumerable<T> collection)
         {
-            ArgumentNullException.ThrowIfNull(cmdlet);
             cmdlet.WriteObject(collection, enumerateCollection: true);
         }
     }
