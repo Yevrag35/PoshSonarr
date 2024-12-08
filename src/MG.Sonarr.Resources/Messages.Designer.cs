@@ -61,6 +61,15 @@ namespace MG.Sonarr.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to HTTP Response (size in bytes: {0}) -&gt; {1}.
+        /// </summary>
+        public static string Debug_JSONResponse_Preamble {
+            get {
+                return ResourceManager.GetString("Debug_JSONResponse_Preamble", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ms.
         /// </summary>
         public static string Timer_Unit_Milliseconds {

@@ -51,6 +51,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
         }
         NetworkCredential? _creds;
 
+        public bool CanDebugSerializeBefore => false;
+        public bool CanDebugSerializeAfter => false;
+
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
@@ -141,6 +144,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
             string fileName = IOPath.GetFileName(logUrl);
             this.WriteDebug($"Appending file name to {nameof(this.Path)} -> {fileName}");
             return IOPath.Combine(dirPath, fileName);
+        }
+        public void WriteDebugPayload(string jsonPayload)
+        {
+            if (this.Host?.UI is not null)
+            {
+                this.Host.UI.WriteDebugLine(jsonPayload);
+            }
         }
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {

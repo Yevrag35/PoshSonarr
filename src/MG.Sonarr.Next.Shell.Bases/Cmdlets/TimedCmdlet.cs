@@ -27,6 +27,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         /// </remarks>
         protected sealed override bool CaptureVerbosePreference => true;
         private protected sealed override int InternalCapacity => 0;
+        public virtual bool CanDebugSerializeBefore => this.DebugPreference != ActionPreference.SilentlyContinue;
+        public virtual bool CanDebugSerializeAfter => this.DebugPreference != ActionPreference.SilentlyContinue;
 
         /// <summary>
         /// Starts the timer.
@@ -70,7 +72,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
                 format: Messages.Verbose_ReceivedResponse_Timed_Format,
                 arguments: [elapsedTime, (int)statusCode, statusCode]);
         }
-
+        public void WriteDebugPayload(string jsonPayload)
+        {
+            if (this.Host?.UI is not null)
+            {
+                this.Host.UI.WriteDebugLine(jsonPayload);
+            }
+        }
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {
             if (this.Host?.UI is not null)

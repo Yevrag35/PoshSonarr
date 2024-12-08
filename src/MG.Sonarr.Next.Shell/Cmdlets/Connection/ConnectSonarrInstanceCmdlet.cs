@@ -26,7 +26,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
     {
         ConnectionSettings _settings = null!;
 
+        private ActionPreference _debugPreference;
         private ActionPreference _verbosePreference;
+
+        public bool CanDebugSerializeAfter => _debugPreference != ActionPreference.SilentlyContinue;
+        public bool CanDebugSerializeBefore => _debugPreference != ActionPreference.SilentlyContinue;
 
         [Parameter(Mandatory = true, Position = 1)]
         [Alias("Key")]
@@ -76,7 +80,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
         protected override void BeginProcessing()
         {
             _settings ??= new();
-            this.StoreVerbosePreference();
+            this.StorePreferences();
         }
         protected override void ProcessRecord()
         {
@@ -169,6 +173,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             hostInterface = this.Host?.UI;
             return ActionPreference.SilentlyContinue != _verbosePreference && hostInterface is not null;
         }
+        private bool IsDebugNotSilentAndUICanWrite([NotNullWhen(true)] out PSHostUserInterface? hostInterface)
+        {
+            hostInterface = this.Host?.UI;
+            return ActionPreference.SilentlyContinue != _debugPreference && hostInterface is not null;
+        }
 
         private void SetConnectionSetting<T>(T? value, Action<T, ConnectionSettings> setValue)
         {
@@ -179,22 +188,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             }
         }
 
-        private void StoreVerbosePreference()
+        private void StorePreferences()
         {
-            if (!this.MyInvocation.BoundParameters.TryGetValue(PSConstants.VERBOSE, out object? boundValue)
-                &&
-                this.SessionState.PSVariable.TryGetVariableValue(PSConstants.VERBOSE_PREFERENCE, out ActionPreference variablePref))
+            _verbosePreference = this.GetActionPreferenceFromSwitch(PSConstants.VERBOSE, PSConstants.VERBOSE_PREFERENCE);
+            _debugPreference = this.GetActionPreferenceFromSwitch(PSConstants.DEBUG, PSConstants.DEBUG_PREFERENCE);
+        }
+        public void WriteDebugPayload(string jsonPayload)
+        {
+            if (this.IsDebugNotSilentAndUICanWrite(out PSHostUserInterface? hostInterface))
             {
-                _verbosePreference = variablePref;
-                return;
+                hostInterface.WriteDebugLine(jsonPayload);
             }
-
-            _verbosePreference = boundValue switch
-            {
-                SwitchParameter swParam when swParam.ToBool() => ActionPreference.Continue,
-                bool justBool when justBool => ActionPreference.Continue,
-                _ => ActionPreference.SilentlyContinue,
-            };
         }
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {

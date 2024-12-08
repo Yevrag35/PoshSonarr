@@ -27,6 +27,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <param name="message">An optional message to display before the serialization.</param>
         /// <param name="options">Options to provide the <see cref="JsonSerializer"/>.</param>
         [DebuggerStepThrough]
+        [Obsolete("Migrating this functionality to an HTTP delegating handler.")]
         protected void SerializeIfDebug<T>(T value, string? message = null, bool includeType = true, JsonSerializerOptions? options = null)
         {
             if (this.DebugPreference != ActionPreference.SilentlyContinue)

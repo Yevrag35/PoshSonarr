@@ -106,6 +106,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                 })
                 .ConfigurePrimaryHttpMessageHandler<SonarrClientHandler>()
                 .AddHttpMessageHandler<VerboseHandler>()
+                .AddHttpMessageHandler<DebugSerializeHandler>()
                 .AddHttpMessageHandler<PathHandler>()
                 .AddHttpMessageHandler<AuthHandler>();
 

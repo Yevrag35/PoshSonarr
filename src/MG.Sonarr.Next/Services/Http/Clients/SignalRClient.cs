@@ -156,7 +156,8 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                             .UserAgent.Add(SonarrClientDependencyInjection.UserAgent);
                     })
                     .ConfigurePrimaryHttpMessageHandler<SonarrClientHandler>()
-                    .AddHttpMessageHandler<VerboseHandler>();
+                    .AddHttpMessageHandler<VerboseHandler>()
+                    .AddHttpMessageHandler<DebugSerializeHandler>();
 
             return services;
         }

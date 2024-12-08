@@ -24,11 +24,25 @@ public sealed class ApiCmdletQueue
         _queue = [];
     }
 
+    public void Clear()
+    {
+        _queue.Clear();
+    }
+    public IApiCmdlet? Dequeue()
+    {
+        return _queue.TryDequeue(out IApiCmdlet? cmdlet)
+            ? cmdlet
+            : null;
+    }
     public void Enqueue(IApiCmdlet cmdlet)
     {
         _queue.Enqueue(cmdlet);
     }
 
+    public bool TryPeek([NotNullWhen(true)] out IApiCmdlet? cmdlet)
+    {
+        return _queue.TryPeek(out cmdlet);
+    }
     public bool TryDequeue([NotNullWhen(true)] out IApiCmdlet? cmdlet)
     {
         return _queue.TryDequeue(out cmdlet);

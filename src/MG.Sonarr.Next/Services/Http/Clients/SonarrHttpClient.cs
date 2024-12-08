@@ -308,11 +308,13 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         {
             services.AddTransient<PathHandler>()
                     .AddTransient<VerboseHandler>()
+                    .AddTransient<DebugSerializeHandler>()
                     .AddTransient<TestingHandler>();
 
             AddSonarrClientInternal(services, cmdletAssembly, settings, configureJson)
                 .AddHttpMessageHandler<PathHandler>()
                 .AddHttpMessageHandler<VerboseHandler>()
+                .AddHttpMessageHandler<DebugSerializeHandler>()
                 .AddHttpMessageHandler<TestingHandler>();
 
             return services;

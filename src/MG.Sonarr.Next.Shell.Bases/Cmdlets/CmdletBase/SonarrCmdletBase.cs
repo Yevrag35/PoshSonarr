@@ -38,7 +38,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <remarks>
         ///     Default implementation in the base class always returns <see langword="false"/>.
         /// </remarks>
-        protected virtual bool CaptureDebugPreference { get; }
+        protected virtual bool CaptureDebugPreference { get; } = true;
 
         /// <summary>
         /// Specifies whether derived cmdlets should capture the current Verbose <see cref="ActionPreference"/> value

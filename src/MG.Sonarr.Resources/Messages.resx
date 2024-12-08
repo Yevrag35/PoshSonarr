@@ -136,4 +136,8 @@
     <value>Received response after {0} - {1} ({2})</value>
     <comment>{0} - Elapsed time value, {1} - Status code integer, {2} - Status code text</comment>
   </data>
+  <data name="Debug_JSONResponse_Preamble" xml:space="preserve">
+    <value>HTTP Response (size in bytes: {0}) -&gt; {1}</value>
+    <comment>{0} - the content length in bytes, {1} - the serialized JSON payload.</comment>
+  </data>
 </root>
