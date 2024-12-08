@@ -4,44 +4,68 @@ namespace MG.Sonarr.Next.Extensions.Reflection;
 
 public sealed class PSTypeAcceleratorNames
 {
-    public static readonly PSTypeAcceleratorNames Shared = new(InitializeDictionary());
+    public static readonly PSTypeAcceleratorNames Shared = new(InitializeDictionaries());
 
-    private readonly ReadOnlyDictionary<Type, string> _dict;
+    private readonly ReadOnlyDictionary<Type, string> _typeToNames;
+    private readonly ReadOnlyDictionary<string, string> _namesToBrackets;
 
     public string this[Type key] => this.TryGetName(key, out string? name)
         ? name
         : key.GetName();
 
-    private PSTypeAcceleratorNames(Dictionary<Type, string> keyValuePairs)
+    private PSTypeAcceleratorNames((Dictionary<Type, string> typeToNames, Dictionary<string, string> namesToBrackets) tuple)
     {
-        _dict = new(keyValuePairs);
+        _typeToNames = new(tuple.typeToNames);
+        _namesToBrackets = new(tuple.namesToBrackets);
     }
 
+    [DebuggerStepThrough]
     public string GetName([DisallowNull] Type type)
     {
-        return _dict.TryGetValue(type, out string? acceleratedName)
+        return this.TryGetName(type, out string? acceleratedName)
             ? acceleratedName
             : type.GetName();
     }
+    public string GetName([DisallowNull] Type type, bool includeBrackets)
+    {
+        return this.TryGetName(type, includeBrackets, out string? acceleratedName)
+            ? acceleratedName
+            : type.GetName();
+    }
+    [DebuggerStepThrough]
     [return: NotNullIfNotNull(nameof(otherName))]
     public string? GetNameOr(Type? type, string? otherName)
     {
-        if (type is null || !_dict.TryGetValue(type, out string? acceleratedName))
-        {
-            return otherName;
-        }
-
-        return acceleratedName;
+        return this.GetNameOr(type, otherName, includeBrackets: false);
+    }
+    [return: NotNullIfNotNull(nameof(otherName))]
+    public string? GetNameOr(Type? type, string? otherName, bool includeBrackets)
+    {
+        return type is not null && this.TryGetName(type, includeBrackets, out string? acceleratedName)
+            ? acceleratedName
+            : otherName;
     }
 
     public bool TryGetName(Type type, [NotNullWhen(true)] out string? acceleratedName)
     {
-        return _dict.TryGetValue(type, out acceleratedName);
+        return _typeToNames.TryGetValue(type, out acceleratedName);
+    }
+    public bool TryGetName(Type type, bool includeBrackets, [NotNullWhen(true)] out string? acceleratedName)
+    {
+        return this.TryGetName(type, out acceleratedName)
+               &&
+               (
+                    !includeBrackets || this.TryGetBracketName(acceleratedName, out acceleratedName)
+               );
+    }
+    public bool TryGetBracketName(string name, [NotNullWhen(true)] out string? bracketName)
+    {
+        return _namesToBrackets.TryGetValue(name, out bracketName);
     }
 
-    private static Dictionary<Type, string> InitializeDictionary()
+    private static (Dictionary<Type, string>, Dictionary<string, string>) InitializeDictionaries()
     {
-        return new()
+        return (new()
         {
             { typeof(System.DirectoryServices.DirectoryEntry), "adsi" },
             { typeof(System.DirectoryServices.DirectorySearcher), "adsisearcher" },
@@ -148,6 +172,114 @@ public sealed class PSTypeAcceleratorNames
             { typeof(System.Security.Cryptography.X509Certificates.X500DistinguishedName), "X500DistinguishedName" },
             { typeof(System.Security.Cryptography.X509Certificates.X509Certificate), "X509Certificate" },
             { typeof(System.Xml.XmlDocument), "xml" },
-        };
+        },
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "adsi", "[adsi]" },
+            { "adsisearcher", "[adsisearcher]" },
+            { "Alias", "[Alias]" },
+            { "AllowEmptyCollection", "[AllowEmptyCollection]" },
+            { "AllowEmptyString", "[AllowEmptyString]" },
+            { "AllowNull", "[AllowNull]" },
+            { "ArgumentCompleter", "[ArgumentCompleter]" },
+            { "ArgumentCompletions", "[ArgumentCompletions]" },
+            { "array", "[array]" },
+            { "bigint", "[bigint]" },
+            { "bool", "[bool]" },
+            { "byte", "[byte]" },
+            { "char", "[char]" },
+            { "cimclass", "[cimclass]" },
+            { "cimconverter", "[cimconverter]" },
+            { "ciminstance", "[ciminstance]" },
+            { "CimSession", "[CimSession]" },
+            { "cimtype", "[cimtype]" },
+            { "CmdletBinding", "[CmdletBinding]" },
+            { "cultureinfo", "[cultureinfo]" },
+            { "datetime", "[datetime]" },
+            { "decimal", "[decimal]" },
+            { "double", "[double]" },
+            { "DscLocalConfigurationManager", "[DscLocalConfigurationManager]" },
+            { "DscProperty", "[DscProperty]" },
+            { "DscResource", "[DscResource]" },
+            { "ExperimentAction", "[ExperimentAction]" },
+            { "Experimental", "[Experimental]" },
+            { "ExperimentalFeature", "[ExperimentalFeature]" },
+            { "float", "[float]" },
+            { "guid", "[guid]" },
+            { "hashtable", "[hashtable]" },
+            { "initialsessionstate", "[initialsessionstate]" },
+            { "int", "[int]" },
+            { "int16", "[int16]" },
+            { "int32", "[int32]" },
+            { "int64", "[int64]" },
+            { "ipaddress", "[ipaddress]" },
+            { "IPEndpoint", "[IPEndpoint]" },
+            { "long", "[long]" },
+            { "mailaddress", "[mailaddress]" },
+            { "NullString", "[NullString]" },
+            { "ObjectSecurity", "[ObjectSecurity]" },
+            { "ordered", "[ordered]" },
+            { "OutputType", "[OutputType]" },
+            { "Parameter", "[Parameter]" },
+            { "PhysicalAddress", "[PhysicalAddress]" },
+            { "powershell", "[powershell]" },
+            { "psaliasproperty", "[psaliasproperty]" },
+            { "pscredential", "[pscredential]" },
+            { "pscustomobject", "[pscustomobject]" },
+            { "PSDefaultValue", "[PSDefaultValue]" },
+            { "pslistmodifier", "[pslistmodifier]" },
+            { "psmoduleinfo", "[psmoduleinfo]" },
+            { "psnoteproperty", "[psnoteproperty]" },
+            { "psobject", "[psobject]" },
+            { "psprimitivedictionary", "[psprimitivedictionary]" },
+            { "pspropertyexpression", "[pspropertyexpression]" },
+            { "psscriptmethod", "[psscriptmethod]" },
+            { "psscriptproperty", "[psscriptproperty]" },
+            { "PSTypeNameAttribute", "[PSTypeNameAttribute]" },
+            { "psvariable", "[psvariable]" },
+            { "psvariableproperty", "[psvariableproperty]" },
+            { "ref", "[ref]" },
+            { "regex", "[regex]" },
+            { "runspace", "[runspace]" },
+            { "runspacefactory", "[runspacefactory]" },
+            { "sbyte", "[sbyte]" },
+            { "scriptblock", "[scriptblock]" },
+            { "securestring", "[securestring]" },
+            { "semver", "[semver]" },
+            { "short", "[short]" },
+            { "single", "[single]" },
+            { "string", "[string]" },
+            { "SupportsWildcards", "[SupportsWildcards]" },
+            { "switch", "[switch]" },
+            { "timespan", "[timespan]" },
+            { "type", "[type]" },
+            { "uint", "[uint]" },
+            { "uint16", "[uint16]" },
+            { "uint32", "[uint32]" },
+            { "uint64", "[uint64]" },
+            { "ulong", "[ulong]" },
+            { "uri", "[uri]" },
+            { "ushort", "[ushort]" },
+            { "ValidateCount", "[ValidateCount]" },
+            { "ValidateDrive", "[ValidateDrive]" },
+            { "ValidateLength", "[ValidateLength]" },
+            { "ValidateNotNull", "[ValidateNotNull]" },
+            { "ValidateNotNullOrEmpty", "[ValidateNotNullOrEmpty]" },
+            { "ValidatePattern", "[ValidatePattern]" },
+            { "ValidateRange", "[ValidateRange]" },
+            { "ValidateScript", "[ValidateScript]" },
+            { "ValidateSet", "[ValidateSet]" },
+            { "ValidateTrustedData", "[ValidateTrustedData]" },
+            { "ValidateUserDrive", "[ValidateUserDrive]" },
+            { "version", "[version]" },
+            { "void", "[void]" },
+            { "WildcardPattern", "[WildcardPattern]" },
+            { "wmi", "[wmi]" },
+            { "wmiclass", "[wmiclass]" },
+            { "wmisearcher", "[wmisearcher]" },
+            { "X500DistinguishedName", "[X500DistinguishedName]" },
+            { "X509Certificate", "[X509Certificate]" },
+            { "xml", "[xml]" },
+        });
     }
 }

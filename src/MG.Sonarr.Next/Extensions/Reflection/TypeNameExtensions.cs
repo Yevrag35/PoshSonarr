@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Extensions.Strings;
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Reflection;
@@ -10,6 +11,7 @@ namespace MG.Sonarr.Next.Extensions.Reflection
     /// </summary>
     public static class TypeNameExtensions
     {
+        private static readonly ConcurrentDictionary<Type, string> _typeNameCache = [];
 
         /// <summary>
         /// Returns the <see cref="Type"/> class's name for display or logging purposes.
@@ -75,9 +77,9 @@ namespace MG.Sonarr.Next.Extensions.Reflection
                 return null;
             }
 
-            if (PSTypeAcceleratorNames.Shared.TryGetName(type, out string? acceleratedName))
+            if (PSTypeAcceleratorNames.Shared.TryGetName(type, includeBrackets: !removeBrackets, out string? acceleratedName))
             {
-
+                return acceleratedName;
             }
 
             string name = LanguagePrimitives.ConvertTypeNameToPSTypeName(type.FullName);
@@ -91,6 +93,11 @@ namespace MG.Sonarr.Next.Extensions.Reflection
             }
 
             return name;
+        }
+
+        private static string GetOrAddTypeName(Type type)
+        {
+
         }
     }
 }
