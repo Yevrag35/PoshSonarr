@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Management.Automation;
 using System.Net.Http.Json;
 using MG.Sonarr.Next.Extensions.Strings;
+using MG.Http.Urls.Queries;
 
 namespace MG.Sonarr.Next.Services.Http.Clients
 {

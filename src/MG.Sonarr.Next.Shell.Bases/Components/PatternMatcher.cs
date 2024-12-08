@@ -31,13 +31,10 @@ namespace MG.Sonarr.Next.Shell.Components
         }
         private static bool ContainsWildcardCharacters(ReadOnlySpan<char> pattern)
         {
-            Guard.IsSpan(pattern);
             return pattern.IndexOfAny(stackalloc char[] { STAR, QUESTION }) >= 0;
         }
         public bool IsMatch(ReadOnlySpan<char> input)
         {
-            Guard.IsSpan(input);
-
             int starIndex = -1;
             int iIndex = -1;
 

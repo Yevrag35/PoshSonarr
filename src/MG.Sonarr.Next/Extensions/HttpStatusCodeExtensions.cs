@@ -28,16 +28,16 @@ namespace MG.Sonarr.Next.Extensions
         static string ToResponseStringFormat(in HttpStatusCode statusCode)
         {
 
-            //string codeStr = statusCode.ToString();
+            string codeStr = statusCode.ToString();
 
-            //return string.Create(codeStr.Length + 6, (codeStr, statusCode), (chars, state) =>
-            //{
-            //    _ = ((int)state.statusCode).TryFormat(chars, out int written, default, Statics.DefaultProvider);
-            //    (stackalloc char[] { ' ', '(' }).CopyToSlice(chars, ref written);
+            return string.Create(codeStr.Length + 6, (codeStr, statusCode), (chars, state) =>
+            {
+                _ = ((int)state.statusCode).TryFormat(chars, out int written, default, Statics.DefaultProvider);
+                (stackalloc char[] { ' ', '(' }).CopyToSlice(chars, ref written);
 
-            //    state.codeStr.CopyToSlice(chars, ref written);
-            //    chars[written] = ')';
-            //});
+                state.codeStr.CopyToSlice(chars, ref written);
+                chars[written] = ')';
+            });
         }
 
         #endregion

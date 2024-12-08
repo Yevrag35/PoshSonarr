@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Http.Urls.Queries;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Strings;
 using System.Collections.Immutable;
 

@@ -17,10 +17,15 @@
 	
 	<ItemGroup>
 		<PackageReference Include="System.Memory" Version="4.6.0" />
+		<PackageReference Include="System.Text.Json" Version="8.0.5" />
 	</ItemGroup>
 	
 	<ItemGroup>
 	  <ProjectReference Include="..\MG.Sonarr.Resources\MG.Sonarr.Resources.csproj" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <Folder Include="Cmdlets\" />
 	</ItemGroup>
 
 </Project>

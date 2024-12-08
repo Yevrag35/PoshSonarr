@@ -141,4 +141,11 @@
   <data name="Reflection_ExpectedTypeOrDerivative" xml:space="preserve">
     <value>The value is not the exact or a derivative of the expected type. Expected: '{0]', Received: '{1}'</value>
   </data>
+  <data name="Startup_Exception_DefaultMessage" xml:space="preserve">
+    <value>An exception occured during the PoshSonarr module initialization.</value>
+    <comment>Try not to use this one.</comment>
+  </data>
+  <data name="Startup_Exception_NoConvertersConstructed" xml:space="preserve">
+    <value>Something catastrophic happened in the JSON options setup routine. No JSON converters for the various SonarrObjects could be found/created. JSON serialization/deserialization will not function correctly without them. We can't let the module continue :(</value>
+  </data>
 </root>

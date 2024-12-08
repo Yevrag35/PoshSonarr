@@ -9,9 +9,12 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Models.Fields;
+using MG.Sonarr.Next.Reflection;
+using MG.Sonarr.Resources;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Immutable;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -120,15 +123,16 @@ namespace MG.Sonarr.Next.Json
                 new SonarrResponseConverter(),
                 new ImmutableArrayConverter<FieldObject>(),
                 new ImmutableArrayConverter<SelectOptionObject>());
-                //new ReadOnlyListConverter<FieldObject>(),
-                //new ReadOnlyListConverter<SelectOptionObject>());
 
-            IEnumerable<JsonConverter> sonarrConverters = ConstructSonarrObjectConverters(objCon);
+            List<JsonConverter> sonarrConverters = ConstructSonarrObjectConverters(objCon);
+            ThrowIfMissingConverters(sonarrConverters.Count == 0, sonarrConverters);
+
             options.Converters.AddMany(sonarrConverters);
         }
 
-        private static IEnumerable<JsonConverter> ConstructSonarrObjectConverters(ObjectConverter converter)
+        private static List<JsonConverter> ConstructSonarrObjectConverters(ObjectConverter converter)
         {
+            List<JsonConverter> output = new(10);
             Type genericClassType = typeof(SonarrObjectConverter<>);
             object[] ctorArgs = new object[] { converter };
             Type[] typeParams = new Type[1];
@@ -138,8 +142,11 @@ namespace MG.Sonarr.Next.Json
             foreach (Type resolvedConverterType in types)
             {
                 typeParams[0] = resolvedConverterType;
-                yield return ConstructConverter(genericClassType, typeParams, ctorArgs);
+                JsonConverter constructed = ConstructConverter(genericClassType, typeParams, ctorArgs);
+                output.Add(constructed);
             }
+
+            return output;
         }
 
         private static JsonConverter ConstructConverter(Type genericClassType, Type[] typeParams, object[] activatorArgs)
@@ -179,20 +186,28 @@ namespace MG.Sonarr.Next.Json
 
         private static IEnumerable<Type> GetSonarrObjectTypes()
         {
-            Type attType = typeof(SonarrObjectAttribute);
-            Type sonarrObjType = typeof(SonarrObject);
-            Assembly thisAss = attType.Assembly;
+            Assembly[] assemblies = AssemblyLoader.GetAppDomainAssemblies(AppDomain.CurrentDomain);
 
-            IEnumerable<Type> types = thisAss.GetExportedTypes()
-                .Where(x => x.IsClass 
-                            && 
-                            !x.IsAbstract
-                            &&
-                            x.IsDefined(attType)
-                            &&
-                            sonarrObjType.IsAssignableFrom(x));
+            return assemblies.Where(x => !x.IsDynamic && x.IsDefined(typeof(SonarrObjectConverterAssemblyAttribute), inherit: false))
+                             .SelectMany(x => x.GetExportedTypes()
+                                               .Where(t => t.IsClass && !t.IsAbstract
+                                                           &&
+                                                           t.IsDefined(typeof(SonarrObjectAttribute), inherit: false)
+                                                           &&
+                                                           typeof(SonarrObject).IsAssignableFrom(t)));
+        }
 
-            return types;
+        /// <exception cref="ModuleStartupException"></exception>
+        private static void ThrowIfMissingConverters([DoesNotReturnIf(true)] bool condition, List<JsonConverter> offender, [CallerArgumentExpression(nameof(offender))] string? paramName = null)
+        {
+            if (condition)
+            {
+                ArgumentOutOfRangeException countEx = new(paramName, offender.Count, "Expected one or more converters in the list.");
+                throw new ModuleStartupException(
+                    message: ExMessages.Startup_Exception_NoConvertersConstructed,
+                    offendingType: typeof(SonarrJsonDependencyInjection),
+                    innerException: countEx);
+            }
         }
     }
 }

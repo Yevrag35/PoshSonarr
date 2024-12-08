@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Models;
+using MG.Sonarr.Next.Services.Jobs;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
 {
@@ -14,13 +15,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
     public abstract class SonarrApiCmdletBase : TimedCmdlet
     {
         private ISonarrClient _client = null!;
-        private Queue<IApiCmdlet> _queue = null!;
+        private ApiCmdletQueue _queue = null!;
 
         private protected override void OnCreatingScopeInternal(IServiceProvider provider)
         {
             base.OnCreatingScopeInternal(provider);
             _client = provider.GetRequiredService<ISonarrClient>();
-            _queue = provider.GetRequiredService<Queue<IApiCmdlet>>();
+            _queue = provider.GetRequiredService<ApiCmdletQueue>();
         }
 
         /// <summary>

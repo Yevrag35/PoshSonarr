@@ -20,8 +20,6 @@ namespace MG.Sonarr.Next.Extensions
         [DebuggerStepThrough]
         public static int GetLength<T>(this T n) where T : unmanaged, INumber<T>
         {
-            Guard.NotNull(in n);
-
             if (T.IsZero(n))
             {
                 return 1;

@@ -29,7 +29,7 @@ public readonly struct Wildcard : IEquatable<Wildcard>, IEquatable<string>, IEnu
     {
         get
         {
-
+            return _pattern.AsSpan()[index];
         }
     }
 

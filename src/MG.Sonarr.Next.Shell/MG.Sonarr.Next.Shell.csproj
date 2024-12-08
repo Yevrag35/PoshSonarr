@@ -93,6 +93,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Using Include="MG.Sonarr.Next.Strings" />
 		<Using Include="MG.Sonarr.Next.Shell.Context" />
 		<Using Include="Microsoft.Extensions.DependencyInjection" />
 		<Using Include="OneOf" />

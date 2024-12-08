@@ -1,3 +1,4 @@
+using MG.Http.Urls.Queries;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.ManualImports;
 using MG.Sonarr.Next.Models.Series;

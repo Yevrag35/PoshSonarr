@@ -12,6 +12,9 @@ using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Profiles;
+using MG.Sonarr.Next.Shell.Services;
+using System.Collections.Concurrent;
+using MG.Sonarr.Next.Services.Jobs;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 {
@@ -82,9 +85,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
                 _settings.Timeout = TimeSpan.FromMinutes(5d);
             }
 
-            using IServiceScope scope = this.ConnectContext(ConfigureServices);
+            using IServiceScope scope = this.ConnectContext(ModuleServiceConfigurer.AddConfiguration);
 
-            var queue = scope.ServiceProvider.GetService<Queue<IApiCmdlet>>();
+            var queue = scope.ServiceProvider.GetService<ApiCmdletQueue>();
             queue?.Enqueue(this);
             var client = scope.ServiceProvider.GetRequiredService<ISonarrClient>();
 
@@ -95,40 +98,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
                 this.DisconnectContext();
                 this.ThrowTerminatingError(result.Error);
             }
-        }
-
-        private static void ConfigureServices(IServiceCollection services)
-        {
-            services.AddScoped<ManualImportEdit>()
-                    .AddScoped<ReleaseProfileObject>()
-                    .AddGenericObjectPool<Dictionary<int, IEpisodeBySeriesPipeable>>(builder =>
-                    {
-                        builder.SetConstructor(() => new Dictionary<int, IEpisodeBySeriesPipeable>(50))
-                               .SetDeconstructor(dict =>
-                               {
-                                   dict.Clear();
-                                   int cap = dict.EnsureCapacity(50);
-                                   if (cap >= 1000)
-                                   {
-                                       dict.TrimExcess(50);
-                                   }
-
-                                   return true;
-                               });
-                    })
-                    .AddGenericObjectPool<HashSet<DayOfWeek>>(set =>
-                    {
-                        int count = set.Count;
-                        set.Clear();
-                        return count <= 1000;
-                    })
-                    .AddGenericObjectPool<SortedSet<SonarrProperty>>(set =>
-                    {
-                        int count = set.Count;
-                        set.Clear();
-
-                        return count <= 3000;
-                    });
         }
 
         private ISonarrResponse SendTest(ISonarrClient client, IServiceProvider provider, bool passThru)
@@ -216,14 +185,18 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
         }
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            this.WriteVerbose($"Sending {request.RequestMethod}  request ->  {request.RequestUrl}");
+            if (_verbosePreference != ActionPreference.SilentlyContinue)
+            {
+                this.Host?.UI?.WriteVerboseLine($"Sending {request.RequestMethod} request -> {request.RequestUrl}");
+            }
         }
         public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
         {
             if (_verbosePreference != ActionPreference.SilentlyContinue)
             {
                 options ??= provider.GetService<ISonarrJsonOptions>()?.ForSerializing;
-                this.WriteVerbose(JsonSerializer.Serialize(response, options));
+                string json = JsonSerializer.Serialize(response, options);
+                this.Host?.UI?.WriteVerboseLine(json);
             }
         }
     }

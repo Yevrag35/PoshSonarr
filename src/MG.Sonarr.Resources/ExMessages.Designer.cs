@@ -131,5 +131,23 @@ namespace MG.Sonarr.Resources {
                 return ResourceManager.GetString("Reflection_ExpectedTypeOrDerivative", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An exception occured during the PoshSonarr module initialization..
+        /// </summary>
+        public static string Startup_Exception_DefaultMessage {
+            get {
+                return ResourceManager.GetString("Startup_Exception_DefaultMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Something catastrophic happened in the JSON options setup routine. No JSON converters for the various SonarrObjects could be found/created. JSON serialization/deserialization will not function correctly without them. We can&apos;t let the module continue :(.
+        /// </summary>
+        public static string Startup_Exception_NoConvertersConstructed {
+            get {
+                return ResourceManager.GetString("Startup_Exception_NoConvertersConstructed", resourceCulture);
+            }
+        }
     }
 }

@@ -4,7 +4,6 @@ using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
-using MG.Sonarr.Next.Strings;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Languages
 {

@@ -1,5 +1,5 @@
-﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions;
+﻿using MG.Http.Urls.Queries;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Renames;

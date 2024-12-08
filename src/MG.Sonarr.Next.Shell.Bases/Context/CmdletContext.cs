@@ -1,3 +1,4 @@
+using MG.Http.Urls.Queries;
 using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
@@ -10,6 +11,8 @@ using MG.Sonarr.Next.Services.Testing;
 using MG.Sonarr.Next.Services.Time;
 using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Shell.Pools;
+using MG.Sonarr.Next.Strings;
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.Json;
 
@@ -98,9 +101,10 @@ namespace MG.Sonarr.Next.Shell.Context
                 //.AddClock(mock => mock.GetNow = c => c.Now.AddDays(-7d))
                 .AddClock()
                 .AddMemoryCache()
-                .AddSingleton<Queue<IApiCmdlet>>()
+                .AddSingleton<ApiCmdletQueue>()
                 .AddSonarrClient(cmdletAssembly, settings, (provider, options) =>
                 {
+                    options.PropertyNameCaseInsensitive = true;
                     options.WriteIndented = true;
                 })
                 .AddCommandTracker()
