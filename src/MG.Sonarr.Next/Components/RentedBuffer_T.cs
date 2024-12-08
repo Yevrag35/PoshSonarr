@@ -135,13 +135,10 @@ public ref partial struct RentedBuffer<T>
 	/// <exception cref="ArgumentException"/>
 	public readonly void CopyTo(Span<T> destination)
 	{
-		Guard.BufferLengthIsAtLeast<T>(destination, _span.Length);
 		_span.CopyTo(destination);
 	}
 	public readonly void CopyTo(ref RentedBuffer<T> destination)
 	{
-		Guard.BufferLengthIsAtLeast<T>(destination._span, _span.Length, nameof(destination));
-
 		this.UnsafeCopyTo(ref destination);
 	}
 	internal readonly void UnsafeCopyTo(ref RentedBuffer<T> destination)

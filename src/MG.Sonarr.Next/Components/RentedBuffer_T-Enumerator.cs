@@ -1,4 +1,6 @@
-﻿namespace Dibs.Components;
+﻿using System.Runtime.InteropServices;
+
+namespace MG.Sonarr.Next.Components;
 public ref partial struct RentedBuffer<T>
 {
 	/// <summary>
