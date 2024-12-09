@@ -54,10 +54,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
 
         public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options)
         {
-            TimeSpan elapsed = this.StopTimer();
-            string msg = GenerateVerboseAfter(new TimedResponse(elapsed, response, provider));
-            //this.WriteVerbose(msg ?? string.Empty);
-            this.Host?.UI?.WriteVerboseLine(msg);
+            if (this.Host?.UI is not null)
+            {
+                TimeSpan elapsed = this.StopTimer();
+                string msg = GenerateVerboseAfter(new TimedResponse(elapsed, response, provider));
+                this.Host.UI.WriteVerboseLine(msg);
+            }
         }
 
         private static string GenerateVerboseAfter(ISonarrTimedResponse response)

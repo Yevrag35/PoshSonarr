@@ -29,24 +29,24 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 
         [Parameter(Mandatory = true, ParameterSetName = BY_EP_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        public int[] Id { get; set; } = [];
 
         [Parameter(Mandatory = true, ParameterSetName = BY_SERIES_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] SeriesId { get; set; } = Array.Empty<int>();
+        public int[] SeriesId { get; set; } = [];
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_EP_INPUT)]
         [ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodePipeable))]
-        public IEpisodePipeable[] EpisodeInput { get; set; } = Array.Empty<IEpisodePipeable>();
+        public IEpisodePipeable[] EpisodeInput { get; set; } = [];
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_SERIES_INPUT)]
         [ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodeBySeriesPipeable))]
-        public IEpisodeBySeriesPipeable[] SeriesInput { get; set; } = Array.Empty<IEpisodeBySeriesPipeable>();
+        public IEpisodeBySeriesPipeable[] SeriesInput { get; set; } = [];
 
         [Parameter(Mandatory = false, Position = 1, ParameterSetName = BY_SERIES_ID)]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = BY_SERIES_INPUT)]
         [Alias("SeasonEpId")]
-        public SeasonEpisodeId[] EpisodeIdentifier { get; set; } = Array.Empty<SeasonEpisodeId>();
+        public SeasonEpisodeId[] EpisodeIdentifier { get; set; } = [];
 
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {
@@ -58,10 +58,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             _epIds = this.GetPooledObject<SortedSet<int>>();
             _seriesIds = this.GetPooledObject<Dictionary<int, IEpisodeBySeriesPipeable>>();
             _params = this.GetPooledObject<QueryParameterCollection>();
-            var span = this.GetReturnables();
-            span[0] = _epIds;
-            span[1] = _seriesIds;
-            span[2] = _params;
+
+            ReadOnlySpan<object> objs = [_epIds, _seriesIds, _params];
+            objs.CopyTo(this.GetReturnables());
         }
 
         protected override void Begin(IServiceProvider provider)

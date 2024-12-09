@@ -36,15 +36,15 @@ namespace MG.Sonarr.Next.Extensions.PSO
             var func = expression.Compile();
             pso.Properties.Add(new PSNoteProperty(member.Member.Name, func(pso)));
         }
-        public static void AddProperties<T>(this T? pso, params Expression<Func<T, object?>>[] expressions)
+        public static void AddProperties<T>(this T? pso, params ReadOnlySpan<Expression<Func<T, object?>>> expressions)
             where T : SonarrObject
         {
-            if (pso is null || expressions is null || expressions.Length <= 0)
+            if (pso is null || expressions.IsEmpty)
             {
                 return;
             }
 
-            foreach (var exp in expressions)
+            foreach (Expression<Func<T, object?>> exp in expressions)
             {
                 AddProperty(pso, exp);
             }

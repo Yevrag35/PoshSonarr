@@ -50,8 +50,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             var pool = provider.GetRequiredService<IObjectPool<SortedSet<int>>>();
             _ids = pool.Get();
             _seriesIds = pool.Get();
-            //this.Returnables[0] = _ids;
-            //this.Returnables[1] = _seriesIds;
 
             var span = this.GetReturnables();
             span[0] = _ids;

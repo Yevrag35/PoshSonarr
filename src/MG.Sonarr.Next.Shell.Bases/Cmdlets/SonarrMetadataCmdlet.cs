@@ -37,7 +37,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             if (response.IsError)
             {
                 this.StopCmdlet(response.Error);
-                return new();
+                return [];
             }
 
             return response.Data;

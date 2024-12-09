@@ -101,13 +101,24 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         ///     If <see cref="Capacity"/> is equal to 0, then <see cref="Span{T}.Empty"/> is returned.
         /// </para>
         /// </returns>
-        protected virtual Span<object> GetReturnables()
+        protected Span<object> GetReturnables()
         {
             return this.GetAllReturnables();
         }
         private Span<object> GetAllReturnables()
         {
             return _isRented ? _rented.AsSpan(0, _capacity) : Span<object>.Empty;
+        }
+        protected void SetReturnables(params ReadOnlySpan<object> values)  // TODO - Implement this for C# 13.
+        //protected void SetReturnables(ReadOnlySpan<object> values)
+        {
+            if (values.IsEmpty || !_isRented)
+            {
+                return;
+            }
+
+            values.CopyTo(_rented);
+            _capacity = values.Length;
         }
 
         /// <summary>
