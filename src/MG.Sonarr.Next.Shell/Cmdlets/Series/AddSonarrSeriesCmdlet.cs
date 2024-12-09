@@ -183,7 +183,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 if (this.ShouldProcess(pso.Title, "Adding Series"))
                 {
                     var response = this.SendPostRequest<AddSeriesObject, SeriesObject>(url, pso);
-                    if (response.TryPickT0(out SeriesObject? so, out var error))
+                    if (response.TryGetT1(out SeriesObject? so, out var error))
                     {
                         this.WriteObject(so);
                         pso.Commit();

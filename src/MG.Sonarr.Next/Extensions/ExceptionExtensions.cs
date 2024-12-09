@@ -17,7 +17,7 @@ namespace MG.Sonarr.Next.Extensions
         public static string? GetTypeName(this Exception? exception)
         {
             Type? type = exception?.GetType();
-            return TypeNameExtensions.GetName(type);
+            return type.GetNameOrNull();
         }
 
         /// <summary>

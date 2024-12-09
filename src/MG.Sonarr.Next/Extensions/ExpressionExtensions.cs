@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Reflection;
+using MG.Sonarr.Next.Unions;
 using System.Reflection;
 
 namespace MG.Sonarr.Next.Extensions
@@ -71,7 +72,7 @@ namespace MG.Sonarr.Next.Extensions
 
             setter = default;
             
-            OneOf<FieldInfo, PropertyInfo, object?> tempOne;
+            Either<FieldInfo, PropertyInfo, object?> tempOne;
             if (expression.Body is MemberExpression memEx)
             {
                 tempOne = GetAsEitherInfo(memEx);
@@ -82,15 +83,15 @@ namespace MG.Sonarr.Next.Extensions
             }
             else
             {
-                tempOne = OneOf<FieldInfo, PropertyInfo, object?>.FromT2(null);
+                tempOne = Either<FieldInfo, PropertyInfo, object?>.FromT3(null);
             }
 
             FieldOrPropertyInfo info = default;
-            if (!tempOne.IsT2)
+            if (!tempOne.IsT3)
             {
-                info = tempOne.IsT0
-                    ? new FieldOrPropertyInfo(tempOne.AsT0)
-                    : new FieldOrPropertyInfo(tempOne.AsT1);
+                info = tempOne.IsT1
+                    ? new FieldOrPropertyInfo(tempOne.AsT1)
+                    : new FieldOrPropertyInfo(tempOne.AsT2!);
 
                 setter = info;
             }
@@ -98,7 +99,7 @@ namespace MG.Sonarr.Next.Extensions
             return !info.IsEmpty;
         }
 
-        private static OneOf<FieldInfo, PropertyInfo, object?> GetAsEitherInfo(MemberExpression memberExpression)
+        private static Either<FieldInfo, PropertyInfo, object?> GetAsEitherInfo(MemberExpression memberExpression)
         {
             switch (memberExpression.Member.MemberType)
             {

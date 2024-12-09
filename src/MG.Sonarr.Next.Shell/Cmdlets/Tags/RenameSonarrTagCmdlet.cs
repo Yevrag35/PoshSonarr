@@ -6,6 +6,7 @@ using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
@@ -14,7 +15,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     [MetadataCanPipe(Tag = Meta.TAG)]
     public sealed class RenameSonarrTagCmdlet : SonarrApiCmdletBase
     {
-        OneOf<string, ScriptBlock> _oneOf;
+        Either<string, ScriptBlock> _oneOf;
         TagObject? _pipedObject;
         MetadataTag _tag = null!;
 
@@ -57,10 +58,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         }
         protected override void Process(IServiceProvider provider)
         {
-            string ordinaryName = this.NewName;
+            string? ordinaryName = this.NewName;
 
             TagRename rename;
-            if (this.InputObject is not null && _oneOf.TryPickT1(out ScriptBlock? newNameBlock, out ordinaryName))
+            if (this.InputObject is not null && _oneOf.TryGetT2(out ScriptBlock? newNameBlock, out ordinaryName))
             {
                 if (!this.TryGenerateNewName(newNameBlock, this.InputObject, out string? newName))
                 {
@@ -72,7 +73,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             }
             else
             {
-                rename = TagRename.Create(this.Id, ordinaryName);
+                rename = TagRename.Create(this.Id, ordinaryName ?? this.NewName);
             }
 
             string url = _tag.GetUrlForId(rename.Id);

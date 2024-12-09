@@ -82,7 +82,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RemotePath
         private void SendNewRequest<T>(T body, MetadataTag tag) where T : notnull
         {
             var oneOf = this.SendPostRequest<T, RemotePathObject>(tag.UrlBase, body);
-            if (oneOf.TryPickT1(out var error, out var remotePath))
+            if (oneOf.TryGetT2(out var error, out var remotePath))
             {
                 this.WriteError(error);
             }

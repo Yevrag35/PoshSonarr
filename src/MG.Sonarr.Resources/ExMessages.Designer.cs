@@ -88,6 +88,42 @@ namespace MG.Sonarr.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The struct named &apos;{0}&apos; of type &apos;{1}&apos; is empty but was expected not to be..
+        /// </summary>
+        public static string EmptyStruct_Full_Format {
+            get {
+                return ResourceManager.GetString("EmptyStruct_Full_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The provided struct of type &apos;{0}&apos; is empty but was expected not to be..
+        /// </summary>
+        public static string EmptyStruct_NoName_Message {
+            get {
+                return ResourceManager.GetString("EmptyStruct_NoName_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The provided struct is empty but was expected not to be..
+        /// </summary>
+        public static string EmptyStruct_NoName_NoType_Message {
+            get {
+                return ResourceManager.GetString("EmptyStruct_NoName_NoType_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The struct named &apos;{0}&apos; is empty but was expected not to be..
+        /// </summary>
+        public static string EmptyStruct_NoType_Message {
+            get {
+                return ResourceManager.GetString("EmptyStruct_NoType_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &lt;null&gt;.
         /// </summary>
         public static string Null_AsString {

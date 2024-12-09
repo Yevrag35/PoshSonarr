@@ -7,6 +7,7 @@ using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
 {
@@ -14,9 +15,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
     [MetadataCanPipe(Tag = Meta.MANUAL_IMPORT)]
     public sealed class EditSonarrManualImportCmdlet : SonarrApiCmdletBase
     {
-        OneOf<int, SeriesObject> _series;
-        OneOf<int, EpisodeObject> _episode;
-        OneOf<int, QualityRevisionObject> _quality;
+        Either<int, SeriesObject> _series;
+        Either<int, EpisodeObject> _episode;
+        Either<int, QualityRevisionObject> _quality;
 
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
         [Alias("Record")]
@@ -93,9 +94,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
             }
         }
 
-        private T? GetObject<T>(OneOf<int, T> oneOf, MetadataTag tag)
+        private T? GetObject<T>(Either<int, T> oneOf, MetadataTag tag)
         {
-            if (oneOf.TryPickT1(out T value, out int id))
+            if (oneOf.TryGetT2(out T? value, out int id))
             {
                 return value;
             }
@@ -113,9 +114,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
             }
         }
 
-        private QualityRevisionObject? GetQualityRevision(OneOf<int, QualityRevisionObject> oneOf, MetadataTag tag)
+        private QualityRevisionObject? GetQualityRevision(Either<int, QualityRevisionObject> oneOf, MetadataTag tag)
         {
-            if (oneOf.TryPickT1(out QualityRevisionObject? qualityObj, out int qualityId))
+            if (oneOf.TryGetT2(out QualityRevisionObject? qualityObj, out int qualityId))
             {
                 return qualityObj;
             }

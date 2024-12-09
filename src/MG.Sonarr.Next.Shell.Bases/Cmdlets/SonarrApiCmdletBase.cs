@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Services.Jobs;
+using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
 {
@@ -106,7 +107,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         ///     A <see cref="OneOf{T0, T1}"/> object that can either be the deserialized HTTP response or
         ///     an <see cref="SonarrErrorRecord"/>.
         /// </returns>
-        protected OneOf<TOutput, SonarrErrorRecord> SendPostRequest<TBody, TOutput>(string path, TBody body, CancellationToken token = default)
+        protected Either<TOutput, SonarrErrorRecord> SendPostRequest<TBody, TOutput>(string path, TBody body, CancellationToken token = default)
             where TBody : notnull
         {
             this.StartTimer();

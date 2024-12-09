@@ -126,6 +126,18 @@
   <data name="Collections_ItemIsNull" xml:space="preserve">
     <value>An element in the array/span is null and was guarded against.</value>
   </data>
+  <data name="EmptyStruct_Full_Format" xml:space="preserve">
+    <value>The struct named '{0}' of type '{1}' is empty but was expected not to be.</value>
+  </data>
+  <data name="EmptyStruct_NoName_Message" xml:space="preserve">
+    <value>The provided struct of type '{0}' is empty but was expected not to be.</value>
+  </data>
+  <data name="EmptyStruct_NoName_NoType_Message" xml:space="preserve">
+    <value>The provided struct is empty but was expected not to be.</value>
+  </data>
+  <data name="EmptyStruct_NoType_Message" xml:space="preserve">
+    <value>The struct named '{0}' is empty but was expected not to be.</value>
+  </data>
   <data name="Null_AsString" xml:space="preserve">
     <value>&lt;null&gt;</value>
   </data>
