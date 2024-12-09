@@ -1,6 +1,7 @@
 ﻿using MG.Http.Urls.Queries;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Next.Services.Http.Queries;
 using System.Collections.Immutable;
 
 namespace MG.Sonarr.Next.Metadata
@@ -103,10 +104,26 @@ namespace MG.Sonarr.Next.Metadata
 
             Span<char> span = stackalloc char[this.UrlBase.Length + 1 + parameters.MaxLength];
             int position = 0;
+
             this.UrlBase.CopyToSlice(span, ref position);
             span[position++] = '?';
-            _ = parameters.TryFormat(span.Slice(position), out int written, default, Statics.DefaultProvider);
-            position += written;
+
+            parameters.CopyToSlice(span, ref position, provider: Statics.DefaultProvider);
+
+            return new string(span.Slice(0, position));
+        }
+        public string GetUrl(QueryCol? parameters)
+        {
+            if (parameters.IsNullOrEmpty())
+            {
+                return this.UrlBase;
+            }
+
+            Span<char> span = stackalloc char[this.UrlBase.Length + 1 + parameters.MaxLength];
+            int position = 0;
+
+            this.UrlBase.CopyToSlice(span, ref position);
+            parameters.CopyToSlice(span, ref position);
 
             return new string(span.Slice(0, position));
         }

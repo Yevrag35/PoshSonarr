@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Episodes;
+using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
@@ -24,6 +25,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 
         SortedSet<int> _epIds = null!;
         QueryParameterCollection _params = null!;
+        QueryCol _test = null!;
         Dictionary<int, IEpisodeBySeriesPipeable> _seriesIds = null!;
         protected override int Capacity => CAPACITY;
 
@@ -58,6 +60,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             _epIds = this.GetPooledObject<SortedSet<int>>();
             _seriesIds = this.GetPooledObject<Dictionary<int, IEpisodeBySeriesPipeable>>();
             _params = this.GetPooledObject<QueryParameterCollection>();
+            _test = [];
 
             ReadOnlySpan<object> objs = [_epIds, _seriesIds, _params];
             objs.CopyTo(this.GetReturnables());
@@ -147,8 +150,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         {
             foreach (int id in series.Keys)
             {
-                _params.Add(Constants.SERIES_ID, id);
-                string url = this.Tag.GetUrl(_params);
+                //_params.Add(Constants.SERIES_ID, id);
+                _test.Add(Constants.SERIES_ID, id);
+                string url = this.Tag.GetUrl(_test);
+                //string url = this.Tag.GetUrl(_params);
                 var response = this.SendGetRequest<MetadataList<EpisodeObject>>(url);
                 if (response.IsError)
                 {
@@ -166,7 +171,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                     yield return obj;
                 }
 
-                _params.Clear();
+                //_params.Clear();
+                _test.Clear();
             }
         }
 

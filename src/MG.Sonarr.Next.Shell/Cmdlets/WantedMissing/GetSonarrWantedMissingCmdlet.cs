@@ -42,8 +42,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing
 
         protected override void Process(IServiceProvider provider)
         {
-            this.QueryCol ??= new();
-            if (this.All.ToBool())
+            this.QueryCol ??= [];
+            if (this.All)
             {
                 IEnumerable<EpisodeObject> records = this.SendAllRecords();
                 this.WriteCollection(records);
@@ -73,7 +73,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing
 
         private static string GetUrl(QueryParameterCollection parameters)
         {
-            if (parameters.Count <= 0)
+            if (parameters.Count == 0)
             {
                 return Constants.WANTEDMISSING;
             }

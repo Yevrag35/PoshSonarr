@@ -58,12 +58,8 @@ public readonly record struct FormattableQueryField : IQueryField
             charsWritten += strValue.Length;
             return result;
         }
-        else
-        {
-            bool result = _value.AsT2!.TryFormat(destination, out int written, format, provider);
-            charsWritten += written;
-            return result;
-        }
+
+        return _value.AsT2!.TryCopyToSlice(destination, ref charsWritten, format, provider);
     }
 
     public string ToString(string? format, IFormatProvider? formatProvider)

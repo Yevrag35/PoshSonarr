@@ -1,33 +1,39 @@
-﻿using MG.Sonarr.Next.Unions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using MG.Sonarr.Next.Extensions.Strings;
+using System.Collections;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MG.Sonarr.Next.Services.Http.Queries;
 
-public sealed class QueryCol
+[DebuggerDisplay(@"\{Count = {Count}, MaxLength = {MaxLength}\}")]
+public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
 {
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     static readonly string s_True = bool.TrueString.ToLower();
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     static readonly string s_False = bool.FalseString.ToLower();
 
-    private readonly List<IQueryField> _fields;
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private int _maxLength;
+
+    private readonly List<IQueryField> _fields;
+
+    public IQueryField this[int index] => _fields[index];
 
     public int Count => _fields.Count;
     public int MaxLength => _maxLength;
 
+    [DebuggerStepThrough]
     public QueryCol()
     {
         _fields = [];
     }
 
+    [DebuggerStepThrough]
     public void Add(string key, bool value)
     {
         this.Add(key, value ? s_True : s_False);
     }
+    [DebuggerStepThrough]
     public void Add(string key, int value)
     {
         this.Add(key, value, LengthConstants.INT_MAX);
@@ -50,6 +56,7 @@ public sealed class QueryCol
         _fields.Add(field);
         _maxLength += field.MaxLength;
     }
+    [DebuggerStepThrough]
     public void Clear()
     {
         _fields.Clear();
@@ -88,30 +95,48 @@ public sealed class QueryCol
             return true;
         }
 
-        int length = 1 + _maxLength + Math.Max(_fields.Count - 1, 0);
         destination[charsWritten++] = '?';
 
         ReadOnlySpan<IQueryField> span = CollectionsMarshal.AsSpan(_fields);
         ref readonly IQueryField field = ref span[0];
-        if (!field.TryFormat(destination.Slice(charsWritten), out int written, default, null))
+        if (!field.TryCopyToSlice(destination, ref charsWritten))
         {
             return false;
         }
-
-        charsWritten += written;
 
         for (int i = 1; i < span.Length; i++)
         {
             destination[charsWritten++] = '&';
             field = ref span[i];
-            if (!field.TryFormat(destination.Slice(charsWritten), out written, default, null))
+            if (!field.TryCopyToSlice(destination, ref charsWritten))
             {
                 return false;
             }
-
-            charsWritten += written;
         }
 
         return true;
+    }
+
+    string IFormattable.ToString(string? format, IFormatProvider? formatProvider)
+    {
+        Span<char> chars = stackalloc char[_maxLength + 1 + (Math.Max(0, this.Count - 1))];
+        _ = this.TryFormat(chars, out int charsWritten);
+
+        return new string(chars.Slice(0, charsWritten));
+    }
+    bool ISpanFormattable.TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+    {
+        return this.TryFormat(destination, out charsWritten);
+    }
+
+    [DebuggerStepThrough]
+    public IEnumerator<IQueryField> GetEnumerator()
+    {
+        return _fields.GetEnumerator();
+    }
+    [DebuggerStepThrough]
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return this.GetEnumerator();
     }
 }

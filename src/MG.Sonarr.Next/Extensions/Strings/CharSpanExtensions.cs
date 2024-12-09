@@ -20,7 +20,7 @@ namespace MG.Sonarr.Next.Extensions.Strings
         ///     successful.
         /// </param>
         [DebuggerStepThrough]
-        public static void CopyToSlice(this string? value, Span<char> span, scoped ref int position)
+        public static void CopyToSlice(this string? value, Span<char> span, ref int position)
         {
             CopyToSlice(spanValue: value, span, ref position);
         }
@@ -35,7 +35,7 @@ namespace MG.Sonarr.Next.Extensions.Strings
         ///     The ref <see cref="int"/> to add the number of the characters to if copying was
         ///     successful.
         /// </param>
-        public static void CopyToSlice(this ReadOnlySpan<char> spanValue, Span<char> span, scoped ref int position)
+        public static void CopyToSlice(this ReadOnlySpan<char> spanValue, Span<char> span, ref int position)
         {
             if (spanValue.TryCopyTo(span.Slice(position)))
             {
@@ -54,9 +54,18 @@ namespace MG.Sonarr.Next.Extensions.Strings
         ///     successful.
         /// </param>
         [DebuggerStepThrough]
-        public static void CopyToSlice(this Span<char> writtableSpan, Span<char> span, scoped ref int position)
+        public static void CopyToSlice(this Span<char> writtableSpan, Span<char> span, ref int position)
         {
             CopyToSlice(spanValue: writtableSpan, span, ref position);
+        }
+
+        public static void CopyToSlice<T>(this T value, Span<char> destination, ref int position, ReadOnlySpan<char> format = default, IFormatProvider? provider = null)
+            where T : ISpanFormattable
+        {
+            if (value.TryFormat(destination.Slice(position), out int written, format, provider))
+            {
+                position += written;
+            }
         }
 
         public static bool EnclosedIn([NotNullWhen(true)] this string? value, char openingChar, char closingChar)
@@ -88,7 +97,7 @@ namespace MG.Sonarr.Next.Extensions.Strings
         ///     <see langword="true"/> if the copying operation was successful; otherwise
         ///     <see langword="false"/>.
         /// </returns>
-        public static bool TryCopyToSlice(this ReadOnlySpan<char> spanValue, Span<char> span, scoped ref int position)
+        public static bool TryCopyToSlice(this ReadOnlySpan<char> spanValue, Span<char> span, ref int position)
         {
             bool result = false;
 
@@ -117,9 +126,22 @@ namespace MG.Sonarr.Next.Extensions.Strings
         ///     <see langword="false"/>.
         /// </returns>
         [DebuggerStepThrough]
-        public static bool TryCopyToSlice(this Span<char> writtableSpan, Span<char> span, scoped ref int position)
+        public static bool TryCopyToSlice(this Span<char> writtableSpan, Span<char> span, ref int position)
         {
             return TryCopyToSlice(spanValue: writtableSpan, span, ref position);
+        }
+
+        public static bool TryCopyToSlice<T>(this T value, Span<char> destination, ref int position, ReadOnlySpan<char> format = default, IFormatProvider? provider = null)
+            where T : ISpanFormattable
+        {
+            bool result = false;
+            if (value.TryFormat(destination.Slice(position), out int written, format, provider))
+            {
+                position += written;
+                result = true;
+            }
+
+            return result;
         }
         /// <summary>
         /// Determines whether the beginning of the <paramref name="readOnlySpan"/> matches the specified <paramref name="value"/> when compared ignoring case.
