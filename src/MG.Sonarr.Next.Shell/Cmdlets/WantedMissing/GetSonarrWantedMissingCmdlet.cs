@@ -1,6 +1,7 @@
 ﻿using MG.Http.Urls.Queries;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
+using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing
@@ -8,7 +9,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing
     [Cmdlet(VerbsCommon.Get, "SonarrWantedMissing", DefaultParameterSetName = "ByPage")]
     public sealed class GetSonarrWantedMissingCmdlet : SonarrApiCmdletBase
     {
-        QueryParameterCollection QueryCol { get; set; } = null!;
+        //QueryParameterCollection QueryCol { get; set; } = null!;
+        QueryCol QueryCol { get; set; } = null!;
 
         [Parameter(Mandatory = true, ParameterSetName = "AllRecords")]
         public SwitchParameter All { get; set; }
@@ -85,6 +87,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing
             span[position++] = '?';
             _ = parameters.TryFormat(span.Slice(position), out int written, default, Statics.DefaultProvider);
             return new string(span.Slice(0, position + written));
+        }
+        private static string GetUrl(QueryCol parameters)
+        {
+            return parameters.GetUrl(Constants.WANTEDMISSING);
         }
 
         private IEnumerable<EpisodeObject> SendAllRecords()

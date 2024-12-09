@@ -29,7 +29,7 @@ namespace MG.Sonarr.Next.PSProperties
         public ReadOnlyCollectionProperty(string propertyName, TCol? collection)
             : base(propertyName)
         {
-            this.Collection = collection ?? new();
+            this.Collection = collection ?? [];
         }
 
         public override PSMemberInfo Copy()

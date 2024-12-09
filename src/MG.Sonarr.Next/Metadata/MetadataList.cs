@@ -90,7 +90,7 @@ namespace MG.Sonarr.Next.Metadata
 
         public void SetTag(IMetadataResolver resolver)
         {
-            if (this.Count <= 0)
+            if (this.Count == 0)
             {
                 return;
             }

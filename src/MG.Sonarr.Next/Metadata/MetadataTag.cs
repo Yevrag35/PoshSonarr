@@ -114,18 +114,7 @@ namespace MG.Sonarr.Next.Metadata
         }
         public string GetUrl(QueryCol? parameters)
         {
-            if (parameters.IsNullOrEmpty())
-            {
-                return this.UrlBase;
-            }
-
-            Span<char> span = stackalloc char[this.UrlBase.Length + 1 + parameters.MaxLength];
-            int position = 0;
-
-            this.UrlBase.CopyToSlice(span, ref position);
-            parameters.CopyToSlice(span, ref position);
-
-            return new string(span.Slice(0, position));
+            return parameters.GetUrl(this.UrlBase);
         }
 
         /// <exception cref="InvalidOperationException"/>
@@ -159,13 +148,13 @@ namespace MG.Sonarr.Next.Metadata
 
             span[position++] = '/';
 
-            if (!id.TryFormat(span.Slice(position), out int written, default, Statics.DefaultProvider))
+            if (!id.TryCopyToSlice(span, ref position, provider: Statics.DefaultProvider))
             {
                 Debug.Fail($"Unable to format '{id}' into the BaseUrl.");
                 return this.UrlBase + '/' + id;
             }
 
-            return new string(span.Slice(0, position + written));
+            return new string(span.Slice(0, position));
         }
         public string GetUrlForId<T>(T id, QueryParameterCollection parameters) where T : ISpanFormattable
         {
@@ -177,14 +166,12 @@ namespace MG.Sonarr.Next.Metadata
 
             span[position++] = '/';
 
-            _ = id.TryFormat(span.Slice(position), out int written, default, Statics.DefaultProvider);
-            position += written;
+            id.CopyToSlice(span, ref position, provider: Statics.DefaultProvider);
 
             if (parameters.Count > 0)
             {
                 span[position++] = '?';
-                parameters.TryFormat(span.Slice(position), out written, default, Statics.DefaultProvider);
-                position += written;
+                parameters.CopyToSlice(span, ref position, provider: Statics.DefaultProvider);
             }
 
             return new string(span.Slice(0, position));

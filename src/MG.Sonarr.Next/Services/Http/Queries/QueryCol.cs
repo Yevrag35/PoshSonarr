@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions.Strings;
+﻿using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Strings;
 using System.Collections;
 using System.Runtime.InteropServices;
 
@@ -26,6 +27,10 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
     public QueryCol()
     {
         _fields = [];
+    }
+    public QueryCol(int capacity)
+    {
+        _fields = new(capacity);
     }
 
     [DebuggerStepThrough]
@@ -138,5 +143,24 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
     IEnumerator IEnumerable.GetEnumerator()
     {
         return this.GetEnumerator();
+    }
+}
+
+public static class QueryColExtensions
+{
+    public static string GetUrl(this QueryCol? collection, string baseUrl)
+    {
+        if (collection is null || collection.Count == 0)
+        {
+            return baseUrl;
+        }
+
+        Span<char> span = stackalloc char[baseUrl.Length + 1 + collection.MaxLength];
+        int position = 0;
+
+        baseUrl.CopyToSlice(span, ref position);
+        collection.CopyToSlice(span, ref position, provider: Statics.DefaultProvider);
+
+        return new string(span.Slice(0, position));
     }
 }
