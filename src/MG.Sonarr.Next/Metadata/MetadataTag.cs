@@ -1,5 +1,4 @@
-﻿using MG.Http.Urls.Queries;
-using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Services.Http.Queries;
 using System.Collections.Immutable;
@@ -95,23 +94,6 @@ namespace MG.Sonarr.Next.Metadata
         /// The constructed URL string to the endpoint defined by this tag with the appended query 
         /// parameters.
         /// </returns>
-        public string GetUrl(QueryParameterCollection? parameters)
-        {
-            if (parameters.IsNullOrEmpty())
-            {
-                return this.UrlBase;
-            }
-
-            Span<char> span = stackalloc char[this.UrlBase.Length + 1 + parameters.MaxLength];
-            int position = 0;
-
-            this.UrlBase.CopyToSlice(span, ref position);
-            span[position++] = '?';
-
-            parameters.CopyToSlice(span, ref position, provider: Statics.DefaultProvider);
-
-            return new string(span.Slice(0, position));
-        }
         public string GetUrl(QueryCol? parameters)
         {
             return parameters.GetUrl(this.UrlBase);
@@ -156,7 +138,7 @@ namespace MG.Sonarr.Next.Metadata
 
             return new string(span.Slice(0, position));
         }
-        public string GetUrlForId<T>(T id, QueryParameterCollection parameters) where T : ISpanFormattable
+        public string GetUrlForId<T>(T id, QueryCol parameters) where T : ISpanFormattable
         {
             this.ThrowIfNotSupportId();
             Span<char> span = stackalloc char[this.UrlBase.Length + 2 + parameters.MaxLength + LengthConstants.INT128_MAX];

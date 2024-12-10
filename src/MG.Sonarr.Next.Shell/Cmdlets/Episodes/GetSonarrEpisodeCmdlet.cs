@@ -24,8 +24,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         const int CAPACITY = 3;
 
         SortedSet<int> _epIds = null!;
-        QueryParameterCollection _params = null!;
-        QueryCol _test = null!;
+        QueryCol _params = null!;
         Dictionary<int, IEpisodeBySeriesPipeable> _seriesIds = null!;
         protected override int Capacity => CAPACITY;
 
@@ -59,11 +58,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             base.OnCreatingScope(provider);
             _epIds = this.GetPooledObject<SortedSet<int>>();
             _seriesIds = this.GetPooledObject<Dictionary<int, IEpisodeBySeriesPipeable>>();
-            _params = this.GetPooledObject<QueryParameterCollection>();
-            _test = [];
+            _params = this.GetPooledObject<QueryCol>();
 
-            ReadOnlySpan<object> objs = [_epIds, _seriesIds, _params];
-            objs.CopyTo(this.GetReturnables());
+            this.SetReturnables(_epIds, _seriesIds, _params);
         }
 
         protected override void Begin(IServiceProvider provider)
@@ -151,8 +148,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             foreach (int id in series.Keys)
             {
                 //_params.Add(Constants.SERIES_ID, id);
-                _test.Add(Constants.SERIES_ID, id);
-                string url = this.Tag.GetUrl(_test);
+                _params.Add(Constants.SERIES_ID, id);
+                string url = this.Tag.GetUrl(_params);
                 //string url = this.Tag.GetUrl(_params);
                 var response = this.SendGetRequest<MetadataList<EpisodeObject>>(url);
                 if (response.IsError)
@@ -172,7 +169,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 }
 
                 //_params.Clear();
-                _test.Clear();
+                _params.Clear();
             }
         }
 

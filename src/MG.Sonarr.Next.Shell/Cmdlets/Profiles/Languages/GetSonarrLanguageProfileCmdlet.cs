@@ -9,6 +9,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Languages
 {
     [Cmdlet(VerbsCommon.Get, "SonarrLanguageProfile", DefaultParameterSetName = "None")]
     [MetadataCanPipe(Tag = Meta.SERIES)]
+    [Obsolete("The LanguageProfileController and its endpoints are deprecated.")]
     public sealed class GetSonarrLanguageProfileCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;

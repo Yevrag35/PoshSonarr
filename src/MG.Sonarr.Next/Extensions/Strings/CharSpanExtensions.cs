@@ -1,4 +1,6 @@
 ﻿using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Next.Guarding;
+using System.Buffers;
 
 namespace MG.Sonarr.Next.Extensions.Strings
 {
@@ -79,6 +81,42 @@ namespace MG.Sonarr.Next.Extensions.Strings
         public static bool EnclosedIn(this Span<char> span, char openingChar, char closingChar)
         {
             return EnclosedInCore(span, in openingChar, in closingChar);
+        }
+
+        public static int RemoveAny(this ReadOnlySpan<char> source, Span<char> destination, SearchValues<char> removeChars)
+        {
+            int length = source.Length;
+            int written = 0;
+            ReadOnlySpan<char> slice = source;
+
+            while (!slice.IsEmpty)
+            {
+                int index = slice.IndexOfAny(removeChars);
+                if (index == -1)
+                {
+                    // No more matches, copy the remaining portion and exit.
+                    slice.CopyToSlice(destination, ref written);
+                    break;
+                }
+
+                if (index == 0)
+                {
+                    slice = slice.Slice(1);
+                    continue;
+                }
+
+                slice.Slice(0, index).CopyToSlice(destination, ref written);
+                if (index < slice.Length - 1)
+                {
+                    slice = slice.Slice(index + 1);
+                }
+                else
+                {
+                    slice = [];
+                }
+            }
+
+            return written;
         }
 
         /// <summary>

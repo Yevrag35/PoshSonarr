@@ -1,8 +1,10 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.DownloadClients;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
 {
@@ -15,23 +17,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
         protected override int Capacity => CAPACITY;
 
         [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        public int[] Id { get; set; } = [];
 
         [Parameter(Position = 0, ParameterSetName = "ByNameOrId")]
-        public IntOrString[] Name { get; set; } = Array.Empty<IntOrString>();
+        public Either<string, int>[] Name { get; set; } = [];
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
+
             _ids = this.GetPooledObject<SortedSet<int>>();
-            //this.Returnables[0] = _ids;
-
             _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
-            //this.Returnables[1] = _wcNames;
 
-            var span = this.GetReturnables();
-            span[0] = _ids;
-            span[1] = _wcNames;
+            this.SetReturnables(_ids, _wcNames);
         }
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {
@@ -41,37 +39,26 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
         protected override void Begin(IServiceProvider provider)
         {
             _ids.UnionWith(this.Id);
-            if (this.HasParameter(x => x.Name))
+            if (this.MyInvocation.BoundParameters.ContainsKey(nameof(this.Name)))
             {
                 this.Name.SplitToSets(_ids, _wcNames);
             }
         }
         protected override void Process(IServiceProvider provider)
         {
-            IEnumerable<DownloadClientObject> dlObjs = _ids.Count > 0
+            IEnumerable<DownloadClientObject> dlObjs = _ids.Count > 0 && _wcNames.Count == 0
                 ? this.GetById<DownloadClientObject>(_ids)
                 : this.GetByName(_wcNames, _ids);
 
             this.WriteCollection(dlObjs);
         }
 
-        private IEnumerable<DownloadClientObject> GetByName(IReadOnlySet<Wildcard> names, IReadOnlySet<int> ids)
+        private MetadataList<DownloadClientObject> GetByName(HashSet<Wildcard> names, SortedSet<int> ids)
         {
             var all = this.GetAll<DownloadClientObject>();
-            if (names.Count <= 0 || all.Count <= 0)
+            if (all.Count > 0 && (names.Count > 0 || ids.Count > 0))
             {
-                return all;
-            }
-            
-            for (int i = all.Count - 1; i >= 0; i--)
-            {
-                DownloadClientObject item = all[i];
-                if (_ids.Contains(item.Id)
-                    ||
-                    !_wcNames.AnyValueLike(item.Name))
-                {
-                    all.RemoveAt(i);
-                }
+                _ = all.RemoveAll(x => !ids.Contains(x.Id) && !names.AnyValueLike(x.Name));
             }
 
             return all;

@@ -4,7 +4,7 @@ using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Shell.Output;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using MG.Http.Urls.Queries;
+using MG.Sonarr.Next.Services.Http.Queries;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 {
@@ -18,7 +18,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 
         DateTime? _end;
         HashSet<DayOfWeek> _dows = null!;
-        QueryParameterCollection _queryCol = null!;
+        QueryCol _queryCol = null!;
 
         [Parameter(Position = 0)]
         public DateTime StartDate { get; set; } = DateTime.Now;
@@ -70,11 +70,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         {
             base.OnCreatingScope(provider);
             _dows = this.GetPooledObject<HashSet<DayOfWeek>>();
-            _queryCol = this.GetPooledObject<QueryParameterCollection>();
+            _queryCol = this.GetPooledObject<QueryCol>();
 
-            var span = this.GetReturnables();
-            span[0] = _dows;
-            span[1] = _queryCol;
+            this.SetReturnables(_dows, _queryCol);
         }
 
         protected override void Begin(IServiceProvider provider)
@@ -104,27 +102,30 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
             }
             else if (this.HasParameter(x => x.DayOfWeek) && _dows.Count > 0)
             {
-                FilterByDayOfWeek(response.Data, _dows);
+                this.FilterByDayOfWeek(response.Data, _dows);
             }
 
             this.WriteCollection(response.Data);
         }
 
-        private static void FilterByDayOfWeek(IList<CalendarObject> list, IReadOnlySet<DayOfWeek> dows)
+        private void FilterByDayOfWeek(MetadataList<CalendarObject> list, HashSet<DayOfWeek> dows)
         {
-            int removed = list.RemoveWhere(dows, predicate: (item, state) =>
+            int removed = list.RemoveAll(predicate: item =>
             {
-                return !state!.Contains(item.AirDateUtc.DayOfWeek);
+                return !dows.Contains(item.AirDateUtc.DayOfWeek);
             });
 
-            Debug.WriteLine($"Filtered {removed} items from {nameof(list)}.");
+            this.WriteVerbose($"Filtered {removed} items from {nameof(list)}.");
         }
         private void GetParameters(DateTime start, DateTime end, bool unmonitored, bool includeEpisodeFile, bool includeEpisodeImages, bool includeSeries)
         {
-            _queryCol.Add(nameof(unmonitored), unmonitored);
-            _queryCol.Add(nameof(includeEpisodeFile), includeEpisodeFile);
-            _queryCol.Add(nameof(includeSeries), includeSeries);
-            _queryCol.Add(nameof(includeEpisodeImages), includeEpisodeImages);
+            _queryCol.Add(
+                [nameof(unmonitored), unmonitored],
+                [nameof(includeEpisodeFile), includeEpisodeFile],
+                [nameof(includeSeries), includeSeries],
+                [nameof(includeEpisodeImages), includeEpisodeImages]
+            );
+
             _queryCol.Add(START, start, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT);
             _queryCol.Add(END, end, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT);
         }

@@ -1,11 +1,10 @@
-﻿using MG.Http.Urls.Queries;
-using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Strings;
 using System.ComponentModel;
 
 namespace MG.Sonarr.Next.Services.Http.Queries
 {
-    public sealed class PagingParameter : IQueryParameter
+    public sealed class PagingParameter : IQueryField//: IQueryParameter
     {
         const string PAGING_KEY = "Paging";
         const int DEFAULT_PAGE_NO = 1;
@@ -83,51 +82,6 @@ namespace MG.Sonarr.Next.Services.Http.Queries
                    4;   // Equal signs for Page, PageSize, SortKey, SortDirection.
         }
 
-        public bool Equals(IQueryParameter? other)
-        {
-            return StringComparer.InvariantCulture.Equals(PAGING_KEY, other?.Key);
-        }
-        public bool Equals(QueryParameter other)
-        {
-            return StringComparer.InvariantCulture.Equals(PAGING_KEY, other.Key);
-        }
-        public override bool Equals(object? obj)
-        {
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-            else if (obj is PagingParameter pp)
-            {
-                return this.Equals(pp);
-            }
-            else if (obj is IQueryParameter qp)
-            {
-                return this.Equals(qp);
-            }
-            else
-            {
-                return false;
-            }
-        }
-        public override int GetHashCode()
-        {
-            return PAGING_KEY.GetHashCode();
-        }
-        private int GetChangedHashCode(string? format, IFormatProvider? provider)
-        {
-            format ??= string.Empty;
-            provider ??= Statics.DefaultProvider;
-
-            return HashCode.Combine(_direction, _pageNo, _pageSize, _sortKey, format, provider);
-        }
-        public bool IsHashChanged(int current, string? format, IFormatProvider? provider, out int changedHashCode)
-        {
-            changedHashCode = this.GetChangedHashCode(format, provider);
-
-            return current != changedHashCode;
-        }
-
         public void Reset()
         {
             _pageNo = DEFAULT_PAGE_NO;
@@ -156,14 +110,13 @@ namespace MG.Sonarr.Next.Services.Http.Queries
         }
         public string ToString(string? format, IFormatProvider? formatProvider)
         {
-            if (_isConstructed && !this.IsHashChanged(_hash, format, formatProvider, out int changed))
+            if (_isConstructed)
             {
                 return _constructed;
             }
             else
             {
                 Debug.WriteLine("PagingParameter hash is changed or not set.");
-                changed = this.GetChangedHashCode(format, formatProvider);
             }
 
             Span<char> span = stackalloc char[_maxLength];
@@ -177,7 +130,7 @@ namespace MG.Sonarr.Next.Services.Http.Queries
         public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
         {
             charsWritten = 0;
-            if (_isConstructed && !this.IsHashChanged(_hash, string.Empty, provider, out _))
+            if (_isConstructed)
             {
                 _constructed.CopyToSlice(destination, ref charsWritten);
                 return true;
@@ -197,12 +150,6 @@ namespace MG.Sonarr.Next.Services.Http.Queries
             WriteStringSection(destination, nameof(this.SortKey), _sortKey, ref charsWritten);
 
             return true;
-        }
-
-        bool IQueryParameter.TryValueAsNumber<T>(out T value)
-        {
-            value = default;
-            return false;
         }
 
         private static void WriteKey(Span<char> span, ReadOnlySpan<char> key, ref int position)

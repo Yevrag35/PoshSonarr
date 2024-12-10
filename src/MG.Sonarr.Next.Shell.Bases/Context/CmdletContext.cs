@@ -130,9 +130,9 @@ namespace MG.Sonarr.Next.Shell.Context
         private static void AddObjectPools(IServiceCollection services)
         {
             services.AddObjectPoolReturner()
-                    .AddGenericObjectPool<QueryParameterCollection>(builder =>
+                    .AddGenericObjectPool<QueryCol>(builder =>
                     {
-                        builder.SetConstructor(() => new QueryParameterCollection(10))
+                        builder.SetConstructor(() => new QueryCol(10))
                                .SetDeconstructor(col =>
                                {
                                    col.Clear();

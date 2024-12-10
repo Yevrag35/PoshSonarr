@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Strings;
 using System.Collections;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Services.Http.Queries;
@@ -8,10 +9,7 @@ namespace MG.Sonarr.Next.Services.Http.Queries;
 [DebuggerDisplay(@"\{Count = {Count}, MaxLength = {MaxLength}\}")]
 public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
 {
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    static readonly string s_True = bool.TrueString.ToLower();
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    static readonly string s_False = bool.FalseString.ToLower();
+    
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private int _maxLength;
@@ -33,10 +31,17 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
         _fields = new(capacity);
     }
 
-    [DebuggerStepThrough]
-    public void Add(string key, bool value)
+    public void AddBoolean(bool value, [CallerArgumentExpression(nameof(value))] string key = "")
     {
-        this.Add(key, value ? s_True : s_False);
+        this.Add([key, value]);
+    }
+    public void Add(params ReadOnlySpan<BooleanQueryField> fields)
+    {
+        foreach (BooleanQueryField field in fields)
+        {
+            _fields.Add(field);
+            _maxLength += field.MaxLength;
+        }
     }
     [DebuggerStepThrough]
     public void Add(string key, int value)

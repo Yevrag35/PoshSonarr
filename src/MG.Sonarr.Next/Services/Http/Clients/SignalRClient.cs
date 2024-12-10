@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Management.Automation;
 using System.Net.Http.Json;
 using MG.Sonarr.Next.Extensions.Strings;
-using MG.Http.Urls.Queries;
+using MG.Sonarr.Next.Services.Http.Queries;
 
 namespace MG.Sonarr.Next.Services.Http.Clients
 {
@@ -28,12 +28,12 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 
         bool _disposed;
         readonly HttpClient _client;
-        QueryParameterCollection _queryParams;
+        QueryCol _queryParams;
         readonly JsonSerializerOptions? _options;
         readonly Random _rng;   // this is *NOT* meant to be cryptographically secure.
         readonly IServiceScopeFactory _scopeFactory;
 
-        public SignalRClient(HttpClient client, Random random, IConnectionSettings settings, ISonarrJsonOptions options, IObjectPool<QueryParameterCollection> pool, IServiceScopeFactory scopeFactory)
+        public SignalRClient(HttpClient client, Random random, IConnectionSettings settings, ISonarrJsonOptions options, IObjectPool<QueryCol> pool, IServiceScopeFactory scopeFactory)
         {
             _client = client;
             _options = options.ForDeserializing;
@@ -52,15 +52,13 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             return this.SendRequest<PingResponse>(request, token);
         }
 
-        private static IQueryParameter GetRandomNumberQuery(Random rng)
+        private static long GetRandomNumberQuery(Random rng)
         {
-            long rand = rng.NextInt64(MIN_RNG, long.MaxValue);
-            return QueryParameter.Create(UNDERSCORE, rand, LengthConstants.LONG_MAX);
+            return rng.NextInt64(MIN_RNG, long.MaxValue);
         }
-        private static string GetPingUrl(QueryParameterCollection queryParams, Random rng)
+        private static string GetPingUrl(QueryCol queryParams, Random rng)
         {
-            IQueryParameter randParam = GetRandomNumberQuery(rng);
-            queryParams.AddOrUpdate(randParam);
+            queryParams.Add(UNDERSCORE, GetRandomNumberQuery(rng), LengthConstants.LONG_MAX);
 
             Span<char> span = stackalloc char[PING.Length + 1 + queryParams.MaxLength];
             
@@ -69,7 +67,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             
             span[position++] = '?';
 
-            _ = queryParams.TryFormat(span.Slice(position), out int written, default, Statics.DefaultProvider);
+            _ = queryParams.TryFormat(span.Slice(position), out int written);
 
             return new string(span.Slice(0, position + written));
         }
@@ -128,7 +126,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                 if (disposing)
                 {
                     using var scope = _scopeFactory.CreateScope();
-                    var returner = scope.ServiceProvider.GetRequiredService<IObjectPool<QueryParameterCollection>>();
+                    var returner = scope.ServiceProvider.GetRequiredService<IObjectPool<QueryCol>>();
                     returner.Return(_queryParams);
                 }
 
@@ -153,7 +151,8 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                         var settings = provider.GetRequiredService<IConnectionSettings>();
                         client.BaseAddress = settings.ServiceUri;
                         client.DefaultRequestHeaders
-                            .UserAgent.Add(SonarrClientDependencyInjection.UserAgent);
+                              .UserAgent
+                                .Add(SonarrClientDependencyInjection.UserAgent);
                     })
                     .ConfigurePrimaryHttpMessageHandler<SonarrClientHandler>()
                     .AddHttpMessageHandler<VerboseHandler>()

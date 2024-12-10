@@ -29,6 +29,11 @@ public readonly partial struct Either<T1, T2>
     public readonly T2? AsT2 => _second;
 
     /// <summary>
+    /// Gets the index indicating the current type.
+    /// </summary>
+    public uint Index => _index;
+
+    /// <summary>
     /// Gets a value indicating whether the instance is default or empty.
     /// </summary>
     public readonly bool IsDefaultOrEmpty => !_isNotDefault;
@@ -83,13 +88,26 @@ public readonly partial struct Either<T1, T2>
         _index = 2;
     }
 
+    public readonly bool IsSameType(Either<T1, T2> other)
+    {
+        return this.IsSameType(other, ignoreDefaultOrEmpty: false);
+    }
+    public readonly bool IsSameType(Either<T1, T2> other, bool ignoreDefaultOrEmpty)
+    {
+        return (other._index > 0u || ignoreDefaultOrEmpty) && _index == other._index;
+    }
+    public readonly bool IsNotSameType(Either<T1, T2> other)
+    {
+        return _index != other._index;
+    }
+
     /// <summary>
     /// Matches the current instance to one of the provided actions based on its type.
     /// </summary>
     /// <typeparam name="TState">The state type.</typeparam>
     /// <param name="f1">The action to execute if the instance is of the first type.</param>
     /// <param name="f2">The action to execute if the instance is of the second type.</param>
-    public void Match<TState>(
+    public readonly void Match<TState>(
         Action<T1> f1,
         Action<T2> f2)// where TState : allows ref struct
     {
@@ -118,7 +136,7 @@ public readonly partial struct Either<T1, T2>
     /// <param name="f1">The action to execute if the instance is of the first type.</param>
     /// <param name="f2">The action to execute if the instance is of the second type.</param>
     /// <exception cref="EmptyStructException"></exception>
-    public void Match<TState>(
+    public readonly void Match<TState>(
         TState state,
         Action<T1, TState> f1,
         Action<T2, TState> f2)// where TState : allows ref struct
@@ -148,7 +166,7 @@ public readonly partial struct Either<T1, T2>
     /// <param name="f2">The function to execute if the instance is of the second type.</param>
     /// <returns>The result of the executed function.</returns>
     /// <exception cref="EmptyStructException"></exception>
-    public TOutput Match<TOutput>(
+    public readonly TOutput Match<TOutput>(
         Func<T1, TOutput> f1,
         Func<T2, TOutput> f2)// where TOutput : allows ref struct
     {
@@ -169,7 +187,7 @@ public readonly partial struct Either<T1, T2>
     /// <param name="f2">The function to execute if the instance is of the second type.</param>
     /// <returns>The result of the executed function.</returns>
     /// <exception cref="EmptyStructException"></exception>
-    public TOutput Match<TOutput, TState>(
+    public readonly TOutput Match<TOutput, TState>(
         TState state,
         Func<T1, TState, TOutput> f1,
         Func<T2, TState, TOutput> f2)// where TOutput : allows ref struct where TState : allows ref struct
