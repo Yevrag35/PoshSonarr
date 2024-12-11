@@ -1,5 +1,5 @@
-﻿using MG.Http.Urls.Queries;
-using MG.Sonarr.Next.Attributes;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.History;
@@ -23,12 +23,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
         const string BY_SERIES_PIPE = "BySeriesPipelineInput";
         const string SINCE_DATE = "SinceDate";
 
-        const int CAPACITY = 3;
+        const int CAPACITY = 2;
 
         int _eventType = -1;
         SortedSet<int> _ids = null!;
-        PagingParameter _paging = null!;
-        QueryParameterCollection _parameters = null!;
+        QueryCol _parameters = null!;
 
         protected override int Capacity => CAPACITY;
 
@@ -70,11 +69,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
 
         [Parameter(Mandatory = true, ParameterSetName = BY_SERIES_PIPE, ValueFromPipeline = true)]
         [ValidateIds(ValidateRangeKind.Positive)]
-        public SeriesObject[] Series { get; set; } = Array.Empty<SeriesObject>();
+        public SeriesObject[] Series { get; set; } = [];
 
         [Parameter(Mandatory = true, ParameterSetName = BY_SERIES_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] SeriesId { get; set; } = Array.Empty<int>();
+        public int[] SeriesId { get; set; } = [];
 
         #endregion
 
@@ -102,14 +101,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _paging = this.GetPooledObject<PagingParameter>();
             _ids = this.GetPooledObject<SortedSet<int>>();
-            _parameters = this.GetPooledObject<QueryParameterCollection>();
+            _parameters = this.GetPooledObject<QueryCol>();
 
-            var span = this.GetReturnables();
-            span[0] = _paging;
-            span[1] = _ids;
-            span[2] = _parameters;
+            this.SetReturnables(_ids, _parameters);
         }
 
         protected override void Begin(IServiceProvider provider)
@@ -118,12 +113,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
 
             if (this.HasParameter(x => x.IncludeEpisode, onlyIfPresent: true))
             {
-                _parameters.Add(QueryParameter.Create(nameof(this.IncludeEpisode), this.IncludeEpisode.ToBool()));
+                _parameters.Add([nameof(this.IncludeEpisode), this.IncludeEpisode.ToBool()]);
             }
 
             if (this.HasParameter(x => x.IncludeSeries, onlyIfPresent: true))
             {
-                _parameters.Add(QueryParameter.Create(nameof(this.IncludeSeries), this.IncludeSeries.ToBool()));
+                _parameters.Add([nameof(this.IncludeSeries), this.IncludeSeries.ToBool()]);
             }
 
             var clock = provider.GetRequiredService<IClock>();
@@ -175,14 +170,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
 
         #region PAGING FUNCTIONALITY
 
-        private void SendPagingQuery(QueryParameterCollection parameters)
+        private void SendPagingQuery(QueryCol parameters)
         {
-            if (this.HasParameter(x => x.EpisodeId))
+            if (this.HasParameter(this.EpisodeId))
             {
                 parameters.Add(nameof(this.EpisodeId), this.EpisodeId);
             }
             
-            if (this.HasParameter(x => x.DownloadId))
+            if (this.HasParameter(this.DownloadId))
             {
                 parameters.Add(nameof(this.DownloadId), this.DownloadId);
             }
@@ -194,42 +189,42 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
 
         private void SetPagingParams()
         {
-            if (this.HasParameter(x => x.PageNumber))
+            if (this.HasParameter(this.PageNumber))
             {
-                _paging.Page = this.PageNumber;
+                _parameters.Add(PagingConstants.PageNumber, this.PageNumber);
             }
 
-            if (this.HasParameter(x => x.PageSize))
+            if (this.HasParameter(this.PageSize))
             {
-                _paging.PageSize = this.PageSize;
+                _parameters.Add(PagingConstants.PageSize, this.PageSize);
             }
 
-            if (this.HasParameter(x => x.SortDirection))
+            if (this.HasParameter(this.SortDirection))
             {
-                _paging.SortDirection = this.SortDirection;
+                _parameters.Add(PagingConstants.SortDirection, this.SortDirection, this.SortDirection.GetLength());
             }
 
-            _paging.SortKey = this.SortKey;
-
-            _parameters.AddOrUpdate(_paging);
+            _parameters.Add(PagingConstants.SortKey, this.SortKey);
         }
 
         #endregion
 
         #region SERIES FUNCTIONALITY
 
-        private void SendSeriesQuery(IServiceProvider provider, QueryParameterCollection parameters, SortedSet<int> ids)
+        private void SendSeriesQuery(IServiceProvider provider, QueryCol parameters, SortedSet<int> ids)
         {
             var tag = provider.GetMetadataTag(Meta.SERIES_HISTORY);
 
-            if (ids.Count <= 0)
+            if (ids.Count == 0)
             {
                 return;
             }
 
             foreach (int id in ids)
             {
-                parameters.AddOrUpdate(QueryParameter.Create(nameof(this.SeriesId), id, LengthConstants.INT_MAX));
+                FormattableQueryField field = new("seriesId", id, LengthConstants.INT_MAX);
+                _parameters.AddOrUpdate(field);
+
                 string url = tag.GetUrl(parameters);
 
                 var response = this.SendGetRequest<MetadataList<HistoryObject>>(url);
@@ -241,7 +236,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
 
         #region SINCE FUNCTIONALITY
 
-        private void SendSinceQuery(IServiceProvider provider, QueryParameterCollection parameters, DateTime date)
+        private void SendSinceQuery(IServiceProvider provider, QueryCol parameters, DateTime date)
         {
             var tag = provider.GetMetadataTag(Meta.HISTORY_SINCE);
             parameters.Add(nameof(date), date, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT);

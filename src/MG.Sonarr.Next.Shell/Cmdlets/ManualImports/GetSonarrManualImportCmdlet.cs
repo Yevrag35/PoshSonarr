@@ -2,6 +2,7 @@ using MG.Http.Urls.Queries;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.ManualImports;
 using MG.Sonarr.Next.Models.Series;
+using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Shell.Extensions;
 using System.Net;
 
@@ -92,7 +93,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
             if (this.ParameterSetName == BY_FOLDER)
             {
                 string formattedPath = this.ResolveAndFormatPath(this.Path);
-                _parameters.AddOrUpdate(QueryParameter.Create(FOLDER, formattedPath));
+                _parameters
+                //_parameters.AddOrUpdate(QueryParameter.Create(FOLDER, formattedPath));
             }
 
             string url = tag.GetUrl(_parameters);
@@ -114,11 +116,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
 
             return path;
         }
-        private static void SetFilterParameter(bool includeExisting, QueryParameterCollection parameters)
+        private static void SetFilterParameter(bool includeExisting, QueryCol parameters)
         {
-            parameters.Add(FILTER_EXISTING, !includeExisting);
+            parameters.Add([FILTER_EXISTING, !includeExisting]);
         }
-        private static void SetSeriesParameters(int seriesId, int seasonNumber, bool wantsSeason, QueryParameterCollection parameters)
+        private static void SetSeriesParameters(int seriesId, int seasonNumber, bool wantsSeason, QueryCol parameters)
         {
             parameters.Add(nameof(seriesId), seriesId);
             if (wantsSeason)

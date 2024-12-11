@@ -9,17 +9,15 @@ namespace MG.Sonarr.Next.Services.Http.Queries;
 [DebuggerDisplay(@"\{Count = {Count}, MaxLength = {MaxLength}\}")]
 public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
 {
-    
-
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private int _maxLength;
 
-    private readonly List<IQueryField> _fields;
+    private readonly SortedList<string, IQueryField> _fields;
 
     public IQueryField this[int index]
     {
-        get => _fields[index];
-        set => _fields[index] = value;
+        get => _fields.Values[index];
+        set => _fields.Values[index] = value;
     }
 
     public int Count => _fields.Count;
@@ -32,7 +30,7 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
     }
     public QueryCol(int capacity)
     {
-        _fields = new(capacity);
+        _fields = new(capacity, StringComparer.OrdinalIgnoreCase);
     }
 
     public void AddBoolean(bool value, [CallerArgumentExpression(nameof(value))] string key = "")
@@ -43,7 +41,7 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
     {
         foreach (BooleanQueryField field in fields)
         {
-            _fields.Add(field);
+            _fields.Add(field.Key, field);
             _maxLength += field.MaxLength;
         }
     }
@@ -67,8 +65,27 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
     }
     public void Add(IQueryField field)
     {
-        _fields.Add(field);
+        _fields.Add(field.Key, field);
         _maxLength += field.MaxLength;
+    }
+    public void AddOrUpdate(IQueryField field)
+    {
+        int index = _fields.IndexOfKey(field.Key);
+        switch (index)
+        {
+            case -1:
+                this.Add(field);
+                break;
+
+            case > -1:
+                IQueryField existing = _fields.GetValueAtIndex(index);
+                _maxLength += field.MaxLength - existing.MaxLength;
+                _fields[field.Key] = field;
+                break;
+
+            default:
+                throw new InvalidOperationException("Invalid index.");
+        }
     }
     [DebuggerStepThrough]
     public void Clear()
@@ -78,31 +95,17 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
     }
     public bool Remove(string key)
     {
-        if (this.Count == 0)
+        if (_fields.Remove(key, out IQueryField? field))
         {
-            return false;
+            _maxLength -= field.MaxLength;
+            return true;
         }
 
-        bool result = false;
-        int index = _fields.FindIndex(f => f.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
-        if (index >= 0)
-        {
-            _maxLength -= _fields[index].MaxLength;
-            _fields.RemoveAt(index);
-            result = true;
-        }
-
-        return result;
-    }
-    public void RemoveAll(string key)
-    {
-        while (this.Count > 0 && this.Remove(key))
-        {
-        }
+        return false;
     }
     public void RemoveAt(int index)
     {
-        ref readonly IQueryField field = ref CollectionsMarshal.AsSpan(_fields)[index];
+        IQueryField field = _fields.GetValueAtIndex(index);
         _maxLength -= field.MaxLength;
         _fields.RemoveAt(index);
     }
@@ -117,17 +120,16 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
 
         destination[charsWritten++] = '?';
 
-        ReadOnlySpan<IQueryField> span = CollectionsMarshal.AsSpan(_fields);
-        ref readonly IQueryField field = ref span[0];
+        IQueryField field = _fields.GetValueAtIndex(0);
         if (!field.TryCopyToSlice(destination, ref charsWritten))
         {
             return false;
         }
 
-        for (int i = 1; i < span.Length; i++)
+        for (int i = 1; i < _fields.Count; i++)
         {
             destination[charsWritten++] = '&';
-            field = ref span[i];
+            field = _fields.GetValueAtIndex(i);
             if (!field.TryCopyToSlice(destination, ref charsWritten))
             {
                 return false;

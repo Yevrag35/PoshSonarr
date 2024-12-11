@@ -93,18 +93,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 return;
             }
 
-            IEnumerable<EpisodeFileObject> files = ParameterNameStartsWithSeries(this.ParameterSetName)
+            List<EpisodeFileObject> files = ParameterNameStartsWithSeries(this.ParameterSetName)
                 ? this.GetEpFilesBySeriesId(_seriesIds)
                 : this.GetEpFilesById(_ids);
 
             this.WriteCollection(files);
         }
 
-        private IEnumerable<EpisodeFileObject> GetEpFilesById(IReadOnlySet<int>? fileIds)
+        private List<EpisodeFileObject> GetEpFilesById(IReadOnlySet<int>? fileIds)
         {
+            List<EpisodeFileObject> list = [];
             if (fileIds is null)
             {
-                yield break;
+                return list;
             }
 
             foreach (int id in fileIds)
@@ -114,24 +115,26 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 if (response.IsError)
                 {
                     this.WriteConditionalError(response.Error);
+                    continue;
                 }
-                else
-                {
-                    yield return response.Data;
-                }
+
+                list.Add(response.Data);
             }
+
+            return list;
         }
-        private IEnumerable<EpisodeFileObject> GetEpFilesBySeriesId(IReadOnlySet<int>? seriesIds)
+        private List<EpisodeFileObject> GetEpFilesBySeriesId(IReadOnlySet<int>? seriesIds)
         {
+            List<EpisodeFileObject> list = [];
             if (seriesIds is null)
             {
-                yield break;
+                return list;
             }
 
             foreach (int id in seriesIds)
             {
-                queryCol.Add(Constants.SERIES_ID, id);
-                string url = this.Tag.GetUrl(queryCol);
+                _params.Add(Constants.SERIES_ID, id);
+                string url = this.Tag.GetUrl(_params);
                 var response = this.SendGetRequest<MetadataList<EpisodeFileObject>>(url);
                 if (response.IsError)
                 {
@@ -139,18 +142,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                     continue;
                 }
 
-                foreach (var item in response.Data)
-                {
-                    yield return item;
-                }
+                list.AddRange(response.Data);
 
-                queryCol.Clear();
+                _params.Clear();
             }
+
+            return list;
         }
         private static bool ParameterNameStartsWithSeries(ReadOnlySpan<char> setName)
         {
             return setName.StartsWith(
-                stackalloc char[] { 'b', 'y', 's', 'e', 'r', 'i', 'e', 's' }, StringComparison.InvariantCultureIgnoreCase);
+                ['b', 'y', 's', 'e', 'r', 'i', 'e', 's'], StringComparison.OrdinalIgnoreCase);
         }
 
         protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
