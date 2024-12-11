@@ -147,7 +147,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             foreach (int id in series.Keys)
             {
                 //_params.Add(Constants.SERIES_ID, id);
-                _params.Add(Constants.SERIES_ID, id);
+                _params.Add(Constants.SERIES_ID_LOWERCASE, id);
                 string url = this.Tag.GetUrl(_params);
                 //string url = this.Tag.GetUrl(_params);
                 var response = this.SendGetRequest<MetadataList<EpisodeObject>>(url);

@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Json;
+using MG.Sonarr.Next.Models.Errors;
 using MG.Sonarr.Next.Services.Http.Requests;
 using System.Management.Automation;
 using System.Net;
@@ -71,7 +72,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             }
             catch (HttpRequestException httpEx)
             {
-                var pso = ParseResponseForError(response, _options.ForDeserializing, token);
+                _ = TryParseResponse(response, _options.ForDeserializing, out SonarrServerError? pso, disposeResponse: false, token);
                 SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
 
                 var result = SonarrResponse.FromException(path, sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);
@@ -100,7 +101,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             }
             catch (HttpRequestException httpEx)
             {
-                var pso = ParseResponseForError(response, _options.ForDeserializing, token);
+                _ = TryParseResponse(response, _options.ForDeserializing, out SonarrServerError? pso, disposeResponse: false, token);
                 SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
 
                 var result = SonarrResponse.FromException<T>(path, sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);
@@ -118,6 +119,10 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             catch (Exception e)
             {
                 return ReturnFromException<T>(path, response, ErrorCategory.ConnectionError, e);
+            }
+            finally
+            {
+                response?.Dispose();
             }
         }
     }

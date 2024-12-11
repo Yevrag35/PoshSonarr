@@ -50,6 +50,11 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
     {
         this.Add(key, value, LengthConstants.INT_MAX);
     }
+    [DebuggerStepThrough]
+    public void Add(string key, long value)
+    {
+        this.Add(key, value, LengthConstants.LONG_MAX);
+    }
     public void Add(string key, string? value)
     {
         IQueryField field = string.IsNullOrWhiteSpace(value)
@@ -68,6 +73,23 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
         _fields.Add(field.Key, field);
         _maxLength += field.MaxLength;
     }
+    public void AddOrUpdate(string key, int value)
+    {
+        FormattableQueryField field = new(key, value, LengthConstants.INT_MAX);
+        this.AddOrUpdate(field);
+    }
+    public void AddOrUpdate(string key, long value)
+    {
+        FormattableQueryField field = new(key, value, LengthConstants.LONG_MAX);
+        this.AddOrUpdate(field);
+    }
+    public void AddOrUpdate(string key, string? value)
+    {
+        IQueryField field = string.IsNullOrWhiteSpace(value)
+            ? new KeyOnlyQueryField(key)
+            : new FormattableQueryField(key, value);
+        this.AddOrUpdate(field);
+    }
     public void AddOrUpdate(IQueryField field)
     {
         int index = _fields.IndexOfKey(field.Key);
@@ -77,7 +99,7 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
                 this.Add(field);
                 break;
 
-            case > -1:
+            case > -1 when index < _fields.Count:
                 IQueryField existing = _fields.GetValueAtIndex(index);
                 _maxLength += field.MaxLength - existing.MaxLength;
                 _fields[field.Key] = field;
@@ -154,7 +176,7 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
     [DebuggerStepThrough]
     public IEnumerator<IQueryField> GetEnumerator()
     {
-        return _fields.GetEnumerator();
+        return _fields.Values.GetEnumerator();
     }
     [DebuggerStepThrough]
     IEnumerator IEnumerable.GetEnumerator()

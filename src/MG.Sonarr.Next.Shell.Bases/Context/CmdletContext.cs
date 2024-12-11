@@ -137,6 +137,15 @@ namespace MG.Sonarr.Next.Shell.Context
                                    col.Clear();
                                    return true;
                                });
+                    })
+                    .AddGenericObjectPool<SortedDictionary<int, string?>>(builder =>
+                    {
+                        builder.SetConstructor(() => [])
+                               .SetDeconstructor(col =>
+                               {
+                                   col.Clear();
+                                   return true;
+                               });
                     });
 
             AddPool<HashSet<Wildcard>, HashSetWildcardPool>(services);

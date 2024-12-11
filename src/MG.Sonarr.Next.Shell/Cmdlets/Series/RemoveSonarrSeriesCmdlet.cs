@@ -1,7 +1,7 @@
-﻿using MG.Http.Urls.Queries;
-using MG.Sonarr.Next.Attributes;
+﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
+using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Shell.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
@@ -11,80 +11,80 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
     {
-        static readonly IQueryParameter FALSE = QueryParameter.Create("deleteFiles", false);
-        static readonly IQueryParameter TRUE = QueryParameter.Create("deleteFiles", true);
+        static readonly BooleanQueryField _falseField = ["deleteFiles", false];
+        static readonly BooleanQueryField _trueField = ["deleteFiles", true];
 
-        QueryParameterCollection _col = null!;
+        QueryCol _col = null!;
         SortedDictionary<int, string?> _dict = null!;
         MetadataTag Tag { get; set; } = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-        [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id
-        {
-            get => Array.Empty<int>();
-            set
-            {
-                _dict ??= new();
-                foreach (int id in value)
-                {
-                    _ = _dict.TryAdd(id, null);
-                }
-            }
-        }
+        [Parameter(Mandatory = false)]
+        public SwitchParameter DeleteFiles { get; set; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE,
-            DontShow = true)]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+        [ValidateRange(ValidateRangeKind.Positive)]
+        public int[] Id { get; set; } = [];
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE, DontShow = true)]
         [ValidateNotNull]
         [ValidateIds(ValidateRangeKind.Positive)]
-        public SeriesObject[] InputObject
-        {
-            get => Array.Empty<SeriesObject>();
-            set
-            {
-                _dict ??= new();
-                AddIdsToDict(value, _dict);
-            }
-        }
+        public SeriesObject[] InputObject { get; set; } = [];
 
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = false)]
-        public SwitchParameter DeleteFiles
-        {
-            get => SwitchParameter.Present;
-            set
-            {
-                _col ??= new(1);
-                if (value.ToBool())
-                {
-                    _col.Remove(FALSE.Key);
-                    _col.Add(TRUE);
-                }
-            }
-        }
+        protected override int Capacity => 2;
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
             this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.SERIES];
+
+            _dict = this.GetPooledObject<SortedDictionary<int, string?>>();
+            _col = this.GetPooledObject<QueryCol>();
+            this.SetReturnables(_dict, _col);
         }
 
-        private static void AddIdsToDict(IEnumerable<SeriesObject> array, IDictionary<int, string?> dictionary)
+        private static void AddIdsToDict(ReadOnlySpan<SeriesObject> array, SortedDictionary<int, string?> dictionary)
         {
-            foreach (SeriesObject so in array)
+            foreach (SeriesObject obj in array)
             {
-                _ = dictionary.TryAdd(so.Id, so.Title);
+                if (!dictionary.ContainsKey(obj.Id))
+                {
+                    dictionary.Add(obj.Id, obj.Title);
+                }
+            }
+        }
+        private static void AddIdsToDict(ReadOnlySpan<int> ids, SortedDictionary<int, string?> dictionary)
+        {
+            foreach (ref readonly int id in ids)
+            {
+                if (!dictionary.ContainsKey(id))
+                {
+                    dictionary.Add(id, null);
+                }
+            }
+        }
+
+        protected override void Process(IServiceProvider provider)
+        {
+            if (this.Id.Length > 0)
+            {
+                AddIdsToDict(this.Id, _dict);
+            }
+
+            if (this.InputObject.Length > 0)
+            {
+                AddIdsToDict(this.InputObject, _dict);
             }
         }
 
         protected override void End(IServiceProvider provider)
         {
-            if (_dict.Count <= 0)
+            if (_dict.Count == 0)
             {
                 this.WriteWarning("No series were passed via the pipeline. Make sure to pass the correct object type.");
                 this.StopCmdlet();
@@ -142,9 +142,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             return $"Are you sure you want to delete the Series \"{id}\"?";
         }
 
-        private static string GetUrl(MetadataTag tag, int id, QueryParameterCollection col)
+        private static string GetUrl(MetadataTag tag, int id, QueryCol queryCollection)
         {
-            return tag.GetUrlForId(id, col);
+            return tag.GetUrlForId(id, queryCollection);
         }
     }
 }

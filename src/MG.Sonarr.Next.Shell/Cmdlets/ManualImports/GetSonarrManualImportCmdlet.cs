@@ -1,4 +1,3 @@
-using MG.Http.Urls.Queries;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.ManualImports;
 using MG.Sonarr.Next.Models.Series;
@@ -20,8 +19,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
         const string BY_SERIES_PIPE = "BySeriesPipelineInput";
         const string FILTER_EXISTING = "filterExistingFiles";
         const string FOLDER = "folder";
-        const int PARAM_CAPACITY = 2;
-        QueryParameterCollection _parameters = null!;
+        const int CAPACITY = 1;
+        QueryCol _parameters = null!;
 
         [Parameter(
             Mandatory = true,
@@ -60,7 +59,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _parameters = new QueryParameterCollection(PARAM_CAPACITY);
+            _parameters = this.GetPooledObject<QueryCol>();
+            this.SetReturnables(_parameters);
         }
         protected override void Begin(IServiceProvider provider)
         {
@@ -75,7 +75,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
                     SetSeriesParameters(
                         this.SeriesId,
                         this.SeasonNumber,
-                        wantsSeason: this.HasParameter(x => x.SeasonNumber),
+                        wantsSeason: this.HasParameter(this.SeasonNumber),
                         _parameters);
 
                     break;
@@ -93,8 +93,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
             if (this.ParameterSetName == BY_FOLDER)
             {
                 string formattedPath = this.ResolveAndFormatPath(this.Path);
-                _parameters
-                //_parameters.AddOrUpdate(QueryParameter.Create(FOLDER, formattedPath));
+                _parameters.AddOrUpdate(FOLDER, formattedPath);
             }
 
             string url = tag.GetUrl(_parameters);

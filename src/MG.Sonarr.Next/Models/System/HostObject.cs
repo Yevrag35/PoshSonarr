@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.System
@@ -24,7 +25,7 @@ namespace MG.Sonarr.Next.Models.System
         public HostObject()
             : base(CAPACITY)
         {
-            this.Conditionals = new(CONDITIONAL_CAPACITY, StringComparer.InvariantCultureIgnoreCase);
+            this.Conditionals = new(CONDITIONAL_CAPACITY, StringComparer.OrdinalIgnoreCase);
         }
 
         public override void Commit()
@@ -61,10 +62,9 @@ namespace MG.Sonarr.Next.Models.System
             this.TypeNames.Insert(0, _typeName);
         }
 
-        static readonly HashSet<string> _capitalProps = new(5)
-        {
+        static readonly HashSet<string> _capitalProps = [
             "AuthenticationMethod", "CertificateValidation", "LogLevel", "ProxyType", "UpdateMechanism",
-        };
+        ];
         public static IReadOnlySet<string> GetPropertiesToCapitalize()
         {
             return _capitalProps;
@@ -76,10 +76,10 @@ namespace MG.Sonarr.Next.Models.System
         IComparable<NoKeyHostObject>,
         ISerializableNames<NoKeyHostObject>
     {
-        static readonly string[] _removeProperties = new[]
-        {
+        static readonly ImmutableArray<string> _removeProperties =
+        [
             Constants.API_KEY, Constants.PASSWORD, Constants.PROXY_PASSWORD,
-        };
+        ];
         static readonly string _typeName = typeof(NoKeyHostObject).GetName();
 
         public int CompareTo(NoKeyHostObject? other)
@@ -109,7 +109,7 @@ namespace MG.Sonarr.Next.Models.System
         public override void Reset()
         {
             base.Reset();
-            this.Properties.RemoveMany(_removeProperties);
+            this.Properties.RemoveMany(_removeProperties.AsSpan());
         }
         private void StoreConditionals()
         {
@@ -121,7 +121,7 @@ namespace MG.Sonarr.Next.Models.System
                 }
             }
 
-            this.Properties.RemoveMany(_removeProperties);
+            this.Properties.RemoveMany(_removeProperties.AsSpan());
         }
         protected override void SetPSTypeName()
         {

@@ -1,6 +1,5 @@
 {
 	"CopyToOutput": [
-		"MG.Http.Urls",
 		"Microsoft.Extensions.Caching.Memory",
 		"Microsoft.Extensions.Caching.Abstractions",
 		"Microsoft.Extensions.DependencyInjection",

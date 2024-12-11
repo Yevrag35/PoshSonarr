@@ -118,7 +118,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         }
         public SonarrResponse SendTest(CancellationToken token = default)
         {
-            HttpResponseMessage response = null!;
+            HttpResponseMessage? response = null;
             using TestRequestMessage request = new(TEST_API, _scopeFactory);
 
             try
@@ -127,10 +127,15 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                 response = _client.Send(request, token);
                 if (response.IsSuccessStatusCode)
                 {
-                    SonarrStatus? status = TryParseForStatus(response, _options.ForDeserializing, token);
-                    SonarrAuthType authType = SonarrAuthType.None;
-                    _settings.AuthType = (status?.TryGetAuthType(out authType)).GetValueOrDefault() 
-                        ? authType : SonarrAuthType.None;
+                    SonarrAuthType authType = TryParseResponse(
+                        response,
+                        options: _options.ForDeserializing,
+                        result :out SonarrStatus? status,
+                        disposeResponse: false,
+                        cancellationToken: token)
+                        &&
+                        status.TryGetAuthType(out SonarrAuthType parsedAuth)
+                            ? parsedAuth : SonarrAuthType.None;
                 }
 
                 return response.IsSuccessStatusCode
@@ -140,36 +145,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             catch (Exception e)
             {
                 var result = SonarrResponse.FromException(TEST_API, e, ErrorCategory.ConnectionError, response?.StatusCode ?? HttpStatusCode.Unused, response);
-                response?.Dispose();
                 return result;
-            }
-        }
-
-        private static SonarrStatus? TryParseForStatus(HttpResponseMessage response, JsonSerializerOptions? options, CancellationToken token)
-        {
-            try
-            {
-                return response.Content.ReadFromJsonAsync<SonarrStatus>(options, token)
-                    .GetAwaiter().GetResult();
-            } 
-            catch
-            {
-                return null;
-            }
-            finally
-            {
-                response.Dispose();
-            }
-        }
-        private static SonarrServerError? ParseResponseForError(HttpResponseMessage? response, JsonSerializerOptions? options, CancellationToken token)
-        {
-            try
-            {
-                return response?.Content.ReadFromJsonAsync<SonarrServerError>(options, token).GetAwaiter().GetResult();
-            }
-            catch
-            {
-                return null;
             }
             finally
             {
@@ -188,7 +164,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             }
             catch (HttpRequestException httpEx)
             {
-                var pso = ParseResponseForError(response, _options.ForDeserializing, token);
+                _ = TryParseResponse(response, _options.ForDeserializing, out SonarrServerError? pso, disposeResponse: true, token);
                 SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
 
                 var result = SonarrResponse.FromException(path, sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);
@@ -219,7 +195,8 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             }
             catch (HttpRequestException httpEx)
             {
-                var pso = ParseResponseForError(response, _options.ForDeserializing, token);
+                //var pso = ParseResponseForError(response, _options.ForDeserializing, token);
+                _ = TryParseResponse(response, _options.ForDeserializing, out SonarrServerError? pso, disposeResponse: true, token);
                 SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
 
                 var result = SonarrResponse.FromException<T>(path, sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);
@@ -252,6 +229,29 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             JsonNode? node = JsonNode.Parse(response.Content.ReadAsStream(token));
             return
                 SonarrResponse.FromException(url, new HttpResponseException(node?.AsObject()["message"]?.ToJsonString(), response), ErrorCategory.ResourceUnavailable, response.StatusCode);
+        }
+
+        private static bool TryParseResponse<T>([NotNullWhen(true)] HttpResponseMessage? response, JsonSerializerOptions? options, [NotNullWhen(true)] out T? result, bool disposeResponse, CancellationToken cancellationToken)
+            where T : class?
+        {
+            try
+            {
+                result = response?.Content.ReadFromJsonAsync<T>(options, cancellationToken).GetAwaiter().GetResult();
+                return result is not null;
+            }
+            catch (Exception e)
+            {
+                Debug.Fail(e.Message);
+                result = null;
+                return false;
+            }
+            finally
+            {
+                if (disposeResponse)
+                {
+                    response?.Dispose();
+                }
+            }
         }
     }
 

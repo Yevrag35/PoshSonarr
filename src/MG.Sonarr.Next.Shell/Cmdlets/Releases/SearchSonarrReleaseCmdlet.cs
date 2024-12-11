@@ -1,7 +1,7 @@
-﻿using MG.Http.Urls.Queries;
-using MG.Sonarr.Next.Attributes;
+﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Releases;
+using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 
@@ -12,7 +12,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
     [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class SearchSonarrReleaseCmdlet : SonarrApiCmdletBase
     {
-        QueryParameterCollection QueryParams { get; set; } = null!;
+        QueryCol QueryParams { get; set; } = null!;
         MetadataTag Tag { get; set; } = null!;
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByEpisodeId")]
@@ -46,19 +46,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
         [Alias("Season")]
         [ValidateRange(ValidateRangeKind.NonNegative)]
         public int SeasonNumber { get; set; }
+        protected override int Capacity => 1;
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
             this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.RELEASE];
-            this.QueryParams = new();
+            this.QueryParams = this.GetPooledObject<QueryCol>();
+            this.SetReturnables(this.QueryParams);
         }
 
         protected override void Process(IServiceProvider provider)
         {
             this.QueryParams.Clear();
 
-            if (this.EpisodeId <= 0 && this.SeriesId <= 0)
+            if (this.EpisodeId == 0 && this.SeriesId == 0)
             {
                 return;
             }
@@ -79,12 +81,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
         {
             if (this.ParameterSetNameIsLike("ByEpisode*"))
             {
-                this.QueryParams.Add(nameof(this.EpisodeId), this.EpisodeId);
+                this.QueryParams.Add(Constants.EPISODE_ID, this.EpisodeId);
             }
             else
             {
-                this.QueryParams.Add(nameof(this.SeriesId), this.SeriesId);
-                this.QueryParams.Add(nameof(this.SeasonNumber), this.SeasonNumber);
+                this.QueryParams.Add(Constants.SERIES_ID_LOWERCASE, this.SeriesId);
+                this.QueryParams.Add(Constants.SEASON_NUMBER, this.SeasonNumber);
             }
             
             return this.Tag.GetUrl(this.QueryParams);

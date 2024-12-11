@@ -32,14 +32,14 @@
     <None Remove="PSTypes\SonarrObjects.Type.ps1xml" />
   </ItemGroup>
 
-	<Target Name="Cleanup" AfterTargets="Clean">
+	<!--<Target Name="Cleanup" AfterTargets="Clean">
 		<ItemGroup>
 			<FilesToDelete Include="$(TargetDir)\**\*.*" />
 		</ItemGroup>
 		<Delete Files="@(FilesToDelete)" />
 		<RemoveDir Directories="@(FoldersToDelete)" />
 		<Exec Command="pwsh.exe -File &quot;$(SolutionDir)\.tasks\clean_project.ps1&quot; -OutputPath &quot;$(TargetDir)&quot;" />
-	</Target>
+	</Target>-->
 
 	<Target Name="ReleaseModuleAfterBuild" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Release'">
 		<Exec Command="pwsh.exe -NoExit -File &quot;$(SolutionDir)\.tasks\publish_module.ps1&quot; -OutputPath &quot;$(TargetDir)&quot;" />
