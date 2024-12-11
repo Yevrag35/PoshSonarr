@@ -138,20 +138,9 @@ namespace MG.Sonarr.Next.Shell.Context
                                    return true;
                                });
                     });
-                    //.AddGenericObjectPool<QueryParameterCollection>(builder =>
-                    //{
-                    //    builder.SetConstructor(() => new QueryParameterCollection(10))
-                    //           .SetDeconstructor(col =>
-                    //           {
-                    //               col.Clear();
-                    //               return true;
-                    //           });
-                    //});
 
             AddPool<HashSet<Wildcard>, HashSetWildcardPool>(services);
             AddPool<SortedSet<int>, SortedIntSetPool>(services);
-            AddPool<PagingParameter, PagingPool>(services);
-            //AddPool<Stopwatch, StopwatchPool>(services);
         }
         private static void AddPool<T, TPool>(IServiceCollection services) 
             where TPool : class, IObjectPoolReturnable, IObjectPool<T>, new()

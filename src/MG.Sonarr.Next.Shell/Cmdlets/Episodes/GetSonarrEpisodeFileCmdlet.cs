@@ -1,8 +1,8 @@
-﻿using MG.Http.Urls.Queries;
-using MG.Sonarr.Next.Attributes;
+﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Episodes;
+using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -15,10 +15,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
     public sealed class GetSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
     {
         bool _disposed;
-        const int CAPACITY = 2;
-        protected override int Capacity => CAPACITY;
+        const int CAPACITY = 3;
         SortedSet<int> _ids = null!;
         SortedSet<int> _seriesIds = null!;
+        QueryCol _params = null!;
+
+        protected override int Capacity => CAPACITY;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByEpisodeFileInput")]
@@ -50,10 +52,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             var pool = provider.GetRequiredService<IObjectPool<SortedSet<int>>>();
             _ids = pool.Get();
             _seriesIds = pool.Get();
+            _params = this.GetPooledObject<QueryCol>();
 
-            var span = this.GetReturnables();
-            span[0] = _ids;
-            span[1] = _seriesIds;
+            this.SetReturnables(_ids, _seriesIds, _params);
         }
 
         private bool HasNoParameters()
@@ -70,14 +71,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         }
         protected override void Process(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.InputObject))
+            if (this.HasParameter(this.InputObject))
             {
                 _ids.UnionWith(
                     this.InputObject
                         .Where(x => x.EpisodeFileId > 0)
                             .Select(x => x.EpisodeFileId));
             }
-            else if (this.HasParameter(x => x.SeriesInput))
+            else if (this.HasParameter(this.SeriesInput))
             {
                 _seriesIds.UnionWith(
                     this.SeriesInput
@@ -127,7 +128,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 yield break;
             }
 
-            QueryParameterCollection queryCol = new();
             foreach (int id in seriesIds)
             {
                 queryCol.Add(Constants.SERIES_ID, id);

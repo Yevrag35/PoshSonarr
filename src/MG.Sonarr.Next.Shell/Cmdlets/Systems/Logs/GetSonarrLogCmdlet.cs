@@ -1,4 +1,4 @@
-﻿using MG.Http.Urls.Queries;
+﻿using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.System;
@@ -13,10 +13,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
     public sealed class GetSonarrLogCmdlet : SonarrMetadataCmdlet
     {
         protected override int Capacity => 1;
-        QueryParameterCollection _parameters = null!;
-        PagingParameter _paging = null!;
+        QueryCol _parameters = null!;
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter]
         [ValidateRange(ValidateRangeKind.Positive)]
         [PSDefaultValue(Value = 10)]
@@ -30,20 +28,22 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
 
         [Parameter]
         [Alias("Direction")]
+        [ValidateRange((int)ListSortDirection.Ascending, (int)ListSortDirection.Descending)]
         [PSDefaultValue(Value = ListSortDirection.Descending)]
-        public ListSortDirection SortDirection { get; set; }
+        public ListSortDirection SortDirection { get; set; } = ListSortDirection.Descending;
 
         [Parameter]
-        [PSDefaultValue(Value = "Time")]
-        public string SortKey { get; set; } = string.Empty;
+        [ValidateNotNullOrWhiteSpace]
+        [PSDefaultValue(Value = "time")]
+        public string SortKey { get; set; } = "time";
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _paging = this.GetPooledObject<PagingParameter>();
-            _paging.SortKey = "Time";
-            this.GetReturnables()[0] = _paging;
-            _parameters = new(2);
+
+            _parameters = this.GetPooledObject<QueryCol>();
+
+            this.SetReturnables(_parameters);
         }
         protected override void Begin(IServiceProvider provider)
         {
@@ -51,32 +51,27 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
         }
         private void SetPagingParams()
         {
-            if (this.HasParameter(x => x.PageNumber))
+            if (this.HasParameter(this.SortKey))
             {
-                _paging.Page = this.PageNumber;
+                
             }
 
-            if (this.HasParameter(x => x.PageSize))
+            if (this.HasParameter(this.PageNumber))
             {
-                _paging.PageSize = this.PageSize;
+                _parameters.Add(PagingConstants.PageNumber, this.PageNumber);
             }
 
-            if (this.HasParameter(x => x.SortDirection))
+            if (this.HasParameter(this.PageSize))
             {
-                _paging.SortDirection = this.SortDirection;
+                _parameters.Add(PagingConstants.PageSize, this.PageSize);
             }
 
-            if (this.HasParameter(x => x.SortKey))
-            {
-                _paging.SortKey = this.SortKey;
-            }
-
-            _parameters.AddOrUpdate(_paging);
+            _parameters.Add(PagingConstants.SortKey, this.SortKey);
+            _parameters.Add(PagingConstants.SortDirection, this.SortDirection, this.SortDirection.GetLength());
         }
 
         protected override void Process(IServiceProvider provider)
         {
-            this.WriteDebug(_paging.ToString(null, null));
             string url = this.Tag.GetUrl(_parameters);
             if (this.GetLogs(url, out var result))
             {

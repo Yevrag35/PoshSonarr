@@ -92,13 +92,17 @@ namespace MG.Sonarr.Next.Shell.Extensions
             return func(cmdlet).ToBool();
         }
 
-        public static bool HasParameter<T, TValue>(this T cmdlet, [NotNullWhen(true)] TValue? value, [CallerArgumentExpression(nameof(value))] string parameterName = "")
-            where T : PSCmdlet
-            where TValue : class
+        public static bool HasParameter<TValue>(this PSCmdlet cmdlet, TValue value, [CallerArgumentExpression(nameof(value))] string parameterName = "") where TValue : struct
         {
-            return cmdlet.MyInvocation.BoundParameters.ContainsKey(parameterName)
-                   &&
-                   value is not null;
+            return ContainsParameterKey(cmdlet.MyInvocation.BoundParameters, parameterName);
+        }
+        public static bool HasParameter(this PSCmdlet cmdlet, object? value, [CallerArgumentExpression(nameof(value))] string parameterName = "")
+        {
+            return ContainsParameterKey(cmdlet.MyInvocation.BoundParameters, parameterName);
+        }
+        public static bool HasNotNullParameter(this PSCmdlet cmdlet, [NotNullWhen(true)] object? value, [CallerArgumentExpression(nameof(value))] string parameterName = "")
+        {
+            return value is not null && HasParameter(cmdlet, value, parameterName);
         }
 
         public static bool ParameterSetNameIsLike(this PSCmdlet cmdlet, Wildcard wildString)
@@ -154,6 +158,29 @@ namespace MG.Sonarr.Next.Shell.Extensions
             }
 
             return resolution(boundValue, in defaultIfNotPresent);
+        }
+
+        private static bool ContainsParameterKey(Dictionary<string, object?> dictionary, string key)
+        {
+            ReadOnlySpan<char> keySpan = TrimProperties(key);
+            return dictionary.ContainsKey(keySpan);
+        }
+        private static bool TryGetParameterValue(Dictionary<string, object?> dictionary, string key, out object? value)
+        {
+            ReadOnlySpan<char> keySpan = TrimProperties(key);
+            return dictionary.TryGetValue(keySpan, out value);
+        }
+        private static bool TryGetParameterNonNullValue(Dictionary<string, object?> dictionary, string key, [NotNullWhen(true)] out object? value)
+        {
+            bool result = TryGetParameterValue(dictionary, key, out value);
+            return result && value is not null;
+        }
+        private static ReadOnlySpan<char> TrimProperties(ReadOnlySpan<char> value)
+        {
+            int index = value.LastIndexOf('.');
+            return index >= 0 && index < value.Length - 1
+                ? value.Slice(index + 1)
+                : value;
         }
     }
 }

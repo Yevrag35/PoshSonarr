@@ -16,7 +16,11 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
 
     private readonly List<IQueryField> _fields;
 
-    public IQueryField this[int index] => _fields[index];
+    public IQueryField this[int index]
+    {
+        get => _fields[index];
+        set => _fields[index] = value;
+    }
 
     public int Count => _fields.Count;
     public int MaxLength => _maxLength;
@@ -95,6 +99,12 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
         while (this.Count > 0 && this.Remove(key))
         {
         }
+    }
+    public void RemoveAt(int index)
+    {
+        ref readonly IQueryField field = ref CollectionsMarshal.AsSpan(_fields)[index];
+        _maxLength -= field.MaxLength;
+        _fields.RemoveAt(index);
     }
 
     public bool TryFormat(Span<char> destination, out int charsWritten)

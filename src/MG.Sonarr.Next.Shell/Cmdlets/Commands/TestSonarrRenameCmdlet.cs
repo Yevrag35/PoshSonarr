@@ -1,8 +1,8 @@
-﻿using MG.Http.Urls.Queries;
-using MG.Sonarr.Next.Attributes;
+﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Renames;
+using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 
@@ -15,7 +15,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
     [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class TestSonarrRenameCmdlet : SonarrApiCmdletBase
     {
-        QueryParameterCollection _params = null!;
+        QueryCol _params = null!;
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "BySeriesInput")]
         [ValidateId(ValidateRangeKind.Positive, typeof(ISeriesPipeable))]
@@ -39,38 +39,38 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
-            _params = this.GetPooledObject<QueryParameterCollection>();
-            this.GetReturnables()[0] = _params;
+            _params = this.GetPooledObject<QueryCol>();
+            this.SetReturnables(_params);
         }
 
         protected override void Begin(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.SeasonNumber))
+            if (this.HasParameter(this.SeasonNumber))
             {
-                _params.Add(nameof(this.SeasonNumber), this.SeasonNumber);
+                _params.Add("seasonNumber", this.SeasonNumber);
             }
         }
 
         protected override void Process(IServiceProvider provider)
         {
-            var parameter = QueryParameter.Create(nameof(this.SeriesId), this.SeriesId, LengthConstants.INT_MAX);
-            _params.AddOrUpdate(parameter);
+            int index = _params.Count;
+            _params.Add("seriesId", this.SeriesId);
 
             string url = GetUrl(_params);
             var response = this.SendGetRequest<MetadataList<RenameObject>>(url);
             _ = this.TryWriteObject(in response);
+            _params.RemoveAt(index);
         }
 
-        private static string GetUrl(QueryParameterCollection parameters)
+        private static string GetUrl(QueryCol parameters)
         {
             ReadOnlySpan<char> endpoint = Constants.RENAME.AsSpan();
             Span<char> span = stackalloc char[endpoint.Length + parameters.MaxLength + 1];
 
             int position = 0;
             endpoint.CopyToSlice(span, ref position);
-            span[position++] = '?';
 
-            _ = parameters.TryFormat(span.Slice(position), out int written, default, Statics.DefaultProvider);
+            _ = parameters.TryFormat(span.Slice(position), out int written);
             return new string(span.Slice(0, position + written));
         }
     }
