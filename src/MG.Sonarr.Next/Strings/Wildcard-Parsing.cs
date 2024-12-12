@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Components;
+using MG.Sonarr.Next.Extensions.Strings;
 using System.Text;
 
 namespace MG.Sonarr.Next.Strings;
@@ -63,6 +64,55 @@ public readonly partial struct Wildcard
 		result = Parse(s);
 		return !result.IsEmpty;
 	}
+
+	public static Wildcard ParseAs(WildcardMatchType matchType, params ReadOnlySpan<char> value)
+	{
+		Span<char> chars = stackalloc char[value.Length + 2];
+		int pos = 0;
+		switch (matchType)
+		{
+            case WildcardMatchType.None when !value.IsEmpty:
+				return Parse(value);
+
+            case WildcardMatchType.Like:
+				value = value.Trim('*');
+				chars[pos++] = '*';
+				value.CopyToSlice(chars, ref pos);
+                chars[pos++] = '*';
+				break;
+
+			case WildcardMatchType.StartsWith:
+				value = value.Trim('*');
+                value.CopyToSlice(chars, ref pos);
+				chars[pos++] = '*';
+				break;
+
+			case WildcardMatchType.EndsWith:
+				value = value.Trim('*');
+                chars[pos++] = '*';
+                value.CopyToSlice(chars, ref pos);
+				break;
+
+			case WildcardMatchType.Exact when value.Trim('*').ContainsAny(_wildcardChars):
+				throw new ArgumentException("An exact pattern cannot contain wildcard characters.", nameof(value));
+
+			case WildcardMatchType.Exact:
+				value = value.Trim('*');
+                value.CopyToSlice(chars, ref pos);
+				break;
+
+            case WildcardMatchType.All when value.Length == 1 && '*' == value[0]:
+                return All;
+
+			case WildcardMatchType.All:
+				throw new ArgumentException("An all pattern must only be a single '*' character.", nameof(value));
+
+			default:
+				return Empty;
+        }
+
+        return new(chars.Slice(0, pos), matchType);
+    }
 
 	#region I_SPAN_PARSABLE IMPLEMENTATIONS
 	/// <inheritdoc/>

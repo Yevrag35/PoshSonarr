@@ -7,20 +7,26 @@ using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
 {
-    [Cmdlet(VerbsCommon.Search, "SonarrRelease", DefaultParameterSetName = "ByEpisodeId")]
+    [Cmdlet(VerbsCommon.Search, "SonarrRelease", DefaultParameterSetName = ByEpisodeId)]
     [MetadataCanPipe(Tag = Meta.EPISODE)]
     [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class SearchSonarrReleaseCmdlet : SonarrApiCmdletBase
     {
-        QueryCol QueryParams { get; set; } = null!;
+        private const string ByEpisodeId = "ByEpisodeId";
+        private const string ByEpisodeInput = "ByEpisodeInput";
+        private const string BySeriesId = "BySeriesId";
+        private const string BySeriesInput = "BySeriesInput";
+        private static readonly Wildcard _byEpisodeWildcard = Wildcard.ParseAs(WildcardMatchType.StartsWith, ByEpisodeId.AsSpan(0, ByEpisodeId.Length - 2));
+
+        QueryCol _queryParams = null!;
         MetadataTag Tag { get; set; } = null!;
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByEpisodeId")]
+        [Parameter(Mandatory = true, Position = 0, ParameterSetName = ByEpisodeId)]
         [ValidateRange(ValidateRangeKind.Positive)]
         public int EpisodeId { get; set; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByEpisodeInput")]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = ByEpisodeInput)]
         [ValidateId(ValidateRangeKind.Positive, typeof(IReleasePipeableByEpisode))]
         public IReleasePipeableByEpisode Episode
         {
@@ -28,12 +34,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
             set => this.EpisodeId = value?.EpisodeId ?? 0;
         }
 
-        [Parameter(Mandatory = true, ParameterSetName = "BySeriesId")]
+        [Parameter(Mandatory = true, ParameterSetName = BySeriesId)]
         [ValidateRange(ValidateRangeKind.Positive)]
         public int SeriesId { get; set; }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "BySeriesInput")]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BySeriesInput)]
         [ValidateId(ValidateRangeKind.Positive, typeof(IReleasePipeableBySeries))]
         public IReleasePipeableBySeries Series
         {
@@ -41,8 +47,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
             set => this.SeriesId = value?.SeriesId ?? 0;
         }
 
-        [Parameter(Mandatory = true, ParameterSetName = "BySeriesId")]
-        [Parameter(Mandatory = true, ParameterSetName = "BySeriesInput")]
+        [Parameter(Mandatory = true, ParameterSetName = BySeriesId)]
+        [Parameter(Mandatory = true, ParameterSetName = BySeriesInput)]
         [Alias("Season")]
         [ValidateRange(ValidateRangeKind.NonNegative)]
         public int SeasonNumber { get; set; }
@@ -52,13 +58,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
         {
             base.OnCreatingScope(provider);
             this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.RELEASE];
-            this.QueryParams = this.GetPooledObject<QueryCol>();
-            this.SetReturnables(this.QueryParams);
+            _queryParams = this.GetPooledObject<QueryCol>();
+            this.SetReturnables(_queryParams);
         }
 
         protected override void Process(IServiceProvider provider)
         {
-            this.QueryParams.Clear();
+            _queryParams.Clear();
 
             if (this.EpisodeId == 0 && this.SeriesId == 0)
             {
@@ -79,17 +85,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
 
         private string GetUrl()
         {
-            if (this.ParameterSetNameIsLike("ByEpisode*"))
+            if (this.ParameterSetNameIsLike(_byEpisodeWildcard))
             {
-                this.QueryParams.Add(Constants.EPISODE_ID, this.EpisodeId);
+                _queryParams.Add(Constants.EPISODE_ID, this.EpisodeId);
             }
             else
             {
-                this.QueryParams.Add(Constants.SERIES_ID_LOWERCASE, this.SeriesId);
-                this.QueryParams.Add(Constants.SEASON_NUMBER, this.SeasonNumber);
+                _queryParams.Add(Constants.SERIES_ID_LOWERCASE, this.SeriesId);
+                _queryParams.Add(Constants.SEASON_NUMBER, this.SeasonNumber);
             }
             
-            return this.Tag.GetUrl(this.QueryParams);
+            return this.Tag.GetUrl(_queryParams);
         }
     }
 }
