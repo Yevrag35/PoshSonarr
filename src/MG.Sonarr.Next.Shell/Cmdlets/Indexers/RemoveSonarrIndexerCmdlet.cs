@@ -16,11 +16,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        public int[] Id { get; set; } = [];
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
         [ValidateIds(ValidateRangeKind.Positive)]
-        public IndexerObject[] InputObject { get; set; } = Array.Empty<IndexerObject>();
+        public IndexerObject[] InputObject { get; set; } = [];
 
         [Parameter]
         public SwitchParameter Force { get; set; }
@@ -34,7 +34,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            this.GetReturnables()[0] = _ids;
+            this.SetReturnables(_ids);
         }
 
         protected override void Begin(IServiceProvider provider)

@@ -146,6 +146,15 @@ namespace MG.Sonarr.Next.Shell.Context
                                    col.Clear();
                                    return true;
                                });
+                    })
+                    .AddGenericObjectPool<Dictionary<string, ITagPipeable>>(builder =>
+                    {
+                        builder.SetConstructor(() => new(5, StringComparer.OrdinalIgnoreCase))
+                               .SetDeconstructor(dict =>
+                               {
+                                   dict.Clear();
+                                   return true;
+                               });
                     });
 
             AddPool<HashSet<Wildcard>, HashSetWildcardPool>(services);

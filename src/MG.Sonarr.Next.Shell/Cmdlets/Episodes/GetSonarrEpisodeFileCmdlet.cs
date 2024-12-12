@@ -35,12 +35,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByEpisodeFileId")]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        public int[] Id { get; set; } = [];
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = "BySeriesId")]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] SeriesId { get; set;  } = Array.Empty<int>();
+        public int[] SeriesId { get; set; } = Array.Empty<int>();
 
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {

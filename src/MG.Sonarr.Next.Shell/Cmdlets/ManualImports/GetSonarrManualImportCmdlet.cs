@@ -22,6 +22,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
         const int CAPACITY = 1;
         QueryCol _parameters = null!;
 
+        protected override int Capacity => CAPACITY;
+
         [Parameter(
             Mandatory = true,
             Position = 0,

@@ -5,6 +5,7 @@ using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
@@ -25,26 +26,25 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
         [ValidateIds(ValidateRangeKind.Positive, typeof(ITagPipeable))]
-        public ITagPipeable[] InputObject { get; set; } = Array.Empty<ITagPipeable>();
+        public ITagPipeable[] InputObject { get; set; } = [];
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        public int[] Id { get; set; } = [];
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Position = 0)]
-        public IntOrString[] Name { get; set; } = Array.Empty<IntOrString>();
+        public Either<string, int>[] Name { get; set; } = [];
 
-        protected override int Capacity => 2;
+        protected override int Capacity => 3;
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
             _resolveNames = this.GetPooledObject<HashSet<Wildcard>>();
-            var span = this.GetReturnables();
-            span[0] = _ids;
-            span[1] = _resolveNames;
-            _updates = new(1, StringComparer.InvariantCultureIgnoreCase);
+            _updates = this.GetPooledObject<Dictionary<string, ITagPipeable>>();
+
+            this.SetReturnables(_ids, _resolveNames, _updates);
         }
 
         private void AddUrlsFromMetadata(ITagPipeable[] pipeables)
@@ -62,11 +62,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
         protected override void Begin(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.Id))
+            if (this.HasParameter(this.Id))
             {
                 _ids.UnionWith(this.Id);
             }
-            else if (this.HasParameter(x => x.Name))
+            else if (this.HasParameter(this.Name))
             {
                 this.Name.SplitToSets(_ids, _resolveNames);
             }

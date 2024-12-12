@@ -9,6 +9,7 @@ using System.Net;
 using MG.Sonarr.Next.Json;
 using System.Text.Json;
 using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Services.Jobs;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
 {
@@ -20,7 +21,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
     {
         bool _noFileName;
         ISonarrDownloadClient Downloader { get; set; } = null!;
-        Queue<IApiCmdlet> Queue { get; set; } = null!;
+        ApiCmdletQueue Queue { get; set; } = null!;
 
         [Parameter(Mandatory = true, ParameterSetName = "ByExplicitUrl")]
         [ValidateUrl(UriKind.Relative)]
@@ -58,7 +59,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
         {
             base.OnCreatingScope(provider);
             this.Downloader = provider.GetRequiredService<ISonarrDownloadClient>();
-            this.Queue = provider.GetRequiredService<Queue<IApiCmdlet>>();
+            this.Queue = provider.GetRequiredService<ApiCmdletQueue>();
         }
 
         protected override void Begin(IServiceProvider provider)

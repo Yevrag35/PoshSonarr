@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
     {
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
         [ValidateIds(ValidateRangeKind.Positive)]
-        public EpisodeObject[] InputObject { get; set; } = Array.Empty<EpisodeObject>();
+        public EpisodeObject[] InputObject { get; set; } = [];
 
         protected override void Process(IServiceProvider provider)
         {

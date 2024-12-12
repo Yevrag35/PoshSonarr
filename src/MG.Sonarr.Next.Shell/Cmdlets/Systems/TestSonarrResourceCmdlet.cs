@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Services.Http;
+using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Services.Testing;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
@@ -15,17 +16,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
         const string TEST = "/test";
         const string TEST_ALL = "/testall";
         ITestingService _tester = null!;
-        Queue<IApiCmdlet> _queue = null!;
+        ApiCmdletQueue _queue = null!;
 
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
         [ValidateNotNull]
         [ValidateIds(ValidateRangeKind.Positive, typeof(ITestPipeable))]
-        public ITestPipeable[] InputObject { get; set; } = Array.Empty<ITestPipeable>();
+        public ITestPipeable[] InputObject { get; set; } = [];
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _queue = provider.GetRequiredService<Queue<IApiCmdlet>>();
+            _queue = provider.GetRequiredService<ApiCmdletQueue>();
             _tester = provider.GetRequiredService<ITestingService>();
         }
 
@@ -35,7 +36,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
             {
                 _queue.Enqueue(this);
                 this.StartTimer();
-                var response = this.SendSingleTest(testable);
+                SonarrResponse response = this.SendSingleTest(testable);
                 var obj = new
                 {
                     testable.Id,

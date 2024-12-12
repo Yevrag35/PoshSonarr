@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Models.Indexers;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
 {
@@ -13,10 +14,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
         HashSet<Wildcard> _wcNames = null!;
 
         [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        public int[] Id { get; set; } = [];
 
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByIndexerNameOrId")]
-        public IntOrString[] Name { get; set; } = Array.Empty<IntOrString>();
+        public Either<string, int>[] Name { get; set; } = [];
          
         protected override int Capacity => 2;
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
@@ -28,17 +29,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
             _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
-            var span = this.GetReturnables();
-            //this.Returnables[1] = _wcNames; 
 
-            span[0] = _ids;
-            span[1] = _wcNames;
+            this.SetReturnables(_ids, _wcNames);
         }
 
         protected override void Begin(IServiceProvider provider)
         {
             _ids.UnionWith(this.Id);
-            if (this.HasParameter(x => x.Name))
+            if (this.HasParameter(this.Name))
             {
                 this.Name.SplitToSets(_ids, _wcNames,
                     this.MyInvocation.Line.Contains(" -Name ", StringComparison.OrdinalIgnoreCase));
@@ -54,7 +52,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
             this.WriteCollection(indexers);
         }
 
-        private IEnumerable<IndexerObject> GetByName(IReadOnlySet<Wildcard> names, IReadOnlySet<int> ids)
+        private MetadataList<IndexerObject> GetByName(HashSet<Wildcard> names, SortedSet<int> ids)
         {
             var response = this.GetAll<IndexerObject>();
             if (response.Count <= 0 || names.Count <= 0)

@@ -29,36 +29,30 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [ValidateId(ValidateRangeKind.Positive, InputNullBehavior.PassAsZero)]
         [ValidateType(typeof(int), typeof(SeriesObject))]
-        public object Series
+        public Either<int, SeriesObject> Series
         {
-            get => null!;
-            set => _series = value is int seriesId
-                ? seriesId
-                : (SeriesObject)value;
+            get => _series;
+            set => _series = value;
         }
 
         [Parameter]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [ValidateId(ValidateRangeKind.Positive, InputNullBehavior.PassAsZero)]
         [ValidateType(typeof(int), typeof(EpisodeObject))]
-        public object Episode
+        public Either<int, EpisodeObject> Episode
         {
-            get => null!;
-            set => _episode = value is int episodeId
-                ? episodeId
-                : (EpisodeObject)value;
+            get => _episode;
+            set => _episode = value;
         }
 
         [Parameter]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [ValidateId(ValidateRangeKind.Positive, InputNullBehavior.PassAsZero)]
         [ValidateType(typeof(int), typeof(QualityRevisionObject))]
-        public object Quality
+        public Either<int, QualityRevisionObject> Quality
         {
-            get => null!;
-            set => _quality = value is int qualityId
-                ? qualityId
-                : (QualityRevisionObject)value;
+            get => _quality;
+            set => _quality = value;
         }
 
         [Parameter]

@@ -39,14 +39,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
         protected override void Begin(IServiceProvider provider)
         {
             _ids.UnionWith(this.Id);
-            if (this.MyInvocation.BoundParameters.ContainsKey(nameof(this.Name)))
+            if (this.HasParameter(this.Name))
             {
                 this.Name.SplitToSets(_ids, _wcNames);
             }
         }
         protected override void Process(IServiceProvider provider)
         {
-            IEnumerable<DownloadClientObject> dlObjs = _ids.Count > 0 && _wcNames.Count == 0
+            IList<DownloadClientObject> dlObjs = _ids.Count > 0 && _wcNames.Count == 0
                 ? this.GetById<DownloadClientObject>(_ids)
                 : this.GetByName(_wcNames, _ids);
 
