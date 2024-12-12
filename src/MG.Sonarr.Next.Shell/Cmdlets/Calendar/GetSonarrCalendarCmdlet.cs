@@ -77,12 +77,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 
         protected override void Begin(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.Today))
+            if (this.HasParameter(this.Today))
             {
                 this.StartDate = DateTime.Today;
                 this.EndDate = this.StartDate.AddDays(1d).AddSeconds(-1d);
             }
-            else if (this.HasParameter(x => x.Tomorrow))
+            else if (this.HasParameter(this.Tomorrow))
             {
                 this.StartDate = DateTime.Today.AddDays(1d);
                 this.EndDate = this.StartDate.AddDays(1d).AddSeconds(-1d);

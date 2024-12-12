@@ -21,7 +21,7 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
     }
 
     public int Count => _fields.Count;
-    public int MaxLength => _maxLength;
+    public int MaxLength => _maxLength + 1 + Math.Max(0, this.Count - 1);
 
     [DebuggerStepThrough]
     public QueryCol()

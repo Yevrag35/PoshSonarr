@@ -31,6 +31,7 @@ public readonly struct BooleanQueryField : IQueryField, IEnumerable<Either<strin
         _key = key;
         _value = value;
         _maxLength = key.Length + 1 + s_False.Length;
+        _isNotEmpty = true;
     }
 
     [DebuggerStepThrough]

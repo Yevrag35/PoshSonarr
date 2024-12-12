@@ -51,11 +51,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
         }
         private void SetPagingParams()
         {
-            if (this.HasParameter(this.SortKey))
-            {
-                
-            }
-
             if (this.HasParameter(this.PageNumber))
             {
                 _parameters.Add(PagingConstants.PageNumber, this.PageNumber);

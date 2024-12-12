@@ -21,11 +21,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
             var history = provider.GetRequiredService<ICommandHistory>();
 
             IEnumerable<ICommand> commands;
-            if (this.HasParameter(x => x.Refresh, false))
+            if (this.HasParameter(x => x.Refresh, onlyIfPresent: false))
             {
                 commands = this.RefreshUnfinished(provider, history);
             }
-            else if (!this.HasParameter(x => x.All, false))
+            else if (!this.HasParameter(x => x.All, onlyIfPresent: false))
             {
                 commands = history.Where(x => !x.IsCompleted);
             }
