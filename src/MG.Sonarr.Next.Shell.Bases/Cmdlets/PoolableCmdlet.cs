@@ -153,7 +153,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
                 if (disposing && this.IsScopeInitialized && _isRented)
                 {
                     var returner = this.Services.GetService<IPoolReturner>();
-                    returner?.Return(this.GetAllReturnables());
+                    ReadOnlySpan<object> returnables = this.GetAllReturnables();
+                    returner?.Return(returnables);
                     ArrayPool<object>.Shared.Return(_rented);
                 }
 
