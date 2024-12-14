@@ -22,8 +22,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     [OutputType(typeof(ISeriesOutput))]
     public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
     {
+        static readonly string _namePropertyName = nameof(Name);
         SortedSet<int> _ids = null!;
-        WildcardSet _names = null!;
+        WildcardSet _wcNames = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesName")]
@@ -40,25 +41,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             ValueFromPipeline = true)]
         [ValidateIds(ValidateRangeKind.Positive, typeof(ISeriesPipeable))]
         public ISeriesPipeable[] InputObject { get; set; } = [];
-        //{
-        //    get => Array.Empty<ISeriesPipeable>();
-        //    set
-        //    {
-        //        if (value is not null)
-        //        {
-        //            _ids ??= new();
-        //            _ids.UnionWith(value.Select(x => x.SeriesId));
-        //        }
-        //    }
-        //}
 
         protected override int Capacity => 2;
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            _names = this.GetPooledObject<WildcardSet>();
-            this.SetReturnables(_ids, _names);
+            _wcNames = this.GetPooledObject<WildcardSet>();
+            this.SetReturnables(_ids, _wcNames);
         }
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {
@@ -77,7 +67,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
             else
             {
-                this.Name.SplitToSets(_ids, _names);
+                this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
             }
 
             bool hadIds = false;
@@ -96,9 +86,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 }
             }
 
-            if (_names.Count > 0)
+            if (_wcNames.Count > 0)
             {
-                var response = this.GetSeriesByName<SeriesObject>(_names);
+                var response = this.GetSeriesByName<SeriesObject>(_wcNames);
                 if (response.IsError)
                 {
                     this.StopCmdlet(response.Error);
@@ -168,7 +158,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             if (disposing && !_disposed)
             {
                 _ids = null!;
-                _names = null!;
+                _wcNames = null!;
                 _disposed = true;
             }
 

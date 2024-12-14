@@ -11,6 +11,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
     [Cmdlet(VerbsCommon.Get, "SonarrIndexer")]
     public sealed class GetSonarrIndexerCmdlet : SonarrMetadataCmdlet
     {
+        static readonly string _namePropertyName = nameof(Name);
+
         SortedSet<int> _ids = null!;
         WildcardSet _wcNames = null!;
 
@@ -39,14 +41,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
             _ids.UnionWith(this.Id);
             if (this.HasParameter(this.Name))
             {
-                this.Name.SplitToSets(_ids, _wcNames,
-                    this.MyInvocation.Line.Contains(" -Name ", StringComparison.OrdinalIgnoreCase));
+                this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
             }
         }
 
         protected override void Process(IServiceProvider provider)
         {
-            IList<IndexerObject> indexers = _ids.Count > 0
+            IList<IndexerObject> indexers = _ids.Count > 0 && _wcNames.Count == 0
                 ? this.GetById<IndexerObject>(_ids)
                 : this.GetByName(_wcNames, _ids);
 
@@ -56,7 +57,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
         private MetadataList<IndexerObject> GetByName(WildcardSet names, SortedSet<int> ids)
         {
             var response = this.GetAll<IndexerObject>();
-            if (response.Count <= 0 || names.Count <= 0)
+            if (response.Count == 0 || names.Count == 0)
             {
                 return response;
             }
@@ -64,8 +65,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
             for (int i = response.Count - 1; i >= 0; i--)
             {
                 var item = response[i];
-                if (ids.Contains(item.Id)
-                    ||
+                if (!ids.Contains(item.Id)
+                    &&
                     !names.IsAnyMatch(item.Name))
                 {
                     response.RemoveAt(i);

@@ -20,6 +20,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     [MetadataCanPipe(Tag = Meta.SERIES_ADD)]
     public sealed class ClearSonarrTagCmdlet : SonarrMetadataCmdlet
     {
+        static readonly string _namePropertyName = nameof(Name);
         SortedSet<int> _ids = null!;
         WildcardSet _wcNames = null!;
         Dictionary<string, ITagPipeable> _updates = null!;
@@ -48,14 +49,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             this.SetReturnables(_ids, _wcNames, _updates);
         }
 
-        private static void AddUrlsFromMetadata(ITagPipeable[] array, IDictionary<string, ITagPipeable> updates)
+        private static void AddUrlsFromMetadata(ITagPipeable[] array, Dictionary<string, ITagPipeable> updates)
         {
             foreach (ITagPipeable pipeable in array)
             {
                 updates.TryAdd(pipeable.MetadataTag.GetUrlForId(pipeable.Id), pipeable);
             }
 
-            if (updates.Count <= 0)
+            if (updates.Count == 0)
             {
                 throw new ArgumentException(
                     "No tag ID's were provided from the pipeline. Did you mean to use \"Clear-SonarrTag\"?");
@@ -75,7 +76,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             }
             else if (this.HasParameter(this.Name))
             {
-                this.Name.SplitToSets(_ids, _wcNames);
+                this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
             }
 
             if (_wcNames.Count > 0)

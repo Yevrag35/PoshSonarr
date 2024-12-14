@@ -9,6 +9,7 @@ using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Services.Testing;
 using MG.Sonarr.Next.Services.Time;
 using MG.Sonarr.Next.Shell.Exceptions;
+using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Pools;
 using MG.Sonarr.Next.Strings;
 using System.Reflection;
@@ -54,7 +55,7 @@ namespace MG.Sonarr.Next.Shell.Context
             //    throw new InvalidOperationException("Don't execute me weird.");
             //}
 
-            return SonarrContext.Initialize(cmdlet.GetConnectionSettings(), cmdletAssembly, addAdditionalServices);
+            return SonarrContext.Initialize(cmdlet.GetConnectionSettings(), cmdletAssembly, cmdlet.MyInvocation.BoundParameters, addAdditionalServices);
         }
         internal static void UnsetContext<T>(this T _) where T : IDisconnectContextCmdlet, IScopeCmdlet<T>
         {
@@ -85,8 +86,11 @@ namespace MG.Sonarr.Next.Shell.Context
             _provider = null!;
         }
 
-        internal static IServiceScope Initialize(IConnectionSettings settings, Assembly cmdletAssembly, Action<IServiceCollection> configureServices)
+        internal static IServiceScope Initialize(IConnectionSettings settings, Assembly cmdletAssembly, Dictionary<string, object?> boundParameters, Action<IServiceCollection> configureServices)
         {
+            bool canCheck = InvocationInfoExtensions.CheckCanCheckPositionalBinding(boundParameters);
+            Debug.Assert(canCheck);
+
             if (_provider is not null)
             {
                 return _provider.CreateScope();

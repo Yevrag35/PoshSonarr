@@ -13,6 +13,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
     public sealed class GetSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
     {
         const int CAPACITY = 2;
+        static readonly string _namePropertyName = nameof(Name);
+
         SortedSet<int> _ids = null!;
         WildcardSet _wcNames = null!;
         protected override int Capacity => CAPACITY;
@@ -42,7 +44,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
             _ids.UnionWith(this.Id);
             if (this.HasParameter(this.Name))
             {
-                this.Name.SplitToSets(_ids, _wcNames);
+                this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
             }
         }
         protected override void Process(IServiceProvider provider)

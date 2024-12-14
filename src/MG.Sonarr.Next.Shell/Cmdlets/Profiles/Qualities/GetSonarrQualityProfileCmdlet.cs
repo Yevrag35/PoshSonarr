@@ -15,6 +15,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities
     [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
     {
+        static readonly string _namePropertyName = nameof(Name);
         SortedSet<int> _ids = null!;
         WildcardSet _wcNames = null!;
 
@@ -52,8 +53,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities
             _ids.UnionWith(this.Id);
             if (this.HasParameter(x => x.Name))
             {
-                this.Name.SplitToSets(_ids, _wcNames,
-                    this.MyInvocation.Line.Contains(" -Name ", StringComparison.InvariantCultureIgnoreCase));
+                if (this.HasParameter(this.Name))
+                {
+                    this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
+                }
             }
         }
         protected override void Process(IServiceProvider provider)

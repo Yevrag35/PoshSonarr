@@ -20,8 +20,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     [MetadataCanPipe(Tag = Meta.SERIES_ADD)]
     public sealed class AddSonarrTagCmdlet : SonarrMetadataCmdlet
     {
+        static readonly string _namePropertyName = nameof(Name);
         SortedSet<int> _ids = null!;
-        WildcardSet _resolveNames = null!;
+        WildcardSet _wcNames = null!;
         Dictionary<string, ITagPipeable> _updates = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -42,10 +43,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            _resolveNames = this.GetPooledObject<WildcardSet>();
+            _wcNames = this.GetPooledObject<WildcardSet>();
             _updates = this.GetPooledObject<Dictionary<string, ITagPipeable>>();
 
-            this.SetReturnables(_ids, _resolveNames, _updates);
+            this.SetReturnables(_ids, _wcNames, _updates);
         }
 
         private void AddUrlsFromMetadata(ITagPipeable[] pipeables)
@@ -69,16 +70,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             }
             else if (this.HasParameter(this.Name))
             {
-                this.Name.SplitToSets(_ids, _resolveNames);
+                this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
             }
 
-            if (_resolveNames.Count > 0)
+            if (_wcNames.Count > 0)
             {
                 var all = this.GetAll<TagObject>();
 
                 foreach (var tag in all)
                 {
-                    if (_resolveNames.IsAnyMatch(tag.Label))
+                    if (_wcNames.IsAnyMatch(tag.Label))
                     {
                         _ = _ids.Add(tag.Id);
                     }
@@ -150,7 +151,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             if (disposing && !_disposed)
             {
                 _ids = null!;
-                _resolveNames = null!;
+                _wcNames = null!;
                 _disposed = true;
             }
 

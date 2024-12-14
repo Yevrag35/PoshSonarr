@@ -12,6 +12,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
     [Alias("Get-SonarrQuality")]
     public sealed class GetSonarrQualityDefinitionCmdlet : SonarrMetadataCmdlet
     {
+        static readonly string _namePropertyName = nameof(Name);
         SortedSet<int> _ids = null!;
         WildcardSet _wcNames = null!;
         List<QualityDefinitionObject> _list = null!;
@@ -32,7 +33,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            //_wcNames = this.GetPooledObject<HashSet<Wildcard>>();
             _wcNames = this.GetPooledObject<WildcardSet>();
             this.SetReturnables(_ids, _wcNames);
             _list = new(1);
@@ -48,8 +48,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
 
             if (this.HasParameter(this.Name))
             {
-                this.Name.SplitToSets(_ids, _wcNames,
-                    this.MyInvocation.Line.Contains(NAME, StringComparison.InvariantCultureIgnoreCase));
+                this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
             }
         }
         protected override void Process(IServiceProvider provider)
