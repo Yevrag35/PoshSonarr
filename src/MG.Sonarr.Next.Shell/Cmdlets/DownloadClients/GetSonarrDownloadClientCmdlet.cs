@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.DownloadClients;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
@@ -13,7 +14,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
     {
         const int CAPACITY = 2;
         SortedSet<int> _ids = null!;
-        HashSet<Wildcard> _wcNames = null!;
+        WildcardSet _wcNames = null!;
         protected override int Capacity => CAPACITY;
 
         [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
@@ -27,7 +28,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
             base.OnCreatingScope(provider);
 
             _ids = this.GetPooledObject<SortedSet<int>>();
-            _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
+            _wcNames = this.GetPooledObject<WildcardSet>();
 
             this.SetReturnables(_ids, _wcNames);
         }
@@ -53,12 +54,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
             this.WriteCollection(dlObjs);
         }
 
-        private MetadataList<DownloadClientObject> GetByName(HashSet<Wildcard> names, SortedSet<int> ids)
+        private MetadataList<DownloadClientObject> GetByName(WildcardSet names, SortedSet<int> ids)
         {
             var all = this.GetAll<DownloadClientObject>();
             if (all.Count > 0 && (names.Count > 0 || ids.Count > 0))
             {
-                _ = all.RemoveAll(x => !ids.Contains(x.Id) && !names.AnyValueLike(x.Name));
+                _ = all.RemoveAll(x => !ids.Contains(x.Id) && !names.IsAnyMatch(x.Name));
             }
 
             return all;

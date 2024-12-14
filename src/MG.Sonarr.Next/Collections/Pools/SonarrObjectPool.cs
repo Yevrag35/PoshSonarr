@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using Microsoft.Extensions.ObjectPool;
+using System.Collections.Concurrent;
 
 namespace MG.Sonarr.Next.Collections.Pools
 {
@@ -37,43 +38,58 @@ namespace MG.Sonarr.Next.Collections.Pools
         /// Returns an object back into the pool.
         /// </summary>
         /// <param name="item">The object to return.</param>
-        void Return(T item);
+        void Return(T? item);
+    }
+
+    public interface IQuickPool<T> : IObjectPool<T> where T : notnull, IResettable
+    {
     }
 
     /// <summary>
     /// A base class allowing for pooling of objects.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of objects the pool manages.</typeparam>
     public abstract class SonarrObjectPool<T> : IObjectPoolReturnable, IObjectPool<T> where T : notnull
     {
-        readonly ConcurrentBag<T> _bag;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private readonly Type _genericType;
+
+        private readonly ConcurrentBag<T> _bag;
         /// <summary>
         /// The maximum number of objects to kept in the pool at any one time.
         /// </summary>
         protected abstract int MaxPoolCapacity { get; }
-        public Type ReturnsType => typeof(T);
+        Type IObjectPoolReturnable.ReturnsType
+        {
+            [DebuggerStepThrough]
+            get => _genericType;
+        }
 
         /// <summary>
         /// The default constructor initializing an empty pool.
         /// </summary>
+        [DebuggerStepThrough]
         protected SonarrObjectPool()
         {
-            _bag = new();
+            _bag = [];
+            _genericType = typeof(T);
         }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SonarrObjectPool{T}"/> class that contains an initial
-        /// pool of objects copied from the specified collection.
-        /// </summary>
-        /// <param name="initialItems">
-        ///     The collection whose elements are copied into the
-        ///     new <see cref="SonarrObjectPool{T}"/>.
-        /// </param>
-        protected SonarrObjectPool(IEnumerable<T> initialItems)
-        {
-            initialItems ??= Enumerable.Empty<T>();
-            _bag = new(initialItems);
-        }
+        ///// <summary>
+        ///// Initializes a new instance of the <see cref="SonarrObjectPool{T}"/> class that contains an initial
+        ///// pool of objects copied from the specified collection.
+        ///// </summary>
+        ///// <param name="initialItems">
+        /////     The collection whose elements are copied into the
+        /////     new <see cref="SonarrObjectPool{T}"/>.
+        ///// </param>
+        //protected SonarrObjectPool(IEnumerable<T>? initialItems)
+        //{
+        //    _bag = initialItems is null
+        //        ? []
+        //        : new(initialItems);
+        //}
 
+        [DebuggerStepThrough]
         public T Get()
         {
             return this.GetItemFromBag();
@@ -92,6 +108,7 @@ namespace MG.Sonarr.Next.Collections.Pools
         /// </summary>
         /// <param name="wasConstructed">A flag that indicates whether the item was constructed.</param>
         /// <returns>A new or retrieved item from the pool.</returns>
+        [DebuggerStepThrough]
         protected T GetItemFromBag(out bool wasConstructed)
         {
             wasConstructed = false;
@@ -108,27 +125,31 @@ namespace MG.Sonarr.Next.Collections.Pools
         /// Returns an item back to the pool.
         /// </summary>
         /// <remarks>
-        ///     If the item fails to be reset or the pool is at its max capacity, it will not be returned.
+        ///     If the item is <see langword="null"/>, fails to be reset, or the pool is at its max capacity, it will not be returned.
         /// </remarks>
         /// <param name="item">The object to return.</param>
-        public void Return([MaybeNull] T item)
+        public void Return(T? item)
         {
-            if (item is null)
+            if (item is not null)
             {
-                return;
+                this.ReturnCore(item);
             }
-
+        }
+        private void ReturnCore([DisallowNull] T item)
+        {
             int count = _bag.Count;
             if (count < this.MaxPoolCapacity && this.ResetObject(item))
             {
                 _bag.Add(item);
             }
         }
+        /// <inheritdoc/>
+        [DebuggerStepThrough]
         void IObjectPoolReturnable.Return(object? obj)
         {
             if (obj is T item)
             {
-                this.Return(item: item);
+                this.ReturnCore(item);
             }
         }
 

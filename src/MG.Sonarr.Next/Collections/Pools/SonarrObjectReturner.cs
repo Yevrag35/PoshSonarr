@@ -21,15 +21,18 @@ namespace MG.Sonarr.Next.Collections.Pools
         void Return(ReadOnlySpan<object> span);
     }
 
-    file sealed class SonarrObjectReturner : IPoolReturner
+    internal sealed class SonarrObjectReturner : IPoolReturner
     {
         readonly Dictionary<Type, IObjectPoolReturnable> _dict;
 
         public SonarrObjectReturner(IEnumerable<IObjectPoolReturnable> returnables)
         {
-            returnables ??= Enumerable.Empty<IObjectPoolReturnable>();
+            ArgumentNullException.ThrowIfNull(returnables);
 
-            _dict = new(returnables.TryGetNonEnumeratedCount(out int count) ? count : 0);
+            _dict = returnables.TryGetNonEnumeratedCount(out int count)
+                ? new(count)
+                : [];
+
             foreach (IObjectPoolReturnable pool in returnables)
             {
                 _dict.Add(pool.ReturnsType, pool);
@@ -38,15 +41,8 @@ namespace MG.Sonarr.Next.Collections.Pools
 
         public void Return(object? obj)
         {
-            if (obj is null)
+            if (obj is null || !_dict.TryGetValue(obj.GetType(), out IObjectPoolReturnable? pool))
             {
-                Debug.Fail("Should this really be null?");
-                return;
-            }
-
-            if (!_dict.TryGetValue(obj.GetType(), out IObjectPoolReturnable? pool))
-            {
-                Debug.Fail("Couldn't find an object returner.");
                 return;
             }
 
@@ -56,7 +52,6 @@ namespace MG.Sonarr.Next.Collections.Pools
         {
             if (span.IsEmpty)
             {
-                Debug.Fail("Should this really be empty?");
                 return;
             }
 

@@ -1,3 +1,4 @@
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
@@ -11,6 +12,7 @@ using MG.Sonarr.Next.Services.Time;
 using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Shell.Pools;
 using MG.Sonarr.Next.Strings;
+using Microsoft.Extensions.ObjectPool;
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.Json;
@@ -157,8 +159,22 @@ namespace MG.Sonarr.Next.Shell.Context
                                });
                     });
 
+            
             AddPool<HashSet<Wildcard>, HashSetWildcardPool>(services);
             AddPool<SortedSet<int>, SortedIntSetPool>(services);
+            AddQuickPool<WildcardSet, GenericResettableObjectPool<WildcardSet>>(services);
+            services.AddTransient<WildcardSet>();
+            
+        }
+
+        private static void AddQuickPool<T, TPool>(IServiceCollection services)
+            where TPool : class, IObjectPoolReturnable, IQuickPool<T>
+            where T : notnull, IResettable
+        {
+            services.AddSingleton<TPool>()
+                    .AddSingleton<IObjectPool<T>>(x => x.GetRequiredService<TPool>())
+                    .AddSingleton<IQuickPool<T>>(x => x.GetRequiredService<TPool>())
+                    .AddSingleton<IObjectPoolReturnable>(x => x.GetRequiredService<TPool>());
         }
         private static void AddPool<T, TPool>(IServiceCollection services) 
             where TPool : class, IObjectPoolReturnable, IObjectPool<T>, new()

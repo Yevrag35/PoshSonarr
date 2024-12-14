@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Indexers;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
@@ -11,7 +12,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
     public sealed class GetSonarrIndexerCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
-        HashSet<Wildcard> _wcNames = null!;
+        WildcardSet _wcNames = null!;
 
         [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         public int[] Id { get; set; } = [];
@@ -28,7 +29,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
+            _wcNames = this.GetPooledObject<WildcardSet>();
 
             this.SetReturnables(_ids, _wcNames);
         }
@@ -45,14 +46,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
 
         protected override void Process(IServiceProvider provider)
         {
-            IEnumerable<IndexerObject> indexers = _ids.Count > 0
+            IList<IndexerObject> indexers = _ids.Count > 0
                 ? this.GetById<IndexerObject>(_ids)
                 : this.GetByName(_wcNames, _ids);
 
             this.WriteCollection(indexers);
         }
 
-        private MetadataList<IndexerObject> GetByName(HashSet<Wildcard> names, SortedSet<int> ids)
+        private MetadataList<IndexerObject> GetByName(WildcardSet names, SortedSet<int> ids)
         {
             var response = this.GetAll<IndexerObject>();
             if (response.Count <= 0 || names.Count <= 0)
@@ -65,7 +66,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
                 var item = response[i];
                 if (ids.Contains(item.Id)
                     ||
-                    !names.AnyValueLike(item.Name))
+                    !names.IsAnyMatch(item.Name))
                 {
                     response.RemoveAt(i);
                 }

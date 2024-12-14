@@ -1,4 +1,5 @@
 using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Tags;
 using MG.Sonarr.Next.Shell.Attributes;
@@ -20,7 +21,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     public sealed class AddSonarrTagCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
-        HashSet<Wildcard> _resolveNames = null!;
+        WildcardSet _resolveNames = null!;
         Dictionary<string, ITagPipeable> _updates = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -41,7 +42,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            _resolveNames = this.GetPooledObject<HashSet<Wildcard>>();
+            _resolveNames = this.GetPooledObject<WildcardSet>();
             _updates = this.GetPooledObject<Dictionary<string, ITagPipeable>>();
 
             this.SetReturnables(_ids, _resolveNames, _updates);

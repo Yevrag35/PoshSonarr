@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Shell.Components;
+﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Strings;
 using MG.Sonarr.Next.Unions;
 
@@ -80,7 +81,7 @@ namespace MG.Sonarr.Next.Shell.Extensions
                 }
             }
         }
-        public static void SplitToSets(this Either<string, int>[]? array, ISet<int> numbers, ISet<Wildcard> strings, bool explicitlyCalledForString = false)
+        public static void SplitToSets(this Either<string, int>[]? array, ISet<int> numbers, WildcardSet strings, bool explicitlyCalledForString = false)
         {
             ArgumentNullException.ThrowIfNull(numbers);
             ArgumentNullException.ThrowIfNull(strings);
@@ -110,18 +111,6 @@ namespace MG.Sonarr.Next.Shell.Extensions
                         numbers.Add(item.AsT2);
                         break;
                 }
-                //if (item.IsNumber && !explicitlyCalledForString)
-                //{
-                //    numbers.Add(item.AsInt);
-                //}
-                //else if (item.IsString)
-                //{
-                //    strings.Add(item.AsString);
-                //}
-                //else if (explicitlyCalledForString)
-                //{
-                //    strings.Add(item.AsInt.ToString());
-                //}
             }
         }
     }
