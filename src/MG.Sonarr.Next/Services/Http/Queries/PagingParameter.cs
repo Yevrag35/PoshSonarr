@@ -1,6 +1,4 @@
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Strings;
-using System;
 using System.ComponentModel;
 
 namespace MG.Sonarr.Next.Services.Http.Queries;

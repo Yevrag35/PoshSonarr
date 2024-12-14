@@ -1,10 +1,12 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Qualities;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities
 {
@@ -14,7 +16,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities
     public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
-        HashSet<Wildcard> _wcNames = null!;
+        WildcardSet _wcNames = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
@@ -24,22 +26,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        public int[] Id { get; set; } = [];
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByProfileName")]
         [SupportsWildcards]
-        public IntOrString[] Name { get; set; } = Array.Empty<IntOrString>();
+        public Either<string, int>[] Name { get; set; } = [];
 
         protected override int Capacity => 2;
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
-            var span = this.GetReturnables();
-            span[0] = _ids;
-            span[1] = _wcNames;
+            _wcNames = this.GetPooledObject<WildcardSet>();
+            this.SetReturnables(_ids, _wcNames);
         }
 
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
@@ -94,9 +94,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities
 
             this.WriteCollection(list);
         }
-        private static void FilterByProfileName(IList<QualityProfileObject> list, IReadOnlySet<Wildcard> names, IReadOnlySet<int> ids)
+        private static void FilterByProfileName(MetadataList<QualityProfileObject> list, WildcardSet names, SortedSet<int> ids)
         {
-            if (ids.Count <= 0 && names.Count <= 0)
+            if (ids.Count == 0 && names.Count == 0)
             {
                 return;
             }
@@ -104,7 +104,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities
             for (int i = list.Count - 1; i >= 0; i--)
             {
                 QualityProfileObject item = list[i];
-                if (ids.Contains(item.Id) || !names.AnyValueLike(item.Name))
+                if (ids.Contains(item.Id) || !names.IsAnyMatch(item.Name))
                 {
                     list.RemoveAt(i);
                 }

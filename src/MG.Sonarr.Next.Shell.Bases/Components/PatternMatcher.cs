@@ -1,7 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Guarding;
-
-namespace MG.Sonarr.Next.Shell.Components
+﻿namespace MG.Sonarr.Next.Shell.Components
 {
     public readonly ref struct PatternMatcher
     {

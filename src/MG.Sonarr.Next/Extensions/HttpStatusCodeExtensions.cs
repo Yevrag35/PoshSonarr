@@ -1,6 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions.Strings;
-using MG.Sonarr.Next.Guarding;
+﻿using MG.Sonarr.Next.Extensions.Strings;
 using System.Collections.ObjectModel;
 using System.Net;
 

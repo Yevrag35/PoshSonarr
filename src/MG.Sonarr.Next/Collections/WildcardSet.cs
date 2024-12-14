@@ -1,5 +1,5 @@
-﻿using MG.Sonarr.Next.Strings;
-using Microsoft.Extensions.ObjectPool;
+﻿using MG.Sonarr.Next.Collections.Pools;
+using MG.Sonarr.Next.Strings;
 using System.Collections;
 using System.Runtime.CompilerServices;
 

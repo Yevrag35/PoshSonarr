@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.ObjectPool;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace MG.Sonarr.Next.Collections.Pools
 {

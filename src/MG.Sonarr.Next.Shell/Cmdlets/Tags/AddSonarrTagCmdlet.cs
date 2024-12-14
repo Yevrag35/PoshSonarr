@@ -78,7 +78,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
                 foreach (var tag in all)
                 {
-                    if (_resolveNames.AnyValueLike(tag.Label))
+                    if (_resolveNames.IsAnyMatch(tag.Label))
                     {
                         _ = _ids.Add(tag.Id);
                     }

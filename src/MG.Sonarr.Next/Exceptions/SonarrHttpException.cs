@@ -1,7 +1,6 @@
 ﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using System.Net;
-using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Next.Exceptions
 {

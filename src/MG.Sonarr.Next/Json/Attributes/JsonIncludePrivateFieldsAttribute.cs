@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Json.Attributes
 {

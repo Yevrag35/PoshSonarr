@@ -86,7 +86,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             for (int i = all.Count - 1; i >= 0; i--)
             {
                 QualityDefinitionObject item = all[i];
-                if (ids.Contains(item.Id) || !names.AnyValueLike(item.Title))
+                if (ids.Contains(item.Id) || !names.IsAnyMatch(item.Title))
                 {
                     all.RemoveAt(i);
                 }

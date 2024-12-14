@@ -1,7 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 
-using Microsoft.Extensions.ObjectPool;
-
 namespace MG.Sonarr.Next.Collections.Pools
 {
     internal class GenericObjectPool<T> : SonarrObjectPool<T> where T : notnull

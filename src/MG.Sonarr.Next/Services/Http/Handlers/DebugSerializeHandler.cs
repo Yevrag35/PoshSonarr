@@ -2,8 +2,6 @@
 using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Strings;
 using MG.Sonarr.Resources;
-using System.Buffers;
-using System.Net.Http.Json;
 using System.Runtime.InteropServices;
 using System.Text;
 

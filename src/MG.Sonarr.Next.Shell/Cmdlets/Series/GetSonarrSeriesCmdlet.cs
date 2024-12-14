@@ -9,6 +9,8 @@ using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Shell.Output;
 using MG.Sonarr.Next.Shell.Attributes;
+using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
@@ -21,44 +23,42 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
-        HashSet<Wildcard> _names = null!;
+        WildcardSet _names = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesName")]
         [SupportsWildcards]
-        public IntOrString[] Name { get; set; } = Array.Empty<IntOrString>();
+        public Either<string, int>[] Name { get; set; } = [];
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        public int[] Id { get; set; } = [];
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, DontShow = true,
             ValueFromPipeline = true)]
         [ValidateIds(ValidateRangeKind.Positive, typeof(ISeriesPipeable))]
-        public ISeriesPipeable[] InputObject
-        {
-            get => Array.Empty<ISeriesPipeable>();
-            set
-            {
-                if (value is not null)
-                {
-                    _ids ??= new();
-                    _ids.UnionWith(value.Select(x => x.SeriesId));
-                }
-            }
-        }
+        public ISeriesPipeable[] InputObject { get; set; } = [];
+        //{
+        //    get => Array.Empty<ISeriesPipeable>();
+        //    set
+        //    {
+        //        if (value is not null)
+        //        {
+        //            _ids ??= new();
+        //            _ids.UnionWith(value.Select(x => x.SeriesId));
+        //        }
+        //    }
+        //}
 
         protected override int Capacity => 2;
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            _names = this.GetPooledObject<HashSet<Wildcard>>();
-            var span = this.GetReturnables();
-            span[0] = _ids;
-            span[1] = _names;
+            _names = this.GetPooledObject<WildcardSet>();
+            this.SetReturnables(_ids, _names);
         }
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {
@@ -71,7 +71,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         }
         protected override void Process(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.InputObject))
+            if (this.HasParameter(this.InputObject))
             {
                 _ids.UnionWith(this.InputObject.Select(x => x.SeriesId));
             }
@@ -120,7 +120,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
         }
 
-        private SonarrResponse<MetadataList<T>> GetSeriesByName<T>(IReadOnlySet<Wildcard> names)
+        private SonarrResponse<MetadataList<T>> GetSeriesByName<T>(WildcardSet names)
             where T : PSObject, IComparable<T>, IJsonMetadataTaggable
         {
             var result = this.GetAllSeries<T>();
@@ -134,7 +134,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 PSObject item = result.Data[i];
                 if (!item.TryGetProperty(Constants.TITLE, out string? title)
                     ||
-                    !names.AnyValueLike(title))
+                    !names.IsAnyMatch(title.AsSpan()))
                 {
                     result.Data.RemoveAt(i);
                 }
@@ -151,7 +151,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         {
             foreach (int id in ids)
             {
-                var result = this.SendGetRequest<T>($"/series/{id}");
+                var result = this.SendGetRequest<T>(this.Tag.GetUrlForId(id));
                 if (result.IsError)
                 {
                     this.WriteConditionalError(result.Error);

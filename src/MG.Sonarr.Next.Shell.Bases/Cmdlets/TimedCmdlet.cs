@@ -1,13 +1,10 @@
 ﻿using MG.Sonarr.Next.Exceptions;
-using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Strings;
 using MG.Sonarr.Resources;
 using System.Net;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Bases

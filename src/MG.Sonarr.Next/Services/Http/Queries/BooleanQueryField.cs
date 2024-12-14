@@ -1,5 +1,4 @@
-﻿using Json.Schema;
-using MG.Sonarr.Next.Extensions.Strings;
+﻿using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Unions;
 using System.Collections;
 using System.Runtime.CompilerServices;

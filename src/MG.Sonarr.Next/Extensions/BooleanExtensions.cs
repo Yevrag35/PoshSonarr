@@ -1,6 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
-
-namespace MG.Sonarr.Next.Extensions
+﻿namespace MG.Sonarr.Next.Extensions
 {
     /// <summary>
     /// Custom extension methods for <see cref="bool"/> values.

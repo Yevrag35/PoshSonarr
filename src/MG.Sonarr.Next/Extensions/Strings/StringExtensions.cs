@@ -1,7 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Guarding;
-
-namespace MG.Sonarr.Next.Extensions.Strings
+﻿namespace MG.Sonarr.Next.Extensions.Strings
 {
     /// <summary>
     /// Custom extension methods for high-performance split operations of <see cref="string"/> 

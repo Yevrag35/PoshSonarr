@@ -1,5 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Collections.Pools
 {

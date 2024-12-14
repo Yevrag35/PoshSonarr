@@ -3,7 +3,6 @@ using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Services.Auth;
-using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Jobs;
@@ -12,8 +11,6 @@ using MG.Sonarr.Next.Services.Time;
 using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Shell.Pools;
 using MG.Sonarr.Next.Strings;
-using Microsoft.Extensions.ObjectPool;
-using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.Json;
 

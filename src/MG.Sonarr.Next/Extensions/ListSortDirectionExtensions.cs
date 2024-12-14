@@ -1,5 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace MG.Sonarr.Next.Extensions
 {
