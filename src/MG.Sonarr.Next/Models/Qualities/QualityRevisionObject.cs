@@ -1,10 +1,10 @@
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.ManualImports;
-using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Models.Qualities
 {
@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.Models.Qualities
         ISerializableNames<QualityRevisionObject>
     {
         const int CAPACITY = 2;
-        static readonly string _typeName = typeof(QualityRevisionObject).GetTypeName();
+        static readonly string _typeName = typeof(QualityRevisionObject).GetName();
 
         protected override bool DisregardMetadataTag => true;
         public QualityObject Quality

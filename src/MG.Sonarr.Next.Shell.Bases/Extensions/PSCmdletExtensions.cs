@@ -1,55 +1,42 @@
-﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Reflection;
 using MG.Sonarr.Next.Shell.Cmdlets;
-using MG.Sonarr.Next.Shell.Components;
+using MG.Sonarr.Next.Strings;
 using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Shell.Extensions
 {
     public static class PSCmdletExtensions
     {
-        public static ActionPreference GetCurrentActionPreferenceFromParam(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName)
+        public static ActionPreference GetActionPreferenceFromParam(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName, ActionPreference defaultIfNotPresent = ActionPreference.SilentlyContinue)
         {
-            ArgumentNullException.ThrowIfNull(cmdlet);
-            ArgumentException.ThrowIfNullOrEmpty(parameterName);
-            ArgumentException.ThrowIfNullOrEmpty(variableName);
-
-            if (cmdlet?.MyInvocation?.BoundParameters is null)
-            {
-                return default;
-            }
-
-            if (cmdlet.MyInvocation.BoundParameters.TryGetValueAs(parameterName, out ActionPreference actionPref))
-            {
-                return actionPref;
-            }
-            else if (cmdlet.SessionState.PSVariable.TryGetVariableValue(variableName, out actionPref))
-            {
-                return actionPref;
-            }
-
-            return default;
+            return ResolveActionPreferenceFromPSCmdlet(
+                cmdlet,
+                parameterName,
+                variableName,
+                in defaultIfNotPresent,
+                resolution: (object? boundValue, in ActionPreference defValue) => boundValue switch
+                {
+                    ActionPreference preference when Enum.IsDefined(preference) => preference,
+                    int numberValue when Enum.IsDefined((ActionPreference)numberValue) => (ActionPreference)numberValue,
+                    string strValue when Enum.TryParse(strValue, ignoreCase: true, out ActionPreference pref) => pref,
+                    _ => defValue,
+                });
         }
 
-        public static ActionPreference GetCurrentActionPreferenceFromSwitch(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName)
+        public static ActionPreference GetActionPreferenceFromSwitch(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName, ActionPreference defaultIfNotPresent = ActionPreference.SilentlyContinue)
         {
-            ArgumentNullException.ThrowIfNull(cmdlet);
-            ArgumentException.ThrowIfNullOrEmpty(parameterName);
-            ArgumentException.ThrowIfNullOrEmpty(variableName);
-
-            if (cmdlet.MyInvocation.BoundParameters.TryGetValueAs(parameterName, out SwitchParameter result)
-                &&
-                result.ToBool())
-            {
-                return ActionPreference.Continue;
-            }
-            else if (cmdlet.SessionState.PSVariable.TryGetVariableValue(variableName, out ActionPreference actionPref))
-            {
-                return actionPref;
-            }
-
-            return default; // silently continue
+            return ResolveActionPreferenceFromPSCmdlet(
+                cmdlet,
+                parameterName,
+                variableName,
+                in defaultIfNotPresent,
+                resolution: (object? boundValue, in ActionPreference defValue) => boundValue switch
+                {
+                    SwitchParameter swParam when swParam.ToBool() => ActionPreference.Continue,
+                    bool justBool when justBool => ActionPreference.Continue,
+                    _ => defValue,
+                });
         }
 
         [return: NotNullIfNotNull(nameof(path))]
@@ -80,18 +67,12 @@ namespace MG.Sonarr.Next.Shell.Extensions
 
         public static bool HasParameter<T>(this T cmdlet, Expression<Func<T, object?>> parameter) where T : PSCmdlet
         {
-            ArgumentNullException.ThrowIfNull(cmdlet);
-            ArgumentNullException.ThrowIfNull(parameter);
-
             return parameter.TryGetAsMember(out MemberExpression? memEx)
                    && 
                    cmdlet.MyInvocation.BoundParameters.ContainsKey(memEx.Member.Name);
         }
         public static bool HasParameter<T>(this T cmdlet, Expression<Func<T, SwitchParameter>> switchExpression, bool onlyIfPresent) where T : PSCmdlet
         {
-            ArgumentNullException.ThrowIfNull(cmdlet);
-            ArgumentNullException.ThrowIfNull(switchExpression);
-
             if (!switchExpression.TryGetAsMember(out MemberExpression? memEx))
             {
                 return false;
@@ -109,23 +90,21 @@ namespace MG.Sonarr.Next.Shell.Extensions
             return func(cmdlet).ToBool();
         }
 
-        public static bool HasParameter<T, TValue>(this T cmdlet, [NotNullWhen(true)] TValue? value, [CallerArgumentExpression(nameof(value))] string parameterName = "")
-            where T : PSCmdlet
-            where TValue : class
+        public static bool HasParameter<TValue>(this PSCmdlet cmdlet, TValue value, [CallerArgumentExpression(nameof(value))] string parameterName = "") where TValue : struct
         {
-            ArgumentNullException.ThrowIfNull(cmdlet);
-            ArgumentNullException.ThrowIfNull(parameterName);
-
-            return cmdlet.MyInvocation.BoundParameters.ContainsKey(parameterName)
-                   &&
-                   value is not null;
+            return ContainsParameterKey(cmdlet.MyInvocation.BoundParameters, parameterName);
+        }
+        public static bool HasParameter(this PSCmdlet cmdlet, object? value, [CallerArgumentExpression(nameof(value))] string parameterName = "")
+        {
+            return ContainsParameterKey(cmdlet.MyInvocation.BoundParameters, parameterName);
+        }
+        public static bool HasNotNullParameter(this PSCmdlet cmdlet, [NotNullWhen(true)] object? value, [CallerArgumentExpression(nameof(value))] string parameterName = "")
+        {
+            return value is not null && HasParameter(cmdlet, value, parameterName);
         }
 
         public static bool ParameterSetNameIsLike(this PSCmdlet cmdlet, Wildcard wildString)
         {
-            ArgumentNullException.ThrowIfNull(cmdlet);
-            Guard.NotNull(in wildString);
-
             return wildString.IsMatch(cmdlet.ParameterSetName);
         }
 
@@ -133,10 +112,6 @@ namespace MG.Sonarr.Next.Shell.Extensions
             where TCmdlet : SonarrCmdletBase
             where TObj : class, new()
         {
-            ArgumentNullException.ThrowIfNull(cmdlet);
-            ArgumentNullException.ThrowIfNull(getSetting);
-            ArgumentNullException.ThrowIfNull(setValue);
-
             if (value is null)
             {
                 return;
@@ -160,8 +135,50 @@ namespace MG.Sonarr.Next.Shell.Extensions
         
         public static void WriteCollection<T>(this Cmdlet cmdlet, IEnumerable<T> collection)
         {
-            ArgumentNullException.ThrowIfNull(cmdlet);
             cmdlet.WriteObject(collection, enumerateCollection: true);
+        }
+
+        private delegate ActionPreference ResolveFromBoundValue(object? boundValue, in ActionPreference defaultIfNotPresent);
+        private static ActionPreference ResolveActionPreferenceFromPSCmdlet(
+            PSCmdlet cmdlet,
+            string parameterName,
+            string variableName,
+            in ActionPreference defaultIfNotPresent,
+            ResolveFromBoundValue resolution)
+        {
+            object? boundValue = null;
+
+            if (false == cmdlet.MyInvocation?.BoundParameters?.TryGetValue(parameterName, out boundValue)
+                &&
+                cmdlet.SessionState.PSVariable.TryGetVariableValue(variableName, out ActionPreference variablePref))
+            {
+                return variablePref;
+            }
+
+            return resolution(boundValue, in defaultIfNotPresent);
+        }
+
+        private static bool ContainsParameterKey(Dictionary<string, object?> dictionary, string key)
+        {
+            ReadOnlySpan<char> keySpan = TrimProperties(key);
+            return dictionary.ContainsKey(keySpan);
+        }
+        private static bool TryGetParameterValue(Dictionary<string, object?> dictionary, string key, out object? value)
+        {
+            ReadOnlySpan<char> keySpan = TrimProperties(key);
+            return dictionary.TryGetValue(keySpan, out value);
+        }
+        private static bool TryGetParameterNonNullValue(Dictionary<string, object?> dictionary, string key, [NotNullWhen(true)] out object? value)
+        {
+            bool result = TryGetParameterValue(dictionary, key, out value);
+            return result && value is not null;
+        }
+        private static ReadOnlySpan<char> TrimProperties(ReadOnlySpan<char> value)
+        {
+            int index = value.LastIndexOf('.');
+            return index >= 0 && index < value.Length - 1
+                ? value.Slice(index + 1)
+                : value;
         }
     }
 }

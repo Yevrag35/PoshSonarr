@@ -15,13 +15,16 @@ namespace MG.Sonarr.Next
         public static readonly string META_PROPERTY_NAME = MetadataResolver.META_PROPERTY_NAME;
         public const char META_PREFIX = MetadataResolver.META_PREFIX;
 
-        public static readonly string API_KEY = "ApiKey";
-        public static readonly string ID = "Id";
-        public static readonly string LABEL = "Label";
-        public static readonly string LANG_PROFILE_ID = "LanguageProfileId";
-        public static readonly string NAME = "Name";
-        public static readonly string PASSWORD = "Password";
-        public static readonly string PROFILE_ID = "ProfileId";
+        public const string API_KEY = "ApiKey";
+        public const string EPISODE_ID = "episodeId";
+        public const string ID = "Id";
+        public const string ID_LOWERCASE = "id";
+        public const string LABEL = "Label";
+        public const string LANG_PROFILE_ID = "LanguageProfileId";
+        public const string NAME = "Name";
+        public const string NAME_LOWERCASE = "name";
+        public const string PASSWORD = "Password";
+        public const string PROFILE_ID = "ProfileId";
         internal const string PROPERTY_DATA = "Data";
         internal const string PROPERTY_EPISODE = "Episode";
         internal const string PROPERTY_EPISODE_FILE = "EpisodeFile";
@@ -29,17 +32,19 @@ namespace MG.Sonarr.Next
         internal const string PROPERTY_QUALITY = "Quality";
         internal const string PROPERTY_REVISION = "Revision";
         internal const string PROPERTY_SERIES = "Series";
-        public static readonly string PROXY_PASSWORD = "ProxyPassword";
-        public static readonly string QUALITY_PROFILE_ID = "QualityProfileId";
-        public static readonly string SEASONS = "Seasons";
-        public static readonly string SERIES_ID = "seriesId";
-        public static readonly string SERIES_TYPE = "SeriesType";
-        public static readonly string TAGS = "Tags";
-        public static readonly string TITLE = "Title";
-        public static readonly string USE_SEASON_FOLDER = "UseSeasonFolders";
+        public const string PROXY_PASSWORD = "ProxyPassword";
+        public const string QUALITY_PROFILE_ID = "QualityProfileId";
+        public const string SEASONS = "Seasons";
+        public const string SEASON_NUMBER = "seasonNumber";
+        public const string SERIES_ID = "SeriesId";
+        public const string SERIES_ID_LOWERCASE = "seriesId";
+        public const string SERIES_TYPE = "SeriesType";
+        public const string TAGS = "Tags";
+        public const string TITLE = "Title";
+        public const string USE_SEASON_FOLDER = "UseSeasonFolders";
 
         internal const string BY_ID = "/{0}";
-        internal static readonly string CONFIG = "/config";
+        internal const string CONFIG = "/config";
         internal const string SCHEMA = "/schema";
 
         public static readonly string BACKUP;

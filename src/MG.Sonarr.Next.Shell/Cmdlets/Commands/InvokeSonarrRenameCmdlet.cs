@@ -21,7 +21,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
         [ValidateIds(ValidateRangeKind.Positive, typeof(IRenameFilePipeable))]
         [ValidateNotNull]
-        public IRenameFilePipeable[] InputObject { get; set; } = Array.Empty<IRenameFilePipeable>();
+        public IRenameFilePipeable[] InputObject { get; set; } = [];
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
@@ -29,7 +29,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
 
         [Parameter(Mandatory = true, Position = 1, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] EpisodeFileId { get; set; } = Array.Empty<int>();
+        public int[] EpisodeFileId { get; set; } = [];
 
         protected override void Process(IServiceProvider provider)
         {

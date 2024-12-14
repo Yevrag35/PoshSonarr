@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Services.Http;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
 {
@@ -37,31 +38,34 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             if (response.IsError)
             {
                 this.StopCmdlet(response.Error);
-                return new();
+                return [];
             }
 
             return response.Data;
         }
-        protected IEnumerable<T> GetById<T>(IReadOnlyCollection<int>? ids) where T : PSObject
+        protected List<T> GetById<T>(IReadOnlyCollection<int>? ids) where T : PSObject
         {
             if (ids.IsNullOrEmpty())
             {
-                yield break;
+                return [];
             }
+
+            List<T> list = new(ids.Count);
 
             foreach (int id in ids)
             {
                 string url = this.Tag.GetUrlForId(id);
-                var response = this.SendGetRequest<T>(url);
+                SonarrResponse<T> response = this.SendGetRequest<T>(url);
                 if (response.IsError)
                 {
                     this.WriteConditionalError(response.Error);
+                    continue;
                 }
-                else
-                {
-                    yield return response.Data;
-                }
+                
+                list.Add(response.Data);
             }
+
+            return list;
         }
     }
 }

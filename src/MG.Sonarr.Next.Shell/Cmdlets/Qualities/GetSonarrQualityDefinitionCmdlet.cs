@@ -1,9 +1,10 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Qualities;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
 {
@@ -11,30 +12,29 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
     [Alias("Get-SonarrQuality")]
     public sealed class GetSonarrQualityDefinitionCmdlet : SonarrMetadataCmdlet
     {
+        static readonly string _namePropertyName = nameof(Name);
         SortedSet<int> _ids = null!;
-        HashSet<Wildcard> _wcNames = null!;
+        WildcardSet _wcNames = null!;
         List<QualityDefinitionObject> _list = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false)]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        public int[] Id { get; set; } = [];
 
         const string NAME = " -Name ";
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0)]
         [SupportsWildcards]
-        public IntOrString[] Name { get; set; } = Array.Empty<IntOrString>();
+        public Either<string, int>[] Name { get; set; } = [];
 
         protected override int Capacity => 2;
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
-            var span = this.GetReturnables();
-            span[0] = _ids;
-            span[1] = _wcNames;
+            _wcNames = this.GetPooledObject<WildcardSet>();
+            this.SetReturnables(_ids, _wcNames);
             _list = new(1);
         }
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
@@ -46,10 +46,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
         {
             _ids.UnionWith(this.Id);
 
-            if (this.HasParameter(x => x.Name))
+            if (this.HasParameter(this.Name))
             {
-                this.Name.SplitToSets(_ids, _wcNames,
-                    this.MyInvocation.Line.Contains(NAME, StringComparison.InvariantCultureIgnoreCase));
+                this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
             }
         }
         protected override void Process(IServiceProvider provider)
@@ -76,9 +75,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             this.WriteCollection(_list);
         }
 
-        private static void FilterByName(IList<QualityDefinitionObject> all, IReadOnlySet<int> ids, IReadOnlySet<Wildcard>? names)
+        private static void FilterByName(MetadataList<QualityDefinitionObject> all, SortedSet<int> ids, WildcardSet names)
         {
-            if (names.IsNullOrEmpty())
+            if (names.Count == 0)
             {
                 return;
             }
@@ -86,7 +85,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities
             for (int i = all.Count - 1; i >= 0; i--)
             {
                 QualityDefinitionObject item = all[i];
-                if (ids.Contains(item.Id) || !names.AnyValueLike(item.Title))
+                if (ids.Contains(item.Id) || !names.IsAnyMatch(item.Title))
                 {
                     all.RemoveAt(i);
                 }

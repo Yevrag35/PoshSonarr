@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
@@ -12,7 +13,7 @@ namespace MG.Sonarr.Next.Models.DownloadClients
         ITestPipeable
     {
         const int CAPACITY = 15;
-        static readonly string _typeName = typeof(DownloadClientObject).GetTypeName();
+        static readonly string _typeName = typeof(DownloadClientObject).GetName();
 
         public string Name
         {

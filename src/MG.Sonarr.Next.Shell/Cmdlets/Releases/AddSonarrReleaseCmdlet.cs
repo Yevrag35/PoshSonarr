@@ -1,7 +1,6 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Releases;
-using MG.Sonarr.Next.Shell.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
 {
@@ -38,11 +37,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
 
             if (response.IsT1)
             {
-                this.WriteError(response.AsT1);
+                this.WriteError(response.AsT2);
             }
             else
             {
-                this.WriteObject(response.AsT0);
+                this.WriteObject(response.AsT1);
             }
         }
         private static PostRelease ToPostRelease(ReleaseObject release)

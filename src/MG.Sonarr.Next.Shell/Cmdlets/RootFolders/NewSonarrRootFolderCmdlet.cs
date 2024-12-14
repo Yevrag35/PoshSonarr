@@ -42,7 +42,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
         {
             T obj = toBody(path);
             var response = this.SendPostRequest<T, PSObject>(this.Tag.UrlBase, obj);
-            if (response.TryPickT0(out var pso, out var error))
+            if (response.TryGetT1(out var pso, out var error))
             {
                 this.WriteObject(pso);
             }

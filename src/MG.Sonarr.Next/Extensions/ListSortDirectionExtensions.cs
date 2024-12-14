@@ -1,5 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace MG.Sonarr.Next.Extensions
 {
@@ -8,8 +7,8 @@ namespace MG.Sonarr.Next.Extensions
     /// </summary>
     public static class ListSortDirectionExtensions
     {
-        static readonly int ASCENDING_LENGTH = ListSortDirection.Ascending.ToString().Length;
-        static readonly int DESCENDING_LENGTH = ListSortDirection.Descending.ToString().Length;
+        static readonly int ASCENDING_LENGTH = nameof(ListSortDirection.Ascending).Length;
+        static readonly int DESCENDING_LENGTH = nameof(ListSortDirection.Descending).Length;
 
         /// <summary>
         /// Gets the number of characters the current <see cref="ListSortDirection"/> value consists of
@@ -21,8 +20,6 @@ namespace MG.Sonarr.Next.Extensions
         /// </returns>
         public static int GetLength(this ListSortDirection direction)
         {
-            Guard.NotNull(in direction);
-
             return direction switch
             {
                 ListSortDirection.Ascending => ASCENDING_LENGTH,

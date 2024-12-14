@@ -1,6 +1,7 @@
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.PSProperties;
@@ -15,7 +16,7 @@ namespace MG.Sonarr.Next.Models.Qualities
         ISerializableNames<QualityObject>
     {
         const int CAPACITY = 4;
-        static readonly string _typeName = typeof(QualityObject).GetTypeName();
+        static readonly string _typeName = typeof(QualityObject).GetName();
         readonly bool _wasCtored;
 
         public int Id { get; private set; }

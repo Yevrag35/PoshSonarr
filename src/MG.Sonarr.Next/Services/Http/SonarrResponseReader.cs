@@ -2,6 +2,7 @@
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.Errors;
+using MG.Sonarr.Next.Unions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Management.Automation;
 using System.Net;
@@ -62,7 +63,7 @@ namespace MG.Sonarr.Next.Services.Http
             {
                 var oneOf = await this.ReadContentAsync<T>(call.Response, targetObj, token);
 
-                return oneOf.TryPickT0(out SonarrErrorRecord? error, out T? remainder)
+                return oneOf.TryGetT1(out SonarrErrorRecord? error, out T? remainder)
                     ? SonarrResponse.FromException<T>(error)
                     : new SonarrResponse<T>(call.RequestUri, remainder, null, call.Response.StatusCode);
             }
@@ -111,7 +112,7 @@ namespace MG.Sonarr.Next.Services.Http
             return list;
         }
 
-        private async Task<OneOf<SonarrErrorRecord, T?>> ReadContentAsync<T>(HttpResponseMessage response, object? targetObj, CancellationToken token)
+        private async Task<Either<SonarrErrorRecord, T?>> ReadContentAsync<T>(HttpResponseMessage response, object? targetObj, CancellationToken token)
         {
             try
             {

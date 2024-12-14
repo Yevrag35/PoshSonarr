@@ -11,9 +11,10 @@ namespace MG.Sonarr.Next.Extensions
             return new KeyValueEnumerator<TKey, TValue>(table);
         }
 
+        [StructLayout(LayoutKind.Auto)]
         public ref struct KeyValueEnumerator<TKey, TValue>
         {
-            IDictionaryEnumerator? _enumerator;
+            private IDictionaryEnumerator? _enumerator;
 
             public KeyValuePair<TKey, TValue> Current { get; private set; }
 

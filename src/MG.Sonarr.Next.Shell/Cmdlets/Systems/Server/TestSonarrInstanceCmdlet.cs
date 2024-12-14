@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Models.System;
 using System.Text.Json;
 using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
+using MG.Sonarr.Next.Services.Jobs;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
 {
@@ -13,27 +14,28 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
     public sealed class TestSonarrInstanceCmdlet : PoolableCmdlet, IApiCmdlet
     {
         ISignalRClient _client = null!;
-        Queue<IApiCmdlet> _queue = null!;
-        Stopwatch _stopwatch = null!;
+        ApiCmdletQueue _queue = null!;
 
         [Parameter]
         public SwitchParameter Quiet { get; set; }
+
+        public bool CanDebugSerializeBefore => this.DebugPreference != ActionPreference.SilentlyContinue;
+        public bool CanDebugSerializeAfter => this.DebugPreference != ActionPreference.SilentlyContinue;
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
             _client = provider.GetRequiredService<ISignalRClient>();
-            _stopwatch = this.GetPooledObject<Stopwatch>();
-            _queue = provider.GetRequiredService<Queue<IApiCmdlet>>();
+            _queue = provider.GetRequiredService<ApiCmdletQueue>();
         }
 
         protected override void Process(IServiceProvider provider)
         {
             _queue.Enqueue(this);
-            _stopwatch.Start();
+            long timestamp = Stopwatch.GetTimestamp();
 
             var response = _client.SendPing();
-            _stopwatch.Stop();
+            TimeSpan elapsed = Stopwatch.GetElapsedTime(timestamp);
 
             if (this.Quiet.ToBool())
             {
@@ -41,7 +43,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
                 return;
             }
 
-            PingResult result = new(in response, _stopwatch.ElapsedTicks);
+            PingResult result = new(in response, elapsed.Ticks);
             this.WriteObject(result);
         }
 
@@ -58,17 +60,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
                 if (disposing)
                 {
                     _queue?.Clear();
-                    this.ReturnPooledObject(_stopwatch);
                 }
 
                 _queue = null!;
-                _stopwatch = null!;
                 _disposed = true;
             }
 
             base.Dispose(disposing);
         }
-
+        public void WriteDebugPayload(string jsonPayload)
+        {
+            if (this.Host?.UI is not null)
+            {
+                this.Host.UI.WriteDebugLine(jsonPayload);
+            }
+        }
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {
             var settings = request.GetRequiredService<IConnectionSettings>();

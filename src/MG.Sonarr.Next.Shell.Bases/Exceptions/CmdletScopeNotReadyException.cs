@@ -24,22 +24,6 @@ namespace MG.Sonarr.Next.Shell.Exceptions
             this.CmdletType = cmdletType;
         }
 
-        //[DoesNotReturn]
-        //[DebuggerStepThrough]
-        //public static TOutput ThrowAsInnerTo<TCmdlet, TOutput>(Func<CmdletScopeNotReadyException, Exception> exceptionFactory)
-        //    where TCmdlet : Cmdlet
-        //{
-        //    return ThrowAsInnerTo<TOutput>(typeof(TCmdlet), null, exceptionFactory);
-        //}
-
-        //[DoesNotReturn]
-        //[DebuggerStepThrough]
-        //public static TOutput ThrowAsInnerTo<TCmdlet, TOutput>(Exception? innerException, Func<CmdletScopeNotReadyException, Exception> exceptionFactory)
-        //    where TCmdlet : Cmdlet
-        //{
-        //    return ThrowAsInnerTo<TOutput>(typeof(TCmdlet), innerException, exceptionFactory);
-        //}
-
         [DoesNotReturn]
         [DebuggerStepThrough]
         public static TOutput ThrowAsInnerTo<TOutput>(Cmdlet cmdlet, Func<CmdletScopeNotReadyException, Exception> exceptionFactory)

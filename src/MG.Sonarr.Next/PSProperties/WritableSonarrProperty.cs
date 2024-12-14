@@ -1,4 +1,4 @@
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Models;
 using System.Management.Automation;
 
@@ -44,7 +44,7 @@ namespace MG.Sonarr.Next.PSProperties
         {
             if (value is null)
             {
-                return typeof(T).GetTypeName();
+                return typeof(T).GetName();
             }
 
             return value.TypeNames[0];

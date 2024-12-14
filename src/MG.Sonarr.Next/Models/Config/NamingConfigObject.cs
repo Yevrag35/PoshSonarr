@@ -1,6 +1,6 @@
 using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.Models.Config
         ISerializableNames<NamingConfigObject>
     {
         const int CAPACITY = 16;
-        static readonly string _typeName = typeof(NamingConfigObject).GetTypeName();
+        static readonly string _typeName = typeof(NamingConfigObject).GetName();
 
         public int Id { get; private set; }
 

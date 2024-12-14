@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+	<LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<RootNamespace>MG.Sonarr.Next.Shell</RootNamespace>
@@ -15,18 +16,25 @@
 	<Copyright>Copyright © 2018-2024 Yevrag35, LLC.</Copyright>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Pools\PagingPool.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Pools\PagingPool.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MG.Sonarr.Next\MG.Sonarr.Next.csproj" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<Using Include="Microsoft.Extensions.DependencyInjection" />
-		<Using Include="OneOf" />
 		<Using Include="System.Diagnostics" />
 		<Using Include="System.Diagnostics.CodeAnalysis" />
 		<Using Include="System.Globalization" />
 		<Using Include="System.Linq.Expressions" />
 		<Using Include="System.Management.Automation" />
 	</ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\MG.Sonarr.Next\MG.Sonarr.Next.csproj" />
-  </ItemGroup>
 
 </Project>

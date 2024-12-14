@@ -61,27 +61,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             return this.TryWriteObject(
                 in response,
                 writeConditionally: true,
-                enumerateCollection: IsEnumerableType(typeof(T)));
+                enumerateCollection: true);
         }
-
-        //[DebuggerStepThrough]
-        //protected bool TryWriteObject<T, TOutput>(in SonarrResponse<T> response, Func<T, TOutput?> writeSelector)
-        //{
-        //    return this.TryWriteObject(in response,
-        //        writeConditionally: true,
-        //        enumerateCollection: IsEnumerableType(typeof(TOutput)),
-        //        writeSelector);
-        //}
-        //[DebuggerStepThrough]
-        //protected bool TryWriteObject<T>(in SonarrResponse<T> response, bool enumerateCollection)
-        //{
-        //    return this.TryWriteObject(in response, writeConditionally: true, enumerateCollection);
-        //}
-        //[DebuggerStepThrough]
-        //protected bool TryWriteObject<T>(in SonarrResponse<T> response, bool enumerateCollection, Func<T, object?> writeSelector)
-        //{
-        //    return this.TryWriteObject(in response, writeConditionally: true, enumerateCollection, writeSelector);
-        //}
 
         /// <inheritdoc cref="TryWriteObject{T, TOutput}(in SonarrResponse{T}, bool, bool, Func{T, TOutput})"
         ///     path="/*[not(self::summary)]"/>
@@ -92,7 +73,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         [DebuggerStepThrough]
         protected bool TryWriteObject<T>(in SonarrResponse<T> response, bool writeConditionally, bool enumerateCollection)
         {
-            return this.TryWriteObject(in response, writeConditionally, enumerateCollection, x => x);
+            return this.TryWriteObject(in response, writeConditionally, enumerateCollection, writeSelector: null);
+
         }
         /// <summary>
         /// Attempts to write the response object to the output stream after transforming it using
@@ -111,14 +93,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// to the output stream.</param>
         /// <returns><see langword="true"/> if the response was written successfully; otherwise, 
         /// <see langword="false"/>.</returns>
-        protected bool TryWriteObject<T, TOutput>(in SonarrResponse<T> response, bool writeConditionally, bool enumerateCollection, Func<T, TOutput?> writeSelector)
+        protected bool TryWriteObject<T>(in SonarrResponse<T> response, bool writeConditionally, bool enumerateCollection, Func<T, object?>? writeSelector)
         {
             if (!response.IsError)
             {
-                this.WriteObject(writeSelector(response.Data), enumerateCollection);
+                object? data = writeSelector is null
+                    ? response.Data
+                    : writeSelector(response.Data);
+
+                this.WriteObject(data, enumerateCollection);
+
                 return true;
             }
-            else if (writeConditionally)
+            
+            if (writeConditionally)
             {
                 this.WriteConditionalError(response.Error);
             }

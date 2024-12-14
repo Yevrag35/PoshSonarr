@@ -2,6 +2,7 @@
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.ManualImports;
@@ -28,7 +29,7 @@ namespace MG.Sonarr.Next.Models.Series
         private const string FIRST_AIRED = "FirstAired";
         private const string OVERVIEW = "Overview";
         private const int SHORT_OVERVIEW_LENGTH = 90;
-        static readonly string _typeName = typeof(SeriesObject).GetTypeName();
+        static readonly string _typeName = typeof(SeriesObject).GetName();
         private DateOnly _firstAired;
 
         public int LanguageProfileId

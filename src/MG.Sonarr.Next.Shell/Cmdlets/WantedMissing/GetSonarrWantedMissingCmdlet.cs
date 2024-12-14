@@ -1,6 +1,7 @@
-﻿using MG.Http.Urls.Queries;
+﻿using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
+using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing
@@ -8,7 +9,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing
     [Cmdlet(VerbsCommon.Get, "SonarrWantedMissing", DefaultParameterSetName = "ByPage")]
     public sealed class GetSonarrWantedMissingCmdlet : SonarrApiCmdletBase
     {
-        QueryParameterCollection QueryCol { get; set; } = null!;
+        QueryCol QueryCol { get; set; } = null!;
 
         [Parameter(Mandatory = true, ParameterSetName = "AllRecords")]
         public SwitchParameter All { get; set; }
@@ -17,15 +18,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing
         [Parameter(Mandatory = false, ParameterSetName = "ByPage")]
         [Alias("Page")]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int PageNumber
-        {
-            get => 0;
-            set
-            {
-                this.QueryCol ??= new(3);
-                this.QueryCol.Add("page", value);
-            }
-        }
+        public int PageNumber { get; set; }
+        //{
+        //    get => 0;
+        //    set
+        //    {
+        //        this.QueryCol ??= new(3);
+        //        this.QueryCol.Add("page", value);
+        //    }
+        //}
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, ParameterSetName = "ByPage")]
@@ -42,8 +43,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing
 
         protected override void Process(IServiceProvider provider)
         {
-            this.QueryCol ??= new();
-            if (this.All.ToBool())
+            this.QueryCol ??= [];
+            if (this.All)
             {
                 IEnumerable<EpisodeObject> records = this.SendAllRecords();
                 this.WriteCollection(records);
@@ -71,9 +72,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing
             return true;
         }
 
-        private static string GetUrl(QueryParameterCollection parameters)
+        private static string GetUrl(QueryCol parameters)
         {
-            if (parameters.Count <= 0)
+            if (parameters.Count == 0)
             {
                 return Constants.WANTEDMISSING;
             }
@@ -82,12 +83,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing
             Constants.WANTEDMISSING.CopyTo(span);
             int position = Constants.WANTEDMISSING.Length;
 
-            span[position++] = '?';
-            _ = parameters.TryFormat(span.Slice(position), out int written, default, Statics.DefaultProvider);
+            _ = parameters.TryFormat(span.Slice(position), out int written);
             return new string(span.Slice(0, position + written));
         }
 
-        private IEnumerable<EpisodeObject> SendAllRecords()
+        private MetadataList<EpisodeObject> SendAllRecords()
         {
             this.PageNumber = 1;
             this.PageSize = 1;
@@ -95,16 +95,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing
             string url = GetUrl(this.QueryCol);
             if (!this.GetWantedMissing(url, out RecordResult<EpisodeObject>? result))
             {
-                return Enumerable.Empty<EpisodeObject>();
+                return [];
             }
 
-            this.QueryCol.Remove(nameof(this.PageSize));
-            this.PageSize = result.TotalRecords;
+            this.QueryCol.AddOrUpdate(PagingConstants.PageSize, result.TotalRecords);
 
             url = GetUrl(this.QueryCol);
-            _ = this.GetWantedMissing(url, out result);
-
-            return result?.Records ?? Enumerable.Empty<EpisodeObject>();
+            return this.GetWantedMissing(url, out result)
+                ? result.Records
+                : [];
         }
     }
 }

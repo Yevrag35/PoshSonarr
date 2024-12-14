@@ -1,5 +1,5 @@
 ﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Models.RootFolders
         ISerializableNames<RootFolderObject>
     {
         const int CAPACITY = 9;
-        static readonly string _typeName = typeof(RootFolderObject).GetTypeName();
+        static readonly string _typeName = typeof(RootFolderObject).GetName();
 
         public RootFolderObject()
             : base(CAPACITY)

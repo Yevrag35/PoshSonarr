@@ -1,9 +1,9 @@
-using MG.Collections;
 using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Reflection;
+using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Fields;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Immutable;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties
@@ -55,8 +55,8 @@ namespace MG.Sonarr.Next.PSProperties
                 DateTimeOffset offset => new StructNoteProperty<DateTimeOffset>(name, offset),
                 TimeSpan ts => new StructNoteProperty<TimeSpan>(name, ts),
                 PSObject pso => HandlePSObject<TParent>(name, pso),
-                ReadOnlyList<FieldObject> rof => new ReadOnlyCollectionProperty<FieldObject>(name, rof),
-                ReadOnlyList<SelectOptionObject> sof => new ReadOnlyCollectionProperty<SelectOptionObject>(name, sof),
+                ImmutableArray<FieldObject> rof => new ReadOnlyCollectionProperty<FieldObject>(name, rof),
+                ImmutableArray<SelectOptionObject> sof => new ReadOnlyCollectionProperty<SelectOptionObject>(name, sof),
                 SortedSet<int> iSet => new ReadOnlyTagsProperty(iSet),
                 SortedSet<string> sSet => new ReadOnlySetProperty<string>(name, sSet),
                 StringKeyValueSet<int> sKvp => new ReadOnlySetProperty<KeyValuePair<string, int>>(name, sKvp),

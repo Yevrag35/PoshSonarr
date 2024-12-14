@@ -9,6 +9,7 @@ using System.Net;
 using MG.Sonarr.Next.Json;
 using System.Text.Json;
 using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Services.Jobs;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
 {
@@ -20,7 +21,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
     {
         bool _noFileName;
         ISonarrDownloadClient Downloader { get; set; } = null!;
-        Queue<IApiCmdlet> Queue { get; set; } = null!;
+        ApiCmdletQueue Queue { get; set; } = null!;
 
         [Parameter(Mandatory = true, ParameterSetName = "ByExplicitUrl")]
         [ValidateUrl(UriKind.Relative)]
@@ -51,11 +52,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
         }
         NetworkCredential? _creds;
 
+        public bool CanDebugSerializeBefore => false;
+        public bool CanDebugSerializeAfter => false;
+
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
             this.Downloader = provider.GetRequiredService<ISonarrDownloadClient>();
-            this.Queue = provider.GetRequiredService<Queue<IApiCmdlet>>();
+            this.Queue = provider.GetRequiredService<ApiCmdletQueue>();
         }
 
         protected override void Begin(IServiceProvider provider)
@@ -141,6 +145,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
             string fileName = IOPath.GetFileName(logUrl);
             this.WriteDebug($"Appending file name to {nameof(this.Path)} -> {fileName}");
             return IOPath.Combine(dirPath, fileName);
+        }
+        public void WriteDebugPayload(string jsonPayload)
+        {
+            if (this.Host?.UI is not null)
+            {
+                this.Host.UI.WriteDebugLine(jsonPayload);
+            }
         }
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {

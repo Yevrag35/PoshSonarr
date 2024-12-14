@@ -1,9 +1,8 @@
 using MG.Sonarr.Next.Components;
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using System.Reflection;
-using System.Xml.Linq;
 
 namespace MG.Sonarr.Next.Shell.Attributes
 {
@@ -92,7 +91,7 @@ namespace MG.Sonarr.Next.Shell.Attributes
             catch (Exception e)
             {
                 throw new ValidationMetadataException(
-                    $"Unable to validate argument as '{_parameterType.GetTypeName()}'.", e);
+                    $"Unable to validate argument as '{_parameterType.GetName()}'.", e);
             }
 
             IdValidationHelper.DoValidation(possibleId: possible, this.NullBehavior, _predicate);
@@ -183,7 +182,7 @@ namespace MG.Sonarr.Next.Shell.Attributes
             catch (Exception e)
             {
                 throw new ValidationMetadataException(
-                    $"Unable to validate argument as '{_parameterType.GetTypeName()}'.", e);
+                    $"Unable to validate argument as '{_parameterType.GetName()}'.", e);
             }
 
             IdValidationHelper.DoValidation(possibleId: possible, this.NullBehavior, _predicate);

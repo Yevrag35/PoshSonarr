@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
@@ -16,7 +16,7 @@ namespace MG.Sonarr.Next.Models.Renames
         ISerializableNames<RenameObject>
     {
         const int CAPACITY = 6;
-        static readonly string _typeName = typeof(RenameObject).GetTypeName();
+        static readonly string _typeName = typeof(RenameObject).GetName();
 
         public int EpisodeFileId { get; private set; }
         public int SeriesId { get; private set; }

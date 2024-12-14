@@ -1,7 +1,7 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Notifications;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications
@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications
     public sealed class GetSonarrNotificationCmdlet : SonarrMetadataCmdlet
     {
         SortedSet<int> _ids = null!;
-        HashSet<Wildcard> _wcNames = null!;
+        WildcardSet _wcNames = null!;
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         public int[] Id { get; set; } = Array.Empty<int>();
@@ -27,17 +27,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            _wcNames = this.GetPooledObject<HashSet<Wildcard>>();
+            _wcNames = this.GetPooledObject<WildcardSet>();
 
-            var span = this.GetReturnables();
-            span[0] = _ids;
-            span[1] = _wcNames;
+            this.SetReturnables(_ids, _wcNames);
         }
 
         protected override void Begin(IServiceProvider provider)
         {
             _ids.UnionWith(this.Id);
-            if (this.HasParameter(x => x.Name))
+            if (this.HasParameter(this.Name))
             {
                 _wcNames.UnionWith(this.Name);
             }
@@ -60,7 +58,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications
             }
         }
 
-        private IEnumerable<NotificationObject> GetByName(IReadOnlySet<Wildcard> names, IReadOnlySet<int> ids)
+        private MetadataList<NotificationObject> GetByName(WildcardSet names, SortedSet<int> ids)
         {
             var response = this.GetAll<NotificationObject>();
             if (response.Count <= 0 || names.Count <= 0)
@@ -71,7 +69,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications
             for (int i = response.Count - 1; i >= 0; i--)
             {
                 var item = response[i];
-                if (ids.Contains(item.Id) || !names.AnyValueLike(item.Name))
+                if (ids.Contains(item.Id) || !names.IsAnyMatch(item.Name))
                 {
                     response.RemoveAt(i);
                 }

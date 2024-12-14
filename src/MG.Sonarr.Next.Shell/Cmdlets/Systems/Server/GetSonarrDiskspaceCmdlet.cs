@@ -18,7 +18,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
                 return;
             }
 
-            foreach (var pso in response.Data)
+            foreach (DiskspaceObject pso in response.Data)
             {
                 pso.TypeNames.Insert(0, TYPE_NAME);
                 this.WriteObject(pso);

@@ -16,9 +16,13 @@ namespace MG.Sonarr.Next.Extensions
         ///     The array of elements that will be added into <paramref name="list"/>.
         /// </param>
         /// <exception cref="ArgumentNullException"/>
-        public static void AddMany<T>(this IList<T> list, params T[] values)
+        public static void AddMany<T>(this IList<T> list, params ReadOnlySpan<T> values)
         {
-            AddMany(list, collection: values);
+            ArgumentNullException.ThrowIfNull(list);
+            foreach (T value in values)
+            {
+                list.Add(value);
+            }
         }
 
         /// <summary>

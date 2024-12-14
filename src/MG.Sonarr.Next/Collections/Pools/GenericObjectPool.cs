@@ -2,11 +2,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Collections.Pools
 {
-    file sealed class GenericObjectPool<T> : SonarrObjectPool<T> where T : notnull
+    internal class GenericObjectPool<T> : SonarrObjectPool<T> where T : notnull
     {
         readonly PoolBuilder<T> _builder;
         protected override int MaxPoolCapacity { get; }
 
+        [DebuggerStepThrough]
         private GenericObjectPool(PoolBuilder<T> builder)
         {
             _builder = builder;
@@ -37,6 +38,28 @@ namespace MG.Sonarr.Next.Collections.Pools
             return builder.Constructor is not null
                 ? new(builder)
                 : throw new InvalidOperationException("The constructor for the pool must at least be defined.");
+        }
+    }
+
+    internal sealed class GenericResettableObjectPool<T> : SonarrObjectPool<T>, IQuickPool<T> where T : notnull, IResettable
+    {
+        private readonly IServiceProvider _provider;
+
+        protected override int MaxPoolCapacity => 10;
+
+        public GenericResettableObjectPool(IServiceProvider serviceProvider)
+        {
+            _provider = serviceProvider;
+        }
+
+        protected override T Construct()
+        {
+            return _provider.GetRequiredService<T>();
+        }
+
+        protected override bool ResetObject(T obj)
+        {
+            return obj.TryReset();
         }
     }
 

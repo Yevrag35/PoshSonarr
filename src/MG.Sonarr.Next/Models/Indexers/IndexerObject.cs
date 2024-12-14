@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
@@ -14,7 +15,7 @@ namespace MG.Sonarr.Next.Models.Indexers
         ITestPipeable
     {
         const int CAPACITY = 17;
-        static readonly string _typeName = typeof(IndexerObject).GetTypeName();
+        static readonly string _typeName = typeof(IndexerObject).GetName();
 
         public bool EnableRss
         {

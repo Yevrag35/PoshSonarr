@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+	<LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<Version>2.0.0</Version>
@@ -31,14 +32,14 @@
     <None Remove="PSTypes\SonarrObjects.Type.ps1xml" />
   </ItemGroup>
 
-	<Target Name="Cleanup" AfterTargets="Clean">
+	<!--<Target Name="Cleanup" AfterTargets="Clean">
 		<ItemGroup>
 			<FilesToDelete Include="$(TargetDir)\**\*.*" />
 		</ItemGroup>
 		<Delete Files="@(FilesToDelete)" />
 		<RemoveDir Directories="@(FoldersToDelete)" />
 		<Exec Command="pwsh.exe -File &quot;$(SolutionDir)\.tasks\clean_project.ps1&quot; -OutputPath &quot;$(TargetDir)&quot;" />
-	</Target>
+	</Target>-->
 
 	<Target Name="ReleaseModuleAfterBuild" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Release'">
 		<Exec Command="pwsh.exe -NoExit -File &quot;$(SolutionDir)\.tasks\publish_module.ps1&quot; -OutputPath &quot;$(TargetDir)&quot;" />
@@ -93,20 +94,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Using Include="MG.Sonarr.Next.Strings" />
 		<Using Include="MG.Sonarr.Next.Shell.Context" />
 		<Using Include="Microsoft.Extensions.DependencyInjection" />
-		<Using Include="OneOf" />
 		<Using Include="System.Diagnostics" />
 		<Using Include="System.Diagnostics.CodeAnalysis" />
 		<Using Include="System.Globalization" />
 		<Using Include="System.Linq.Expressions" />
 		<Using Include="System.Management.Automation" />
 	</ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.4.6" />
-    <PackageReference Include="System.Management.Automation" Version="7.4.6" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MG.Sonarr.Next.Shell.Bases\MG.Sonarr.Next.Shell.Bases.csproj" />

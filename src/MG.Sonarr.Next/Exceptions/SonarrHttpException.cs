@@ -1,7 +1,6 @@
 ﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using System.Net;
-using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Next.Exceptions
 {
@@ -9,7 +8,6 @@ namespace MG.Sonarr.Next.Exceptions
     /// An exception class thrown when an <see cref="HttpClient"/> exception is thrown from a client 
     /// implementation written for PoshSonarr.
     /// </summary>
-    [Serializable]
     public sealed class SonarrHttpException : PoshSonarrException
     {
         ///// <summary>
@@ -68,31 +66,6 @@ namespace MG.Sonarr.Next.Exceptions
             this.Headers = ParseResponseHeaders(response);
         }
 
-        private SonarrHttpException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            ArgumentNullException.ThrowIfNull(info);
-
-            // Retrieve properties/fields from the serialization store.
-            this.ExtendedInfo = ErrorCollection.Empty;
-            this.Headers = (IReadOnlyDictionary<string, string>?)info.GetValue(nameof(this.Headers), typeof(Dictionary<string, string>)) ?? EmptyNameDictionary<string>.Default;
-            this.StatusCode = (HttpStatusCode?)info.GetValue(nameof(this.StatusCode), typeof(HttpStatusCode?));
-            this.ReasonPhrase = (string?)info.GetValue(nameof(this.ReasonPhrase), typeof(string));
-            this.RequestUri = (string?)info.GetValue(nameof(this.RequestUri), typeof(string));
-        }
-
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            ArgumentNullException.ThrowIfNull(info);
-
-            // Add public properties/fields to the serialization store.
-            info.AddValue(nameof(this.Headers), this.Headers, typeof(Dictionary<string, string>));
-            info.AddValue(nameof(this.StatusCode), this.StatusCode, typeof(HttpStatusCode?));
-            info.AddValue(nameof(this.ReasonPhrase), this.ReasonPhrase, typeof(string));
-            info.AddValue(nameof(this.RequestUri), this.RequestUri, typeof(string));
-
-            base.GetObjectData(info, context);
-        }
         private static string GetMessage(HttpRequestMessage request, HttpResponseMessage? response, Exception? inner, IErrorCollection errors, out string? requestUri)
         {
             requestUri = GetRequestUri(request);

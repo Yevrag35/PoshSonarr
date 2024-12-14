@@ -20,7 +20,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        public int[] Id { get; set; } = [];
 
         protected override int Capacity => 1;
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
@@ -31,7 +31,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            this.GetReturnables()[0] = _ids;
+            this.SetReturnables(_ids);
         }
 
         protected override void Begin(IServiceProvider provider)

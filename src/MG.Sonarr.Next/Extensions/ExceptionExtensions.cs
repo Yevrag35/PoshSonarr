@@ -1,4 +1,5 @@
-﻿using System.Management.Automation;
+﻿using MG.Sonarr.Next.Extensions.Reflection;
+using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Extensions
 {
@@ -11,12 +12,12 @@ namespace MG.Sonarr.Next.Extensions
         /// Returns the <see cref="Exception"/> class's type name.
         /// </summary>
         /// <param name="exception">The exception to check.</param>
-        /// <inheritdoc cref="TypeExtensions.GetTypeName(Type?)"/>
+        /// <inheritdoc cref="TypeNameExtensions.GetName(Type?)"/>
         [return: NotNullIfNotNull(nameof(exception))]
         public static string? GetTypeName(this Exception? exception)
         {
             Type? type = exception?.GetType();
-            return TypeExtensions.GetTypeName(type);
+            return type.GetNameOrNull();
         }
 
         /// <summary>

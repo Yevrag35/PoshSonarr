@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Reflection;
 using System.Management.Automation;
 using System.Net;
 
@@ -56,7 +57,7 @@ namespace MG.Sonarr.Next.Exceptions
 
             this.CategoryInfo.Activity = $"Sending {response?.RequestMessage?.Method.Method ?? "an"} HTTP request.";
             this.CategoryInfo.Reason = this.ReasonPhrase;
-            this.CategoryInfo.TargetType = targetObj?.GetType().GetTypeName();
+            this.CategoryInfo.TargetType = targetObj?.GetType().GetName();
         }
         public SonarrErrorRecord(SonarrHttpException response)
             : this(exception: response, response: response?.Response, (object?)null)

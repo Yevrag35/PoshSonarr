@@ -9,7 +9,7 @@ namespace MG.Sonarr.Next.Shell.Attributes
         public ValidateTypeAttribute(params Type[] types)
         {
             ArgumentNullException.ThrowIfNull(types);
-            _mustBeOneOf = new HashSet<Type>(types);
+            _mustBeOneOf = [.. types];
         }
 
         protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
@@ -27,7 +27,7 @@ namespace MG.Sonarr.Next.Shell.Attributes
             }
         }
 
-        private static void GuardIsType(IReadOnlySet<Type> types, object? item)
+        private static void GuardIsType(HashSet<Type> types, object? item)
         {
             if (item is null || !types.Contains(item.GetType()))
             {

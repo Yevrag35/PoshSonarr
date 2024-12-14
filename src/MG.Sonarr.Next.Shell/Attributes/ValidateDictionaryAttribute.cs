@@ -1,12 +1,7 @@
 using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Extensions;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MG.Sonarr.Next.Shell.Attributes
 {

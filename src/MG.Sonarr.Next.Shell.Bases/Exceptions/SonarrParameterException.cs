@@ -1,5 +1,5 @@
 ﻿using MG.Sonarr.Next.Exceptions;
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Strings;
 
 namespace MG.Sonarr.Next.Shell.Exceptions
 {
@@ -102,12 +102,6 @@ namespace MG.Sonarr.Next.Shell.Exceptions
         public SonarrErrorRecord ToRecord(object? targetObj)
         {
             return new SonarrErrorRecord(this, nameof(SonarrParameterException), ErrorCategory.InvalidArgument, targetObj);
-
         }
-
-        //private static ReadOnlySpan<char> GetFormat(ReadOnlySpan<char> additionalMsg, out int )
-        //{
-
-        //}
     }
 }

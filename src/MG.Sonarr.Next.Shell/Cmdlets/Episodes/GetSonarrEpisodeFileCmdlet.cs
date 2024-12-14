@@ -1,8 +1,8 @@
-﻿using MG.Http.Urls.Queries;
-using MG.Sonarr.Next.Attributes;
+﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Episodes;
+using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -15,10 +15,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
     public sealed class GetSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
     {
         bool _disposed;
-        const int CAPACITY = 2;
-        protected override int Capacity => CAPACITY;
+        const int CAPACITY = 3;
         SortedSet<int> _ids = null!;
         SortedSet<int> _seriesIds = null!;
+        QueryCol _params = null!;
+
+        protected override int Capacity => CAPACITY;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByEpisodeFileInput")]
@@ -33,12 +35,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByEpisodeFileId")]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        public int[] Id { get; set; } = [];
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = "BySeriesId")]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] SeriesId { get; set;  } = Array.Empty<int>();
+        public int[] SeriesId { get; set; } = Array.Empty<int>();
 
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {
@@ -50,12 +52,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             var pool = provider.GetRequiredService<IObjectPool<SortedSet<int>>>();
             _ids = pool.Get();
             _seriesIds = pool.Get();
-            //this.Returnables[0] = _ids;
-            //this.Returnables[1] = _seriesIds;
+            _params = this.GetPooledObject<QueryCol>();
 
-            var span = this.GetReturnables();
-            span[0] = _ids;
-            span[1] = _seriesIds;
+            this.SetReturnables(_ids, _seriesIds, _params);
         }
 
         private bool HasNoParameters()
@@ -72,14 +71,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         }
         protected override void Process(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.InputObject))
+            if (this.HasParameter(this.InputObject))
             {
                 _ids.UnionWith(
                     this.InputObject
                         .Where(x => x.EpisodeFileId > 0)
                             .Select(x => x.EpisodeFileId));
             }
-            else if (this.HasParameter(x => x.SeriesInput))
+            else if (this.HasParameter(this.SeriesInput))
             {
                 _seriesIds.UnionWith(
                     this.SeriesInput
@@ -94,18 +93,19 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 return;
             }
 
-            IEnumerable<EpisodeFileObject> files = ParameterNameStartsWithSeries(this.ParameterSetName)
+            List<EpisodeFileObject> files = ParameterNameStartsWithSeries(this.ParameterSetName)
                 ? this.GetEpFilesBySeriesId(_seriesIds)
                 : this.GetEpFilesById(_ids);
 
             this.WriteCollection(files);
         }
 
-        private IEnumerable<EpisodeFileObject> GetEpFilesById(IReadOnlySet<int>? fileIds)
+        private List<EpisodeFileObject> GetEpFilesById(IReadOnlySet<int>? fileIds)
         {
+            List<EpisodeFileObject> list = [];
             if (fileIds is null)
             {
-                yield break;
+                return list;
             }
 
             foreach (int id in fileIds)
@@ -115,25 +115,26 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 if (response.IsError)
                 {
                     this.WriteConditionalError(response.Error);
+                    continue;
                 }
-                else
-                {
-                    yield return response.Data;
-                }
-            }
-        }
-        private IEnumerable<EpisodeFileObject> GetEpFilesBySeriesId(IReadOnlySet<int>? seriesIds)
-        {
-            if (seriesIds is null)
-            {
-                yield break;
+
+                list.Add(response.Data);
             }
 
-            QueryParameterCollection queryCol = new();
+            return list;
+        }
+        private List<EpisodeFileObject> GetEpFilesBySeriesId(IReadOnlySet<int>? seriesIds)
+        {
+            List<EpisodeFileObject> list = [];
+            if (seriesIds is null)
+            {
+                return list;
+            }
+
             foreach (int id in seriesIds)
             {
-                queryCol.Add(Constants.SERIES_ID, id);
-                string url = this.Tag.GetUrl(queryCol);
+                _params.Add(Constants.SERIES_ID_LOWERCASE, id);
+                string url = this.Tag.GetUrl(_params);
                 var response = this.SendGetRequest<MetadataList<EpisodeFileObject>>(url);
                 if (response.IsError)
                 {
@@ -141,18 +142,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                     continue;
                 }
 
-                foreach (var item in response.Data)
-                {
-                    yield return item;
-                }
+                list.AddRange(response.Data);
 
-                queryCol.Clear();
+                _params.Clear();
             }
+
+            return list;
         }
         private static bool ParameterNameStartsWithSeries(ReadOnlySpan<char> setName)
         {
             return setName.StartsWith(
-                stackalloc char[] { 'b', 'y', 's', 'e', 'r', 'i', 'e', 's' }, StringComparison.InvariantCultureIgnoreCase);
+                ['b', 'y', 's', 'e', 'r', 'i', 'e', 's'], StringComparison.OrdinalIgnoreCase);
         }
 
         protected override void Dispose(bool disposing, IServiceScopeFactory? factory)

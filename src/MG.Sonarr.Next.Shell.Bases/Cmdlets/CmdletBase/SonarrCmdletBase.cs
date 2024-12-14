@@ -1,12 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Exceptions;
-using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Services.Http;
-using MG.Sonarr.Next.Shell.Context;
-using MG.Sonarr.Next.Shell.Extensions;
-using System.Collections;
-using System.Text.Json;
+﻿using MG.Sonarr.Next.Shell.Context;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
 {
@@ -46,7 +38,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <remarks>
         ///     Default implementation in the base class always returns <see langword="false"/>.
         /// </remarks>
-        protected virtual bool CaptureDebugPreference { get; }
+        protected virtual bool CaptureDebugPreference { get; } = true;
 
         /// <summary>
         /// Specifies whether derived cmdlets should capture the current Verbose <see cref="ActionPreference"/> value
@@ -121,7 +113,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         [DoesNotReturn]
         protected static T ThrowPipelineStopped<T>()
         {
-            throw new PipelineStoppedException();
+            throw new PipelineStoppedException(PIPELINE_STOPPED);
         }
 
         /// <inheritdoc cref="ThrowPipelineStopped{T}()"/>

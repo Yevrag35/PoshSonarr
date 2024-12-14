@@ -24,7 +24,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             if (this.ShouldProcess(json, "Creating Tag"))
             {
                 var oneOf = this.SendPostRequest<SonarrTag, TagObject>(Constants.TAG, tag);
-                if (oneOf.TryPickT0(out TagObject? to, out var error))
+                if (oneOf.TryGetT1(out TagObject? to, out var error))
                 {
                     this.WriteObject(to);
                 }

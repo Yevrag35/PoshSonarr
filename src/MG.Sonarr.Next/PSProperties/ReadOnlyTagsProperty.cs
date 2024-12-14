@@ -1,4 +1,4 @@
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Strings;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties
@@ -7,7 +7,7 @@ namespace MG.Sonarr.Next.PSProperties
     {
         const string AS_STRING = "read-only SortedSet[int] Tags=";
         const string AS_EMPTY = AS_STRING + "{}";
-        const int MAX_STRING_LENGTH = 1000;
+        const int MAX_STRING_LENGTH = 256;
 
         public SortedSet<int> Tags { get; internal set; }
         protected override SortedSet<int> ValueAsT => this.Tags;

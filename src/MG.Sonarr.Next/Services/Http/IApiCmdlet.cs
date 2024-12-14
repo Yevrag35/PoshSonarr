@@ -10,6 +10,21 @@ namespace MG.Sonarr.Next.Services.Http
     public interface IApiCmdlet
     {
         /// <summary>
+        /// Indicates whether the cmdlet should serialize the JSON payloads to the PowerShell's debug stream before sending HTTP requests.
+        /// </summary>
+        bool CanDebugSerializeBefore { get; }
+        /// <summary>
+        /// Indicates whether the cmdlet should serialize the JSON payloads to the PowerShell's debug stream after receiving HTTP responses.
+        /// </summary>
+        bool CanDebugSerializeAfter { get; }
+
+        /// <summary>
+        /// Writes a JSON payload to the PowerShell's debug stream. The payload can either be the request or response serialized.
+        /// </summary>
+        /// <param name="jsonPayload">The JSON serialized payload to write to the debug stream.</param>
+        void WriteDebugPayload(string jsonPayload);
+
+        /// <summary>
         /// Writes a message to the PowerShell's verbose stream before the provided request message is sent.
         /// </summary>
         /// <param name="request">The details of the pending request.</param>

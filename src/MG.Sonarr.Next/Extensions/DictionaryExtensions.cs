@@ -7,6 +7,25 @@ namespace MG.Sonarr.Next.Extensions
     /// </summary>
     public static class DictionaryExtensions
     {
+        [SuppressMessage("Style", "IDE0008:Use explicit type", Justification = "<Pending>")]
+        public static bool ContainsKey<T>(this Dictionary<string, T> dictionary, ReadOnlySpan<char> key)
+        {
+            var lookup =
+#if NET9_0_OR_GREATER
+                dictionary.GetAlternateLookup<ReadOnlySpan<char>>();
+#else
+                dictionary;
+#endif
+
+            var lookupKey =
+#if NET9_0_OR_GREATER
+                key;
+#else
+                key.ToString();
+#endif
+            return lookup.ContainsKey(lookupKey);
+        }
+
         public static string GetValue<T>(this IReadOnlyDictionary<T, string>? dictionary, T key) where T : notnull
         {
             return dictionary is not null && dictionary.TryGetValue(key, out string? value)
@@ -59,6 +78,25 @@ namespace MG.Sonarr.Next.Extensions
             }
 
             return false;
+        }
+
+        [SuppressMessage("Style", "IDE0008:Use explicit type", Justification = "<Pending>")]
+        public static bool TryGetValue<T>(this Dictionary<string, T> dictionary, ReadOnlySpan<char> key, [MaybeNullWhen(false)] out T value)
+        {
+            var lookup =
+#if NET9_0_OR_GREATER
+                dictionary.GetAlternateLookup<ReadOnlySpan<char>>();
+#else
+                dictionary;
+#endif
+
+            var lookupKey =
+#if NET9_0_OR_GREATER
+                key;
+#else
+                key.ToString();
+#endif
+            return lookup.TryGetValue(lookupKey, out value);
         }
     }
 }

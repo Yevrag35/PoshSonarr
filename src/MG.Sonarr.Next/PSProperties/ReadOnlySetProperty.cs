@@ -1,4 +1,4 @@
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Reflection;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties

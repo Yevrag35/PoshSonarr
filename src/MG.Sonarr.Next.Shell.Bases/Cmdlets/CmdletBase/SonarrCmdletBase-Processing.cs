@@ -20,8 +20,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 return;
             }
 
-            this.DebugPreference = this
-                .GetCurrentActionPreferenceFromSwitch(PSConstants.DEBUG, PSConstants.DEBUG_PREFERENCE);
+            this.DebugPreference = this.GetActionPreferenceFromSwitch(
+                parameterName: PSConstants.DEBUG,
+                variableName: PSConstants.DEBUG_PREFERENCE);
         }
         [DebuggerStepThrough]
         private void StoreVerbosePreference(bool wantsCapture)
@@ -31,8 +32,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 return;
             }
 
-            this.VerbosePreference = this
-                .GetCurrentActionPreferenceFromSwitch(PSConstants.VERBOSE, PSConstants.VERBOSE_PREFERENCE);
+            this.VerbosePreference = this.GetActionPreferenceFromSwitch(
+                parameterName: PSConstants.VERBOSE,
+                variableName: PSConstants.VERBOSE_PREFERENCE);
         }
 
         #endregion
@@ -76,9 +78,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             {
                 this.StoreVerbosePreference(this.CaptureVerbosePreference);
                 this.StoreDebugPreference(this.CaptureDebugPreference);
-                this.ErrorPreference = this
-                    .GetCurrentActionPreferenceFromParam(
-                        PSConstants.ERROR_ACTION, PSConstants.ERROR_ACTION_PREFERENCE);
+                this.ErrorPreference = this.GetActionPreferenceFromParam(
+                    parameterName: PSConstants.ERROR_ACTION,
+                    variableName: PSConstants.ERROR_ACTION_PREFERENCE,
+                    defaultIfNotPresent: ActionPreference.Continue);
             }
             catch (Exception e)
             {
@@ -343,7 +346,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// </remarks>
         /// <param name="provider"></param>
         [DebuggerStepThrough]
-        protected virtual void OnErrorStopping(IServiceProvider provider, [NotNullWhenTrue(nameof(errorWasProvided))] ErrorRecord? error, bool errorWasProvided)
+        protected virtual void OnErrorStopping(IServiceProvider provider, [ParameterNotNullWhenTrue(nameof(errorWasProvided))] ErrorRecord? error, bool errorWasProvided)
         {
             return;
         }

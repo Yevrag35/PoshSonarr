@@ -18,16 +18,16 @@ namespace MG.Sonarr.Next.Extensions.PSO
             }
         }
 
-        public static void RemoveMany<T>(this PSMemberInfoCollection<T> collection, params string[] propertyNames) where T : PSMemberInfo
+        public static void RemoveMany<T>(this PSMemberInfoCollection<T> collection, params ReadOnlySpan<string> propertyNames) where T : PSMemberInfo
         {
             ArgumentNullException.ThrowIfNull(collection);
 
-            if (propertyNames is null || propertyNames.Length <= 0)
+            if (propertyNames.IsEmpty)
             {
                 return;
             }
 
-            foreach (string name in propertyNames.Where(x => !string.IsNullOrWhiteSpace(x)))
+            foreach (string name in propertyNames)
             {
                 collection.Remove(name);
             }

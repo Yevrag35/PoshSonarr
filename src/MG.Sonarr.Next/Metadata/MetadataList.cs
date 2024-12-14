@@ -87,10 +87,14 @@ namespace MG.Sonarr.Next.Metadata
         {
             _list.RemoveAt(index);
         }
+        public int RemoveAll(Func<T, bool> predicate)
+        {
+            return _list.RemoveAll(new Predicate<T>(predicate));
+        }
 
         public void SetTag(IMetadataResolver resolver)
         {
-            if (this.Count <= 0)
+            if (this.Count == 0)
             {
                 return;
             }

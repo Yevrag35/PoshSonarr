@@ -1,17 +1,17 @@
-using MG.Http.Urls.Queries;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Services.Auth;
-using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Services.Testing;
 using MG.Sonarr.Next.Services.Time;
-using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Exceptions;
+using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Pools;
+using MG.Sonarr.Next.Strings;
 using System.Reflection;
 using System.Text.Json;
 
@@ -55,7 +55,7 @@ namespace MG.Sonarr.Next.Shell.Context
             //    throw new InvalidOperationException("Don't execute me weird.");
             //}
 
-            return SonarrContext.Initialize(cmdlet.GetConnectionSettings(), cmdletAssembly, addAdditionalServices);
+            return SonarrContext.Initialize(cmdlet.GetConnectionSettings(), cmdletAssembly, cmdlet.MyInvocation.BoundParameters, addAdditionalServices);
         }
         internal static void UnsetContext<T>(this T _) where T : IDisconnectContextCmdlet, IScopeCmdlet<T>
         {
@@ -65,7 +65,7 @@ namespace MG.Sonarr.Next.Shell.Context
 
     file static class SonarrContext
     {
-        static IServiceProvider _provider = null!;
+        static ServiceProvider _provider = null!;
 
         /// <exception cref="ContextNotSetException"/>
         internal static IServiceProvider GetProvider()
@@ -82,11 +82,15 @@ namespace MG.Sonarr.Next.Shell.Context
 
         internal static void Deinitialize()
         {
+            _provider.Dispose();
             _provider = null!;
         }
 
-        internal static IServiceScope Initialize(IConnectionSettings settings, Assembly cmdletAssembly, Action<IServiceCollection> configureServices)
+        internal static IServiceScope Initialize(IConnectionSettings settings, Assembly cmdletAssembly, Dictionary<string, object?> boundParameters, Action<IServiceCollection> configureServices)
         {
+            bool canCheck = InvocationInfoExtensions.CheckCanCheckPositionalBinding(boundParameters);
+            Debug.Assert(canCheck);
+
             if (_provider is not null)
             {
                 return _provider.CreateScope();
@@ -99,9 +103,10 @@ namespace MG.Sonarr.Next.Shell.Context
                 //.AddClock(mock => mock.GetNow = c => c.Now.AddDays(-7d))
                 .AddClock()
                 .AddMemoryCache()
-                .AddSingleton<Queue<IApiCmdlet>>()
+                .AddSingleton<ApiCmdletQueue>()
                 .AddSonarrClient(cmdletAssembly, settings, (provider, options) =>
                 {
+                    options.PropertyNameCaseInsensitive = true;
                     options.WriteIndented = true;
                 })
                 .AddCommandTracker()
@@ -127,20 +132,49 @@ namespace MG.Sonarr.Next.Shell.Context
         private static void AddObjectPools(IServiceCollection services)
         {
             services.AddObjectPoolReturner()
-                    .AddGenericObjectPool<QueryParameterCollection>(builder =>
+                    .AddGenericObjectPool<QueryCol>(builder =>
                     {
-                        builder.SetConstructor(() => new QueryParameterCollection(10))
+                        builder.SetConstructor(() => new QueryCol(10))
                                .SetDeconstructor(col =>
                                {
                                    col.Clear();
                                    return true;
                                });
+                    })
+                    .AddGenericObjectPool<SortedDictionary<int, string?>>(builder =>
+                    {
+                        builder.SetConstructor(() => [])
+                               .SetDeconstructor(col =>
+                               {
+                                   col.Clear();
+                                   return true;
+                               });
+                    })
+                    .AddGenericObjectPool<Dictionary<string, ITagPipeable>>(builder =>
+                    {
+                        builder.SetConstructor(() => new(5, StringComparer.OrdinalIgnoreCase))
+                               .SetDeconstructor(dict =>
+                               {
+                                   dict.Clear();
+                                   return true;
+                               });
                     });
 
-            AddPool<HashSet<Wildcard>, HashSetWildcardPool>(services);
+            
             AddPool<SortedSet<int>, SortedIntSetPool>(services);
-            AddPool<PagingParameter, PagingPool>(services);
-            AddPool<Stopwatch, StopwatchPool>(services);
+            AddQuickPool<WildcardSet, GenericResettableObjectPool<WildcardSet>>(services);
+            services.AddTransient<WildcardSet>();
+            
+        }
+
+        private static void AddQuickPool<T, TPool>(IServiceCollection services)
+            where TPool : class, IObjectPoolReturnable, IQuickPool<T>
+            where T : notnull, IResettable
+        {
+            services.AddSingleton<TPool>()
+                    .AddSingleton<IObjectPool<T>>(x => x.GetRequiredService<TPool>())
+                    .AddSingleton<IQuickPool<T>>(x => x.GetRequiredService<TPool>())
+                    .AddSingleton<IObjectPoolReturnable>(x => x.GetRequiredService<TPool>());
         }
         private static void AddPool<T, TPool>(IServiceCollection services) 
             where TPool : class, IObjectPoolReturnable, IObjectPool<T>, new()

@@ -1,6 +1,6 @@
 ﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Models.Profiles
         ISerializableNames<LanguageProfileObject>
     {
         const int CAPACITY = 6;
-        static readonly string _typeName = typeof(LanguageProfileObject).GetTypeName();
+        static readonly string _typeName = typeof(LanguageProfileObject).GetName();
 
         public string Name
         {

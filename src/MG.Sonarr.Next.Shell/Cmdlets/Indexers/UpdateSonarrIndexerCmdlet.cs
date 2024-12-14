@@ -18,7 +18,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
         protected override void Process(IServiceProvider provider)
         {
             this.SerializeIfDebug(
-                value: this.InputObject, 
+                value: this.InputObject,
                 options: provider.GetRequiredService<ISonarrJsonOptions>().ForDeserializing);
 
             string path = this.InputObject.MetadataTag.GetUrlForId(this.InputObject.Id);

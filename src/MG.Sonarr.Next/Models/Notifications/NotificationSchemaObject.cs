@@ -1,5 +1,5 @@
 ﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
@@ -13,7 +13,7 @@ namespace MG.Sonarr.Next.Models.Notifications
         ISerializableNames<NotificationSchemaObject>
     {
         const int CAPACITY = 38;
-        static readonly string _typeName = typeof(NotificationSchemaObject).GetTypeName();
+        static readonly string _typeName = typeof(NotificationSchemaObject).GetName();
         public bool IsTaggable => true;
 
         public NotificationSchemaObject()

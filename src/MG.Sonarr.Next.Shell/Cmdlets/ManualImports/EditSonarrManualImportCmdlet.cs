@@ -7,6 +7,7 @@ using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
 {
@@ -14,9 +15,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
     [MetadataCanPipe(Tag = Meta.MANUAL_IMPORT)]
     public sealed class EditSonarrManualImportCmdlet : SonarrApiCmdletBase
     {
-        OneOf<int, SeriesObject> _series;
-        OneOf<int, EpisodeObject> _episode;
-        OneOf<int, QualityRevisionObject> _quality;
+        Either<int, SeriesObject> _series;
+        Either<int, EpisodeObject> _episode;
+        Either<int, QualityRevisionObject> _quality;
 
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
         [Alias("Record")]
@@ -28,36 +29,30 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [ValidateId(ValidateRangeKind.Positive, InputNullBehavior.PassAsZero)]
         [ValidateType(typeof(int), typeof(SeriesObject))]
-        public object Series
+        public Either<int, SeriesObject> Series
         {
-            get => null!;
-            set => _series = value is int seriesId
-                ? seriesId
-                : (SeriesObject)value;
+            get => _series;
+            set => _series = value;
         }
 
         [Parameter]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [ValidateId(ValidateRangeKind.Positive, InputNullBehavior.PassAsZero)]
         [ValidateType(typeof(int), typeof(EpisodeObject))]
-        public object Episode
+        public Either<int, EpisodeObject> Episode
         {
-            get => null!;
-            set => _episode = value is int episodeId
-                ? episodeId
-                : (EpisodeObject)value;
+            get => _episode;
+            set => _episode = value;
         }
 
         [Parameter]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [ValidateId(ValidateRangeKind.Positive, InputNullBehavior.PassAsZero)]
         [ValidateType(typeof(int), typeof(QualityRevisionObject))]
-        public object Quality
+        public Either<int, QualityRevisionObject> Quality
         {
-            get => null!;
-            set => _quality = value is int qualityId
-                ? qualityId
-                : (QualityRevisionObject)value;
+            get => _quality;
+            set => _quality = value;
         }
 
         [Parameter]
@@ -93,9 +88,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
             }
         }
 
-        private T? GetObject<T>(OneOf<int, T> oneOf, MetadataTag tag)
+        private T? GetObject<T>(Either<int, T> oneOf, MetadataTag tag)
         {
-            if (oneOf.TryPickT1(out T value, out int id))
+            if (oneOf.TryGetT2(out T? value, out int id))
             {
                 return value;
             }
@@ -113,9 +108,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
             }
         }
 
-        private QualityRevisionObject? GetQualityRevision(OneOf<int, QualityRevisionObject> oneOf, MetadataTag tag)
+        private QualityRevisionObject? GetQualityRevision(Either<int, QualityRevisionObject> oneOf, MetadataTag tag)
         {
-            if (oneOf.TryPickT1(out QualityRevisionObject? qualityObj, out int qualityId))
+            if (oneOf.TryGetT2(out QualityRevisionObject? qualityObj, out int qualityId))
             {
                 return qualityObj;
             }

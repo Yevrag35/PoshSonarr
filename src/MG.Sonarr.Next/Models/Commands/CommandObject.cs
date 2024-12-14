@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Management.Automation;
@@ -18,7 +19,7 @@ namespace MG.Sonarr.Next.Models.Commands
         const string BODY = "Body";
         const int CAPACITY = 16;
         const string COMPLETED = "completed";
-        static readonly string _typeName = typeof(CommandObject).GetTypeName();
+        static readonly string _typeName = typeof(CommandObject).GetName();
 
         PSObject? _body;
 

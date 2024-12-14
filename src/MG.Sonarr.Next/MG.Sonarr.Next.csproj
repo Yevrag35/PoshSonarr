@@ -1,7 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+	<LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<RootNamespace>MG.Sonarr.Next</RootNamespace>
@@ -20,37 +21,47 @@
   </PropertyGroup>
 
 	<ItemGroup>
-		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+		<InternalsVisibleTo Include="MG.Sonarr.Next.Shell;MG.Sonarr.Next.Shell.Bases" />
+		<AssemblyAttribute Include="MG.Sonarr.Next.Attributes.SonarrObjectConverterAssemblyAttribute" />
+		<!--<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
 			<_Parameter1>MG.Sonarr.Next.Shell.Bases</_Parameter1>
 		</AssemblyAttribute>
 		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
 			<_Parameter1>MG.Sonarr.Next.Shell</_Parameter1>
-		</AssemblyAttribute>
+		</AssemblyAttribute>-->
 	</ItemGroup>
 
   <ItemGroup>
     <Compile Remove="Json\Converters\Spans\UtcTimeToLocalConverter.cs" />
+    <Compile Remove="Strings\WildcardOld.cs" />
+    <Compile Remove="Services\Http\Queries\PagingParameterOld.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="Json\Converters\Spans\UtcTimeToLocalConverter.cs" />
+    <None Include="Strings\WildcardOld.cs" />
+    <None Include="Services\Http\Queries\PagingParameterOld.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="MG.Collections" Version="1.2.0" />
-    <PackageReference Include="MG.Http.Urls" Version="1.0.0" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
     <PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.4.6" />
-    <PackageReference Include="OneOf" Version="3.0.271" />
     <PackageReference Include="System.Management.Automation" Version="7.4.6" />
-    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+	<PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
+		<PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.5.0-rc.1" />
+		<PackageReference Include="System.Management.Automation" Version="7.5.0-rc.1" />
+		<PackageReference Include="System.Text.Json" Version="9.0.0" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Using Include="MG.Sonarr.Next.Exceptions" />
-		<Using Include="OneOf" />
 		<Using Include="System.Diagnostics" />
 		<Using Include="System.Diagnostics.CodeAnalysis" />
 		<Using Include="System.Globalization" />
@@ -60,6 +71,10 @@
 
 	<ItemGroup>
 	  <Folder Include="Services\Time\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\MG.Sonarr.Next.Standard\MG.Sonarr.Next.Standard.csproj" />
 	</ItemGroup>
 
 </Project>

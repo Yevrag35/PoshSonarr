@@ -4,7 +4,6 @@ using System.Runtime.Serialization;
 
 namespace MG.Sonarr.Next.Shell.Exceptions
 {
-    [Serializable]
     public sealed class InvalidEpisodeIdFormatException : PoshSonarrException
     {
         const string ARG_MSG = "Episode identifiers should be either be an integer or a string in \"S<season#>E<episode#>\" format.";
@@ -15,26 +14,6 @@ namespace MG.Sonarr.Next.Shell.Exceptions
             : base(ARG_MSG, innerException)
         {
             this.OffendingIds = identifiers ?? Array.Empty<IEpisodeIdentifier>();
-        }
-
-        private InvalidEpisodeIdFormatException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-            ArgumentNullException.ThrowIfNull(info);
-            // Retrieve properties/fields from the serialization store.
-
-            this.OffendingIds = (IReadOnlyList<IEpisodeIdentifier>?)info.GetValue(nameof(this.OffendingIds), typeof(StoredId[]))
-                ?? Array.Empty<IEpisodeIdentifier>();
-        }
-
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            ArgumentNullException.ThrowIfNull(info);
-
-            // Add public properties/fields to the serialization store.
-            info.AddValue(nameof(this.OffendingIds), this.OffendingIds, typeof(StoredId[]));
-
-            base.GetObjectData(info, context);
         }
 
         public static InvalidEpisodeIdFormatException FromList<T>(IReadOnlyList<T>? identifiers, Exception? innerException)

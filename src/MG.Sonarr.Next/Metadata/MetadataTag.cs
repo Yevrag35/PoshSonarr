@@ -1,6 +1,7 @@
-﻿using MG.Http.Urls.Queries;
-using MG.Sonarr.Next.Extensions;
-using System.Management.Automation;
+﻿using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Next.Services.Http.Queries;
+using System.Collections.Immutable;
 
 namespace MG.Sonarr.Next.Metadata
 {
@@ -18,7 +19,7 @@ namespace MG.Sonarr.Next.Metadata
         /// <summary>
         /// Gets the array of cmdlet names that data tagged with this instance can be piped to in PowerShell.
         /// </summary>
-        public string[] CanPipeTo { get; }
+        public ImmutableArray<string> CanPipeTo { get; }
         /// <summary>
         /// Indicates whether the API endpoint this tag represents supports an ID in the URL path.
         /// </summary>
@@ -41,8 +42,7 @@ namespace MG.Sonarr.Next.Metadata
         }
         private MetadataTag(MetadataTag copyFrom)
         {
-            ArgumentNullException.ThrowIfNull(copyFrom);
-            this.CanPipeTo = CopyOriginal(copyFrom.CanPipeTo);
+            this.CanPipeTo = copyFrom.CanPipeTo;
             this.SupportsId = copyFrom.SupportsId;
             this.UrlBase = copyFrom.UrlBase;
             this.Value = copyFrom.Value;
@@ -52,38 +52,10 @@ namespace MG.Sonarr.Next.Metadata
             this.UrlBase = urlBase.TrimEnd('/');
             this.Value = value;
             this.SupportsId = supportsId;
-            this.CanPipeTo = CopyFromSet(pipesTo);
+            this.CanPipeTo = [.. pipesTo];
         }
 
-        private static string[] CopyFromSet(IReadOnlySet<string> pipesTo)
-        {
-            if (pipesTo.Count <= 0)
-            {
-                return [];
-            }
-
-            string[] canPipeTo = new string[pipesTo.Count];
-            int i = 0;
-            foreach (string s in pipesTo)
-            {
-                canPipeTo[i++] = s;
-            }
-
-            return canPipeTo;
-        }
-
-        private static string[] CopyOriginal(scoped Span<string> canPipeTo)
-        {
-            if (canPipeTo.Length <= 0)
-            {
-                return [];
-            }
-
-            string[] copyInto = new string[canPipeTo.Length];
-            canPipeTo.CopyTo(copyInto);
-            return copyInto;
-        }
-
+        [DebuggerStepThrough]
         object ICloneable.Clone() => this.Clone();
         public MetadataTag Clone() => new(this);
 
@@ -122,21 +94,9 @@ namespace MG.Sonarr.Next.Metadata
         /// The constructed URL string to the endpoint defined by this tag with the appended query 
         /// parameters.
         /// </returns>
-        public string GetUrl(QueryParameterCollection? parameters)
+        public string GetUrl(QueryCol? parameters)
         {
-            if (parameters.IsNullOrEmpty())
-            {
-                return this.UrlBase;
-            }
-
-            Span<char> span = stackalloc char[this.UrlBase.Length + 1 + parameters.MaxLength];
-            int position = 0;
-            this.UrlBase.CopyToSlice(span, ref position);
-            span[position++] = '?';
-            _ = parameters.TryFormat(span.Slice(position), out int written, default, Statics.DefaultProvider);
-            position += written;
-
-            return new string(span.Slice(0, position));
+            return parameters.GetUrl(this.UrlBase);
         }
 
         /// <exception cref="InvalidOperationException"/>
@@ -170,15 +130,15 @@ namespace MG.Sonarr.Next.Metadata
 
             span[position++] = '/';
 
-            if (!id.TryFormat(span.Slice(position), out int written, default, Statics.DefaultProvider))
+            if (!id.TryCopyToSlice(span, ref position, provider: Statics.DefaultProvider))
             {
                 Debug.Fail($"Unable to format '{id}' into the BaseUrl.");
                 return this.UrlBase + '/' + id;
             }
 
-            return new string(span.Slice(0, position + written));
+            return new string(span.Slice(0, position));
         }
-        public string GetUrlForId<T>(T id, QueryParameterCollection parameters) where T : ISpanFormattable
+        public string GetUrlForId<T>(T id, QueryCol parameters) where T : ISpanFormattable
         {
             this.ThrowIfNotSupportId();
             Span<char> span = stackalloc char[this.UrlBase.Length + 2 + parameters.MaxLength + LengthConstants.INT128_MAX];
@@ -188,14 +148,12 @@ namespace MG.Sonarr.Next.Metadata
 
             span[position++] = '/';
 
-            _ = id.TryFormat(span.Slice(position), out int written, default, Statics.DefaultProvider);
-            position += written;
+            id.CopyToSlice(span, ref position, provider: Statics.DefaultProvider);
 
             if (parameters.Count > 0)
             {
                 span[position++] = '?';
-                parameters.TryFormat(span.Slice(position), out written, default, Statics.DefaultProvider);
-                position += written;
+                parameters.CopyToSlice(span, ref position, provider: Statics.DefaultProvider);
             }
 
             return new string(span.Slice(0, position));

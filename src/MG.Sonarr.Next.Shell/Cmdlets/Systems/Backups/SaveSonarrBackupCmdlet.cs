@@ -23,6 +23,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
         ISonarrDownloadClient Downloader { get; set; } = null!;
         Queue<IApiCmdlet> Queue { get; set; } = null!;
 
+        public bool CanDebugSerializeAfter => false;
+        public bool CanDebugSerializeBefore => this.VerbosePreference != ActionPreference.SilentlyContinue;
+
         [Parameter(Mandatory = true, ParameterSetName = "ByExplicitUrl")]
         [ValidateUrl(UriKind.Relative)]
         public string BackupUri { get; set; } = string.Empty;
@@ -141,6 +144,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
             string fileName = IOPath.GetFileName(backupUrl);
             this.WriteDebug($"Appending file name to {nameof(this.Path)} -> {fileName}");
             return IOPath.Combine(dirPath, fileName);
+        }
+        public void WriteDebugPayload(string jsonPayload)
+        {
+            if (this.Host?.UI is not null)
+            {
+                this.Host.UI.WriteDebugLine(jsonPayload);
+            }
         }
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {

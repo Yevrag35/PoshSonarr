@@ -9,8 +9,7 @@ namespace MG.Sonarr.Next.Json.Converters
     {
         public override bool CanConvert(Type typeToConvert)
         {
-            ArgumentNullException.ThrowIfNull(typeToConvert);
-            return typeToConvert.IsAssignableTo(typeof(ISonarrResponse));
+            return typeof(ISonarrResponse).IsAssignableFrom(typeToConvert);
         }
 
         public override ISonarrResponse? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

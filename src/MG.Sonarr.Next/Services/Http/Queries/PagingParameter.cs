@@ -1,258 +1,125 @@
-﻿using MG.Http.Urls.Queries;
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Strings;
 using System.ComponentModel;
-using System.Numerics;
 
-namespace MG.Sonarr.Next.Services.Http.Queries
+namespace MG.Sonarr.Next.Services.Http.Queries;
+
+public sealed class PagingParameter : IQueryField
 {
-    public sealed class PagingParameter : IQueryParameter
+    const string PAGING_KEY = "Paging";
+    private const string PAGE = "page";
+    private const string PAGE_SIZE = "pageSize";
+    private const string SORT_DIRECTION = "sortDirection";
+    private const string SORT_KEY = "sortKey";
+
+    const int DEFAULT_PAGE_NO = 1;
+    const int DEFAULT_PAGE_SIZE = 10;
+    static readonly int STARTING_LENGTH = GetStartingLength();
+
+    private string _sortKey = string.Empty;
+
+    public string Key => PAGING_KEY;
+    public int MaxLength => STARTING_LENGTH + _sortKey.Length;
+    public int Page { get; set; } = DEFAULT_PAGE_NO;
+    public int PageSize { get; set; } = DEFAULT_PAGE_SIZE;
+    [NotNull]
+    public string? SortKey
     {
-        const string PAGING_KEY = "Paging";
-        const int DEFAULT_PAGE_NO = 1;
-        const int DEFAULT_PAGE_SIZE = 10;
-        //const string PAGE = "page";
-        //const string PAGE_SIZE = "pageSize";
-        //const string SORT_DIRECTION = "sortDirection";
-        //const string SORT_KEY = "sortKey";
+        get => _sortKey ??= string.Empty;
+        set => _sortKey = value ?? string.Empty;
+    }
+    public ListSortDirection SortDirection { get; set; } = ListSortDirection.Descending;
 
-        private string _constructed = string.Empty;
-        private bool _isConstructed;
-        private int _maxLength;
-        private int _pageNo;
-        private int _pageSize;
-        private string _sortKey;
-        private ListSortDirection _direction;
-        private int _hash;
-
-        public string Key => PAGING_KEY;
-        public int MaxLength => _maxLength;
-        public int Page
+    [DebuggerStepThrough]
+    string IFormattable.ToString(string? format, IFormatProvider? formatProvider)
+    {
+        Span<char> chars = stackalloc char[this.MaxLength];
+        _ = this.TryFormat(chars, out int charsWritten);
+        return new(chars.Slice(0, charsWritten));
+    }
+    public bool TryFormat(Span<char> destination, out int charsWritten)
+    {
+        charsWritten = 0;
+        return TryWriteSection(destination, ref charsWritten, PAGE, this.Page)
+            && TryWriteSection(destination, ref charsWritten, PAGE_SIZE, this.PageSize)
+            && TryWriteSection(destination, ref charsWritten, SORT_DIRECTION, this.SortDirection)
+            && TryWriteSection(destination, ref charsWritten, SORT_KEY, this.SortKey);
+    }
+    private static bool TryWriteSection(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> name, int value)
+    {
+        if (!name.TryCopyToSlice(destination, ref charsWritten))
         {
-            get => _pageNo;
-            set => _pageNo = CheckValue(in value, DEFAULT_PAGE_NO);
-        }
-        public int PageSize
-        {
-            get => _pageSize;
-            set => _pageSize = CheckValue(in value, DEFAULT_PAGE_SIZE);
-        }
-        public ListSortDirection SortDirection
-        {
-            get => _direction;
-            set
-            {
-                if (_direction == value)
-                {
-                    return;
-                }
-
-                _maxLength -= _direction.GetLength();
-                _maxLength += value.GetLength();
-                _direction = value;
-            }
-        }
-        public string SortKey
-        {
-            get => _sortKey;
-            set => _sortKey = SetStringField(value, _sortKey, Constants.ID, ref _maxLength);
-        }
-
-        public PagingParameter()
-        {
-            _direction = ListSortDirection.Descending;
-            _pageNo = DEFAULT_PAGE_NO;
-            _pageSize = DEFAULT_PAGE_SIZE;
-            _sortKey = Constants.ID;
-            _maxLength = GetStartingLength(_direction);
-        }
-
-        private static int CheckValue(in int value, int defaultValue)
-        {
-            return value > 0 ? value : defaultValue;
-        }
-        private static int GetStartingLength(ListSortDirection direction)
-        {
-            return (LengthConstants.INT_MAX * 2)
-                   +
-                   nameof(Page).Length + nameof(PageSize).Length
-                   +
-                   nameof(SortKey).Length + Constants.ID.Length
-                   +
-                   nameof(SortDirection).Length + direction.GetLength()
-                   +
-                   4;   // Equal signs for Page, PageSize, SortKey, SortDirection.
-        }
-
-        public bool Equals(IQueryParameter? other)
-        {
-            return StringComparer.InvariantCulture.Equals(PAGING_KEY, other?.Key);
-        }
-        public bool Equals(QueryParameter other)
-        {
-            return StringComparer.InvariantCulture.Equals(PAGING_KEY, other.Key);
-        }
-        public override bool Equals(object? obj)
-        {
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-            else if (obj is PagingParameter pp)
-            {
-                return this.Equals(pp);
-            }
-            else if (obj is IQueryParameter qp)
-            {
-                return this.Equals(qp);
-            }
-            else
-            {
-                return false;
-            }
-        }
-        public override int GetHashCode()
-        {
-            return PAGING_KEY.GetHashCode();
-        }
-        private int GetChangedHashCode(string? format, IFormatProvider? provider)
-        {
-            format ??= string.Empty;
-            provider ??= Statics.DefaultProvider;
-
-            return HashCode.Combine(_direction, _pageNo, _pageSize, _sortKey, format, provider);
-        }
-        public bool IsHashChanged(int current, string? format, IFormatProvider? provider, out int changedHashCode)
-        {
-            changedHashCode = this.GetChangedHashCode(format, provider);
-
-            return current != changedHashCode;
-        }
-
-        public void Reset()
-        {
-            _pageNo = DEFAULT_PAGE_NO;
-            _pageSize = DEFAULT_PAGE_SIZE;
-            _sortKey = Constants.ID;
-            _direction = ListSortDirection.Descending;
-            _maxLength = GetStartingLength(_direction);
-        }
-
-        private static string SetStringField(string? incoming, string current, string defaultValue, ref int maxLength)
-        {
-            if (string.IsNullOrWhiteSpace(incoming))
-            {
-                maxLength -= current.Length;
-                maxLength += defaultValue.Length;
-                return defaultValue;
-            }
-            else if (current.Equals(incoming, StringComparison.InvariantCultureIgnoreCase))
-            {
-                return current;
-            }
-
-            maxLength -= current.Length;
-            maxLength += incoming.Length;
-            return incoming;
-        }
-        public string ToString(string? format, IFormatProvider? formatProvider)
-        {
-            if (_isConstructed && !this.IsHashChanged(_hash, format, formatProvider, out int changed))
-            {
-                return _constructed;
-            }
-            else
-            {
-                Debug.WriteLine("PagingParameter hash is changed or not set.");
-                changed = this.GetChangedHashCode(format, formatProvider);
-            }
-
-            Span<char> span = stackalloc char[_maxLength];
-            _ = this.TryFormatInternal(span, out int written);
-            _constructed = new string(span.Slice(0, written));
-            _isConstructed = true;
-            _hash = changed;
-
-            return _constructed;
-        }
-        public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
-        {
-            charsWritten = 0;
-            if (_isConstructed && !this.IsHashChanged(_hash, string.Empty, provider, out _))
-            {
-                _constructed.CopyToSlice(destination, ref charsWritten);
-                return true;
-            }
-            else
-            {
-                return this.TryFormatInternal(destination, out charsWritten);
-            }
-        }
-
-        private bool TryFormatInternal(Span<char> destination, out int charsWritten)
-        {
-            charsWritten = 0;
-            WriteIntSection(destination, nameof(this.Page), _pageNo, ref charsWritten);
-            WriteIntSection(destination, nameof(this.PageSize), _pageSize, ref charsWritten);
-            WriteStringSection(destination, nameof(this.SortDirection), _direction.ToString(), includeAnd: true, ref charsWritten);
-            WriteStringSection(destination, nameof(this.SortKey), _sortKey, ref charsWritten);
-
-            return true;
-        }
-
-        bool IQueryParameter.TryValueAsNumber<T>(out T value)
-        {
-            value = default;
             return false;
         }
 
-        private static void WriteKey(Span<char> span, ReadOnlySpan<char> key, ref int position)
+        try
         {
-            if (char.IsLower(key[0]))
-            {
-                key.CopyToSlice(span, ref position);
-                return;
-            }
-
-            Span<char> working = span.Slice(position);
-            working[0] = char.ToLower(key[0]);
-            key.Slice(1).CopyTo(working.Slice(1));
-
-            position += key.Length;
+            destination[charsWritten++] = '=';
+            return value.TryCopyToSlice(destination, ref charsWritten, provider: Statics.DefaultProvider);
         }
-        private static void WriteIntSection(Span<char> span, ReadOnlySpan<char> key, int value, ref int position)
+        catch (IndexOutOfRangeException)
         {
-            WriteKey(span, key, ref position);
-            span[position++] = '=';
-            if (!value.TryFormat(span.Slice(position), out int written, default, Statics.DefaultProvider))
-            {
-                Debug.Fail($"Couldn't format int value -> {value}");
-
-                ReadOnlySpan<char> toStr = value.ToString().AsSpan();
-                toStr.CopyTo(span.Slice(position));
-                position += toStr.Length;
-            }
-            else
-            {
-                position += written;
-            }
-
-            span[position++] = '&';
+            return false;
         }
-        private static void WriteStringSection(Span<char> span, ReadOnlySpan<char> key, ReadOnlySpan<char> value, bool includeAnd, ref int position)
+    }
+    private static bool TryWriteSection(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> name, ListSortDirection direction)
+    {
+        if (!name.TryCopyToSlice(destination, ref charsWritten))
         {
-            WriteStringSection(span, key, value, ref position);
-            if (includeAnd)
-            {
-                span[position++] = '&';
-            }
+            return false;
         }
-        private static void WriteStringSection(Span<char> span, ReadOnlySpan<char> key, ReadOnlySpan<char> value, ref int position)
-        {
-            WriteKey(span, key, ref position);
-            span[position++] = '=';
 
-            int written = value.ToLower(span.Slice(position), Statics.DefaultCulture);
-            position += written;
+        try
+        {
+            destination[charsWritten++] = '=';
+            return direction switch
+            {
+                ListSortDirection.Ascending => nameof(ListSortDirection.Ascending).AsSpan().TryCopyToSlice(destination, ref charsWritten),
+                ListSortDirection.Descending => nameof(ListSortDirection.Descending).AsSpan().TryCopyToSlice(destination, ref charsWritten),
+                _ => ((int)direction).TryCopyToSlice(destination, ref charsWritten, provider: Statics.DefaultProvider),
+            };
         }
+        catch (IndexOutOfRangeException)
+        {
+            return false;
+        }
+    }
+    private static bool TryWriteSection(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> name, ReadOnlySpan<char> value)
+    {
+        if (!name.TryCopyToSlice(destination, ref charsWritten))
+        {
+            return false;
+        }
+
+        try
+        {
+            destination[charsWritten++] = '=';
+            return value.TryCopyToSlice(destination, ref charsWritten);
+        }
+        catch (IndexOutOfRangeException)
+        {
+            return false;
+        }
+    }
+    [DebuggerStepThrough]
+    bool ISpanFormattable.TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+    {
+        return this.TryFormat(destination, out charsWritten);
+    }
+
+    [DebuggerStepThrough]
+    static int CombineLengths(params ReadOnlySpan<string> values)
+    {
+        int length = 0;
+        foreach (string value in values)
+        {
+            length += value.Length;
+        }
+
+        return length + values.Length + Math.Max(0, values.Length - 1);
+    }
+    [DebuggerStepThrough]
+    static int GetStartingLength()
+    {
+        return (LengthConstants.INT_MAX * 2) + 10 + CombineLengths(PAGE, PAGE_SIZE, SORT_DIRECTION, SORT_KEY);
     }
 }
