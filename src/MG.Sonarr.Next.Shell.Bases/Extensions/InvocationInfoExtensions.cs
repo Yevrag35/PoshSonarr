@@ -6,10 +6,11 @@ namespace MG.Sonarr.Next.Shell.Extensions;
 public static class InvocationInfoExtensions
 {
     private static bool _hasChecked;
-    [MemberNotNullWhen(true, nameof(_positionallyBoundProperty))]
+    [MemberNotNullWhen(true, nameof(_positionallyBoundGetter))]
     private static bool CanCheck { get; set; }
 
-    private static PropertyInfo? _positionallyBoundProperty;
+    private static PropertyInfo? _listProperty;
+    private static Func<object, IReadOnlyCollection<string>>? _positionallyBoundGetter;
 
     static InvocationInfoExtensions()
     {
@@ -17,7 +18,7 @@ public static class InvocationInfoExtensions
         _hasChecked = false;
     }
 
-    [MemberNotNullWhen(true, nameof(_positionallyBoundProperty))]
+    [MemberNotNullWhen(true, nameof(_positionallyBoundGetter))]
     public static bool CheckCanCheckPositionalBinding(Dictionary<string, object?> example)
     {
         if (_hasChecked)
@@ -25,7 +26,7 @@ public static class InvocationInfoExtensions
             return CanCheck;
         }
 
-        bool canCheck = TryGetListProperty(example, out _positionallyBoundProperty);
+        bool canCheck = TryGetListProperty(example, out _positionallyBoundGetter);
         CanCheck = canCheck;
         _hasChecked = true;
         return canCheck;
@@ -43,23 +44,39 @@ public static class InvocationInfoExtensions
             return false;
         }
 
-        return IsPositionallyBound(parameterName, _positionallyBoundProperty, invocation.BoundParameters);
+        return IsPositionallyBound(parameterName, _positionallyBoundGetter, invocation.BoundParameters);
     }
 
-    private static bool IsPositionallyBound(string parameterName, PropertyInfo listProperty, Dictionary<string, object?> boundParameters)
+    private static bool IsPositionallyBound(string parameterName, Func<object, IReadOnlyCollection<string>> getter, Dictionary<string, object?> boundParameters)
     {
-        ICollection<string>? positionallyBound = (ICollection<string>?)listProperty.GetValue(boundParameters);
+        IReadOnlyCollection<string> positionallyBound = getter(boundParameters);
 
-        return positionallyBound is not null
-            && positionallyBound.Count > 0
+        return positionallyBound.Count > 0
             && positionallyBound.Contains(parameterName, StringComparer.OrdinalIgnoreCase);
     }
-    private static bool TryGetListProperty(Dictionary<string, object?> boundParameters, [NotNullWhen(true)] out PropertyInfo? listProperty)
+    private static bool TryGetListProperty(Dictionary<string, object?> boundParameters, [NotNullWhen(true)] out Func<object, IReadOnlyCollection<string>>? getter)
     {
         Type type = boundParameters.GetType();
         string propertyName = "BoundPositionally";
 
-        listProperty = type.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
-        return listProperty is not null;
+        PropertyInfo? listProperty = type.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
+        if (listProperty is null)
+        {
+            getter = null;
+            return false;
+        }
+
+        _listProperty = listProperty;
+        getter = static (object o) =>
+        {
+            object? list = _listProperty.GetValue(o);
+            return list is IReadOnlyCollection<string> iCol
+                ? iCol
+                : list is IEnumerable<string> iEnum
+                    ? iEnum.ToArray()
+                    : Array.Empty<string>();
+        };
+
+        return true;
     }
 }

@@ -88,9 +88,6 @@ namespace MG.Sonarr.Next.Shell.Context
 
         internal static IServiceScope Initialize(IConnectionSettings settings, Assembly cmdletAssembly, Dictionary<string, object?> boundParameters, Action<IServiceCollection> configureServices)
         {
-            bool canCheck = InvocationInfoExtensions.CheckCanCheckPositionalBinding(boundParameters);
-            Debug.Assert(canCheck);
-
             if (_provider is not null)
             {
                 return _provider.CreateScope();
