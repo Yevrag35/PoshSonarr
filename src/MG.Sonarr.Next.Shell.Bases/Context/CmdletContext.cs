@@ -157,7 +157,6 @@ namespace MG.Sonarr.Next.Shell.Context
                     });
 
             
-            AddPool<HashSet<Wildcard>, HashSetWildcardPool>(services);
             AddPool<SortedSet<int>, SortedIntSetPool>(services);
             AddQuickPool<WildcardSet, GenericResettableObjectPool<WildcardSet>>(services);
             services.AddTransient<WildcardSet>();
