@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Reflection;
@@ -39,26 +39,48 @@ namespace MG.Sonarr.Next.Json
             ArgumentNullException.ThrowIfNull(setupDeserializer);
 
             this.ForDeserializing = new(JsonSerializerDefaults.Web);
-            this.ForSerializing = new(JsonSerializerDefaults.Web)
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                WriteIndented = true,
-            };
+            setupDeserializer(this.ForDeserializing);
 
-            this.ForDebugging = new(JsonSerializerDefaults.Web)
+            this.ForSerializing = new(this.ForDeserializing)
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true,
                 WriteIndented = false,
             };
 
-            setupDeserializer(this.ForDeserializing);
-
-            foreach (var conv in this.ForDeserializing.Converters)
+            this.ForDebugging = new(this.ForDeserializing)
             {
-                this.ForSerializing.Converters.Add(conv);
-                this.ForDebugging.Converters.Add(conv);
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                PropertyNameCaseInsensitive = true,
+                WriteIndented = true,
+            };
+        }
+
+        [Obsolete("Complete rework", error: true)]
+        internal static void ApplyCamelCasing(Span<char> chars)
+        {
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (i == 1 && !char.IsUpper(chars[i]))
+                {
+                    break;
+                }
+
+                bool hasNext = (i + 1 < chars.Length);
+
+                // Stop when next char is already lowercase.
+                if (i > 0 && hasNext && !char.IsUpper(chars[i + 1]))
+                {
+                    // If the next char is a space, lowercase current char before exiting.
+                    if (chars[i + 1] == ' ')
+                    {
+                        chars[i] = char.ToLowerInvariant(chars[i]);
+                    }
+
+                    break;
+                }
+
+                chars[i] = char.ToLowerInvariant(chars[i]);
             }
         }
     }
@@ -72,7 +94,6 @@ namespace MG.Sonarr.Next.Json
                 void newAction(JsonSerializerOptions options)
                 {
                     options.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
-                    options.PropertyNamingPolicy = null;
                     options.TypeInfoResolver = new DefaultJsonTypeInfoResolver
                     {
                         Modifiers =
@@ -104,8 +125,7 @@ namespace MG.Sonarr.Next.Json
                 config.AddConvertProperties(EnumerateConverterProperties())
                       .AddGlobalReplaceNames(EnumerateGlobalReplaceNames())
                       .AddIgnoreProperties(EnumerateIgnoreProperties())
-                      .AddSpanConverters(new KeyValuePair<string, SpanConverter>[]
-                      {
+                      .AddSpanConverters(
                             new("AirDate", doSpanConverter),
                             new("FirstAired", doSpanConverter),
                             new("AirTime", timeConverter),
@@ -113,8 +133,8 @@ namespace MG.Sonarr.Next.Json
                             new("ApiKey", alwaysStringConverter),
                             new("DownloadId", alwaysStringConverter),
                             new("ReleaseHash", alwaysStringConverter),
-                            new("TorrentInfoHash", alwaysStringConverter),
-                      });
+                            new("TorrentInfoHash", alwaysStringConverter)
+                      );
             });
 
             options.Converters.AddMany(
@@ -134,7 +154,7 @@ namespace MG.Sonarr.Next.Json
         {
             List<JsonConverter> output = new(10);
             Type genericClassType = typeof(SonarrObjectConverter<>);
-            object[] ctorArgs = new object[] { converter };
+            object[] ctorArgs = [converter];
             Type[] typeParams = new Type[1];
 
             IEnumerable<Type> types = GetSonarrObjectTypes();

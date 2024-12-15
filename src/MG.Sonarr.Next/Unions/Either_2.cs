@@ -104,12 +104,11 @@ public readonly partial struct Either<T1, T2>
     /// <summary>
     /// Matches the current instance to one of the provided actions based on its type.
     /// </summary>
-    /// <typeparam name="TState">The state type.</typeparam>
     /// <param name="f1">The action to execute if the instance is of the first type.</param>
     /// <param name="f2">The action to execute if the instance is of the second type.</param>
-    public readonly void Match<TState>(
+    public readonly void Match(
         Action<T1> f1,
-        Action<T2> f2)// where TState : allows ref struct
+        Action<T2> f2)
     {
         switch (_index)
         {
@@ -139,7 +138,10 @@ public readonly partial struct Either<T1, T2>
     public readonly void Match<TState>(
         TState state,
         Action<T1, TState> f1,
-        Action<T2, TState> f2)// where TState : allows ref struct
+        Action<T2, TState> f2)
+#if NET9_0_OR_GREATER
+            where TState : allows ref struct
+#endif
     {
         switch (_index)
         {
@@ -168,7 +170,10 @@ public readonly partial struct Either<T1, T2>
     /// <exception cref="EmptyStructException"></exception>
     public readonly TOutput Match<TOutput>(
         Func<T1, TOutput> f1,
-        Func<T2, TOutput> f2)// where TOutput : allows ref struct
+        Func<T2, TOutput> f2)
+#if NET9_0_OR_GREATER
+            where TOutput : allows ref struct
+#endif
     {
         return _index switch
         {
@@ -190,7 +195,10 @@ public readonly partial struct Either<T1, T2>
     public readonly TOutput Match<TOutput, TState>(
         TState state,
         Func<T1, TState, TOutput> f1,
-        Func<T2, TState, TOutput> f2)// where TOutput : allows ref struct where TState : allows ref struct
+        Func<T2, TState, TOutput> f2)
+#if NET9_0_OR_GREATER
+            where TState : allows ref struct where TOutput : allows ref struct
+#endif
     {
         return _index switch
         {

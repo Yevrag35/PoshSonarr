@@ -2,6 +2,7 @@ using MG.Sonarr.Next.Components;
 using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
+using MG.Sonarr.Next.Unions;
 using System.Reflection;
 
 namespace MG.Sonarr.Next.Shell.Attributes
@@ -30,20 +31,16 @@ namespace MG.Sonarr.Next.Shell.Attributes
         ///     When not specified in the constructor, the default value is <see cref="InputNullBehavior.EnforceNotNull"/> 
         ///     throwing a <see cref="ValidationMetadataException"/> on encountering <see langword="null"/> values.
         /// </remarks>
-        public InputNullBehavior NullBehavior { get; }
+        public InputNullBehavior NullBehavior { get; init; }
 
         public ValidateIdAttribute(ValidateRangeKind kind)
-            : this(kind, InputNullBehavior.EnforceNotNull)
-        {
-        }
-        public ValidateIdAttribute(ValidateRangeKind kind, InputNullBehavior nullBehavior)
         {
             this.Kind = kind;
-            this.NullBehavior = nullBehavior;
             _parameterType = typeof(object);
             _isValidatableType = false;
             _predicate = IdValidationHelper.GetValidation(in kind);
         }
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidateIdAttribute"/> class. 
@@ -52,24 +49,9 @@ namespace MG.Sonarr.Next.Shell.Attributes
         /// </summary>
         /// <param name="kind">The predefined range to validate an ID against.</param>
         public ValidateIdAttribute(ValidateRangeKind kind, Type parameterType)
-            : this(kind, parameterType, InputNullBehavior.EnforceNotNull)
-        {
-        }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ValidateIdAttribute"/> class. 
-        /// This constructor uses a predefined <see cref="ValidateRangeKind"/> and the specfied
-        /// <see cref="InputNullBehavior"/>.
-        /// </summary>
-        /// <param name="kind">The predefined range to validate an ID against.</param>
-        /// <param name="nullBehavior">
-        ///     The validation behavior when a passed <see cref="IHasId"/> or <see cref="PSObject"/> instance is 
-        ///     <see langword="null"/> or when a <see cref="PSObject"/> instance does not contain an "Id" property.
-        /// </param>
-        public ValidateIdAttribute(ValidateRangeKind kind, Type parameterType, InputNullBehavior nullBehavior)
         {
             ArgumentNullException.ThrowIfNull(parameterType);
             this.Kind = kind;
-            this.NullBehavior = nullBehavior;
             _parameterType = parameterType;
             _isValidatableType = IdValidationHelper.TryGetMethodInfo(parameterType);
             _predicate = IdValidationHelper.GetValidation(in kind);
@@ -121,30 +103,14 @@ namespace MG.Sonarr.Next.Shell.Attributes
         ///     When not specified in the constructor, the default value is <see cref="InputNullBehavior.EnforceNotNull"/> 
         ///     throwing a <see cref="ValidationMetadataException"/> on encountering <see langword="null"/> values.
         /// </remarks>
-        public InputNullBehavior NullBehavior { get; }
+        public InputNullBehavior NullBehavior { get; init; }
 
         public ValidateIdsAttribute(ValidateRangeKind kind)
-            : this(kind, InputNullBehavior.EnforceNotNull)
-        {
-        }
-        public ValidateIdsAttribute(ValidateRangeKind kind, InputNullBehavior nullBehavior)
         {
             this.Kind = kind;
-            this.NullBehavior = nullBehavior;
             _parameterType = typeof(object);
             _isValidatableType = false;
             _predicate = IdValidationHelper.GetValidation(in kind);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ValidateIdsAttribute"/> class. 
-        /// This constructor uses a predefined <see cref="ValidateRangeKind"/> and uses the default <see langword="null"/>
-        /// behavior, <see cref="InputNullBehavior.EnforceNotNull"/>.
-        /// </summary>
-        /// <param name="kind">The predefined range to validate the element's ID against.</param>
-        public ValidateIdsAttribute(ValidateRangeKind kind, Type parameterType)
-            : this(kind, parameterType, InputNullBehavior.EnforceNotNull)
-        {
         }
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidateIdsAttribute"/> class. 
@@ -152,15 +118,10 @@ namespace MG.Sonarr.Next.Shell.Attributes
         /// <see cref="InputNullBehavior"/>.
         /// </summary>
         /// <param name="kind">The predefined range to validate the element's ID against.</param>
-        /// <param name="nullBehavior">
-        ///     The validation behavior when an element is <see cref="IHasId"/> or <see cref="PSObject"/> and
-        ///     <see langword="null"/> OR when a <see cref="PSObject"/> element does not contain an "Id" property.
-        /// </param>
-        public ValidateIdsAttribute(ValidateRangeKind kind, Type parameterType, InputNullBehavior nullBehavior)
+        public ValidateIdsAttribute(ValidateRangeKind kind, Type parameterType)
         {
             ArgumentNullException.ThrowIfNull(parameterType);
             this.Kind = kind;
-            this.NullBehavior = nullBehavior;
             _parameterType = parameterType;
             _isValidatableType = IdValidationHelper.TryGetMethodInfo(parameterType);
             _predicate = IdValidationHelper.GetValidation(in kind);
@@ -256,6 +217,8 @@ namespace MG.Sonarr.Next.Shell.Attributes
             int? possibleId = argument switch
             {
                 IHasId idObj => idObj.Id,
+                Either<string, int> stringOrInt when stringOrInt.IsT2 => stringOrInt.AsT2,
+                Either<int, string> intOrString when intOrString.IsT1 => intOrString.AsT1,
                 PSObject pso => GetIdFromPSObject(pso),
                 int id => id,
                 _ => null,
@@ -268,7 +231,7 @@ namespace MG.Sonarr.Next.Shell.Attributes
             ArgumentNullException.ThrowIfNull(parameterType);
             ArgumentNullException.ThrowIfNull(element);
 
-            return (int?)_getIds[parameterType].Invoke(null, new object[] { element });
+            return (int?)_getIds[parameterType].Invoke(null, [element]);
         }
         internal static IdPredicate GetValidation(in ValidateRangeKind kind)
         {

@@ -1,6 +1,7 @@
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Json;
+using MG.Sonarr.Next.Json.Naming;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Http.Clients;
@@ -103,6 +104,7 @@ namespace MG.Sonarr.Next.Shell.Context
                 .AddSingleton<ApiCmdletQueue>()
                 .AddSonarrClient(cmdletAssembly, settings, (provider, options) =>
                 {
+                    options.PropertyNamingPolicy = JsonSpanCamelCaseNamingPolicy.SpanPolicy;
                     options.PropertyNameCaseInsensitive = true;
                     options.WriteIndented = true;
                 })

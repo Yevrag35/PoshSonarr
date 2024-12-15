@@ -71,13 +71,13 @@ namespace MG.Sonarr.Next.Exceptions
         public SonarrErrorRecord(Exception normalEx, string errorId, ErrorCategory category, object? targetObj)
             : base(exception: normalEx, errorId, category, targetObj)
         {
-            _headers = EmptyNameDictionary<string>.Default;
+            _headers = EmptyNameDictionary.Empty<string>();
         }
 
         public SonarrErrorRecord(ErrorRecord wraps)
             : base(wraps, wraps?.Exception)
         {
-            _headers = EmptyNameDictionary<string>.Default;
+            _headers = EmptyNameDictionary.Empty<string>();
         }
 
         private static ErrorCategory GetCategoryFromStatusCode(HttpStatusCode? statusCode, out bool isIgnorable)
