@@ -27,7 +27,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
 
         [Parameter]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [ValidateId(ValidateRangeKind.Positive, InputNullBehavior.PassAsZero)]
+        [ValidateId(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.PassAsZero)]
         [ValidateType(typeof(int), typeof(SeriesObject))]
         public Either<int, SeriesObject> Series
         {
@@ -37,7 +37,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
 
         [Parameter]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [ValidateId(ValidateRangeKind.Positive, InputNullBehavior.PassAsZero)]
+        [ValidateId(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.PassAsZero)]
         [ValidateType(typeof(int), typeof(EpisodeObject))]
         public Either<int, EpisodeObject> Episode
         {
@@ -47,7 +47,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
 
         [Parameter]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [ValidateId(ValidateRangeKind.Positive, InputNullBehavior.PassAsZero)]
+        [ValidateId(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.PassAsZero)]
         [ValidateType(typeof(int), typeof(QualityRevisionObject))]
         public Either<int, QualityRevisionObject> Quality
         {

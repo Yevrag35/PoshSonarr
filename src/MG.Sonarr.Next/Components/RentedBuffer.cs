@@ -11,7 +11,7 @@ public static class RentedBuffer
 	/// <typeparam name="T">The type of elements in the buffer.</typeparam>
 	/// <param name="values">A read-only span of values to initialize the buffer with.</param>
 	/// <returns>A <see cref="RentedBuffer{T}"/> containing the specified values.</returns>
-	public static RentedBuffer<T> Create<T>(ReadOnlySpan<T> values)
+	public static RentedBuffer<T> Create<T>(params ReadOnlySpan<T> values)
 	{
 		return !values.IsEmpty
 			? new(values)

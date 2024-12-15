@@ -1,4 +1,5 @@
 ﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
@@ -6,6 +7,7 @@ using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Models.Series;
+using MG.Sonarr.Next.Unions;
 using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
@@ -22,13 +24,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
-        [ValidateIds(ValidateRangeKind.Positive, InputNullBehavior.EnforceNull)]
+        [ValidateIds(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.EnforceNull)]
         public AddSeriesObject[] InputObject
         {
-            get => Array.Empty<AddSeriesObject>();
+            get => [];
             set
             {
-                value ??= Array.Empty<AddSeriesObject>();
+                value ??= [];
                 _list ??= new(value.Length);
                 int count = _list.Count;
                 int howMany = value.Length;
@@ -148,17 +150,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 pso.UseSeasonFolders = this.UseSeasonFolders.ToBool();
             }
 
-            if (this.HasParameter(x => x.ProfileId))
+            if (this.HasParameter(this.ProfileId))
             {
                 pso.ProfileId = this.ProfileId;
             }
 
-            if (this.HasParameter(x => x.QualityProfileId))
+            if (this.HasParameter(this.QualityProfileId))
             {
                 pso.QualityProfileId = this.QualityProfileId;
             }
 
-            if (this.HasParameter(x => x.SeriesType))
+            if (this.HasParameter(this.SeriesType))
             {
                 pso.SeriesType = this.SeriesType;
             }
@@ -176,23 +178,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
             foreach (AddSeriesObject pso in _list)
             {
-                this.SerializeIfDebug(
-                    value: pso,
-                    options: provider.GetService<ISonarrJsonOptions>()?.ForDebugging);
+                this.SerializeIfDebug(pso);
 
                 if (this.ShouldProcess(pso.Title, "Adding Series"))
                 {
-                    var response = this.SendPostRequest<AddSeriesObject, SeriesObject>(url, pso);
-                    if (response.TryGetT1(out SeriesObject? so, out var error))
-                    {
-                        this.WriteObject(so);
-                        pso.Commit();
-                    }
-                    else
-                    {
-                        this.WriteConditionalError(error);
-                        pso.Reset();
-                    }
+                    Either<SeriesObject, SonarrErrorRecord> response = this.SendPostRequest<AddSeriesObject, SeriesObject>(url, pso);
+
+                    this.WriteOutcome(pso, response);
                 }
             }
         }

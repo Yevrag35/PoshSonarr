@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Collections.Pools;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
@@ -15,7 +16,8 @@ namespace MG.Sonarr.Next.Models
     /// <remarks><inheritdoc cref="PSObject"/></remarks>
     public abstract class SonarrObject : PSObject,
         IJsonSonarrMetadata,
-        IJsonOnDeserialized
+        IJsonOnDeserialized,
+        IResettable
     {
         bool _addedType;
         static readonly string _typeName = typeof(SonarrObject).GetName();
@@ -74,6 +76,12 @@ namespace MG.Sonarr.Next.Models
         public bool TryGetId(out int id)
         {
             return this.TryGetProperty(Constants.ID, out id);
+        }
+        /// <inheritdoc/>
+        bool IResettable.TryReset()
+        {
+            this.Reset();
+            return true;
         }
     }
 }

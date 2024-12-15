@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Shell.Extensions
 {
-    public static class PSCmdletExtensions
+    public static partial class PSCmdletExtensions
     {
         public static ActionPreference GetActionPreferenceFromParam(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName, ActionPreference defaultIfNotPresent = ActionPreference.SilentlyContinue)
         {

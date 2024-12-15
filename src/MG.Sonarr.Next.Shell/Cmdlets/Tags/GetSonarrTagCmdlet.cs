@@ -95,7 +95,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         {
             return this.SendGetRequest<MetadataList<TagObject>>(Constants.TAG);
         }
-        private static void ProcessAndFilterTags(MetadataList<TagObject> data, WildcardSet names)
+        internal static void ProcessAndFilterTags(MetadataList<TagObject> data, WildcardSet names)
         {
             for (int i = data.Count - 1; i >= 0; i--)
             {

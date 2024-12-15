@@ -8,16 +8,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
 {
     public abstract partial class SonarrCmdletBase
     {
-        static readonly Type _enumerableType = typeof(IEnumerable);
-        static readonly Type _stringType = typeof(string);
-
-        private static bool IsEnumerableType(Type type)
-        {
-            return (type.IsArray || _enumerableType.IsAssignableFrom(type)) 
-                   && 
-                   !_stringType.IsAssignableFrom(type);
-        }
-
         /// <summary>
         /// Serializes a given object to the cmdlet's Debug output stream but only if the
         /// <see cref="DebugPreference"/> preference would allow for writing it. This possibly saves not 

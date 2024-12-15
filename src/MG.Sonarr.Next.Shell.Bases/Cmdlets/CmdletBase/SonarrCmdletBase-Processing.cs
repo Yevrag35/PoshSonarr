@@ -106,6 +106,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 this.Cleanup();
                 return;
             }
+
+            if (!_isStopped && this.HasError && this.ErrorPreference == ActionPreference.Stop)
+            {
+                this.StopCmdlet(_error);
+            }
         }
 
         /// <inheritdoc cref="SonarrCmdletBase" path="/provider"/>
@@ -156,6 +161,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 this.Error = e.ToRecord();
                 this.Cleanup();
                 return;
+            }
+
+            if (!_isStopped && this.HasError && this.ErrorPreference == ActionPreference.Stop)
+            {
+                this.StopCmdlet(_error);
             }
         }
 
