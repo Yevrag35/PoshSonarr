@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Metadata
     {
         public static IServiceCollection AddMetadata(this IServiceCollection services, Assembly cmdletAssembly)
         {
-            int initialCapacity = 34;
+            int initialCapacity = 35;
             NameLookup<string> pipes = FindPipeableCmdlets(cmdletAssembly);
             MetadataResolver dict = new(initialCapacity, pipes)
             {
@@ -21,6 +21,7 @@ namespace MG.Sonarr.Next.Metadata
                 { Meta.DISK, Constants.DISKSPACE, false },
                 { Meta.DOWNLOAD_CLIENT, Constants.DOWNLOAD_CLIENT, true },
                 { Meta.DOWNLOAD_CLIENT_CONFIG, Constants.DOWNLOAD_CLIENT_CONFIG, true },
+                { Meta.DOWNLOAD_CLIENT_SCHEMA, Constants.DOWNLOAD_CLIENT_SCHEMA, false },
                 { Meta.EPISODE, Constants.EPISODE, true },
                 { Meta.EPISODE_FILE, Constants.EPISODEFILE, true },
                 { Meta.HISTORY, Constants.HISTORY, false },
