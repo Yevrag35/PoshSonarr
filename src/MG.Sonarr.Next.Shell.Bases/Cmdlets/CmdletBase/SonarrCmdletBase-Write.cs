@@ -1,4 +1,5 @@
 using MG.Sonarr.Next.Exceptions;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Services.Http;
 using System.Collections;
 using System.Text.Json;
@@ -35,6 +36,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
                 {
                     this.WriteDebug(message);
                 }
+
+                options ??= this.Services?.GetService<ISonarrJsonOptions>()?.ForDebugging;
 
                 Type type = value is not null
                     ? typeof(T)

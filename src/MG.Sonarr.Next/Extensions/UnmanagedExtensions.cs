@@ -42,5 +42,16 @@ namespace MG.Sonarr.Next.Extensions
 
             return length;
         }
+
+        [DebuggerStepThrough]
+        public static int GetMaxLength<T>(this T n) where T : unmanaged, INumber<T>
+        {
+            return LengthConstants.GetMaxLength(in n);
+        }
+        [DebuggerStepThrough]
+        public static int GetRefMaxLength<T>(this ref T n) where T : unmanaged, INumber<T>
+        {
+            return LengthConstants.GetMaxLength(ref n);
+        }
     }
 }

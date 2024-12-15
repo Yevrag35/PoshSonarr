@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Reflection;
@@ -61,6 +61,34 @@ namespace MG.Sonarr.Next.Json
                 this.ForDebugging.Converters.Add(conv);
             }
         }
+
+        [Obsolete("Complete rework", error: true)]
+        internal static void ApplyCamelCasing(Span<char> chars)
+        {
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (i == 1 && !char.IsUpper(chars[i]))
+                {
+                    break;
+                }
+
+                bool hasNext = (i + 1 < chars.Length);
+
+                // Stop when next char is already lowercase.
+                if (i > 0 && hasNext && !char.IsUpper(chars[i + 1]))
+                {
+                    // If the next char is a space, lowercase current char before exiting.
+                    if (chars[i + 1] == ' ')
+                    {
+                        chars[i] = char.ToLowerInvariant(chars[i]);
+                    }
+
+                    break;
+                }
+
+                chars[i] = char.ToLowerInvariant(chars[i]);
+            }
+        }
     }
 
     public static class SonarrJsonDependencyInjection
@@ -104,8 +132,7 @@ namespace MG.Sonarr.Next.Json
                 config.AddConvertProperties(EnumerateConverterProperties())
                       .AddGlobalReplaceNames(EnumerateGlobalReplaceNames())
                       .AddIgnoreProperties(EnumerateIgnoreProperties())
-                      .AddSpanConverters(new KeyValuePair<string, SpanConverter>[]
-                      {
+                      .AddSpanConverters(
                             new("AirDate", doSpanConverter),
                             new("FirstAired", doSpanConverter),
                             new("AirTime", timeConverter),
@@ -113,8 +140,8 @@ namespace MG.Sonarr.Next.Json
                             new("ApiKey", alwaysStringConverter),
                             new("DownloadId", alwaysStringConverter),
                             new("ReleaseHash", alwaysStringConverter),
-                            new("TorrentInfoHash", alwaysStringConverter),
-                      });
+                            new("TorrentInfoHash", alwaysStringConverter)
+                      );
             });
 
             options.Converters.AddMany(
@@ -134,7 +161,7 @@ namespace MG.Sonarr.Next.Json
         {
             List<JsonConverter> output = new(10);
             Type genericClassType = typeof(SonarrObjectConverter<>);
-            object[] ctorArgs = new object[] { converter };
+            object[] ctorArgs = [converter];
             Type[] typeParams = new Type[1];
 
             IEnumerable<Type> types = GetSonarrObjectTypes();
