@@ -39,27 +39,21 @@ namespace MG.Sonarr.Next.Json
             ArgumentNullException.ThrowIfNull(setupDeserializer);
 
             this.ForDeserializing = new(JsonSerializerDefaults.Web);
-            this.ForSerializing = new(JsonSerializerDefaults.Web)
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                WriteIndented = true,
-            };
+            setupDeserializer(this.ForDeserializing);
 
-            this.ForDebugging = new(JsonSerializerDefaults.Web)
+            this.ForSerializing = new(this.ForDeserializing)
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true,
                 WriteIndented = false,
             };
 
-            setupDeserializer(this.ForDeserializing);
-
-            foreach (var conv in this.ForDeserializing.Converters)
+            this.ForDebugging = new(this.ForDeserializing)
             {
-                this.ForSerializing.Converters.Add(conv);
-                this.ForDebugging.Converters.Add(conv);
-            }
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                PropertyNameCaseInsensitive = true,
+                WriteIndented = true,
+            };
         }
 
         [Obsolete("Complete rework", error: true)]
@@ -100,7 +94,6 @@ namespace MG.Sonarr.Next.Json
                 void newAction(JsonSerializerOptions options)
                 {
                     options.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
-                    options.PropertyNamingPolicy = null;
                     options.TypeInfoResolver = new DefaultJsonTypeInfoResolver
                     {
                         Modifiers =

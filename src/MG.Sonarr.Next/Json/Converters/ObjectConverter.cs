@@ -63,8 +63,8 @@ namespace MG.Sonarr.Next.Json.Converters
         internal T ConvertToObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options, IReadOnlyDictionary<string, string>? replaceNames, IReadOnlySet<string>? propertiesToCapitalize) where T : PSObject, new()
         {
             var pso = new T();
-            replaceNames ??= EmptyNameDictionary<string>.Default;
-            propertiesToCapitalize ??= EmptyNameDictionary<string>.Default;
+            replaceNames ??= EmptyNameDictionary.Empty<string>();
+            propertiesToCapitalize ??= EmptyNameDictionary.Empty<string>();
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
@@ -143,8 +143,8 @@ namespace MG.Sonarr.Next.Json.Converters
         private static string ProcessQuotes(ReadOnlySpan<char> chars, string propertyName)
         {
             int position = 0;
-            ReadOnlySpan<char> quotes = stackalloc char[] { '\\', '"' };
-            ReadOnlySpan<char> backs = stackalloc char[] { '\\', '\\' };
+            ReadOnlySpan<char> quotes = ['\\', '"'];
+            ReadOnlySpan<char> backs = ['\\', '\\'];
             Span<char> scratch = stackalloc char[chars.Length];
 
             foreach (SplitEntry section in chars.SpanSplit(quotes, backs))
@@ -290,7 +290,7 @@ namespace MG.Sonarr.Next.Json.Converters
             }
             else if (DateTimeOffset.TryParse(chars, Statics.DefaultProvider, DateTimeStyles.AssumeUniversal, out DateTimeOffset offset))
             {
-                return propertyName.AsSpan().EndsWith(stackalloc char[] { 'U', 'T', 'C' }, StringComparison.OrdinalIgnoreCase)
+                return propertyName.AsSpan().EndsWith(['U', 'T', 'C'], StringComparison.OrdinalIgnoreCase)
                     ? offset
                     : offset.ToLocalTime();
             }
@@ -305,7 +305,7 @@ namespace MG.Sonarr.Next.Json.Converters
         }
         private object? ReadString(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName, IReadOnlySet<string>? capitalize)
         {
-            capitalize ??= EmptyNameDictionary<string>.Default;
+            capitalize ??= EmptyNameDictionary.Empty<string>();
             bool isRented = false;
             char[]? array = null;
 
@@ -415,7 +415,7 @@ namespace MG.Sonarr.Next.Json.Converters
 
         internal void WritePSObject(Utf8JsonWriter writer, JsonSerializerOptions options, PSObject pso, IReadOnlyDictionary<string, string>? replaceNames = null)
         {
-            replaceNames ??= EmptyNameDictionary<string>.Default;
+            replaceNames ??= EmptyNameDictionary.Empty<string>();
             var globalReplace = _config.GlobalReplaceNames.SerializationNames;
 
             writer.WriteStartObject();
