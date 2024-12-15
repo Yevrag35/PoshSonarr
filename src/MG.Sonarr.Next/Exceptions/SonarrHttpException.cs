@@ -5,7 +5,7 @@ using System.Net;
 namespace MG.Sonarr.Next.Exceptions
 {
     /// <summary>
-    /// An exception class thrown when an <see cref="HttpClient"/> exception is thrown from a client 
+    /// An exception class thrown when an <see cref="HttpClient"/> exception is thrown from a client
     /// implementation written for PoshSonarr.
     /// </summary>
     public sealed class SonarrHttpException : PoshSonarrException
@@ -35,7 +35,7 @@ namespace MG.Sonarr.Next.Exceptions
         /// </summary>
         public HttpResponseMessage? Response { get; }
         /// <summary>
-        /// Gets the reason phrase which is typically is sent by servers together with the status code 
+        /// Gets the reason phrase which is typically is sent by servers together with the status code
         /// from the response that generated the current exception.
         /// </summary>
         public string? ReasonPhrase { get; }
@@ -87,7 +87,8 @@ namespace MG.Sonarr.Next.Exceptions
         {
             if (response is null)
             {
-                return EmptyNameDictionary<string>.Default;
+                EmptyNameDictionary<string> empty = [];
+                return empty;
             }
 
             Dictionary<string, string> dict = new(3);

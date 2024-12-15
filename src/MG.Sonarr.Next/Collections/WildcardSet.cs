@@ -5,6 +5,9 @@ using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Collections;
 
+/// <summary>
+/// Represents a set of wildcard patterns.
+/// </summary>
 [DebuggerDisplay("Count = {Count}")]
 [CollectionBuilder(typeof(WildcardSet), nameof(Create))]
 public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
@@ -23,11 +26,19 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
         get => _set.Count;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WildcardSet"/> class with the default capacity.
+    /// </summary>
     [DebuggerStepThrough]
     public WildcardSet()
         : this(DEFAULT_CAPACITY)
     {
     }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WildcardSet"/> class with the specified values.
+    /// </summary>
+    /// <param name="values">The wildcard values to initialize the set with.</param>
     private WildcardSet(scoped ReadOnlySpan<Wildcard> values)
         : this(values.Length)
     {
@@ -36,6 +47,11 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
             _ = _set.Add(ws);
         }
     }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WildcardSet"/> class with the specified capacity.
+    /// </summary>
+    /// <param name="capacity">The initial capacity of the set.</param>
     [DebuggerStepThrough]
     private WildcardSet(int capacity)
     {
@@ -49,15 +65,32 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
     }
 #endif
 
+    /// <summary>
+    /// Adds a wildcard to the set.
+    /// </summary>
+    /// <param name="value">The wildcard to add.</param>
+    /// <returns><see langword="true"/> if the wildcard was added; otherwise, <see langword="false"/>.</returns>
     public bool Add(Wildcard value)
     {
         return _set.Add(value);
     }
+
+    /// <summary>
+    /// Adds a wildcard pattern to the set.
+    /// </summary>
+    /// <param name="value">The wildcard pattern to add.</param>
+    /// <returns><see langword="true"/> if the wildcard pattern was added; otherwise, <see langword="false"/>.</returns>
     public bool Add([NotNullWhen(true)] string? value)
     {
         Wildcard wildcard = Wildcard.Parse(value);
         return !wildcard.IsEmpty && _set.Add(wildcard);
     }
+
+    /// <summary>
+    /// Adds an integer value as a wildcard pattern to the set.
+    /// </summary>
+    /// <param name="value">The integer value to add.</param>
+    /// <returns><see langword="true"/> if the integer value was added; otherwise, <see langword="false"/>.</returns>
     public bool Add(int value)
     {
         Span<char> chars = stackalloc char[LengthConstants.INT_MAX];
@@ -67,6 +100,12 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 
         return this.Add(chars);
     }
+
+    /// <summary>
+    /// Adds a read-only span of characters as a wildcard pattern to the set.
+    /// </summary>
+    /// <param name="value">The read-only span of characters to add.</param>
+    /// <returns><see langword="true"/> if the span was added; otherwise, <see langword="false"/>.</returns>
     public bool Add(ReadOnlySpan<char> value)
     {
         if (value.IsWhiteSpace())
@@ -76,6 +115,12 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 
         return _alternate.Add(value);
     }
+
+    /// <summary>
+    /// Determines whether the set contains a specific read-only span of characters.
+    /// </summary>
+    /// <param name="value">The read-only span of characters to locate in the set.</param>
+    /// <returns><see langword="true"/> if the span is found; otherwise, <see langword="false"/>.</returns>
     public bool Contains(ReadOnlySpan<char> value)
     {
         return _alternate.Contains(value);
@@ -85,6 +130,12 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
         return this.Add(Wildcard.Parse(chars));
     }
 #endif
+
+    /// <summary>
+    /// Determines whether the set contains a specific wildcard.
+    /// </summary>
+    /// <param name="value">The wildcard to locate in the set.</param>
+    /// <returns><see langword="true"/> if the wildcard is found; otherwise, <see langword="false"/>.</returns>
     public bool Contains(Wildcard value)
     {
         return _set.Contains(value);
@@ -116,6 +167,7 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 
         return false;
     }
+
     /// <summary>
     /// Determines if any of the <see cref="Wildcard"/> objects in the current set match the provided value.
     /// </summary>
@@ -128,6 +180,7 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
     {
         return _set.Any(ws => ws.IsMatch(value));
     }
+
     /// <summary>
     /// Modifies the current <see cref="WildcardSet"/> object to contain only the elements that are present in itself,
     /// the specified collection, or both.
@@ -137,6 +190,7 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
     {
         _set.UnionWith(other);
     }
+
     /// <summary>
     /// Modifies the current <see cref="WildcardSet"/> object to contain only the elements that are present in itself,
     /// the specified collection, or both.
@@ -155,6 +209,7 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
     {
         return _set.GetEnumerator();
     }
+
     /// <inheritdoc/>
     [DebuggerStepThrough]
     IEnumerator IEnumerable.GetEnumerator()
@@ -169,6 +224,11 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
         return true;
     }
 
+    /// <summary>
+    /// Creates a new <see cref="WildcardSet"/> with the specified values.
+    /// </summary>
+    /// <param name="values">The wildcard values to initialize the set with.</param>
+    /// <returns>A new <see cref="WildcardSet"/> containing the specified values.</returns>
     public static WildcardSet Create(params ReadOnlySpan<Wildcard> values)
     {
         return !values.IsEmpty
@@ -181,26 +241,54 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
         , IAlternateEqualityComparer<ReadOnlySpan<char>, Wildcard>
 #endif
     {
+        /// <summary>
+        /// Determines whether the specified wildcards are equal.
+        /// </summary>
+        /// <param name="x">The first wildcard to compare.</param>
+        /// <param name="y">The second wildcard to compare.</param>
+        /// <returns><see langword="true"/> if the specified wildcards are equal; otherwise, <see langword="false"/>.</returns>
         public bool Equals(Wildcard x, Wildcard y)
         {
             return x.Equals(y);
         }
+
+        /// <summary>
+        /// Returns a hash code for the specified wildcard.
+        /// </summary>
+        /// <param name="obj">The wildcard for which a hash code is to be returned.</param>
+        /// <returns>A hash code for the specified wildcard.</returns>
         public int GetHashCode([DisallowNull] Wildcard obj)
         {
             return obj.GetHashCode();
         }
 
 #if NET9_0_OR_GREATER
+        /// <summary>
+        /// Creates a wildcard from the specified read-only span of characters.
+        /// </summary>
+        /// <param name="alternate">The read-only span of characters to create the wildcard from.</param>
+        /// <returns>A new wildcard created from the specified span.</returns>
         public Wildcard Create(ReadOnlySpan<char> alternate)
         {
             return Wildcard.Parse(alternate);
         }
 
+        /// <summary>
+        /// Determines whether the specified read-only span of characters and wildcard are equal.
+        /// </summary>
+        /// <param name="alternate">The read-only span of characters to compare.</param>
+        /// <param name="other">The wildcard to compare.</param>
+        /// <returns><see langword="true"/> if the specified span and wildcard are equal; otherwise, <see langword="false"/>.</returns>
         public bool Equals(ReadOnlySpan<char> alternate, Wildcard other)
         {
             return other.Equals(alternate);
         }
 
+        /// <summary>
+        /// Returns a hash code for the specified read-only span of characters.
+        /// </summary>
+        /// <param name="alternate">The read-only span of characters for which a hash code is to be returned.</param>
+        /// <returns>A hash code for the specified span.</returns>
         public int GetHashCode(ReadOnlySpan<char> alternate)
         {
             return ((IAlternateEqualityComparer<ReadOnlySpan<char>, string>)StringComparer.OrdinalIgnoreCase)

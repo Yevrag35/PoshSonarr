@@ -4,16 +4,18 @@ namespace MG.Sonarr.Next.Collections
 {
     internal readonly struct JsonNameHolder
     {
+        private static readonly EmptyNameDictionary<string> _empty = [];
+
         readonly IReadOnlyDictionary<string, string> _deserialization;
         readonly IReadOnlyDictionary<string, string> _serialization;
 
-        public IReadOnlyDictionary<string, string> DeserializationNames => _deserialization ?? EmptyNameDictionary<string>.Default;
-        public IReadOnlyDictionary<string, string> SerializationNames => _serialization ?? EmptyNameDictionary<string>.Default;
+        public IReadOnlyDictionary<string, string> DeserializationNames => _deserialization ?? _empty;
+        public IReadOnlyDictionary<string, string> SerializationNames => _serialization ?? _empty;
 
         internal JsonNameHolder(IReadOnlyDictionary<string, string>? serialization, IReadOnlyDictionary<string, string>? deserialization)
         {
-            _deserialization = deserialization ?? EmptyNameDictionary<string>.Default;
-            _serialization = serialization ?? EmptyNameDictionary<string>.Default;
+            _deserialization = deserialization ?? _empty;
+            _serialization = serialization ?? _empty;
         }
 
         /// <exception cref="ArgumentException"/>
@@ -57,7 +59,7 @@ namespace MG.Sonarr.Next.Collections
         {
             return dict.Count switch
             {
-                0 => new(EmptyNameDictionary<string>.Default, EmptyNameDictionary<string>.Default),
+                0 => new(_empty, _empty),
                 1 => new(OneStringDictionary.FromEnumerable(dict), dict),
                 >= 2 => new(ReverseDictionary(dict), dict),
                 _ => throw new UnreachableException("How could you have a negative count???"),

@@ -27,7 +27,7 @@ namespace MG.Sonarr.Next.Collections.Pools
     public interface IObjectPool<T> where T : notnull
     {
         /// <summary>
-        /// Retrieves a single object from the pool. If no items are present in the pool, a new object will 
+        /// Retrieves a single object from the pool. If no items are present in the pool, a new object will
         /// constructed instead.
         /// </summary>
         /// <returns>A cached or constructed object instance from the pool.</returns>
@@ -40,6 +40,11 @@ namespace MG.Sonarr.Next.Collections.Pools
         void Return(T? item);
     }
 
+    /// <summary>
+    /// An interface that extends <see cref="IObjectPool{T}"/> for types that implement
+    /// <see cref="IResettable"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of objects the pool manages.</typeparam>
     public interface IQuickPool<T> : IObjectPool<T> where T : notnull, IResettable
     {
     }

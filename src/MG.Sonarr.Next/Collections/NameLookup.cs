@@ -11,7 +11,7 @@
         {
             get => _dict.TryGetValue(key, out SortedSet<T>? result)
                 ? result
-                : EmptyNameDictionary<T>.Default;
+                : EmptyNameDictionary.Empty<T>();
         }
 
         internal NameLookup(int capacity, IEqualityComparer<T>? equalityComparer, IComparer<T>? comparer)

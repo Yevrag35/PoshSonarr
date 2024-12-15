@@ -1,7 +1,10 @@
 ﻿using System.Collections;
+using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Collections
 {
+    [DebuggerStepThrough]
+    [StructLayout(LayoutKind.Auto)]
     internal readonly struct OneStringDictionary : IReadOnlyDictionary<string, string>
     {
         const int COUNT = 1;
@@ -18,16 +21,18 @@ namespace MG.Sonarr.Next.Collections
         int IReadOnlyCollection<KeyValuePair<string, string>>.Count => COUNT;
         IEnumerable<string> IReadOnlyDictionary<string, string>.Keys
         {
+            [DebuggerStepThrough]
             get
             {
-                yield return this.Key;
+                return [this.Key];
             }
         }
         IEnumerable<string> IReadOnlyDictionary<string, string>.Values
         {
+            [DebuggerStepThrough]
             get
             {
-                yield return this.Value;
+                return [this.Value];
             }
         }
         string IReadOnlyDictionary<string, string>.this[string key] => this.GetValueIfKeyIsSame(key, failOnNotEqual: true);
@@ -37,7 +42,7 @@ namespace MG.Sonarr.Next.Collections
         private string GetValueIfKeyIsSame(string key, bool failOnNotEqual)
         {
             ArgumentNullException.ThrowIfNull(key);
-            if (!this.IsEmpty && key.Equals(_key, StringComparison.InvariantCultureIgnoreCase))
+            if (!this.IsEmpty && key.Equals(_key, StringComparison.OrdinalIgnoreCase))
             {
                 return _value;
             }
@@ -66,15 +71,19 @@ namespace MG.Sonarr.Next.Collections
         bool IReadOnlyDictionary<string, string>.ContainsKey(string key)
         {
             ArgumentNullException.ThrowIfNull(key);
-            return !this.IsEmpty && StringComparer.InvariantCultureIgnoreCase.Equals(key, this.Key);
+            return !this.IsEmpty
+                && key.AsSpan().Equals(_key, StringComparison.OrdinalIgnoreCase);
         }
 
         public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
         {
             if (!this.IsEmpty)
             {
-                yield return new(_key, _value);
+                KeyValuePair<string, string> kvp = new(_key, _value);
+                return Enumerable.Repeat(kvp, 1).GetEnumerator();
             }
+
+            return Enumerable.Empty<KeyValuePair<string, string>>().GetEnumerator();
         }
         IEnumerator IEnumerable.GetEnumerator()
         {

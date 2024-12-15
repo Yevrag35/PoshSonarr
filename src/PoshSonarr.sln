@@ -3,10 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MG.Sonarr-DotNet", "Legacy\MG.Sonarr-DotNet\MG.Sonarr-DotNet.csproj", "{8DD7200C-4DC3-4117-9439-30AD07B4337C}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MG.Sonarr-Core", "Legacy\MG.Sonarr-Core\MG.Sonarr-Core.csproj", "{E0B1EF91-A152-4836-A56E-27F6390F6382}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MG.Sonarr.Functionality", "Legacy\MG.Sonarr.Functionality\MG.Sonarr.Functionality.csproj", "{16FD2D22-D7F4-48E1-9208-04D1939F1785}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Legacy", "Legacy", "{BF64B7EB-C988-439E-A802-87170EFFB271}"
@@ -37,14 +33,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8DD7200C-4DC3-4117-9439-30AD07B4337C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8DD7200C-4DC3-4117-9439-30AD07B4337C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8DD7200C-4DC3-4117-9439-30AD07B4337C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8DD7200C-4DC3-4117-9439-30AD07B4337C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E0B1EF91-A152-4836-A56E-27F6390F6382}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E0B1EF91-A152-4836-A56E-27F6390F6382}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E0B1EF91-A152-4836-A56E-27F6390F6382}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E0B1EF91-A152-4836-A56E-27F6390F6382}.Release|Any CPU.Build.0 = Release|Any CPU
 		{16FD2D22-D7F4-48E1-9208-04D1939F1785}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{16FD2D22-D7F4-48E1-9208-04D1939F1785}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16FD2D22-D7F4-48E1-9208-04D1939F1785}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -74,8 +62,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{8DD7200C-4DC3-4117-9439-30AD07B4337C} = {BF64B7EB-C988-439E-A802-87170EFFB271}
-		{E0B1EF91-A152-4836-A56E-27F6390F6382} = {BF64B7EB-C988-439E-A802-87170EFFB271}
 		{16FD2D22-D7F4-48E1-9208-04D1939F1785} = {BF64B7EB-C988-439E-A802-87170EFFB271}
 		{579327AF-51FA-43F6-A3AD-7F91E02572AF} = {7045688D-A1C1-4EE6-94CA-877E01750D4F}
 		{AA685AFD-07AB-4C49-B0C9-7860EBBB4D6A} = {7045688D-A1C1-4EE6-94CA-877E01750D4F}
