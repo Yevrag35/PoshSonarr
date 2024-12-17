@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Models;
+﻿using MG.Sonarr.Next.Json.Naming;
+using MG.Sonarr.Next.Models;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Json.Converters
@@ -43,7 +44,8 @@ namespace MG.Sonarr.Next.Json.Converters
                 return;
             }
 
-            _converter.WritePSObject(writer, options, value, _serializedNames);
+            WorkingNamingPolicy policy = new(options);
+            _converter.WritePSObject(writer, options, value, ref policy, _serializedNames);
         }
     }
 }

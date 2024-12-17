@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.Metadata
     /// <see cref="IMetadataResolver"/> implementing service.
     /// </remarks>
     [DebuggerDisplay(@"\{{Value}, {UrlBase}\}")]
-    public sealed class MetadataTag : ICloneable, IEquatable<MetadataTag>
+    public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatable<MetadataTag>
     {
         /// <summary>
         /// Gets the array of cmdlet names that data tagged with this instance can be piped to in PowerShell.
@@ -34,18 +34,12 @@ namespace MG.Sonarr.Next.Metadata
         public string Value { get; }
 
         private MetadataTag()
+            : this(string.Empty, string.Empty, supportsId: false, [])
         {
-            this.CanPipeTo = [];
-            this.SupportsId = false;
-            this.UrlBase = string.Empty;
-            this.Value = string.Empty;
         }
         private MetadataTag(MetadataTag copyFrom)
+            : this(copyFrom.UrlBase, copyFrom.Value, copyFrom.SupportsId, copyFrom.CanPipeTo)
         {
-            this.CanPipeTo = copyFrom.CanPipeTo;
-            this.SupportsId = copyFrom.SupportsId;
-            this.UrlBase = copyFrom.UrlBase;
-            this.Value = copyFrom.Value;
         }
         internal MetadataTag(string urlBase, string value, bool supportsId, ImmutableArray<string> pipesTo)
         {
@@ -65,15 +59,34 @@ namespace MG.Sonarr.Next.Metadata
         /// </summary>
         public static readonly MetadataTag Empty = new();
 
+        /// <summary>
+        /// Compares this instance to another <see cref="MetadataTag"/> instance based on the
+        /// <see cref="Value"/> property.
+        /// </summary>
+        /// <param name="other">The <see cref="MetadataTag"/> instance to compare to.</param>
+        /// <returns>A value indicating the relative order of the two instances.</returns>
+        public int CompareTo(MetadataTag? other)
+        {
+            if (this.IsNullOrReferenceEquals(other, out bool isEqual))
+            {
+                return isEqual ? 0 : -1;
+            }
+
+            return this.Value.CompareTo(other.Value);
+        }
+
         public bool Equals(MetadataTag? other)
         {
-            return ReferenceEquals(this, other)
-                   ||
-                   (this.UrlBase == other?.UrlBase
-                    &&
-                    this.Value == other?.Value
-                    &&
-                    this.SupportsId == other?.SupportsId);
+            if (!this.IsNullOrReferenceEquals(other, out bool isEqual))
+            {
+                isEqual = this.SupportsId == other.SupportsId
+                          &&
+                          this.UrlBase.Equals(other.UrlBase, StringComparison.OrdinalIgnoreCase)
+                          &&
+                          this.Value.Equals(other.Value, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return isEqual;
         }
         public override bool Equals(object? obj)
         {
@@ -119,6 +132,24 @@ namespace MG.Sonarr.Next.Metadata
                 state.id.CopyTo(chars.Slice(position));
             });
         }
+        public string GetUrlForId(ReadOnlySpan<char> id)
+        {
+            this.ThrowIfNotSupportId();
+            if (id.IsWhiteSpace())
+            {
+                return this.UrlBase;
+            }
+
+            Span<char> chars = stackalloc char[this.UrlBase.Length + 1 + id.Length];
+
+            int position = 0;
+            this.UrlBase.CopyToSlice(chars, ref position);
+            chars[position++] = '/';
+
+            id.CopyTo(chars.Slice(position));
+
+            return new string(chars);
+        }
         
         /// <exception cref="InvalidOperationException"/>
         public string GetUrlForId<T>(T id) where T : ISpanFormattable
@@ -133,7 +164,11 @@ namespace MG.Sonarr.Next.Metadata
             if (!id.TryCopyToSlice(span, ref position, provider: Statics.DefaultProvider))
             {
                 Debug.Fail($"Unable to format '{id}' into the BaseUrl.");
-                return this.UrlBase + '/' + id;
+                position = this.UrlBase.Length + 1;
+
+                id.ToString(null, formatProvider: Statics.DefaultProvider)
+                  .AsSpan()
+                  .CopyToSlice(span, ref position);
             }
 
             return new string(span.Slice(0, position));
@@ -157,6 +192,23 @@ namespace MG.Sonarr.Next.Metadata
             }
 
             return new string(span.Slice(0, position));
+        }
+
+        private bool IsNullOrReferenceEquals([NotNullWhen(false)] MetadataTag? other, out bool isEqual)
+        {
+            if (other is null)
+            {
+                isEqual = false;
+                return true;
+            }
+            else if (ReferenceEquals(this, other))
+            {
+                isEqual = true;
+                return true;
+            }
+
+            isEqual = false;
+            return false;
         }
         private void ThrowIfNotSupportId()
         {

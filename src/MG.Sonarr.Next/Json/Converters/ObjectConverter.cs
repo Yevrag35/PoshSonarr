@@ -1,7 +1,9 @@
 ﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Components;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Json.Converters.Spans;
+using MG.Sonarr.Next.Json.Naming;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
@@ -20,6 +22,7 @@ namespace MG.Sonarr.Next.Json.Converters
 {
     public sealed class ObjectConverter : JsonConverter<object>
     {
+        const int MAX_STACKALLOC = 256;
         readonly ObjectConverterConfiguration _config;
 
         public ObjectConverter(IMetadataResolver resolver, Action<IObjectConverterConfig> configure)
@@ -54,10 +57,10 @@ namespace MG.Sonarr.Next.Json.Converters
             };
         }
 
-        private static List<object> ConvertToListOfObjects(ref Utf8JsonReader reader, JsonSerializerOptions options)
+        private static object[] ConvertToListOfObjects(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
-            return JsonSerializer.Deserialize<List<object>>(ref reader, options) ?? 
-                throw new JsonException("Unable to deserialize into an array of PSObject instances.");
+            return JsonSerializer.Deserialize<object[]>(ref reader, options) ?? 
+                throw new JsonException("Unable to deserialize into an array of object instances.");
         }
 
         internal T ConvertToObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options, IReadOnlyDictionary<string, string>? replaceNames, IReadOnlySet<string>? propertiesToCapitalize) where T : PSObject, new()
@@ -278,7 +281,7 @@ namespace MG.Sonarr.Next.Json.Converters
 
             return propertyName;
         }
-        private object ReadString(Span<char> chars, string propertyName)
+        private static object ReadString(ReadOnlySpan<char> chars, string propertyName)
         {
             if (Guid.TryParse(chars, Statics.DefaultProvider, out Guid guidStr))
             {
@@ -306,53 +309,50 @@ namespace MG.Sonarr.Next.Json.Converters
         private object? ReadString(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName, IReadOnlySet<string>? capitalize)
         {
             capitalize ??= EmptyNameDictionary.Empty<string>();
-            bool isRented = false;
-            char[]? array = null;
 
             if (reader.ValueIsEscaped)
             {
                 return reader.GetString() ?? string.Empty;
             }
 
-            Span<char> span = reader.ValueSpan.Length < 1001
-                ? stackalloc char[reader.ValueSpan.Length]
-                : RentArray(reader.ValueSpan.Length, ref isRented, ref array);
-
-            int written = Encoding.UTF8.GetChars(reader.ValueSpan, span);
-            span = span.Slice(0, written);
-
-            ref char firstChar = ref span[0];
-            if (capitalize.Contains(propertyName) && char.IsLower(firstChar))
+            int length = reader.ValueSpan.Length;
+            RentedBuffer<char> buffer = [];
+            
+            try
             {
-                firstChar = char.ToUpper(firstChar);
-            }
+                Span<char> span = length <= MAX_STACKALLOC
+                    ? stackalloc char[length]
+                    : RentedBuffer.Rent(length, ref buffer);
 
-            object? result;
-            if (_config.SpanConverters.TryGetValue(propertyName, out SpanConverter? converter))
-            {
-                result = converter.ConvertSpan(span, propertyName);
-            }
-            else if (TryReadAsNumber(span, out ValueType? asValueType))
-            {
-                result = asValueType;
-            }
-            else
-            {
-                result = this.ReadString(span, propertyName);
-            }
+                int written = Encoding.UTF8.GetChars(reader.ValueSpan, span);
+                span = span.Slice(0, written);
 
-            if (isRented)
-            {
-                ArrayPool<char>.Shared.Return(array!);
-            }
+                ref char firstChar = ref span[0];
+                if (capitalize.Contains(propertyName) && char.IsLower(firstChar))
+                {
+                    firstChar = char.ToUpper(firstChar);
+                }
 
-            return result;
-        }
-        private static Span<T> RentArray<T>(in int length, ref bool isRented, ref T[]? array)
-        {
-            array = ArrayPool<T>.Shared.Rent(length);
-            isRented = true;
-            return array.AsSpan(0, length);
+                object? result;
+                if (_config.SpanConverters.TryGetValue(propertyName, out SpanConverter? converter))
+                {
+                    result = converter.ConvertSpan(span, propertyName);
+                }
+                else if (TryReadAsNumber(span, out ValueType? asValueType))
+                {
+                    result = asValueType;
+                }
+                else
+                {
+                    result = ReadString(span, propertyName);
+                }
+
+                return result;
+            }
+            finally
+            {
+                buffer.Dispose();
+            }
         }
 
         [DoesNotReturn]
@@ -400,7 +400,8 @@ namespace MG.Sonarr.Next.Json.Converters
 
             if (value is PSObject pso)
             {
-                this.WritePSObject(writer, options, pso);
+                WorkingNamingPolicy policy = new(options);
+                this.WritePSObject(writer, options, pso, ref policy);
             }
             else if (value is PSCustomObject)
             {
@@ -413,7 +414,7 @@ namespace MG.Sonarr.Next.Json.Converters
             }
         }
 
-        internal void WritePSObject(Utf8JsonWriter writer, JsonSerializerOptions options, PSObject pso, IReadOnlyDictionary<string, string>? replaceNames = null)
+        internal void WritePSObject(Utf8JsonWriter writer, JsonSerializerOptions options, PSObject pso, ref readonly WorkingNamingPolicy policy, IReadOnlyDictionary<string, string>? replaceNames = null)
         {
             replaceNames ??= EmptyNameDictionary.Empty<string>();
             var globalReplace = _config.GlobalReplaceNames.SerializationNames;
@@ -421,7 +422,7 @@ namespace MG.Sonarr.Next.Json.Converters
             writer.WriteStartObject();
 
             foreach (var prop in pso.Properties
-                .Where(x => x.MemberType == PSMemberTypes.NoteProperty
+                .Where(static x => x.MemberType == PSMemberTypes.NoteProperty
                             &&
                             x.IsGettable))
             {
@@ -436,21 +437,46 @@ namespace MG.Sonarr.Next.Json.Converters
                         ? globalPn
                         : prop.Name;
 
-                writer.WritePropertyName(options.ConvertName(pn));
+                policy.WritePropertyName(writer, pn);
 
-                if (prop.Value is null)
+                switch (prop.Value)
                 {
-                    writer.WriteNullValue();
-                    continue;
-                }
-                else if (prop.Value is string strVal)
-                {
-                    writer.WriteStringValue(strVal);
-                    continue;
-                }
+                    case string strVal:
+                        writer.WriteStringValue(strVal);
+                        break;
 
-                string serialized = JsonSerializer.Serialize(prop.Value, prop.Value.GetType(), options);
-                writer.WriteRawValue(serialized);
+                    case bool boolVal:
+                        writer.WriteBooleanValue(boolVal);
+                        break;
+
+                    case int intVal:
+                        writer.WriteNumberValue(intVal);
+                        break;
+
+                    case long longVal:
+                        writer.WriteNumberValue(longVal);
+                        break;
+
+                    case decimal decVal:
+                        writer.WriteNumberValue(decVal);
+                        break;
+
+                    case double dubVal:
+                        writer.WriteNumberValue(dubVal);
+                        break;
+
+                    case null:
+                        writer.WriteNullValue();
+                        break;
+
+                    default:
+                        JsonSerializer.Serialize(
+                            writer,
+                            prop.Value,
+                            prop.Value.GetType(),
+                            options);
+                        break;
+                }
             }
 
             writer.WriteEndObject();

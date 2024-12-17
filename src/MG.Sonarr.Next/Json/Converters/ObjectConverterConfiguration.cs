@@ -29,7 +29,7 @@ namespace MG.Sonarr.Next.Json.Converters
         internal ObjectConverterConfiguration(IMetadataResolver resolver)
         {
             this.Resolver = resolver;
-            _convertProps = new(StringComparer.InvariantCultureIgnoreCase);
+            _convertProps = new(StringComparer.OrdinalIgnoreCase);
             _globalReplaceNames = default;
             _ignoreProps = new(_convertProps.Comparer);
             _spanConverters = new(_convertProps.Comparer);
