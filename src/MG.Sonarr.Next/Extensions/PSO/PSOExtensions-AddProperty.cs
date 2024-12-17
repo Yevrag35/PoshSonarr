@@ -1,3 +1,4 @@
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.PSProperties;
 using System.Management.Automation;
@@ -17,36 +18,63 @@ namespace MG.Sonarr.Next.Extensions.PSO
 
         public static void AddProperty<T>(this PSObject pso, string propertyName, T value)
         {
-            ArgumentNullException.ThrowIfNull(pso);
             ArgumentException.ThrowIfNullOrEmpty(propertyName);
-
-            pso.Properties.Add(new PSNoteProperty(propertyName, value));
-        }
-        public static void AddProperty<T, TProp>(this T pso, Expression<Func<T, TProp>> expression)
-            where T : SonarrObject
-        {
-            ArgumentNullException.ThrowIfNull(pso);
-            ArgumentNullException.ThrowIfNull(expression);
-
-            if (!expression.TryGetAsMember(out var member))
+            switch (value)
             {
-                return;
+                case int intValue:
+                    pso.Properties.Add(NumberProperty.Create(propertyName, intValue));
+                    break;
+
+                case long longValue:
+                    pso.Properties.Add(NumberProperty.Create(propertyName, longValue));
+                    break;
+
+                case double dubValue:
+                    pso.Properties.Add(NumberProperty.Create(propertyName, dubValue));
+                    break;
+
+                case string strValue:
+                    pso.Properties.Add(new StringNoteProperty(propertyName, strValue));
+                    break;
+
+                case MetadataTag tag:
+                    pso.Properties.Add(new MetadataProperty(tag));
+                    break;
+
+                default:
+                    pso.Properties.Add(new PSNoteProperty(propertyName, value));
+                    break;
             }
-
-            var func = expression.Compile();
-            pso.Properties.Add(new PSNoteProperty(member.Member.Name, func(pso)));
         }
-        public static void AddProperties<T>(this T? pso, params ReadOnlySpan<Expression<Func<T, object?>>> expressions)
-            where T : SonarrObject
-        {
-            if (pso is null || expressions.IsEmpty)
-            {
-                return;
-            }
 
-            foreach (Expression<Func<T, object?>> exp in expressions)
+        public static void AddReadOnlyProperty<T>(this PSObject pso, string propertyName, [System.Diagnostics.CodeAnalysis.AllowNull] T value)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(propertyName);
+            switch (value)
             {
-                AddProperty(pso, exp);
+                case int intValue:
+                    pso.Properties.Add(ReadOnlyNumberProperty.Create(propertyName, intValue));
+                    break;
+
+                case long longValue:
+                    pso.Properties.Add(ReadOnlyNumberProperty.Create(propertyName, longValue));
+                    break;
+
+                case double dubValue:
+                    pso.Properties.Add(ReadOnlyNumberProperty.Create(propertyName, dubValue));
+                    break;
+
+                case string strValue:
+                    pso.Properties.Add(new ReadOnlyStringProperty(propertyName, strValue));
+                    break;
+
+                case MetadataTag tag:
+                    pso.Properties.Add(new MetadataProperty(tag));
+                    break;
+
+                default:
+                    pso.Properties.Add(new PSNoteProperty(propertyName, value));
+                    break;
             }
         }
 
@@ -78,7 +106,7 @@ namespace MG.Sonarr.Next.Extensions.PSO
             where T : SonarrObject
             where TValue : struct
         {
-            
+            ReplaceStructProperty(pso, propertyName, value, isReadOnly: false);
         }
         public static void ReplaceStructProperty<T, TValue>(this T pso, string propertyName, TValue value, bool isReadOnly)
             where T : SonarrObject

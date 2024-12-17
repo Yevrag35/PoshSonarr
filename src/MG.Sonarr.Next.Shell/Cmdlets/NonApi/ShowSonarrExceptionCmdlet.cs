@@ -52,7 +52,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.NonApi
             foreach (SonarrObject pso in errors)
             {
                 PSObject copy = pso.Copy();
-                copy.AddProperty(nameof(HttpRequestMessage.RequestUri), exception.RequestUri);
+                copy.AddReadOnlyProperty(nameof(HttpRequestMessage.RequestUri), exception.RequestUri);
 
                 this.WriteObject(copy);
             }
