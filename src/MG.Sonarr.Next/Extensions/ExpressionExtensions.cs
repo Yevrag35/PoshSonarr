@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Reflection;
+﻿using MG.Sonarr.Next.Enums;
+using MG.Sonarr.Next.Reflection;
 using MG.Sonarr.Next.Unions;
 using System.Reflection;
 
@@ -68,57 +69,62 @@ namespace MG.Sonarr.Next.Extensions
         /// </returns>
         public static bool TryGetAsSetter(this LambdaExpression expression, [NotNullWhen(true)] out IMemberSetter? setter)
         {
-            ArgumentNullException.ThrowIfNull(expression);
+            MemberExpression? memEx = expression.Body as MemberExpression;
+            if (memEx is null && expression.Body is UnaryExpression unEx && unEx.Operand is MemberExpression unMemEx)
+            {
+                memEx = unMemEx;
+            }
+
+            if (memEx is null)
+            {
+                setter = default;
+                return false;
+            }
+
+            MemberTypes enumValue = memEx.Member.MemberType;
+            FlagEnumerator<MemberTypes> enumerator = new(enumValue);
+
+            while (enumerator.MoveNext())
+            {
+                switch (enumerator.Current)
+                {
+                    case MemberTypes.Property:
+                        setter = new FieldOrPropertyInfo((PropertyInfo)memEx.Member);
+                        return setter.CanSet;
+
+                    case MemberTypes.Field:
+                        setter = new FieldOrPropertyInfo((FieldInfo)memEx.Member);
+                        return setter.CanSet;
+
+                    default:
+                        break;
+                }
+            }
 
             setter = default;
-            
-            Either<FieldInfo, PropertyInfo, object?> tempOne;
-            if (expression.Body is MemberExpression memEx)
-            {
-                tempOne = GetAsEitherInfo(memEx);
-            }
-            else if (expression.Body is UnaryExpression unEx && unEx.Operand is MemberExpression unExMem)
-            {
-                tempOne = GetAsEitherInfo(unExMem);
-            }
-            else
-            {
-                tempOne = Either<FieldInfo, PropertyInfo, object?>.FromT3(null);
-            }
-
-            FieldOrPropertyInfo info = default;
-            if (!tempOne.IsT3)
-            {
-                info = tempOne.IsT1
-                    ? new FieldOrPropertyInfo(tempOne.AsT1)
-                    : new FieldOrPropertyInfo(tempOne.AsT2!);
-
-                setter = info;
-            }
-
-            return !info.IsEmpty;
+            return false;
         }
 
-        private static Either<FieldInfo, PropertyInfo, object?> GetAsEitherInfo(MemberExpression memberExpression)
-        {
-            switch (memberExpression.Member.MemberType)
-            {
-                case MemberTypes.Field:
-                    return (FieldInfo)memberExpression.Member;
+        //private static Either<FieldInfo, PropertyInfo, object?> GetAsEitherInfo(MemberExpression memberExpression)
+        //{
+        //    switch (memberExpression.Member.MemberType)
+        //    {
+        //        case MemberTypes.Field:
+        //            return (FieldInfo)memberExpression.Member;
 
-                case MemberTypes.Property:
-                    return (PropertyInfo)memberExpression.Member;
+        //        case MemberTypes.Property:
+        //            return (PropertyInfo)memberExpression.Member;
 
-                case MemberTypes.Constructor:
-                case MemberTypes.Event:
-                case MemberTypes.Method:
-                case MemberTypes.TypeInfo:
-                case MemberTypes.Custom:
-                case MemberTypes.NestedType:
-                case MemberTypes.All:
-                default:
-                    return (object?)null;
-            }
-        }
+        //        case MemberTypes.Constructor:
+        //        case MemberTypes.Event:
+        //        case MemberTypes.Method:
+        //        case MemberTypes.TypeInfo:
+        //        case MemberTypes.Custom:
+        //        case MemberTypes.NestedType:
+        //        case MemberTypes.All:
+        //        default:
+        //            return (object?)null;
+        //    }
+        //}
     }
 }

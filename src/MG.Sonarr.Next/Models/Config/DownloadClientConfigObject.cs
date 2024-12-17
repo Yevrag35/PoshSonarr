@@ -24,9 +24,10 @@ namespace MG.Sonarr.Next.Models.Config
             return resolver[Meta.DOWNLOAD_CLIENT_CONFIG];
         }
 
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Because of 'nameof()'")]
         public void OnSerializing()
         {
-            this.UpdateProperty(x => x.Id);
+            this.UpdateProperty(this.Id, propertyName: nameof(Id));
         }
 
         protected override void SetPSTypeName()

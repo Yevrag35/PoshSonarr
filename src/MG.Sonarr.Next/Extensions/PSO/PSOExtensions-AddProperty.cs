@@ -1,8 +1,10 @@
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.PSProperties;
+using Newtonsoft.Json.Linq;
 using System.Management.Automation;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Extensions.PSO
 {
@@ -10,13 +12,12 @@ namespace MG.Sonarr.Next.Extensions.PSO
     {
         public static void AddNumberProperty<T>(this PSObject pso, string propertyName, T value) where T : unmanaged, INumber<T>
         {
-            ArgumentNullException.ThrowIfNull(pso);
             ArgumentException.ThrowIfNullOrEmpty(propertyName);
 
             pso.Properties.Add(new NumberNoteProperty<T>(propertyName, value));
         }
 
-        public static void AddProperty<T>(this PSObject pso, string propertyName, T value)
+        public static void AddProperty(this PSObject pso, string propertyName, object? value)
         {
             ArgumentException.ThrowIfNullOrEmpty(propertyName);
             switch (value)
@@ -47,7 +48,7 @@ namespace MG.Sonarr.Next.Extensions.PSO
             }
         }
 
-        public static void AddReadOnlyProperty<T>(this PSObject pso, string propertyName, [System.Diagnostics.CodeAnalysis.AllowNull] T value)
+        public static void AddReadOnlyProperty(this PSObject pso, string propertyName, object? value)
         {
             ArgumentException.ThrowIfNullOrEmpty(propertyName);
             switch (value)
@@ -90,7 +91,6 @@ namespace MG.Sonarr.Next.Extensions.PSO
             where T : SonarrObject
             where TValue : unmanaged, INumber<TValue>
         {
-            ArgumentNullException.ThrowIfNull(pso);
             ArgumentException.ThrowIfNullOrEmpty(propertyName);
 
             pso.Properties.Remove(propertyName);
@@ -123,47 +123,121 @@ namespace MG.Sonarr.Next.Extensions.PSO
             pso.Properties.Add(info);
         }
 
-        /// <exception cref="ArgumentNullException"/>
-        /// <exception cref="ReadOnlyPropertyException"/>
-        public static void UpdateProperty<T>(this T pso, Expression<Func<T, object?>> expression) where T : SonarrObject
+        public static void UpdateProperty<T>(this PSObject pso, T number, bool replaceReadOnly = false, [CallerMemberName] string propertyName = "")
+            where T : unmanaged, INumber<T>
         {
-            ArgumentNullException.ThrowIfNull(expression);
+            PSPropertyInfo? rawProperty = pso.Properties[propertyName];
+            if (rawProperty is null || rawProperty is not NumberNoteProperty<T> numberProp)
+            {
+                pso.Properties.Remove(propertyName);
+                pso.Properties.Add(NumberProperty.Create(propertyName, number));
 
-            if (!expression.TryGetAsMember(out var memberExp))
+                return;
+            }
+
+            if (!numberProp.IsSettable)
+            {
+                if (!replaceReadOnly)
+                {
+                    throw new ReadOnlyPropertyException(propertyName);
+                }
+
+                pso.Properties.Remove(propertyName);
+                pso.Properties.Add(ReadOnlyNumberProperty.Create(propertyName, number));
+                return;
+            }
+
+            numberProp.NumValue = number;
+        }
+
+        [DebuggerStepThrough]
+        public static void UpdateProperty<T>(this T pso, params ReadOnlySpan<Expression<Func<T, object?>>> expressions)
+            where T : SonarrObject
+        {
+            UpdateProperty(pso, replaceReadOnly: false, expressions);
+        }
+        public static void UpdateProperty<T>(this T pso, bool replaceReadOnly, params ReadOnlySpan<Expression<Func<T, object?>>> expressions)
+            where T : SonarrObject
+        {
+            if (expressions.IsEmpty)
             {
                 return;
             }
 
-            var func = expression.Compile();
-            UpdateProperty(pso, memberExp.Member.Name, func(pso));
+            foreach (var exp in expressions)
+            {
+                if (!exp.TryGetAsMember()
+            }
         }
-
-        /// <exception cref="ArgumentException"/>
-        /// <exception cref="ArgumentNullException"/>
-        /// <exception cref="ReadOnlyPropertyException">
-        public static void UpdateProperty<T>(this T pso, string propertyName, object? value) where T : PSObject
+        public static void UpdateProperty(this PSObject pso, object? value, bool replaceReadOnly = false, [CallerMemberName] string propertyName = "")
         {
-            ArgumentNullException.ThrowIfNull(pso);
-            ArgumentException.ThrowIfNullOrEmpty(propertyName);
+            PSPropertyInfo? rawProperty = pso.Properties[propertyName];
+            if (rawProperty is null)
+            {
+                AddProperty(pso, propertyName, value);
+                return;
+            }
 
-            PSPropertyInfo? propInfo = pso.Properties[propertyName];
-            if (propInfo is null)
+            if (!rawProperty.IsSettable)
             {
-                propInfo = WritableProperty.ToProperty<T>(propertyName, value);
-                pso.Properties.Add(propInfo);
+                if (!replaceReadOnly)
+                {
+                    throw new ReadOnlyPropertyException(propertyName);
+                }
+
+                pso.Properties.Remove(propertyName);
+                AddReadOnlyProperty(pso, propertyName, value);
+                return;
             }
-            else if (propInfo is ReadOnlyProperty)
-            {
-                throw new ReadOnlyPropertyException(propertyName);
-            }
-            else if (propInfo is WritableProperty writable && writable.ValueIsProper(value))
-            {
-                writable.Value = value;
-            }
-            else
-            {
-                propInfo.Value = value;
-            }
+
+            rawProperty.Value = value;
         }
+
+        ///// <exception cref="ArgumentNullException"/>
+        ///// <exception cref="ReadOnlyPropertyException"/>
+        //[Obsolete("Stop using", error: true)]
+        //public static void UpdateProperty<T>(this T pso, Expression<Func<T, object?>> expression) where T : SonarrObject
+        //{
+        //    ArgumentNullException.ThrowIfNull(expression);
+
+        //    if (!expression.TryGetAsMember(out var memberExp))
+        //    {
+        //        return;
+        //    }
+
+        //    var func = expression.Compile();
+        //    UpdateProperty(pso, memberExp.Member.Name, func(pso));
+        //}
+
+        ///// <exception cref="ArgumentException"/>
+        ///// <exception cref="ArgumentNullException"/>
+        ///// <exception cref="ReadOnlyPropertyException">
+        //[Obsolete("Stop using", error: true)]
+        //public static void UpdateProperty<T>(this T pso, string propertyName, object? value) where T : PSObject
+        //{
+        //    ArgumentNullException.ThrowIfNull(pso);
+        //    ArgumentException.ThrowIfNullOrEmpty(propertyName);
+
+        //    PSPropertyInfo? propInfo = pso.Properties[propertyName];
+        //    if (propInfo is null)
+        //    {
+        //        propInfo = WritableProperty.ToProperty<T>(propertyName, value);
+        //        pso.Properties.Add(propInfo);
+        //    }
+        //    else if (propInfo is ReadOnlyProperty)
+        //    {
+        //        throw new ReadOnlyPropertyException(propertyName);
+        //    }
+        //    else if (propInfo is WritableProperty writable && writable.ValueIsProper(value))
+        //    {
+        //        writable.Value = value;
+        //    }
+        //    else
+        //    {
+        //        propInfo.Value = value;
+        //    }
+        //}
+
+
     }
 }

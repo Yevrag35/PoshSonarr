@@ -3,6 +3,8 @@ using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Unions;
 
+public delegate void RefAction<T>(T item, ReadOnlySpan<object?> parameters);
+
 /// <summary>
 /// Represents a union of two possible types.
 /// </summary>
@@ -130,6 +132,31 @@ public readonly partial struct Either<T1, T2>
     /// <summary>
     /// Matches the current instance to one of the provided actions based on its type, with state.
     /// </summary>
+    /// <remarks>
+    /// This method exists when the state and return object types are simply <see cref="object"/> to reduce the 
+    /// overhead of creating a new delegate type for each call.
+    /// </remarks>
+    /// <param name="state">The state to pass to the actions.</param>
+    /// <param name="f1">The action to execute if the instance is of the first type.</param>
+    /// <param name="f2">The action to execute if the instance is of the second type.</param>
+    /// <returns>The result of the executed function.</returns>
+    /// <exception cref="EmptyStructException"></exception>
+    public readonly object? MatchObj(
+        object? state,
+        Func<T1, object?, object?> f1,
+        Func<T2, object?, object?> f2)
+    {
+        return _index switch
+        {
+            0u => throw new EmptyStructException(nameof(Either<T1, T2>), this.GetType(), innerException: null),
+            1u => f1(_first!, state),
+            2u => f2(_second!, state),
+            _ => null,
+        };
+    }
+    /// <summary>
+    /// Matches the current instance to one of the provided actions based on its type, with state.
+    /// </summary>
     /// <typeparam name="TState">The state type.</typeparam>
     /// <param name="state">The state to pass to the actions.</param>
     /// <param name="f1">The action to execute if the instance is of the first type.</param>
@@ -206,6 +233,72 @@ public readonly partial struct Either<T1, T2>
             2u => f2(_second!, state),
             0u or _ => throw new EmptyStructException(nameof(Either<T1, T2>), this.GetType(), innerException: null),
         };
+    }
+    /// <summary>
+    /// Matches the current instance to one of the provided actions based on its type, with state.
+    /// </summary>
+    /// <remarks>
+    /// This method exists when the state type is simply <see cref="object"/> to reduce the 
+    /// overhead of creating a new delegate type for each call.
+    /// </remarks>
+    /// <param name="state">The state to pass to the actions.</param>
+    /// <param name="f1">The action to execute if the instance is of the first type.</param>
+    /// <param name="f2">The action to execute if the instance is of the second type.</param>
+    /// <exception cref="EmptyStructException"></exception>
+    public readonly void MatchObj(
+        object? state,
+        Action<T1, object?> f1,
+        Action<T2, object?> f2)
+    {
+        switch (_index)
+        {
+            case 0u:
+                goto default;
+
+            case 1u:
+                f1(_first!, state);
+                break;
+
+            case 2u:
+                f2(_second!, state);
+                break;
+
+            default:
+                throw new EmptyStructException(nameof(Either<T1, T2>), this.GetType(), innerException: null);
+        }
+    }
+    /// <summary>
+    /// Matches the current instance to one of the provided actions based on its type, with state.
+    /// </summary>
+    /// <remarks>
+    /// This method exists when the state type is simply <see cref="object"/> to reduce the 
+    /// overhead of creating a new delegate type for each call.
+    /// </remarks>
+    /// <param name="state">The state to pass to the actions.</param>
+    /// <param name="f1">The action to execute if the instance is of the first type.</param>
+    /// <param name="f2">The action to execute if the instance is of the second type.</param>
+    /// <exception cref="EmptyStructException"></exception>
+    public readonly void MatchObj(
+        RefAction<T1> f1,
+        RefAction<T2> f2,
+        params ReadOnlySpan<object?> state)
+    {
+        switch (_index)
+        {
+            case 0u:
+                goto default;
+
+            case 1u:
+                f1(_first!, state);
+                break;
+
+            case 2u:
+                f2(_second!, state);
+                break;
+
+            default:
+                throw new EmptyStructException(nameof(Either<T1, T2>), this.GetType(), innerException: null);
+        }
     }
 
     /// <summary>

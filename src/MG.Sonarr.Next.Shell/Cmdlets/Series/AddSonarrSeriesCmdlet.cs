@@ -6,6 +6,7 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Shell.Internal;
 using MG.Sonarr.Next.Shell.Models.Series;
 using MG.Sonarr.Next.Unions;
 using System.Runtime.InteropServices;
@@ -19,7 +20,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     {
         List<AddSeriesObject> _list = null!;
         Range _range;
-        SeriesAddOptions AddOptions { get; set; } = null!;
+        private EditableSeriesAddOptions? _addOptions;
+        private SeriesAddOptions? _usingOptions;
+        internal SeriesAddOptions AddOptions => _usingOptions ??= _addOptions ?? SeriesAddOptions.Default;
         MetadataTag Tag { get; set; } = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -69,8 +72,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         [Parameter(Mandatory = true, ParameterSetName = "RootFolderPathAndSearch")]
         public SwitchParameter SearchForMissingEpisodes
         {
-            get => this.AddOptions?.SearchForMissingEpisodes ?? default;
-            set => this.SetAddOptionsValue(in value);
+            get => _usingOptions?.SearchForMissingEpisodes ?? default;
+            set
+            {
+                _addOptions ??= new();
+                _addOptions.SearchForMissingEps = value.ToBool();
+            }
         }
 
         [Parameter(Mandatory = false)]
@@ -140,9 +147,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
         }
 
-        private void SetPropertiesFromParameters(AddSeriesObject pso)
+        private void SetPropertiesFromParameters(AddSeriesObject pso, SeriesAddOptions options)
         {
-            pso.AddOptions = this.AddOptions;
+            pso.AddOptions = options;
             pso.LanguageProfileId = this.LanguageProfileId;
 
             if (this.HasParameter(x => x.UseSeasonFolders, onlyIfPresent: true))
@@ -217,10 +224,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         }
         private void SetAddOptionsValue(in SwitchParameter swParam)
         {
-            this.SetValue(
-                value: swParam.ToBool(),
-                getSetting: x => x.AddOptions,
-                setValue: (x, options) => options.SearchForMissingEpisodes = x);
+            this.AddOptions ??= new();
+            this.AddOptions.SearchForMissingEpisodes = swParam.ToBool();
         }
     }
 }

@@ -41,12 +41,11 @@ namespace MG.Sonarr.Next.Models.RemotePaths
             this.Commit();
         }
 
+        
         public override void Commit()
         {
             base.Commit();
-            this.UpdateProperty(x => x.HostName);
-            this.UpdateProperty(x => x.LocalPath);
-            this.UpdateProperty(x => x.RemotePath);
+            this.UpdateProperties();
         }
 
         protected override void OnDeserialized(bool alreadyCalled)
@@ -70,15 +69,21 @@ namespace MG.Sonarr.Next.Models.RemotePaths
         public override void Reset()
         {
             base.Reset();
-            this.UpdateProperty(x => x.HostName);
-            this.UpdateProperty(x => x.LocalPath);
-            this.UpdateProperty(x => x.RemotePath);
+            this.UpdateProperties();
         }
 
         protected override void SetPSTypeName()
         {
             base.SetPSTypeName();
             this.TypeNames.Insert(0, _typeName);
+        }
+
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Because of 'nameof()'")]
+        private void UpdateProperties()
+        {
+            this.UpdateProperty(this.HostName, propertyName: nameof(HostName));
+            this.UpdateProperty(this.LocalPath, propertyName: nameof(LocalPath));
+            this.UpdateProperty(this.RemotePath, propertyName: nameof(RemotePath));
         }
 
         private static readonly Lazy<JsonNameHolder> _names = new(GetJsonNames);

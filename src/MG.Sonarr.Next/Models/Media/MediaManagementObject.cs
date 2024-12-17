@@ -63,10 +63,11 @@ namespace MG.Sonarr.Next.Models.Media
 
             this.Reset();
         }
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Because of 'nameof()'")]
         public void OnSerializing()
         {
             this.Properties.Remove(_pathAlias.Name);
-            this.UpdateProperty(x => x.Id);
+            this.UpdateProperty(this.Id, propertyName: nameof(Id));
         }
         public override void Reset()
         {

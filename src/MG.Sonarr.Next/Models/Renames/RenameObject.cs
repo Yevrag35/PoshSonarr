@@ -53,6 +53,8 @@ namespace MG.Sonarr.Next.Models.Renames
                 this.EpisodeFileId = episodeFileId;
             }
         }
+
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Because of 'nameof()'")]
         public void OnSerializing()
         {
             this.UpdateProperty(x => x.EpisodeFileId);
