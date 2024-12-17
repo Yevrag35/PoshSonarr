@@ -1,6 +1,8 @@
 ﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions.PSO;
 using System.Collections;
+using System.Collections.Frozen;
+using System.Collections.Immutable;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Metadata
@@ -27,7 +29,8 @@ namespace MG.Sonarr.Next.Metadata
         public static readonly string META_PROPERTY_NAME = "MetadataTag";
         public const char META_PREFIX = '#';
         readonly Dictionary<string, MetadataTag> _dict;
-        readonly NameLookup<string> _pipesTo;
+        readonly Dictionary<string, ImmutableArray<string>> _pipesTo;
+        //readonly NameLookup<string> _pipesTo;
 
         /// <summary>
         /// Gets the <see cref="MetadataTag"/> associated with the specified key.
@@ -44,9 +47,9 @@ namespace MG.Sonarr.Next.Metadata
 
         public int Count => _dict.Count;
 
-        public MetadataResolver(int capacity, NameLookup<string> pipesTo)
+        public MetadataResolver(int capacity, Dictionary<string, ImmutableArray<string>> pipesTo)
         {
-            _dict = new(capacity, StringComparer.InvariantCultureIgnoreCase);
+            _dict = new(capacity, StringComparer.OrdinalIgnoreCase);
             _pipesTo = pipesTo;
         }
 
@@ -55,10 +58,9 @@ namespace MG.Sonarr.Next.Metadata
             ArgumentException.ThrowIfNullOrEmpty(tag);
             ArgumentException.ThrowIfNullOrEmpty(baseUrl);
 
-            MetadataTag metadataTag = new(baseUrl, tag, supportsId, _pipesTo[tag]);
+            MetadataTag metadataTag = new(baseUrl, tag, supportsId, this.GetPipesTo(tag));
 
             return _dict.TryAdd(tag, metadataTag);
-
         }
         public bool ContainsKey([NotNullWhen(true)] string? key)
         {
@@ -67,6 +69,12 @@ namespace MG.Sonarr.Next.Metadata
         public IEnumerator<MetadataTag> GetEnumerator()
         {
             return _dict.Values.GetEnumerator();
+        }
+        private ImmutableArray<string> GetPipesTo(string key)
+        {
+            return _pipesTo.TryGetValue(key, out ImmutableArray<string> pipesTo)
+                ? pipesTo
+                : [];
         }
         public bool TryGetValue(PSObject pso, [NotNullWhen(true)] out MetadataTag? value)
         {

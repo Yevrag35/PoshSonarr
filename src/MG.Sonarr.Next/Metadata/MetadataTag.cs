@@ -47,12 +47,12 @@ namespace MG.Sonarr.Next.Metadata
             this.UrlBase = copyFrom.UrlBase;
             this.Value = copyFrom.Value;
         }
-        internal MetadataTag(string urlBase, string value, bool supportsId, IReadOnlySet<string> pipesTo)
+        internal MetadataTag(string urlBase, string value, bool supportsId, ImmutableArray<string> pipesTo)
         {
             this.UrlBase = urlBase.TrimEnd('/');
             this.Value = value;
             this.SupportsId = supportsId;
-            this.CanPipeTo = [.. pipesTo];
+            this.CanPipeTo = pipesTo;
         }
 
         [DebuggerStepThrough]
