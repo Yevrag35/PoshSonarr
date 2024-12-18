@@ -136,6 +136,22 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             base.OnCreatingScope(provider);
             this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.SERIES];
         }
+        protected override void Begin(IServiceProvider provider)
+        {
+            if (this.MyInvocation.BoundParameters.TryGetValueAs(WITH_FILES, out SwitchParameter withFiles))
+            {
+                _addOptions ??= new();
+                _addOptions.IgnoreEpsWithFiles = withFiles.ToBool();
+            }
+
+            if (this.MyInvocation.BoundParameters.TryGetValueAs(WITHOUT_FILES, out SwitchParameter withoutFiles))
+            {
+                _addOptions ??= new();
+                _addOptions.IgnoreEpsWithoutFiles = withoutFiles.ToBool();
+            }
+
+            _usingOptions = _addOptions;
+        }
         protected override void Process(IServiceProvider provider)
         {
             ReadOnlySpan<AddSeriesObject> span = CollectionsMarshal.AsSpan(_list).Slice(_range.Start.Value, _range.End.Value);
@@ -143,7 +159,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             foreach (AddSeriesObject pso in span)
             {
                 this.SetPath(pso);
-                this.SetPropertiesFromParameters(pso);
+                this.SetPropertiesFromParameters(pso, this.AddOptions);
             }
         }
 
@@ -180,7 +196,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
         protected override void End(IServiceProvider provider)
         {
-            this.SetAddOptions(this.AddOptions);
             string url = this.Tag.UrlBase;
 
             foreach (AddSeriesObject pso in _list)
@@ -195,22 +210,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 }
             }
         }
-
-        private void SetAddOptions(SeriesAddOptions options)
-        {
-            if (this.SearchForMissingEpisodes)
-            {
-                if (this.MyInvocation.BoundParameters.TryGetValueAs(WITH_FILES, out SwitchParameter wfSwitch))
-                {
-                    options.IgnoreEpisodesWithFiles = !wfSwitch.ToBool();
-                }
-
-                if (this.MyInvocation.BoundParameters.TryGetValueAs(WITHOUT_FILES, out SwitchParameter wofSwitch))
-                {
-                    options.IgnoreEpisodesWithoutFiles = !wofSwitch.ToBool();
-                }
-            }
-        }
         private void SetPath(AddSeriesObject pso)
         {
             if (this.HasParameter(x => x.RootFolderPath))
@@ -221,11 +220,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
             pso.Path = this.AbsolutePath;
             pso.IsFullPath = true;
-        }
-        private void SetAddOptionsValue(in SwitchParameter swParam)
-        {
-            this.AddOptions ??= new();
-            this.AddOptions.SearchForMissingEpisodes = swParam.ToBool();
         }
     }
 }

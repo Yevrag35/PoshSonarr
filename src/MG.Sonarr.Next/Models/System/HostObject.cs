@@ -103,7 +103,7 @@ namespace MG.Sonarr.Next.Models.System
             base.OnSerializing();
             foreach (var kvp in this.Conditionals)
             {
-                this.UpdateProperty(kvp.Key, kvp.Value);
+                this.UpdateProperty(kvp.Value, propertyName: kvp.Key);
             }
         }
         public override void Reset()

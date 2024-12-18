@@ -1,6 +1,7 @@
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.PSProperties;
+using MG.Sonarr.Next.Reflection;
 using Newtonsoft.Json.Linq;
 using System.Management.Automation;
 using System.Numerics;
@@ -164,9 +165,15 @@ namespace MG.Sonarr.Next.Extensions.PSO
                 return;
             }
 
-            foreach (var exp in expressions)
+            foreach (ref readonly var exp in expressions)
             {
-                if (!exp.TryGetAsMember()
+                FieldOrPropertyInfo info = exp.GetMemberInfo();
+                if (info.IsEmpty || !info.CanGet)
+                {
+                    throw new InvalidOperationException("The expression does not represent a readable member.");
+                }
+
+                UpdateProperty(pso, info.GetValue(pso), replaceReadOnly, info.MemberName);
             }
         }
         public static void UpdateProperty(this PSObject pso, object? value, bool replaceReadOnly = false, [CallerMemberName] string propertyName = "")

@@ -50,6 +50,39 @@ namespace MG.Sonarr.Next.Extensions
             return false;
         }
 
+        public static FieldOrPropertyInfo GetMemberInfo(this LambdaExpression expression)
+        {
+            MemberExpression? memEx = expression.Body as MemberExpression;
+            if (memEx is null && expression.Body is UnaryExpression unEx && unEx.Operand is MemberExpression unMemEx)
+            {
+                memEx = unMemEx;
+            }
+
+            if (memEx is null)
+            {
+                return default;
+            }
+
+            MemberInfo member = memEx.Member; MemberTypes enumValue = member.MemberType;
+
+            foreach (MemberTypes flag in enumValue.Enumerate())
+            {
+                switch (flag)
+                {
+                    case MemberTypes.Property:
+                        return (PropertyInfo)member;
+
+                    case MemberTypes.Field:
+                        return (FieldInfo)member;
+
+                    default:
+                        break;
+                }
+            }
+
+            return default;
+        }
+
         /// <summary>
         /// Attempts to retrieve a <see cref="LambdaExpression"/> instance's body as a
         /// <see cref="MemberExpression"/> of a defined <see cref="PropertyInfo"/> or 

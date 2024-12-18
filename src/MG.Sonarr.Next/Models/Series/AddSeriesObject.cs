@@ -88,17 +88,19 @@ namespace MG.Sonarr.Next.Models.Series
         }
         public override void OnSerializing()
         {
-            this.UpdateProperty(x => x.AddOptions);
-            this.UpdateProperty(x => x.Title);
+            //this.UpdateProperties(x => x.AddOptions);
+            //this.UpdateProperties(x => x.Title);
+            this.UpdateProperty(x => x.AddOptions, x => x.Title);
             this.SetPath();
             base.OnSerializing();
         }
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Using nameof()")]
         private void SetPath()
         {
             if (this.IsFullPath)
             {
                 this.UpdateProperty(x => x.Path);
-                _pathProp = nameof(this.Path);
+                _pathProp = nameof(Path);
             }
             else
             {

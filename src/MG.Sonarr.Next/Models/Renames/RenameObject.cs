@@ -57,8 +57,8 @@ namespace MG.Sonarr.Next.Models.Renames
         [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Because of 'nameof()'")]
         public void OnSerializing()
         {
-            this.UpdateProperty(x => x.EpisodeFileId);
-            this.UpdateProperty(x => x.SeriesId);
+            this.UpdateProperty(this.EpisodeFileId, propertyName: nameof(EpisodeFileId));
+            this.UpdateProperty(this.SeriesId, propertyName: nameof(SeriesId));
         }
         protected override void SetPSTypeName()
         {
