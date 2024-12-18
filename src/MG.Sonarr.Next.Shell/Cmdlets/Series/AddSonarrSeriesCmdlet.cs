@@ -27,7 +27,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
-        [ValidateIds(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.EnforceNull)]
+        [ValidateIds(ValidateRangeKind.NonPositive, NullBehavior = InputNullBehavior.EnforceNull)]
         public AddSeriesObject[] InputObject
         {
             get => [];

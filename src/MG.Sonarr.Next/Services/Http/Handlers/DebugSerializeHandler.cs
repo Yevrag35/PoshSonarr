@@ -43,7 +43,7 @@ public sealed class DebugSerializeHandler : DelegatingHandler
             string jsonString = Messenger.Format(
                 provider: CultureInfo.CurrentCulture,
                 format: Messages.Debug_JSONResponse_Preamble,
-                [parsed.ContentLength, parsed.JsonString]);
+                parsed.ContentLength, parsed.JsonString);
 
             cmdlet.WriteDebugPayload(jsonString);
         }

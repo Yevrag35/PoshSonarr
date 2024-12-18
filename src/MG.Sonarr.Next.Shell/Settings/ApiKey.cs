@@ -9,6 +9,8 @@ namespace MG.Sonarr.Next.Shell.Settings
     /// A wrapping object that allows implicit conversions from <see cref="string"/> and 
     /// <see cref="SecureString"/> objects.
     /// </summary>
+    [StructLayout(LayoutKind.Auto)]
+    [DebuggerDisplay("{_key}")]
     public readonly struct ApiKey : IApiKey
     {
         readonly string? _key;

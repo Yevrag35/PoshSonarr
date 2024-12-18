@@ -90,15 +90,15 @@ public readonly partial struct Either<T1, T2>
         _index = 2;
     }
 
-    public readonly bool IsSameType(Either<T1, T2> other)
+    public readonly bool IsSameType(in Either<T1, T2> other)
     {
-        return this.IsSameType(other, ignoreDefaultOrEmpty: false);
+        return this.IsSameType(in other, ignoreDefaultOrEmpty: false);
     }
-    public readonly bool IsSameType(Either<T1, T2> other, bool ignoreDefaultOrEmpty)
+    public readonly bool IsSameType(in Either<T1, T2> other, bool ignoreDefaultOrEmpty)
     {
         return (other._index > 0u || ignoreDefaultOrEmpty) && _index == other._index;
     }
-    public readonly bool IsNotSameType(Either<T1, T2> other)
+    public readonly bool IsNotSameType(in Either<T1, T2> other)
     {
         return _index != other._index;
     }

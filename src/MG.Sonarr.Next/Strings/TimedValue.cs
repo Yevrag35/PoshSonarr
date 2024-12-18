@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 namespace MG.Sonarr.Next.Strings;
 
 [StructLayout(LayoutKind.Auto)]
+[DebuggerDisplay("{Elapsed}")]
 public readonly struct TimedValue : IFormattable
 {
     private const double _exclusiveMaxMillisecondThreshold = 50_000;
@@ -52,7 +53,9 @@ public readonly struct TimedValue : IFormattable
         return Messenger.Format(
             provider,
             format: "{0}{1}",
-            arguments: [value, unit]);
+            value,
+            unit
+        );
     }
 
     public static implicit operator TimeSpan(TimedValue value) => value.Elapsed;

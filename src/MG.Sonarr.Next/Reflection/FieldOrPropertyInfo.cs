@@ -149,13 +149,13 @@ public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemb
         _isStatic = propertyInfo.GetMethod?.IsStatic ?? propertyInfo.SetMethod?.IsStatic ?? false;
     }
 
-    public object? GetValue(object? instance)
+    public readonly object? GetValue(object? instance)
     {
         return _either.MatchObj(instance,
             f1: static (pi, instance) => pi.GetValue(instance),
             f2: static (fi, instance) => fi.GetValue(instance));
     }
-    public void SetValue(object? instance, object? value)
+    public readonly void SetValue(object? instance, object? value)
     {
         _either.MatchObj(
             f1: static (pi, state) => pi.SetValue(state[0], state[1]),
