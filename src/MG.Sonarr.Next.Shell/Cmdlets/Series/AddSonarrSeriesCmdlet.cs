@@ -10,13 +10,14 @@ using MG.Sonarr.Next.Shell.Internal;
 using MG.Sonarr.Next.Shell.Models.Series;
 using MG.Sonarr.Next.Unions;
 using System.Runtime.InteropServices;
+using System.Security.Policy;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
     [Cmdlet(VerbsCommon.Add, "SonarrSeries", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
         DefaultParameterSetName = "RootFolderPath")]
     [MetadataCanPipe(Tag = Meta.SERIES_ADD)]
-    public sealed class AddSonarrSeriesCmdlet : SonarrApiCmdletBase, IDynamicParameters
+    public sealed class AddSonarrSeriesCmdlet : SonarrApiCmdletBase//, IDynamicParameters
     {
         List<AddSeriesObject> _list = null!;
         Range _range;
@@ -27,7 +28,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
-        [ValidateIds(ValidateRangeKind.NonPositive, NullBehavior = InputNullBehavior.EnforceNull)]
+        [ValidateNotNull]
         public AddSeriesObject[] InputObject
         {
             get => [];
@@ -44,41 +45,24 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         }
 
         [Parameter(Mandatory = true, ParameterSetName = "AbsolutePath")]
-        [Parameter(Mandatory = true, ParameterSetName = "AbsolutePathAndSearch")]
-        [ValidateNotNullOrEmpty]
+        [ValidateNotNullOrWhiteSpace]
         public string AbsolutePath { get; set; } = string.Empty;
 
         [Parameter(Mandatory = false)]
         public SwitchParameter IsMonitored { get; set; }
-
-        [Parameter(Mandatory = true)]
-        [ValidateRange(ValidateRangeKind.Positive)]
-        public int LanguageProfileId { get; set; }
-
-        [Parameter(Mandatory = false)]
-        [ValidateRange(ValidateRangeKind.Positive)]
-        public int ProfileId { get; set; }
 
         [Parameter(Mandatory = false)]
         [ValidateRange(ValidateRangeKind.Positive)]
         public int QualityProfileId { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "RootFolderPath")]
-        [Parameter(Mandatory = true, ParameterSetName = "RootFolderPathAndSearch")]
-        [ValidateNotNullOrEmpty]
+        [ValidateNotNullOrWhiteSpace]
         public string RootFolderPath { get; set; } = string.Empty;
 
-        [Parameter(Mandatory = true, ParameterSetName = "AbsolutePathAndSearch")]
-        [Parameter(Mandatory = true, ParameterSetName = "RootFolderPathAndSearch")]
-        public SwitchParameter SearchForMissingEpisodes
-        {
-            get => _usingOptions?.SearchForMissingEpisodes ?? default;
-            set
-            {
-                _addOptions ??= new();
-                _addOptions.SearchForMissingEps = value.ToBool();
-            }
-        }
+        [Parameter]
+        [System.Management.Automation.AllowNull]
+        [AllowEmptyCollection]
+        public SeriesAddIgnoreAction[] SearchForMissingEpisodes { get; set; } = [];
 
         [Parameter(Mandatory = false)]
         public string SeriesType { get; set; } = string.Empty;
@@ -86,50 +70,50 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         [Parameter(Mandatory = false)]
         public SwitchParameter UseSeasonFolders { get; set; }
 
-        const string WITH_FILES = "SearchEpisodesWithFiles";
-        const string WITHOUT_FILES = "SearchEpisodesWithoutFiles";
-        static readonly Lazy<RuntimeDefinedParameterDictionary> _runtimeDic = new(CreateRuntimeDictionary);
-        public object? GetDynamicParameters()
-        {
-            RuntimeDefinedParameterDictionary? dict = null;
-            if (this.SearchForMissingEpisodes)
-            {
-                dict = _runtimeDic.Value;
-            }
+        //const string WITH_FILES = "SearchEpisodesWithFiles";
+        //const string WITHOUT_FILES = "SearchEpisodesWithoutFiles";
+        //static readonly Lazy<RuntimeDefinedParameterDictionary> _runtimeDic = new(CreateRuntimeDictionary);
+        //public object? GetDynamicParameters()
+        //{
+        //    RuntimeDefinedParameterDictionary? dict = null;
+        //    if (this.SearchForMissingEpisodes)
+        //    {
+        //        dict = _runtimeDic.Value;
+        //    }
 
-            return dict;
-        }
+        //    return dict;
+        //}
 
-        private static RuntimeDefinedParameterDictionary CreateRuntimeDictionary()
-        {
-            return new RuntimeDefinedParameterDictionary
-                {
-                    {
-                        WITH_FILES,
-                        new RuntimeDefinedParameter()
-                        {
-                            Attributes =
-                            {
-                                new ParameterAttribute() { Mandatory = false },
-                            },
-                            Name = WITH_FILES,
-                            ParameterType = typeof(SwitchParameter),
-                        }
-                    },
-                    {
-                        WITHOUT_FILES,
-                        new RuntimeDefinedParameter()
-                        {
-                            Attributes =
-                            {
-                                new ParameterAttribute() { Mandatory = false },
-                            },
-                            Name = WITHOUT_FILES,
-                            ParameterType = typeof(SwitchParameter),
-                        }
-                    }
-                };
-        }
+        //private static RuntimeDefinedParameterDictionary CreateRuntimeDictionary()
+        //{
+        //    return new RuntimeDefinedParameterDictionary
+        //        {
+        //            {
+        //                WITH_FILES,
+        //                new RuntimeDefinedParameter()
+        //                {
+        //                    Attributes =
+        //                    {
+        //                        new ParameterAttribute() { Mandatory = false },
+        //                    },
+        //                    Name = WITH_FILES,
+        //                    ParameterType = typeof(SwitchParameter),
+        //                }
+        //            },
+        //            {
+        //                WITHOUT_FILES,
+        //                new RuntimeDefinedParameter()
+        //                {
+        //                    Attributes =
+        //                    {
+        //                        new ParameterAttribute() { Mandatory = false },
+        //                    },
+        //                    Name = WITHOUT_FILES,
+        //                    ParameterType = typeof(SwitchParameter),
+        //                }
+        //            }
+        //        };
+        //}
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {
@@ -138,35 +122,41 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         }
         protected override void Begin(IServiceProvider provider)
         {
-            if (this.MyInvocation.BoundParameters.TryGetValueAs(WITH_FILES, out SwitchParameter withFiles))
+            if (this.HasParameter(this.SearchForMissingEpisodes) && this.SearchForMissingEpisodes.Length > 0)
             {
-                _addOptions ??= new();
-                _addOptions.IgnoreEpsWithFiles = withFiles.ToBool();
-            }
+                int actions = this.SearchForMissingEpisodes.Distinct().Sum(x => (int)x);
 
-            if (this.MyInvocation.BoundParameters.TryGetValueAs(WITHOUT_FILES, out SwitchParameter withoutFiles))
-            {
-                _addOptions ??= new();
-                _addOptions.IgnoreEpsWithoutFiles = withoutFiles.ToBool();
+                _addOptions = new EditableSeriesAddOptions
+                {
+                    IgnoreEpsWithFiles = actions > 0,
+                    IgnoreEpsWithoutFiles = actions > 1,
+                    SearchForMissingEps = true,
+                };
             }
 
             _usingOptions = _addOptions;
         }
         protected override void Process(IServiceProvider provider)
         {
-            ReadOnlySpan<AddSeriesObject> span = CollectionsMarshal.AsSpan(_list).Slice(_range.Start.Value, _range.End.Value);
-
-            foreach (AddSeriesObject pso in span)
+            foreach (AddSeriesObject pso in this.InputObject)
             {
                 this.SetPath(pso);
                 this.SetPropertiesFromParameters(pso, this.AddOptions);
+
+                this.SerializeIfDebug(pso);
+
+                if (this.ShouldProcess(pso.Title, "Adding Series"))
+                {
+                    Either<SeriesObject, SonarrErrorRecord> response = this.SendPostRequest<AddSeriesObject, SeriesObject>(this.Tag.UrlBase, pso);
+
+                    this.WriteOutcome(pso, response);
+                }
             }
         }
 
         private void SetPropertiesFromParameters(AddSeriesObject pso, SeriesAddOptions options)
         {
             pso.AddOptions = options;
-            pso.LanguageProfileId = this.LanguageProfileId;
 
             if (this.HasParameter(x => x.UseSeasonFolders, onlyIfPresent: true))
             {
@@ -193,26 +183,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 pso.IsMonitored = this.IsMonitored.ToBool();
             }
         }
-
-        protected override void End(IServiceProvider provider)
-        {
-            string url = this.Tag.UrlBase;
-
-            foreach (AddSeriesObject pso in _list)
-            {
-                this.SerializeIfDebug(pso);
-
-                if (this.ShouldProcess(pso.Title, "Adding Series"))
-                {
-                    Either<SeriesObject, SonarrErrorRecord> response = this.SendPostRequest<AddSeriesObject, SeriesObject>(url, pso);
-
-                    this.WriteOutcome(pso, response);
-                }
-            }
-        }
         private void SetPath(AddSeriesObject pso)
         {
-            if (this.HasParameter(x => x.RootFolderPath))
+            if (this.HasParameter(this.RootFolderPath))
             {
                 pso.Path = this.RootFolderPath;
                 return;

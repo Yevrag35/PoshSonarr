@@ -2,6 +2,13 @@
 
 namespace MG.Sonarr.Next.Shell.Internal;
 
+public enum SeriesAddIgnoreAction
+{
+    Default,
+    IgnoreWithEpisodes,
+    IgnoreWithoutEpisodes,
+}
+
 [DebuggerStepThrough]
 internal sealed record EditableSeriesAddOptions : SeriesAddOptions
 {
