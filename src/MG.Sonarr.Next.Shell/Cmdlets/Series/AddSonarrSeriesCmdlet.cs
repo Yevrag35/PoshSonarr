@@ -1,16 +1,11 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Exceptions;
-using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
-using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Internal;
 using MG.Sonarr.Next.Shell.Models.Series;
 using MG.Sonarr.Next.Unions;
-using System.Runtime.InteropServices;
-using System.Security.Policy;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
@@ -161,11 +156,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             if (this.HasParameter(x => x.UseSeasonFolders, onlyIfPresent: true))
             {
                 pso.UseSeasonFolders = this.UseSeasonFolders.ToBool();
-            }
-
-            if (this.HasParameter(this.ProfileId))
-            {
-                pso.ProfileId = this.ProfileId;
             }
 
             if (this.HasParameter(this.QualityProfileId))
