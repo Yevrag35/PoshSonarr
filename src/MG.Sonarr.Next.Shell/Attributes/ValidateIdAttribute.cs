@@ -41,7 +41,6 @@ namespace MG.Sonarr.Next.Shell.Attributes
             _predicate = IdValidationHelper.GetValidation(in kind);
         }
 
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidateIdAttribute"/> class. 
         /// This constructor uses a predefined <see cref="ValidateRangeKind"/> and uses the default <see langword="null"/>
@@ -228,30 +227,19 @@ namespace MG.Sonarr.Next.Shell.Attributes
         }
         internal static int? ExecuteMethod(Type parameterType, object element)
         {
-            ArgumentNullException.ThrowIfNull(parameterType);
             ArgumentNullException.ThrowIfNull(element);
 
             return (int?)_getIds[parameterType].Invoke(null, [element]);
         }
         internal static IdPredicate GetValidation(in ValidateRangeKind kind)
         {
-            switch (kind)
+            return kind switch
             {
-                case ValidateRangeKind.Positive:
-                    return MustBePositive;
-
-                case ValidateRangeKind.NonNegative:
-                    return MustBeNonNegative;
-
-                case ValidateRangeKind.Negative:
-                    return MustBeNegative;
-
-                case ValidateRangeKind.NonPositive:
-                    return MustBeNonPositive;
-
-                default:
-                    goto case ValidateRangeKind.Positive;
-            }
+                ValidateRangeKind.NonNegative => MustBeNonNegative,
+                ValidateRangeKind.Negative => MustBeNegative,
+                ValidateRangeKind.NonPositive => MustBeNonPositive,
+                ValidateRangeKind.Positive or _ => MustBePositive,
+            };
         }
 
         /// <exception cref="ValidationMetadataException"></exception>
@@ -320,7 +308,7 @@ namespace MG.Sonarr.Next.Shell.Attributes
         private static bool TryGetMatchingPipeableInterface(Type parameterType)
         {
             Type[] interfaces = parameterType.GetInterfaces();
-            if (interfaces.Length <= 0)
+            if (interfaces.Length == 0)
             {
                 return false;
             }
