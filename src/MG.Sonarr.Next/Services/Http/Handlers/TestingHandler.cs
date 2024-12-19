@@ -16,12 +16,6 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            string str = string.Empty;
-            if (request.Content is not null)
-            {
-                str = await request.Content.ReadAsStringAsync();
-            }
-
             var respTask = base.SendAsync(request, cancellationToken);
             if (!IsTesting(request))
             {
@@ -33,7 +27,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
             if (response.IsSuccessStatusCode)
             {
                 response = await this.ReadAndReturnNewResponse(
-                    request, response, cancellationToken);
+                    request, response, cancellationToken).ConfigureAwait(false);
             }
 
             return response;
@@ -44,9 +38,10 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
             bool isHtml = false;
             MemoryStream memStream = new MemoryStream();
 
-            await using (var stream = await response.Content.ReadAsStreamAsync(cancellationToken))
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using (stream.ConfigureAwait(false))
             {
-                await stream.CopyToAsync(memStream, cancellationToken);
+                await stream.CopyToAsync(memStream, cancellationToken).ConfigureAwait(false);
                 isHtml = IsHtml(memStream);
             }
 

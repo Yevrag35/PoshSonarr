@@ -271,7 +271,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                     .AddMetadata(cmdletAssembly)
                     .AddResponseReader()
                     .AddSingleton(settings)
-                    .AddSignalRClient()
+                    //.AddSignalRClient()
                     .AddSonarrDownloadClient()
                     .AddSonarrJsonOptions(configureJson)
                     .AddTransient<SonarrClientHandler>()
