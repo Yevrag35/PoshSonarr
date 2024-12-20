@@ -80,7 +80,7 @@ namespace MG.Sonarr.Next.Json.Converters
 
                     if (reader.TokenType == JsonTokenType.Number
                         &&
-                        Constants.ID.Equals(pn, StringComparison.InvariantCultureIgnoreCase))
+                        Constants.ID.Equals(pn, StringComparison.OrdinalIgnoreCase))
                     {
                         //TODO: Move functionality into a read-only property key lookup operation.
                         pso.Properties.Add(new ReadOnlyNumberProperty<int>(pn, reader.GetInt32()));
@@ -173,7 +173,8 @@ namespace MG.Sonarr.Next.Json.Converters
         }
         private static ValueType ReadNumber(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
-            Span<char> chars = stackalloc char[reader.ValueSpan.Length];
+            int length = Encoding.UTF8.GetMaxCharCount(reader.ValueSpan.Length);
+            Span<char> chars = stackalloc char[length];
             int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
 
             chars = chars.Slice(0, written);
@@ -259,7 +260,8 @@ namespace MG.Sonarr.Next.Json.Converters
 
         private static string ReadPropertyName(ref Utf8JsonReader reader, JsonSerializerOptions options, IReadOnlyDictionary<string, string> replaceNames, IReadOnlyDictionary<string, string> globalReplace)
         {
-            Span<char> chars = stackalloc char[reader.ValueSpan.Length];
+            int length = Encoding.UTF8.GetMaxCharCount(reader.ValueSpan.Length);
+            Span<char> chars = stackalloc char[length];
             int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
 
             chars = chars.Slice(0, written);
@@ -390,7 +392,7 @@ namespace MG.Sonarr.Next.Json.Converters
             return returnVal;
         }
 
-        public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, object? value, JsonSerializerOptions options)
         {
             if (value is null)
             {

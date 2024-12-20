@@ -31,7 +31,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
             set => _end = value;
         }
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter]
         //[DistinctValues]
         public DayOfWeek[] DayOfWeek { get; set; } = [];
