@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace MG.Sonarr.Next.Shell.Checkers;
 
-namespace MG.Sonarr.Next.Shell.Checkers;
-
-public abstract class EqualityChecker<T> : EqualityChecker
+public class EqualityChecker<T> : EqualityChecker where T : IEquatable<T>
 {
-    protected abstract bool Equals([DisallowNull] T x, [DisallowNull] T y);
+    protected virtual bool Equals([DisallowNull] T x, [DisallowNull] T y)
+    {
+        return x.Equals(y);
+    }
 
     public int GetHashCode([DisallowNull] T obj)
     {

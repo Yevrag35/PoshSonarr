@@ -4,30 +4,31 @@ using System.Collections;
 namespace MG.Sonarr.Next.Shell.Attributes;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
-public sealed class DistinctValuesAttribute : ArgumentTransformationAttribute
+public sealed class DistinctValuesAttribute : EnumerableTransformAttribute
 {
     private static readonly Dictionary<Type, EqualityChecker> _checkers = [];
 
-    public required Type ElementType { get; init; }
-    public Type? CheckerType { get; init; }
-
-    public override object? Transform(EngineIntrinsics engineIntrinsics, object? inputData)
+    public Type? CollectionType
     {
-        if (inputData is null || !LanguagePrimitives.IsObjectEnumerable(inputData))
-        {
-            return inputData;
-        }
-
-        var array = this.GetDistinct((IEnumerable)inputData);
-        return array;
+        get => this.CollectionTypeCore;
+        init => this.CollectionTypeCore = value;
     }
 
-    private IEnumerable GetDistinct(IEnumerable enumerable)
+    public DistinctValuesAttribute(Type elementType) : base(elementType)
     {
-        if (this.CheckerType is not null && _checkers.TryGetValue(this.CheckerType, out EqualityChecker? checker))
+    }
+
+    protected override Array TransformCore([DisallowNull] IEnumerable<object> input, Type elementType, Type inputType, EngineIntrinsics engineIntrinsics, IServiceProvider provider)
+    {
+        if (!_checkers.TryGetValue(elementType, out EqualityChecker? checker))
         {
-            return enumerable.Cast<object>().Distinct(checker).ToArray();
+            checker = CreateChecker(elementType);
+            _checkers.TryAdd(elementType, checker);
         }
+
+        IEnumerable<object> converted = input.Select(x => LanguagePrimitives.ConvertTo(x, elementType, Statics.DefaultProvider));
+
+        return converted.Distinct(checker).ToArray();
     }
 
     private static bool IsEquatable(Type type)
@@ -36,4 +37,15 @@ public sealed class DistinctValuesAttribute : ArgumentTransformationAttribute
 
         return def.IsAssignableFrom(type);
     }
+
+    private static EqualityChecker CreateChecker(Type elementType)
+    {
+        if (!IsEquatable(elementType))
+        {
+            return EqualityChecker.Default;
+        }
+
+        return (EqualityChecker)Activator.CreateInstance(typeof(EqualityChecker<>).MakeGenericType(elementType))!;
+    }
+
 }

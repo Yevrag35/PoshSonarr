@@ -9,6 +9,7 @@ using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Services.Testing;
 using MG.Sonarr.Next.Services.Time;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Pools;
@@ -34,6 +35,11 @@ namespace MG.Sonarr.Next.Shell.Context
             return SonarrContext.GetProvider().CreateScope();
         }
 
+        internal static IServiceScope CreateScope(this ScopedTransformationAttribute attribute)
+        {
+            return SonarrContext.GetProvider().CreateScope();
+        }
+
 #if DEBUG
         [Obsolete("Only used in interactive PowerShell testing. Never should be called in the code directly.", error: true)]
         public static IMetadataResolver GetResolver()
@@ -51,11 +57,6 @@ namespace MG.Sonarr.Next.Shell.Context
         internal static IServiceScope SetContext<T>(this T cmdlet, Assembly cmdletAssembly, Action<IServiceCollection> addAdditionalServices)
             where T : PSCmdlet, IConnectContextCmdlet, IIsRunning<T>
         {
-            //if (!T.IsRunningCommand(cmdlet))
-            //{
-            //    throw new InvalidOperationException("Don't execute me weird.");
-            //}
-
             return SonarrContext.Initialize(cmdlet.GetConnectionSettings(), cmdletAssembly, cmdlet.MyInvocation.BoundParameters, addAdditionalServices);
         }
         internal static void UnsetContext<T>(this T _) where T : IDisconnectContextCmdlet, IScopeCmdlet<T>
