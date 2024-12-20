@@ -20,6 +20,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Attributes\DistinctValuesAttribute.cs" />
+    <Compile Remove="Checkers\EqualityChecker.cs" />
+    <Compile Remove="Checkers\EqualityChecker_T.cs" />
+    <Compile Remove="Checkers\GenericEqualityChecker_T.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="build_dependencies.json" />
     <None Remove="Debug.ps1" />
     <None Remove="PSFormats\EpisodeObject.Format.ps1xml" />
@@ -91,6 +98,12 @@
 	  <Content Include="PSTypes\SonarrObjects.Type.ps1xml">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	</ItemGroup>
+	<ItemGroup>
+	  <None Include="Attributes\DistinctValuesAttribute.cs" />
+	  <None Include="Checkers\EqualityChecker.cs" />
+	  <None Include="Checkers\EqualityChecker_T.cs" />
+	  <None Include="Checkers\GenericEqualityChecker_T.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
