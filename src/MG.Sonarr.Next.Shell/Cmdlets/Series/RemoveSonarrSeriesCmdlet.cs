@@ -11,9 +11,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     [MetadataCanPipe(Tag = Meta.SERIES)]
     public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
     {
-        static readonly BooleanQueryField _falseField = ["deleteFiles", false];
-        static readonly BooleanQueryField _trueField = ["deleteFiles", true];
-
         QueryCol _col = null!;
         SortedDictionary<int, string?> _dict = null!;
         MetadataTag Tag { get; set; } = null!;
@@ -25,6 +22,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
+        [DistinctValues(typeof(int))]
         public int[] Id { get; set; } = [];
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]

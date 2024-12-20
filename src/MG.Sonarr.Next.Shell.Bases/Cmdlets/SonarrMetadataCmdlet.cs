@@ -1,6 +1,8 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Services.Http;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
@@ -42,6 +44,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             }
 
             return response.Data;
+        }
+        protected MetadataList<T> GetAllAndFilter<T>(SortedSet<int> ids, WildcardSet names) where T : PSObject, IComparable<T>, IHasId, IJsonMetadataTaggable
+        {
+            MetadataList<T> list = this.GetAll<T>();
+            if (list.Count == 0)
+            {
+                return list;
+            }
+
+            ReadOnlySpan<T> span = list.AsSpan();
+            for (int i = span.Length - 1; i >= 0; i--)
+            {
+                ref readonly T item = ref span[i];
+                if (!ids.Contains(item.Id) && )
+            }
         }
         protected List<T> GetById<T>(IReadOnlyCollection<int>? ids) where T : PSObject
         {

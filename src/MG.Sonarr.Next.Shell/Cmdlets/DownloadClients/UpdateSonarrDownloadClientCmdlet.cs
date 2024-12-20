@@ -12,7 +12,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
     {
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
         [ValidateIds(ValidateRangeKind.Positive)]
-        public DownloadClientObject[] InputObject { get; set; } = Array.Empty<DownloadClientObject>();
+        public DownloadClientObject[] InputObject { get; set; } = [];
 
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {

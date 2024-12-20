@@ -2,6 +2,7 @@
 using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Internal;
 using MG.Sonarr.Next.Shell.Models.Series;
@@ -57,6 +58,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         [Parameter]
         [System.Management.Automation.AllowNull]
         [AllowEmptyCollection]
+        [DistinctValues(typeof(SeriesAddIgnoreAction))]
         public SeriesAddIgnoreAction[] SearchForMissingEpisodes { get; set; } = [];
 
         [Parameter(Mandatory = false)]

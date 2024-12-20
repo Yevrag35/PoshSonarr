@@ -16,7 +16,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
         [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
         [ValidateIds(ValidateRangeKind.Positive)]
-        public SeriesObject[] InputObject { get; set; } = Array.Empty<SeriesObject>();
+        public SeriesObject[] InputObject { get; set; } = [];
 
         protected override void OnCreatingScope(IServiceProvider provider)
         {

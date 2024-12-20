@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Json;
 using System.Collections;
+using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Metadata
 {
@@ -45,6 +46,10 @@ namespace MG.Sonarr.Next.Metadata
         {
             collection ??= Enumerable.Empty<T>();
             _list.AddRange(collection);
+        }
+        public ReadOnlySpan<T> AsSpan()
+        {
+            return CollectionsMarshal.AsSpan(_list);
         }
         public void Clear()
         {

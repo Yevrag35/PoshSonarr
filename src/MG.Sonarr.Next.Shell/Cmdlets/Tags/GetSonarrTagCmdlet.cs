@@ -26,18 +26,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         SortedSet<int> _ids = null!;
         WildcardSet _wcNames = null!;
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_PIPELINE)]
         [ValidateIds(ValidateRangeKind.Positive, typeof(ITagPipeable))]
         public ITagPipeable[] InputObject { get; set; } = [];
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+        [ValidateRange(ValidateRangeKind.Positive)]
         public int[] Id { get; set; } = [];
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByName")]
         [SupportsWildcards]
+        [ValidateIds(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.Ignore)]
         public Either<string, int>[] Name { get; set; } = [];
 
         protected override int Capacity => 2;
@@ -67,7 +66,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             if (this.HasParameter(this.InputObject))
             {
                 _ids.UnionWith(this.InputObject.SelectMany(x => x.Tags)
-                    .Where(x => x > 0));
+                                               .Where(x => x > 0));
             }
         }
         protected override void End(IServiceProvider provider)
@@ -77,75 +76,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                 return;
             }
 
-            bool hasIds = this.ProcessIds(_ids);
+            IList<TagObject> tags = _ids.Count > 0 && _wcNames.Count == 0
+                ? this.GetById<TagObject>(_ids)
+                : this.GetAll<TagObject>();
 
-            if (this.ParameterSetName != BY_PIPELINE && !this.TryProcessNames(_wcNames) && !hasIds)
-            {
-                SonarrResponse<MetadataList<TagObject>> tags = this.GetAllTags();
-                if (tags.IsError)
-                {
-                    this.StopCmdlet(tags.Error);
-                    return;
-                }
-
-                this.WriteCollection(tags.Data);
-            }
-        }
-        private SonarrResponse<MetadataList<TagObject>> GetAllTags()
-        {
-            return this.SendGetRequest<MetadataList<TagObject>>(Constants.TAG);
-        }
-        internal static void ProcessAndFilterTags(MetadataList<TagObject> data, WildcardSet names)
-        {
-            for (int i = data.Count - 1; i >= 0; i--)
-            {
-                if (!names.IsAnyMatch(data[i].Label))
-                {
-                    data.RemoveAt(i);
-                }
-            }
-        }
-        private bool ProcessIds(SortedSet<int> ids)
-        {
-            bool hasIds = false;
-            if (ids.Count > 0)
-            {
-                hasIds = true;
-                foreach (int id in ids)
-                {
-                    var result = this.SendGetRequest<TagObject>($"/tag/{id}");
-                    if (result.IsError)
-                    {
-                        this.WriteConditionalError(result.Error);
-                        continue;
-                    }
-
-                    this.WriteObject(result.Data, enumerateCollection: true);
-                }
-            }
-
-            return hasIds;
-        }
-        private bool TryProcessNames(WildcardSet names)
-        {
-            if (names.Count == 0)
-            {
-                return false;
-            }
-
-            SonarrResponse<MetadataList<TagObject>> list = this.GetAllTags();
-            if (list.IsError)
-            {
-                this.StopCmdlet(list.Error);
-                return false;
-            }
-            else
-            {
-                ProcessAndFilterTags(list.Data, _wcNames);
-                this.WriteCollection(list.Data);
-            }
-            
-            return true;
+            this.WriteCollection(tags);
         }
 
         bool _disposed;

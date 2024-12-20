@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Next.Shell.Checkers;
-using System.Collections;
 using System.Collections.Concurrent;
 
 namespace MG.Sonarr.Next.Shell.Attributes;
