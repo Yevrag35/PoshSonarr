@@ -2,6 +2,7 @@
 
 namespace MG.Sonarr.Next.Shell.Checkers;
 
+[DebuggerStepThrough]
 public abstract class EqualityChecker : IEqualityComparer, IEqualityComparer<object>
 {
     public new bool Equals(object? x, object? y)

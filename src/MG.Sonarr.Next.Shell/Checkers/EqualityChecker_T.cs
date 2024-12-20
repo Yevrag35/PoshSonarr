@@ -1,5 +1,6 @@
 ﻿namespace MG.Sonarr.Next.Shell.Checkers;
 
+[DebuggerStepThrough]
 public class EqualityChecker<T> : EqualityChecker where T : IEquatable<T>
 {
     protected virtual bool Equals([DisallowNull] T x, [DisallowNull] T y)

@@ -1,7 +1,9 @@
 ﻿using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Profiles;
+using MG.Sonarr.Next.Shell.Checkers;
 using MG.Sonarr.Next.Shell.Components;
+using System.Collections.Concurrent;
 
 namespace MG.Sonarr.Next.Shell.Services;
 
@@ -11,6 +13,7 @@ internal static class ModuleServiceConfigurer
     {
         services.AddScoped<ManualImportEdit>()
                 .AddScoped<ReleaseProfileObject>()
+                .AddSingleton<ConcurrentDictionary<Type, EqualityChecker>>(provider => new(Environment.ProcessorCount, 4))
                 .AddGenericObjectPool<Dictionary<int, IEpisodeBySeriesPipeable>>(builder =>
                 {
                     builder.SetConstructor(() => new Dictionary<int, IEpisodeBySeriesPipeable>(50))

@@ -1,14 +1,14 @@
 ﻿using MG.Sonarr.Next.Shell.Checkers;
 using System.Collections;
+using System.Collections.Concurrent;
 
 namespace MG.Sonarr.Next.Shell.Attributes;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 public sealed class DistinctValuesAttribute : EnumerableTransformAttribute
 {
-    private static readonly Dictionary<Type, EqualityChecker> _checkers = [];
-
-    public Type? CollectionType
+    [MaybeNull]
+    public Type CollectionType
     {
         get => this.CollectionTypeCore;
         init => this.CollectionTypeCore = value;
@@ -20,32 +20,34 @@ public sealed class DistinctValuesAttribute : EnumerableTransformAttribute
 
     protected override Array TransformCore([DisallowNull] IEnumerable<object> input, Type elementType, Type inputType, EngineIntrinsics engineIntrinsics, IServiceProvider provider)
     {
-        if (!_checkers.TryGetValue(elementType, out EqualityChecker? checker))
-        {
-            checker = CreateChecker(elementType);
-            _checkers.TryAdd(elementType, checker);
-        }
+        var checkers = provider.GetRequiredService<ConcurrentDictionary<Type, EqualityChecker>>();
+        var checker = checkers.GetOrAdd(elementType, CreateChecker);
 
         IEnumerable<object> converted = input.Select(x => LanguagePrimitives.ConvertTo(x, elementType, Statics.DefaultProvider));
 
         return converted.Distinct(checker).ToArray();
     }
 
-    private static bool IsEquatable(Type type)
+    private static bool IsEquatable(Type[] types, int index)
     {
-        Type def = typeof(IEquatable<>).MakeGenericType(type);
+        Type def = typeof(IEquatable<>).MakeGenericType(types);
 
-        return def.IsAssignableFrom(type);
+        return def.IsAssignableFrom(types.AsSpan(index)[0]);
     }
 
     private static EqualityChecker CreateChecker(Type elementType)
     {
-        if (!IsEquatable(elementType))
+        Type[] parameters = [elementType];
+        if (elementType.IsEnum)
         {
-            return EqualityChecker.Default;
+            return (EqualityChecker)Activator.CreateInstance(typeof(EnumEqualityChecker<>).MakeGenericType(parameters))!;
+        }
+        
+        if (IsEquatable(parameters, 0))
+        {
+            return (EqualityChecker)Activator.CreateInstance(typeof(EqualityChecker<>).MakeGenericType(parameters))!;
         }
 
-        return (EqualityChecker)Activator.CreateInstance(typeof(EqualityChecker<>).MakeGenericType(elementType))!;
+        return EqualityChecker.Default;
     }
-
 }

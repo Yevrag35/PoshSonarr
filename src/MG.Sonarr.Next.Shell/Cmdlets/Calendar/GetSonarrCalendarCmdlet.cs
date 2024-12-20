@@ -32,7 +32,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         }
 
         [Parameter]
-        [DistinctValues(typeof(DayOfWeek), CollectionType = typeof(DayOfWeek[]))]
+        [DistinctValues(typeof(DayOfWeek))]
         public DayOfWeek[] DayOfWeek { get; set; } = [];
 
         [Parameter(Mandatory = true, ParameterSetName = "ShowToday")]
