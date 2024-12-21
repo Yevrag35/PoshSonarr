@@ -78,7 +78,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
             IList<TagObject> tags = _ids.Count > 0 && _wcNames.Count == 0
                 ? this.GetById<TagObject>(_ids)
-                : this.GetAll<TagObject>();
+                : this.GetAllAndFilter<TagObject>(_ids, _wcNames);
 
             this.WriteCollection(tags);
         }

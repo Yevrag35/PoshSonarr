@@ -83,12 +83,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
 
             if (_tagNames.Count > 0)
             {
-                this.ProcessNames(_tagNames, _tagIds);
+                MetadataTag tag = provider.GetMetadataTag(Meta.TAG);
+                this.ProcessNames(_tagNames, _tagIds, tag);
             }
 
             if (this.HasParameter(this.Indexer) && IsIndexNameAndNotAny(this.Indexer, out Wildcard indexerName))
             {
-                var indexers = this.GetAll<IndexerObject>();
+                MetadataTag tag = provider.GetMetadataTag(Meta.INDEXER);
+                var indexers = this.GetAll<IndexerObject>(tag.UrlBase);
                 if (indexers.Count == 0)
                 {
                     return;
@@ -161,25 +163,24 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
 
             return result;
         }
-        private void ProcessNames(WildcardSet names, SortedSet<int> tagIds)
+        private void ProcessNames(WildcardSet names, SortedSet<int> tagIds, MetadataTag tag)
         {
             if (names.Count == 0)
             {
                 return;
             }
 
-            SonarrResponse<MetadataList<TagObject>> list = this.SendGetRequest<MetadataList<TagObject>>(Constants.TAG);
-            if (list.IsError)
+            var tags = this.GetAll<TagObject>(tag.UrlBase).AsSpan();
+
+            for (int i = 0; i < tags.Length; i++)
             {
-                this.StopCmdlet(list.Error);
-            }
-            else
-            {
-                GetSonarrTagCmdlet.ProcessAndFilterTags(list.Data, names);
-                tagIds.UnionWith(list.Data.Select(x => x.Id));
+                TagObject tagObj = tags[i];
+                if (!tagIds.Contains(tagObj.Id) && names.IsAnyMatch(tagObj.Label))
+                {
+                    tagIds.Add(tagObj.Id);
+                }
             }
         }
-
     }
 }
 
