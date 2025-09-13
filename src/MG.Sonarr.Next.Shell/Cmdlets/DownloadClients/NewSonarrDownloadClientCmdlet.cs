@@ -67,12 +67,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
                     ? this.Tag.GetUrl(BooleanQueryField.CreateTrue("forceSave"))
                     : this.Tag.UrlBase;
 
-                var response = this.SendPostRequest(url, schema);
+                var response = this.SendPostRequest<DownloadClientSchemaObject, DownloadClientObject>(url, schema);
 
-                if (response.IsError)
-                {
-                    this.WriteError(response.Error);
-                }
+                this.WriteOutcome(response);
             }
         }
     }
