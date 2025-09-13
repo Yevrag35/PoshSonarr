@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.DownloadClients;
+using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
 
@@ -17,6 +18,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
 
         [Parameter]
         public SwitchParameter Enabled { get; set; }
+
+        [Parameter]
+        public SwitchParameter ForceSave { get; set; }
 
         [Parameter]
         public string? Name { get; set; }
@@ -59,7 +63,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
 
             if (this.ShouldProcess(this.Tag.UrlBase, $"Create new download client of type '{schema.ImplementationName}' -> '{schema.Name}'"))
             {
-                var response = this.SendPostRequest(this.Tag.UrlBase, schema);
+                string url = this.ForceSave.ToBool()
+                    ? this.Tag.GetUrl(BooleanQueryField.CreateTrue("forceSave"))
+                    : this.Tag.UrlBase;
+
+                var response = this.SendPostRequest(url, schema);
 
                 if (response.IsError)
                 {

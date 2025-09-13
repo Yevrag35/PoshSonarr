@@ -111,6 +111,14 @@ namespace MG.Sonarr.Next.Metadata
         {
             return parameters.GetUrl(this.UrlBase);
         }
+        public string GetUrl(IQueryField parameter)
+        {
+            Span<char> chars = stackalloc char[parameter.MaxLength + 1];
+            chars[0] = '?';
+            _ = parameter.TryFormat(chars[1..], out int written, default, null);
+
+            return string.Concat(this.UrlBase, chars.Slice(0, written + 1));
+        }
 
         /// <exception cref="InvalidOperationException"/>
         public string GetUrlForId(string? id)

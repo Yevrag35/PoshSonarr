@@ -45,6 +45,10 @@ public readonly struct BooleanQueryField : IQueryField, IEnumerable<Either<strin
         return ((IEnumerable<Either<string, bool>>)this).GetEnumerator();
     }
 
+    public static BooleanQueryField CreateTrue(string key)
+    {
+        return new BooleanQueryField(key, value: true);
+    }
     public static BooleanQueryField CreateFromSpan(params ReadOnlySpan<Either<string, bool>> values)
     {
         if (values.Length != 2)
