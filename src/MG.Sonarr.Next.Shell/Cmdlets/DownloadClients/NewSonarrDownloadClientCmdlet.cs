@@ -6,11 +6,12 @@ using MG.Sonarr.Next.Models.DownloadClients;
 using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Shell.Output;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
 {
     [Cmdlet(VerbsCommon.New, "SonarrDownloadClient", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
-    [MetadataCanPipe(Tag = Meta.DOWNLOAD_CLIENT_SCHEMA)]
+    [MetadataCanPipe(Tag = Meta.DOWNLOAD_CLIENT_SCHEMA), OutputType(typeof(IDownloadClientOutput))]
     public sealed class NewSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
     {
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
