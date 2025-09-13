@@ -5,6 +5,7 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Shell.Output;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Services.Http.Queries;
+using MG.Sonarr.Next.Shell.Attributes;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 {
@@ -17,7 +18,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         static readonly TimeSpan WEEK_TIME_SPAN = TimeSpan.FromDays(8).Subtract(TimeSpan.FromSeconds(1));
 
         DateTime? _end;
-        HashSet<DayOfWeek> _dows = null!;
         QueryCol _queryCol = null!;
 
         [Parameter(Position = 0)]
@@ -27,17 +27,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         [Parameter(Position = 1)]
         public DateTime EndDate
         {
-            get => _end ?? this.StartDate.Add(WEEK_TIME_SPAN);
+            get => _end ??= this.StartDate.Add(WEEK_TIME_SPAN);
             set => _end = value;
         }
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter]
-        public DayOfWeek[] DayOfWeek
-        {
-            get => Array.Empty<DayOfWeek>();
-            set => _dows.UnionWith(value);
-        }
+        [DistinctValues(typeof(DayOfWeek))]
+        public DayOfWeek[] DayOfWeek { get; set; } = [];
 
         [Parameter(Mandatory = true, ParameterSetName = "ShowToday")]
         public SwitchParameter Today { get; set; }
@@ -69,10 +65,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
-            _dows = this.GetPooledObject<HashSet<DayOfWeek>>();
             _queryCol = this.GetPooledObject<QueryCol>();
 
-            this.SetReturnables(_dows, _queryCol);
+            this.SetReturnables(_queryCol);
         }
 
         protected override void Begin(IServiceProvider provider)
@@ -100,15 +95,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
                 this.StopCmdlet(response.Error);
                 return;
             }
-            else if (this.HasParameter(x => x.DayOfWeek) && _dows.Count > 0)
+            else if (this.HasParameter(x => x.DayOfWeek) && this.DayOfWeek.Length > 0)
             {
-                this.FilterByDayOfWeek(response.Data, _dows);
+                this.FilterByDayOfWeek(response.Data, this.DayOfWeek);
             }
 
             this.WriteCollection(response.Data);
         }
 
-        private void FilterByDayOfWeek(MetadataList<CalendarObject> list, HashSet<DayOfWeek> dows)
+        private void FilterByDayOfWeek(MetadataList<CalendarObject> list, DayOfWeek[] dows)
         {
             int removed = list.RemoveAll(predicate: item =>
             {

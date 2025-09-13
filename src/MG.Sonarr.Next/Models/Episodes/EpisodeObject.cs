@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
+using MG.Sonarr.Next.PSProperties;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Episodes
@@ -117,7 +118,7 @@ namespace MG.Sonarr.Next.Models.Episodes
 
         public void OnSerializing()
         {
-            this.AddProperty("AirDate", _airDate);
+            this.Properties.Add(StructNoteProperty.Create("AirDate", _airDate));
         }
 
         public void SetSeries(IEpisodeBySeriesPipeable series)

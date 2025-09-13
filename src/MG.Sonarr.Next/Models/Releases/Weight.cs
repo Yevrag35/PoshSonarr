@@ -1,14 +1,17 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
+using System.Collections.Immutable;
 using System.Management.Automation;
+using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Models.Releases
 {
+    [StructLayout(LayoutKind.Auto)]
     public readonly struct Weight
     {
-        static readonly string[] _weightProps = new string[]
-        {
+        static readonly ImmutableArray<string> _weightProps =
+        [
             "LanguageWeight", "PreferredWordScore", "QualityWeight", "ReleaseWeight"
-        };
+        ];
 
         readonly int _langWeight;
         readonly int _releaseWeight;
@@ -48,10 +51,10 @@ namespace MG.Sonarr.Next.Models.Releases
 
         public void SetRelease(ReleaseObject release)
         {
-            release.UpdateProperty(_weightProps[0], _langWeight);
-            release.UpdateProperty(_weightProps[1], _prefWord);
-            release.UpdateProperty(_weightProps[2], _qualWeight);
-            release.UpdateProperty(_weightProps[3], _releaseWeight);
+            release.UpdateProperty(_langWeight, propertyName: _weightProps[0]);
+            release.UpdateProperty(_prefWord, propertyName: _weightProps[1]);
+            release.UpdateProperty(_qualWeight, propertyName: _weightProps[2]);
+            release.UpdateProperty(_releaseWeight, propertyName: _weightProps[3]);
         }
     }
 }

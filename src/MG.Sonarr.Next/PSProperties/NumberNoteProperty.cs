@@ -4,6 +4,13 @@ using System.Numerics;
 
 namespace MG.Sonarr.Next.PSProperties
 {
+    public static class NumberProperty
+    {
+        public static NumberNoteProperty<T> Create<T>(string propertyName, T value) where T : unmanaged, INumber<T>
+        {
+            return new NumberNoteProperty<T>(propertyName, value);
+        }
+    }
     public sealed class NumberNoteProperty<T> : WritableProperty<T> where T : unmanaged, INumber<T>
     {
         protected override int MaxValueCharacterLength => LengthConstants.INT128_MAX;

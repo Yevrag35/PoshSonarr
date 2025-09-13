@@ -13,14 +13,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0)]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        public int[] Id { get; set; } = [];
 
         protected override int Capacity => 1;
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            this.GetReturnables()[0] = _ids;
+            this.SetReturnables(_ids);
         }
 
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
@@ -35,7 +35,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
 
         protected override void Process(IServiceProvider provider)
         {
-            IEnumerable<RootFolderObject> folders = this.HasParameter(x => x.Id)
+            IEnumerable<RootFolderObject> folders = this.HasParameter(this.Id)
                 ? this.GetById<RootFolderObject>(_ids)
                 : this.GetAll<RootFolderObject>();
 

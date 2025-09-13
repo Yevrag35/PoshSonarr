@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.System;
+using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
 
@@ -17,10 +18,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
         bool _noToAll;
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        [ValidateRange(ValidateRangeKind.Positive)]
+        public int[] Id { get; set; } = [];
 
         [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
-        public BackupObject[] InputObject { get; set; } = Array.Empty<BackupObject>();
+        [ValidateIds(ValidateRangeKind.Positive)]
+        public BackupObject[] InputObject { get; set; } = [];
 
         [Parameter]
         public SwitchParameter Force { get; set; }
@@ -35,15 +38,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
         {
             base.OnCreatingScope(provider);
             _ids = this.GetPooledObject<SortedSet<int>>();
-            this.GetReturnables()[0] = _ids;
+            this.SetReturnables(_ids);
         }
 
         protected override void Process(IServiceProvider provider)
         {
             _ids.UnionWith(this.Id);
-            if (this.HasParameter(x => x.InputObject))
+            if (this.HasParameter(this.InputObject))
             {
-                _ids.UnionWith(this.InputObject.Where(x => x.Id > 0).Select(x => x.Id));
+                _ids.UnionWith(this.InputObject.Select(x => x.Id));
             }
         }
 

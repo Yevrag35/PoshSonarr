@@ -8,12 +8,7 @@ using MG.Sonarr.Next.Shell.Settings;
 using System.Text.Json;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Services.Auth;
-using MG.Sonarr.Next.Shell.Components;
-using MG.Sonarr.Next.Collections.Pools;
-using MG.Sonarr.Next.Metadata;
-using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Shell.Services;
-using System.Collections.Concurrent;
 using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Resources;
 using System.Management.Automation.Host;
@@ -88,7 +83,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 
             if (_settings.Timeout <= TimeSpan.Zero)
             {
-                _settings.Timeout = TimeSpan.FromMinutes(5d);
+                _settings.Timeout = TimeSpan.FromMinutes(5);
             }
 
             using IServiceScope scope = this.ConnectContext(ModuleServiceConfigurer.AddConfiguration);

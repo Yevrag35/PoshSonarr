@@ -1,6 +1,8 @@
 ﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions.PSO;
 using System.Collections;
+using System.Collections.Frozen;
+using System.Collections.Immutable;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Metadata
@@ -14,20 +16,19 @@ namespace MG.Sonarr.Next.Metadata
         MetadataTag this[string key] { get; }
 
         bool ContainsKey([NotNullWhen(true)] string? key);
-        bool TryGetValue([NotNullWhen(true)] string? key, [NotNullWhen(true)] out MetadataTag? value);
-        bool TryGetValue(PSObject pso, [NotNullWhen(true)] out MetadataTag? value);
     }
 
     /// <summary>
     /// A dictionary implementation of <see cref="MetadataTag"/> instances that describe the various
     /// types of deserialized API response objects.
     /// </summary>
+    [DebuggerDisplay("Count = {Count}")]
     internal sealed class MetadataResolver : IMetadataResolver
     {
         public static readonly string META_PROPERTY_NAME = "MetadataTag";
         public const char META_PREFIX = '#';
         readonly Dictionary<string, MetadataTag> _dict;
-        readonly NameLookup<string> _pipesTo;
+        readonly Dictionary<string, ImmutableArray<string>> _pipesTo;
 
         /// <summary>
         /// Gets the <see cref="MetadataTag"/> associated with the specified key.
@@ -44,9 +45,9 @@ namespace MG.Sonarr.Next.Metadata
 
         public int Count => _dict.Count;
 
-        public MetadataResolver(int capacity, NameLookup<string> pipesTo)
+        public MetadataResolver(int capacity, Dictionary<string, ImmutableArray<string>> pipesTo)
         {
-            _dict = new(capacity, StringComparer.InvariantCultureIgnoreCase);
+            _dict = new(capacity, StringComparer.OrdinalIgnoreCase);
             _pipesTo = pipesTo;
         }
 
@@ -55,10 +56,9 @@ namespace MG.Sonarr.Next.Metadata
             ArgumentException.ThrowIfNullOrEmpty(tag);
             ArgumentException.ThrowIfNullOrEmpty(baseUrl);
 
-            MetadataTag metadataTag = new(baseUrl, tag, supportsId, _pipesTo[tag]);
+            MetadataTag metadataTag = new(baseUrl, tag, supportsId, this.GetPipesTo(tag));
 
             return _dict.TryAdd(tag, metadataTag);
-
         }
         public bool ContainsKey([NotNullWhen(true)] string? key)
         {
@@ -68,26 +68,13 @@ namespace MG.Sonarr.Next.Metadata
         {
             return _dict.Values.GetEnumerator();
         }
-        public bool TryGetValue(PSObject pso, [NotNullWhen(true)] out MetadataTag? value)
+        private ImmutableArray<string> GetPipesTo(string key)
         {
-            ArgumentNullException.ThrowIfNull(pso);
-
-            if (pso.TryGetProperty(META_PROPERTY_NAME, out string? metaTag)
-                &&
-                this.TryGetValue(metaTag, out value))
-            {
-                return true;
-            }
-
-            value = null;
-            return false;
+            return _pipesTo.TryGetValue(key, out ImmutableArray<string> pipesTo)
+                ? pipesTo
+                : [];
         }
-        public bool TryGetValue([NotNullWhen(true)] string? key, [NotNullWhen(true)] out MetadataTag? value)
-        {
-            value = null;
-            return !string.IsNullOrWhiteSpace(key) && _dict.TryGetValue(key, out value);
-        }
-        
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();

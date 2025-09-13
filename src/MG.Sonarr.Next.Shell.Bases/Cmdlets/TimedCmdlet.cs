@@ -70,7 +70,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             return Messenger.Format(
                 provider: CultureInfo.CurrentCulture,
                 format: Messages.Verbose_ReceivedResponse_Timed_Format,
-                arguments: [elapsedTime, (int)statusCode, statusCode]);
+                elapsedTime, (int)statusCode, statusCode);
         }
         public void WriteDebugPayload(string jsonPayload)
         {

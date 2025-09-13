@@ -20,12 +20,12 @@ namespace MG.Sonarr.Next.Models.Qualities
         public QualityObject Quality
         {
             get => this.GetValue<QualityObject>() ?? QualityObject.Default;
-            private set => this.UpdateProperty(nameof(this.Quality), value);
+            private set => this.UpdateProperty(value);
         }
         public RevisionObject Revision
         {
             get => this.GetValue<RevisionObject>() ?? RevisionObject.Default;
-            private set => this.UpdateProperty(nameof(this.Revision), value);
+            private set => this.UpdateProperty(value);
         }
 
         public QualityRevisionObject()

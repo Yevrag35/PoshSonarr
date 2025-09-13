@@ -3,6 +3,14 @@ using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties
 {
+    public static class StructNoteProperty
+    {
+        public static StructNoteProperty<T> Create<T>(string propertyName, T value) where T : struct
+        {
+            return new StructNoteProperty<T>(propertyName, value);
+        }
+    }
+
     public sealed class StructNoteProperty<T> : WritableProperty<T> where T : struct
     {
         public override string TypeNameOfValue => typeof(T).GetName();

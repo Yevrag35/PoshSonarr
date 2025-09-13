@@ -77,7 +77,7 @@ namespace MG.Sonarr.Next.Models.Indexers
             string? name = this.GetValue<string>(nameof(this.Name));
             if (string.IsNullOrWhiteSpace(name))
             {
-                this.UpdateProperty(nameof(this.Name), this.Name);
+                this.UpdateProperty(x => x.Name);
             }
         }
         protected override void SetPSTypeName()

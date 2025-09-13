@@ -22,6 +22,11 @@ namespace MG.Sonarr.Next.Models
         bool _addedType;
         static readonly string _typeName = typeof(SonarrObject).GetName();
 
+        public object? this[string propertyName]
+        {
+            get => this.Properties[propertyName]?.Value;
+        }
+
         protected virtual bool DisregardMetadataTag { get; }
         public MetadataTag MetadataTag => this.GetValue<MetadataTag>() ?? MetadataTag.Empty;
 
@@ -67,7 +72,7 @@ namespace MG.Sonarr.Next.Models
             }
 
             MetadataTag tagToUse = this.GetTag(resolver, MetadataTag.Empty);
-            this.Properties.Add(new MetadataProperty(tagToUse));
+            this.AddOrUpdate(MetadataProperty.Empty.Name, replaceReadOnly: true, tagToUse, static (name, tag) => new MetadataProperty(tag));
         }
         protected virtual void SetPSTypeName()
         {

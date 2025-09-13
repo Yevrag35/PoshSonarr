@@ -6,23 +6,35 @@ namespace MG.Sonarr.Next.Extensions.PSO
     public static partial class PSOExtensions
     {
         [DebuggerStepThrough]
-        public static T? GetValue<T>(this PSObject? pso, [CallerMemberName] string propertyName = "")
+        public static T? GetValue<T>(this PSObject pso, [CallerMemberName] string propertyName = "")
         {
-            try
+            object? value = pso.Properties[propertyName]?.Value;
+            return value switch
             {
-                return (T?)pso?.Properties[propertyName]?.Value;
-            }
-            catch
-            {
-                return default;
-            }
+                T tVal => tVal,
+                null => default,
+                _ when LanguagePrimitives.TryConvertTo(value, out T? convertedTo) && convertedTo is not null => convertedTo,
+                _ => default,
+            };
         }
 
+        /// <summary>
+        /// Gets the value of the property as a string or an empty string if the value is null or cannot be converted to a string.
+        /// </summary>
+        /// <param name="pso">The <see cref="PSObject"/> this method is extending.</param>
+        /// <param name="propertyName">The name of the property to get the value of.</param>
+        /// <returns>The value of the property as a string or an empty string if the value is null or cannot be converted to a string.</returns>
         [DebuggerStepThrough]
-        public static string GetStringOrEmpty(this PSObject? pso, [CallerMemberName] string propertyName = "")
+        public static string GetStringOrEmpty(this PSObject pso, [CallerMemberName] string propertyName = "")
         {
-            string? value = pso?.Properties[propertyName]?.Value as string;
-            return value ?? string.Empty;
+            object? value = pso.Properties[propertyName]?.Value;
+            return value switch
+            {
+                string strValue => strValue,
+                null => string.Empty,
+                _ when LanguagePrimitives.TryConvertTo(value, out string? convertedTo) && convertedTo is not null => convertedTo,
+                _ => string.Empty,
+            };
         }
 
         [DebuggerStepThrough]

@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Immutable;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -147,7 +148,7 @@ namespace MG.Sonarr.Next.Json
             List<JsonConverter> sonarrConverters = ConstructSonarrObjectConverters(objCon);
             ThrowIfMissingConverters(sonarrConverters.Count == 0, sonarrConverters);
 
-            options.Converters.AddMany(sonarrConverters);
+            options.Converters.AddMany(CollectionsMarshal.AsSpan(sonarrConverters));
         }
 
         private static List<JsonConverter> ConstructSonarrObjectConverters(ObjectConverter converter)
@@ -178,43 +179,59 @@ namespace MG.Sonarr.Next.Json
             return constructed;
         }
 
-        private static IEnumerable<KeyValuePair<string, Type>> EnumerateConverterProperties()
+        private static KeyValuePair<string, Type>[] EnumerateConverterProperties()
         {
-            yield return new("AirDate", typeof(DateOnly));
-            yield return new("EpisodeNumbers", typeof(int[]));
-            yield return new("Episodes", typeof(SortedSet<EpisodeObject>));
-            yield return new("Fields", typeof(ImmutableArray<FieldObject>));
-            yield return new("Genres", typeof(string[]));
-            yield return new("Ignored", typeof(StringSet));
-            yield return new("Preferred", typeof(StringKeyValueSet<int>));
-            yield return new("Required", typeof(StringSet));
-            yield return new("SelectOptions", typeof(ImmutableArray<SelectOptionObject>));
-            yield return new("Tags", typeof(SortedSet<int>));
+             return [
+                 new("AirDate", typeof(DateOnly)),
+                 new("EpisodeNumbers", typeof(int[])),
+                 new("Episodes", typeof(SortedSet<EpisodeObject>)),
+                 new("Fields", typeof(ImmutableArray<FieldObject>)),
+                 new("Genres", typeof(string[])),
+                 new("Ignored", typeof(StringSet)),
+                 new("Preferred", typeof(StringKeyValueSet<int>)),
+                 new("ReleaseGroups", typeof(string[])),
+                 new("Required", typeof(StringSet)),
+                 new("SelectOptions", typeof(ImmutableArray<SelectOptionObject>)),
+                 new("Tags", typeof(SortedSet<int>)),
+             ];
         }
-        private static IEnumerable<KeyValuePair<string, string>> EnumerateGlobalReplaceNames()
+        private static KeyValuePair<string, string>[] EnumerateGlobalReplaceNames()
         {
-            yield return new("Monitored", "IsMonitored");
-            yield return new("ChmodFolder", "CHMODFolder");
-            yield return new("ChownGroup", "CHOWNGroup");
-            yield return new("TvdbId", "TVDbId");
+             return [
+                 new("Monitored", "IsMonitored"),
+                 new("ChmodFolder", "CHMODFolder"),
+                 new("ChownGroup", "CHOWNGroup"),
+                 new("TvdbId", "TVDbId"),
+             ];
         }
-        private static IEnumerable<string> EnumerateIgnoreProperties()
+        private static string[] EnumerateIgnoreProperties()
         {
-            yield return Constants.META_PROPERTY_NAME;
-            yield return Constants.PROPERTY_SHORT_OVERVIEW;
+             return [
+                 Constants.META_PROPERTY_NAME,
+                 Constants.PROPERTY_SHORT_OVERVIEW,
+             ];
         }
 
         private static IEnumerable<Type> GetSonarrObjectTypes()
         {
             Assembly[] assemblies = AssemblyLoader.GetAppDomainAssemblies(AppDomain.CurrentDomain);
 
-            return assemblies.Where(x => !x.IsDynamic && x.IsDefined(typeof(SonarrObjectConverterAssemblyAttribute), inherit: false))
-                             .SelectMany(x => x.GetExportedTypes()
-                                               .Where(t => t.IsClass && !t.IsAbstract
-                                                           &&
-                                                           t.IsDefined(typeof(SonarrObjectAttribute), inherit: false)
-                                                           &&
-                                                           typeof(SonarrObject).IsAssignableFrom(t)));
+            return assemblies
+                .Where(ass => !ass.IsDynamic 
+                            && ass.IsDefined(
+                                    typeof(SonarrObjectConverterAssemblyAttribute),
+                                    inherit: false))
+
+                .SelectMany(ass => ass.GetExportedTypes()
+                                      .Where(t => t.IsClass
+                                                  &&
+                                                  !t.IsAbstract
+                                                  &&
+                                                  t.IsDefined(
+                                                      typeof(SonarrObjectAttribute),
+                                                      inherit: false)
+                                                  &&
+                                                  typeof(SonarrObject).IsAssignableFrom(t)));
         }
 
         /// <exception cref="ModuleStartupException"></exception>

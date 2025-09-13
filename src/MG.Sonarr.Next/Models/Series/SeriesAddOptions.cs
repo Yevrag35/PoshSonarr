@@ -1,9 +1,19 @@
 ﻿namespace MG.Sonarr.Next.Shell.Models.Series
 {
-    public sealed class SeriesAddOptions
+    [DebuggerStepThrough]
+    public abstract record SeriesAddOptions
     {
-        public bool IgnoreEpisodesWithFiles { get; set; } = true;
-        public bool IgnoreEpisodesWithoutFiles { get; set; } = true;
-        public bool SearchForMissingEpisodes { get; set; }
+        public abstract bool IgnoreEpisodesWithFiles { get; }
+        public abstract bool IgnoreEpisodesWithoutFiles { get; }
+        public abstract bool SearchForMissingEpisodes { get; }
+
+        public static readonly SeriesAddOptions Default = new DefaultInstance();
+
+        private sealed record DefaultInstance : SeriesAddOptions
+        {
+            public override bool IgnoreEpisodesWithFiles => true;
+            public override bool IgnoreEpisodesWithoutFiles => true;
+            public override bool SearchForMissingEpisodes => false;
+        }
     }
 }

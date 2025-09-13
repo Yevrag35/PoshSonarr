@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.PSProperties;
 using MG.Sonarr.Next.Shell.Models.Series;
 using System.Text.Json.Serialization;
 
@@ -74,6 +75,8 @@ namespace MG.Sonarr.Next.Models.Series
         {
             base.OnDeserialized(alreadyCalled);
             this.Properties.RemoveMany(Constants.ID, "Added");
+            this.Properties.Remove("LanguageProfileId");
+            this.Properties.Add(ReadOnlyNumberProperty.Create("LanguageProfileId", 1));
 
             if (this.TryGetNonNullProperty(Constants.SERIES_TYPE, out string? seriesType))
             {
@@ -88,17 +91,17 @@ namespace MG.Sonarr.Next.Models.Series
         }
         public override void OnSerializing()
         {
-            this.UpdateProperty(x => x.AddOptions);
-            this.UpdateProperty(x => x.Title);
+            this.UpdateProperty(x => x.AddOptions, x => x.Title);
             this.SetPath();
             base.OnSerializing();
         }
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Using nameof()")]
         private void SetPath()
         {
             if (this.IsFullPath)
             {
                 this.UpdateProperty(x => x.Path);
-                _pathProp = nameof(this.Path);
+                _pathProp = nameof(Path);
             }
             else
             {

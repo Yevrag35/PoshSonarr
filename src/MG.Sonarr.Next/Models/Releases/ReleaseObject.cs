@@ -92,12 +92,13 @@ namespace MG.Sonarr.Next.Models.Releases
             this.Reset();
         }
 
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "<Pending>")]
         public void OnSerializing()
         {
             _weight.SetRelease(this);
             this.ReplaceNumberProperty(nameof(this.Age), _age);
-            this.UpdateProperty(nameof(this.IndexerId), this.IndexerId);
-            this.UpdateProperty(nameof(this.ReleaseUrl), this.ReleaseUrl);
+            this.UpdateProperty(this.IndexerId, propertyName: nameof(IndexerId));
+            this.UpdateProperty(x => x.ReleaseUrl);
             this.AddNumberProperty("AgeHours", _ageHours);
             this.AddNumberProperty("AgeMinutes", _ageMinutes);
         }
@@ -115,10 +116,10 @@ namespace MG.Sonarr.Next.Models.Releases
             this.TypeNames.Insert(0, _typeName);
         }
 
-        static readonly HashSet<string> _capitalProps = new(1)
-        {
+        static readonly HashSet<string> _capitalProps =
+        [
             "Protocol",
-        };
+        ];
         public static IReadOnlySet<string> GetPropertiesToCapitalize()
         {
             return _capitalProps;

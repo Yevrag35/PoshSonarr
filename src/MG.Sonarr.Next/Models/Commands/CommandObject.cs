@@ -36,7 +36,7 @@ namespace MG.Sonarr.Next.Models.Commands
 
         public static readonly ICommand Empty = EmptyCommand.Default;
 
-        private static bool AreCommandPropertiesEqual(ICommand thisAsCommand, [NotNullWhen(true)] ICommand? otherCommand)
+        private static bool AreCommandPropertiesEqual(CommandObject thisAsCommand, [NotNullWhen(true)] ICommand? otherCommand)
         {
             return thisAsCommand.Id.IsEqualTo(otherCommand?.Id)
                    &&
@@ -137,10 +137,10 @@ namespace MG.Sonarr.Next.Models.Commands
             this.TypeNames.Insert(0, _typeName);
         }
 
-        static readonly HashSet<string> _capitalProps = new()
-        {
+        static readonly HashSet<string> _capitalProps =
+        [
             "Priority", "Status", "Trigger",
-        };
+        ];
         public static IReadOnlySet<string> GetPropertiesToCapitalize()
         {
             return _capitalProps;

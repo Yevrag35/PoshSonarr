@@ -45,19 +45,30 @@ public readonly struct BooleanQueryField : IQueryField, IEnumerable<Either<strin
         return ((IEnumerable<Either<string, bool>>)this).GetEnumerator();
     }
 
+    public static BooleanQueryField CreateTrue(string key)
+    {
+        return new BooleanQueryField(key, value: true);
+    }
     public static BooleanQueryField CreateFromSpan(params ReadOnlySpan<Either<string, bool>> values)
     {
-        if (values.Length != 2 || values[0].IsSameType(values[1]))
+        if (values.Length != 2)
         {
             return default;
         }
 
-        return values[0].Match(values[1],
-            (key, other) => new BooleanQueryField(key, other.AsT2),
-            (boolean, other) => new BooleanQueryField(other.AsT1!, boolean));
+        ref readonly var first = ref values[0];
+        ref readonly var second = ref values[1];
+        if (first.IsSameType(in second))
+        {
+            return default;
+        }
+
+        return first.Match(second,
+            static (key, other) => new BooleanQueryField(key, other.AsT2),
+            static (boolean, other) => new BooleanQueryField(other.AsT1!, boolean));
     }
 
-    string IFormattable.ToString(string? format, System.IFormatProvider? formatProvider)
+    string IFormattable.ToString(string? format, IFormatProvider? formatProvider)
     {
         Span<char> chars = stackalloc char[this.MaxLength];
         if (!this.TryFormat(chars, out int charsWritten))

@@ -1,6 +1,8 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Services.Http;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
@@ -32,9 +34,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         }
 
         protected abstract MetadataTag GetMetadataTag(IMetadataResolver resolver);
-        protected MetadataList<T> GetAll<T>() where T : PSObject, IComparable<T>, IJsonMetadataTaggable
+        protected MetadataList<T> GetAll<T>(string? url = null) where T : PSObject, IComparable<T>, IJsonMetadataTaggable
         {
-            var response = this.SendGetRequest<MetadataList<T>>(this.Tag.UrlBase);
+            var response = this.SendGetRequest<MetadataList<T>>(url ?? this.Tag.UrlBase);
             if (response.IsError)
             {
                 this.StopCmdlet(response.Error);
@@ -42,6 +44,26 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             }
 
             return response.Data;
+        }
+        protected MetadataList<T> GetAllAndFilter<T>(SortedSet<int> ids, WildcardSet names, string? url = null) where T : PSObject, IComparable<T>, IHasId, IHasName, IJsonMetadataTaggable
+        {
+            MetadataList<T> list = this.GetAll<T>(url);
+            if (list.Count == 0)
+            {
+                return list;
+            }
+
+            ReadOnlySpan<T> span = list.AsSpan();
+            for (int i = span.Length - 1; i >= 0; i--)
+            {
+                ref readonly T item = ref span[i];
+                if (!ids.Contains(item.Id) && !names.IsAnyMatch(item.Name))
+                {
+                    list.RemoveAt(i);
+                }
+            }
+
+            return list;
         }
         protected List<T> GetById<T>(IReadOnlyCollection<int>? ids) where T : PSObject
         {

@@ -1,20 +1,15 @@
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Exceptions;
-using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Extensions.Strings;
-using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Indexers;
 using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Models.Tags;
-using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using MG.Sonarr.Next.Shell.Cmdlets.Tags;
+using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Unions;
-using System.Collections;
-using System.Text;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
 {
@@ -74,6 +69,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
             this.SetReturnables(_tagIds, _tagNames);
         }
 
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in nameof()")]
         protected override void Begin(IServiceProvider provider)
         {
             if (this.HasParameter(this.Tags))
@@ -83,12 +79,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
 
             if (_tagNames.Count > 0)
             {
-                this.ProcessNames(_tagNames, _tagIds);
+                MetadataTag tag = provider.GetMetadataTag(Meta.TAG);
+                this.ProcessNames(_tagNames, _tagIds, tag);
             }
 
             if (this.HasParameter(this.Indexer) && IsIndexNameAndNotAny(this.Indexer, out Wildcard indexerName))
             {
-                var indexers = this.GetAll<IndexerObject>();
+                MetadataTag tag = provider.GetMetadataTag(Meta.INDEXER);
+                var indexers = this.GetAll<IndexerObject>(tag.UrlBase);
                 if (indexers.Count == 0)
                 {
                     return;
@@ -102,10 +100,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
                 }
                 else
                 {
-                    this.Error = new SonarrErrorRecord(new ArgumentException($"No indexer found the name '{indexerName}'.",
-                        nameof(this.Indexer)),
-                        "SonarrObjectNotMatchedToName",
-                        ErrorCategory.ObjectNotFound,
+                    this.Error = new SonarrErrorRecord(
+                        normalEx: new SonarrParameterException(nameof(Indexer), ParameterErrorType.Invalid, $"No indexer was found with the name '{indexerName}'."),
+                        "New-SonarrReleaseProfile.InvalidIndexerName",
+                        ErrorCategory.InvalidArgument,
                         indexerName);
                 }
             }
@@ -161,25 +159,24 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
 
             return result;
         }
-        private void ProcessNames(WildcardSet names, SortedSet<int> tagIds)
+        private void ProcessNames(WildcardSet names, SortedSet<int> tagIds, MetadataTag tag)
         {
             if (names.Count == 0)
             {
                 return;
             }
 
-            SonarrResponse<MetadataList<TagObject>> list = this.SendGetRequest<MetadataList<TagObject>>(Constants.TAG);
-            if (list.IsError)
+            var tags = this.GetAll<TagObject>(tag.UrlBase).AsSpan();
+
+            for (int i = 0; i < tags.Length; i++)
             {
-                this.StopCmdlet(list.Error);
-            }
-            else
-            {
-                GetSonarrTagCmdlet.ProcessAndFilterTags(list.Data, names);
-                tagIds.UnionWith(list.Data.Select(x => x.Id));
+                TagObject tagObj = tags[i];
+                if (!tagIds.Contains(tagObj.Id) && names.IsAnyMatch(tagObj.Label))
+                {
+                    tagIds.Add(tagObj.Id);
+                }
             }
         }
-
     }
 }
 

@@ -16,7 +16,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
         private const string ByEpisodeInput = "ByEpisodeInput";
         private const string BySeriesId = "BySeriesId";
         private const string BySeriesInput = "BySeriesInput";
-        private static readonly Wildcard _byEpisodeWildcard = Wildcard.ParseAs(WildcardMatchType.StartsWith, ByEpisodeId.AsSpan(0, ByEpisodeId.Length - 2));
+        private static readonly Wildcard _byEpisodeWildcard = Wildcard
+            .ParseAs(WildcardMatchType.StartsWith, ByEpisodeId.AsSpan(0, ByEpisodeId.Length - 2));
 
         QueryCol _queryParams = null!;
         MetadataTag Tag { get; set; } = null!;

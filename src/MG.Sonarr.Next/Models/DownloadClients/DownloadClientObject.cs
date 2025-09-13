@@ -17,7 +17,7 @@ namespace MG.Sonarr.Next.Models.DownloadClients
 
         public string Name
         {
-            get => this.GetValue<string>() ?? string.Empty;
+            get => this.GetStringOrEmpty();
             set => this.SetValue(value);
         }
 

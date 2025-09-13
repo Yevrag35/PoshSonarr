@@ -9,12 +9,16 @@ namespace MG.Sonarr.Next.Models.Tags
     [SonarrObject]
     public sealed class TagObject : SonarrObject,
         IComparable<TagObject>,
+        IHasId,
+        IHasName,
         ISerializableNames<TagObject>
     {
         const int CAPACITY = 3;
 
         public int Id { get; private set; }
         public string Label { get; private set; } = string.Empty;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        string IHasName.Name => this.Label;
 
         public TagObject()
             : base(CAPACITY)

@@ -51,6 +51,8 @@ namespace MG.Sonarr.Next.Services.Http
     /// <summary>
     /// A struct object that encapsulates the response from a Sonarr API endpoint.
     /// </summary>
+    [StructLayout(LayoutKind.Auto)]
+    [DebuggerDisplay(@"\{{RequestUrl,nq} -> {StatusCode}\}")]
     public readonly struct SonarrResponse : ISonarrResponse
     {
         readonly SonarrErrorRecord? _error;

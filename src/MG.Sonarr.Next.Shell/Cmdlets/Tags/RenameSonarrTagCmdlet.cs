@@ -15,7 +15,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     [MetadataCanPipe(Tag = Meta.TAG)]
     public sealed class RenameSonarrTagCmdlet : SonarrApiCmdletBase
     {
-        Either<string, ScriptBlock> _oneOf;
         TagObject? _pipedObject;
         MetadataTag _tag = null!;
 
@@ -41,7 +40,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_PIPELINE)]
+        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipelineByPropertyName = true)]
         [Parameter(Mandatory = true, Position = 1, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateNotNullOrEmpty]
         public string NewName { get; set; } = string.Empty;
@@ -52,29 +51,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             _tag = provider.GetRequiredService<IMetadataResolver>()[Meta.TAG];
         }
 
-        protected override void Begin(IServiceProvider provider)
-        {
-            _oneOf = this.TryNameToScriptBlock(this.NewName, out ScriptBlock? sb) ? sb : this.NewName;
-        }
         protected override void Process(IServiceProvider provider)
         {
-            string? ordinaryName = this.NewName;
-
-            TagRename rename;
-            if (this.InputObject is not null && _oneOf.TryGetT2(out ScriptBlock? newNameBlock, out ordinaryName))
-            {
-                if (!this.TryGenerateNewName(newNameBlock, this.InputObject, out string? newName))
-                {
-                    this.WriteWarning("Cannot rename a tag with a null or empty name.");
-                    return;
-                }
-
-                rename = TagRename.Create(this.InputObject.Id, newName);
-            }
-            else
-            {
-                rename = TagRename.Create(this.Id, ordinaryName ?? this.NewName);
-            }
+            TagRename rename = TagRename.Create(this.Id, this.NewName);
 
             string url = _tag.GetUrlForId(rename.Id);
 
@@ -89,37 +68,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                 }
 
                 this.WriteVerbose($"Renamed Tag -> {this.Id}");
-            }
-        }
-
-        private bool TryNameToScriptBlock(string newName, [NotNullWhen(true)] out ScriptBlock? scriptBlock)
-        {
-            try
-            {
-                scriptBlock = this.SessionState.InvokeCommand.NewScriptBlock(newName);
-                return scriptBlock.IsProperScriptBlock();
-            }
-            catch (Exception e)
-            {
-                scriptBlock = null;
-                this.WriteError(e.ToRecord(ErrorCategory.ParserError, newName));
-                return false;
-            }
-        }
-        private bool TryGenerateNewName(ScriptBlock scriptBlock, TagObject tag, [NotNullWhen(true)] out string? newLabel)
-        {
-            ArgumentNullException.ThrowIfNull(tag);
-            newLabel = null;
-
-            try
-            {
-                newLabel = scriptBlock.InvokeWith<TagObject, string>(tag, this.ErrorPreference);
-                return !string.IsNullOrWhiteSpace(newLabel);
-            }
-            catch (Exception e)
-            {
-                this.WriteError(e.ToRecord(ErrorCategory.InvalidOperation, scriptBlock));
-                return false;
             }
         }
     }

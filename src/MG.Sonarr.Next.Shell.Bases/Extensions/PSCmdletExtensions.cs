@@ -117,20 +117,21 @@ namespace MG.Sonarr.Next.Shell.Extensions
                 return;
             }
 
-            var func = getSetting.Compile();
-            TObj? obj = func(cmdlet);
-            if (obj is null)
-            {
-                if (!getSetting.TryGetAsSetter(out IMemberSetter? setter))
-                {
-                    throw new InvalidOperationException("TObj must resolve to a field or property.");
-                }
 
-                obj = new();
-                setter.SetValue(cmdlet, obj);
-            }
+            //var func = getSetting.Compile();
+            //TObj? obj = func(cmdlet);
+            //if (obj is null)
+            //{
+            //    if (!getSetting.TryGetAsSetter(out IMemberSetter? setter))
+            //    {
+            //        throw new InvalidOperationException("TObj must resolve to a field or property.");
+            //    }
 
-            setValue.Invoke(value, obj);
+            //    obj = new();
+            //    setter.SetValue(cmdlet, obj);
+            //}
+
+            //setValue.Invoke(value, obj);
         }
         
         public static void WriteCollection<T>(this Cmdlet cmdlet, IEnumerable<T> collection)

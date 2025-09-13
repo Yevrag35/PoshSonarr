@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Extensions.Strings;
+using System.Collections.Immutable;
 using System.Reflection;
 
 namespace MG.Sonarr.Next.Shell.Build
@@ -20,8 +21,8 @@ namespace MG.Sonarr.Next.Shell.Build
             }
 
             PSObject pso = new(2);
-            pso.Properties.Add(new PSNoteProperty("Formats", paths.FormatPaths.ToArray()));
-            pso.Properties.Add(new PSNoteProperty("Types", paths.TypePaths.ToArray()));
+            pso.Properties.Add(new PSNoteProperty("Formats", paths.FormatPaths.ToImmutableArray()));
+            pso.Properties.Add(new PSNoteProperty("Types", paths.TypePaths.ToImmutableArray()));
 
             return pso;
         }
@@ -41,8 +42,8 @@ namespace MG.Sonarr.Next.Shell.Build
             aliases.Sort();
 
             PSObject pso = new(2);
-            pso.AddProperty("Cmdlets", names.ToArray());
-            pso.AddProperty("Aliases", aliases.ToArray());
+            pso.AddProperty("Cmdlets", names.ToImmutableArray());
+            pso.AddProperty("Aliases", aliases.ToImmutableArray());
 
             return pso;
         }

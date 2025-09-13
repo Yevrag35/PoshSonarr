@@ -13,7 +13,7 @@ namespace MG.Sonarr.Next.Models
         public virtual bool MustUpdateViaApi { get; protected set; }
         public SortedSet<int> Tags
         {
-            get => _tags ??= new();
+            get => _tags ??= [];
             set
             {
                 ArgumentNullException.ThrowIfNull(value, nameof(this.Tags));

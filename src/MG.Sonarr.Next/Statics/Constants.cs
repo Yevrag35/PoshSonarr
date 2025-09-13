@@ -55,6 +55,7 @@ namespace MG.Sonarr.Next
         public static readonly string DOWNLOAD_CLIENT = "/downloadclient";
         public static readonly string DOWNLOAD_CLIENT_BYID = DOWNLOAD_CLIENT + BY_ID;
         public static readonly string DOWNLOAD_CLIENT_CONFIG = CONFIG + DOWNLOAD_CLIENT;
+        public static readonly string DOWNLOAD_CLIENT_SCHEMA = DOWNLOAD_CLIENT + SCHEMA;
         public static readonly string EPISODE = "/episode";
         public static readonly string EPISODEFILE = "/episodefile";
         public static readonly string FILESYSTEM = "/filesystem";
@@ -107,6 +108,7 @@ namespace MG.Sonarr.Next
         public const string DISK = "#disk";
         public const string DOWNLOAD_CLIENT = "#download_client";
         public const string DOWNLOAD_CLIENT_CONFIG = "#download_client_config";
+        public const string DOWNLOAD_CLIENT_SCHEMA = "#download_client_schema";
         public const string EPISODE = "#episode";
         public const string EPISODE_FILE = "#episode_file";
         public const string HISTORY = "#history_item";
