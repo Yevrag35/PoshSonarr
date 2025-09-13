@@ -55,7 +55,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
                 return;
             }
 
-            this.WriteObject(schema);
+            this.SerializeIfDebug(schema, includeType: true);
+
+            if (this.ShouldProcess(this.Tag.UrlBase, $"Create new download client of type '{schema.ImplementationName}' -> '{schema.Name}'"))
+            {
+                var response = this.SendPostRequest(this.Tag.UrlBase, schema);
+
+                if (response.IsError)
+                {
+                    this.WriteError(response.Error);
+                }
+            }
         }
     }
 }
