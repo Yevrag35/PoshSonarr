@@ -7,6 +7,7 @@ using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Models.Tags;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
+using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Unions;
 
@@ -68,6 +69,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
             this.SetReturnables(_tagIds, _tagNames);
         }
 
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in nameof()")]
         protected override void Begin(IServiceProvider provider)
         {
             if (this.HasParameter(this.Tags))
@@ -98,10 +100,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
                 }
                 else
                 {
-                    this.Error = new SonarrErrorRecord(new ArgumentException($"No indexer found the name '{indexerName}'.",
-                        nameof(this.Indexer)),
-                        "SonarrObjectNotMatchedToName",
-                        ErrorCategory.ObjectNotFound,
+                    this.Error = new SonarrErrorRecord(
+                        normalEx: new SonarrParameterException(nameof(Indexer), ParameterErrorType.Invalid, $"No indexer was found with the name '{indexerName}'."),
+                        "New-SonarrReleaseProfile.InvalidIndexerName",
+                        ErrorCategory.InvalidArgument,
                         indexerName);
                 }
             }

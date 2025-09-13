@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.PSProperties;
+using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Models.DownloadClients;
 
@@ -18,7 +19,11 @@ public sealed class DownloadClientSchemaObject : TagUpdateObject<DownloadClientS
     {
         get => this.GetStringOrEmpty();
     }
-
+    public bool Enable
+    {
+        get => this.GetValue<bool>();
+        set => this.SetValue(value);
+    }
     public string Implementation
     {
         get => this.GetStringOrEmpty();
@@ -31,13 +36,35 @@ public sealed class DownloadClientSchemaObject : TagUpdateObject<DownloadClientS
     {
         get => this.GetStringOrEmpty();
     }
+    public string Name
+    {
+        get => this.GetStringOrEmpty();
+        set => this.SetValue(value);
+    }
     public string Protocol
     {
         get => this.GetStringOrEmpty();
     }
+    public int Priority
+    {
+        get => this.GetValue<int>();
+        set => this.SetValue(value);
+    }
 
     public DownloadClientSchemaObject() : base(CAPACITY)
     {
+    }
+
+    public override PSObject Copy()
+    {
+        DownloadClientSchemaObject copy = new();
+        foreach (PSPropertyInfo prop in this.Properties)
+        {
+            copy.Members.Add(prop.Copy());
+        }
+
+        copy.SetPSTypeName();
+        return copy;
     }
 
     protected override void SetPSTypeName()
