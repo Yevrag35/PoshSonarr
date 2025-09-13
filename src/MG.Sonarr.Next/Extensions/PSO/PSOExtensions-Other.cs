@@ -13,7 +13,7 @@ namespace MG.Sonarr.Next.Extensions.PSO
             {
                 T tVal => tVal,
                 null => default,
-                _ when LanguagePrimitives.TryConvertTo(value, out T? convertedTo) => convertedTo,
+                _ when LanguagePrimitives.TryConvertTo(value, out T? convertedTo) && convertedTo is not null => convertedTo,
                 _ => default,
             };
         }

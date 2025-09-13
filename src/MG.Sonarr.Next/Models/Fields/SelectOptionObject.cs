@@ -1,5 +1,6 @@
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
@@ -10,10 +11,13 @@ namespace MG.Sonarr.Next.Models.Fields
         IComparable<SelectOptionObject>,
         ISerializableNames<SelectOptionObject>
     {
+        static readonly string _typeName = typeof(SelectOptionObject).GetName();
+
         const int CAPACITY = 3;
         protected override bool DisregardMetadataTag => true;
 
-        public int Order { get; private set; }
+        public string Name => this.GetStringOrEmpty();
+        public int Order => this.GetValue<int>();
 
         public SelectOptionObject()
             : base(CAPACITY)
@@ -29,12 +33,17 @@ namespace MG.Sonarr.Next.Models.Fields
             return existing;
         }
 
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in nameof()")]
         protected override void OnDeserialized(bool alreadyCalled)
         {
-            if (this.TryGetProperty(nameof(this.Order), out int order))
-            {
-                this.Order = order;
-            }
+            this.ReplaceWithReadOnlyStringProperty(nameof(Name));
+            this.ReplaceWithReadOnlyNumberProperty<int>(nameof(Order));
+        }
+
+        protected override void SetPSTypeName()
+        {
+            base.SetPSTypeName();
+            this.TypeNames.Insert(0, _typeName);
         }
     }
 }

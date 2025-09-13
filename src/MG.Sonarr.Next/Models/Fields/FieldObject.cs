@@ -5,6 +5,7 @@ using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.PSProperties;
 using System.Collections.Immutable;
+using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Models.Fields
 {
@@ -16,13 +17,20 @@ namespace MG.Sonarr.Next.Models.Fields
         const int CAPACITY = 8;
         static readonly string _typeName = typeof(FieldObject).GetName();
         protected override bool DisregardMetadataTag => true;
-        public int Order { get; private set; }
+        public bool Advanced => this.GetValue<bool>();
+        public string HelpText => this.GetStringOrEmpty();
+        public bool IsFloat => this.GetValue<bool>();
+        public string Label => this.GetStringOrEmpty();
+        public string Name => this.GetStringOrEmpty();
+        public int Order => this.GetValue<int>();
+        public string Privacy => this.GetStringOrEmpty();
         public IReadOnlyList<SelectOptionObject> SelectOptions { get; private set; }
+        public string Type => this.GetStringOrEmpty();
 
         public FieldObject()
             : base(CAPACITY)
         {
-            this.SelectOptions = Array.Empty<SelectOptionObject>();
+            this.SelectOptions = ImmutableArray<SelectOptionObject>.Empty;
         }
 
         public int CompareTo(FieldObject? other)
@@ -35,21 +43,29 @@ namespace MG.Sonarr.Next.Models.Fields
             return existing;
         }
 
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in nameof()")]
         protected override void OnDeserialized(bool alreadyCalled)
         {
             base.OnDeserialized(alreadyCalled);
-            if (this.TryGetProperty(nameof(this.Order), out int order))
-            {
-                this.Order = order;
-            }
 
-            if (this.TryGetNonNullProperty(nameof(this.SelectOptions), out IReadOnlyList<SelectOptionObject>? list))
+            this.ReplaceWithReadOnlyStringProperty(nameof(HelpText));
+            this.ReplaceWithReadOnlyStringProperty(nameof(Label));
+            this.ReplaceWithReadOnlyStringProperty(nameof(Name));
+            this.ReplaceWithReadOnlyStringProperty(nameof(Privacy));
+            this.ReplaceWithReadOnlyStringProperty(nameof(Type));
+            this.ReplaceWithReadOnlyNumberProperty<int>(nameof(Order));
+            this.ReplaceWithReadOnlyStructProperty<bool>(nameof(IsFloat));
+            this.ReplaceWithReadOnlyStructProperty<bool>(nameof(Advanced));
+
+            if (this.TryGetNonNullProperty(nameof(SelectOptions), out IReadOnlyList<SelectOptionObject>? list))
             {
                 this.SelectOptions = list;
             }
             else
             {
-                this.Properties.Add(new ReadOnlyCollectionProperty<SelectOptionObject>(nameof(this.SelectOptions), ImmutableArray<SelectOptionObject>.Empty));
+                var array = ImmutableArray<SelectOptionObject>.Empty;
+                this.Properties.Add(new ReadOnlyCollectionProperty<SelectOptionObject>(nameof(SelectOptions), array));
+                this.SelectOptions = array;
             }
         }
 

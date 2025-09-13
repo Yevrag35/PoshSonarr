@@ -1,20 +1,14 @@
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Exceptions;
-using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Extensions.Strings;
-using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Indexers;
 using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Models.Tags;
-using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using MG.Sonarr.Next.Shell.Cmdlets.Tags;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Unions;
-using System.Collections;
-using System.Text;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
 {

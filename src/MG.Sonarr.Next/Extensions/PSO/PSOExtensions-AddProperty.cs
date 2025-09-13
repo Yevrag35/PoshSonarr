@@ -48,7 +48,17 @@ namespace MG.Sonarr.Next.Extensions.PSO
                     break;
             }
         }
-
+        /// <summary>
+        /// Adds a read-only property with the specified name and value to the given <see cref="PSObject"/> instance.
+        /// </summary>
+        /// <remarks>The property added is read-only and cannot be modified after creation. The method
+        /// selects an appropriate property type based on the value's type, supporting common types such as <see
+        /// langword="int"/>, <see langword="long"/>, <see langword="double"/>, <see langword="string"/>, and <see
+        /// cref="MetadataTag"/>. For other types, a generic note property is used.</remarks>
+        /// <param name="pso">The <see cref="PSObject"/> to which the property will be added.</param>
+        /// <param name="propertyName">The name of the property to add. Cannot be null or empty.</param>
+        /// <param name="value">The value to assign to the property. The property's type will be determined based on the runtime type of
+        /// this value.</param>
         public static void AddReadOnlyProperty(this PSObject pso, string propertyName, object? value)
         {
             ArgumentException.ThrowIfNullOrEmpty(propertyName);
@@ -78,6 +88,67 @@ namespace MG.Sonarr.Next.Extensions.PSO
                     pso.Properties.Add(new PSNoteProperty(propertyName, value));
                     break;
             }
+        }
+        /// <summary>
+        /// Replaces the specified property of the PSObject with a read-only string property if conversion is possible.
+        /// </summary>
+        /// <remarks>If the property specified by propertyName can be converted to a read-only string
+        /// property, it is removed and replaced. If conversion is not possible, no changes are made.</remarks>
+        /// <param name="pso">The PSObject whose property will be replaced.</param>
+        /// <param name="propertyName">The name of the property to replace with a read-only string property. Cannot be null.</param>
+        public static void ReplaceWithReadOnlyStringProperty(this PSObject pso, string propertyName)
+        {
+            if (pso.Properties[propertyName].TryConvertToReadOnly(out ReadOnlyStringProperty? rosp))
+            {
+                pso.Properties.Remove(propertyName);
+                pso.Properties.Add(rosp);
+            }
+        }
+        public static void ReplaceWithReadOnlyNumberProperty<T>(this PSObject pso, string propertyName) where T : unmanaged, INumber<T>
+        {
+            PSPropertyInfo? property = pso.Properties[propertyName];
+            if (property is null || property is ReadOnlyNumberProperty<T>)
+                return;
+
+            ReadOnlyNumberProperty<T> newProp;
+            switch (property.Value)
+            {
+                case T numValue:
+                    newProp = ReadOnlyNumberProperty.Create(propertyName, numValue);
+                    break;
+
+                case string strValue when T.TryParse(strValue, CultureInfo.CurrentCulture, out T result):
+                    newProp = ReadOnlyNumberProperty.Create(propertyName, result);
+                    break;
+
+                default:
+                    newProp = ReadOnlyNumberProperty.Create(propertyName, LanguagePrimitives.ConvertTo<T>(property.Value));
+                    break;
+            }
+
+            pso.Properties.Remove(propertyName);
+            pso.Properties.Add(newProp);
+        }
+        public static void ReplaceWithReadOnlyStructProperty<T>(this PSObject pso, string propertyName) where T : struct
+        {
+            PSPropertyInfo? property = pso.Properties[propertyName];
+            if (property is null || property is ReadOnlyStructProperty<T>)
+                return;
+
+            ReadOnlyStructProperty<T> newProp;
+            switch (property.Value)
+            {
+                case T numValue:
+                    newProp = ReadOnlyStructProperty.Create(propertyName, numValue);
+                    break;
+
+                default:
+                    newProp = ReadOnlyStructProperty.Create(propertyName, LanguagePrimitives.ConvertTo<T>(property.Value));
+                    break;
+            }
+
+            pso.Properties.Remove(propertyName);
+            pso.Properties.Add(newProp);
         }
 
         /// <exception cref="ArgumentException"/>
@@ -122,6 +193,44 @@ namespace MG.Sonarr.Next.Extensions.PSO
                 : new StructNoteProperty<TValue>(propertyName, value);
 
             pso.Properties.Add(info);
+        }
+
+        /// <summary>
+        /// Attempts to convert the specified property to a read-only string property.
+        /// </summary>
+        /// <remarks>If the property is already a <see cref="ReadOnlyStringProperty"/>, the method returns
+        /// false and does not perform a conversion. The conversion uses the property's value, formatting it as a string
+        /// when possible.</remarks>
+        /// <param name="property">The property to convert. Must not be null.</param>
+        /// <param name="result">When this method returns <see langword="true"/>, contains the resulting <see cref="ReadOnlyStringProperty"/>
+        /// instance; otherwise, <see langword="null"/>.</param>
+        /// <returns>true if the conversion was successful and <paramref name="result"/> contains a valid <see
+        /// cref="ReadOnlyStringProperty"/>; otherwise, false.</returns>
+        public static bool TryConvertToReadOnly([NotNullWhen(true)] this PSPropertyInfo? property, [NotNullWhen(true)] out ReadOnlyStringProperty? result)
+        {
+            if (property is null)
+            {
+                result = null;
+                return false;
+            }
+
+            if (property is ReadOnlyStringProperty rosp)
+            {
+                result = rosp;
+                return false;
+            }
+
+            object? value = property.Value;
+            result = value switch
+            {
+                null => new ReadOnlyStringProperty(property.Name, value: null),
+                string s => new ReadOnlyStringProperty(property.Name, s),
+                IFormattable f => new ReadOnlyStringProperty(property.Name, f.ToString(format: null, CultureInfo.CurrentCulture)),
+                IConvertible c => new ReadOnlyStringProperty(property.Name, c.ToString(CultureInfo.CurrentCulture)),
+                _ => new ReadOnlyStringProperty(property.Name, value.ToString()),
+            };
+
+            return true;
         }
 
         public static void UpdateProperty<T>(this PSObject pso, T number, bool replaceReadOnly = false, [CallerMemberName] string propertyName = "")
