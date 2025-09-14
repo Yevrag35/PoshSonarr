@@ -8,7 +8,6 @@ using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
-using ZLinq;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 {
@@ -158,7 +157,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                     continue;
                 }
 
-                foreach (EpisodeObject obj in response.Value.AsValueEnumerable())
+                foreach (EpisodeObject obj in response.Value)
                 {
                     if (_seriesIds.TryGetValue(obj.SeriesId, out IEpisodeBySeriesPipeable? s))
                     {

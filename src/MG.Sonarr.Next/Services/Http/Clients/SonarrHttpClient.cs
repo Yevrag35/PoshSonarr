@@ -8,8 +8,6 @@ using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Services.Http.Requests;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerShell.Commands;
-using System;
-using System.IO;
 using System.Management.Automation;
 using System.Net;
 using System.Net.Http.Headers;

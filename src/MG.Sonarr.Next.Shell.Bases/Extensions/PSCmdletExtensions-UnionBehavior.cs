@@ -1,7 +1,6 @@
 ﻿using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Unions;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace MG.Sonarr.Next.Shell.Extensions;
 

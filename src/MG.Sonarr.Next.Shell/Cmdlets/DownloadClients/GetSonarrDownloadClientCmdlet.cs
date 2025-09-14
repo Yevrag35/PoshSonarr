@@ -1,9 +1,7 @@
 ﻿using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.DownloadClients;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Output;
 using MG.Sonarr.Next.Unions;

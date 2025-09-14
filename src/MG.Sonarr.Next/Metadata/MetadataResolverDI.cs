@@ -1,8 +1,6 @@
 using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions.Strings;
 using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Management.Automation;
 using System.Reflection;

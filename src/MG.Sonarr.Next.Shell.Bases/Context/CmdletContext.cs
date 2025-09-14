@@ -11,9 +11,7 @@ using MG.Sonarr.Next.Services.Testing;
 using MG.Sonarr.Next.Services.Time;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Exceptions;
-using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Pools;
-using MG.Sonarr.Next.Strings;
 using System.Reflection;
 using System.Text.Json;
 

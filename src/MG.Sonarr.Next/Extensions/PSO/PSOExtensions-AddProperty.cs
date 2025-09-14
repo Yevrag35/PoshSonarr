@@ -2,7 +2,6 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.PSProperties;
 using MG.Sonarr.Next.Reflection;
-using Newtonsoft.Json.Linq;
 using System.Management.Automation;
 using System.Numerics;
 using System.Runtime.CompilerServices;

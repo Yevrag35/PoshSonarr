@@ -1,5 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
-using System;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
 #nullable enable

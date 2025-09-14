@@ -1,7 +1,6 @@
 using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Services.Http;
-using System.Collections;
 using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
