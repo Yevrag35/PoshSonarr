@@ -49,7 +49,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
             }
         }
 
-        private SonarrResponse SendSingleTest<T>(T sonarrObj, CancellationToken token = default)
+        private SonarrClientResult SendSingleTest<T>(T sonarrObj, CancellationToken token = default)
             where T : ITestPipeable
         {
             string url = GetUrl(TEST, sonarrObj.MetadataTag);

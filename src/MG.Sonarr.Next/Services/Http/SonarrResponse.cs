@@ -59,7 +59,6 @@ namespace MG.Sonarr.Next.Services.Http
         readonly bool _isError;
         readonly bool _isNotEmpty;
         readonly HttpStatusCode _statusCode;
-        readonly string? _url;
 
         /// <inheritdoc cref="ISonarrResponse.Error"/>
         public SonarrErrorRecord? Error => _error;
@@ -88,7 +87,7 @@ namespace MG.Sonarr.Next.Services.Http
         /// <returns>
         /// The URL string of the request that produced this response or, if not provided, an empty string.
         /// </returns>
-        public string RequestUrl => _url ?? string.Empty;
+        public string RequestUrl => _error?.RequestUri ?? string.Empty;
 
         /// <inheritdoc cref="ISonarrResponse.StatusCode"/>
         public HttpStatusCode StatusCode => _statusCode;
@@ -98,14 +97,12 @@ namespace MG.Sonarr.Next.Services.Http
             _statusCode = statusCode;
             _error = null;
             _isError = false;
-            _url = url ?? string.Empty;
         }
         private SonarrResponse(string url, SonarrErrorRecord record, HttpStatusCode statusCode)
         {
             _statusCode = statusCode;
             _error = record;
             _isError = true;
-            _url = url ?? string.Empty;
         }
 
         /// <summary>

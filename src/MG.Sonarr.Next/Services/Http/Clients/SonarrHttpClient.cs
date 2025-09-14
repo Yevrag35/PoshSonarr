@@ -153,13 +153,14 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             }
         }
 
-        private SonarrResponse SendNoResultRequest(HttpRequestMessage request, string path, CancellationToken token)
+        private SonarrClientResult SendNoResultRequest(HttpRequestMessage request, string path, CancellationToken token)
         {
             HttpResponseMessage? response = null;
             try
             {
                 response = _client.Send(request, token);
-                return _responseReader.ReadNoResultAsync((path, request, response), path, token)
+                HttpCall call = new(path, request, response);
+                return _responseReader.ReadNoResultAsync(call, path, token)
                     .GetAwaiter().GetResult();
             }
             catch (HttpRequestException httpEx)

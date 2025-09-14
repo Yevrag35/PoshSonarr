@@ -1,9 +1,5 @@
-﻿using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions.PSO;
-using System.Collections;
-using System.Collections.Frozen;
+﻿using System.Collections;
 using System.Collections.Immutable;
-using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Metadata
 {

@@ -7,7 +7,7 @@ namespace MG.Sonarr.Next.Services.Testing
 {
     public interface ITestingService
     {
-        SonarrResponse SendTest<T>(string path, T resource, CancellationToken token = default) where T : ITestPipeable;
+        SonarrClientResult SendTest<T>(string path, T resource, CancellationToken token = default) where T : ITestPipeable;
     }
 
     internal sealed class TestingService : ITestingService
@@ -19,7 +19,7 @@ namespace MG.Sonarr.Next.Services.Testing
             _client = client;
         }
 
-        public SonarrResponse SendTest<T>(string path, T resource, CancellationToken token = default) where T : ITestPipeable
+        public SonarrClientResult SendTest<T>(string path, T resource, CancellationToken token = default) where T : ITestPipeable
         {
             return _client.SendPost(path, resource, token);
         }

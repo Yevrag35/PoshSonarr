@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Exceptions
     /// Represents an error thrown from the PoshSonarr PowerShell module.
     /// </summary>
     /// <inheritdoc cref="ErrorRecord"/>
-    public sealed class SonarrErrorRecord : ErrorRecord
+    public sealed class SonarrErrorRecord : ErrorRecord, IHttpRequestUri
     {
         readonly IReadOnlyDictionary<string, string> _headers;
 
@@ -32,7 +32,7 @@ namespace MG.Sonarr.Next.Exceptions
         public string? ReasonPhrase { get; }
 
         /// <inheritdoc cref="SonarrHttpException.RequestUri"/>
-        public string? RequestUri { get; }
+        public string? RequestUri { get; set; }
 
         public SonarrErrorRecord(SonarrHttpException exception, HttpResponseMessage? response)
             : this(exception, response, (object?)null)
