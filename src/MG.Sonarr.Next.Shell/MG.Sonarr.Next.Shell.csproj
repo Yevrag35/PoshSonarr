@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TargetFramework>net9.0</TargetFramework>
 	<LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -10,9 +10,9 @@
 	<FileVersion>2.0.0</FileVersion>
 	<Authors>Mike Garvey</Authors>
 	<Company>Yevrag35, LLC.</Company>
-	<Product>PoshSonarr .NET 8</Product>
+	<Product>PoshSonarr .NET 9</Product>
 	<Description>The binary library of the PoshSonarr PowerShell module.</Description>
-	<Copyright>Copyright © 2018-2024 Yevrag35, LLC.</Copyright>
+	<Copyright>Copyright © 2018-2025 Yevrag35, LLC.</Copyright>
 	<PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
 	<PackageProjectUrl>https://github.com/Yevrag35/PoshSonarr</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/Yevrag35/PoshSonarr</RepositoryUrl>
@@ -31,15 +31,6 @@
     <None Remove="PSFormats\SystemStatus.Format.ps1xml" />
     <None Remove="PSTypes\SonarrObjects.Type.ps1xml" />
   </ItemGroup>
-
-	<!--<Target Name="Cleanup" AfterTargets="Clean">
-		<ItemGroup>
-			<FilesToDelete Include="$(TargetDir)\**\*.*" />
-		</ItemGroup>
-		<Delete Files="@(FilesToDelete)" />
-		<RemoveDir Directories="@(FoldersToDelete)" />
-		<Exec Command="pwsh.exe -File &quot;$(SolutionDir)\.tasks\clean_project.ps1&quot; -OutputPath &quot;$(TargetDir)&quot;" />
-	</Target>-->
 
 	<Target Name="ReleaseModuleAfterBuild" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Release'">
 		<Exec Command="pwsh.exe -NoExit -File &quot;$(SolutionDir)\.tasks\publish_module.ps1&quot; -OutputPath &quot;$(TargetDir)&quot;" />

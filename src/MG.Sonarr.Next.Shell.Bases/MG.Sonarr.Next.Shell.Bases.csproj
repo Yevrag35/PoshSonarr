@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TargetFramework>net9.0</TargetFramework>
 	<LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -11,9 +11,9 @@
 	<FileVersion>2.0.0</FileVersion>
 	<Authors>Mike Garvey</Authors>
 	<Company>Yevrag35, LLC.</Company>
-	<Product>PoshSonarr Bases .NET 8</Product>
+	<Product>PoshSonarr Bases .NET 9</Product>
 	<Description>The binary library of the PoshSonarr PowerShell module containing the base modules.</Description>
-	<Copyright>Copyright © 2018-2024 Yevrag35, LLC.</Copyright>
+	<Copyright>Copyright © 2018-2025 Yevrag35, LLC.</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

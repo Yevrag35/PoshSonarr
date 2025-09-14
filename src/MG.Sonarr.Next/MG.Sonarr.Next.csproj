@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TargetFramework>net9.0</TargetFramework>
 	<LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -11,9 +11,9 @@
 	<FileVersion>2.0.0</FileVersion>
 	<Authors>Mike Garvey</Authors>
 	<Company>Yevrag35, LLC.</Company>
-	<Product>PoshSonarr Services Library .NET 8</Product>
+	<Product>PoshSonarr Services Library .NET 9</Product>
 	<Description>The service library for the PoshSonarr PowerShell module.</Description>
-	<Copyright>Copyright © 2018-2024 Yevrag35, LLC.</Copyright>
+	<Copyright>Copyright © 2018-2025 Yevrag35, LLC.</Copyright>
 	<PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
 	<PackageProjectUrl>https://github.com/Yevrag35/PoshSonarr</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/Yevrag35/PoshSonarr</RepositoryUrl>
@@ -23,12 +23,6 @@
 	<ItemGroup>
 		<InternalsVisibleTo Include="MG.Sonarr.Next.Shell;MG.Sonarr.Next.Shell.Bases" />
 		<AssemblyAttribute Include="MG.Sonarr.Next.Attributes.SonarrObjectConverterAssemblyAttribute" />
-		<!--<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-			<_Parameter1>MG.Sonarr.Next.Shell.Bases</_Parameter1>
-		</AssemblyAttribute>
-		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-			<_Parameter1>MG.Sonarr.Next.Shell</_Parameter1>
-		</AssemblyAttribute>-->
 	</ItemGroup>
 
   <ItemGroup>
@@ -52,12 +46,12 @@
 	<PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
-		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
-		<PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.5.0-rc.1" />
-		<PackageReference Include="System.Management.Automation" Version="7.5.0-rc.1" />
-		<PackageReference Include="System.Text.Json" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.9" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.9" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.9" />
+		<PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.5.3" />
+		<PackageReference Include="System.Management.Automation" Version="7.5.3" />
+		<PackageReference Include="System.Text.Json" Version="9.0.9" />
 	</ItemGroup>
 
 	<ItemGroup>
