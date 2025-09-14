@@ -5,34 +5,78 @@ using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Metadata
 {
-    public sealed class MetadataList<T> : IList<T>, IJsonMetadataTaggable, ISortable
-        where T : IComparable<T>, IJsonMetadataTaggable
+    /// <summary>
+    /// Represents a strongly-typed, sortable list of metadata items that supports tagging and JSON metadata operations.
+    /// </summary>
+    /// <remarks>MetadataList provides collection management features similar to <see cref="List{T}"/>, with
+    /// additional support for metadata tagging and sorting. Items in the list can be tagged using an <see
+    /// cref="IMetadataResolver"/>, and the list can be sorted based on the natural ordering of <typeparamref
+    /// name="T"/>. The class is not thread-safe; external synchronization is required if accessed
+    /// concurrently.</remarks>
+    /// <typeparam name="T">The type of elements in the list. Must implement <see cref="IComparable{T}"/> and <see
+    /// cref="IJsonMetadataTaggable"/>.</typeparam>
+    public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, ISortable where T : IComparable<T>, IJsonMetadataTaggable
     {
-        readonly List<T> _list;
+        private readonly List<T> _list;
 
+        /// <summary>
+        /// Gets or sets the element at the specified index.
+        /// </summary>
+        /// <param name="index">The zero-based index of the element to get or set. Must be greater than or equal to 0 and less than the
+        /// number of elements in the collection.</param>
+        /// <returns>The element at the specified index.</returns>
         public T this[int index]
         {
             get => _list[index];
             set => _list[index] = value;
         }
 
+        /// <summary>
+        /// Gets the number of elements contained in the list.
+        /// </summary>
         public int Count => _list.Count;
+
+        /// <inheritdoc/>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         bool ICollection<T>.IsReadOnly => false;
 
+        /// <summary>
+        /// Initializes a new instance of the MetadataList class with no initial capacity.
+        /// </summary>
+        /// <remarks>This constructor creates an empty MetadataList. Items can be added after construction
+        /// as needed.</remarks>
         public MetadataList()
-            : this(0)
         {
+            _list = [];
         }
+        /// <summary>
+        /// Initializes a new instance of the MetadataList class with the specified initial capacity.
+        /// </summary>
+        /// <param name="capacity">The number of elements that the list can initially contain. Must be non-negative.</param>
         public MetadataList(int capacity)
         {
             _list = new(capacity);
         }
-        public MetadataList(IEnumerable<T> items)
+        /// <summary>
+        /// Initializes a new instance of the MetadataList class that contains elements copied from the specified
+        /// collection.
+        /// </summary>
+        /// <param name="items">The collection of items to copy into the list.</param>
+        public MetadataList(IEnumerable<T>? items)
         {
-            items ??= Enumerable.Empty<T>();
-            _list = new(items);
+            if (items is null)
+            {
+                _list = [];
+                return;
+            }
+
+            _list = [.. items];
         }
 
+        /// <summary>
+        /// Adds the specified item to the collection if it is not null.
+        /// </summary>
+        /// <param name="item">The item to add to the collection. If <paramref name="item"/> is null, it will not be added.</param>
         public void Add(T item)
         {
             if (item is not null)
@@ -47,18 +91,44 @@ namespace MG.Sonarr.Next.Metadata
             collection ??= Enumerable.Empty<T>();
             _list.AddRange(collection);
         }
+        /// <summary>
+        /// Returns a read-only span over the elements in the collection.
+        /// </summary>
+        /// <remarks>The returned span reflects the current state of the underlying collection. Modifying
+        /// the collection after obtaining the span may invalidate the span or result in undefined behavior. This method
+        /// is intended for performance-critical scenarios where direct access to the underlying data is
+        /// required.</remarks>
+        /// <returns>A <see cref="ReadOnlySpan{T}"/> that provides a read-only view of the collection's elements.</returns>
         public ReadOnlySpan<T> AsSpan()
         {
             return CollectionsMarshal.AsSpan(_list);
         }
+        /// <summary>
+        /// Removes all items from the collection.
+        /// </summary>
+        /// <remarks>After calling this method, the collection will be empty. This operation does not
+        /// modify the capacity of the underlying storage.</remarks>
         public void Clear()
         {
             _list.Clear();
         }
+        /// <summary>
+        /// Determines whether the collection contains a specific element.
+        /// </summary>
+        /// <param name="item">The element to locate in the collection. The value can be null for reference types.</param>
+        /// <returns>true if the element is found in the collection; otherwise, false.</returns>
         public bool Contains(T item)
         {
             return _list.Contains(item);
         }
+        /// <summary>
+        /// Copies the elements of the collection to the specified array, starting at the given array index.
+        /// </summary>
+        /// <remarks>The elements are copied in the same order as they are stored in the collection. If
+        /// the array is not large enough to accommodate the copied elements, an exception will be thrown.</remarks>
+        /// <param name="array">The destination array that will receive the copied elements. Must be large enough to contain the elements
+        /// from the specified index onward.</param>
+        /// <param name="index">The zero-based index in the destination array at which copying begins.</param>
         public void CopyTo(T[] array, int index)
         {
             _list.CopyTo(array, index);
@@ -68,14 +138,7 @@ namespace MG.Sonarr.Next.Metadata
             ArgumentNullException.ThrowIfNull(predicate);
             return _list.Find(predicate);
         }
-        public IEnumerator<T> GetEnumerator()
-        {
-            return _list.GetEnumerator();
-        }
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
+        
         public int IndexOf(T item)
         {
             return _list.IndexOf(item);
@@ -114,6 +177,35 @@ namespace MG.Sonarr.Next.Metadata
         public void Sort()
         {
             _list.Sort();
+        }
+
+        /// <summary>
+        /// Attempts to find an item in the collection that matches the specified predicate and state.
+        /// </summary>
+        /// <remarks>This method performs a linear search over the collection. The predicate is invoked
+        /// for each item, passing the current item and the provided state. If multiple items match, only the first is
+        /// returned. The method does not modify the collection.</remarks>
+        /// <typeparam name="TState">The type of the state object passed to the predicate for evaluation.</typeparam>
+        /// <param name="state">An object representing state information to be supplied to the predicate for each item.</param>
+        /// <param name="predicate">A pointer to a function that determines whether an item matches the desired condition, given the item and
+        /// the state. The function should return <see langword="true"/> to indicate a match; otherwise, <see
+        /// langword="false"/>.</param>
+        /// <param name="result">When this method returns, contains the first item that matches the predicate if found; otherwise, the
+        /// default value for type <c>T</c>. This parameter is passed uninitialized.</param>
+        /// <returns><see langword="true"/> if a matching item is found; otherwise, <see langword="false"/>.</returns>
+        internal unsafe bool TryFind<TState>(TState state, delegate*<T, TState, bool> predicate, [NotNullWhen(true)] out T? result)
+        {
+            foreach (T item in CollectionsMarshal.AsSpan(_list))
+            {
+                if (predicate(item, state))
+                {
+                    result = item;
+                    return true;
+                }
+            }
+
+            result = default;
+            return false;
         }
     }
 }

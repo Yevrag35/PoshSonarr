@@ -27,6 +27,12 @@
 	</ItemGroup>
 
   <ItemGroup>
+	<Compile Update="**\*-*.cs">
+		<DependentUpon>$([System.Text.RegularExpressions.Regex]::Replace('$([System.String]::Copy(%(Filename)))', '^(.+)\-.+$', '$1.cs'))</DependentUpon>
+	</Compile>
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Json\Converters\Spans\UtcTimeToLocalConverter.cs" />
     <Compile Remove="Strings\WildcardOld.cs" />
     <Compile Remove="Services\Http\Queries\PagingParameterOld.cs" />

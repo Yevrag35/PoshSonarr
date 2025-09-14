@@ -59,7 +59,7 @@ public readonly partial struct Wildcard :
 	[MemberNotNullWhen(true, nameof(_pattern))]
 	public readonly bool ContainsWildcards
 	{
-		get => _isNotEmpty && _matchType != WildcardMatchType.Exact;
+		get => !this.IsEmpty && _matchType != WildcardMatchType.Exact;
 	}
 	/// <summary>
 	/// Indicates whether this <see cref="Wildcard"/> object is empty or default-initialized.
@@ -68,7 +68,7 @@ public readonly partial struct Wildcard :
 	/// An empty <see cref="Wildcard"/> instance will never match any input.
 	/// </remarks>
 	[MemberNotNullWhen(false, nameof(_pattern))]
-	public readonly bool IsEmpty => !_isNotEmpty;
+	public readonly bool IsEmpty => _length == 0;
 	/// <summary>
 	/// Gets the number of characters in the current <see cref="Wildcard"/> pattern.
 	/// </summary>
@@ -146,8 +146,6 @@ public readonly partial struct Wildcard :
 	private readonly WildcardMatchType _matchType;
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	private readonly int _length;
-	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	private readonly bool _isNotEmpty;
 	private readonly string? _pattern;
 
 	#endregion
