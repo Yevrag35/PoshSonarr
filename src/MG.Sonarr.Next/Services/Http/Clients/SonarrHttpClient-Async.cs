@@ -10,13 +10,13 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 {
     internal sealed partial class SonarrHttpClient
     {
-        public Task<SonarrResponse> SendDeleteAsync(string path, CancellationToken token = default)
+        public Task<SonarrClientResult> SendDeleteAsync(string path, CancellationToken token = default)
         {
             using ApiKeyRequestMessage request = new(HttpMethod.Delete, path, _scopeFactory);
 
             return this.SendNoResultRequestAsync(request, path, token);
         }
-        public async Task<SonarrResponse<T>> SendGetAsync<T>(string path, CancellationToken token = default)
+        public async Task<SonarrClientResult<T>> SendGetAsync<T>(string path, CancellationToken token = default)
         {
             using ApiKeyRequestMessage request = new(HttpMethod.Get, path, _scopeFactory);
 
@@ -33,14 +33,14 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 
             return response;
         }
-        public Task<SonarrResponse> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
+        public Task<SonarrClientResult> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
         {
             using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
             request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
 
             return this.SendNoResultRequestAsync(request, path, token);
         }
-        public async Task<SonarrResponse<TOutput>> SendPostAsync<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull
+        public async Task<SonarrClientResult<TOutput>> SendPostAsync<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull
         {
             using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
 
@@ -54,7 +54,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 
             return response;
         }
-        public Task<SonarrResponse> SendPutAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
+        public Task<SonarrClientResult> SendPutAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
         {
             using ApiKeyRequestMessage request = new(HttpMethod.Put, path, _scopeFactory);
             request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
@@ -62,26 +62,34 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             return this.SendNoResultRequestAsync(request, path, token);
         }
 
-        private async Task<SonarrResponse> SendNoResultRequestAsync(HttpRequestMessage request, string path, CancellationToken token)
+        private async Task<SonarrClientResult> SendNoResultRequestAsync(HttpRequestMessage request, string path, CancellationToken token)
         {
             HttpResponseMessage? response = null;
             try
             {
                 response = await _client.SendAsync(request, token);
-                return await _responseReader.ReadNoResultAsync((path, request, response), path, token);
+                return await _responseReader.ReadNoResultAsync(new(path, request, response), path, token);
             }
             catch (HttpRequestException httpEx)
             {
                 _ = TryParseResponse(response, _options.ForDeserializing, out SonarrServerError? pso, disposeResponse: false, token);
                 SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
 
-                var result = SonarrResponse.FromException(path, sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);
+                var result = SonarrClientResult.FromException(sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);
+                if (string.IsNullOrEmpty(result.RequestUrl))
+                {
+                    result.RequestUrl = path;
+                }
 
                 return result;
             }
             catch (Exception ex)
             {
-                var result = SonarrResponse.FromException(path, ex, ErrorCategory.ConnectionError, response?.StatusCode ?? HttpStatusCode.Unused, response);
+                var result = SonarrClientResult.FromException(ex, ErrorCategory.ConnectionError, response?.StatusCode ?? HttpStatusCode.Unused, response);
+                if (string.IsNullOrEmpty(result.RequestUrl))
+                {
+                    result.RequestUrl = path;
+                }
 
                 return result;
             }
@@ -90,21 +98,25 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                 response?.Dispose();
             }
         }
-        private async Task<SonarrResponse<T>> SendResultRequestAsync<T>(HttpRequestMessage request, string path, CancellationToken token)
+        private async Task<SonarrClientResult<T>> SendResultRequestAsync<T>(HttpRequestMessage request, string path, CancellationToken token)
         {
             HttpResponseMessage? response = null;
 
             try
             {
                 response = await _client.SendAsync(request, token);
-                return await _responseReader.ReadResultAsync<T>((path, request, response), path, token);
+                return await _responseReader.ReadResultAsync<T>(new(path, request, response), path, token);
             }
             catch (HttpRequestException httpEx)
             {
                 _ = TryParseResponse(response, _options.ForDeserializing, out SonarrServerError? pso, disposeResponse: false, token);
                 SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
 
-                var result = SonarrResponse.FromException<T>(path, sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);
+                var result = SonarrClientResult.FromException<T>(sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);
+                if (string.IsNullOrEmpty(result.RequestUrl))
+                {
+                    result.RequestUrl = path;
+                }
 
                 return result;
             }

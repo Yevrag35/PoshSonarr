@@ -126,7 +126,7 @@ public readonly partial struct Either<T1, T2>
                 break;
 
             default:
-                throw new EmptyStructException(nameof(Either<T1, T2>), this.GetType(), innerException: null);
+                throw new EmptyStructException(nameof(Either<,>), this.GetType(), innerException: null);
         }
     }
     /// <summary>
@@ -148,7 +148,7 @@ public readonly partial struct Either<T1, T2>
     {
         return _index switch
         {
-            0u => throw new EmptyStructException(nameof(Either<T1, T2>), this.GetType(), innerException: null),
+            0u => throw new EmptyStructException(nameof(Either<,>), this.GetType(), innerException: null),
             1u => f1(_first!, state),
             2u => f2(_second!, state),
             _ => null,
@@ -184,7 +184,7 @@ public readonly partial struct Either<T1, T2>
                 break;
 
             default:
-                throw new EmptyStructException(nameof(Either<T1, T2>), this.GetType(), innerException: null);
+                throw new EmptyStructException(nameof(Either<,>), this.GetType(), innerException: null);
         }
     }
     /// <summary>
@@ -206,7 +206,7 @@ public readonly partial struct Either<T1, T2>
         {
             1u => f1(_first!),
             2u => f2(_second!),
-            0u or _ => throw new EmptyStructException(nameof(Either<T1, T2>), this.GetType(), innerException: null),
+            0u or _ => throw new EmptyStructException(nameof(Either<,>), this.GetType(), innerException: null),
         };
     }
     /// <summary>
@@ -224,16 +224,31 @@ public readonly partial struct Either<T1, T2>
         Func<T1, TState, TOutput> f1,
         Func<T2, TState, TOutput> f2)
 #if NET9_0_OR_GREATER
-            where TState : allows ref struct where TOutput : allows ref struct
+            where TState : allows ref struct
 #endif
     {
         return _index switch
         {
             1u => f1(_first!, state),
             2u => f2(_second!, state),
-            0u or _ => throw new EmptyStructException(nameof(Either<T1, T2>), this.GetType(), innerException: null),
+            0u or _ => throw new EmptyStructException(nameof(Either<,>), this.GetType(), innerException: null),
         };
     }
+
+    public unsafe TOutput Match<TOutput, TState>(
+        TState state,
+        delegate*<T1, TState, TOutput> f1,
+        delegate*<T2, TState, TOutput> f2)
+        where TState : allows ref struct
+    {
+        return _index switch
+        {
+            1 => f1(_first!, state),
+            2 => f2(_second!, state),
+            _ => default!,
+        };
+    }
+
     /// <summary>
     /// Matches the current instance to one of the provided actions based on its type, with state.
     /// </summary>
@@ -264,7 +279,7 @@ public readonly partial struct Either<T1, T2>
                 break;
 
             default:
-                throw new EmptyStructException(nameof(Either<T1, T2>), this.GetType(), innerException: null);
+                throw new EmptyStructException(nameof(Either<,>), this.GetType(), innerException: null);
         }
     }
     /// <summary>
@@ -297,7 +312,7 @@ public readonly partial struct Either<T1, T2>
                 break;
 
             default:
-                throw new EmptyStructException(nameof(Either<T1, T2>), this.GetType(), innerException: null);
+                throw new EmptyStructException(nameof(Either<,>), this.GetType(), innerException: null);
         }
     }
 
@@ -310,7 +325,7 @@ public readonly partial struct Either<T1, T2>
     /// <exception cref="EmptyStructException"></exception>
     public readonly bool TryGetT1([NotNullWhen(true)] out T1? t1, [NotNullWhen(false)] out T2? t2)
     {
-        EmptyStructException.ThrowIf(this.IsDefaultOrEmpty, this, nameof(Either<T1, T2>));
+        EmptyStructException.ThrowIf(this.IsDefaultOrEmpty, this, nameof(Either<,>));
         t1 = _first;
         t2 = _second;
         return this.IsT1;
@@ -324,7 +339,7 @@ public readonly partial struct Either<T1, T2>
     /// <exception cref="EmptyStructException"></exception>
     public readonly bool TryGetT2([NotNullWhen(true)] out T2? t2, [NotNullWhen(false)] out T1? t1)
     {
-        EmptyStructException.ThrowIf(this.IsDefaultOrEmpty, this, nameof(Either<T1, T2>));
+        EmptyStructException.ThrowIf(this.IsDefaultOrEmpty, this, nameof(Either<,>));
         t1 = _first;
         t2 = _second;
         return this.IsT2;

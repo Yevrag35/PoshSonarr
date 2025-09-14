@@ -1,5 +1,7 @@
-﻿using MG.Sonarr.Next.Extensions;
+﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Guarding;
+using MG.Sonarr.Next.Json;
 using System.Management.Automation;
 using System.Net;
 
@@ -25,6 +27,11 @@ namespace MG.Sonarr.Next.Services.Http
         /// <inheritdoc/>
         public virtual SonarrErrorRecord? Error { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether the item can be safely ignored during processing.
+        /// </summary>
+        public bool IsIgnoreable { get; private set; }
+
         /// <inheritdoc/>
         [AllowsNull][field: MaybeNull]
         public string RequestUrl
@@ -34,7 +41,15 @@ namespace MG.Sonarr.Next.Services.Http
         }
 
         /// <inheritdoc/>
-        public required HttpStatusCode StatusCode { get; init; }
+        public required HttpStatusCode StatusCode
+        {
+            get;
+            init
+            {
+                field = value;
+                this.IsIgnoreable = value is < HttpStatusCode.BadRequest or HttpStatusCode.NotFound;
+            }
+        }
 
         /// <inheritdoc/>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -52,11 +67,11 @@ namespace MG.Sonarr.Next.Services.Http
         /// <param name="response">The HTTP response message received from the Sonarr API. Cannot be null.</param>
         /// <exception cref="ArgumentNullException"><paramref name="response"/> is null.</exception>
         [SetsRequiredMembers]
-        public SonarrClientResult(HttpResponseMessage response)
+        public SonarrClientResult(HttpResponseMessage response, string? requestUri = null)
         {
             ArgumentNullException.ThrowIfNull(response);
             this.StatusCode = response.StatusCode;
-            this.RequestUrl = response.RequestMessage?.RequestUri?.ToString() ?? string.Empty;
+            this.RequestUrl = response.RequestMessage?.RequestUri?.ToString() ?? requestUri;
         }
         /// <summary>
         /// Initializes a new instance of the <see cref="SonarrClientResult"/> class that represents an error response from the Sonarr
@@ -86,10 +101,14 @@ namespace MG.Sonarr.Next.Services.Http
         /// <inheritdoc cref="SonarrClientResult{T}.SonarrClientResult(T)" path="/exception"/>
         public static SonarrClientResult<T> Create<T>([DisallowNull] T value, HttpStatusCode code, string? uriPath = null)
         {
+            string? requestUri = value is IHttpRequestUri hasReqUri
+                ? hasReqUri.RequestUri ?? uriPath
+                : uriPath;
+
             return new SonarrClientResult<T>(value)
             {
                 StatusCode = code,
-                RequestUrl = uriPath,
+                RequestUrl = requestUri,
             };
         }
         /// <summary>
@@ -103,12 +122,16 @@ namespace MG.Sonarr.Next.Services.Http
         /// <param name="response">The HTTP response message associated with the result. Used to set status and request URL information.</param>
         /// <param name="uriPath">An optional URI path to use as the request URL if not available from <paramref name="response"/>.</param>
         /// <returns>A <see cref="SonarrClientResult{T}"/> containing the provided value and details from the HTTP response.</returns>
-        public static SonarrClientResult<T> Create<T>([DisallowNull] T value, HttpResponseMessage response, string? uriPath = null)
+        public static SonarrClientResult<T> Create<T>(T value, HttpResponseMessage response, string? uriPath = null)
         {
+            string? requestUri = value is IHttpRequestUri hasReqUri
+                ? hasReqUri.RequestUri ?? response.RequestMessage?.RequestUri?.ToString() ?? uriPath
+                : response.RequestMessage?.RequestUri?.ToString() ?? uriPath;
+
             return new(value)
             {
                 StatusCode = response.StatusCode,
-                RequestUrl = response.RequestMessage?.RequestUri?.ToString() ?? uriPath,
+                RequestUrl = requestUri,
             };
         }
         /// <summary>
@@ -126,7 +149,12 @@ namespace MG.Sonarr.Next.Services.Http
         public static SonarrClientResult FromException(Exception exception, ErrorCategory errorCategory, HttpStatusCode statusCode, HttpResponseMessage? response = null)
         {
             string name = exception.GetTypeName();
-            SonarrErrorRecord error = new(exception, name, errorCategory, response?.RequestMessage?.RequestUri?.ToString());
+
+            string? requestUri = exception is IHttpRequestUri hasReqUri
+                ? hasReqUri.RequestUri ?? response?.RequestMessage?.RequestUri?.ToString()
+                : response?.RequestMessage?.RequestUri?.ToString();
+
+            SonarrErrorRecord error = new(exception, name, errorCategory, requestUri);
             return new SonarrClientResult(error);
         }
         /// <summary>
@@ -148,7 +176,12 @@ namespace MG.Sonarr.Next.Services.Http
                 return FromException<T>(reqEx, errorCategory, statusCode, response);
 
             string name = exception.GetTypeName();
-            SonarrErrorRecord error = new(exception, name, errorCategory, response?.RequestMessage?.RequestUri?.ToString());
+
+            string? requestUri = exception is IHttpRequestUri hasReqUri
+                ? hasReqUri.RequestUri ?? response?.RequestMessage?.RequestUri?.ToString()
+                : response?.RequestMessage?.RequestUri?.ToString();
+
+            SonarrErrorRecord error = new(exception, name, errorCategory, requestUri);
             return new SonarrClientResult<T>(error);
         }
         /// <summary>
@@ -189,7 +222,7 @@ namespace MG.Sonarr.Next.Services.Http
         /// </summary>
         /// <param name="value">The result value to be encapsulated by the client result.</param>
         /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
-        public SonarrClientResult([DisallowNull] T value) : base()
+        public SonarrClientResult(T value) : base()
         {
             ArgumentNullException.ThrowIfNull(value);
             this.Value = value;
@@ -203,6 +236,30 @@ namespace MG.Sonarr.Next.Services.Http
         public SonarrClientResult(SonarrErrorRecord error) : base(error)
         {
             this.Value = default;
+        }
+
+        public bool IsDataTaggable([NotNullWhen(true)] out IJsonMetadataTaggable? taggable)
+        {
+            if (this.Value is IJsonMetadataTaggable jsonMetadataTaggable)
+            {
+                taggable = jsonMetadataTaggable;
+                return true;
+            }
+
+            taggable = null;
+            return false;
+        }
+
+        public bool IsDataSortable([NotNullWhen(true)] out ISortable? sortable)
+        {
+            if (this.Value is ISortable sort)
+            {
+                sortable = sort;
+                return true;
+            }
+
+            sortable = null;
+            return false;
         }
     }
 }
