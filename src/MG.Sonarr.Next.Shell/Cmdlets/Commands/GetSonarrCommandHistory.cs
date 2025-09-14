@@ -44,15 +44,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
 
             foreach (ICommand command in history.Where(x => !x.IsCompleted))
             {
-                SonarrResponse<CommandObject> response = client.SendGet<CommandObject>(tag.GetUrlForId(command.Id));
+                SonarrClientResult<CommandObject> response = client.SendGet<CommandObject>(tag.GetUrlForId(command.Id));
                 if (response.IsError)
                 {
                     this.WriteConditionalError(response.Error);
                 }
-                else if (response.Data.IsCompleted)
+                else if (response.Value.IsCompleted)
                 {
-                    history[response.Data.Id] = response.Data;
-                    yield return response.Data;
+                    history[response.Value.Id] = response.Value;
+                    yield return response.Value;
                 }
             }
         }

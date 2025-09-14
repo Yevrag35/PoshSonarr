@@ -8,6 +8,7 @@ using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Unions;
+using ZLinq;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
 {
@@ -104,7 +105,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
             }
             else
             {
-                return response.Data;
+                return response.Value;
             }
         }
 
@@ -123,7 +124,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
                 return null;
             }
 
-            foreach (QualityDefinitionObject definition in definitions.Data)
+            foreach (QualityDefinitionObject definition in definitions.Value.AsValueEnumerable())
             {
                 PSPropertyInfo? info = definition.Properties[nameof(this.Quality)];
                 if (info?.Value is QualityObject quality && quality.Id == qualityId)

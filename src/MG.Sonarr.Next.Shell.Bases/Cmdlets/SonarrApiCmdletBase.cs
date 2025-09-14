@@ -33,7 +33,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <returns>
         ///     A response object indicating the status code and any errors that may have occurred.
         /// </returns>
-        protected SonarrResponse SendDeleteRequest(string path, CancellationToken token = default)
+        protected SonarrClientResult SendDeleteRequest(string path, CancellationToken token = default)
         {
             this.StartTimer();
             _queue.Enqueue(this);
@@ -52,11 +52,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <returns>
         ///     A response object indicating the status code and any errors that may have occurred.
         /// </returns>
-        protected SonarrResponse<T> SendGetRequest<T>(string path, CancellationToken token = default)
+        protected SonarrClientResult<T> SendGetRequest<T>(string path, CancellationToken token = default)
         {
             this.StartTimer();
             _queue.Enqueue(this);
-            SonarrResponse<T> response = _client.SendGet<T>(path, token);
+            SonarrClientResult<T> response = _client.SendGet<T>(path, token);
             return response;
         }
 
@@ -68,11 +68,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <param name="path"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        protected SonarrResponse<T> SendPostRequest<T>(string path, CancellationToken token = default)
+        protected SonarrClientResult<T> SendPostRequest<T>(string path, CancellationToken token = default)
         {
             this.StartTimer();
             _queue.Enqueue(this);
-            SonarrResponse<T> response = _client.SendPost<T>(path, token);
+            SonarrClientResult<T> response = _client.SendPost<T>(path, token);
             return response;
         }
         /// <summary>
@@ -86,12 +86,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <returns>
         ///     A response object indicating the status code and any errors that may have occurred.
         /// </returns>
-        protected SonarrResponse SendPostRequest<T>(string path, T body, CancellationToken token = default)
+        protected SonarrClientResult SendPostRequest<T>(string path, T body, CancellationToken token = default)
             where T : notnull
         {
             this.StartTimer();
             _queue.Enqueue(this);
-            SonarrResponse response = _client.SendPost(path, body, token);
+            SonarrClientResult response = _client.SendPost(path, body, token);
             return response;
         }
         /// <summary>
@@ -112,9 +112,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         {
             this.StartTimer();
             _queue.Enqueue(this);
-            SonarrResponse<TOutput> response = _client.SendPost<TBody, TOutput>(path, body, token);
+            SonarrClientResult<TOutput> response = _client.SendPost<TBody, TOutput>(path, body, token);
             return !response.IsError
-                ? response.Data
+                ? response.Value
                 : response.Error;
         }
         /// <summary>
@@ -128,18 +128,18 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <returns>
         ///     A response object indicating the status code and any errors that may have occurred.
         /// </returns>
-        protected SonarrResponse SendPutRequest<T>(string path, T body , CancellationToken token = default)
+        protected SonarrClientResult SendPutRequest<T>(string path, T body , CancellationToken token = default)
             where T : notnull
         {
             this.StartTimer();
             _queue.Enqueue(this);
-            SonarrResponse response = _client.SendPut(path, body, token);
+            SonarrClientResult response = _client.SendPut(path, body, token);
             return response;
         }
 
         /// <summary>
         /// Attempts to commit or reset properties of the <typeparamref name="T"/> object depending on if
-        /// the accompanying <see cref="SonarrResponse"/> indicates an error occurred.
+        /// the accompanying <see cref="SonarrClientResult"/> indicates an error occurred.
         /// </summary>
         /// <typeparam name="T">The type of <see cref="SonarrObject"/> to process.</typeparam>
         /// <param name="sonarrObj">
@@ -148,14 +148,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// </param>
         /// <param name="response">
         /// The response from the Sonarr API call and whose
-        /// <see cref="SonarrResponse.IsError"/> property determines the action taken on 
+        /// <see cref="SonarrClientResult.IsError"/> property determines the action taken on 
         /// the properties of <paramref name="sonarrObj"/>.
         /// </param>
         /// <returns>
         /// <see langword="true"/> if <paramref name="sonarrObj"/> had it properties committed, indicating
         /// a successful operation; otherwise, <see langword="false"/> indicating an error occurred.
         /// </returns>
-        protected bool TryCommitFromResponse<T>(T sonarrObj, in SonarrResponse response) where T : SonarrObject
+        protected bool TryCommitFromResponse<T>(T sonarrObj, in SonarrClientResult response) where T : SonarrObject
         {
             if (response.IsError)
             {

@@ -59,7 +59,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
             if (this.ShouldProcess(url, $"Renaming Tag -> {rename.Label}"))
             {
-                SonarrResponse response = this.SendPutRequest(url, rename);
+                SonarrClientResult response = this.SendPutRequest(url, rename);
 
                 if (response.IsError)
                 {

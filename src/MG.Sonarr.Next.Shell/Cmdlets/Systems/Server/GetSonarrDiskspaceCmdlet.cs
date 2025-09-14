@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.System;
+using ZLinq;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
 {
@@ -18,7 +19,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
                 return;
             }
 
-            foreach (DiskspaceObject pso in response.Data)
+            foreach (DiskspaceObject pso in response.Value.AsValueEnumerable())
             {
                 pso.TypeNames.Insert(0, TYPE_NAME);
                 this.WriteObject(pso);

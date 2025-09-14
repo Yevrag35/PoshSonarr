@@ -113,9 +113,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             if (!response.IsError)
             {
                 var settings = provider.GetRequiredService<IConnectionSettings>();
-                settings.AuthType = response.Data.Authentication;
+                settings.AuthType = response.Value.Authentication;
 
-                this.WriteObject(response.Data);
+                this.WriteObject(response.Value);
             }
 
             return response;

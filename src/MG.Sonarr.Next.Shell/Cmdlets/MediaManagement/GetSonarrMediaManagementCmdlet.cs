@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.MediaManagement
             var tag = provider.GetMetadataTag(Meta.MEDIA_MANGEMENT);
             var response = this.SendGetRequest<MediaManagementObject>(tag.UrlBase);
 
-            _ = this.TryWriteObject(in response);
+            _ = this.TryWriteObject(response);
         }
     }
 }

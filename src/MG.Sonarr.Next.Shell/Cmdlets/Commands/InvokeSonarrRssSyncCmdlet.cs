@@ -23,7 +23,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
 
             this.StartTimer();
             var response = tracker.SendRssSync(this.Priority, this.UpdateScheduledTask.ToBool());
-            bool written = this.TryWriteObject(in response);
+            bool written = this.TryWriteObject(response);
         }
     }
 }

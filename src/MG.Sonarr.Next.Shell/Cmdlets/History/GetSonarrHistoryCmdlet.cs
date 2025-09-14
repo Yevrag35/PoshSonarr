@@ -184,7 +184,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
 
             string url = this.Tag.GetUrl(parameters);
             var response = this.SendGetRequest<RecordResult<HistoryObject>>(url);
-            _ = this.TryWriteObject(in response, writeConditionally: false, enumerateCollection: true, x => x.Records);
+            _ = this.TryWriteObject(response, writeConditionally: false, enumerateCollection: true, x => x.Records);
         }
 
         private void SetPagingParams()
@@ -228,7 +228,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
                 string url = tag.GetUrl(parameters);
 
                 var response = this.SendGetRequest<MetadataList<HistoryObject>>(url);
-                _ = this.TryWriteObject(in response, writeConditionally: false, enumerateCollection: true);
+                _ = this.TryWriteObject(response, writeConditionally: false, enumerateCollection: true);
             }
         }
 
@@ -243,7 +243,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
 
             string url = tag.GetUrl(parameters);
             var response = this.SendGetRequest<MetadataList<HistoryObject>>(url);
-            _ = this.TryWriteObject(in response, writeConditionally: false, enumerateCollection: true);
+            _ = this.TryWriteObject(response, writeConditionally: false, enumerateCollection: true);
         }
 
         #endregion

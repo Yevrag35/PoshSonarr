@@ -63,7 +63,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
             };
 
             var response = client.SendRename(rename);
-            _ = this.TryWriteObject(in response);
+            _ = this.TryWriteObject(response);
         }
         private void SendRenamesFromPipeline(ICommandTracker client)
         {
@@ -74,7 +74,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
                 if (this.ShouldProcess(rename.ToString(), "Rename Episode Files"))
                 {
                     var response = client.SendRename(rename);
-                    _ = this.TryWriteObject(in response);
+                    _ = this.TryWriteObject(response);
                 }
             }
         }

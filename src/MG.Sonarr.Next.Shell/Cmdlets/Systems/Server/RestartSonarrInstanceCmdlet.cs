@@ -19,7 +19,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
             }
 
             var response = this.SendPostRequest<PSObject>(Constants.RESTART);
-            _ = this.TryWriteObject(in response);
+            _ = this.TryWriteObject(response);
         }
 
         private bool ShouldNotProcess(IServiceProvider provider)

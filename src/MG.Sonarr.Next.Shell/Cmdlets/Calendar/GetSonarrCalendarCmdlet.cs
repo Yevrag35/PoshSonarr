@@ -97,10 +97,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
             }
             else if (this.HasParameter(x => x.DayOfWeek) && this.DayOfWeek.Length > 0)
             {
-                this.FilterByDayOfWeek(response.Data, this.DayOfWeek);
+                this.FilterByDayOfWeek(response.Value, this.DayOfWeek);
             }
 
-            this.WriteCollection(response.Data);
+            this.WriteCollection(response.Value);
         }
 
         private void FilterByDayOfWeek(MetadataList<CalendarObject> list, DayOfWeek[] dows)

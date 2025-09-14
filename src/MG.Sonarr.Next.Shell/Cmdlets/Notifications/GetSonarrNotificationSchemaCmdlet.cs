@@ -9,7 +9,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications
         protected override void Process(IServiceProvider provider)
         {
             var response = this.SendGetRequest<MetadataList<NotificationSchemaObject>>(Constants.NOTIFICATION_SCHEMA);
-            _ = this.TryWriteObject(in response);
+            _ = this.TryWriteObject(response);
         }
     }
 }

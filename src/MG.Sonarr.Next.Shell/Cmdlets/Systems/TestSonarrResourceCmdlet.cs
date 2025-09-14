@@ -36,7 +36,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
             {
                 _queue.Enqueue(this);
                 this.StartTimer();
-                SonarrResponse response = this.SendSingleTest(testable);
+                SonarrClientResult response = this.SendSingleTest(testable);
                 var obj = new
                 {
                     testable.Id,

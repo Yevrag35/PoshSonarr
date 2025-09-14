@@ -2,6 +2,7 @@
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Shell.Extensions;
 using System.Net;
+using ZLinq;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
@@ -47,17 +48,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
             if (this.Strict)
             {
-                this.ProcessStricly(result.Data, in _wildcardStr);
+                this.ProcessStricly(result.Value, in _wildcardStr);
             }
             else
             {
-                this.WriteCollection(result.Data);
+                this.WriteCollection(result.Value);
             }
         }
 
         private void ProcessStricly(IEnumerable<AddSeriesObject> values, in Wildcard Wildcard)
         {
-            foreach (AddSeriesObject pso in values)
+            foreach (AddSeriesObject pso in values.AsValueEnumerable())
             {
                 if (StrictlyMatches(pso.Title, in Wildcard))
                 {
