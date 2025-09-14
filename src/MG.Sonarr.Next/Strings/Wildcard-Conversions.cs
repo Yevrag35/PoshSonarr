@@ -88,7 +88,7 @@ public readonly partial struct Wildcard
 		}
 
 		ReadOnlySpan<char> pattern = _pattern;
-		int length = _length;
+		int length = _state.Length;
 
 		RentedBuffer<char> buffer = [];
 		try

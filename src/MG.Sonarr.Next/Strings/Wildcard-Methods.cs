@@ -129,14 +129,14 @@ public readonly partial struct Wildcard
 	/// </returns>
 	public readonly bool IsMatch(ReadOnlySpan<char> input, StringComparison comparisonType)
 	{
-		WildcardMatchType matchType = _matchType;
+		WildcardMatchType matchType = _state.Type;
 		ReadOnlySpan<char> pattern = _pattern;
 
 		return matchType switch
 		{
 			WildcardMatchType.All => true,
 			WildcardMatchType.Exact => pattern.Equals(input, comparisonType),
-			WildcardMatchType.Like => IsMatch(pattern, input, in comparisonType),
+			WildcardMatchType.Like => IsMatch(pattern, input, comparisonType),
 			WildcardMatchType.StartsWith => input.StartsWith(pattern.TrimEnd('*'), comparisonType),
 			WildcardMatchType.EndsWith => input.EndsWith(pattern.TrimStart('*'), comparisonType),
 			WildcardMatchType.None or _ => false,
@@ -148,7 +148,7 @@ public readonly partial struct Wildcard
 	#region PRIVATE METHODS
 
 	//[DebuggerStepThrough]
-	private static bool AreCharactersEqual(in char x, in char y, in StringComparison comparisonType)
+	private static bool AreCharactersEqual(char x, char y, StringComparison comparisonType)
 	{
 		switch (comparisonType)
 		{
@@ -169,10 +169,10 @@ public readonly partial struct Wildcard
 
 			case StringComparison.OrdinalIgnoreCase:
 			default:
-				return x == y || AreCharactersEqualIgnoreCase(in x, in y);
+				return x == y || AreCharactersEqualIgnoreCase(x, y);
 		}
 	}
-	private static bool AreCharactersEqualIgnoreCase(in char x, in char y)
+	private static bool AreCharactersEqualIgnoreCase(char x, char y)
 	{
 		if (CharCollections.AlphaLowercase.Contains(x) && CharCollections.AlphaUppercase.Contains(y))
 		{
@@ -185,7 +185,40 @@ public readonly partial struct Wildcard
 
 		return x == y;
 	}
-	private static string ConstructPattern(ReadOnlySpan<char> pattern, in WildcardMatchType matchType, ref int length, ref bool isNotEmpty)
+	private static string ConstructPattern(string? patternString, WildcardMatchType matchType, ref int length)
+	{
+		if (patternString is null)
+		{
+			return string.Empty;
+		}
+
+        string resulting_pattern;
+
+        switch (matchType)
+        {
+            case WildcardMatchType.None:
+            default:
+                length = 0;
+                resulting_pattern = string.Empty;
+                break;
+
+            case WildcardMatchType.Like:
+            case WildcardMatchType.StartsWith:
+            case WildcardMatchType.EndsWith:
+            case WildcardMatchType.Exact:
+                length = patternString.Length;
+				resulting_pattern = patternString;
+                break;
+
+            case WildcardMatchType.All:
+                length = 1;
+                resulting_pattern = ALL_STRING;
+                break;
+        }
+
+        return resulting_pattern;
+    }
+	private static string ConstructPattern(ReadOnlySpan<char> pattern, WildcardMatchType matchType, ref int length)
 	{
 		string resulting_pattern;
 
@@ -194,7 +227,6 @@ public readonly partial struct Wildcard
 			case WildcardMatchType.None:
 			default:
 				length = 0;
-				isNotEmpty = false;
 				resulting_pattern = string.Empty;
 				break;
 
@@ -203,21 +235,11 @@ public readonly partial struct Wildcard
 			case WildcardMatchType.EndsWith:
 			case WildcardMatchType.Exact:
 				length = pattern.Length;
-				isNotEmpty = true;
-				resulting_pattern = pattern.ToString();
+				resulting_pattern = new(pattern);
 				break;
-
-			//case WildcardMatchType.StartsWith:
-			//	pattern = pattern.TrimEnd('*');
-			//	goto case WildcardMatchType.Exact;
-
-			//case WildcardMatchType.EndsWith:
-			//	pattern = pattern.TrimStart('*');
-			//	goto case WildcardMatchType.Exact;
 
 			case WildcardMatchType.All:
 				length = 1;
-				isNotEmpty = true;
 				resulting_pattern = ALL_STRING;
 				break;
 		}
@@ -253,7 +275,7 @@ public readonly partial struct Wildcard
 
 		return matchType;
 	}
-	private static bool IsMatch(ReadOnlySpan<char> pattern, ReadOnlySpan<char> input, in StringComparison comparisonType)
+	private static bool IsMatch(ReadOnlySpan<char> pattern, ReadOnlySpan<char> input, StringComparison comparisonType)
 	{
 		int starIndex = -1;
 		int iIndex = -1;
@@ -263,7 +285,7 @@ public readonly partial struct Wildcard
 
 		while ((uint)i < (uint)input.Length)
 		{
-			if ((uint)j < (uint)pattern.Length && (pattern[j] == '?' || AreCharactersEqual(in pattern[j], in input[i], in comparisonType)))
+			if ((uint)j < (uint)pattern.Length && (pattern[j] == '?' || AreCharactersEqual(pattern[j], input[i], comparisonType)))
 			{
 				i++;
 				j++;

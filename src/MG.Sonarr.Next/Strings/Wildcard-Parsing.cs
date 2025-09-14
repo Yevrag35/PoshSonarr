@@ -23,7 +23,7 @@ public readonly partial struct Wildcard
 
 		if (s.Length == 1)
 		{
-			ref readonly char c = ref s[0];
+			char c = s[0];
 			if ('*' == c || '%' == c)
 			{
 				return All;
@@ -43,7 +43,12 @@ public readonly partial struct Wildcard
 	[DebuggerStepThrough]
 	public static Wildcard Parse(string? s)
 	{
-		return Parse(s.AsSpan());
+		return s switch
+		{
+			null or "" => Empty,
+			_ when s.Length == 1 && (s[0] == '*' || s[0] == '%') => All,
+			_ => new(s),
+		};
 	}
 	/// <summary>
 	/// Attempts to parse the provided read-only span of characters into a <see cref="Wildcard"/> pattern.

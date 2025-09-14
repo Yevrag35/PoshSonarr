@@ -34,13 +34,11 @@
 
   <ItemGroup>
     <Compile Remove="Json\Converters\Spans\UtcTimeToLocalConverter.cs" />
-    <Compile Remove="Strings\WildcardOld.cs" />
     <Compile Remove="Services\Http\Queries\PagingParameterOld.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="Json\Converters\Spans\UtcTimeToLocalConverter.cs" />
-    <None Include="Strings\WildcardOld.cs" />
     <None Include="Services\Http\Queries\PagingParameterOld.cs" />
   </ItemGroup>
 
