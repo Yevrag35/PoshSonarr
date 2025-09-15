@@ -34,13 +34,13 @@ namespace MG.Sonarr.Next.Shell.Components
         {
             _season = season;
             _isAbsolute = isAbsolute;
-            _isNotEmpty = season > 0 || epRange.IsValid();
+            _isNotEmpty = season > 0;
             _range = epRange;
         }
 
         bool IEpisodeIdentifier.IsValid()
         {
-            return _isNotEmpty;
+            return _isNotEmpty && this.EpisodeRange.IsValid();
         }
 
         public static bool TryParse([ValidatedNotNull] ReadOnlySpan<char> value, out SeasonEpisodeId result)
