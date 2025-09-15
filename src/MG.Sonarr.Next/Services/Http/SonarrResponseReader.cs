@@ -18,7 +18,7 @@ namespace MG.Sonarr.Next.Services.Http
         Task<SonarrClientResult<T>> ReadResultAsync<T>(HttpCall call, object? targetObj = null, CancellationToken token = default);
     }
 
-    file sealed class SonarrResponseReader : IResponseReader
+    internal sealed class SonarrResponseReader : IResponseReader
     {
         readonly JsonSerializerOptions _options;
 
