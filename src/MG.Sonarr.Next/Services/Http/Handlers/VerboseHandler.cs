@@ -41,7 +41,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     cmdlet?.WriteVerboseAfter(
-                        response: SonarrResponse.Create(response, request.RequestUri?.ToString() ?? string.Empty),
+                        response: new SonarrClientResult(response, request.RequestUri?.ToString()),
                         provider: scope.ServiceProvider,
                         options: _options);
                 }
