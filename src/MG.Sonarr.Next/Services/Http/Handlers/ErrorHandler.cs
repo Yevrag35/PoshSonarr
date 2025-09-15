@@ -16,7 +16,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
     {
         internal const string Is404 = "Is404";
         internal const string ErrorKey = "ResponseError";
-        internal const HttpStatusCode NoResponseCode = (HttpStatusCode)599;
+        internal const HttpStatusCode NoResponseCode = (HttpStatusCode)600;
         private const int STREAM_BUFFER_SIZE = 2048;
         private const string JSON = "json";
 

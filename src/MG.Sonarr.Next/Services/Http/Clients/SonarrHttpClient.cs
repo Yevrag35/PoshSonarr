@@ -161,11 +161,11 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                 _ = TryParseResponse(response, _options.ForDeserializing, out SonarrServerError? pso, disposeResponse: true, token);
                 SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
 
-                return SonarrClientResult.FromException(sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? (HttpStatusCode)599, response);
+                return SonarrClientResult.FromException(sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
             }
             catch (Exception ex)
             {
-                var result = SonarrClientResult.FromException(ex, ErrorCategory.ConnectionError, response?.StatusCode ?? HttpStatusCode.Unused, response);
+                var result = SonarrClientResult.FromException(ex, ErrorCategory.ConnectionError, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
                 if (string.IsNullOrEmpty(result.RequestUrl))
                 {
                     result.RequestUrl = path;
@@ -194,7 +194,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                 _ = TryParseResponse(response, _options.ForDeserializing, out SonarrServerError? pso, disposeResponse: true, token);
                 SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
 
-                var result = SonarrClientResult.FromException<T>(sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);
+                var result = SonarrClientResult.FromException<T>(sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
                 if (string.IsNullOrEmpty(result.RequestUrl))
                 {
                     result.RequestUrl = path;
@@ -222,7 +222,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 
         private static SonarrClientResult<T> ReturnFromException<T>(string path, HttpResponseMessage? response, ErrorCategory category, Exception e)
         {
-            var result = SonarrClientResult.FromException<T>(e, category, response?.StatusCode ?? HttpStatusCode.Unused, response);
+            var result = SonarrClientResult.FromException<T>(e, category, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
             if (string.IsNullOrEmpty(result.RequestUrl))
             {
                 result.RequestUrl = path;

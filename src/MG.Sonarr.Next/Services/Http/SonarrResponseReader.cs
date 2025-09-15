@@ -48,14 +48,14 @@ namespace MG.Sonarr.Next.Services.Http
         }
         public async Task<SonarrClientResult<T>> ReadResultAsync<T>(HttpCall call, object? targetObj = null, CancellationToken token = default)
         {
+            if (((IReadOnlyDictionary<string, object?>)call.Request.Options).ContainsKey(ErrorHandler.Is404))
+            {
+                return SonarrClientResult.NotFound<T>();
+            }
+
             if (TryGetInvalidResult(call, call.Response, out SonarrClientResult<T>? result))
             {
                 return result;
-            }
-
-            if (call.Response.ContainsMetadata(ErrorHandler.Is404))
-            {
-                return SonarrClientResult.NotFound<T>();
             }
 
             if (IsSuccessCode(call.Response.StatusCode, call.Method, out bool isIgnorable))

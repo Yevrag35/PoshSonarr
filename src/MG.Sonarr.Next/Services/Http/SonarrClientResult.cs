@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
+using MG.Sonarr.Next.Services.Http.Handlers;
 using System.Management.Automation;
 using System.Net;
 
@@ -85,7 +86,7 @@ namespace MG.Sonarr.Next.Services.Http
             this.Error = error;
             this.IsError = true;
             this.RequestUrl = error.RequestUri;
-            this.StatusCode = error.StatusCode ?? (HttpStatusCode)599;
+            this.StatusCode = error.StatusCode ?? ErrorHandler.NoResponseCode;
         }
 
         /// <summary>
@@ -200,8 +201,17 @@ namespace MG.Sonarr.Next.Services.Http
             return new SonarrClientResult<T>(error);
         }
 
-        private static readonly SonarrErrorRecord _notFound = new(new Exception(), "NotFound", ErrorCategory.ObjectNotFound, targetObj: null, isIgnoreable: true);
+        private static readonly SonarrErrorRecord _notFound = new(new Exception("Not found."), "NotFound", ErrorCategory.ObjectNotFound, targetObj: null, isIgnoreable: true);
 
+        /// <summary>
+        /// Creates a result indicating that the requested resource was not found.
+        /// </summary>
+        /// <remarks>Use this method to return a standardized 'Not Found' result when a requested resource
+        /// does not exist. The returned result can be ignored by consumers if appropriate.</remarks>
+        /// <typeparam name="T">The type of the value associated with the result.</typeparam>
+        /// <returns>A <see cref="SonarrClientResult{T}"/> representing a 'Not Found' response. The result has <see cref="IsIgnoreable"/> 
+        /// set to <see langword="true"/> and <see cref="StatusCode"/> set to <see
+        /// cref="System.Net.HttpStatusCode.NotFound"/>.</returns>
         public static SonarrClientResult<T> NotFound<T>() => new(_notFound)
         {
             IsIgnoreable = true,
