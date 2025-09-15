@@ -98,7 +98,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
             }
 
             this.WriteVerbose($"Writing response to -> {downloadPath}");
-            var response = this.Downloader.DownloadToPath(this.LogUri, downloadPath);
+            var response = this.Downloader.DownloadToPathAsync(this.LogUri, downloadPath).GetAwaiter().GetResult();
 
             if (response.IsError)
             {
@@ -106,7 +106,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(response.Data))
+            if (!string.IsNullOrWhiteSpace(response.Value))
             {
                 FileInfo fi = new(downloadPath);
                 this.WriteObject(fi);

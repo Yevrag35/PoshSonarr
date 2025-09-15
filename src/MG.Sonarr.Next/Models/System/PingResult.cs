@@ -13,12 +13,12 @@ namespace MG.Sonarr.Next.Models.System
         public string Status { get; }
         public ErrorRecord? Error { get; }
 
-        public PingResult(in SonarrResponse<PingResponse> response, long elapsedTicks)
+        public PingResult(SonarrClientResult<PingResponse> response, long elapsedTicks)
         {
-            this.IsSuccess = !response.IsEmpty && !response.IsError;
+            this.IsSuccess = !response.IsError;
             this.Duration = TimeSpan.FromTicks(elapsedTicks);
 
-            this.Message = response.Data?.Response ?? string.Empty;
+            this.Message = response.Value?.Response ?? string.Empty;
             this.Status = GetHttpStatusString(response.StatusCode);
             this.Error = response.Error;
         }
