@@ -50,7 +50,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
         [Parameter]
         [ValidateNotNull]
         [AllowEmptyCollection]
-        [ValidateIds(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.PassAsZero)]
+        [ValidateIds(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.Ignore)]
         public Either<string, int>[] Tags { get; set; } = [];
 
         protected override int Capacity => 2;

@@ -1,5 +1,8 @@
 ﻿using MG.Sonarr.Next.Shell.Components;
+using System.Buffers;
 using System.Collections;
+using System.Collections.Frozen;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Management.Automation.Language;
 
@@ -7,69 +10,69 @@ namespace MG.Sonarr.Next.Shell.Completers
 {
     internal sealed class EventTypeCompleter : IArgumentCompleter
     {
-        private delegate bool PatternPredicate(PatternMatcher matcher, ReadOnlySpan<char> value);
-
-        static readonly Lazy<ReadOnlyDictionary<string, int>> _namesToInts = new(GetTypeDictionary);
+        private delegate bool PatternPredicate(in PatternMatcher matcher, ReadOnlySpan<char> value);
+        private static readonly ImmutableDictionary<string, int> _namesToInts;
+        private static readonly string[] _names;
+        static EventTypeCompleter()
+        {
+            _namesToInts = GetTypeDictionary(out _names);
+        }
 
         public EventTypeCompleter() { }
 
         public IEnumerable<CompletionResult> CompleteArgument(string commandName, string parameterName, string wordToComplete, CommandAst commandAst, IDictionary fakeBoundParameters)
         {
-            bool empty = string.IsNullOrEmpty(wordToComplete);
-            foreach (string name in _namesToInts.Value.Keys)
+            CompletionResult[] array = ArrayPool<CompletionResult>.Shared.Rent(_names.Length);
+            try
             {
-                if (empty || NameIsMatch(name, wordToComplete))
+                bool empty = string.IsNullOrEmpty(wordToComplete);
+                int count = 0;
+
+                foreach (string name in _names)
                 {
-                    yield return new CompletionResult(name);
+                    if (empty || NameIsMatch(name, wordToComplete))
+                    {
+                        int value = _namesToInts[name];
+                        array[count++] = new CompletionResult(name, name, CompletionResultType.ParameterValue, name);
+                    }
                 }
+
+                return count > 0 ? array.AsSpan(0, count).ToArray() : [];
+            }
+            finally
+            {
+                ArrayPool<CompletionResult>.Shared.Return(array, clearArray: true);
             }
         }
 
-        /// <exception cref="ArgumentException"></exception>
         internal static int GetNumberFromEventType(string? type)
         {
-            if (string.IsNullOrWhiteSpace(type))
-            {
-                return -1;
-            }
-            else if (_namesToInts.Value.TryGetValue(type, out int value))
-            {
-                return value;
-            }
-            else if (int.TryParse(type, Statics.DefaultProvider, out int intResult))
-            {
-                return intResult;
-            }
-            else
-            {
-                throw new ArgumentException($"{type} is not a valid event type. Provide either a valid string or a number");
-            }
+            return !string.IsNullOrWhiteSpace(type) && _namesToInts.TryGetValue(type, out int value)
+                ? value
+                : -1;
         }
 
-        private static bool NameIsMatch(ReadOnlySpan<char> value, ReadOnlySpan<char> word)
+        private static bool NameIsMatch(string name, ReadOnlySpan<char> word)
         {
             word = word.Trim();
             Span<char> chars = stackalloc char[word.Length + 1];
             word.CopyTo(chars);
             chars[word.Length] = '*';
             PatternMatcher matcher = new(chars);
-            return matcher.IsMatch(value);
+            return matcher.IsMatch(name);
         }
-        private static bool ValueIsMatch(PatternMatcher matcher, ReadOnlySpan<char> value)
+        private static ImmutableDictionary<string, int> GetTypeDictionary(out string[] names)
         {
-            return matcher.IsMatch(value);
-        }
-        private static ReadOnlyDictionary<string, int> GetTypeDictionary()
-        {
-            EpisodeHistoryEventType[] values = Enum.GetValues<EpisodeHistoryEventType>();
-            SortedDictionary<string, int> dict = new(StringComparer.InvariantCultureIgnoreCase);
+            var builder = ImmutableDictionary.CreateBuilder<string, int>(StringComparer.OrdinalIgnoreCase);
+            names = Enum.GetNames<EpisodeHistoryEventType>();
+            Array.Sort(names, StringComparer.Ordinal);
 
-            foreach (var val in values)
+            foreach (string name in names)
             {
-                dict.Add(val.ToString(), (int)val);
+                builder.Add(name, (int)Enum.Parse<EpisodeHistoryEventType>(name, ignoreCase: false));
             }
 
-            return new ReadOnlyDictionary<string, int>(dict);
+            return builder.ToImmutable();
         }
         private enum EpisodeHistoryEventType
         {

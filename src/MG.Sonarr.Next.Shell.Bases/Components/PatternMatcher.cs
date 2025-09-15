@@ -6,18 +6,16 @@
         const char STAR = '*';
 
         readonly bool _containsWc;
-        readonly bool _isNotEmpty;
         readonly int _length;
         readonly ReadOnlySpan<char> _pattern;
 
         public bool ContainsWildcards => _containsWc;
-        public bool IsEmpty => !_isNotEmpty;
+        public bool IsEmpty => _length == 0;
         public int Length => _length;
 
         public PatternMatcher(ReadOnlySpan<char> span)
         {
             _pattern = span;
-            _isNotEmpty = !span.IsEmpty;
             _length = span.Length;
             _containsWc = ContainsWildcardCharacters(span);
         }
@@ -28,7 +26,7 @@
         }
         private static bool ContainsWildcardCharacters(ReadOnlySpan<char> pattern)
         {
-            return pattern.IndexOfAny(stackalloc char[] { STAR, QUESTION }) >= 0;
+            return pattern.IndexOfAny([STAR, QUESTION]) >= 0;
         }
         public bool IsMatch(ReadOnlySpan<char> input)
         {

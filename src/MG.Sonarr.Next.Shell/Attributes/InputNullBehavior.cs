@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.Shell.Attributes
         /// <summary>
         /// If the passed validation argument is <see langword="null"/>, the 
         /// <see cref="ValidateArgumentsAttribute"/> attribute will skip validation entirely or if 
-        /// <see cref="ValidateEnumeratedArgumentsAttribute"/> will skip validation for that individually element.
+        /// <see cref="ValidateEnumeratedArgumentsAttribute"/> will skip validation for that individual element.
         /// </summary>
         Ignore = 1,
         /// <summary>
