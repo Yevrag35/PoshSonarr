@@ -9,17 +9,15 @@ namespace MG.Sonarr.Next.Shell.Settings
     /// A wrapping object that allows implicit conversions from <see cref="string"/> and 
     /// <see cref="SecureString"/> objects.
     /// </summary>
-    [StructLayout(LayoutKind.Auto)]
-    [DebuggerDisplay("{_key}")]
+    [StructLayout(LayoutKind.Sequential), DebuggerDisplay("{_key}")]
     public readonly struct ApiKey : IApiKey
     {
-        readonly string? _key;
-        readonly bool _isNotEmpty;
+        private readonly string? _key;
 
         /// <summary>
         /// Indicates whether this <see cref="ApiKey"/> object is <see langword="null"/> or empty.
         /// </summary>
-        public bool IsEmpty => !_isNotEmpty;
+        public bool IsEmpty => string.IsNullOrWhiteSpace(_key);
 
         /// <summary>
         /// Gets the number of characters in the current <see cref="ApiKey"/> object.
@@ -31,7 +29,6 @@ namespace MG.Sonarr.Next.Shell.Settings
 
         private ApiKey(string? key)
         {
-            _isNotEmpty = !string.IsNullOrWhiteSpace(key);
             _key = key ?? string.Empty;
         }
         private ApiKey(SecureString secureString)
@@ -49,7 +46,7 @@ namespace MG.Sonarr.Next.Shell.Settings
             IntPtr pp = Marshal.SecureStringToBSTR(ss);
             string? s = Marshal.PtrToStringAuto(pp);
             Marshal.ZeroFreeBSTR(pp);
-            return s ?? string.Empty;
+            return s;
         }
 
         /// <summary>
