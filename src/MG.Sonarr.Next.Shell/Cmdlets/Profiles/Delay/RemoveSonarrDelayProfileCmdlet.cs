@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
+using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delay
@@ -15,7 +16,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delay
         protected override int Capacity => 1;
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-        [ValidateRange(ValidateRangeKind.Positive)]
+        [ValidateRange(2, int.MaxValue)]
         public int[] Id { get; set; } = Array.Empty<int>();
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
@@ -47,11 +48,17 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delay
                 _ids.UnionWith(this.InputObject.Select(x => x.Id));
             }
         }
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in nameof()")]
         protected override void End(IServiceProvider provider)
         {
-            if (_ids.Count <= 0)
+            if (_ids.Count == 0)
             {
                 return;
+            }
+            else if (_ids.Contains(1))
+            {
+                this.WriteError(new ErrorRecord(new SonarrParameterException(nameof(Id), ParameterErrorType.Invalid, "Cannot delete a built-in Sonarr object."), "SonarrParameterException.DeletingRestrictedId", ErrorCategory.InvalidArgument, null));
+                _ids.Remove(1);
             }
 
             bool force = this.Force.ToBool();

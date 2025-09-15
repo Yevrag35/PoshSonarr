@@ -38,7 +38,7 @@ namespace MG.Sonarr.Next.Shell.Attributes
             this.Kind = kind;
             _parameterType = typeof(object);
             _isValidatableType = false;
-            _predicate = IdValidationHelper.GetValidation(in kind);
+            _predicate = IdValidationHelper.GetValidation(kind);
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace MG.Sonarr.Next.Shell.Attributes
             this.Kind = kind;
             _parameterType = parameterType;
             _isValidatableType = IdValidationHelper.TryGetMethodInfo(parameterType);
-            _predicate = IdValidationHelper.GetValidation(in kind);
+            _predicate = IdValidationHelper.GetValidation(kind);
         }
 
         protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
@@ -109,7 +109,7 @@ namespace MG.Sonarr.Next.Shell.Attributes
             this.Kind = kind;
             _parameterType = typeof(object);
             _isValidatableType = false;
-            _predicate = IdValidationHelper.GetValidation(in kind);
+            _predicate = IdValidationHelper.GetValidation(kind);
         }
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidateIdsAttribute"/> class. 
@@ -123,7 +123,7 @@ namespace MG.Sonarr.Next.Shell.Attributes
             this.Kind = kind;
             _parameterType = parameterType;
             _isValidatableType = IdValidationHelper.TryGetMethodInfo(parameterType);
-            _predicate = IdValidationHelper.GetValidation(in kind);
+            _predicate = IdValidationHelper.GetValidation(kind);
         }
 
         protected override void ValidateElement(object element)
@@ -161,7 +161,7 @@ namespace MG.Sonarr.Next.Shell.Attributes
     /// <returns>
     ///     <see langword="true"/>, if <paramref name="id"/> passes validation; otherwise, <see langword="false"/>.
     /// </returns>
-    delegate bool IdPredicate(in int id, out ValidateRangeKind kind);
+    delegate bool IdPredicate(int id, out ValidateRangeKind kind);
     file static class IdValidationHelper
     {
         static readonly Dictionary<Type, MethodInfo> _getIds = new(5);
@@ -231,7 +231,7 @@ namespace MG.Sonarr.Next.Shell.Attributes
 
             return (int?)_getIds[parameterType].Invoke(null, [element]);
         }
-        internal static IdPredicate GetValidation(in ValidateRangeKind kind)
+        internal static IdPredicate GetValidation(ValidateRangeKind kind)
         {
             return kind switch
             {
@@ -245,28 +245,28 @@ namespace MG.Sonarr.Next.Shell.Attributes
         /// <exception cref="ValidationMetadataException"></exception>
         private static void ValidateId(int id, IdPredicate validationFunc)
         {
-            if (!validationFunc(in id, out ValidateRangeKind kind))
+            if (!validationFunc(id, out ValidateRangeKind kind))
             {
                 throw new ValidationMetadataException($"The argument's ID is not in the acceptable range of values. Expected value to be '{kind}'.");
             }
         }
 
-        private static bool MustBePositive(in int id, out ValidateRangeKind kind)
+        private static bool MustBePositive(int id, out ValidateRangeKind kind)
         {
             kind = ValidateRangeKind.Positive;
             return id > 0;
         }
-        private static bool MustBeNegative(in int id, out ValidateRangeKind kind)
+        private static bool MustBeNegative(int id, out ValidateRangeKind kind)
         {
             kind = ValidateRangeKind.Negative;
             return id < 0;
         }
-        private static bool MustBeNonNegative(in int id, out ValidateRangeKind kind)
+        private static bool MustBeNonNegative(int id, out ValidateRangeKind kind)
         {
             kind = ValidateRangeKind.NonNegative;
             return id >= 0;
         }
-        private static bool MustBeNonPositive(in int id, out ValidateRangeKind kind)
+        private static bool MustBeNonPositive(int id, out ValidateRangeKind kind)
         {
             kind = ValidateRangeKind.NonPositive;
             return id <= 0;
