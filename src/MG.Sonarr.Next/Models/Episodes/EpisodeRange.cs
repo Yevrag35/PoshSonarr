@@ -24,7 +24,7 @@ namespace MG.Sonarr.Next.Models.Episodes
             _end = -1;
             _allDontMatch = false;
         }
-        public EpisodeRange(in int start, in int end)
+        public EpisodeRange(int start, int end)
         {
             _start = start;
             _end = end;
@@ -52,7 +52,6 @@ namespace MG.Sonarr.Next.Models.Episodes
         public static readonly EpisodeRange Empty = new(true);
 
         const string ALL_MATCH = "All Match";
-        //static readonly int PART_LENGTH = nameof(Start).Length + nameof(End).Length + 8;
 
         public override string ToString()
         {
