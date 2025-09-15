@@ -1,6 +1,5 @@
 ﻿using MG.Sonarr.Next.Enums;
 using MG.Sonarr.Next.Reflection;
-using MG.Sonarr.Next.Unions;
 using System.Reflection;
 
 namespace MG.Sonarr.Next.Extensions

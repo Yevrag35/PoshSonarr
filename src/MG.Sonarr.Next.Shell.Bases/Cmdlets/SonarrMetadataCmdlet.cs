@@ -12,7 +12,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
     /// implementation for cmdlets that query/manipulate specific metadata types returned from or provided to
     /// the Sonarr APIs.
     /// </summary>
-    [DebuggerStepThrough]
+    //[DebuggerStepThrough]
     public abstract class SonarrMetadataCmdlet : SonarrApiCmdletBase
     {
         MetadataTag? _tag;
@@ -43,7 +43,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
                 return [];
             }
 
-            return response.Data;
+            return response.Value;
         }
         protected MetadataList<T> GetAllAndFilter<T>(SortedSet<int> ids, WildcardSet names, string? url = null) where T : PSObject, IComparable<T>, IHasId, IHasName, IJsonMetadataTaggable
         {
@@ -77,14 +77,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             foreach (int id in ids)
             {
                 string url = this.Tag.GetUrlForId(id);
-                SonarrResponse<T> response = this.SendGetRequest<T>(url);
+                SonarrClientResult<T> response = this.SendGetRequest<T>(url);
                 if (response.IsError)
                 {
                     this.WriteConditionalError(response.Error);
                     continue;
                 }
                 
-                list.Add(response.Data);
+                list.Add(response.Value);
             }
 
             return list;

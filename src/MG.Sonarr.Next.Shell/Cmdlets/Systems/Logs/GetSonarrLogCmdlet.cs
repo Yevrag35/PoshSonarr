@@ -84,7 +84,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
                 return false;
             }
 
-            result = response.Data;
+            result = response.Value;
             return true;
         }
 

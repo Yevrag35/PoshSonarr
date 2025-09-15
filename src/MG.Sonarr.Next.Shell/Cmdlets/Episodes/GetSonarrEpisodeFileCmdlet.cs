@@ -118,7 +118,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                     continue;
                 }
 
-                list.Add(response.Data);
+                list.Add(response.Value);
             }
 
             return list;
@@ -142,7 +142,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                     continue;
                 }
 
-                list.AddRange(response.Data);
+                list.AddRange(response.Value);
 
                 _params.Clear();
             }

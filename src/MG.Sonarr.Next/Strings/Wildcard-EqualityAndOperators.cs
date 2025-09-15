@@ -87,8 +87,7 @@ public readonly partial struct Wildcard
 			return other.IsEmpty;
 		}
 
-		return _matchType == other._matchType
-			&& _length == other._length
+		return _state.Equals(other._state)
 			&& _pattern.AsSpan().Equals(other._pattern, comparisonType);
 	}
 	/// <summary>
@@ -123,15 +122,10 @@ public readonly partial struct Wildcard
 			return HashCode.Combine(value1: true, string.Empty, WildcardMatchType.None, 0);
 		}
 
-		return HashCode.Combine(value1: false, StringComparer.OrdinalIgnoreCase.GetHashCode(_pattern), _matchType, _length);
+		return HashCode.Combine(value1: false, StringComparer.OrdinalIgnoreCase.GetHashCode(_pattern), _state.Type, _state.Length);
 	}
 
 	#endregion
-
-	//private static IAlternateEqualityComparer<ReadOnlySpan<char>, string?> GetSpanComparer(StringComparison comparisonType)
-	//{
-	//	return (IAlternateEqualityComparer<ReadOnlySpan<char>, string?>)StringComparer.FromComparison(comparisonType);
-	//}
 
 	#region OPERATORS
 

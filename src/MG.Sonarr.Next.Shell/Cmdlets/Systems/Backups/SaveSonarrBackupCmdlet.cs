@@ -99,7 +99,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
             }
 
             this.WriteVerbose($"Writing response to -> {downloadPath}");
-            var response = this.Downloader.DownloadToPath(this.BackupUri, downloadPath, _creds);
+            var response = this.Downloader.DownloadToPathAsync(this.BackupUri, downloadPath, _creds).GetAwaiter().GetResult();
 
             if (response.IsError)
             {
@@ -107,7 +107,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(response.Data))
+            if (!string.IsNullOrWhiteSpace(response.Value))
             {
                 FileInfo fi = new(downloadPath);
                 this.WriteObject(fi);
@@ -131,7 +131,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
             isEmpty = fileExt.IsEmpty;
             return !isEmpty
                    &&
-                   !fileExt.Equals(stackalloc char[] { '.', 'z', 'i', 'p' },
+                   !fileExt.Equals(['.', 'z', 'i', 'p'],
                         StringComparison.InvariantCultureIgnoreCase);
         }
         private string MakeFilePath(string dirPath, string backupUrl, bool noFileExtension)

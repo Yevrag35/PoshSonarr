@@ -9,7 +9,7 @@ namespace MG.Sonarr.Next.Shell.Completers
     {
         private delegate bool PatternPredicate(PatternMatcher matcher, ReadOnlySpan<char> value);
 
-        static readonly Lazy<IReadOnlyDictionary<string, int>> _namesToInts = new(GetTypeDictionary);
+        static readonly Lazy<ReadOnlyDictionary<string, int>> _namesToInts = new(GetTypeDictionary);
 
         public EventTypeCompleter() { }
 
@@ -59,7 +59,7 @@ namespace MG.Sonarr.Next.Shell.Completers
         {
             return matcher.IsMatch(value);
         }
-        private static IReadOnlyDictionary<string, int> GetTypeDictionary()
+        private static ReadOnlyDictionary<string, int> GetTypeDictionary()
         {
             EpisodeHistoryEventType[] values = Enum.GetValues<EpisodeHistoryEventType>();
             SortedDictionary<string, int> dict = new(StringComparer.InvariantCultureIgnoreCase);

@@ -4,7 +4,6 @@ using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Shell.Output;
@@ -82,7 +81,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                         continue;
                     }
 
-                    this.WriteObject(result.Data);
+                    this.WriteObject(result.Value);
                 }
             }
 
@@ -95,7 +94,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                     return;
                 }
 
-                this.WriteCollection(response.Data);
+                this.WriteCollection(response.Value);
             }
             else if (!hadIds)
             {
@@ -106,11 +105,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                     return;
                 }
 
-                this.WriteCollection(response.Data);
+                this.WriteCollection(response.Value);
             }
         }
 
-        private SonarrResponse<MetadataList<T>> GetSeriesByName<T>(WildcardSet names)
+        private SonarrClientResult<MetadataList<T>> GetSeriesByName<T>(WildcardSet names)
             where T : PSObject, IComparable<T>, IJsonMetadataTaggable
         {
             var result = this.GetAllSeries<T>();
@@ -119,25 +118,25 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 return result;
             }
 
-            for (int i = result.Data.Count - 1; i >= 0; i--)
+            for (int i = result.Value.Count - 1; i >= 0; i--)
             {
-                PSObject item = result.Data[i];
+                PSObject item = result.Value[i];
                 if (!item.TryGetProperty(Constants.TITLE, out string? title)
                     ||
                     !names.IsAnyMatch(title.AsSpan()))
                 {
-                    result.Data.RemoveAt(i);
+                    result.Value.RemoveAt(i);
                 }
             }
 
             return result;
         }
-        private SonarrResponse<MetadataList<T>> GetAllSeries<T>()
+        private SonarrClientResult<MetadataList<T>> GetAllSeries<T>()
             where T : PSObject, IComparable<T>, IJsonMetadataTaggable
         {
             return this.SendGetRequest<MetadataList<T>>(this.Tag.UrlBase);
         }
-        private IEnumerable<SonarrResponse<T>> GetSeriesById<T>(IEnumerable<int> ids) where T : PSObject, IJsonMetadataTaggable
+        private IEnumerable<SonarrClientResult<T>> GetSeriesById<T>(IEnumerable<int> ids) where T : PSObject, IJsonMetadataTaggable
         {
             foreach (int id in ids)
             {

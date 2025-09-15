@@ -43,8 +43,8 @@ public sealed class GetSonarrDownloadClientSchemaCmdlet : SonarrMetadataCmdlet
         }
 
         IEnumerable<DownloadClientSchemaObject> results = _wcNames.Count > 0
-            ? all.Data.Where(x => _wcNames.IsAnyMatch(x.ImplementationName))
-            : all.Data;
+            ? all.Value.Where(x => _wcNames.IsAnyMatch(x.ImplementationName))
+            : all.Value;
 
         this.WriteCollection(results);
     }

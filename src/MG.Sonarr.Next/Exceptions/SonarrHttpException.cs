@@ -8,7 +8,7 @@ namespace MG.Sonarr.Next.Exceptions
     /// An exception class thrown when an <see cref="HttpClient"/> exception is thrown from a client
     /// implementation written for PoshSonarr.
     /// </summary>
-    public sealed class SonarrHttpException : PoshSonarrException
+    public sealed class SonarrHttpException : PoshSonarrException, IHttpRequestUri
     {
         ///// <summary>
         ///// The stack trace, if any, received from the Sonarr server.

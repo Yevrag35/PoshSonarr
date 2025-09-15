@@ -30,16 +30,10 @@ public sealed class DebugSerializeHandler : DelegatingHandler
             return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
 
-        //if (cmdlet.CanDebugSerializeBefore && request.Content is not null)
-        //{
-        //    string jsonString = await this.SerializeRequest(request, request.Content, cancellationToken).ConfigureAwait(false);
-        //    cmdlet.WriteDebugPayload(jsonString);
-        //}
-
         HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (cmdlet.CanDebugSerializeAfter && response.Content is not null)
         {
-            StringResponse parsed = await this.SerializeResponse(response, response.Content, cancellationToken).ConfigureAwait(false);
+            StringResponse parsed = await SerializeResponseAsync(response, response.Content, cancellationToken).ConfigureAwait(false);
             string jsonString = Messenger.Format(
                 provider: CultureInfo.CurrentCulture,
                 format: Messages.Debug_JSONResponse_Preamble,
@@ -51,7 +45,7 @@ public sealed class DebugSerializeHandler : DelegatingHandler
         return response;
     }
 
-    private async Task<StringResponse> SerializeResponse(HttpResponseMessage response, HttpContent content, CancellationToken token)
+    private static async Task<StringResponse> SerializeResponseAsync(HttpResponseMessage response, HttpContent content, CancellationToken token)
     {
         byte[] responseBytes = await content.ReadAsByteArrayAsync(token).ConfigureAwait(false);
         string jsonString = Encoding.UTF8.GetString(responseBytes);

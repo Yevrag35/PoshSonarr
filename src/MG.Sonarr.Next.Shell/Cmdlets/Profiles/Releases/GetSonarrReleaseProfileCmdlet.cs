@@ -4,7 +4,6 @@ using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Unions;
 
@@ -69,21 +68,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
             }
             else if (names.IsNullOrEmpty())
             {
-                return response.Data;
+                return response.Value;
             }
 
-            for (int i = response.Data.Count - 1; i >= 0; i--)
+            for (int i = response.Value.Count - 1; i >= 0; i--)
             {
-                var profile = response.Data[i];
+                var profile = response.Value[i];
                 if (!profile.TryGetNonNullProperty(Constants.NAME, out string? name)
                     ||
                     !names.IsAnyMatch(name))
                 {
-                    response.Data.RemoveAt(i);
+                    response.Value.RemoveAt(i);
                 }
             }
 
-            return response.Data;
+            return response.Value;
         }
     }
 }

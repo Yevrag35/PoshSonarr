@@ -4,7 +4,6 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Qualities;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Unions;
 

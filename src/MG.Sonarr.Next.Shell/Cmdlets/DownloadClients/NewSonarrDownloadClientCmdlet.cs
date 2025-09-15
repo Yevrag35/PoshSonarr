@@ -1,6 +1,5 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Exceptions;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.DownloadClients;
 using MG.Sonarr.Next.Services.Http.Queries;

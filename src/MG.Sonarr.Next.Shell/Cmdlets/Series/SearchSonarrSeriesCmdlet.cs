@@ -47,11 +47,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 
             if (this.Strict)
             {
-                this.ProcessStricly(result.Data, in _wildcardStr);
+                this.ProcessStricly(result.Value, in _wildcardStr);
             }
             else
             {
-                this.WriteCollection(result.Data);
+                this.WriteCollection(result.Value);
             }
         }
 

@@ -1,7 +1,6 @@
 ﻿using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Calendar;
 using MG.Sonarr.Next.Shell.Extensions;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Shell.Output;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Services.Http.Queries;
@@ -97,10 +96,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
             }
             else if (this.HasParameter(x => x.DayOfWeek) && this.DayOfWeek.Length > 0)
             {
-                this.FilterByDayOfWeek(response.Data, this.DayOfWeek);
+                this.FilterByDayOfWeek(response.Value, this.DayOfWeek);
             }
 
-            this.WriteCollection(response.Data);
+            this.WriteCollection(response.Value);
         }
 
         private void FilterByDayOfWeek(MetadataList<CalendarObject> list, DayOfWeek[] dows)

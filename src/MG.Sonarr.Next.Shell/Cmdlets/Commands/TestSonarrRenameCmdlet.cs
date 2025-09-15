@@ -58,7 +58,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
 
             string url = GetUrl(_params);
             var response = this.SendGetRequest<MetadataList<RenameObject>>(url);
-            _ = this.TryWriteObject(in response);
+            _ = this.TryWriteObject(response);
             _params.RemoveAt(index);
         }
 

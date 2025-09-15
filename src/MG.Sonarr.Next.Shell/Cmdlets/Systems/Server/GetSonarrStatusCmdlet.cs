@@ -18,7 +18,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server
             }
             else
             {
-                this.WriteObject(result.Data);
+                this.WriteObject(result.Value);
             }
         }
     }

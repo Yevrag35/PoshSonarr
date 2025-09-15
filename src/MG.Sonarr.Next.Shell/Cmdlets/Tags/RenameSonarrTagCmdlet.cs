@@ -1,12 +1,9 @@
 ﻿using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Tags;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Components;
-using MG.Sonarr.Next.Shell.Extensions;
-using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 {
@@ -59,7 +56,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
             if (this.ShouldProcess(url, $"Renaming Tag -> {rename.Label}"))
             {
-                SonarrResponse response = this.SendPutRequest(url, rename);
+                SonarrClientResult response = this.SendPutRequest(url, rename);
 
                 if (response.IsError)
                 {

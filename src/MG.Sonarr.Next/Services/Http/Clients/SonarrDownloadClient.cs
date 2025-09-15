@@ -10,11 +10,11 @@ namespace MG.Sonarr.Next.Services.Http.Clients
 {
     public interface ISonarrDownloadClient
     {
-        SonarrResponse<string> DownloadToPath(string url, string path, CancellationToken token = default);
-        SonarrResponse<string> DownloadToPath(string url, string path, NetworkCredential? credential, CancellationToken token = default);
+        Task<SonarrClientResult<string>> DownloadToPathAsync(string url, string path, CancellationToken token = default);
+        Task<SonarrClientResult<string>> DownloadToPathAsync(string url, string path, NetworkCredential? credential, CancellationToken token = default);
     }
 
-    file sealed class SonarrDownloadClient : ISonarrDownloadClient
+    internal sealed class SonarrDownloadClient : ISonarrDownloadClient
     {
         readonly HttpClient _client;
         readonly IServiceScopeFactory _scopeFactory;
@@ -25,65 +25,83 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             _scopeFactory = scopeFactory;
         }
 
-        public SonarrResponse<string> DownloadToPath(string url, string path, CancellationToken token = default)
+        public async Task<SonarrClientResult<string>> DownloadToPathAsync(string url, string path, CancellationToken token = default)
         {
             using ApiKeyRequestMessage msg = new(HttpMethod.Get, url, _scopeFactory);
 
             HttpResponseMessage response = null!;
             try
             {
-                response = _client.Send(msg, token);
+                try
+                {
+                    response = await _client.SendAsync(msg, token).ConfigureAwait(false);
+                }
+                catch (SonarrHttpException ex)
+                {
+                    var result = SonarrClientResult.FromException<string>(ex, ErrorCategory.InvalidResult, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
+                    if (string.IsNullOrEmpty(result.RequestUrl))
+                    {
+                        result.RequestUrl = url;
+                    }
+
+                    return result;
+                }
+
+                bool written = await WriteFileAsync(response, path, token).ConfigureAwait(false);
+
+                return written
+                    ? SonarrClientResult.Create(path, response, url)
+                    : SonarrClientResult.FromException<string>(new SonarrHttpException(msg, response, ErrorCollection.Empty, null), ErrorCategory.WriteError, response.StatusCode, response);
             }
-            catch (SonarrHttpException ex)
+            finally
             {
-                var result = SonarrResponse.FromException<string>(
-                    url, ex, ErrorCategory.AuthenticationError, HttpStatusCode.Unauthorized, response);
-
-                return result;
+                response?.Dispose();
             }
-
-            this.WriteFileAsync(response, path, token).GetAwaiter().GetResult();
-
-            return new SonarrResponse<string>(url, path, null, HttpStatusCode.OK);
         }
-        public SonarrResponse<string> DownloadToPath(string url, string path, NetworkCredential? credential, CancellationToken token = default)
+        public async Task<SonarrClientResult<string>> DownloadToPathAsync(string url, string path, NetworkCredential? credential, CancellationToken token = default)
         {
             using AuthedRequestMessage msg = new(HttpMethod.Get, url, credential, _scopeFactory);
 
             HttpResponseMessage response = null!;
             try
             {
-                response = _client.Send(msg, token);
+                response = await _client.SendAsync(msg, token).ConfigureAwait(false);
             }
             catch (SonarrHttpException ex)
             {
-                var result = SonarrResponse.FromException<string>(
-                    url, ex, ErrorCategory.AuthenticationError, HttpStatusCode.Unauthorized, response);
+                var result = SonarrClientResult.FromException<string>(ex, ErrorCategory.InvalidResult, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
+                if (string.IsNullOrEmpty(result.RequestUrl))
+                {
+                    result.RequestUrl = url;
+                }
 
                 return result;
             }
 
-            bool written = this.WriteFileAsync(response, path, token).GetAwaiter().GetResult();
+            bool written = await WriteFileAsync(response, path, token).ConfigureAwait(false);
 
             return written
-                ? new SonarrResponse<string>(url, path, null, response.StatusCode)
-                : new SonarrResponse<string>(url, null, 
-                    new SonarrErrorRecord(new SonarrHttpException(msg, response, ErrorCollection.Empty, null)),
-                    HttpStatusCode.Unauthorized);
+                ? SonarrClientResult.Create(path, response, url)
+                : SonarrClientResult.FromException<string>(new SonarrHttpException(msg, response, ErrorCollection.Empty, null), ErrorCategory.WriteError, response.StatusCode, response);
         }
 
-        private async Task<bool> WriteFileAsync(HttpResponseMessage response, string path, CancellationToken token)
+        private static async Task<bool> WriteFileAsync(HttpResponseMessage response, string path, CancellationToken token)
         {
-            await using Stream stream = response.Content.ReadAsStream(token);
-            if (stream.CanSeek && stream.Length <= 0)
+            Stream stream = response.Content.ReadAsStream(token);
+            await using (stream.ConfigureAwait(false))
             {
-                return false;
+                if (stream.CanSeek && stream.Length <= 0)
+                {
+                    return false;
+                }
+
+                FileStream fs = new(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 8192, useAsync: true);
+                await using (fs.ConfigureAwait(false))
+                {
+                    await stream.CopyToAsync(fs, token).ConfigureAwait(false);
+                    return true;
+                }
             }
-
-            await using FileStream fs = new(path, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
-
-            await stream.CopyToAsync(fs, token);
-            return true;
         }
     }
 

@@ -36,7 +36,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
             {
                 _queue.Enqueue(this);
                 this.StartTimer();
-                SonarrResponse response = this.SendSingleTest(testable);
+                SonarrClientResult response = this.SendSingleTest(testable);
                 var obj = new
                 {
                     testable.Id,
@@ -49,7 +49,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems
             }
         }
 
-        private SonarrResponse SendSingleTest<T>(T sonarrObj, CancellationToken token = default)
+        private SonarrClientResult SendSingleTest<T>(T sonarrObj, CancellationToken token = default)
             where T : ITestPipeable
         {
             string url = GetUrl(TEST, sonarrObj.MetadataTag);

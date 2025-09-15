@@ -7,10 +7,9 @@ namespace MG.Sonarr.Next.Services.Http.Queries;
 public readonly record struct KeyOnlyQueryField : IQueryField
 {
     private readonly string? _key;
-    private readonly bool _isNotEmpty;
 
     [MemberNotNullWhen(false, nameof(_key))]
-    public bool IsDefaultOrEmpty => !_isNotEmpty;
+    public bool IsDefaultOrEmpty => _key is null;
     public string Key => _key ?? string.Empty;
     public int MaxLength => this.Key.Length;
 
@@ -18,7 +17,6 @@ public readonly record struct KeyOnlyQueryField : IQueryField
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         _key = key;
-        _isNotEmpty = true;
     }
 
     public string ToString(string? format, IFormatProvider? formatProvider)

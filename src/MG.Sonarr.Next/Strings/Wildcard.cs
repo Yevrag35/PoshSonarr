@@ -7,7 +7,7 @@ namespace MG.Sonarr.Next.Strings;
 /// <summary>
 /// A read-only <see cref="string"/> that can be used for checking case-insensitive equality and pattern matching based on traditional wildcard characters.
 /// </summary>
-[StructLayout(LayoutKind.Auto)]
+[StructLayout(LayoutKind.Sequential)]
 [DebuggerDisplay("{GetDebuggerString(),nq}")]
 public readonly partial struct Wildcard :
 	IEnumerable<char>,
@@ -59,7 +59,7 @@ public readonly partial struct Wildcard :
 	[MemberNotNullWhen(true, nameof(_pattern))]
 	public readonly bool ContainsWildcards
 	{
-		get => _isNotEmpty && _matchType != WildcardMatchType.Exact;
+		get => !this.IsEmpty && _state.Type != WildcardMatchType.Exact;
 	}
 	/// <summary>
 	/// Indicates whether this <see cref="Wildcard"/> object is empty or default-initialized.
@@ -68,15 +68,15 @@ public readonly partial struct Wildcard :
 	/// An empty <see cref="Wildcard"/> instance will never match any input.
 	/// </remarks>
 	[MemberNotNullWhen(false, nameof(_pattern))]
-	public readonly bool IsEmpty => !_isNotEmpty;
+	public readonly bool IsEmpty => _state.Length == 0;
 	/// <summary>
 	/// Gets the number of characters in the current <see cref="Wildcard"/> pattern.
 	/// </summary>
-	public readonly int Length => _length;
+	public readonly int Length => _state.Length;
 	/// <summary>
 	/// Gets the match type that this <see cref="Wildcard"/> instance will follow when comparing its pattern against input.
 	/// </summary>
-	public readonly WildcardMatchType MatchType => _matchType;
+	public readonly WildcardMatchType MatchType => _state.Type;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Wildcard"/> struct using the 
@@ -88,11 +88,14 @@ public readonly partial struct Wildcard :
 	/// Functionality equivalent to <see cref="Empty"/>.
 	/// </remarks>
 	/// <param name="pattern">The string to use as the wildcard pattern.</param>
-	[DebuggerStepThrough]
+	//[DebuggerStepThrough]
 	public Wildcard(string? patternString)
-		: this(pattern: patternString.AsSpan())
 	{
-	}
+		WildcardMatchType matchType = DeterminePattern(patternString.AsSpan().Trim());
+		int length = 0;
+		_pattern = ConstructPattern(patternString, matchType, ref length);
+		_state = new(length: length, type: matchType);
+    }
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Wildcard"/> struct using the 
 	/// specified read-only span of <see cref="char"/> elements.
@@ -103,35 +106,30 @@ public readonly partial struct Wildcard :
 	/// Functionality equivalent to <see cref="Empty"/>.
 	/// </remarks>
 	/// <param name="pattern">The read-only character span to use as the wildcard pattern.</param>
-	[DebuggerStepThrough]
+	//[DebuggerStepThrough]
 	public Wildcard(ReadOnlySpan<char> pattern)
 	{
 		WildcardMatchType matchType = DeterminePattern(pattern.Trim());
-		_pattern = ConstructPattern(pattern, in matchType, ref _length, ref _isNotEmpty);
-		_matchType = matchType;
-	}
+		int length = 0;
+		_pattern = ConstructPattern(pattern, matchType, ref length);
+		_state = new(length: length, type: matchType);
+    }
 	private Wildcard(ReadOnlySpan<char> pattern, WildcardMatchType matchType)
 	{
-		_isNotEmpty = !pattern.IsEmpty;
 		_pattern = pattern.ToString();
-		_length = pattern.Length;
-		_matchType = matchType;
-	}
+		_state = new(length: _pattern.Length, type: matchType);
+    }
 	private Wildcard(bool isAll)
 	{
 		if (isAll)
 		{
-			_matchType = WildcardMatchType.All;
-			_length = 1;
+			_state = new(length: 1, type: WildcardMatchType.All);
 			_pattern = ALL_STRING;
-			_isNotEmpty = true;
 		}
 		else
 		{
-			_matchType = WildcardMatchType.None;
-			_length = 0;
+			_state = default;
 			_pattern = string.Empty;
-			_isNotEmpty = false;
 		}
 	}
 
@@ -142,13 +140,13 @@ public readonly partial struct Wildcard :
 	private const string ALL_STRING = "*";
 	static readonly SearchValues<char> _wildcardChars = SearchValues.Create(['*', '?']);
 
-	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	private readonly WildcardMatchType _matchType;
-	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	private readonly int _length;
-	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	private readonly bool _isNotEmpty;
 	private readonly string? _pattern;
+	private readonly State _state;
+
+	public static int GetSize()
+	{
+		return System.Runtime.CompilerServices.Unsafe.SizeOf<State>();
+	}
 
 	#endregion
 

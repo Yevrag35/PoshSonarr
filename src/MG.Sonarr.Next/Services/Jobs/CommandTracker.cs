@@ -8,8 +8,8 @@ namespace MG.Sonarr.Next.Services.Jobs
 {
     public interface ICommandTracker
     {
-        SonarrResponse<CommandObject> SendRename(PostRename rename, CancellationToken token = default);
-        SonarrResponse<CommandObject> SendRssSync(CommandPriority priority, bool updateScheduledTask, CancellationToken token = default);
+        SonarrClientResult<CommandObject> SendRename(PostRename rename, CancellationToken token = default);
+        SonarrClientResult<CommandObject> SendRssSync(CommandPriority priority, bool updateScheduledTask, CancellationToken token = default);
     }
 
     file sealed class CommandTracker : ICommandTracker
@@ -23,17 +23,17 @@ namespace MG.Sonarr.Next.Services.Jobs
             _history = history;
         }
 
-        public SonarrResponse<CommandObject> SendRename(PostRename rename, CancellationToken token = default)
+        public SonarrClientResult<CommandObject> SendRename(PostRename rename, CancellationToken token = default)
         {
             var response = _client.SendPost<PostRename, CommandObject>(Constants.COMMAND, rename, token);
-            if (!response.IsEmpty && !response.IsError)
+            if (!response.IsError)
             {
-                _history.Add(response.Data);
+                _history.Add(response.Value);
             }
 
             return response;
         }
-        public SonarrResponse<CommandObject> SendRssSync(CommandPriority priority, bool updateScheduledTask, CancellationToken token = default)
+        public SonarrClientResult<CommandObject> SendRssSync(CommandPriority priority, bool updateScheduledTask, CancellationToken token = default)
         {
             if (!Enum.IsDefined(priority))
             {
@@ -50,9 +50,9 @@ namespace MG.Sonarr.Next.Services.Jobs
 
             var response = _client.SendPost<PostCommand, CommandObject>(Constants.COMMAND, post, token);
 
-            if (!response.IsEmpty && !response.IsError)
+            if (!response.IsError)
             {
-                _history.Add(response.Data);
+                _history.Add(response.Value);
             }
 
             return response;

@@ -54,9 +54,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
                 string url = this.Tag.GetUrlForId(id);
                 var response = this.SendGetRequest<CommandObject>(url);
 
-                if (this.TryWriteObject(in response) && history.Remove(id))
+                if (this.TryWriteObject(response) && history.Remove(id))
                 {
-                    history.Add(response.Data);
+                    history.Add(response.Value);
                 }
             }
         }

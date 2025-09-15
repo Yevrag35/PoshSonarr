@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Reflection;
 using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Strings;
 using System.Runtime.CompilerServices;

@@ -9,15 +9,11 @@
 		<Authors>Mike Garvey</Authors>
 		<Company>Yevrag35, LLC.</Company>
 		<RootNamespace>MG.Sonarr.Next</RootNamespace>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="MG.Sonarr.Next" />
-	</ItemGroup>
-	
-	<ItemGroup>
-		<PackageReference Include="System.Memory" Version="4.6.0" />
-		<PackageReference Include="System.Text.Json" Version="8.0.5" />
 	</ItemGroup>
 	
 	<ItemGroup>

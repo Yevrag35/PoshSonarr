@@ -16,31 +16,31 @@ namespace MG.Sonarr.Next.Shell.Components
         public bool IsEmpty => !_isNotEmpty;
         public int Season => _season;
 
-        private SeasonEpisodeId(in int absoluteNumber)
+        private SeasonEpisodeId(int absoluteNumber)
         {
             _season = -1;
             _isAbsolute = true;
             _isNotEmpty = true;
-            _range = new(in absoluteNumber, in absoluteNumber);
+            _range = new(absoluteNumber, absoluteNumber);
         }
-        private SeasonEpisodeId(in int season, in int episode, bool isAbsolute)
+        private SeasonEpisodeId(int season, int episode, bool isAbsolute)
         {
             _season = season;
             _isAbsolute = isAbsolute;
             _isNotEmpty = season > 0 || episode > 0;
-            _range = new(in episode, in episode);
+            _range = new(episode, episode);
         }
-        private SeasonEpisodeId(in int season, EpisodeRange epRange, bool isAbsolute)
+        private SeasonEpisodeId(int season, EpisodeRange epRange, bool isAbsolute)
         {
             _season = season;
             _isAbsolute = isAbsolute;
-            _isNotEmpty = season > 0 || epRange.IsValid();
+            _isNotEmpty = season > 0;
             _range = epRange;
         }
 
         bool IEpisodeIdentifier.IsValid()
         {
-            return _isNotEmpty;
+            return _isNotEmpty && this.EpisodeRange.IsValid();
         }
 
         public static bool TryParse([ValidatedNotNull] ReadOnlySpan<char> value, out SeasonEpisodeId result)
@@ -54,7 +54,7 @@ namespace MG.Sonarr.Next.Shell.Components
             char e = 'e';
             int endEp = -1;
             int episode = -1;
-            int index = value.IndexOf(new ReadOnlySpan<char>(in e), StringComparison.InvariantCultureIgnoreCase);
+            int index = value.IndexOf([e], StringComparison.InvariantCultureIgnoreCase);
 
             if (index > -1)
             {
@@ -83,8 +83,8 @@ namespace MG.Sonarr.Next.Shell.Components
             if (value.IsWhiteSpace())
             {
                 result = endEp > -1
-                    ? new(in season, new EpisodeRange(in episode, in endEp), true)
-                    : new(in season, in episode, true);
+                    ? new(season, new EpisodeRange(episode, endEp), true)
+                    : new(season, episode, true);
                 return true;
             }
 
@@ -95,20 +95,18 @@ namespace MG.Sonarr.Next.Shell.Components
 
                 if (int.TryParse(sSlice, Statics.DefaultProvider, out season))
                 {
-                    //result = new(in season, in episode, false);
                     result = endEp > -1
-                        ? new(in season, new EpisodeRange(in episode, in endEp), false)
-                        : new(in season, in episode, false);
+                        ? new(season, new EpisodeRange(episode, endEp), false)
+                        : new(season, episode, false);
 
                     return true;
                 }
             }
             else if (int.TryParse(value, Statics.DefaultProvider, out int absolute))
             {
-                //result = new(in season, in absolute, true);
                 result = endEp > -1
-                    ? new(in season, new EpisodeRange(in absolute, in endEp), true)
-                    : new(in season, in absolute, true);
+                    ? new(season, new EpisodeRange(absolute, endEp), true)
+                    : new(season, absolute, true);
 
                 return true;
             }
@@ -128,7 +126,7 @@ namespace MG.Sonarr.Next.Shell.Components
 
             for (int i = 0; i < array.Length; i++)
             {
-                object o = array[i];
+                object? o = array[i];
                 switch (o)
                 {
                     case SeasonEpisodeId sei:
@@ -139,16 +137,9 @@ namespace MG.Sonarr.Next.Shell.Components
                         copyTo[i] = intVal;
                         break;
 
-                    case long longVal:
-                        if (longVal <= int.MaxValue)
-                        {
-                            copyTo[i] = Convert.ToInt32(longVal);
-                            break;
-                        }
-                        else
-                        {
-                            goto default;
-                        }
+                    case long longVal when longVal is <= int.MaxValue and >= int.MinValue:
+                        copyTo[i] = (int)longVal;
+                        break;
 
                     case string strVal:
                         copyTo[i] = strVal;
@@ -190,7 +181,7 @@ namespace MG.Sonarr.Next.Shell.Components
         }
         public static implicit operator SeasonEpisodeId(int absoluteEpNumber)
         {
-            return new(in absoluteEpNumber);
+            return new(absoluteEpNumber);
         }
     }
 }

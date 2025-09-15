@@ -1,7 +1,6 @@
 using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Services.Http;
-using System.Collections;
 using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets
@@ -42,31 +41,31 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             }
         }
 
-        /// <inheritdoc cref="TryWriteObject{T, TOutput}(in SonarrResponse{T}, bool, bool, Func{T, TOutput})"
+        /// <inheritdoc cref="TryWriteObject{T, TOutput}(SonarrClientResult{T}, bool, bool, Func{T, TOutput})"
         ///     path="/*[not(self::summary)]"/>
         /// <summary>
         /// Attempts to write the response object to the output stream, applying default conditions for 
         /// writing the object based on the response status and its type.
         /// </summary>
         [DebuggerStepThrough]
-        protected bool TryWriteObject<T>(in SonarrResponse<T> response)
+        protected bool TryWriteObject<T>(SonarrClientResult<T> response)
         {
             return this.TryWriteObject(
-                in response,
+                response,
                 writeConditionally: true,
                 enumerateCollection: true);
         }
 
-        /// <inheritdoc cref="TryWriteObject{T, TOutput}(in SonarrResponse{T}, bool, bool, Func{T, TOutput})"
+        /// <inheritdoc cref="TryWriteObject{T, TOutput}(SonarrClientResult{T}, bool, bool, Func{T, TOutput})"
         ///     path="/*[not(self::summary)]"/>
         /// <summary>
         /// Attempts to write the response object to the output stream, applying conditional logic based on 
         /// the response status and whether to enumerate collections.
         /// </summary>
         [DebuggerStepThrough]
-        protected bool TryWriteObject<T>(in SonarrResponse<T> response, bool writeConditionally, bool enumerateCollection)
+        protected bool TryWriteObject<T>(SonarrClientResult<T> response, bool writeConditionally, bool enumerateCollection)
         {
-            return this.TryWriteObject(in response, writeConditionally, enumerateCollection, writeSelector: null);
+            return this.TryWriteObject(response, writeConditionally, enumerateCollection, writeSelector: null);
 
         }
         /// <summary>
@@ -86,13 +85,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// to the output stream.</param>
         /// <returns><see langword="true"/> if the response was written successfully; otherwise, 
         /// <see langword="false"/>.</returns>
-        protected bool TryWriteObject<T>(in SonarrResponse<T> response, bool writeConditionally, bool enumerateCollection, Func<T, object?>? writeSelector)
+        protected bool TryWriteObject<T>(SonarrClientResult<T> response, bool writeConditionally, bool enumerateCollection, Func<T, object?>? writeSelector)
         {
             if (!response.IsError)
             {
                 object? data = writeSelector is null
-                    ? response.Data
-                    : writeSelector(response.Data);
+                    ? response.Value
+                    : writeSelector(response.Value);
 
                 this.WriteObject(data, enumerateCollection);
 
@@ -116,7 +115,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <see cref="SonarrErrorRecord.IsIgnorable"/> is <see langword="false"/>.
         /// </summary>
         /// <param name="error">The error record to write.</param>
-        [DebuggerStepThrough]
+        //[DebuggerStepThrough]
         protected void WriteConditionalError(SonarrErrorRecord error)
         {
             if (error.IsIgnorable)

@@ -109,13 +109,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             }
 
             var tag = provider.GetMetadataTag(Meta.STATUS);
-            var response = client.SendGet<SystemStatusObject>(tag.UrlBase);
+            var response = client.SendGetAsync<SystemStatusObject>(tag.UrlBase).GetAwaiter().GetResult();
             if (!response.IsError)
             {
                 var settings = provider.GetRequiredService<IConnectionSettings>();
-                settings.AuthType = response.Data.Authentication;
+                settings.AuthType = response.Value.Authentication;
 
-                this.WriteObject(response.Data);
+                this.WriteObject(response.Value);
             }
 
             return response;

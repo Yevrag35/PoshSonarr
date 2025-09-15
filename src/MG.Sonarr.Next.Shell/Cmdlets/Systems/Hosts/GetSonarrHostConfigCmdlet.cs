@@ -23,16 +23,16 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Hosts
             if (includeApiKey)
             {
                 var response = this.GetHostResponse<HostObject>(tag);
-                _ = this.TryWriteObject(in response);
+                _ = this.TryWriteObject(response);
             }
             else
             {
                 var response = this.GetHostResponse<NoKeyHostObject>(tag);
-                _ = this.TryWriteObject(in response);
+                _ = this.TryWriteObject(response);
             }
         }
 
-        private SonarrResponse<THost> GetHostResponse<THost>(MetadataTag tag) where THost : HostObject
+        private SonarrClientResult<THost> GetHostResponse<THost>(MetadataTag tag) where THost : HostObject
         {
             return this.SendGetRequest<THost>(tag.UrlBase);
         }

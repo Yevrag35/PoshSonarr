@@ -100,7 +100,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
 
             string url = tag.GetUrl(_parameters);
             var response = this.SendGetRequest<MetadataList<ManualImportObject>>(url);
-            _ = this.TryWriteObject(in response);
+            _ = this.TryWriteObject(response);
         }
 
         private string ResolveAndFormatPath(string path)

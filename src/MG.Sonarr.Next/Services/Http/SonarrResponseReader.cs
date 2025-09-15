@@ -2,6 +2,8 @@
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.Errors;
+using MG.Sonarr.Next.Services.Http.Extensions;
+using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Unions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Management.Automation;
@@ -12,11 +14,11 @@ namespace MG.Sonarr.Next.Services.Http
 {
     public interface IResponseReader
     {
-        Task<SonarrResponse> ReadNoResultAsync(HttpCall call, object? targetObj = null, CancellationToken token = default);
-        Task<SonarrResponse<T>> ReadResultAsync<T>(HttpCall call, object? targetObj = null, CancellationToken token = default);
+        Task<SonarrClientResult> ReadNoResultAsync(HttpCall call, object? targetObj = null, CancellationToken token = default);
+        Task<SonarrClientResult<T>> ReadResultAsync<T>(HttpCall call, object? targetObj = null, CancellationToken token = default);
     }
 
-    file sealed class SonarrResponseReader : IResponseReader
+    internal sealed class SonarrResponseReader : IResponseReader
     {
         readonly JsonSerializerOptions _options;
 
@@ -25,20 +27,16 @@ namespace MG.Sonarr.Next.Services.Http
             _options = options.ForDeserializing;
         }
 
-        public async Task<SonarrResponse> ReadNoResultAsync(HttpCall call, object? targetObj = null, CancellationToken token = default)
+        public async Task<SonarrClientResult> ReadNoResultAsync(HttpCall call, object? targetObj = null, CancellationToken token = default)
         {
-            if (call.IsEmpty)
-            {
-                throw new ArgumentException("HttpCall must be defined.");
-            }
-            else if (TryGetInvalidResult(in call, call.Response, out SonarrResponse result))
+            if (TryGetInvalidResult(call, call.Response, out SonarrClientResult? result))
             {
                 return result;
             }
 
             if (IsSuccessCode(call.Response.StatusCode, call.Method, out bool isIgnorable))
             {
-                return SonarrResponse.Create(call.Response, call.RequestUri);
+                return new(call.Response, call.RequestUri);
             }
 
             string? content = await call.Response.Content.ReadAsStringAsync(token);
@@ -46,15 +44,16 @@ namespace MG.Sonarr.Next.Services.Http
             SonarrHttpException httpEx = new(call.Request, call.Response, deserializedError, null);
             SonarrErrorRecord record = new(httpEx, targetObj);
 
-            return SonarrResponse.FromException(record);
+            return new(record);
         }
-        public async Task<SonarrResponse<T>> ReadResultAsync<T>(HttpCall call, object? targetObj = null, CancellationToken token = default)
+        public async Task<SonarrClientResult<T>> ReadResultAsync<T>(HttpCall call, object? targetObj = null, CancellationToken token = default)
         {
-            if (call.IsEmpty)
+            if (((IReadOnlyDictionary<string, object?>)call.Request.Options).ContainsKey(ErrorHandler.Is404))
             {
-                throw new ArgumentException("HttpCall must be defined.");
+                return SonarrClientResult.NotFound<T>();
             }
-            else if (TryGetInvalidResult(in call, call.Response, out SonarrResponse<T> result))
+
+            if (TryGetInvalidResult(call, call.Response, out SonarrClientResult<T>? result))
             {
                 return result;
             }
@@ -63,9 +62,12 @@ namespace MG.Sonarr.Next.Services.Http
             {
                 var oneOf = await this.ReadContentAsync<T>(call.Response, targetObj, token);
 
-                return oneOf.TryGetT1(out SonarrErrorRecord? error, out T? remainder)
-                    ? SonarrResponse.FromException<T>(error)
-                    : new SonarrResponse<T>(call.RequestUri, remainder, null, call.Response.StatusCode);
+                unsafe
+                {
+                    return oneOf.Match(call,
+                        f1: &ReadErrorFromOneOf<T>,
+                        f2: &ReadContentFromOneOf);
+                }
             }
 
             string? content = await call.Response.Content.ReadAsStringAsync(token);
@@ -73,7 +75,7 @@ namespace MG.Sonarr.Next.Services.Http
             SonarrHttpException httpEx = new(call.Request, call.Response, deserializedError, null);
             SonarrErrorRecord record = new(httpEx, targetObj);
 
-            return SonarrResponse.FromException<T>(record);
+            return new(record);
         }
 
         private static IErrorCollection GetErrorFromContent(string? content, JsonSerializerOptions? options)
@@ -112,11 +114,12 @@ namespace MG.Sonarr.Next.Services.Http
             return list;
         }
 
-        private async Task<Either<SonarrErrorRecord, T?>> ReadContentAsync<T>(HttpResponseMessage response, object? targetObj, CancellationToken token)
+        private async Task<Either<SonarrErrorRecord, T>> ReadContentAsync<T>(HttpResponseMessage response, object? targetObj, CancellationToken token)
         {
             try
             {
-                return await response.Content.ReadFromJsonAsync<T>(_options, token);
+                return await response.Content.ReadFromJsonAsync<T>(_options, token)
+                    ?? throw new JsonException("Unable to deserialize the response content.");
             }
             catch (Exception e)
             {
@@ -125,27 +128,26 @@ namespace MG.Sonarr.Next.Services.Http
             }
         }
 
-        private static bool TryGetInvalidResult(in HttpCall call, [NotNullWhen(false)] HttpResponseMessage? msg, out SonarrResponse result)
+        private static bool TryGetInvalidResult(HttpCall call, [NotNullWhen(false)] HttpResponseMessage? msg, [NotNullWhen(true)] out SonarrClientResult? result)
         {
-            result = default;
-
+            result = null;
             if (!call.HasResponse)
             {
                 var ex = new EmptyHttpResponseException(call.RequestUri);
-                result = SonarrResponse.FromException(ex.Url, ex, ErrorCategory.InvalidResult, HttpStatusCode.Unused);
+                result = SonarrClientResult.FromException(ex, ErrorCategory.InvalidResult, ErrorHandler.NoResponseCode, msg);
                 return true;
             }
 
             return !ReferenceEquals(call.Response, msg);
         }
-        private static bool TryGetInvalidResult<T>(in HttpCall call, [NotNullWhen(false)] HttpResponseMessage? msg, out SonarrResponse<T> result)
+        private static bool TryGetInvalidResult<T>(HttpCall call, [NotNullWhen(false)] HttpResponseMessage? msg, [NotNullWhen(true)] out SonarrClientResult<T>? result)
         {
-            result = default;
+            result = null;
 
             if (!call.HasResponse)
             {
-                var ex = new EmptyHttpResponseException(call.RequestUri);
-                result = SonarrResponse.FromException<T>(ex.Url, ex, ErrorCategory.InvalidResult, HttpStatusCode.Unused);
+                EmptyHttpResponseException ex = new(call.RequestUri);
+                result = SonarrClientResult.FromException<T>(ex, ErrorCategory.InvalidResult, ErrorHandler.NoResponseCode, msg);
                 return true;
             }
 
@@ -157,7 +159,7 @@ namespace MG.Sonarr.Next.Services.Http
             int? status = (int?)code;
             switch (status)
             {
-                case <= 299:
+                case <= 399:
                     return true;
 
                 case 404:
@@ -167,6 +169,18 @@ namespace MG.Sonarr.Next.Services.Http
                 default:
                     return false;
             }
+        }
+
+        private static SonarrClientResult<T> ReadErrorFromOneOf<T>(SonarrErrorRecord error, HttpCall call)
+        {
+            return new(error)
+            {
+                StatusCode = error.StatusCode ?? call.Response!.StatusCode,
+            };
+        }
+        private static SonarrClientResult<T> ReadContentFromOneOf<T>(T content, HttpCall call)
+        {
+            return SonarrClientResult.Create(content, call.Response!, call.RequestUri);
         }
     }
 

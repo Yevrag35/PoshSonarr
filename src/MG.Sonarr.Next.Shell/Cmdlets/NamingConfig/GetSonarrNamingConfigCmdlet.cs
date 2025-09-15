@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.NamingConfig
             var tag = provider.GetMetadataTag(Meta.NAMING_CONFIG);
             var response = this.SendGetRequest<NamingConfigObject>(tag.UrlBase);
 
-            _ = this.TryWriteObject(in response);
+            _ = this.TryWriteObject(response);
         }
     }
 }

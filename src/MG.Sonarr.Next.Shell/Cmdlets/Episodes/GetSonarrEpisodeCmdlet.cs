@@ -138,18 +138,18 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 }
                 else
                 {
-                    yield return response.Data;
+                    yield return response.Value;
                 }
             }
         }
-        private IEnumerable<EpisodeObject> GetEpisodesBySeries(IReadOnlyDictionary<int, IEpisodeBySeriesPipeable> series)
+        private List<EpisodeObject> GetEpisodesBySeries(Dictionary<int, IEpisodeBySeriesPipeable> series)
         {
+            List<EpisodeObject> list = new(series.Count);
             foreach (int id in series.Keys)
             {
-                //_params.Add(Constants.SERIES_ID, id);
                 _params.Add(Constants.SERIES_ID_LOWERCASE, id);
                 string url = this.Tag.GetUrl(_params);
-                //string url = this.Tag.GetUrl(_params);
+                
                 var response = this.SendGetRequest<MetadataList<EpisodeObject>>(url);
                 if (response.IsError)
                 {
@@ -157,19 +157,20 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                     continue;
                 }
 
-                foreach (EpisodeObject obj in response.Data)
+                foreach (EpisodeObject obj in response.Value)
                 {
                     if (_seriesIds.TryGetValue(obj.SeriesId, out IEpisodeBySeriesPipeable? s))
                     {
                         obj.SetSeries(s);
                     }
 
-                    yield return obj;
+                    list.Add(obj);
                 }
 
-                //_params.Clear();
                 _params.Clear();
             }
+
+            return list;
         }
 
         private readonly struct EmptySeries : IEpisodeBySeriesPipeable

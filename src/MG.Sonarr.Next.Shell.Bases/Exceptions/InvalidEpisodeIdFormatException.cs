@@ -33,8 +33,7 @@ namespace MG.Sonarr.Next.Shell.Exceptions
             return new InvalidEpisodeIdFormatException(array, innerException);
         }
 
-        [Serializable]
-        private readonly struct StoredId : IEpisodeIdentifier, ISerializable
+        private readonly struct StoredId : IEpisodeIdentifier
         {
             readonly EpisodeRange _ep;
             readonly int _season;
@@ -52,25 +51,6 @@ namespace MG.Sonarr.Next.Shell.Exceptions
                 _season = other.Season;
                 _isNotEmpty = other.IsValid();
                 _isAb = other.IsAbsolute;
-            }
-            private StoredId(SerializationInfo info, StreamingContext context)
-            {
-                ArgumentNullException.ThrowIfNull(info);
-                bool isAbsolute = info.GetBoolean(nameof(this.IsAbsolute));
-                int season = info.GetInt32(nameof(this.Season));
-
-                _season = season;
-                _isAb = isAbsolute;
-                _isNotEmpty = true;
-            }
-
-            public void GetObjectData(SerializationInfo info, StreamingContext context)
-            {
-                ArgumentNullException.ThrowIfNull(info);
-
-                info.AddValue(nameof(this.EpisodeRange), this.EpisodeRange, typeof(EpisodeRange));
-                info.AddValue(nameof(this.IsAbsolute), this.IsAbsolute);
-                info.AddValue(nameof(this.Season), this.Season);
             }
 
             public bool IsValid()

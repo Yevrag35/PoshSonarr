@@ -1,6 +1,5 @@
 ﻿using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Components;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Json.Converters.Spans;
 using MG.Sonarr.Next.Json.Naming;
@@ -13,7 +12,6 @@ using MG.Sonarr.Next.Models.Qualities;
 using MG.Sonarr.Next.Models.Releases;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.PSProperties;
-using System.Buffers;
 using System.Management.Automation;
 using System.Text;
 using System.Text.Json.Serialization;

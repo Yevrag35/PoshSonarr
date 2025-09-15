@@ -68,7 +68,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing
                 return false;
             }
 
-            result = response.Data;
+            result = response.Value;
             return true;
         }
 

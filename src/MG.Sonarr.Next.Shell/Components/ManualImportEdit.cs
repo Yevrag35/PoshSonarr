@@ -7,47 +7,40 @@ namespace MG.Sonarr.Next.Shell.Components
 {
     internal sealed class ManualImportEdit
     {
-        EpisodeObject? _episode;
-        QualityRevisionObject? _quality;
-        SeriesObject? _series;
-        bool _hasEpisode;
-        bool _hasQuality;
-        bool _hasSeries;
+        [MemberNotNullWhen(true, nameof(Episode))]
+        internal bool HasEpisode { get; private set; }
 
-        [MemberNotNullWhen(true, nameof(Episode), nameof(_episode))]
-        internal bool HasEpisode => _hasEpisode;
+        [MemberNotNullWhen(true, nameof(Quality))]
+        internal bool HasQuality { get; private set; }
 
-        [MemberNotNullWhen(true, nameof(Quality), nameof(_quality))]
-        internal bool HasQuality => _hasQuality;
-
-        [MemberNotNullWhen(true, nameof(Series), nameof(_series))]
-        internal bool HasSeries => _hasSeries;
+        [MemberNotNullWhen(true, nameof(Series))]
+        internal bool HasSeries { get; private set; }
 
         internal EpisodeObject? Episode
         {
-            get => _episode;
+            get;
             set
             {
-                _episode = value;
-                _hasEpisode = _episode is not null;
+                field = value;
+                this.HasEpisode = value is not null;
             }
         }
         internal QualityRevisionObject? Quality
         {
-            get => _quality;
+            get;
             set
             {
-                _quality = value;
-                _hasQuality = _quality is not null;
+                field = value;
+                this.HasQuality = value is not null;
             }
         }
         internal SeriesObject? Series
         {
-            get => _series;
+            get;
             set
             {
-                _series = value;
-                _hasSeries = _series is not null;
+                field = value;
+                this.HasSeries = value is not null;
             }
         }
 

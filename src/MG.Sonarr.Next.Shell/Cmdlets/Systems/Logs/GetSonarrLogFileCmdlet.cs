@@ -26,7 +26,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
                 return;
             }
 
-            logs.AddRange(updateLogs.Data);
+            logs.AddRange(updateLogs.Value);
             logs.Sort();
             this.WriteCollection(logs);
         }

@@ -81,7 +81,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Releases
                 return;
             }
 
-            this.WriteCollection(response.Data);
+            this.WriteCollection(response.Value);
         }
 
         private string GetUrl()
