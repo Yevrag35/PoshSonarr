@@ -22,7 +22,7 @@ namespace MG.Sonarr.Next.Shell.Completers
 
         public IEnumerable<CompletionResult> CompleteArgument(string commandName, string parameterName, string wordToComplete, CommandAst commandAst, IDictionary fakeBoundParameters)
         {
-            CompletionResult[] array = ArrayPool<CompletionResult>.Shared.Rent(_namesToInts.Count);
+            CompletionResult[] array = ArrayPool<CompletionResult>.Shared.Rent(_names.Length);
             try
             {
                 bool empty = string.IsNullOrEmpty(wordToComplete);
@@ -33,7 +33,7 @@ namespace MG.Sonarr.Next.Shell.Completers
                     if (empty || NameIsMatch(name, wordToComplete))
                     {
                         int value = _namesToInts[name];
-                        array[count++] = new CompletionResult(name, value.ToString(Statics.DefaultProvider), CompletionResultType.ParameterValue, name);
+                        array[count++] = new CompletionResult(name, name, CompletionResultType.ParameterValue, name);
                     }
                 }
 
