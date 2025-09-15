@@ -246,6 +246,22 @@ namespace MG.Sonarr.Next.Extensions.Strings
             };
         }
 
+        /// <summary>
+        /// Attempts to find the last occurrence of a specified substring within the current span using the specified string
+        /// comparison.
+        /// </summary>
+        /// <param name="chars">The span of characters to search within.</param>
+        /// <param name="value">The substring to locate within the span.</param>
+        /// <param name="comparisonType">The type of string comparison to use when searching for the substring.</param>
+        /// <param name="index">When this method returns, contains the zero-based index of the last occurrence of <paramref name="value"/> within
+        /// <paramref name="chars"/>, if found; otherwise, -1.</param>
+        /// <returns><see langword="true"/> if the substring is found within the span; otherwise, <see langword="false"/>.</returns>
+        public static bool TryLastIndexOf(this string chars, [ConstantExpected] string value, StringComparison comparisonType, out int index)
+        {
+            index = chars.LastIndexOf(value, comparisonType);
+            return index >= 0;
+        }
+
         #region PRIVATE METHODS
         private static bool EnclosedInCore(ReadOnlySpan<char> readOnlySpan, in char opening, in char closing)
         {

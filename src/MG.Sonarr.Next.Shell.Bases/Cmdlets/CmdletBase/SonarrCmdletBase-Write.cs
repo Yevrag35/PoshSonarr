@@ -115,7 +115,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <see cref="SonarrErrorRecord.IsIgnorable"/> is <see langword="false"/>.
         /// </summary>
         /// <param name="error">The error record to write.</param>
-        [DebuggerStepThrough]
+        //[DebuggerStepThrough]
         protected void WriteConditionalError(SonarrErrorRecord error)
         {
             if (error.IsIgnorable)

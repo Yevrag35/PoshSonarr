@@ -20,20 +20,14 @@ namespace MG.Sonarr.Next.Services.Http.Clients
     /// <summary>
     /// An interface exposing HTTP methods for issuing RESTful requests to Sonarr's API v3 endpoints.
     /// </summary>
-    public interface ISonarrClient
+    public partial interface ISonarrClient
     {
         SonarrClientResult SendDelete(string path, CancellationToken token = default);
-        Task<SonarrClientResult> SendDeleteAsync(string path, CancellationToken token = default);
         SonarrClientResult<T> SendGet<T>(string path, CancellationToken token = default);
-        Task<SonarrClientResult<T>> SendGetAsync<T>(string path, CancellationToken token = default);
         SonarrClientResult<TOutput> SendPost<TOutput>(string path, CancellationToken token = default);
         SonarrClientResult SendPost<T>(string path, T body, CancellationToken token = default) where T : notnull;
-        Task<SonarrClientResult> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull;
         SonarrClientResult<TOutput> SendPost<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull;
-        Task<SonarrClientResult<TOutput>> SendPostAsync<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull;
-        SonarrClientResult SendPut<T>(string path, T body, CancellationToken token = default)
-            where T : notnull;
-        Task<SonarrClientResult> SendPutAsync<T>(string path, T body, CancellationToken token = default) where T : notnull;
+        SonarrClientResult SendPut<T>(string path, T body, CancellationToken token = default) where T : notnull;
         SonarrClientResult SendTest(CancellationToken token = default);
     }
 
@@ -220,6 +214,10 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             {
                 return ReturnFromException<T>(path, response, ErrorCategory.ConnectionError, e);
             }
+            finally
+            {
+                response?.Dispose();
+            }
         }
 
         private static SonarrClientResult<T> ReturnFromException<T>(string path, HttpResponseMessage? response, ErrorCategory category, Exception e)
@@ -230,7 +228,6 @@ namespace MG.Sonarr.Next.Services.Http.Clients
                 result.RequestUrl = path;
             }
 
-            response?.Dispose();
             return result;
         }
 
@@ -323,16 +320,18 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             IConnectionSettings settings,
             Action<IServiceProvider, JsonSerializerOptions> configureJson)
         {
-            services.AddTransient<PathHandler>()
-                    .AddTransient<VerboseHandler>()
-                    .AddTransient<DebugSerializeHandler>()
-                    .AddTransient<TestingHandler>();
+            services.AddTransient<DebugSerializeHandler>()
+                    .AddTransient<ErrorHandler>()
+                    .AddTransient<PathHandler>()
+                    .AddTransient<TestingHandler>()
+                    .AddTransient<VerboseHandler>();
 
             AddSonarrClientInternal(services, cmdletAssembly, settings, configureJson)
                 .AddHttpMessageHandler<PathHandler>()
                 .AddHttpMessageHandler<VerboseHandler>()
                 .AddHttpMessageHandler<DebugSerializeHandler>()
-                .AddHttpMessageHandler<TestingHandler>();
+                .AddHttpMessageHandler<TestingHandler>()
+                .AddHttpMessageHandler<ErrorHandler>();
 
             return services;
         }

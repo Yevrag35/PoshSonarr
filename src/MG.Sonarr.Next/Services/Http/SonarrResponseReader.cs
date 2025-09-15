@@ -2,6 +2,8 @@
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.Errors;
+using MG.Sonarr.Next.Services.Http.Extensions;
+using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Unions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Management.Automation;
@@ -49,6 +51,11 @@ namespace MG.Sonarr.Next.Services.Http
             if (TryGetInvalidResult(call, call.Response, out SonarrClientResult<T>? result))
             {
                 return result;
+            }
+
+            if (call.Response.ContainsMetadata(ErrorHandler.Is404))
+            {
+                return SonarrClientResult.NotFound<T>();
             }
 
             if (IsSuccessCode(call.Response.StatusCode, call.Method, out bool isIgnorable))
@@ -127,7 +134,7 @@ namespace MG.Sonarr.Next.Services.Http
             if (!call.HasResponse)
             {
                 var ex = new EmptyHttpResponseException(call.RequestUri);
-                result = SonarrClientResult.FromException(ex, ErrorCategory.InvalidResult, (HttpStatusCode)599, msg);
+                result = SonarrClientResult.FromException(ex, ErrorCategory.InvalidResult, ErrorHandler.NoResponseCode, msg);
                 return true;
             }
 
@@ -140,7 +147,7 @@ namespace MG.Sonarr.Next.Services.Http
             if (!call.HasResponse)
             {
                 EmptyHttpResponseException ex = new(call.RequestUri);
-                result = SonarrClientResult.FromException<T>(ex, ErrorCategory.InvalidResult, (HttpStatusCode)599, msg);
+                result = SonarrClientResult.FromException<T>(ex, ErrorCategory.InvalidResult, ErrorHandler.NoResponseCode, msg);
                 return true;
             }
 

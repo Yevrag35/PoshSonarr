@@ -8,6 +8,17 @@ using System.Net.Http.Json;
 
 namespace MG.Sonarr.Next.Services.Http.Clients
 {
+    public partial interface ISonarrClient
+    {
+        Task<SonarrClientResult> SendDeleteAsync(string path, CancellationToken token = default);
+        Task<SonarrClientResult<T>> SendGetAsync<T>(string path, CancellationToken token = default);
+        //Task<SonarrClientResult> SendNoResultPostAsync<T>(string path, CancellationToken token = default);
+        Task<SonarrClientResult<T>> SendPostAsync<T>(string path, CancellationToken token = default);
+        Task<SonarrClientResult> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull;
+        Task<SonarrClientResult<TOutput>> SendPostAsync<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull;
+        Task<SonarrClientResult> SendPutAsync<T>(string path, T body, CancellationToken token = default) where T : notnull;
+    }
+
     internal sealed partial class SonarrHttpClient
     {
         public Task<SonarrClientResult> SendDeleteAsync(string path, CancellationToken token = default)
@@ -32,6 +43,18 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             }
 
             return response;
+        }
+        public Task<SonarrClientResult> SendPostAsync(string path, CancellationToken token = default)
+        {
+            using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
+
+            return this.SendNoResultRequestAsync(request, path, token);
+        }
+        public Task<SonarrClientResult<T>> SendPostAsync<T>(string path, CancellationToken token = default)
+        {
+            using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
+
+            return this.SendResultRequestAsync<T>(request, path, token);
         }
         public Task<SonarrClientResult> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
         {

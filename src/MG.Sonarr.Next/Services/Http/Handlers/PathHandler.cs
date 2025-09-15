@@ -27,7 +27,6 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-
             if (request is not AuthedRequestMessage)
             {
                 this.SetPath(request);

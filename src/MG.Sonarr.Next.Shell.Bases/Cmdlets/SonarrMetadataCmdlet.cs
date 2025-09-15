@@ -12,7 +12,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
     /// implementation for cmdlets that query/manipulate specific metadata types returned from or provided to
     /// the Sonarr APIs.
     /// </summary>
-    [DebuggerStepThrough]
+    //[DebuggerStepThrough]
     public abstract class SonarrMetadataCmdlet : SonarrApiCmdletBase
     {
         MetadataTag? _tag;

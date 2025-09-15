@@ -199,17 +199,25 @@ namespace MG.Sonarr.Next.Services.Http
 
             return new SonarrClientResult<T>(error);
         }
+
+        private static readonly SonarrErrorRecord _notFound = new(new Exception(), "NotFound", ErrorCategory.ObjectNotFound, targetObj: null, isIgnoreable: true);
+
+        public static SonarrClientResult<T> NotFound<T>() => new(_notFound)
+        {
+            IsIgnoreable = true,
+            StatusCode = HttpStatusCode.NotFound,
+        };
     }
 
     [DebuggerDisplay(@"\{StatusCode = {StatusCode}, IsError = {IsError}, Value = {Value}\}")]
     public sealed class SonarrClientResult<T> : SonarrClientResult
     {
         /// <inheritdoc/>
-        public override SonarrErrorRecord? Error { get; }
+        public override SonarrErrorRecord? Error => base.Error;
 
         /// <inheritdoc/>
         [MemberNotNullWhen(true, nameof(Error)), MemberNotNullWhen(false, nameof(Value))]
-        public override bool IsError { get; }
+        public override bool IsError => base.IsError;
 
         /// <summary>
         /// Gets the parsed value from the HTTP response, or <see langword="null"/> if <see cref="IsError"/> is <see langword="true"/>.

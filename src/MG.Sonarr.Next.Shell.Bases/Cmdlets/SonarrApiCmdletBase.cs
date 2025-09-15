@@ -38,9 +38,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
             this.StartTimer();
             _queue.Enqueue(this);
 
-            var response = _client.SendDelete(path, token);
-
-            return response;
+            return _client.SendDeleteAsync(path, token).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -56,8 +54,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         {
             this.StartTimer();
             _queue.Enqueue(this);
-            SonarrClientResult<T> response = _client.SendGet<T>(path, token);
-            return response;
+            return _client.SendGetAsync<T>(path, token).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -72,8 +69,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         {
             this.StartTimer();
             _queue.Enqueue(this);
-            SonarrClientResult<T> response = _client.SendPost<T>(path, token);
-            return response;
+            return _client.SendPostAsync<T>(path, token).GetAwaiter().GetResult();
         }
         /// <summary>
         /// Sends a POST Http request to the specified Sonarr API endpoint with the specified object 
@@ -86,13 +82,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <returns>
         ///     A response object indicating the status code and any errors that may have occurred.
         /// </returns>
-        protected SonarrClientResult SendPostRequest<T>(string path, T body, CancellationToken token = default)
-            where T : notnull
+        protected SonarrClientResult SendPostRequest<T>(string path, T body, CancellationToken token = default) where T : notnull
         {
             this.StartTimer();
             _queue.Enqueue(this);
-            SonarrClientResult response = _client.SendPost(path, body, token);
-            return response;
+            return _client.SendPostAsync(path, body, token).GetAwaiter().GetResult();
         }
         /// <summary>
         /// Sends a POST Http request to the specified Sonarr API endpoint with the specified object 
@@ -107,12 +101,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         ///     A <see cref="OneOf{T0, T1}"/> object that can either be the deserialized HTTP response or
         ///     an <see cref="SonarrErrorRecord"/>.
         /// </returns>
-        protected Either<TOutput, SonarrErrorRecord> SendPostRequest<TBody, TOutput>(string path, TBody body, CancellationToken token = default)
-            where TBody : notnull
+        protected Either<TOutput, SonarrErrorRecord> SendPostRequest<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull
         {
             this.StartTimer();
             _queue.Enqueue(this);
-            SonarrClientResult<TOutput> response = _client.SendPost<TBody, TOutput>(path, body, token);
+            SonarrClientResult<TOutput> response = _client.SendPostAsync<TBody, TOutput>(path, body, token).GetAwaiter().GetResult();
             return !response.IsError
                 ? response.Value
                 : response.Error;
@@ -133,8 +126,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         {
             this.StartTimer();
             _queue.Enqueue(this);
-            SonarrClientResult response = _client.SendPut(path, body, token);
-            return response;
+            return _client.SendPutAsync(path, body, token).GetAwaiter().GetResult();
         }
 
         /// <summary>

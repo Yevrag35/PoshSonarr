@@ -32,7 +32,7 @@ namespace MG.Sonarr.Next.Exceptions
         public string? ReasonPhrase { get; }
 
         /// <inheritdoc cref="SonarrHttpException.RequestUri"/>
-        public string? RequestUri { get; set; }
+        public string? RequestUri { get; internal set; }
 
         public SonarrErrorRecord(SonarrHttpException exception, HttpResponseMessage? response)
             : this(exception, response, (object?)null)
@@ -68,10 +68,11 @@ namespace MG.Sonarr.Next.Exceptions
         {
         }
 
-        public SonarrErrorRecord(Exception normalEx, string errorId, ErrorCategory category, object? targetObj)
+        public SonarrErrorRecord(Exception normalEx, string errorId, ErrorCategory category, object? targetObj, bool isIgnoreable = false)
             : base(exception: normalEx, errorId, category, targetObj)
         {
             _headers = EmptyNameDictionary.Empty<string>();
+            this.IsIgnorable = isIgnoreable;
         }
 
         public SonarrErrorRecord(ErrorRecord wraps)
