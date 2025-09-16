@@ -157,15 +157,22 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
                 return;
             }
 
-            var tags = this.GetAll<TagObject>(tag.UrlBase).AsSpan();
+            int prevCount = tagIds.Count;
 
-            for (int i = 0; i < tags.Length; i++)
+            var tags = this.GetAll<TagObject>(tag.UrlBase);
+
+            for (int i = tags.Count - 1; i >= 0; i--)
             {
                 TagObject tagObj = tags[i];
                 if (!tagIds.Contains(tagObj.Id) && names.IsAnyMatch(tagObj.Label))
                 {
                     tagIds.Add(tagObj.Id);
                 }
+            }
+
+            if (tagIds.Count == prevCount)
+            {
+                this.WriteWarning($"No tags were found matching the specified names - {string.Join(", ", names)}");
             }
         }
     }

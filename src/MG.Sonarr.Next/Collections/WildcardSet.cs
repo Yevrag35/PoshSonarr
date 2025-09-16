@@ -181,6 +181,11 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
         return _set.Any(ws => ws.IsMatch(value));
     }
 
+    public bool Remove(Wildcard value)
+    {
+        return _set.Remove(value);
+    }
+
     /// <summary>
     /// Modifies the current <see cref="WildcardSet"/> object to contain only the elements that are present in itself,
     /// the specified collection, or both.
