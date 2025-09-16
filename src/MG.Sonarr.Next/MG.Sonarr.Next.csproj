@@ -34,10 +34,7 @@
 
   <ItemGroup>
     <Compile Remove="Json\Converters\Spans\UtcTimeToLocalConverter.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Json\Converters\Spans\UtcTimeToLocalConverter.cs" />
+	<None Include="Json\Converters\Spans\UtcTimeToLocalConverter.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">

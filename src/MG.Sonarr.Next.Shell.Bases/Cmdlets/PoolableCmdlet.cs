@@ -109,8 +109,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         {
             return _isRented ? _rented.AsSpan(0, _capacity) : Span<object>.Empty;
         }
-        protected void SetReturnables(params ReadOnlySpan<object> values)  // TODO - Implement this for C# 13.
-        //protected void SetReturnables(ReadOnlySpan<object> values)
+        protected void SetReturnables(params ReadOnlySpan<object> values)
         {
             if (values.IsEmpty || !_isRented)
             {

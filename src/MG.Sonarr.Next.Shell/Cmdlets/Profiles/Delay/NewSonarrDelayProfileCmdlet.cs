@@ -40,6 +40,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delay
         [Parameter, ValidateNotNull, AllowEmptyCollection, ValidateIds(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.Ignore)]
         public Either<string, int>[] Tags { get; set; } = [];
 
+        protected override int Capacity => 2;
+
         private SortedSet<int> _tagIds = null!;
         private WildcardSet _tagNames = null!;
 

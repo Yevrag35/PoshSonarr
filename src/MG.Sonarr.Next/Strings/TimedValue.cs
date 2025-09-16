@@ -9,35 +9,30 @@ public readonly struct TimedValue : IFormattable
 {
     private const double _exclusiveMaxMillisecondThreshold = 50_000;
 
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private readonly bool _useSeconds;
-
     /// <summary>
     /// Gets the <see cref="TimeSpan"/> value of the current instance.
     /// </summary>
-    public readonly TimeSpan Elapsed;
+    public TimeSpan Elapsed { get; }
     /// <summary>
     /// Gets a value indicating whether the formatted string output of <see cref="Elapsed"/> will be in seconds.
     /// </summary>
-    public readonly bool WillUseSeconds => _useSeconds;
+    public readonly bool WillUseSeconds => this.Elapsed.TotalMilliseconds >= _exclusiveMaxMillisecondThreshold;
 
     [DebuggerStepThrough]
     public TimedValue()
     {
-        Elapsed = TimeSpan.Zero;
-        _useSeconds = false;
+        this.Elapsed = TimeSpan.Zero;
     }
     public TimedValue(TimeSpan elapsed)
     {
-        Elapsed = elapsed;
-        _useSeconds = elapsed.TotalMilliseconds >= _exclusiveMaxMillisecondThreshold;
+        this.Elapsed = elapsed;
     }
 
     [DebuggerStepThrough]
     public readonly double GetRoundedValue() => this.GetRoundedValue(decimalPlaces: 2);
     public readonly double GetRoundedValue(int decimalPlaces)
     {
-        double value = _useSeconds ? Elapsed.TotalSeconds : Elapsed.TotalMilliseconds;
+        double value = this.WillUseSeconds ? this.Elapsed.TotalSeconds : this.Elapsed.TotalMilliseconds;
         return Math.Round(value, decimalPlaces, MidpointRounding.AwayFromZero);
     }
 
@@ -48,14 +43,12 @@ public readonly struct TimedValue : IFormattable
     public readonly string ToString(string? format, IFormatProvider? provider)
     {
         double value = this.GetRoundedValue();
-        string unit = !_useSeconds ? Messages.Timer_Unit_Milliseconds : Messages.Timer_Unit_Seconds;
+        string unit = !this.WillUseSeconds ? Messages.Timer_Unit_Milliseconds : Messages.Timer_Unit_Seconds;
 
-        return Messenger.Format(
-            provider,
-            format: "{0}{1}",
-            value,
-            unit
-        );
+        Span<char> buffer = stackalloc char[LengthConstants.DOUBLE_MAX];
+        _ = value.TryFormat(buffer, out int written);
+
+        return string.Concat(buffer.Slice(0, written), unit);
     }
 
     public static implicit operator TimeSpan(TimedValue value) => value.Elapsed;

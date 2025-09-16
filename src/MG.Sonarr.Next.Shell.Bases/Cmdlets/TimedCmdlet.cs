@@ -40,9 +40,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         /// <summary>
         /// Stops the timer and returns the elapsed <see cref="TimeSpan"/>.
         /// </summary>
-        /// <remarks>
-        ///     When the method returns, the underlying <see cref="Stopwatch"/> is reset.
-        /// </remarks>
         /// <exception cref="CmdletScopeNotReadyException"/>
         protected TimeSpan StopTimer()
         {
@@ -54,18 +51,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             if (this.Host?.UI is not null)
             {
                 TimeSpan elapsed = this.StopTimer();
-                string msg = GenerateVerboseAfter(new TimedResponse(elapsed, response, provider));
+                string msg = GetAfterMessage(elapsed, response.StatusCode);
                 this.Host.UI.WriteVerboseLine(msg);
             }
         }
 
-        private static string GenerateVerboseAfter(ISonarrTimedResponse response)
-        {
-            TimedValue elapsedTime = response.Elapsed;
-            return GetAfterMessage(in elapsedTime, response.StatusCode);
-        }
-
-        private static string GetAfterMessage(in TimedValue elapsedTime, HttpStatusCode statusCode)
+        private static string GetAfterMessage(TimedValue elapsedTime, HttpStatusCode statusCode)
         {
             return Messenger.Format(
                 provider: CultureInfo.CurrentCulture,

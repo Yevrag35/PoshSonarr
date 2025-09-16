@@ -35,6 +35,14 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
     {
         this.Add([key, value]);
     }
+    public void AddIfTrue(bool value, [CallerArgumentExpression(nameof(value))] string key = "")
+    {
+        if (value)
+        {
+            _fields.Add(key, BooleanQueryField.CreateTrue(key));
+            _maxLength += key.Length + 1 + bool.TrueString.Length;
+        }
+    }
     public void Add(params ReadOnlySpan<BooleanQueryField> fields)
     {
         foreach (BooleanQueryField field in fields)
