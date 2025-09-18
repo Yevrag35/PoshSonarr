@@ -20,6 +20,7 @@ namespace MG.Sonarr.Next.Models.System
         const string UPDATE_PART = "/file/update/";
 
         public string ContentsUrl { get; private set; } = string.Empty;
+        public string DownloadUrl => this.GetStringOrEmpty();
         public DateTimeOffset LastWriteTime { get; private set; }
         public LogFileType Type
         {

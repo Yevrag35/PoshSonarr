@@ -35,7 +35,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
         public LogFileObject InputObject
         {
             get => null!;
-            set => this.LogUri = value?.ContentsUrl ?? string.Empty;
+            set => this.LogUri = value?.DownloadUrl ?? string.Empty;
         }
 
         [Parameter(Mandatory = true, Position = 0)]
@@ -98,7 +98,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
             }
 
             this.WriteVerbose($"Writing response to -> {downloadPath}");
-            var response = this.Downloader.DownloadToPathAsync(this.LogUri, downloadPath).GetAwaiter().GetResult();
+            var response = this.Downloader.DownloadToPathAsync(this.LogUri, downloadPath, _creds).GetAwaiter().GetResult();
 
             if (response.IsError)
             {
