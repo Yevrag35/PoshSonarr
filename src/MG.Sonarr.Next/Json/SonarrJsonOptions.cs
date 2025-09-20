@@ -128,12 +128,16 @@ namespace MG.Sonarr.Next.Json
                       .AddIgnoreProperties(EnumerateIgnoreProperties())
                       .AddSpanConverters(
                             new("AirDate", doSpanConverter),
+                            new("Certification", alwaysStringConverter),
                             new("FirstAired", doSpanConverter),
                             new("AirTime", timeConverter),
                             new("Duration", timeSpanConverter),
                             new("ApiKey", alwaysStringConverter),
                             new("DownloadId", alwaysStringConverter),
                             new("ReleaseHash", alwaysStringConverter),
+                            new("CleanTitle", alwaysStringConverter),
+                            new("SortTitle", alwaysStringConverter),
+                            new("Title", alwaysStringConverter),
                             new("TorrentInfoHash", alwaysStringConverter)
                       );
             });
