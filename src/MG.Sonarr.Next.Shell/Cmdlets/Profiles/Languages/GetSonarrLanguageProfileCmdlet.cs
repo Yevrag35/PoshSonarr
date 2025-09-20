@@ -1,5 +1,6 @@
 ﻿using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Shell.Attributes;
@@ -24,7 +25,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Languages
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE, DontShow = true)]
         [ValidateIds(ValidateRangeKind.Positive, typeof(ILanguageProfilePipeable))]
-        public ILanguageProfilePipeable[] InputObject { get; set; } = Array.Empty<ILanguageProfilePipeable>();
+        public ILanguageProfilePipeable[] InputObject { get; set; } = [];
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = false, Position = 0)]
@@ -54,11 +55,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Languages
                 _wcNames.UnionWith(this.Name);
             }
         }
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
         protected override void Process(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.InputObject))
+            if (this.InputObject.Length > 0)
             {
-                _ids.UnionWith(this.InputObject.Select(x => x.LanguageProfileId));
+                _ids.AddRange(this.InputObject);
             }
         }
         protected override void End(IServiceProvider provider)
@@ -80,8 +82,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Languages
 
         private MetadataList<LanguageProfileObject> GetByName(WildcardSet names, SortedSet<int> ids)
         {
-            var response = this.GetAll<LanguageProfileObject>();
-            if (response.Count <= 0 || names.Count <= 0)
+            MetadataList<LanguageProfileObject> response = this.GetAll<LanguageProfileObject>();
+            if (response.Count == 0 || names.Count == 0)
             {
                 return response;
             }

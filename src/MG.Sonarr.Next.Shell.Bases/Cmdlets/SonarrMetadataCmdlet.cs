@@ -56,7 +56,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
             ReadOnlySpan<T> span = list.AsSpan();
             for (int i = span.Length - 1; i >= 0; i--)
             {
-                ref readonly T item = ref span[i];
+                T item = span[i];
                 if (!ids.Contains(item.Id) && !names.IsAnyMatch(item.Name))
                 {
                     list.RemoveAt(i);

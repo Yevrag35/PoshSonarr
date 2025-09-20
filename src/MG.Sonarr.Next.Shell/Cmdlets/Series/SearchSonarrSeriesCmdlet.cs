@@ -32,9 +32,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             base.OnCreatingScope(provider);
             _tag = provider.GetRequiredService<IMetadataResolver>()[Meta.SERIES_ADD];
         }
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
         protected override void Process(IServiceProvider provider)
         {
-            string path = this.HasParameter(x => x.Name)
+            string path = this.HasParameter(Name)
                 ? GetSearchByNamePath(_wildcardStr)
                 : string.Format(SEARCH_ID_QUERY, this.TVDbId);
 

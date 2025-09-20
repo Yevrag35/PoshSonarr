@@ -16,11 +16,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
         [ValidateIds(ValidateRangeKind.Positive)]
-        public RootFolderObject[] InputObject { get; set; } = Array.Empty<RootFolderObject>();
+        public RootFolderObject[] InputObject { get; set; } = [];
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        public int[] Id { get; set; } = [];
 
         [Parameter]
         public SwitchParameter Force { get; set; }
@@ -41,9 +41,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
         {
             _ids.UnionWith(this.Id);
         }
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
         protected override void Process(IServiceProvider provider)
         {
-            if (!this.HasParameter(x => x.InputObject))
+            if (!this.HasParameter(InputObject))
             {
                 return;
             }
@@ -69,11 +70,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
 
             foreach (int id in _ids)
             {
-                this.PerformDelete(in id, in force);
+                this.PerformDelete(id, force);
             }
         }
 
-        private void PerformDelete(in int id, in bool force)
+        private void PerformDelete(int id, bool force)
         {
             string url = this.Tag.GetUrlForId(id);
 

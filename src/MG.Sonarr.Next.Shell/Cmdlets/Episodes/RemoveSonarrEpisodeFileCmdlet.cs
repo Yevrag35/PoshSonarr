@@ -17,11 +17,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = "ByEpisodeId")]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        public int[] Id { get; set; } = [];
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput")]
         [ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodeFilePipeable))]
-        public IEpisodeFilePipeable[] InputObject { get; set; } = Array.Empty<IEpisodeFilePipeable>();
+        public IEpisodeFilePipeable[] InputObject { get; set; } = [];
 
         [Parameter]
         public SwitchParameter Force { get; set; }
@@ -42,9 +42,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         {
             _ids.UnionWith(this.Id);
         }
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
         protected override void Process(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.InputObject))
+            if (this.HasParameter(InputObject) && this.InputObject.Length > 0)
             {
                 _ids.UnionWith(
                     this.InputObject.Select(x => x.EpisodeFileId)

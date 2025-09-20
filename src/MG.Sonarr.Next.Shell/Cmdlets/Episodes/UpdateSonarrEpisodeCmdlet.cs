@@ -31,7 +31,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 
         private bool IsValid([NotNullWhen(true)] IHasId? value)
         {
-            if (value is null || value.Id <= 0)
+            if (value is null or { Id: <= 0})
             {
                 this.WriteWarning("An episode with an invalid ID was passed. It will be ignored.");
                 return false;
@@ -41,6 +41,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         }
         private void SendUpdate(EpisodeObject episode)
         {
+            Debug.Assert(episode is not null, "Episode should not be null here.");
             string url = episode.MetadataTag.GetUrlForId(episode.Id);
             if (!this.ShouldProcess(url, "Update Episode"))
             {

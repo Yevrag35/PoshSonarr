@@ -38,11 +38,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
         {
             _ids.UnionWith(this.Id ?? Array.Empty<int>());
         }
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
         protected override void Process(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.InputObject))
+            if (this.HasParameter(InputObject) && this.InputObject.Length > 0)
             {
-                _ids.UnionWith(this.InputObject.Select(x => x.Id));
+                foreach (ICommand cmd in this.InputObject)
+                {
+                    _ids.Add(cmd.Id);
+                }
             }
         }
         protected override void End(IServiceProvider provider)

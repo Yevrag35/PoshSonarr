@@ -17,11 +17,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delay
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(2, int.MaxValue)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        public int[] Id { get; set; } = [];
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
         [ValidateIds(ValidateRangeKind.Positive)]
-        public DelayProfileObject[] InputObject { get; set; } = Array.Empty<DelayProfileObject>();
+        public DelayProfileObject[] InputObject { get; set; } = [];
 
         [Parameter]
         public SwitchParameter Force { get; set; }
@@ -41,9 +41,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delay
         {
             _ids.UnionWith(this.Id);
         }
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
         protected override void Process(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.InputObject) && this.InputObject.Length > 0)
+            if (this.InputObject.Length > 0)
             {
                 _ids.UnionWith(this.InputObject.Select(x => x.Id));
             }
@@ -64,11 +65,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delay
             bool force = this.Force.ToBool();
             foreach (int id in _ids)
             {
-                this.DeleteProfile(in id, this.Tag, in force);
+                this.DeleteProfile(in id, this.Tag, force);
             }
         }
 
-        private void DeleteProfile(in int id, MetadataTag tag, in bool force)
+        private void DeleteProfile(in int id, MetadataTag tag, bool force)
         {
             string url = tag.GetUrlForId(id);
             if (!force

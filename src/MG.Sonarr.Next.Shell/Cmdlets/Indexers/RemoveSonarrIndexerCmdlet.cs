@@ -44,7 +44,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
 
         protected override void Process(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.InputObject))
+            if (this.InputObject.Length > 0)
             {
                 _ids.UnionWith(this.InputObject.Select(x => x.Id));
             }
