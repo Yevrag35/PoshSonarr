@@ -147,7 +147,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// <see langword="true"/> if <paramref name="sonarrObj"/> had it properties committed, indicating
         /// a successful operation; otherwise, <see langword="false"/> indicating an error occurred.
         /// </returns>
-        protected bool TryCommitFromResponse<T>(T sonarrObj, in SonarrClientResult response) where T : SonarrObject
+        protected bool TryCommitFromResponse<T>(T sonarrObj, SonarrClientResult response) where T : SonarrObject
         {
             if (response.IsError)
             {

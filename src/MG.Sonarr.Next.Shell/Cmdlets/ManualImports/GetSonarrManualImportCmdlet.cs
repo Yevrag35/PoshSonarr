@@ -11,6 +11,7 @@ using IOPath = System.IO.Path;
 namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
 {
     [Cmdlet(VerbsCommon.Get, "SonarrManualImport", DefaultParameterSetName = BY_FOLDER)]
+    //[OutputType(typeof())]
     public sealed class GetSonarrManualImportCmdlet : SonarrApiCmdletBase
     {
         const string BY_FOLDER = "ByFolderPath";

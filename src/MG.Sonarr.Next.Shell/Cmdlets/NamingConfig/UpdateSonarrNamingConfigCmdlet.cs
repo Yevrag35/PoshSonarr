@@ -23,7 +23,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.NamingConfig
             }
 
             var response = this.SendPutRequest(url, this.InputObject);
-            bool committed = this.TryCommitFromResponse(this.InputObject, in response);
+            bool committed = this.TryCommitFromResponse(this.InputObject, response);
             Debug.Assert(committed);
         }
     }

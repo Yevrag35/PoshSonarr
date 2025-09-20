@@ -49,7 +49,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
             }
 
             var response = this.SendPutRequest(url, episode);
-            this.TryCommitFromResponse(episode, in response);
+            this.TryCommitFromResponse(episode, response);
         }
     }
 }

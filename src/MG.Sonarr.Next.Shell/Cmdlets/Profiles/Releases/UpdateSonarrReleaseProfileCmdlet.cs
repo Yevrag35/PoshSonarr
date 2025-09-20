@@ -36,7 +36,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases
             }
 
             var response = this.SendPutRequest(url, profile);
-            _ = this.TryCommitFromResponse(profile, in response);
+            _ = this.TryCommitFromResponse(profile, response);
         }
     }
 }

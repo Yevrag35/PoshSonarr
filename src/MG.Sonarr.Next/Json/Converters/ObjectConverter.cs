@@ -421,10 +421,13 @@ namespace MG.Sonarr.Next.Json.Converters
 
             writer.WriteStartObject();
 
-            foreach (var prop in pso.Properties
-                .Where(static x => x.MemberType == PSMemberTypes.NoteProperty
-                            &&
-                            x.IsGettable))
+            PSPropertyInfo[] props = [.. pso.Properties.Where(x => x.MemberType == PSMemberTypes.NoteProperty && x.IsGettable)];
+            bool containsMetadata = props.Any(x => x.Name == "MetadataTag");
+            //foreach (var prop in pso.Properties
+            //    .Where(static x => x.MemberType == PSMemberTypes.NoteProperty
+            //                &&
+            //                x.IsGettable))
+            foreach (PSPropertyInfo prop in props)
             {
                 if (_config.IgnoreProperties.Contains(prop.Name))
                 {

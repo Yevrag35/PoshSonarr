@@ -9,6 +9,7 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Models.Fields;
+using MG.Sonarr.Next.Models.ManualImports;
 using MG.Sonarr.Next.Reflection;
 using MG.Sonarr.Resources;
 using Microsoft.Extensions.DependencyInjection;
@@ -147,6 +148,7 @@ namespace MG.Sonarr.Next.Json
                 new PostCommandWriter(),
                 new SonarrResponseConverter(),
                 new ImmutableArrayConverter<FieldObject>(),
+                new ImmutableArrayConverter<ManualImportObject>(),
                 new ImmutableArrayConverter<SelectOptionObject>());
 
             List<JsonConverter> sonarrConverters = ConstructSonarrObjectConverters(objCon);
