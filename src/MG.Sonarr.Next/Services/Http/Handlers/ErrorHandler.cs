@@ -53,11 +53,8 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
         private static bool IsJsonType([NotNullWhen(true)] MediaTypeHeaderValue? mediaType)
         {
-            if (mediaType is null || string.IsNullOrEmpty(mediaType.MediaType))
-                return false;
-
-            string type = mediaType.MediaType;
-            return type.TryLastIndexOf(JSON, StringComparison.OrdinalIgnoreCase, out int index)
+            return mediaType?.MediaType is string type
+                && type.TryLastIndexOf(JSON, StringComparison.OrdinalIgnoreCase, out int index)
                 && index != 0
                 && type[index - 1] is '/' or '+';
         }
@@ -71,6 +68,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
             using HttpContent originalContent = response.Content;
             Stream stream = await originalContent.ReadAsStreamAsync(token).ConfigureAwait(false);
+
             MemoryStream mem = new(STREAM_BUFFER_SIZE);
             await stream.CopyToAsync(mem, cancellationToken: token).ConfigureAwait(false);
 
