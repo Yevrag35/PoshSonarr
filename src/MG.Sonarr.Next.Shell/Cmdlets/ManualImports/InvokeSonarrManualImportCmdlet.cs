@@ -1,16 +1,8 @@
-﻿using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Extensions.PSO;
-using MG.Sonarr.Next.Metadata;
-using MG.Sonarr.Next.Models;
+﻿using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.ManualImports;
-using MG.Sonarr.Next.Models.Profiles;
-using MG.Sonarr.Next.Models.Qualities;
-using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Exceptions;
-using MG.Sonarr.Next.Shell.Extensions;
-using System.Collections.Immutable;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
 {
@@ -19,6 +11,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
     {
         [Parameter(Mandatory = true, ValueFromPipeline = true), AllowEmptyCollection]
         public ManualImportObject[] InputObject { get; set; } = [];
+
+        [Parameter]
+        public ManualImportMode ImportMode { get; set; } = ManualImportMode.Copy;
 
         private MetadataList<ManualImportObject> _list = null!;
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
@@ -57,18 +52,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
 
             var body = new
             {
-                Files = _list.Select(x => new
-                {
-                    Path = x.GetValue<string>("Path"),
-                    SeriesId = x.Series!.Id,
-                    EpisodeIds = x.Episodes.Select(e => e.Id).ToArray(),
-                    Quality = x.Quality.ToDictionary(nameof(QualityRevisionObject.MetadataTag)),
-                    Languages = x.GetValue<PSObject[]>("Languages")?.Select(x => x.ToDictionary(nameof(LanguageProfileObject.MetadataTag))).ToArray() ?? [],
-                    ReleaseGroup = x.GetValue<string>("ReleaseGroup"),
-                    IndexerFlags = x.GetValue<int>("IndexerFlags"),
-                    ReleaseType = x.GetValue<int>("ReleaseType")
-                }).ToArray(),
-                ImportMode = "copy",
+                Files = _list.ToManualImportFiles(),
+                ImportMode = GetImportModeString(this.ImportMode),
                 Name = "ManualImport",
             };
 
@@ -87,5 +72,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
             _list = null!;
             base.Dispose(disposing);
         }
+
+        private static string GetImportModeString(ManualImportMode mode)
+        {
+            return mode switch
+            {
+                ManualImportMode.Copy => "copy",
+                ManualImportMode.Move => "move",
+                _ => string.Empty,
+            };
+        }
+    }
+
+    public enum ManualImportMode
+    {
+        Copy,
+        Move,
     }
 }
