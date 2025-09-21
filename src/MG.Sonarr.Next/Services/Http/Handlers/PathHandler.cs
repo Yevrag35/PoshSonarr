@@ -1,6 +1,7 @@
 using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Http.Requests;
 using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Next.Services.Http.Extensions;
 
 namespace MG.Sonarr.Next.Services.Http.Handlers
 {
@@ -8,6 +9,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
     {
         const string API = "/api";
         const string V3 = "/v3/";
+        internal const string Ping = "IsPing";
         readonly bool _noApiInPath;
 
         public PathHandler(IConnectionSettings settings)
@@ -17,7 +19,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
 
         protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            if (request is not AuthedRequestMessage)
+            if (request is not AuthedRequestMessage && !request.Options.ContainsMetadata(Ping))
             {
                 this.SetPath(request);
             }

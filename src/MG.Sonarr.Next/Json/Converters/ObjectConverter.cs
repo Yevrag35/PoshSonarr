@@ -57,7 +57,7 @@ namespace MG.Sonarr.Next.Json.Converters
 
         private static object[] ConvertToListOfObjects(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
-            return JsonSerializer.Deserialize<object[]>(ref reader, options) ?? 
+            return JsonSerializer.Deserialize<object[]>(ref reader, options) ??
                 throw new JsonException("Unable to deserialize into an array of object instances.");
         }
 
@@ -148,14 +148,19 @@ namespace MG.Sonarr.Next.Json.Converters
             ReadOnlySpan<char> backs = ['\\', '\\'];
             Span<char> scratch = stackalloc char[chars.Length];
 
-            if (reader.ValueIsEscaped)
+            foreach (SplitEntry section in chars.SpanSplit(quotes, backs))
             {
-                return intNum;
+                section.Chars.CopyTo(scratch.Slice(position));
+                position += section.Chars.Length;
+
+                if (!section.Separator.IsEmpty)
+                {
+                    scratch[position++] = section.Separator[1];
+                }
             }
 
-            Span<char> span = reader.ValueSpan.Length < 1001
-                ? stackalloc char[reader.ValueSpan.Length]
-                : RentArray(reader.ValueSpan.Length, ref isRented, ref array);
+            return new string(scratch.Slice(0, position));
+        }
 
         private static bool ReadBoolean(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
@@ -173,102 +178,24 @@ namespace MG.Sonarr.Next.Json.Converters
             chars = chars.Slice(0, written);
             if (int.TryParse(chars, Statics.DefaultProvider, out int intNum))
             {
-                firstChar = char.ToUpper(firstChar);
+                return intNum;
             }
             else if (long.TryParse(chars, Statics.DefaultProvider, out long longNum))
             {
-                result = converter.ConvertSpan(span, propertyName);
+                return longNum;
             }
             else if (double.TryParse(chars, Statics.DefaultProvider, out double dubNum))
             {
-                result = asValueType;
+                return dubNum;
             }
             else if (decimal.TryParse(chars, Statics.DefaultProvider, out decimal decNum))
             {
-                result = this.ReadString(span, propertyName);
+                return decNum;
             }
-        }
-
-        private object ReadObject<TParent>(ref Utf8JsonReader reader, JsonSerializerOptions options, string pn) where TParent : PSObject
-        {
-            Type parentType = typeof(TParent);
-            switch (pn)
+            else
             {
-                case Constants.PROPERTY_DATA:
-                    if (!parentType.Equals(typeof(HistoryObject)))
-                    {
-                        goto default;
-                    }
-
-                    return this.ReadPSObject<ReleaseObject>(ref reader, options);
-
-                case Constants.PROPERTY_EPISODE:
-                    return this.ReadPSObject<EpisodeObject>(ref reader, options);
-
-                case Constants.PROPERTY_EPISODE_FILE:
-                    return this.ReadPSObject<EpisodeFileObject>(ref reader, options);
-
-                case Constants.PROPERTY_QUALITY:
-                    if (parentType.Equals(typeof(QualityRevisionObject))
-                        ||
-                        parentType.Equals(typeof(QualityDefinitionObject)))
-                    {
-                        return this.ReadPSObject<QualityObject>(ref reader, options);
-                    }
-                    else if (parentType.Equals(typeof(ManualImportObject)))
-                    {
-                        return this.ReadPSObject<QualityRevisionObject>(ref reader, options);
-                    }
-
-                    goto default;
-
-                case Constants.PROPERTY_REVISION:
-                    if (parentType.Equals(typeof(QualityRevisionObject)))
-                    {
-                        return this.ReadPSObject<RevisionObject>(ref reader, options);
-                    }
-
-                    goto default;
-
-                case Constants.PROPERTY_SERIES:
-                    return this.ReadPSObject<SeriesObject>(ref reader, options);
-
-                default:
-                    return this.ConvertToObject<PSObject>(ref reader, options, null, null);
+                return int.MinValue;
             }
-        }
-        private T ReadPSObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options) where T : SonarrObject, ISerializableNames<T>, new()
-        {
-            var sonarrObj = this.ConvertToObject<T>(
-                ref reader, options, T.GetDeserializedNames(), T.GetPropertiesToCapitalize());
-
-            sonarrObj.OnDeserialized();
-            sonarrObj.SetTag(_config.Resolver);
-            return sonarrObj;
-        }
-        private static Span<T> RentArray<T>(in int length, ref bool isRented, ref T[]? array)
-        {
-            Span<char> chars = stackalloc char[reader.ValueSpan.Length];
-            int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
-
-            chars = chars.Slice(0, written);
-            ref char first = ref chars[0];
-            if (char.IsLower(first))
-            {
-                first = char.ToUpper(first);
-            }
-
-            string propertyName = new(chars);
-            if (replaceNames.TryGetValue(propertyName, out string? replacement))
-            {
-                return replacement;
-            }
-            else if (globalReplace.TryGetValue(propertyName, out string? gbReplacement))
-            {
-                return gbReplacement;
-            }
-
-            return propertyName;
         }
 
         private object ReadObject<TParent>(ref Utf8JsonReader reader, JsonSerializerOptions options, string pn) where TParent : PSObject
@@ -335,33 +262,24 @@ namespace MG.Sonarr.Next.Json.Converters
             Span<char> chars = stackalloc char[length];
             int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
 
-        private static bool TryReadAsNumber(Span<char> chars, [NotNullWhen(true)] out ValueType? result)
-        {
-            bool returnVal = false;
-            result = default;
-
-            if (int.TryParse(chars, Statics.DefaultProvider, out int intNum))
+            chars = chars.Slice(0, written);
+            ref char first = ref chars[0];
+            if (char.IsLower(first))
             {
-                result = intNum;
-                returnVal = true;
-            }
-            else if (long.TryParse(chars, Statics.DefaultProvider, out long longNum))
-            {
-                result = longNum;
-                returnVal = true;
-            }
-            else if (double.TryParse(chars, Statics.DefaultProvider, out double dubNum))
-            {
-                result = dubNum;
-                returnVal = true;
-            }
-            else if (decimal.TryParse(chars, Statics.DefaultProvider, out decimal decNum))
-            {
-                result = decNum;
-                returnVal = true;
+                first = char.ToUpper(first);
             }
 
-            return returnVal;
+            string propertyName = new(chars);
+            if (replaceNames.TryGetValue(propertyName, out string? replacement))
+            {
+                return replacement;
+            }
+            else if (globalReplace.TryGetValue(propertyName, out string? gbReplacement))
+            {
+                return gbReplacement;
+            }
+
+            return propertyName;
         }
         private static object ReadString(ReadOnlySpan<char> chars, string propertyName)
         {
@@ -399,7 +317,7 @@ namespace MG.Sonarr.Next.Json.Converters
 
             int length = reader.ValueSpan.Length;
             RentedBuffer<char> buffer = [];
-            
+
             try
             {
                 Span<char> span = length <= MAX_STACKALLOC
@@ -435,12 +353,6 @@ namespace MG.Sonarr.Next.Json.Converters
             {
                 buffer.Dispose();
             }
-        }
-        private static Span<T> RentArray<T>(in int length, ref bool isRented, ref T[]? array)
-        {
-            array = ArrayPool<T>.Shared.Rent(length);
-            isRented = true;
-            return array.AsSpan(0, length);
         }
 
         [DoesNotReturn]
@@ -511,10 +423,7 @@ namespace MG.Sonarr.Next.Json.Converters
 
             PSPropertyInfo[] props = [.. pso.Properties.Where(x => x.MemberType == PSMemberTypes.NoteProperty && x.IsGettable)];
             bool containsMetadata = props.Any(x => x.Name == "MetadataTag");
-            //foreach (var prop in pso.Properties
-            //    .Where(static x => x.MemberType == PSMemberTypes.NoteProperty
-            //                &&
-            //                x.IsGettable))
+
             foreach (PSPropertyInfo prop in props)
             {
                 if (_config.IgnoreProperties.Contains(prop.Name))

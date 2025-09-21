@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -45,6 +46,17 @@ namespace MG.Sonarr.Next.Services.Http.Extensions
 
             return response.RequestMessage?.Options is IReadOnlyDictionary<string, object?> options
                 && options.ContainsKey(key);
+        }
+        /// <summary>
+        /// Determines whether the specified key exists in the HTTP request options.
+        /// </summary>
+        /// <param name="options">The <see cref="HttpRequestOptions"/> instance to search.</param>
+        /// <param name="key">The key to locate in the options.</param>
+        /// <returns><see langword="true"/> if the specified key exists in the options; otherwise, <see langword="false"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool ContainsMetadata(this HttpRequestOptions options, string key)
+        {
+            return ((IReadOnlyDictionary<string, object?>)options).ContainsKey(key);
         }
         /// <summary>
         /// Attempts to add a metadata key-value pair to the <see cref="HttpRequestMessage.Options"/> of the associated

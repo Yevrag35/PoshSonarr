@@ -1,6 +1,7 @@
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.Errors;
+using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Services.Http.Requests;
 using System.Management.Automation;
 using System.Net;
@@ -13,7 +14,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients
     {
         Task<SonarrClientResult> SendDeleteAsync(string path, CancellationToken token = default);
         Task<SonarrClientResult<T>> SendGetAsync<T>(string path, CancellationToken token = default);
-        //Task<SonarrClientResult> SendNoResultPostAsync<T>(string path, CancellationToken token = default);
+        Task<SonarrClientResult> SendPingAsync(CancellationToken token = default);
         Task<SonarrClientResult<T>> SendPostAsync<T>(string path, CancellationToken token = default);
         Task<SonarrClientResult> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull;
         Task<SonarrClientResult<TOutput>> SendPostAsync<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull;
@@ -44,6 +45,32 @@ namespace MG.Sonarr.Next.Services.Http.Clients
             }
 
             return response;
+        }
+        public async Task<SonarrClientResult> SendPingAsync(CancellationToken token = default)
+        {
+            const string pingPath = "/ping";
+            using ApiKeyRequestMessage request = new(HttpMethod.Head, pingPath, _scopeFactory);
+            request.Options.TryAdd(PathHandler.Ping, true);
+
+            using var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+            try
+            {
+                response.EnsureSuccessStatusCode();
+                return new SonarrClientResult(response, pingPath);
+            }
+            catch (Exception e)
+            {
+                ErrorCategory category = response.StatusCode switch
+                {
+                    HttpStatusCode.NotFound => ErrorCategory.ObjectNotFound,
+                    HttpStatusCode.Forbidden => ErrorCategory.PermissionDenied,
+                    HttpStatusCode.Unauthorized => ErrorCategory.AuthenticationError,
+                    >= HttpStatusCode.InternalServerError => ErrorCategory.ConnectionError,
+                    _ => ErrorCategory.InvalidResult,
+                };
+
+                return SonarrClientResult.FromException(e, category, response.StatusCode, response);
+            }
         }
         public Task<SonarrClientResult> SendPostAsync(string path, CancellationToken token = default)
         {

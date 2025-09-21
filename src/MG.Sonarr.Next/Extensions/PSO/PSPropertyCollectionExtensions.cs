@@ -23,7 +23,7 @@ namespace MG.Sonarr.Next.Extensions.PSO
                 return;
             }
 
-            foreach (string name in propertyNames.Where(x => !string.IsNullOrWhiteSpace(x)))
+            foreach (string name in propertyNames)
             {
                 collection.Remove(name);
             }
