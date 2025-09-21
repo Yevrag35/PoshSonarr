@@ -2,6 +2,9 @@
 using System.Net;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Services.Http.Requests;
+using MG.Sonarr.Next.Services.Http.IO;
+using MG.Sonarr.Next.Services.Http.Extensions;
+using System.Text;
 
 namespace MG.Sonarr.Next.Services.Http.Handlers
 {
@@ -36,16 +39,16 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
         private async Task<HttpResponseMessage> ReadAndReturnNewResponse(HttpRequestMessage request, HttpResponseMessage response, CancellationToken cancellationToken)
         {
             bool isHtml = false;
-            MemoryStream memStream = new MemoryStream();
+            ArrayPoolMemoryStream memStream = new();
 
-            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             await using (stream.ConfigureAwait(false))
             {
                 await stream.CopyToAsync(memStream, cancellationToken).ConfigureAwait(false);
                 isHtml = IsHtml(memStream);
             }
 
-            response = isHtml
+            return isHtml
                 ? new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
                 {
                     Content = JsonContent.Create(new
@@ -53,40 +56,51 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
                         Message = "The response returned something that looks like an HTML page. You sure the URL is correct?"
                     }, options: _options),
                     RequestMessage = request,
-                    ReasonPhrase = HttpStatusCode.ServiceUnavailable.ToString(),
+                    ReasonPhrase = nameof(HttpStatusCode.ServiceUnavailable),
                 }
-                : ResetResponse(response, memStream);
-
-            return response;
+                : await ResetResponseAsync(response, memStream, cancellationToken).ConfigureAwait(false);
         }
 
         private static bool IsTesting(HttpRequestMessage request)
         {
             return request is SonarrRequestMessage sonarrRequest && sonarrRequest.IsTest;
         }
-        private static bool IsHtml(Stream stream)
+        private static bool IsHtml(ArrayPoolMemoryStream stream)
         {
-            ReadOnlySpan<byte> badHtml = "<!doctype"u8;
-            Span<byte> span = stackalloc byte[badHtml.Length];
-            try
+            const string docType = "<!doctype";
+            const string htmlType = "<html";
+            const string xmlType = "<?xml";
+            if (stream.Length < xmlType.Length)
             {
-                stream.ReadExactly(span);
-                return badHtml.SequenceEqual(span);
+                return true;
             }
-            catch
+
+            Span<char> buffer = stackalloc char[docType.Length];
+            ReadOnlySpan<byte> slice = stream.AsSpan(0, htmlType.Length);
+            int written = Encoding.UTF8.GetChars(slice, buffer);
+            if (buffer.Slice(0, written).Equals(htmlType, StringComparison.OrdinalIgnoreCase)
+                ||
+                buffer.Slice(0, written).Equals(xmlType, StringComparison.OrdinalIgnoreCase))
             {
+                return true;
+            }
+
+            if (stream.Length < docType.Length)
                 return false;
-            }
+
+            slice = stream.AsSpan(0, docType.Length);
+            written = Encoding.UTF8.GetChars(slice, buffer);
+            return buffer.Slice(0, written).Equals(docType, StringComparison.OrdinalIgnoreCase);
         }
-        private static HttpResponseMessage ResetResponse(HttpResponseMessage original, MemoryStream stream)
+        private static async Task<HttpResponseMessage> ResetResponseAsync(HttpResponseMessage original, ArrayPoolMemoryStream stream, CancellationToken token)
         {
-            original.Content = ResetStream(stream);
+            original.Content = await ResetStreamAsync(stream, token).ConfigureAwait(false);
             return original;
         }
-        private static HttpContent ResetStream(MemoryStream stream)
+        private static async Task<HttpContent> ResetStreamAsync(ArrayPoolMemoryStream stream, CancellationToken token)
         {
-            stream.Seek(0, SeekOrigin.Begin);
-            return new StreamContent(stream);
+            stream.Rewind();
+            return new StreamContent(await stream.ToMemoryStreamAsync(token).ConfigureAwait(false));
         }
     }
 }

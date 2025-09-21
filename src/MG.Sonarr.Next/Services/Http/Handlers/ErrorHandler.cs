@@ -1,6 +1,7 @@
 ﻿using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Services.Http.Extensions;
+using MG.Sonarr.Next.Services.Http.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -69,21 +70,23 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
             using HttpContent originalContent = response.Content;
             Stream stream = await originalContent.ReadAsStreamAsync(token).ConfigureAwait(false);
 
-            MemoryStream mem = new(STREAM_BUFFER_SIZE);
-            await stream.CopyToAsync(mem, cancellationToken: token).ConfigureAwait(false);
+            using ArrayPoolMemoryStream memStream = new();
+            await stream.CopyToAsync(memStream, cancellationToken: token).ConfigureAwait(false);
 
             ValueTask disposeTask = stream.DisposeAsync();
             try
             {
-                mem.Rewind();
+                memStream.Rewind();
 
-                var error = await JsonSerializer.DeserializeAsync<ServerError>(mem, options, token).ConfigureAwait(false)
+                var error = await JsonSerializer.DeserializeAsync<ServerError>(memStream, options, token).ConfigureAwait(false)
                     ?? throw new JsonException("Unable to deserialize the error response content.");
 
                 response.AddMetadata(ErrorKey, error);
 
-                mem.Rewind();
-                response.Content = new StreamContent(mem);
+                memStream.Rewind();
+                response.Content = new StreamContent(await memStream.ToMemoryStreamAsync(token).ConfigureAwait(false));
+                originalContent.Headers.CopyTo(response.Content.Headers);
+
                 return response;
             }
             finally

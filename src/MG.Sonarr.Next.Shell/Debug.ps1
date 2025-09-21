@@ -134,7 +134,7 @@ Get-ChildItem -Path "$PSScriptRoot\PSTypes" -File *.ps1xml -Recurse -ea Stop | %
 Write-Host ""
 Write-Host "Debugging PoshSonarr PowerShell Module" -ForegroundColor Cyan
 Write-Host "`n"
-$VerbosePreference = "Continue"
+#$VerbosePreference = "Continue"
 if (-not ([string]::IsNullOrWhitespace($SonarrUrl) -or [string]::IsNullOrWhitespace($ApiKey))) {
 
 	$status = Connect-SonarrInstance -Url $SonarrUrl -ApiKey $ApiKey -PassThru

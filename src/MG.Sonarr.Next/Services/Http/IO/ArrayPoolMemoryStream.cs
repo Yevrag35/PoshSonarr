@@ -101,8 +101,19 @@ namespace MG.Sonarr.Next.Services.Http.IO
             return true;
         }
 
+        internal ReadOnlySpan<byte> AsSpan(int start, int length)
+        {
+            this.EnsureNotDisposed();
+            return new ReadOnlySpan<byte>(_buffer, start, length);
+        }
+
         /// <inheritdoc/>
         public override void Flush() { /* no-op */ }
+
+        public bool IsSequenceEqual(ReadOnlySpan<byte> other)
+        {
+            return _buffer is not null && _length >= other.Length && other.SequenceEqual(_buffer.AsSpan(0, other.Length));
+        }
 
         /// <inheritdoc/>
         public override int Read(byte[] buffer, int offset, int count)

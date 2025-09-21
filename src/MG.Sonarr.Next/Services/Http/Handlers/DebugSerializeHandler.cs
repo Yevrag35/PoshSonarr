@@ -62,16 +62,9 @@ public sealed class DebugSerializeHandler : DelegatingHandler
 
         memStream.Rewind();
         response.Content = new StreamContent(await memStream.ToMemoryStreamAsync(token).ConfigureAwait(false));
-        CopyHeaders(content, response.Content);
-        return new(length, jsonString);
-    }
+        content.Headers.CopyTo(response.Content.Headers);
 
-    private static void CopyHeaders(HttpContent original, HttpContent copy)
-    {
-        foreach (var kvp in original.Headers)
-        {
-            copy.Headers.TryAddWithoutValidation(kvp.Key, kvp.Value);
-        }
+        return new(length, jsonString);
     }
 
     [StructLayout(LayoutKind.Auto)]
