@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using MG.Sonarr.Next.Services.Http.IO;
+using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Services.Http.Extensions
 {
@@ -19,6 +20,20 @@ namespace MG.Sonarr.Next.Services.Http.Extensions
             ArgumentNullException.ThrowIfNull(stream);
             Debug.Assert(stream.CanSeek, "Attempted to rewind a non-seekable stream.");
             _ = stream.Seek(0, SeekOrigin.Begin);
+        }
+
+        internal static async Task<MemoryStream> ToMemoryStreamAsync(this ArrayPoolMemoryStream stream, CancellationToken cancellationToken)
+        {
+            if (!stream.CanSeek)
+                throw new InvalidOperationException("Stream is not seekable.");
+
+            stream.Rewind();
+            MemoryStream memStream = new(checked((int)stream.Length));
+
+            await stream.CopyToAsync(memStream).ConfigureAwait(false);
+            memStream.Rewind();
+
+            return memStream;
         }
     }
 }

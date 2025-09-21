@@ -25,6 +25,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups
 
         public bool CanDebugSerializeAfter => false;
         public bool CanDebugSerializeBefore => this.VerbosePreference != ActionPreference.SilentlyContinue;
+        public bool CanWriteVerbose => this.VerbosePreference is not (ActionPreference.SilentlyContinue or ActionPreference.Ignore);
 
         [Parameter(Mandatory = true, ParameterSetName = "ByExplicitUrl")]
         [ValidateUrl(UriKind.Relative)]

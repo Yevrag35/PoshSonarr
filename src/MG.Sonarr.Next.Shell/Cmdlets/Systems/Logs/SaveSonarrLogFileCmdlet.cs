@@ -19,9 +19,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
     [OutputType(typeof(FileInfo))]
     public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
     {
-        bool _noFileName;
-        ISonarrDownloadClient Downloader { get; set; } = null!;
-        ApiCmdletQueue Queue { get; set; } = null!;
+        private bool _noFileName;
+        private ISonarrDownloadClient Downloader { get; set; } = null!;
+        public bool CanWriteVerbose => this.VerbosePreference is not (ActionPreference.SilentlyContinue or ActionPreference.Ignore);
+        private ApiCmdletQueue Queue { get; set; } = null!;
 
         [Parameter(Mandatory = true, ParameterSetName = "ByExplicitUrl")]
         [ValidateUrl(UriKind.Relative)]

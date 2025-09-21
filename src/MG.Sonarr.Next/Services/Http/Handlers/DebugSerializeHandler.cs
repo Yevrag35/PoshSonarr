@@ -1,7 +1,10 @@
 ﻿using MG.Sonarr.Next.Json;
+using MG.Sonarr.Next.Services.Http.Extensions;
+using MG.Sonarr.Next.Services.Http.IO;
 using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Strings;
 using MG.Sonarr.Resources;
+using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -33,7 +36,7 @@ public sealed class DebugSerializeHandler : DelegatingHandler
         HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         if (cmdlet.CanDebugSerializeAfter && response.Content is not null)
         {
-            StringResponse parsed = await SerializeResponseAsync(response, response.Content, cancellationToken).ConfigureAwait(false);
+            StringResponse parsed = await SerializeResponseAsync(response, cancellationToken).ConfigureAwait(false);
             string jsonString = Messenger.Format(
                 provider: CultureInfo.CurrentCulture,
                 format: Messages.Debug_JSONResponse_Preamble,
@@ -45,21 +48,24 @@ public sealed class DebugSerializeHandler : DelegatingHandler
         return response;
     }
 
-    private static async Task<StringResponse> SerializeResponseAsync(HttpResponseMessage response, HttpContent content, CancellationToken token)
+    private static async Task<StringResponse> SerializeResponseAsync(HttpResponseMessage response, CancellationToken token)
     {
-        byte[] responseBytes = await content.ReadAsByteArrayAsync(token).ConfigureAwait(false);
-        string jsonString = Encoding.UTF8.GetString(responseBytes);
+        using HttpContent content = response.Content;
+        using ArrayPoolMemoryStream memStream = new();
 
-        try
-        {
-            response.Content = new StringContent(jsonString, Encoding.UTF8, "application/json");
-            CopyHeaders(content, response.Content);
-            return new(responseBytes.Length, jsonString);
-        }
-        finally
-        {
-            content.Dispose();
-        }
+        Stream stream = await content.ReadAsStreamAsync(token).ConfigureAwait(false);
+
+        await stream.CopyToAsync(memStream, token).ConfigureAwait(false);
+
+        long length = memStream.Length;
+        memStream.Rewind();
+        using StreamReader reader = new(memStream, Encoding.UTF8);
+        string jsonString = await reader.ReadToEndAsync(token).ConfigureAwait(false);
+
+        memStream.Rewind();
+        response.Content = new StreamContent(await memStream.ToMemoryStreamAsync(token).ConfigureAwait(false));
+        CopyHeaders(content, response.Content);
+        return new(length, jsonString);
     }
 
     private static void CopyHeaders(HttpContent original, HttpContent copy)
@@ -73,10 +79,10 @@ public sealed class DebugSerializeHandler : DelegatingHandler
     [StructLayout(LayoutKind.Auto)]
     private readonly struct StringResponse
     {
-        public readonly int ContentLength;
+        public readonly long ContentLength;
         public readonly string JsonString;
 
-        public StringResponse(int contentLength, string jsonString)
+        public StringResponse(long contentLength, string jsonString)
         {
             ContentLength = contentLength;
             JsonString = jsonString;

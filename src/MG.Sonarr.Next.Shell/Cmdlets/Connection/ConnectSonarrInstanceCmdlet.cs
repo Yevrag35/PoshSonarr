@@ -72,6 +72,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
             set => this.SetConnectionSetting(value, (x, settings) => settings.Timeout = x);
         }
 
+        public bool CanWriteVerbose => _verbosePreference is not (ActionPreference.SilentlyContinue or ActionPreference.Ignore);
+
         protected override void BeginProcessing()
         {
             _settings ??= new();
@@ -166,12 +168,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
         private bool IsVerboseNotSilentAndUICanWrite([NotNullWhen(true)] out PSHostUserInterface? hostInterface)
         {
             hostInterface = this.Host?.UI;
-            return ActionPreference.SilentlyContinue != _verbosePreference && hostInterface is not null;
+            return this.CanWriteVerbose && hostInterface is not null;
         }
         private bool IsDebugNotSilentAndUICanWrite([NotNullWhen(true)] out PSHostUserInterface? hostInterface)
         {
             hostInterface = this.Host?.UI;
-            return ActionPreference.SilentlyContinue != _debugPreference && hostInterface is not null;
+            return _debugPreference is not (ActionPreference.SilentlyContinue or ActionPreference.Ignore) && hostInterface is not null;
         }
 
         private void SetConnectionSetting<T>(T? value, Action<T, ConnectionSettings> setValue)
