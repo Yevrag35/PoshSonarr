@@ -66,14 +66,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         }
         public void WriteDebugPayload(string jsonPayload)
         {
-            if (this.CanWriteVerbose && this.Host?.UI is not null)
+            if (this.Host?.UI is not null)
             {
                 this.Host.UI.WriteDebugLine(jsonPayload);
             }
         }
         public void WriteVerboseBefore(IHttpRequestDetails request)
         {
-            if (this.Host?.UI is not null)
+            if (this.CanWriteVerbose && this.Host?.UI is not null)
             {
                 string msg = GenerateBeforeMessage(request);
                 this.Host.UI.WriteVerboseLine(msg);
