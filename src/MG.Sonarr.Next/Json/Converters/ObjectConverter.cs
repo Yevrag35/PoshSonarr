@@ -150,7 +150,7 @@ namespace MG.Sonarr.Next.Json.Converters
 
             if (reader.ValueIsEscaped)
             {
-                return reader.GetString() ?? string.Empty;
+                return intNum;
             }
 
             Span<char> span = reader.ValueSpan.Length < 1001
@@ -187,19 +187,88 @@ namespace MG.Sonarr.Next.Json.Converters
             {
                 result = this.ReadString(span, propertyName);
             }
+        }
 
-            if (isRented)
+        private object ReadObject<TParent>(ref Utf8JsonReader reader, JsonSerializerOptions options, string pn) where TParent : PSObject
+        {
+            Type parentType = typeof(TParent);
+            switch (pn)
             {
-                ArrayPool<char>.Shared.Return(array!);
-            }
+                case Constants.PROPERTY_DATA:
+                    if (!parentType.Equals(typeof(HistoryObject)))
+                    {
+                        goto default;
+                    }
 
-            return result;
+                    return this.ReadPSObject<ReleaseObject>(ref reader, options);
+
+                case Constants.PROPERTY_EPISODE:
+                    return this.ReadPSObject<EpisodeObject>(ref reader, options);
+
+                case Constants.PROPERTY_EPISODE_FILE:
+                    return this.ReadPSObject<EpisodeFileObject>(ref reader, options);
+
+                case Constants.PROPERTY_QUALITY:
+                    if (parentType.Equals(typeof(QualityRevisionObject))
+                        ||
+                        parentType.Equals(typeof(QualityDefinitionObject)))
+                    {
+                        return this.ReadPSObject<QualityObject>(ref reader, options);
+                    }
+                    else if (parentType.Equals(typeof(ManualImportObject)))
+                    {
+                        return this.ReadPSObject<QualityRevisionObject>(ref reader, options);
+                    }
+
+                    goto default;
+
+                case Constants.PROPERTY_REVISION:
+                    if (parentType.Equals(typeof(QualityRevisionObject)))
+                    {
+                        return this.ReadPSObject<RevisionObject>(ref reader, options);
+                    }
+
+                    goto default;
+
+                case Constants.PROPERTY_SERIES:
+                    return this.ReadPSObject<SeriesObject>(ref reader, options);
+
+                default:
+                    return this.ConvertToObject<PSObject>(ref reader, options, null, null);
+            }
+        }
+        private T ReadPSObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options) where T : SonarrObject, ISerializableNames<T>, new()
+        {
+            var sonarrObj = this.ConvertToObject<T>(
+                ref reader, options, T.GetDeserializedNames(), T.GetPropertiesToCapitalize());
+
+            sonarrObj.OnDeserialized();
+            sonarrObj.SetTag(_config.Resolver);
+            return sonarrObj;
         }
         private static Span<T> RentArray<T>(in int length, ref bool isRented, ref T[]? array)
         {
-            array = ArrayPool<T>.Shared.Rent(length);
-            isRented = true;
-            return array.AsSpan(0, length);
+            Span<char> chars = stackalloc char[reader.ValueSpan.Length];
+            int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
+
+            chars = chars.Slice(0, written);
+            ref char first = ref chars[0];
+            if (char.IsLower(first))
+            {
+                first = char.ToUpper(first);
+            }
+
+            string propertyName = new(chars);
+            if (replaceNames.TryGetValue(propertyName, out string? replacement))
+            {
+                return replacement;
+            }
+            else if (globalReplace.TryGetValue(propertyName, out string? gbReplacement))
+            {
+                return gbReplacement;
+            }
+
+            return propertyName;
         }
 
         private object ReadObject<TParent>(ref Utf8JsonReader reader, JsonSerializerOptions options, string pn) where TParent : PSObject
@@ -366,6 +435,12 @@ namespace MG.Sonarr.Next.Json.Converters
             {
                 buffer.Dispose();
             }
+        }
+        private static Span<T> RentArray<T>(in int length, ref bool isRented, ref T[]? array)
+        {
+            array = ArrayPool<T>.Shared.Rent(length);
+            isRented = true;
+            return array.AsSpan(0, length);
         }
 
         [DoesNotReturn]
