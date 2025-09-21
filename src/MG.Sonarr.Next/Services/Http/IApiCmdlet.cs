@@ -19,6 +19,11 @@ namespace MG.Sonarr.Next.Services.Http
         bool CanDebugSerializeAfter { get; }
 
         /// <summary>
+        /// Gets a value indicating whether verbose logging is enabled.
+        /// </summary>
+        bool CanWriteVerbose { get; }
+
+        /// <summary>
         /// Writes a JSON payload to the PowerShell's debug stream. The payload can either be the request or response serialized.
         /// </summary>
         /// <param name="jsonPayload">The JSON serialized payload to write to the debug stream.</param>

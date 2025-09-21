@@ -24,26 +24,34 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
         }
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            if (_queue.TryDequeue(out IApiCmdlet? cmdlet) && request is SonarrRequestMessage sr)
+            if (_queue.TryDequeue(out IApiCmdlet? cmdlet))
             {
-                cmdlet.WriteVerboseBefore(sr);
+                if (cmdlet.CanWriteVerbose && request is SonarrRequestMessage sr)
+                {
+                    cmdlet.WriteVerboseBefore(sr);
+                }
             }
 
             try
             {
+                bool canWriteVerbose = false;
                 if (cmdlet is not null)
                 {
+                    canWriteVerbose = cmdlet.CanWriteVerbose;
                     _queue.Enqueue(cmdlet);
                 }
 
                 var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-                using (var scope = _scopeFactory.CreateScope())
+                if (canWriteVerbose)
                 {
-                    cmdlet?.WriteVerboseAfter(
-                        response: new SonarrClientResult(response, request.RequestUri?.ToString()),
-                        provider: scope.ServiceProvider,
-                        options: _options);
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
+                        cmdlet?.WriteVerboseAfter(
+                            response: new SonarrClientResult(response, request.RequestUri?.ToString()),
+                            provider: scope.ServiceProvider,
+                            options: _options);
+                    }
                 }
 
                 return response;
