@@ -15,30 +15,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
     [MetadataCanPipe(Tag = Meta.SERIES_ADD)]
     public sealed class AddSonarrSeriesCmdlet : SonarrApiCmdletBase//, IDynamicParameters
     {
-        List<AddSeriesObject> _list = null!;
-        Range _range;
         private EditableSeriesAddOptions? _addOptions;
         private SeriesAddOptions? _usingOptions;
         internal SeriesAddOptions AddOptions => _usingOptions ??= _addOptions ?? SeriesAddOptions.Default;
-        MetadataTag Tag { get; set; } = null!;
+        private MetadataTag Tag { get; set; } = null!;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ValueFromPipeline = true)]
         [ValidateNotNull]
-        public AddSeriesObject[] InputObject
-        {
-            get => [];
-            set
-            {
-                value ??= [];
-                _list ??= new(value.Length);
-                int count = _list.Count;
-                int howMany = value.Length;
-                _range = new Range(count, howMany);
-
-                _list.AddRange(value);
-            }
-        }
+        public AddSeriesObject[] InputObject { get; set; } = [];
 
         [Parameter(Mandatory = true, ParameterSetName = "AbsolutePath")]
         [ValidateNotNullOrWhiteSpace]
@@ -59,7 +44,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         [System.Management.Automation.AllowNull]
         [AllowEmptyCollection]
         [DistinctValues(typeof(SeriesAddIgnoreAction))]
-        public SeriesAddIgnoreAction[] SearchForMissingEpisodes { get; set; } = [];
+        public SeriesAddIgnoreAction[]? SearchForMissingEpisodes { get; set; }
 
         [Parameter(Mandatory = false)]
         public string SeriesType { get; set; } = string.Empty;
@@ -67,59 +52,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         [Parameter(Mandatory = false)]
         public SwitchParameter UseSeasonFolders { get; set; }
 
-        //const string WITH_FILES = "SearchEpisodesWithFiles";
-        //const string WITHOUT_FILES = "SearchEpisodesWithoutFiles";
-        //static readonly Lazy<RuntimeDefinedParameterDictionary> _runtimeDic = new(CreateRuntimeDictionary);
-        //public object? GetDynamicParameters()
-        //{
-        //    RuntimeDefinedParameterDictionary? dict = null;
-        //    if (this.SearchForMissingEpisodes)
-        //    {
-        //        dict = _runtimeDic.Value;
-        //    }
-
-        //    return dict;
-        //}
-
-        //private static RuntimeDefinedParameterDictionary CreateRuntimeDictionary()
-        //{
-        //    return new RuntimeDefinedParameterDictionary
-        //        {
-        //            {
-        //                WITH_FILES,
-        //                new RuntimeDefinedParameter()
-        //                {
-        //                    Attributes =
-        //                    {
-        //                        new ParameterAttribute() { Mandatory = false },
-        //                    },
-        //                    Name = WITH_FILES,
-        //                    ParameterType = typeof(SwitchParameter),
-        //                }
-        //            },
-        //            {
-        //                WITHOUT_FILES,
-        //                new RuntimeDefinedParameter()
-        //                {
-        //                    Attributes =
-        //                    {
-        //                        new ParameterAttribute() { Mandatory = false },
-        //                    },
-        //                    Name = WITHOUT_FILES,
-        //                    ParameterType = typeof(SwitchParameter),
-        //                }
-        //            }
-        //        };
-        //}
-
         protected override void OnCreatingScope(IServiceProvider provider)
         {
             base.OnCreatingScope(provider);
             this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.SERIES];
         }
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
         protected override void Begin(IServiceProvider provider)
         {
-            if (this.HasParameter(this.SearchForMissingEpisodes) && this.SearchForMissingEpisodes.Length > 0)
+            if (this.HasNotNullParameter(SearchForMissingEpisodes) && this.SearchForMissingEpisodes.Length > 0)
             {
                 int actions = this.SearchForMissingEpisodes.Distinct().Sum(x => (int)x);
 
@@ -151,26 +92,27 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
         }
 
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
         private void SetPropertiesFromParameters(AddSeriesObject pso, SeriesAddOptions options)
         {
             pso.AddOptions = options;
 
-            if (this.HasParameter(x => x.UseSeasonFolders, onlyIfPresent: true))
+            if (this.UseSeasonFolders.IsPresent)
             {
                 pso.UseSeasonFolders = this.UseSeasonFolders.ToBool();
             }
 
-            if (this.HasParameter(this.QualityProfileId))
+            if (this.HasParameter(QualityProfileId))
             {
                 pso.QualityProfileId = this.QualityProfileId;
             }
 
-            if (this.HasParameter(this.SeriesType))
+            if (this.HasParameter(SeriesType))
             {
                 pso.SeriesType = this.SeriesType;
             }
 
-            if (this.HasParameter(x => x.IsMonitored, onlyIfPresent: true))
+            if (this.IsMonitored.IsPresent)
             {
                 pso.IsMonitored = this.IsMonitored.ToBool();
             }

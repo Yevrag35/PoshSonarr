@@ -36,7 +36,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
             }
 
             var response = this.SendPutRequest(url, client);
-            _ = this.TryCommitFromResponse(client, in response);
+            _ = this.TryCommitFromResponse(client, response);
         }
     }
 }

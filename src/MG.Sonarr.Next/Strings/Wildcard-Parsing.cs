@@ -16,21 +16,12 @@ public readonly partial struct Wildcard
 	/// </returns>
 	public static Wildcard Parse(params ReadOnlySpan<char> s)
 	{
-		if (s.IsEmpty)
+		return s.Length switch
 		{
-			return Empty;
-		}
-
-		if (s.Length == 1)
-		{
-			char c = s[0];
-			if ('*' == c || '%' == c)
-			{
-				return All;
-			}
-		}
-
-		return new(s);
+			0 => Empty,
+			1 when s[0] is '*' or '%' => All,
+			_ => new(s),
+		};
 	}
 	/// <summary>
 	/// Parses the provided <see cref="string"/> instance in a <see cref="Wildcard"/> pattern.
@@ -43,10 +34,10 @@ public readonly partial struct Wildcard
 	[DebuggerStepThrough]
 	public static Wildcard Parse(string? s)
 	{
-		return s switch
+		return s?.Length switch
 		{
-			null or "" => Empty,
-			_ when s.Length == 1 && (s[0] == '*' || s[0] == '%') => All,
+			null or 0 => Empty,
+			1 when s[0] is '*' or '%' => All,
 			_ => new(s),
 		};
 	}

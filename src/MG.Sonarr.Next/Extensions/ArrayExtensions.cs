@@ -5,6 +5,16 @@ namespace MG.Sonarr.Next.Extensions;
 public static class ArrayExtensions
 {
     /// <summary>
+    /// Determines whether the specified array is null or has a length of zero.
+    /// </summary>
+    /// <param name="array">The array to test for nullity or emptiness.</param>
+    /// <returns>true if the array is null or has a length of zero; otherwise, false.</returns>
+    public static bool IsNullOrEmpty([NotNullWhen(false)] this Array? array)
+    {
+        return array is null || array.Length == 0;
+    }
+
+    /// <summary>
     /// Removes all <see langword="null"/> elements from the specified array.
     /// </summary>
     /// <typeparam name="T">The type of elements in the array.</typeparam>

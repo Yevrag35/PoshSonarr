@@ -19,7 +19,7 @@
         /// </returns>
         public static bool IsNullOrEmpty<T>([NotNullWhen(false)] this IReadOnlyCollection<T>? collection)
         {
-            return collection is null || collection.Count <= 0;
+            return collection is null || collection.Count == 0;
         }
     }
 }

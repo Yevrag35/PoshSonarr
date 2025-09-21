@@ -15,11 +15,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
 
         [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
         [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+        public int[] Id { get; set; } = [];
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
         [ValidateIds(ValidateRangeKind.Positive)]
-        public DownloadClientObject[] InputObject { get; set; } = Array.Empty<DownloadClientObject>();
+        public DownloadClientObject[] InputObject { get; set; } = [];
 
         [Parameter]
         public SwitchParameter Force { get; set; }
@@ -39,11 +39,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
         {
             _ids.UnionWith(this.Id);
         }
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
         protected override void Process(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.InputObject))
+            if (this.HasParameter(InputObject) && this.InputObject.Length > 0)
             {
-                _ids.UnionWith(this.InputObject.Select(x => x.Id));
+                foreach (DownloadClientObject obj in this.InputObject)
+                {
+                    _ = _ids.Add(obj.Id);
+                }
             }
         }
         protected override void End(IServiceProvider provider)
@@ -56,11 +60,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
             bool force = this.Force.ToBool();
             foreach (int id in _ids)
             {
-                this.DeleteDownloadClient(id, this.Tag, in force);
+                this.DeleteDownloadClient(id, this.Tag, force);
             }
         }
 
-        private void DeleteDownloadClient(int id, MetadataTag tag, in bool force)
+        private void DeleteDownloadClient(int id, MetadataTag tag, bool force)
         {
             string url = tag.GetUrlForId(id);
             if (!force

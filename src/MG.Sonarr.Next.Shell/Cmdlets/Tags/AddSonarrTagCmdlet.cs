@@ -61,13 +61,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             return resolver[Meta.TAG];
         }
 
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
         protected override void Begin(IServiceProvider provider)
         {
-            if (this.HasParameter(this.Id))
+            if (this.Id.Length > 0)
             {
                 _ids.UnionWith(this.Id);
             }
-            else if (this.HasParameter(this.Name))
+            else if (this.Name.Length > 0)
             {
                 this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
             }
@@ -76,7 +77,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             {
                 var all = this.GetAll<TagObject>();
 
-                foreach (var tag in all)
+                foreach (TagObject tag in all)
                 {
                     if (_wcNames.IsAnyMatch(tag.Label))
                     {
@@ -87,7 +88,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         }
         protected override void Process(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.InputObject))
+            if (this.InputObject.Length > 0)
             {
                 this.AddUrlsFromMetadata(this.InputObject);
             }
@@ -113,7 +114,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
                         "Adding tags: ({0})",
                         string.Join(", ", _ids.Where(x => !kvp.Value.Tags.Contains(x))))))
                 {
-                    if (!this.PerformTagUpdate(in kvp))
+                    if (!this.PerformTagUpdate(kvp))
                     {
                         continue;
                     }
@@ -121,7 +122,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             }
         }
 
-        private bool PerformTagUpdate(in KeyValuePair<string, ITagPipeable> kvp)
+        private bool PerformTagUpdate(KeyValuePair<string, ITagPipeable> kvp)
         {
             kvp.Value.Tags.UnionWith(_ids);
 

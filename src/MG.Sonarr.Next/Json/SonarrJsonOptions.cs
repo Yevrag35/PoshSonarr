@@ -9,6 +9,7 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Models.Fields;
+using MG.Sonarr.Next.Models.ManualImports;
 using MG.Sonarr.Next.Reflection;
 using MG.Sonarr.Resources;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +46,7 @@ namespace MG.Sonarr.Next.Json
             this.ForSerializing = new(this.ForDeserializing)
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
                 PropertyNameCaseInsensitive = true,
                 WriteIndented = false,
             };
@@ -128,12 +130,16 @@ namespace MG.Sonarr.Next.Json
                       .AddIgnoreProperties(EnumerateIgnoreProperties())
                       .AddSpanConverters(
                             new("AirDate", doSpanConverter),
+                            new("Certification", alwaysStringConverter),
                             new("FirstAired", doSpanConverter),
                             new("AirTime", timeConverter),
                             new("Duration", timeSpanConverter),
                             new("ApiKey", alwaysStringConverter),
                             new("DownloadId", alwaysStringConverter),
                             new("ReleaseHash", alwaysStringConverter),
+                            new("CleanTitle", alwaysStringConverter),
+                            new("SortTitle", alwaysStringConverter),
+                            new("Title", alwaysStringConverter),
                             new("TorrentInfoHash", alwaysStringConverter)
                       );
             });
@@ -143,6 +149,7 @@ namespace MG.Sonarr.Next.Json
                 new PostCommandWriter(),
                 new SonarrResponseConverter(),
                 new ImmutableArrayConverter<FieldObject>(),
+                new ImmutableArrayConverter<ManualImportObject>(),
                 new ImmutableArrayConverter<SelectOptionObject>());
 
             List<JsonConverter> sonarrConverters = ConstructSonarrObjectConverters(objCon);

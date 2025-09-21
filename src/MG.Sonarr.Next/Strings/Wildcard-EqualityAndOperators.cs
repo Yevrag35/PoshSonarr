@@ -137,7 +137,7 @@ public readonly partial struct Wildcard
 	[DebuggerStepThrough]
 	public static implicit operator Wildcard(string? pattern)
 	{
-		return !string.IsNullOrEmpty(pattern) ? new Wildcard(pattern) : Empty;
+		return Parse(pattern);
 	}
 	/// <summary>
 	/// Explicitly converts a <see cref="Wildcard"/> instance to a <see cref="string"/>.

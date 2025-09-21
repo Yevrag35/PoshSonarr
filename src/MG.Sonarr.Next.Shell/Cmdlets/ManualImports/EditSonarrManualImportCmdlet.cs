@@ -58,20 +58,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
         [Parameter]
         public SwitchParameter PassThru { get; set; }
 
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
         protected override void Begin(IServiceProvider provider)
         {
             var edit = provider.GetRequiredService<ManualImportEdit>();
-            if (this.HasParameter(x => x.Episode))
+            if (this.HasParameter(Episode))
             {
                 edit.Episode = this.GetObject(_episode, provider.GetMetadataTag(Meta.EPISODE));
             }
 
-            if (this.HasParameter(x => x.Quality))
+            if (this.HasParameter(Quality))
             {
                 edit.Quality = this.GetQualityRevision(_quality, provider.GetMetadataTag(Meta.QUALITY));
             }
 
-            if (this.HasParameter(x => x.Series))
+            if (this.HasParameter(Series))
             {
                 edit.Series = this.GetObject(_series, provider.GetMetadataTag(Meta.SERIES));
             }

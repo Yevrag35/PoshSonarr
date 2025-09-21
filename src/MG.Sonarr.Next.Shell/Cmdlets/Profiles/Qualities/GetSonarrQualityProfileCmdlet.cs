@@ -21,7 +21,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
         [ValidateIds(ValidateRangeKind.Positive, typeof(IQualityProfilePipeable))]
-        public IQualityProfilePipeable[] InputObject { get; set; } = Array.Empty<IQualityProfilePipeable>();
+        public IQualityProfilePipeable[] InputObject { get; set; } = [];
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
@@ -47,20 +47,18 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities
             return resolver[Meta.QUALITY_PROFILE];
         }
 
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
         protected override void Begin(IServiceProvider provider)
         {
             _ids.UnionWith(this.Id);
-            if (this.HasParameter(x => x.Name))
+            if (this.Name.Length > 0)
             {
-                if (this.HasParameter(this.Name))
-                {
-                    this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
-                }
+                this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
             }
         }
         protected override void Process(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.InputObject))
+            if (this.InputObject.Length > 0)
             {
                 _ids.UnionWith(
                     this.InputObject.Where(x => x.QualityProfileId > 0).Select(x => x.QualityProfileId));

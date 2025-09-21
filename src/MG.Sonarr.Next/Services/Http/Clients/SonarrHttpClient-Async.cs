@@ -5,6 +5,7 @@ using MG.Sonarr.Next.Services.Http.Requests;
 using System.Management.Automation;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 
 namespace MG.Sonarr.Next.Services.Http.Clients
 {
@@ -59,7 +60,10 @@ namespace MG.Sonarr.Next.Services.Http.Clients
         public Task<SonarrClientResult> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
         {
             using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
-            request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
+            string json = JsonSerializer.Serialize(body, _options.ForSerializing);
+
+            //request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
+            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
             return this.SendNoResultRequestAsync(request, path, token);
         }

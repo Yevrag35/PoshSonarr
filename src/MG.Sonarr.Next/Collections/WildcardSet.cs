@@ -1,7 +1,9 @@
 ﻿using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Strings;
+using System.Buffers;
 using System.Collections;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Collections;
 
@@ -159,13 +161,25 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
     /// </returns>
     public bool IsAnyMatch(ReadOnlySpan<char> value)
     {
-        foreach (Wildcard wc in _set)
+        int count = _set.Count;
+        Wildcard[] array = ArrayPool<Wildcard>.Shared.Rent(count);
+        try
         {
-            if (wc.IsMatch(value))
-                return true;
-        }
+            _set.CopyTo(array);
+            ref Wildcard first = ref MemoryMarshal.GetArrayDataReference(array);
 
-        return false;
+            for (int i = 0; i < count; i++)
+            {
+                if (Unsafe.Add(ref first, i).IsMatch(value))
+                    return true;
+            }
+
+            return false;
+        }
+        finally
+        {
+            ArrayPool<Wildcard>.Shared.Return(array);
+        }
     }
 
     /// <summary>
@@ -178,7 +192,14 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
     /// </returns>
     public bool IsAnyMatch([DisallowNull] string value)
     {
-        return _set.Any(ws => ws.IsMatch(value));
+        ReadOnlySpan<char> chars = value;
+        foreach (Wildcard str in _set)
+        {
+            if (str.IsMatch(chars, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
     }
 
     public bool Remove(Wildcard value)
@@ -193,7 +214,14 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
     /// <param name="other">The collection to compare to the current <see cref="WildcardSet"/> object.</param>
     public void UnionWith(IEnumerable<Wildcard> other)
     {
-        _set.UnionWith(other);
+        if (other is WildcardSet wcSet)
+        {
+            _set.UnionWith(wcSet._set);
+        }
+        else
+        {
+            _set.UnionWith(other);
+        }
     }
 
     /// <summary>
@@ -203,18 +231,29 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
     /// <param name="other">The collection of string patterns to compare to the current <see cref="WildcardSet"/> object.</param>
     public void UnionWith(IEnumerable<string> other)
     {
-        this.UnionWith(other.Select(Wildcard.Parse));
+        foreach (string s in other)
+        {
+            if (s is null) continue;
+
+            _ = _set.Add(s);
+        }
     }
 
     /// <summary>
     /// Returns an enumerator that iterates through the <see cref="WildcardSet"/>.
     /// </summary>
     [DebuggerStepThrough]
-    public IEnumerator<Wildcard> GetEnumerator()
+    public Enumerator GetEnumerator()
     {
-        return _set.GetEnumerator();
+        return new(_set);
     }
 
+    /// <inheritdoc/>
+    [DebuggerStepThrough]
+    IEnumerator<Wildcard> IEnumerable<Wildcard>.GetEnumerator()
+    {
+        return this.GetEnumerator();
+    }
     /// <inheritdoc/>
     [DebuggerStepThrough]
     IEnumerator IEnumerable.GetEnumerator()
@@ -241,39 +280,65 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
             : new();
     }
 
-    private sealed class WildcardEqualityComparer : IEqualityComparer<Wildcard>
-#if NET9_0_OR_GREATER
-        , IAlternateEqualityComparer<ReadOnlySpan<char>, Wildcard>
-#endif
+    [StructLayout(LayoutKind.Auto)]
+    public struct Enumerator : IEnumerator<Wildcard>
     {
-        /// <summary>
-        /// Determines whether the specified wildcards are equal.
-        /// </summary>
-        /// <param name="x">The first wildcard to compare.</param>
-        /// <param name="y">The second wildcard to compare.</param>
-        /// <returns><see langword="true"/> if the specified wildcards are equal; otherwise, <see langword="false"/>.</returns>
-        public bool Equals(Wildcard x, Wildcard y)
+        private HashSet<Wildcard> _set;
+        private HashSet<Wildcard>.Enumerator _enumerator;
+        private Wildcard _current;
+
+        internal Enumerator(HashSet<Wildcard> set)
         {
-            return x.Equals(y);
+            _set = set;
+            _enumerator = set.GetEnumerator();
+            _current = default;
         }
 
-        /// <summary>
-        /// Returns a hash code for the specified wildcard.
-        /// </summary>
-        /// <param name="obj">The wildcard for which a hash code is to be returned.</param>
-        /// <returns>A hash code for the specified wildcard.</returns>
-        public int GetHashCode([DisallowNull] Wildcard obj)
+        public readonly Wildcard Current => _current;
+        readonly object? IEnumerator.Current => this.Current;
+
+        public void Dispose()
         {
-            return obj.GetHashCode();
+            this = default;
         }
 
-#if NET9_0_OR_GREATER
+        public bool MoveNext()
+        {
+            if (_enumerator.MoveNext())
+            {
+                _current = _enumerator.Current;
+                return true;
+            }
+
+            return false;
+        }
+
+        void IEnumerator.Reset()
+        {
+            var enumerator = _enumerator;
+            ((IEnumerator)enumerator).Reset();
+            _enumerator = enumerator;
+        }
+    }
+
+    private sealed class WildcardEqualityComparer : IEqualityComparer<Wildcard>, IAlternateEqualityComparer<ReadOnlySpan<char>, Wildcard>,
+        IAlternateEqualityComparer<string, Wildcard>
+    {
         /// <summary>
         /// Creates a wildcard from the specified read-only span of characters.
         /// </summary>
         /// <param name="alternate">The read-only span of characters to create the wildcard from.</param>
         /// <returns>A new wildcard created from the specified span.</returns>
         public Wildcard Create(ReadOnlySpan<char> alternate)
+        {
+            return Wildcard.Parse(alternate);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="alternate"></param>
+        /// <returns></returns>
+        public Wildcard Create(string alternate)
         {
             return Wildcard.Parse(alternate);
         }
@@ -286,7 +351,22 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
         /// <returns><see langword="true"/> if the specified span and wildcard are equal; otherwise, <see langword="false"/>.</returns>
         public bool Equals(ReadOnlySpan<char> alternate, Wildcard other)
         {
-            return other.Equals(alternate);
+            return other.Equals(alternate, StringComparison.OrdinalIgnoreCase);
+        }
+        ///
+        public bool Equals(string alternate, Wildcard other)
+        {
+            return other.Equals(alternate, StringComparison.OrdinalIgnoreCase);
+        }
+        /// <summary>
+        /// Determines whether the specified wildcards are equal.
+        /// </summary>
+        /// <param name="x">The first wildcard to compare.</param>
+        /// <param name="y">The second wildcard to compare.</param>
+        /// <returns><see langword="true"/> if the specified wildcards are equal; otherwise, <see langword="false"/>.</returns>
+        public bool Equals(Wildcard x, Wildcard y)
+        {
+            return x.Equals(y);
         }
 
         /// <summary>
@@ -296,9 +376,21 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
         /// <returns>A hash code for the specified span.</returns>
         public int GetHashCode(ReadOnlySpan<char> alternate)
         {
-            return ((IAlternateEqualityComparer<ReadOnlySpan<char>, string>)StringComparer.OrdinalIgnoreCase)
-                .GetHashCode(alternate);
+            return string.GetHashCode(alternate, StringComparison.OrdinalIgnoreCase);
         }
-#endif
+
+        public int GetHashCode([DisallowNull] string alternate)
+        {
+            return alternate.GetHashCode(StringComparison.OrdinalIgnoreCase);
+        }
+        /// <summary>
+        /// Returns a hash code for the specified wildcard.
+        /// </summary>
+        /// <param name="obj">The wildcard for which a hash code is to be returned.</param>
+        /// <returns>A hash code for the specified wildcard.</returns>
+        public int GetHashCode(Wildcard obj)
+        {
+            return obj.GetHashCode();
+        }
     }
 }

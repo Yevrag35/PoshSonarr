@@ -34,7 +34,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 
         [Parameter]
         [DistinctValues(typeof(DayOfWeek))]
-        public DayOfWeek[] DayOfWeek { get; set; } = [];
+        public DayOfWeek[]? DayOfWeek { get; set; }
 
         [Parameter, ValidateNotNull, AllowEmptyCollection, ValidateIds(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.Ignore)]
         public Either<string, int>[] Tags { get; set; } = [];
@@ -77,12 +77,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
 
         protected override void Begin(IServiceProvider provider)
         {
-            if (this.HasParameter(this.Today))
+            if (this.Today)
             {
                 this.StartDate = DateTime.Today;
                 this.EndDate = this.StartDate.AddDays(1).AddSeconds(-1);
             }
-            else if (this.HasParameter(this.Tomorrow))
+            else if (this.Tomorrow)
             {
                 this.StartDate = DateTime.Today.AddDays(1);
                 this.EndDate = this.StartDate.AddDays(1).AddSeconds(-1);
@@ -100,6 +100,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
             }
         }
 
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming")]
         protected override void Process(IServiceProvider provider)
         {
             this.GetParameters(this.StartDate, this.EndDate.Value, this.IncludeUnmonitored, this.IncludeEpisodeFile, this.IncludeEpisodeImages, this.IncludeSeries);
@@ -111,7 +112,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar
                 this.WriteConditionalError(response.Error);
                 return;
             }
-            else if (this.HasParameter(x => x.DayOfWeek) && this.DayOfWeek.Length > 0)
+            else if (this.HasNotNullParameter(DayOfWeek) && this.DayOfWeek.Length > 0)
             {
                 this.FilterByDayOfWeek(response.Value, this.DayOfWeek);
             }

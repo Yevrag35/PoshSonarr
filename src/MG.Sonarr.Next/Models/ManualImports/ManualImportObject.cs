@@ -64,6 +64,16 @@ namespace MG.Sonarr.Next.Models.ManualImports
         {
             return resolver[Meta.MANUAL_IMPORT];
         }
+
+        public bool IsReadyToPost()
+        {
+            return this.Episodes.Count > 0
+                && this.Series is SeriesObject sObj
+                && sObj.Id > 0
+                && this.Quality is QualityRevisionObject qRev
+                && qRev.Quality.Id > 0;
+        }
+
         protected override void OnDeserialized(bool alreadyCalled)
         {
             base.OnDeserialized(alreadyCalled);
@@ -82,10 +92,9 @@ namespace MG.Sonarr.Next.Models.ManualImports
 
         private void AddMissingProperties()
         {
-            var setProp = CreateIfMissing(this.Properties, EPISODES, (name) =>
+            var setProp = CreateIfMissing(this.Properties, EPISODES, static (name) =>
             {
-                return new ReadOnlyCollectionProperty<EpisodeObject, SortedSet<EpisodeObject>>(
-                    EPISODES, new SortedSet<EpisodeObject>());
+                return new ReadOnlyCollectionProperty<EpisodeObject, SortedSet<EpisodeObject>>(EPISODES, []);
             });
 
             this.Episodes = (SortedSet<EpisodeObject>)setProp.Value;
@@ -94,9 +103,9 @@ namespace MG.Sonarr.Next.Models.ManualImports
             {
                 return new WritableSonarrProperty<QualityRevisionObject>(QUALITY);
             });
-            CreateIfMissing(this.Properties, RELEASE_GROUP, (name) => new StringNoteProperty(name, string.Empty));
-            CreateIfMissing(this.Properties, SERIES, (name) => new WritableSonarrProperty<SeriesObject>(name));
-            CreateIfMissing(this.Properties, SEASON_NUMBER, (name) =>
+            CreateIfMissing(this.Properties, RELEASE_GROUP, static (name) => new StringNoteProperty(name, string.Empty));
+            CreateIfMissing(this.Properties, SERIES, static (name) => new WritableSonarrProperty<SeriesObject>(name));
+            CreateIfMissing(this.Properties, SEASON_NUMBER, static (name) =>
             {
                 return new PSScriptProperty(name,
                     ScriptBlock.Create("if (0 -lt $this.Episodes.Count) { $this.Episodes[0].SeasonNumber }"));

@@ -4,7 +4,10 @@
     {
         public override string? ConvertSpan(Span<char> chars, ReadOnlySpan<char> propertyName, bool isNull)
         {
-            return new string(chars.Trim());
+            chars = chars.Trim();
+            return chars.IsEmpty
+                ? string.Empty
+                : new string(chars);
         }
     }
 }

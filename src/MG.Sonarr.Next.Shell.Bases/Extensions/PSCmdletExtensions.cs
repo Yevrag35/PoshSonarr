@@ -64,31 +64,30 @@ namespace MG.Sonarr.Next.Shell.Extensions
             return cmdlet.GetUnresolvedProviderPathFromPSPath(path) ?? string.Empty;
         }
 
-        public static bool HasParameter<T>(this T cmdlet, Expression<Func<T, object?>> parameter) where T : PSCmdlet
-        {
-            return parameter.TryGetAsMember(out MemberExpression? memEx)
-                   && 
-                   cmdlet.MyInvocation.BoundParameters.ContainsKey(memEx.Member.Name);
-        }
-        public static bool HasParameter<T>(this T cmdlet, Expression<Func<T, SwitchParameter>> switchExpression, bool onlyIfPresent) where T : PSCmdlet
-        {
-            if (!switchExpression.TryGetAsMember(out MemberExpression? memEx))
-            {
-                return false;
-            }
-            else if (!cmdlet.MyInvocation.BoundParameters.ContainsKey(memEx.Member.Name))
-            {
-                return false;
-            }
-            else if (onlyIfPresent)
-            {
-                return true;
-            }
+        //public static bool HasParameter<T>(this T cmdlet, Expression<Func<T, object?>> parameter) where T : PSCmdlet
+        //{
+        //    return parameter.TryGetAsMember(out MemberExpression? memEx)
+        //           && 
+        //           cmdlet.MyInvocation.BoundParameters.ContainsKey(memEx.Member.Name);
+        //}
+        //public static bool HasParameter<T>(this T cmdlet, Expression<Func<T, SwitchParameter>> switchExpression, bool onlyIfPresent) where T : PSCmdlet
+        //{
+        //    if (!switchExpression.TryGetAsMember(out MemberExpression? memEx))
+        //    {
+        //        return false;
+        //    }
+        //    else if (!cmdlet.MyInvocation.BoundParameters.ContainsKey(memEx.Member.Name))
+        //    {
+        //        return false;
+        //    }
+        //    else if (onlyIfPresent)
+        //    {
+        //        return true;
+        //    }
 
-            var func = switchExpression.Compile();
-            return func(cmdlet).ToBool();
-        }
-
+        //    var func = switchExpression.Compile();
+        //    return func(cmdlet).ToBool();
+        //}
         public static bool HasParameter<TValue>(this PSCmdlet cmdlet, TValue value, [CallerArgumentExpression(nameof(value))] string parameterName = "") where TValue : struct
         {
             return ContainsParameterKey(cmdlet.MyInvocation.BoundParameters, parameterName);
@@ -105,32 +104,6 @@ namespace MG.Sonarr.Next.Shell.Extensions
         public static bool ParameterSetNameIsLike(this PSCmdlet cmdlet, Wildcard wildString)
         {
             return wildString.IsMatch(cmdlet.ParameterSetName);
-        }
-
-        public static void SetValue<TCmdlet, TObj, TValue>(this TCmdlet cmdlet, TValue? value, Expression<Func<TCmdlet, TObj?>> getSetting, Action<TValue, TObj> setValue)
-            where TCmdlet : SonarrCmdletBase
-            where TObj : class, new()
-        {
-            if (value is null)
-            {
-                return;
-            }
-
-
-            //var func = getSetting.Compile();
-            //TObj? obj = func(cmdlet);
-            //if (obj is null)
-            //{
-            //    if (!getSetting.TryGetAsSetter(out IMemberSetter? setter))
-            //    {
-            //        throw new InvalidOperationException("TObj must resolve to a field or property.");
-            //    }
-
-            //    obj = new();
-            //    setter.SetValue(cmdlet, obj);
-            //}
-
-            //setValue.Invoke(value, obj);
         }
         
         public static void WriteCollection<T>(this Cmdlet cmdlet, IEnumerable<T> collection)

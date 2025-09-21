@@ -46,7 +46,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
         [Parameter(Mandatory = false, Position = 1, ParameterSetName = BY_SERIES_ID)]
         [Parameter(Mandatory = false, Position = 0, ParameterSetName = BY_SERIES_INPUT)]
         [Alias("SeasonEpId")]
-        public SeasonEpisodeId[] EpisodeIdentifier { get; set; } = [];
+        public SeasonEpisodeId[]? EpisodeIdentifier { get; set; }
 
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {
@@ -61,10 +61,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
 
             this.SetReturnables(_epIds, _seriesIds, _params);
         }
-
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
         protected override void Begin(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.EpisodeIdentifier) && !this.EpisodeIdentifier.AreAllValid(out ErrorRecord? error))
+            if (this.HasNotNullParameter(this.EpisodeIdentifier) && this.EpisodeIdentifier.Length > 0 && !this.EpisodeIdentifier.AreAllValid(out ErrorRecord? error))
             {
                 this.WriteError(error);
             }
@@ -91,7 +91,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                     break;
             }
         }
-
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
         protected override void End(IServiceProvider provider)
         {
             if (this.InvokeCommand.HasErrors || (_epIds.IsNullOrEmpty() && _seriesIds.IsNullOrEmpty()))
@@ -103,7 +103,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
                 ? this.GetEpisodesById<EpisodeObject>(_epIds!)
                 : this.GetEpisodesBySeries(_seriesIds);
 
-            if (this.HasParameter(x => x.EpisodeIdentifier))
+            if (this.HasNotNullParameter(EpisodeIdentifier) && this.EpisodeIdentifier.Length > 0)
             {
                 episodes = this.EpisodeIdentifier.FilterEpisodes(episodes);
             }

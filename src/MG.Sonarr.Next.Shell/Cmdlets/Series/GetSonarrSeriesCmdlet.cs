@@ -10,6 +10,8 @@ using MG.Sonarr.Next.Shell.Output;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Unions;
+using MG.Sonarr.Next.Extensions;
+using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series
 {
@@ -60,9 +62,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         }
         protected override void Process(IServiceProvider provider)
         {
-            if (this.HasParameter(this.InputObject))
+            if (this.InputObject.Length > 0)
             {
-                _ids.UnionWith(this.InputObject.Select(x => x.SeriesId));
+                _ids.AddRange(this.InputObject);
+                //_ids.UnionWith(this.InputObject.Select(x => x.SeriesId));
             }
             else
             {
@@ -73,21 +76,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             if (_ids.Count > 0)
             {
                 hadIds = true;
-                foreach (var result in this.GetSeriesById<SeriesObject>(_ids))
-                {
-                    if (result.IsError)
-                    {
-                        this.WriteConditionalError(result.Error);
-                        continue;
-                    }
-
-                    this.WriteObject(result.Value);
-                }
+                this.WriteSeriesById(_ids);
             }
 
             if (_wcNames.Count > 0)
             {
-                var response = this.GetSeriesByName<SeriesObject>(_wcNames);
+                var response = this.GetSeriesByName(_wcNames);
                 if (response.IsError)
                 {
                     this.StopCmdlet(response.Error);
@@ -109,10 +103,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
             }
         }
 
-        private SonarrClientResult<MetadataList<T>> GetSeriesByName<T>(WildcardSet names)
-            where T : PSObject, IComparable<T>, IJsonMetadataTaggable
+        private SonarrClientResult<MetadataList<SeriesObject>> GetSeriesByName(WildcardSet names)
         {
-            var result = this.GetAllSeries<T>();
+            var result = this.GetAllSeries<SeriesObject>();
             if (result.IsError)
             {
                 return result;
@@ -123,7 +116,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
                 PSObject item = result.Value[i];
                 if (!item.TryGetProperty(Constants.TITLE, out string? title)
                     ||
-                    !names.IsAnyMatch(title.AsSpan()))
+                    title is null
+                    ||
+                    !names.IsAnyMatch(title))
                 {
                     result.Value.RemoveAt(i);
                 }
@@ -136,18 +131,18 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series
         {
             return this.SendGetRequest<MetadataList<T>>(this.Tag.UrlBase);
         }
-        private IEnumerable<SonarrClientResult<T>> GetSeriesById<T>(IEnumerable<int> ids) where T : PSObject, IJsonMetadataTaggable
+        private void WriteSeriesById(SortedSet<int> ids)
         {
             foreach (int id in ids)
             {
-                var result = this.SendGetRequest<T>(this.Tag.GetUrlForId(id));
+                SonarrClientResult<SeriesObject> result = this.SendGetRequest<SeriesObject>(this.Tag.GetUrlForId(id));
                 if (result.IsError)
                 {
                     this.WriteConditionalError(result.Error);
                     continue;
                 }
 
-                yield return result;
+                this.WriteObject(result.Value);
             }
         }
 

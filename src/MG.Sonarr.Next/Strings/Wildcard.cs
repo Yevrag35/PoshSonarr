@@ -91,7 +91,7 @@ public readonly partial struct Wildcard :
 	//[DebuggerStepThrough]
 	public Wildcard(string? patternString)
 	{
-		WildcardMatchType matchType = DeterminePattern(patternString.AsSpan().Trim());
+		WildcardMatchType matchType = DeterminePattern(patternString.AsSpan());
 		int length = 0;
 		_pattern = ConstructPattern(patternString, matchType, ref length);
 		_state = new(length: length, type: matchType);
@@ -109,7 +109,7 @@ public readonly partial struct Wildcard :
 	//[DebuggerStepThrough]
 	public Wildcard(ReadOnlySpan<char> pattern)
 	{
-		WildcardMatchType matchType = DeterminePattern(pattern.Trim());
+		WildcardMatchType matchType = DeterminePattern(pattern);
 		int length = 0;
 		_pattern = ConstructPattern(pattern, matchType, ref length);
 		_state = new(length: length, type: matchType);

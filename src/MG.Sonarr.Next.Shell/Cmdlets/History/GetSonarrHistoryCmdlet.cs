@@ -106,23 +106,23 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
 
             this.SetReturnables(_ids, _parameters);
         }
-
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
         protected override void Begin(IServiceProvider provider)
         {
             _ids.UnionWith(this.SeriesId);
 
-            if (this.HasParameter(x => x.IncludeEpisode, onlyIfPresent: true))
+            if (this.IncludeEpisode.IsPresent)
             {
                 _parameters.Add([nameof(this.IncludeEpisode), this.IncludeEpisode.ToBool()]);
             }
 
-            if (this.HasParameter(x => x.IncludeSeries, onlyIfPresent: true))
+            if (this.IncludeSeries.IsPresent)
             {
                 _parameters.Add([nameof(this.IncludeSeries), this.IncludeSeries.ToBool()]);
             }
 
             var clock = provider.GetRequiredService<IClock>();
-            if (this.HasParameter(x => x.Since) && this.Since > clock.Now.DateTime)
+            if (this.HasParameter(Since) && this.Since > clock.Now.DateTime)
             {
                 this.WriteWarning($"The specified parameter '{nameof(this.Since)}' is set to a time in the future. This could give unpredicatable results.");
             }
@@ -132,15 +132,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History
                 this.SetPagingParams();
             }
             
-            if (this.HasParameter(x => x.EventType) && _eventType > -1)
+            if (this.HasParameter(EventType) && _eventType > -1)
             {
                 _parameters.Add(nameof(this.EventType), _eventType, LengthConstants.INT_MAX);
             }
         }
-
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
         protected override void Process(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.Series))
+            if (this.Series.Length > 0)
             {
                 _ids.UnionWith(this.Series.Select(x => x.Id));
             }

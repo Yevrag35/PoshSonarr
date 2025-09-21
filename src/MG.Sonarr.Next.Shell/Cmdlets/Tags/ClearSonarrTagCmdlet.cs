@@ -69,11 +69,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
 
         protected override void Begin(IServiceProvider provider)
         {
-            if (this.HasParameter(this.Id))
+            if (this.Id.Length > 0)
             {
                 _ids.UnionWith(this.Id);
             }
-            else if (this.HasParameter(this.Name))
+            else if (this.Name.Length > 0)
             {
                 this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
             }
@@ -93,7 +93,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
         }
         protected override void Process(IServiceProvider provider)
         {
-            if (this.HasParameter(x => x.InputObject))
+            if (this.InputObject.Length > 0)
             {
                 AddUrlsFromMetadata(this.InputObject, _updates);
             }
