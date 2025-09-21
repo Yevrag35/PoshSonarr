@@ -3,6 +3,9 @@ using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.ManualImports;
+using MG.Sonarr.Next.Models.Profiles;
+using MG.Sonarr.Next.Models.Qualities;
+using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Exceptions;
@@ -20,7 +23,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
         private MetadataList<ManualImportObject> _list = null!;
         protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
         {
-            return resolver[Meta.MANUAL_IMPORT];
+            return resolver[Meta.COMMAND];
         }
 
         [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in nameof()")]
@@ -28,7 +31,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
         {
             if (this.InputObject.Length == 0)
                 return;
-
 
             foreach (ManualImportObject obj in this.InputObject)
             {
@@ -53,10 +55,26 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
             if (_list is null or { Count: 0 })
                 return;
 
-            Dictionary<string, object?>[] array = [.. _list.Select(x => x.ToDictionary(nameof(SonarrObject.MetadataTag)))];
-            this.SerializeIfDebug(array, includeType: false);
+            var body = new
+            {
+                Files = _list.Select(x => new
+                {
+                    Path = x.GetValue<string>("Path"),
+                    SeriesId = x.Series!.Id,
+                    EpisodeIds = x.Episodes.Select(e => e.Id).ToArray(),
+                    Quality = x.Quality.ToDictionary(nameof(QualityRevisionObject.MetadataTag)),
+                    Languages = x.GetValue<PSObject[]>("Languages")?.Select(x => x.ToDictionary(nameof(LanguageProfileObject.MetadataTag))).ToArray() ?? [],
+                    ReleaseGroup = x.GetValue<string>("ReleaseGroup"),
+                    IndexerFlags = x.GetValue<int>("IndexerFlags"),
+                    ReleaseType = x.GetValue<int>("ReleaseType")
+                }).ToArray(),
+                ImportMode = "copy",
+                Name = "ManualImport",
+            };
 
-            SonarrClientResult response = this.SendPostRequest(this.Tag.UrlBase, array);
+            this.SerializeIfDebug(body, includeType: false);
+
+            SonarrClientResult response = this.SendPostRequest(this.Tag.UrlBase, body);
             if (response.IsError)
             {
                 this.WriteConditionalError(response.Error);
