@@ -27,6 +27,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         private protected sealed override int InternalCapacity => 0;
         public virtual bool CanDebugSerializeBefore => this.DebugPreference != ActionPreference.SilentlyContinue;
         public virtual bool CanDebugSerializeAfter => this.DebugPreference != ActionPreference.SilentlyContinue;
+        protected bool CanWriteVerbose => !(this.VerbosePreference is ActionPreference.SilentlyContinue or ActionPreference.Ignore);
 
         /// <summary>
         /// Starts the timer.
@@ -48,7 +49,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
 
         public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options)
         {
-            if (this.Host?.UI is not null)
+            if (this.CanWriteVerbose && this.Host?.UI is not null)
             {
                 TimeSpan elapsed = this.StopTimer();
                 string msg = GetAfterMessage(elapsed, response.StatusCode);
@@ -65,7 +66,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases
         }
         public void WriteDebugPayload(string jsonPayload)
         {
-            if (this.Host?.UI is not null)
+            if (this.CanWriteVerbose && this.Host?.UI is not null)
             {
                 this.Host.UI.WriteDebugLine(jsonPayload);
             }

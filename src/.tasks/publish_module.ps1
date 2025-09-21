@@ -111,7 +111,7 @@ $manifestArgs = @{
 	CompanyName          = $fileInfo.CompanyName
 	Description          = 'A PowerShell module for querying and managing Sonarr PVR through its APIs.'
 	Copyright            = $fileInfo.LegalCopyright.Replace("$([char]169)", '(c)')
-	PowerShellVersion    = '7.3'
+	PowerShellVersion    = '7.5'
 	CompatiblePSEditions = 'Core'
 	LicenseUri           = 'https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE'
 	ProjectUri           = 'https://github.com/Yevrag35/PoshSonarr'
@@ -126,7 +126,7 @@ $manifestArgs = @{
 	FormatsToProcess     = $typesAndFormats.Formats
 	Tags                 = @('Anime', 'Api', 'Backup', 'Calendar', 'Connect', 'dll', 'Episode', 'Json', '.NET',
 							 'Manage', 'PVR', 'Quality', 'Rss', 'Series', 'Sonarr',
-							 'Status', 'Sync', 'Website')
+							 'Status', 'Sync', 'Website', 'automation')
 }
 
 New-ModuleManifest @manifestArgs
