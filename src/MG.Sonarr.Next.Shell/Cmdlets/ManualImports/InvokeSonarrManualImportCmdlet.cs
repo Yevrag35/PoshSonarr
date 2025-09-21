@@ -1,5 +1,7 @@
 ﻿using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.ManualImports;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
@@ -51,7 +53,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
             if (_list is null or { Count: 0 })
                 return;
 
-            SonarrClientResult response = this.SendPostRequest(this.Tag.UrlBase, _list.ToImmutableArray());
+            Dictionary<string, object?>[] array = [.. _list.Select(x => x.ToDictionary(nameof(SonarrObject.MetadataTag)))];
+            this.SerializeIfDebug(array, includeType: false);
+
+            SonarrClientResult response = this.SendPostRequest(this.Tag.UrlBase, array);
             if (response.IsError)
             {
                 this.WriteConditionalError(response.Error);

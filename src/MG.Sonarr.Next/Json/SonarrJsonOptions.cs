@@ -46,6 +46,7 @@ namespace MG.Sonarr.Next.Json
             this.ForSerializing = new(this.ForDeserializing)
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
                 PropertyNameCaseInsensitive = true,
                 WriteIndented = false,
             };

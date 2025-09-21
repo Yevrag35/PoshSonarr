@@ -1,4 +1,5 @@
-﻿using System.Management.Automation;
+﻿using System.Collections;
+using System.Management.Automation;
 using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Extensions.PSO
@@ -50,6 +51,57 @@ namespace MG.Sonarr.Next.Extensions.PSO
             }
 
             prop.Value = value;
+        }
+
+        [return: NotNullIfNotNull(nameof(pso))]
+        public static Dictionary<string, object?>? ToDictionary(this PSObject? pso, params ReadOnlySpan<string> ignoreKeys)
+        {
+            if (pso is null) return null;
+
+            Dictionary<string, object?> dic = new(StringComparer.OrdinalIgnoreCase);
+            foreach (PSPropertyInfo prop in pso.Properties)
+            {
+                if (ignoreKeys.Contains(prop.Name))
+                {
+                    continue;
+                }
+
+                if (prop.Value is null)
+                {
+                    dic.TryAdd(prop.Name, prop.Value);
+                    continue;
+                }
+
+                object val = prop.Value switch
+                {
+                    PSObject innerPso => ToDictionary(innerPso, ignoreKeys),
+                    string str => str,
+                    IEnumerable collection => ProcessCollection(collection, ignoreKeys),
+                    _ => prop.Value
+                };
+
+                dic.TryAdd(prop.Name, val);
+            }
+
+            return dic;
+        }
+
+        private static List<object?> ProcessCollection(IEnumerable collection, ReadOnlySpan<string> ignoreKeys)
+        {
+            List<object?> list = [];
+            foreach (object? item in collection)
+            {
+                object? val = item switch
+                {
+                    PSObject innerPso => ToDictionary(innerPso, ignoreKeys),
+                    string str => str,
+                    IEnumerable innerCollection => ProcessCollection(innerCollection, ignoreKeys),
+                    _ => item
+                };
+
+                list.Add(val);
+            }
+            return list;
         }
 
         [DebuggerStepThrough]
