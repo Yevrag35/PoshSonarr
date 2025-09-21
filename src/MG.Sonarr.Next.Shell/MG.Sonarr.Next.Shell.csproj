@@ -33,7 +33,7 @@
   </ItemGroup>
 
 	<Target Name="ReleaseModuleAfterBuild" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Release'">
-		<Exec Command="pwsh.exe -NoExit -File &quot;$(SolutionDir)\.tasks\publish_module.ps1&quot; -OutputPath &quot;$(TargetDir)&quot;" />
+		<Exec Command="pwsh.exe -NoExit -File &quot;$(SolutionDir)\.tasks\publish_module.ps1&quot; -BuildDependenciesJson &quot;$(ProjectDir)build_dependencies.json&quot; -OutputPath &quot;$(TargetDir)&quot;" />
 	</Target>
 
 	<ItemGroup Condition="'$(Configuration)' != 'Release'">
@@ -42,6 +42,9 @@
 		</Content>
 		<Content Include="debugging.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="build_dependencies.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
 	<ItemGroup Condition="'$(Configuration)' == 'Release'">
@@ -53,11 +56,12 @@
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
 		</Content>
+		<Content Include="build_dependencies.json">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
+		</Content>
 	</ItemGroup>
 	<ItemGroup>
-	  <Content Include="build_dependencies.json">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
 	  <Content Include="PSFormats\EpisodeObject.Format.ps1xml">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>

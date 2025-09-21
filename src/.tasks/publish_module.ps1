@@ -21,9 +21,11 @@ param (
 
 	[Parameter()]
 	[ValidateNotNullOrEmpty()]
-	[string] $BuildDependenciesJson = 'build_dependencies.json'
+	[string] $BuildDependenciesJson# = 'build_dependencies.json'
 )
 
+$BuildDependenciesJson = $BuildDependenciesJson.Trim('"')
+Write-Output $BuildDependenciesJson
 $OutputPath = $OutputPath.Trim('"')
 
 if (-not [System.IO.Path]::IsPathFullyQualified($BuildDependenciesJson)) {
@@ -122,6 +124,7 @@ $manifestArgs = @{
 	AliasesToExport      = $info.Aliases
 	FunctionsToExport    = @()
 	VariablesToExport    = @()
+	ReleaseNotes		 = "GA release of PoshSonarr v2-NEXT"
 	TypesToProcess		 = $typesAndFormats.Types
 	FormatsToProcess     = $typesAndFormats.Formats
 	Tags                 = @('Anime', 'Api', 'Backup', 'Calendar', 'Connect', 'dll', 'Episode', 'Json', '.NET',
