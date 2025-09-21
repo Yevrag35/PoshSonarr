@@ -58,9 +58,7 @@ public sealed class DebugSerializeHandler : DelegatingHandler
         await stream.CopyToAsync(memStream, token).ConfigureAwait(false);
 
         long length = memStream.Length;
-        memStream.Rewind();
-        using StreamReader reader = new(memStream, Encoding.UTF8);
-        string jsonString = await reader.ReadToEndAsync(token).ConfigureAwait(false);
+        string jsonString = memStream.ReadString(Encoding.UTF8);
 
         memStream.Rewind();
         response.Content = new StreamContent(await memStream.ToMemoryStreamAsync(token).ConfigureAwait(false));

@@ -1,4 +1,6 @@
+using System;
 using System.Buffers;
+using System.Text;
 
 namespace MG.Sonarr.Next.Services.Http.IO
 {
@@ -150,6 +152,14 @@ namespace MG.Sonarr.Next.Services.Http.IO
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             return this.ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+        }
+
+        internal string ReadString(Encoding encoding)
+        {
+            if (_length == 0 || _buffer is null)
+                return string.Empty;
+
+            return encoding.GetString(_buffer.AsSpan(0, (int)_length));
         }
 
         internal void Rewind()
