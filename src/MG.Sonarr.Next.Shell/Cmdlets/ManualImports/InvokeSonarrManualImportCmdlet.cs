@@ -1,4 +1,5 @@
-﻿using MG.Sonarr.Next.Metadata;
+﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.ManualImports;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
@@ -7,6 +8,7 @@ using MG.Sonarr.Next.Shell.Exceptions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
 {
     [Cmdlet(VerbsLifecycle.Invoke, "SonarrManualImport", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
+    [MetadataCanPipe(Tag = Meta.MANUAL_IMPORT)]
     public class InvokeSonarrManualImportCmdlet : SonarrMetadataCmdlet
     {
         [Parameter(Mandatory = true, ValueFromPipeline = true), AllowEmptyCollection]
