@@ -17,6 +17,7 @@
 	<PackageProjectUrl>https://github.com/Yevrag35/PoshSonarr</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/Yevrag35/PoshSonarr</RepositoryUrl>
 	<RepositoryType>Git</RepositoryType>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
