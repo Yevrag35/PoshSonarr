@@ -77,18 +77,6 @@ namespace MG.Sonarr.Next.Metadata
                     comparer: StringComparer.OrdinalIgnoreCase);
         }
 
-        [StructLayout(LayoutKind.Auto)]
-        private readonly struct TwoStrings
-        {
-            public readonly string First;
-            public readonly string Second;
-            internal TwoStrings(string first, string second)
-            {
-                First = first ?? string.Empty;
-                Second = second ?? string.Empty;
-            }
-        }
-
         private static string GetCmdletNameFromAttribute(Type cmdletType, out int howManyMetaAtts)
         {
             TwoStrings verbAndNoun = GetVerbAndNoun(cmdletType, out howManyMetaAtts);
@@ -97,8 +85,7 @@ namespace MG.Sonarr.Next.Metadata
 
         private static TwoStrings[] GetTagAndCmdletNamePair(Type cmdletType, string cmdletName, int howManyMetaApps)
         {
-            if (howManyMetaApps == 0)
-                return [];
+            Debug.Assert(howManyMetaApps > 0, "Should have at least one MetadataCanPipeAttribute.");
 
             TwoStrings[] array = new TwoStrings[howManyMetaApps];
             int i = 0;
@@ -155,12 +142,9 @@ namespace MG.Sonarr.Next.Metadata
                 }
             }
 
-            if (!hasCombo)
-            {
-                throw new ArgumentException($"{cmdletType} does not have the right CmdletAttribute constructor signature.", nameof(cmdletType));
-            }
-
-            return combo;
+            return hasCombo
+                ? combo
+                : throw new ArgumentException($"{cmdletType} does not have the right CmdletAttribute constructor signature.", nameof(cmdletType));
         }
 
         private static bool TryGetVerbAndNoun(
@@ -180,6 +164,18 @@ namespace MG.Sonarr.Next.Metadata
             verb = v;
             noun = n;
             return true;
+        }
+
+        [StructLayout(LayoutKind.Auto)]
+        private readonly struct TwoStrings
+        {
+            public readonly string First;
+            public readonly string Second;
+            internal TwoStrings(string first, string second)
+            {
+                First = first ?? string.Empty;
+                Second = second ?? string.Empty;
+            }
         }
     }
 }
