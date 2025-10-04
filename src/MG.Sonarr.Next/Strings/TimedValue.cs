@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Resources;
-using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Strings;
 

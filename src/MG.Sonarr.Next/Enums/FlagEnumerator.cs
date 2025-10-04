@@ -1,7 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
-namespace MG.Sonarr.Next.Enums;
+﻿namespace MG.Sonarr.Next.Enums;
 
 /// <summary>
 /// A ref struct that enumerates the mask of <typeparamref name="T"/> enumeration values.

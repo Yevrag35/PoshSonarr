@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace MG.Sonarr.Next.Services.Http.Queries;
+﻿namespace MG.Sonarr.Next.Services.Http.Queries;
 
 [DebuggerStepThrough]
 [StructLayout(LayoutKind.Auto)]

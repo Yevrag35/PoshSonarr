@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Next.Services.Http.IO;
-using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Services.Http.Extensions
 {

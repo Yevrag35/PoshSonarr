@@ -4,7 +4,6 @@ using MG.Sonarr.Next.PSProperties;
 using MG.Sonarr.Next.Reflection;
 using System.Management.Automation;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Extensions.PSO
 {

@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Extensions.Strings;
-using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Models.Episodes
 {

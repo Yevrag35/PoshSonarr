@@ -2,7 +2,6 @@
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.Errors;
-using MG.Sonarr.Next.Services.Http.Extensions;
 using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Unions;
 using Microsoft.Extensions.DependencyInjection;

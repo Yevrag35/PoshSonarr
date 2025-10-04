@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace MG.Sonarr.Next.Strings
+﻿namespace MG.Sonarr.Next.Strings
 {
     public readonly partial struct Wildcard
     {

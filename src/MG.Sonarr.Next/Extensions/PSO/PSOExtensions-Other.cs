@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Management.Automation;
-using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Extensions.PSO
 {

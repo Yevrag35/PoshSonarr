@@ -1,7 +1,6 @@
 ﻿using MG.Sonarr.Next.Extensions.PSO;
 using System.Collections.Immutable;
 using System.Management.Automation;
-using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Models.Releases
 {

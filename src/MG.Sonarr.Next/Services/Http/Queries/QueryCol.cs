@@ -1,6 +1,5 @@
 ﻿using MG.Sonarr.Next.Extensions.Strings;
 using System.Collections;
-using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Services.Http.Queries;
 

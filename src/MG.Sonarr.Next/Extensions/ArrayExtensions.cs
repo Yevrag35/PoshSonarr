@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Components;
+﻿using MG.Sonarr.Next.Buffers;
 
 namespace MG.Sonarr.Next.Extensions;
 

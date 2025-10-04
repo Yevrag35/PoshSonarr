@@ -1,9 +1,4 @@
-﻿using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Json;
-using System.Management.Automation;
-using System.Net;
-using System.Runtime.InteropServices;
+﻿using System.Net;
 
 namespace MG.Sonarr.Next.Services.Http
 {

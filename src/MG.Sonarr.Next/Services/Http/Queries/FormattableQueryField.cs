@@ -1,6 +1,4 @@
 ﻿using MG.Sonarr.Next.Extensions.Strings;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Services.Http.Queries;
 

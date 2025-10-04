@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MG.Sonarr.Next.Services.Http.Extensions
+﻿namespace MG.Sonarr.Next.Services.Http.Extensions
 {
     /// <summary>
     /// Provides extension methods for working with metadata in <see cref="HttpResponseMessage"/> instances.

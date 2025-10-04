@@ -1,5 +1,4 @@
 ﻿using MG.Sonarr.Resources;
-using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Guarding;
 

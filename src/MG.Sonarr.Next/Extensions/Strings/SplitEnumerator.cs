@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace MG.Sonarr.Next.Extensions.Strings
+﻿namespace MG.Sonarr.Next.Extensions.Strings
 {
     [DebuggerStepThrough]
     [StructLayout(LayoutKind.Auto)]

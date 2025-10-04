@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace MG.Sonarr.Next.Components;
+﻿namespace MG.Sonarr.Next.Components;
 
 /// <summary>
 /// Represents a key for a PowerShell type, including optional brackets.

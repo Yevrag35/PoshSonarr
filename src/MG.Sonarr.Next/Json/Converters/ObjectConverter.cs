@@ -1,5 +1,5 @@
+using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Components;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Json.Converters.Spans;
 using MG.Sonarr.Next.Json.Naming;
@@ -260,16 +260,12 @@ namespace MG.Sonarr.Next.Json.Converters
         {
             int length = Encoding.UTF8.GetMaxCharCount(reader.ValueSpan.Length);
             Span<char> chars = stackalloc char[length];
-            int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
 
-            chars = chars.Slice(0, written);
-            ref char first = ref chars[0];
-            if (char.IsLower(first))
-            {
-                first = char.ToUpper(first);
-            }
+            int written = reader.CopyString(chars);
 
-            string propertyName = new(chars);
+            chars[0] = char.ToUpperInvariant(chars[0]);
+
+            string propertyName = new(chars[..written]);
             if (replaceNames.TryGetValue(propertyName, out string? replacement))
             {
                 return replacement;
@@ -316,15 +312,18 @@ namespace MG.Sonarr.Next.Json.Converters
             }
 
             int length = reader.ValueSpan.Length;
-            RentedBuffer<char> buffer = [];
+            RentedBuffer<char> buffer = RentedBuffer.Rent<char>(
+                length <= MAX_STACKALLOC
+                    ? stackalloc char[length]
+                    : length);
 
             try
             {
-                Span<char> span = length <= MAX_STACKALLOC
-                    ? stackalloc char[length]
-                    : RentedBuffer.Rent(length, ref buffer);
+                //Span<char> span = length <= MAX_STACKALLOC
+                //    ? stackalloc char[length]
+                //    : RentedBuffer.Rent(length, ref buffer);
 
-                int written = Encoding.UTF8.GetChars(reader.ValueSpan, span);
+                int written = Encoding.UTF8.GetChars(reader.ValueSpan, buffer);
                 span = span.Slice(0, written);
 
                 ref char firstChar = ref span[0];

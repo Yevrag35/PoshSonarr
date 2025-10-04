@@ -1,6 +1,5 @@
 ﻿using MG.Sonarr.Next.Models;
 using System.Collections.Immutable;
-using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Json.Converters

@@ -2,8 +2,6 @@
 using MG.Sonarr.Next.Strings;
 using System.Buffers;
 using System.Collections;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Collections;
 
