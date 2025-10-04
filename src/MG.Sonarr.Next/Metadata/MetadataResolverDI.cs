@@ -1,7 +1,10 @@
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions.Strings;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Reflection;
 
@@ -69,38 +72,74 @@ namespace MG.Sonarr.Next.Metadata
                 {
                     string cmdletName = GetCmdletNameFromAttribute(type);
                     return type.GetCustomAttributes<MetadataCanPipeAttribute>()
-                               .Select(att => new PipeableCmdlet(att.Tag, cmdletName));
+                               .Select(att => new TwoStrings(att.Tag, cmdletName));
                 })
-                .GroupBy(x => x.Tag)
+                .GroupBy(x => x.First)
                 .ToDictionary(
                     keySelector: x => x.Key,
-                    elementSelector: x => x.Select(c => c.CmdletName).Order(StringComparer.Ordinal).ToImmutableArray(),
+                    elementSelector: x => x.Select(c => c.Second).Order(StringComparer.Ordinal).ToImmutableArray(),
                     comparer: StringComparer.OrdinalIgnoreCase);
         }
 
         [StructLayout(LayoutKind.Auto)]
-        private readonly struct PipeableCmdlet
+        private readonly struct TwoStrings
         {
-            public readonly string Tag;
-            public readonly string CmdletName;
-            internal PipeableCmdlet(string tag, string cmdletName)
+            public readonly string First;
+            public readonly string Second;
+            internal TwoStrings(string first, string second)
             {
-                Tag = tag;
-                CmdletName = cmdletName;
+                First = first ?? string.Empty;
+                Second = second ?? string.Empty;
             }
         }
 
-        private static string GetCmdletNameFromAttribute(Type cmdlet)
+        private static string GetCmdletNameFromAttribute(Type cmdletType)
         {
-            CmdletAttribute ca = cmdlet.GetCustomAttribute<CmdletAttribute>() ?? throw new InvalidOperationException();
-            return string.Create(ca.VerbName.Length + ca.NounName.Length + 1, ca, static (chars, state) =>
+            TwoStrings verbAndNoun = GetVerbAndNoun(cmdletType);
+            return string.Concat(verbAndNoun.First, ['-'], verbAndNoun.Second);
+        }
+
+        /// <summary>
+        /// Extracts the verb and noun components from the CmdletAttribute applied to the specified cmdlet type.
+        /// </summary>
+        /// <param name="cmdletType">The type representing the cmdlet from which to retrieve the verb and noun. Must have a CmdletAttribute with
+        /// a constructor that accepts two string arguments.</param>
+        /// <returns>
+        /// A struct instance containing the verb and noun specified in the CmdletAttribute of the given cmdlet type.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="cmdletType"/> does not have a <see cref="CmdletAttribute"/> with a constructor that accepts two string arguments.
+        /// </exception>
+        private static TwoStrings GetVerbAndNoun(Type cmdletType)
+        {
+            foreach (CustomAttributeData cad in cmdletType.CustomAttributes)
             {
-                state.VerbName.CopyTo(chars, out int position);
+                if (typeof(CmdletAttribute).Equals(cad.AttributeType) && TryGetVerbAndNoun(cad.ConstructorArguments, out string? verb, out string? noun))
+                {
+                    return new(verb, noun);
+                }
+            }
 
-                chars[position++] = '-';
+            throw new ArgumentException($"{cmdletType} does not have the right CmdletAttribute constructor signature.", nameof(cmdletType));
+        }
 
-                state.NounName.CopyTo(chars.Slice(position));
-            });
+        private static bool TryGetVerbAndNoun(
+            IList<CustomAttributeTypedArgument> constructorArgs,
+            [NotNullWhen(true)] out string? verb,
+            [NotNullWhen(true)] out string? noun)
+        {
+            if (constructorArgs.Count < 2
+                || constructorArgs[0].Value is not string v
+                || constructorArgs[1].Value is not string n)
+            {
+                verb = null;
+                noun = null;
+                return false;
+            }
+
+            verb = v;
+            noun = n;
+            return true;
         }
     }
 }
