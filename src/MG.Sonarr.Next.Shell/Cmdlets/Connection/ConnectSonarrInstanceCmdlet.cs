@@ -15,11 +15,10 @@ using System.Management.Automation.Host;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 {
-    [Cmdlet(VerbsCommunications.Connect, "SonarrInstance")]
-    [Alias("Connect-Sonarr")]
+    [Cmdlet(VerbsCommunications.Connect, "SonarrInstance", DefaultParameterSetName = "None"), Alias("Connect-Sonarr")]
     public sealed class ConnectSonarrInstanceCmdlet : ConnectCmdlet, IApiCmdlet
     {
-        ConnectionSettings _settings = null!;
+        private ConnectionSettings _settings = null!;
 
         private ActionPreference _debugPreference;
         private ActionPreference _verbosePreference;
@@ -28,8 +27,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
         public bool CanDebugSerializeBefore => _debugPreference != ActionPreference.SilentlyContinue;
 
         [Parameter(Mandatory = true, Position = 1)]
-        [Alias("Key")]
-        [ValidateNotNullOrEmpty]
+        [Alias("Key"), ValidateNotNullOrEmpty]
         public ApiKey ApiKey
         {
             get => _settings?.Key ?? ApiKey.Empty;
@@ -38,16 +36,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection
 
         [Parameter(Mandatory = true, Position = 0)]
         [Alias("SonarrUrl", "Uri")] // for backward compatibility
-        [ValidateUrl(UriKind.Absolute)]
-        [MaybeNull]
+        [ValidateUrl(UriKind.Absolute), MaybeNull]
         public Uri Url
         {
             get => _settings?.ServiceUri;
             set => this.SetConnectionSetting(value, (x, settings) => settings.ServiceUri = x);
         }
 
-        [Parameter]
-        [Alias("NoApiPrefix")]  // for backward-compatibility
+        [Parameter, Alias("NoApiPrefix")]  // for backward-compatibility
         public SwitchParameter NoApiInPath
         {
             get => _settings?.NoApiInPath ?? default;

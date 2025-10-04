@@ -155,19 +155,37 @@ namespace MG.Sonarr.Next.Metadata
         {
             _list.RemoveAt(index);
         }
-        public int RemoveAll(Func<T, bool> predicate)
+        //internal unsafe void RemoveAll<TState>(ref TState state, delegate*<T, ref TState, bool> predicate)
+        //{
+        //    int listCount = _list.Count;
+        //    if (listCount == 0) return;
+
+        //    for (int i = listCount - 1; i >= 0; i--)
+        //    {
+        //        if (predicate(_list[i], ref state))
+        //        {
+        //            _list.RemoveAt(i);
+        //        }
+        //    }
+        //}
+        internal unsafe void RemoveAll<TArg1, TArg2>(TArg1 arg1, TArg2 arg2, delegate*<T, TArg1, TArg2, bool> predicate)
         {
-            return _list.RemoveAll(new Predicate<T>(predicate));
+            int listCount = _list.Count;
+            if (listCount == 0)
+                return;
+
+            for (int i = listCount - 1; i >= 0; i--)
+            {
+                if (predicate(_list[i], arg1, arg2))
+                {
+                    _list.RemoveAt(i);
+                }
+            }
         }
 
         public void SetTag(IMetadataResolver resolver)
         {
-            if (this.Count == 0)
-            {
-                return;
-            }
-
-            foreach (T item in this)
+            foreach (T item in CollectionsMarshal.AsSpan(_list))
             {
                 item.SetTag(resolver);
             }

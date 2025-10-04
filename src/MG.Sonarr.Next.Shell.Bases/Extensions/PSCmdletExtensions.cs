@@ -1,41 +1,69 @@
 using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Strings;
+using System.Collections.Frozen;
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Shell.Extensions
 {
     public static partial class PSCmdletExtensions
     {
-        public static ActionPreference GetActionPreferenceFromParam(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName, ActionPreference defaultIfNotPresent = ActionPreference.SilentlyContinue)
+        private static readonly FrozenDictionary<string, ActionPreference> _preferences;
+        private static readonly FrozenSet<ActionPreference> _prefSet;
+
+        static PSCmdletExtensions()
         {
-            return ResolveActionPreferenceFromPSCmdlet(
-                cmdlet,
-                parameterName,
-                variableName,
-                in defaultIfNotPresent,
-                resolution: (object? boundValue, in ActionPreference defValue) => boundValue switch
-                {
-                    ActionPreference preference when Enum.IsDefined(preference) => preference,
-                    int numberValue when Enum.IsDefined((ActionPreference)numberValue) => (ActionPreference)numberValue,
-                    string strValue when Enum.TryParse(strValue, ignoreCase: true, out ActionPreference pref) => pref,
-                    _ => defValue,
-                });
+            string[] names = Enum.GetNames<ActionPreference>();
+            var dic = new Dictionary<string, ActionPreference>(names.Length, StringComparer.OrdinalIgnoreCase);
+
+            foreach (string name in names)
+            {
+                dic.Add(name, Enum.Parse<ActionPreference>(name));
+            }
+
+            _preferences = dic.ToFrozenDictionary();
+            _prefSet = dic.Values.ToFrozenSet();
         }
 
-        public static ActionPreference GetActionPreferenceFromSwitch(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName, ActionPreference defaultIfNotPresent = ActionPreference.SilentlyContinue)
+        public static unsafe ActionPreference GetActionPreferenceFromParam(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName, ActionPreference defaultIfNotPresent = ActionPreference.SilentlyContinue)
         {
             return ResolveActionPreferenceFromPSCmdlet(
                 cmdlet,
                 parameterName,
                 variableName,
-                in defaultIfNotPresent,
-                resolution: (object? boundValue, in ActionPreference defValue) => boundValue switch
+                defaultIfNotPresent,
+                &getPreference);
+
+            static ActionPreference getPreference(object? boundValue, ActionPreference defaultIfNotPresent)
+            {
+                return boundValue switch
+                {
+                    ActionPreference preference when _prefSet.Contains(preference) => preference,
+                    int numberValue when _prefSet.Contains((ActionPreference)numberValue) => (ActionPreference)numberValue,
+                    string strValue when _preferences.TryGetValue(strValue, out ActionPreference pref) => pref,
+                    _ => defaultIfNotPresent,
+                };
+            }
+        }
+
+        public static unsafe ActionPreference GetActionPreferenceFromSwitch(this PSCmdlet cmdlet, [ConstantExpected] string parameterName, [ConstantExpected] string variableName, ActionPreference defaultIfNotPresent = ActionPreference.SilentlyContinue)
+        {
+            return ResolveActionPreferenceFromPSCmdlet(
+                cmdlet,
+                parameterName,
+                variableName,
+                defaultIfNotPresent,
+                &getPreference);
+
+            static ActionPreference getPreference(object? boundValue, ActionPreference defaultIfNotPresent)
+            {
+                return boundValue switch
                 {
                     SwitchParameter swParam when swParam.ToBool() => ActionPreference.Continue,
                     bool justBool when justBool => ActionPreference.Continue,
-                    _ => defValue,
-                });
+                    _ => defaultIfNotPresent,
+                };
+            }
         }
 
         [return: NotNullIfNotNull(nameof(path))]
@@ -64,30 +92,6 @@ namespace MG.Sonarr.Next.Shell.Extensions
             return cmdlet.GetUnresolvedProviderPathFromPSPath(path) ?? string.Empty;
         }
 
-        //public static bool HasParameter<T>(this T cmdlet, Expression<Func<T, object?>> parameter) where T : PSCmdlet
-        //{
-        //    return parameter.TryGetAsMember(out MemberExpression? memEx)
-        //           && 
-        //           cmdlet.MyInvocation.BoundParameters.ContainsKey(memEx.Member.Name);
-        //}
-        //public static bool HasParameter<T>(this T cmdlet, Expression<Func<T, SwitchParameter>> switchExpression, bool onlyIfPresent) where T : PSCmdlet
-        //{
-        //    if (!switchExpression.TryGetAsMember(out MemberExpression? memEx))
-        //    {
-        //        return false;
-        //    }
-        //    else if (!cmdlet.MyInvocation.BoundParameters.ContainsKey(memEx.Member.Name))
-        //    {
-        //        return false;
-        //    }
-        //    else if (onlyIfPresent)
-        //    {
-        //        return true;
-        //    }
-
-        //    var func = switchExpression.Compile();
-        //    return func(cmdlet).ToBool();
-        //}
         public static bool HasParameter<TValue>(this PSCmdlet cmdlet, TValue value, [CallerArgumentExpression(nameof(value))] string parameterName = "") where TValue : struct
         {
             return ContainsParameterKey(cmdlet.MyInvocation.BoundParameters, parameterName);
@@ -111,13 +115,13 @@ namespace MG.Sonarr.Next.Shell.Extensions
             cmdlet.WriteObject(collection, enumerateCollection: true);
         }
 
-        private delegate ActionPreference ResolveFromBoundValue(object? boundValue, in ActionPreference defaultIfNotPresent);
-        private static ActionPreference ResolveActionPreferenceFromPSCmdlet(
+        private delegate ActionPreference ResolveFromBoundValue(object? boundValue, ActionPreference defaultIfNotPresent);
+        private static unsafe ActionPreference ResolveActionPreferenceFromPSCmdlet(
             PSCmdlet cmdlet,
             string parameterName,
             string variableName,
-            in ActionPreference defaultIfNotPresent,
-            ResolveFromBoundValue resolution)
+            ActionPreference defaultIfNotPresent,
+            delegate*<object?, ActionPreference, ActionPreference> resolution)
         {
             object? boundValue = null;
 
@@ -128,23 +132,13 @@ namespace MG.Sonarr.Next.Shell.Extensions
                 return variablePref;
             }
 
-            return resolution(boundValue, in defaultIfNotPresent);
+            return resolution(boundValue, defaultIfNotPresent);
         }
 
         private static bool ContainsParameterKey(Dictionary<string, object?> dictionary, string key)
         {
             ReadOnlySpan<char> keySpan = TrimProperties(key);
             return dictionary.ContainsKey(keySpan);
-        }
-        private static bool TryGetParameterValue(Dictionary<string, object?> dictionary, string key, out object? value)
-        {
-            ReadOnlySpan<char> keySpan = TrimProperties(key);
-            return dictionary.TryGetValue(keySpan, out value);
-        }
-        private static bool TryGetParameterNonNullValue(Dictionary<string, object?> dictionary, string key, [NotNullWhen(true)] out object? value)
-        {
-            bool result = TryGetParameterValue(dictionary, key, out value);
-            return result && value is not null;
         }
         private static ReadOnlySpan<char> TrimProperties(ReadOnlySpan<char> value)
         {

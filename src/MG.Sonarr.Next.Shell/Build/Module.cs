@@ -1,56 +1,52 @@
-using MG.Sonarr.Next.Extensions.PSO;
-using MG.Sonarr.Next.Extensions.Strings;
-using System.Collections.Immutable;
 using System.Reflection;
 
 namespace MG.Sonarr.Next.Shell.Build
 {
     public static class Module
     {
-        public static PSObject GetFormatsAndTypePaths(string outputDir)
+        public static Dictionary<string, string[]> GetFormatsAndTypePaths(string outputDir)
         {
             ArgumentException.ThrowIfNullOrEmpty(outputDir);
 
             ReadOnlySpan<char> formatStr = ".Format.ps1xml";
             ReadOnlySpan<char> typeStr = ".Type.ps1xml";
-            FileTypes paths = new(formatStr, typeStr, outputDir);
+            FileTypes paths = new(formatStr, typeStr);
 
             foreach (string file in Directory.EnumerateFiles(outputDir, "*.ps1xml", SearchOption.AllDirectories))
             {
                 paths.AddPath(file);
             }
 
-            PSObject pso = new(2);
-            pso.Properties.Add(new PSNoteProperty("Formats", paths.FormatPaths.ToImmutableArray()));
-            pso.Properties.Add(new PSNoteProperty("Types", paths.TypePaths.ToImmutableArray()));
-
-            return pso;
+            return new(2, StringComparer.OrdinalIgnoreCase)
+            {
+                { "Formats", paths.FormatPaths.Count > 0 ? [.. paths.FormatPaths.Order(StringComparer.Ordinal)] : [] },
+                { "Types", paths.TypePaths.Count > 0 ? [.. paths.TypePaths.Order(StringComparer.Ordinal)] : [] },
+            };
         }
-        public static PSObject ReadAllAssemblyCmdlets()
+        public static Dictionary<string, string[]> ReadAllAssemblyCmdlets()
         {
-            List<Type> list = GetCmdletTypes();
+            Type[] list = GetCmdletTypes();
+            if (list.Length == 0)
+                return [];
 
-            List<string> names = new(list.Count);
-            List<string> aliases = new(list.Count / 2);
+            HashSet<string> names = new(list.Length, StringComparer.OrdinalIgnoreCase);
+            HashSet<string> aliases = new((int)Math.Ceiling(list.Length / 2d), StringComparer.OrdinalIgnoreCase);
 
             foreach (Type type in list)
             {
                 AddCmdletData(type, names, aliases);
             }
 
-            names.Sort();
-            aliases.Sort();
-
-            PSObject pso = new(2);
-            pso.AddProperty("Cmdlets", names.ToImmutableArray());
-            pso.AddProperty("Aliases", aliases.ToImmutableArray());
-
-            return pso;
+            return new(2, StringComparer.OrdinalIgnoreCase)
+            {
+                { "Cmdlets", [.. names.Order(StringComparer.Ordinal)] },
+                { "Aliases", [.. aliases.Order(StringComparer.Ordinal)] },
+            };
         }
-        private static void AddCmdletData(Type type, List<string> names, List<string> aliases)
+        private static void AddCmdletData(Type type, HashSet<string> names, HashSet<string> aliases)
         {
             CmdletAttribute cmdletAtt = type.GetCustomAttributes<CmdletAttribute>().First();
-            names.Add(GetCmdletName(cmdletAtt));
+            _ = names.Add(GetCmdletName(cmdletAtt));
 
             if (type.IsDefined(typeof(AliasAttribute), false))
             {
@@ -58,87 +54,68 @@ namespace MG.Sonarr.Next.Shell.Build
                 {
                     if (alias.AliasNames is not null)
                     {
-                        aliases.AddRange(alias.AliasNames);
+                        aliases.UnionWith(alias.AliasNames);
                     }
                 }
             }
         }
-        private static List<Type> GetCmdletTypes()
+        private static Type[] GetCmdletTypes()
         {
             Assembly thisAss = typeof(Module).Assembly;
 
-            IEnumerable<Type> cmdletTypes = thisAss
-                .GetExportedTypes()
-                    .Where(IsCmdlet);
-
-            return new(cmdletTypes);
+            return [.. thisAss.GetExportedTypes().Where(x => x.IsDefined(typeof(CmdletAttribute), inherit: false))];
         }
-        const char DASH = '-';
+
         private static string GetCmdletName(CmdletAttribute cmdletAttribute)
         {
-            int length = cmdletAttribute.VerbName.Length + cmdletAttribute.NounName.Length + 1;
-            return string.Create(length, cmdletAttribute, (chars, state) =>
-            {
-                state.VerbName.CopyTo(chars);
-                int position = state.VerbName.Length;
-
-                chars[position++] = DASH;
-
-                state.NounName.CopyTo(chars.Slice(position));
-            });
-        }
-        private static bool IsCmdlet(Type type)
-        {
-            return type.IsDefined(typeof(CmdletAttribute), false);
+            return string.Concat(cmdletAttribute.VerbName, ['-'], cmdletAttribute.NounName);
         }
 
         private readonly ref struct FileTypes
         {
             readonly ReadOnlySpan<char> _formatStr;
-            readonly ReadOnlySpan<char> _outputDir;
             readonly ReadOnlySpan<char> _typeStr;
 
-            internal readonly List<string> FormatPaths;
-            internal readonly List<string> TypePaths;
+            internal readonly HashSet<string> FormatPaths;
+            internal readonly HashSet<string> TypePaths;
 
-            internal FileTypes(ReadOnlySpan<char> formatStr, ReadOnlySpan<char> typeStr, ReadOnlySpan<char> outputDir)
+            internal FileTypes(ReadOnlySpan<char> formatStr, ReadOnlySpan<char> typeStr)
             {
                 _formatStr = formatStr;
-                _outputDir = outputDir;
                 _typeStr = typeStr;
-                FormatPaths = new(10);
-                TypePaths = new(1);
+                FormatPaths = new(10, StringComparer.OrdinalIgnoreCase);
+                TypePaths = new(1, StringComparer.OrdinalIgnoreCase);
             }
 
-            internal void AddPath(string filePath)
+            internal void AddPath(ReadOnlySpan<char> path)
             {
-                ReadOnlySpan<char> path = filePath.AsSpan();
-                if (path.EndsWith(_formatStr, StringComparison.InvariantCultureIgnoreCase)
+                if (path.EndsWith(_formatStr, StringComparison.OrdinalIgnoreCase)
                     &&
-                    TryGetFinalPath(_outputDir, path, out string? finalPath))
+                    TryGetFinalPath(path, out string? finalPath))
                 {
                     FormatPaths.Add(finalPath);
                 }
-                else if (path.EndsWith(_typeStr, StringComparison.InvariantCultureIgnoreCase)
+                else if (path.EndsWith(_typeStr, StringComparison.OrdinalIgnoreCase)
                     &&
-                    TryGetFinalPath(_outputDir, path, out string? typePath))
+                    TryGetFinalPath(path, out string? typePath))
                 {
                     TypePaths.Add(typePath);
                 }
             }
-            private static bool TryGetFinalPath(ReadOnlySpan<char> outputDir, ReadOnlySpan<char> path, [NotNullWhen(true)] out string? finalPath)
+            private static bool TryGetFinalPath(ReadOnlySpan<char> path, [NotNullWhen(true)] out string? finalPath)
             {
-                finalPath = null;
-                foreach (ReadOnlySpan<char> section in path.SpanSplit(outputDir))
+                ReadOnlySpan<char> parentPath = Path.GetDirectoryName(path);
+                ReadOnlySpan<char> parentDirName = Path.GetFileName(parentPath);
+                ReadOnlySpan<char> fileName = Path.GetFileName(path);
+
+                if (parentDirName.Equals(fileName, StringComparison.Ordinal))
                 {
-                    if (section.StartsWith('/') || section.StartsWith('\\'))
-                    {
-                        finalPath = new string(section.Slice(1));
-                        return true;
-                    }
+                    finalPath = null;
+                    return false;
                 }
 
-                return false;
+                finalPath = Path.Join(parentDirName, fileName);
+                return true;
             }
         }
     }

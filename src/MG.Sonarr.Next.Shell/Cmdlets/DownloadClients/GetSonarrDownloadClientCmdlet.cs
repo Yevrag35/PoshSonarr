@@ -58,12 +58,21 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
         private MetadataList<DownloadClientObject> GetByName(WildcardSet names, SortedSet<int> ids)
         {
             var all = this.GetAll<DownloadClientObject>();
+            
             if (all.Count > 0 && (names.Count > 0 || ids.Count > 0))
             {
-                _ = all.RemoveAll(x => !ids.Contains(x.Id) && !names.IsAnyMatch(x.Name));
+                unsafe
+                {
+                    all.RemoveAll(names, ids, &removeIf);
+                }
             }
 
             return all;
+
+            static bool removeIf(DownloadClientObject item, WildcardSet names, SortedSet<int> ids)
+            {
+                return !ids.Contains(item.Id) && !names.IsAnyMatch(item.Name);
+            }
         }
     }
 }

@@ -36,7 +36,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         /// before cmdlet processing begins.
         /// </summary>
         /// <remarks>
-        ///     Default implementation in the base class always returns <see langword="false"/>.
+        ///     Default implementation in the base class always returns <see langword="true"/>.
         /// </remarks>
         protected virtual bool CaptureDebugPreference { get; } = true;
 

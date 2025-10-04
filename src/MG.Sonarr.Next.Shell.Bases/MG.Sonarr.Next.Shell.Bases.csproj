@@ -14,6 +14,7 @@
 	<Product>PoshSonarr Bases .NET 9</Product>
 	<Description>The binary library of the PoshSonarr PowerShell module containing the base modules.</Description>
 	<Copyright>Copyright © 2018-2025 Yevrag35, LLC.</Copyright>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
