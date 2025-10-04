@@ -58,7 +58,8 @@ namespace MG.Sonarr.Next.Metadata
         internal static Dictionary<string, ImmutableArray<string>> FindPipeableCmdlets(Assembly cmdletAssembly)
         {
             IEnumerable<Type> cmdletTypes = cmdletAssembly.GetExportedTypes()
-                .Where(x => x.IsClass
+                .Where(x => x.IsPublic
+                         && x.IsClass
                          && !x.IsAbstract
                          && x.IsDefined(typeof(CmdletAttribute), inherit: false)
                          && x.IsDefined(typeof(MetadataCanPipeAttribute), inherit: false));
@@ -66,9 +67,8 @@ namespace MG.Sonarr.Next.Metadata
             return cmdletTypes
                 .SelectMany(type =>
                 {
-                    string cmdletName = GetCmdletNameFromAttribute(type);
-                    return type.GetCustomAttributes<MetadataCanPipeAttribute>()
-                               .Select(att => new TwoStrings(att.Tag, cmdletName));
+                    string cmdletName = GetCmdletNameFromAttribute(type, out int howManyMetaAtts);
+                    return GetTagAndCmdletNamePair(type, cmdletName, howManyMetaAtts);
                 })
                 .GroupBy(x => x.First)
                 .ToDictionary(
@@ -89,10 +89,38 @@ namespace MG.Sonarr.Next.Metadata
             }
         }
 
-        private static string GetCmdletNameFromAttribute(Type cmdletType)
+        private static string GetCmdletNameFromAttribute(Type cmdletType, out int howManyMetaAtts)
         {
-            TwoStrings verbAndNoun = GetVerbAndNoun(cmdletType);
+            TwoStrings verbAndNoun = GetVerbAndNoun(cmdletType, out howManyMetaAtts);
             return string.Concat(verbAndNoun.First, ['-'], verbAndNoun.Second);
+        }
+
+        private static TwoStrings[] GetTagAndCmdletNamePair(Type cmdletType, string cmdletName, int howManyMetaApps)
+        {
+            if (howManyMetaApps == 0)
+                return [];
+
+            TwoStrings[] array = new TwoStrings[howManyMetaApps];
+            int i = 0;
+
+            foreach (CustomAttributeData cad in cmdletType.CustomAttributes)
+            {
+                if (i >= howManyMetaApps)
+                    break;
+
+                if (typeof(MetadataCanPipeAttribute).Equals(cad.AttributeType))
+                {
+                    array[i++] = new TwoStrings(GetMetadataTag(cad.NamedArguments), cmdletName);
+                }
+            }
+
+            Debug.Assert(i == howManyMetaApps, "Should have found the expected number of MetadataCanPipeAttributes.");
+            return array;
+        }
+
+        private static string GetMetadataTag(IList<CustomAttributeNamedArgument> constructorArgs)
+        {
+            return (string?)constructorArgs[0].TypedValue.Value ?? throw new InvalidOperationException("Expected a string tag.");
         }
 
         /// <summary>
@@ -106,17 +134,33 @@ namespace MG.Sonarr.Next.Metadata
         /// <exception cref="ArgumentException">
         /// <paramref name="cmdletType"/> does not have a <see cref="CmdletAttribute"/> with a constructor that accepts two string arguments.
         /// </exception>
-        private static TwoStrings GetVerbAndNoun(Type cmdletType)
+        private static TwoStrings GetVerbAndNoun(Type cmdletType, out int howManyPipeAtts)
         {
+            TwoStrings combo = default;
+            bool hasCombo = false;
+            howManyPipeAtts = 0;
+
             foreach (CustomAttributeData cad in cmdletType.CustomAttributes)
             {
+                if (typeof(MetadataCanPipeAttribute).Equals(cad.AttributeType))
+                {
+                    howManyPipeAtts++;
+                    continue;
+                }
+
                 if (typeof(CmdletAttribute).Equals(cad.AttributeType) && TryGetVerbAndNoun(cad.ConstructorArguments, out string? verb, out string? noun))
                 {
-                    return new(verb, noun);
+                    combo = new(verb, noun);
+                    hasCombo = hasCombo = true;
                 }
             }
 
-            throw new ArgumentException($"{cmdletType} does not have the right CmdletAttribute constructor signature.", nameof(cmdletType));
+            if (!hasCombo)
+            {
+                throw new ArgumentException($"{cmdletType} does not have the right CmdletAttribute constructor signature.", nameof(cmdletType));
+            }
+
+            return combo;
         }
 
         private static bool TryGetVerbAndNoun(
