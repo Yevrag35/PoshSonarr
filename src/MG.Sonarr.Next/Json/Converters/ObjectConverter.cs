@@ -319,31 +319,25 @@ namespace MG.Sonarr.Next.Json.Converters
 
             try
             {
-                //Span<char> span = length <= MAX_STACKALLOC
-                //    ? stackalloc char[length]
-                //    : RentedBuffer.Rent(length, ref buffer);
+                int written = reader.CopyString(buffer);
 
-                int written = Encoding.UTF8.GetChars(reader.ValueSpan, buffer);
-                span = span.Slice(0, written);
-
-                ref char firstChar = ref span[0];
-                if (capitalize.Contains(propertyName) && char.IsLower(firstChar))
+                if (capitalize.Contains(propertyName) && char.IsLower(buffer[0]))
                 {
-                    firstChar = char.ToUpper(firstChar);
+                    buffer[0] = char.ToUpper(buffer[0]);
                 }
 
                 object? result;
                 if (_config.SpanConverters.TryGetValue(propertyName, out SpanConverter? converter))
                 {
-                    result = converter.ConvertSpan(span, propertyName);
+                    result = converter.ConvertSpan(buffer[..written], propertyName);
                 }
-                else if (TryReadAsNumber(span, out ValueType? asValueType))
+                else if (TryReadAsNumber(buffer[..written], out ValueType? asValueType))
                 {
                     result = asValueType;
                 }
                 else
                 {
-                    result = ReadString(span, propertyName);
+                    result = ReadString(buffer[..written], propertyName);
                 }
 
                 return result;
