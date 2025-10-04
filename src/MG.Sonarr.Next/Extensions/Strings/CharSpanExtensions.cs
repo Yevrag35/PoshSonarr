@@ -7,24 +7,8 @@ namespace MG.Sonarr.Next.Extensions.Strings
     /// Custom extension methods for <see cref="Span{T}"/> and <see cref="ReadOnlySpan{T}"/> instances
     /// of type <see cref="char"/>.
     /// </summary>
-    public static class CharSpanExtensions
+    public static partial class CharSpanExtensions
     {
-        /// <summary>
-        /// Copies the characters of this <see cref="string"/> instance into a destination
-        /// <see cref="Span{T}"/> and advances the given ref <see cref="int"/> the 
-        /// <see cref="string.Length"/>.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="span">The span to copy items into.</param>
-        /// <param name="position">
-        ///     The ref <see cref="int"/> to add the number of the characters to if copying was
-        ///     successful.
-        /// </param>
-        [DebuggerStepThrough]
-        public static void CopyToSlice(this string? value, Span<char> span, ref int position)
-        {
-            CopyToSlice(spanValue: value, span, ref position);
-        }
         /// <summary>
         /// Copies the contents of this <see cref="ReadOnlySpan{T}"/> into a destination 
         /// <see cref="Span{T}"/> and advances the given ref <see cref="int"/> the number 
@@ -36,6 +20,7 @@ namespace MG.Sonarr.Next.Extensions.Strings
         ///     The ref <see cref="int"/> to add the number of the characters to if copying was
         ///     successful.
         /// </param>
+        [Obsolete("Use the overload that returns int.")]
         public static void CopyToSlice(this ReadOnlySpan<char> spanValue, Span<char> span, ref int position)
         {
             if (spanValue.TryCopyTo(span.Slice(position)))
@@ -43,23 +28,7 @@ namespace MG.Sonarr.Next.Extensions.Strings
                 position += spanValue.Length;
             }
         }
-        /// <summary>
-        /// Copies the contents of this <see cref="Span{T}"/> into a destination 
-        /// <see cref="Span{T}"/> and advances the given ref <see cref="int"/> the number 
-        /// of characters that were copied.
-        /// </summary>
-        /// <param name="writtableSpan">The source span whose characters are copied.</param>
-        /// <param name="span">The span to copy items into.</param>
-        /// <param name="position">
-        ///     The ref <see cref="int"/> to add the number of the characters to if copying was
-        ///     successful.
-        /// </param>
-        [DebuggerStepThrough]
-        public static void CopyToSlice(this Span<char> writtableSpan, Span<char> span, ref int position)
-        {
-            CopyToSlice(spanValue: writtableSpan, span, ref position);
-        }
-
+        [Obsolete("Use the overload that returns int.")]
         public static void CopyToSlice<T>(this T value, Span<char> destination, ref int position, ReadOnlySpan<char> format = default, IFormatProvider? provider = null)
             where T : ISpanFormattable
         {
@@ -68,23 +37,34 @@ namespace MG.Sonarr.Next.Extensions.Strings
                 position += written;
             }
         }
-
-        public static bool EnclosedIn([NotNullWhen(true)] this string? value, char openingChar, char closingChar)
-        {
-            return EnclosedInCore(value.AsSpan(), in openingChar, in closingChar);
-        }
+        /// <summary>
+        /// Determines whether the specified span is enclosed by the given opening and closing characters.
+        /// </summary>
+        /// <param name="readOnlySpan">The span of characters to examine for enclosure.</param>
+        /// <param name="openingChar">The character that should appear at the start of the span.</param>
+        /// <param name="closingChar">The character that should appear at the end of the span.</param>
+        /// <returns><see langword="true"/> if the span begins with the opening character and ends with the closing character; otherwise,
+        /// <see langword="false"/>.</returns>
         public static bool EnclosedIn(this ReadOnlySpan<char> readOnlySpan, char openingChar, char closingChar)
         {
-            return EnclosedInCore(readOnlySpan, in openingChar, in closingChar);
+            return EnclosedInCore(readOnlySpan, openingChar, closingChar);
         }
-        public static bool EnclosedIn(this Span<char> span, char openingChar, char closingChar)
-        {
-            return EnclosedInCore(span, in openingChar, in closingChar);
-        }
-
+        /// <summary>
+        /// Copies characters from the source span to the destination span, omitting any characters that match those
+        /// specified in the <paramref name="removeChars"/> set.
+        /// </summary>
+        /// <remarks>If the destination span is not large enough to hold all non-removed characters, only
+        /// as many characters as will fit are written. The method does not throw an exception in this case; excess
+        /// characters are omitted. The operation does not allocate additional memory and is suitable for
+        /// performance-critical scenarios.</remarks>
+        /// <param name="source">The read-only span of characters to process and copy from.</param>
+        /// <param name="destination">The span of characters to which the filtered result will be written. Must be large enough to hold all
+        /// non-removed characters.</param>
+        /// <param name="removeChars">A set of characters to remove from the source span during copying. Any character in this set will be
+        /// excluded from the destination.</param>
+        /// <returns>The number of characters written to the destination span after removal of specified characters.</returns>
         public static int RemoveAny(this ReadOnlySpan<char> source, Span<char> destination, SearchValues<char> removeChars)
         {
-            int length = source.Length;
             int written = 0;
             ReadOnlySpan<char> slice = source;
 
@@ -94,7 +74,7 @@ namespace MG.Sonarr.Next.Extensions.Strings
                 if (index == -1)
                 {
                     // No more matches, copy the remaining portion and exit.
-                    slice.CopyToSlice(destination, ref written);
+                    written = slice.CopyToSlice(destination, written);
                     break;
                 }
 
@@ -104,7 +84,7 @@ namespace MG.Sonarr.Next.Extensions.Strings
                     continue;
                 }
 
-                slice.Slice(0, index).CopyToSlice(destination, ref written);
+                written = slice.Slice(0, index).CopyToSlice(destination, written);
                 if (index < slice.Length - 1)
                 {
                     slice = slice.Slice(index + 1);
@@ -146,27 +126,6 @@ namespace MG.Sonarr.Next.Extensions.Strings
 
             return result;
         }
-        /// <summary>
-        /// Attemps to copy the contents of this <see cref="Span{T}"/> into a destination
-        /// <see cref="Span{T}"/> and advancing the given ref <see cref="int"/> the number 
-        /// of characters that were copied, returning a value indicating whether or not the operation
-        /// succeeded.
-        /// </summary>
-        /// <param name="writtableSpan">The source span whose characters are copied.</param>
-        /// <param name="span">The target of the copy operation.</param>
-        /// <param name="position">
-        ///     The ref <see cref="int"/> to add the number of the characters to if copying was
-        ///     successful.
-        /// </param>
-        /// <returns>
-        ///     <see langword="true"/> if the copying operation was successful; otherwise
-        ///     <see langword="false"/>.
-        /// </returns>
-        [DebuggerStepThrough]
-        public static bool TryCopyToSlice(this Span<char> writtableSpan, Span<char> span, ref int position)
-        {
-            return TryCopyToSlice(spanValue: writtableSpan, span, ref position);
-        }
 
         public static bool TryCopyToSlice<T>(this T value, Span<char> destination, ref int position, ReadOnlySpan<char> format = default, IFormatProvider? provider = null)
             where T : ISpanFormattable
@@ -192,7 +151,7 @@ namespace MG.Sonarr.Next.Extensions.Strings
         [DebuggerStepThrough]
         public static bool StartsWith(this ReadOnlySpan<char> readOnlySpan, char value)
         {
-            return FirstCharEquals(readOnlySpan, in value);
+            return FirstCharEquals(readOnlySpan, value);
         }
         /// <summary>
         /// Determines whether the beginning of the <paramref name="readOnlySpan"/> matches the specified <paramref name="value"/> when compared using the specified 
@@ -213,38 +172,6 @@ namespace MG.Sonarr.Next.Extensions.Strings
         {
             return readOnlySpan.StartsWith(new ReadOnlySpan<char>(in value), comparisonType);
         }
-        /// <summary>
-        /// Determines whether the specified sequence appears at the start of the span.
-        /// </summary>
-        /// <param name="span">The source span.</param>
-        /// <param name="value">The character to compare to the beginning of the source span.</param>
-        /// <returns>
-        ///     <see langword="true"/> if <paramref name="value"/> matches the beginning of 
-        ///     <paramref name="span"/>; otherwise, <see langword="false"/>.
-        /// </returns>
-        [DebuggerStepThrough]
-        public static bool StartsWith(this Span<char> span, char value)
-        {
-            return FirstCharEquals(span, in value);
-        }
-        /// <summary>
-        /// Determines whether the specified sequence appears at the start of the span.
-        /// </summary>
-        /// <param name="span">The source span.</param>
-        /// <param name="value">The character to compare to the beginning of the source span.</param>
-        /// <param name="ignoreCase">Indicates the comparison should ignore casing rules.</param>
-        /// <returns>
-        ///     <see langword="true"/> if <paramref name="value"/> matches the beginning of 
-        ///     <paramref name="span"/>; otherwise, <see langword="false"/>.
-        /// </returns>
-        public static bool StartsWith(this Span<char> span, char value, StringComparison comparisonType)
-        {
-            return comparisonType switch
-            {
-                StringComparison.Ordinal => FirstCharEquals(span, in value),
-                _ => ((ReadOnlySpan<char>)span).StartsWith(new ReadOnlySpan<char>(in value), comparisonType),
-            };
-        }
 
         /// <summary>
         /// Attempts to find the last occurrence of a specified substring within the current span using the specified string
@@ -256,31 +183,29 @@ namespace MG.Sonarr.Next.Extensions.Strings
         /// <param name="index">When this method returns, contains the zero-based index of the last occurrence of <paramref name="value"/> within
         /// <paramref name="chars"/>, if found; otherwise, -1.</param>
         /// <returns><see langword="true"/> if the substring is found within the span; otherwise, <see langword="false"/>.</returns>
-        public static bool TryLastIndexOf(this string chars, [ConstantExpected] string value, StringComparison comparisonType, out int index)
+        public static bool TryLastIndexOf(this ReadOnlySpan<char> chars, [ConstantExpected] string value, StringComparison comparisonType, out int index)
         {
             index = chars.LastIndexOf(value, comparisonType);
-            return index >= 0;
+            return index != -1;
         }
 
         #region PRIVATE METHODS
-        private static bool EnclosedInCore(ReadOnlySpan<char> readOnlySpan, in char opening, in char closing)
+        private static bool EnclosedInCore(ReadOnlySpan<char> readOnlySpan, char opening, char closing)
         {
             if (readOnlySpan.Length < 2)
             {
                 return false;
             }
 
-            ref readonly char first = ref readOnlySpan[0];
-            return first == opening && closing == readOnlySpan[^1];
+            return opening == readOnlySpan[0] && closing == readOnlySpan[^1];
         }
 
-        private static bool FirstCharEquals(ReadOnlySpan<char> span, in char value)
+        private static bool FirstCharEquals(ReadOnlySpan<char> span, char value)
         {
             bool result = false;
             if (!span.IsEmpty)
             {
-                ref readonly char c = ref span[0];
-                result = c == value;
+                result = span[0] == value;
             }
 
             return result;

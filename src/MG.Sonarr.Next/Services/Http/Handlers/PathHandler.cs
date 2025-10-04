@@ -45,7 +45,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
                 path = path.TrimStart('/');
             }
 
-            if (path.StartsWith("api/v3", StringComparison.InvariantCultureIgnoreCase))
+            if (path.StartsWith("api/v3", StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
@@ -63,7 +63,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers
             }
 
             V3.CopyToSlice(span, ref position);
-            if (path.StartsWith('/', StringComparison.InvariantCulture))
+            if (path.StartsWith('/', StringComparison.Ordinal))
             {
                 position--;
             }

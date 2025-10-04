@@ -58,40 +58,36 @@ namespace MG.Sonarr.Next.Metadata
 
         internal static Dictionary<string, ImmutableArray<string>> FindPipeableCmdlets(Assembly cmdletAssembly)
         {
-            StringComparer comparer = StringComparer.OrdinalIgnoreCase;
-
-            Type cmdletAtt = typeof(CmdletAttribute);
-            Type pipeAtt = typeof(MetadataCanPipeAttribute);
-
             IEnumerable<Type> cmdletTypes = cmdletAssembly.GetExportedTypes()
-                .Where(x => x.IsDefined(cmdletAtt, inherit: false)
-                         && x.IsDefined(pipeAtt, inherit: false));
+                .Where(x => x.IsClass
+                         && !x.IsAbstract
+                         && x.IsDefined(typeof(CmdletAttribute), inherit: false)
+                         && x.IsDefined(typeof(MetadataCanPipeAttribute), inherit: false));
 
             return cmdletTypes
-                .SelectMany(static type =>
+                .SelectMany(type =>
                 {
                     string cmdletName = GetCmdletNameFromAttribute(type);
                     return type.GetCustomAttributes<MetadataCanPipeAttribute>()
-                            .Select(att => (att.Tag, cmdletName));
+                               .Select(att => new PipeableCmdlet(att.Tag, cmdletName));
                 })
-                .GroupBy(static x => x.Tag)
-                .Select(static x => KeyValuePair.Create(
-                    key: x.Key,
-                    value: x.Select(x => x.cmdletName)
-                            .Order()
-                            .ToImmutableArray()))
-                .ToDictionary(StringComparer.OrdinalIgnoreCase);
+                .GroupBy(x => x.Tag)
+                .ToDictionary(
+                    keySelector: x => x.Key,
+                    elementSelector: x => x.Select(c => c.CmdletName).Order(StringComparer.Ordinal).ToImmutableArray(),
+                    comparer: StringComparer.OrdinalIgnoreCase);
+        }
 
-            //foreach (Type cmdlet in cmdletTypes)
-            //{
-            //    string cmdletName = GetCmdletNameFromAttribute(cmdlet);
-            //    foreach (MetadataCanPipeAttribute mta in cmdlet.GetCustomAttributes<MetadataCanPipeAttribute>())
-            //    {
-            //        namesToTags.Add(mta.Tag, cmdletName);
-            //    }
-            //}
-
-            //return namesToTags;
+        [StructLayout(LayoutKind.Auto)]
+        private readonly struct PipeableCmdlet
+        {
+            public readonly string Tag;
+            public readonly string CmdletName;
+            internal PipeableCmdlet(string tag, string cmdletName)
+            {
+                Tag = tag;
+                CmdletName = cmdletName;
+            }
         }
 
         private static string GetCmdletNameFromAttribute(Type cmdlet)
@@ -99,8 +95,7 @@ namespace MG.Sonarr.Next.Metadata
             CmdletAttribute ca = cmdlet.GetCustomAttribute<CmdletAttribute>() ?? throw new InvalidOperationException();
             return string.Create(ca.VerbName.Length + ca.NounName.Length + 1, ca, static (chars, state) =>
             {
-                int position = 0;
-                state.VerbName.CopyToSlice(chars, ref position);
+                state.VerbName.CopyTo(chars, out int position);
 
                 chars[position++] = '-';
 

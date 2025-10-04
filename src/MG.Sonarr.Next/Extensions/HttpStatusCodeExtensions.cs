@@ -31,10 +31,12 @@ namespace MG.Sonarr.Next.Extensions
             return string.Create(codeStr.Length + 6, (codeStr, statusCode), (chars, state) =>
             {
                 _ = ((int)state.statusCode).TryFormat(chars, out int written, default, Statics.DefaultProvider);
-                (stackalloc char[] { ' ', '(' }).CopyToSlice(chars, ref written);
+                written = chars.Slice(written).Push(' ', '(');
 
-                state.codeStr.CopyToSlice(chars, ref written);
-                chars[written] = ')';
+                written = codeStr.CopyToSlice(chars, written);
+                chars[written++] = ')';
+
+                Debug.Assert(written == chars.Length, "All characters should have been written.");
             });
         }
 
@@ -92,18 +94,6 @@ namespace MG.Sonarr.Next.Extensions
                 {
                     charsWritten += value.Length;
                 }
-            }
-
-            return result;
-        }
-
-        private static bool NotDefinedWriteTo(in HttpStatusCode statusCode, Span<char> destination, ref int written)
-        {
-            ReadOnlySpan<char> sc = statusCode.ToString();
-            bool result = sc.TryCopyTo(destination);
-            if (result)
-            {
-                written = sc.Length;
             }
 
             return result;

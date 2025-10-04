@@ -54,8 +54,10 @@ namespace MG.Sonarr.Next.Shell.Exceptions
 
             int written = 0;
             int i = 0;
-            foreach (ReadOnlySpan<char> section in typeSpan.SpanSplit(splitBy))
+            //foreach (ReadOnlySpan<char> section in typeSpan.SpanSplit(splitBy))
+            foreach (Range range in typeSpan.Split(splitBy))
             {
+                ReadOnlySpan<char> section = typeSpan[range];
                 section.Slice(0, 1).ToLower(destination.Slice(written), Statics.DefaultCulture);
                 written++;
 
@@ -86,13 +88,7 @@ namespace MG.Sonarr.Next.Shell.Exceptions
 
         private static int GetErrorCount(ReadOnlySpan<char> typeSpan, ReadOnlySpan<char> splitBy)
         {
-            int count = 0;
-            foreach (ReadOnlySpan<char> _ in typeSpan.SpanSplit(splitBy))
-            {
-                count++;
-            }
-
-            return count;
+            return typeSpan.Count(splitBy) + 1;
         }
 
         public SonarrErrorRecord ToRecord()
