@@ -16,11 +16,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets
         protected IServiceScope ConnectContext(Action<IServiceCollection> addAdditionalServices)
         {
             IServiceScope scope = this.SetContext(this.GetType().Assembly, addAdditionalServices);
-            bool canCheck = InvocationInfoExtensions.CheckCanCheckPositionalBinding(this.MyInvocation.BoundParameters);
-            if (!canCheck)
-            {
-                this.WriteWarning("Integer positional binding on 'Name' parameters is not supported on this version of PowerShell.\r\n\t The explicit '-Id' parameter must be used instead.");
-            }
 
             return scope;
         }

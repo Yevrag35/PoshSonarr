@@ -19,7 +19,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
     public sealed class GetSonarrTagCmdlet : SonarrMetadataCmdlet
     {
         const string BY_PIPELINE = "ByPipelineInput";
-        static readonly string _namePropertyName = nameof(Name);
 
         SortedSet<int> _ids = null!;
         WildcardSet _wcNames = null!;
@@ -51,12 +50,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
             return resolver[Meta.TAG];
         }
 
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "<Pending>")]
         protected override void Begin(IServiceProvider provider)
         {
             _ids.UnionWith(this.Id);
             if (this.HasParameter(this.Name))
             {
-                this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
+                this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(nameof(Name)));
             }
         }
         protected override void Process(IServiceProvider provider)

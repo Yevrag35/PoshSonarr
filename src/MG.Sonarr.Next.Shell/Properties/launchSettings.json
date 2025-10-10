@@ -13,8 +13,7 @@
     "Pwsh-Preview": {
       "commandName": "Executable",
       "executablePath": "C:\\Program Files\\PowerShell\\7-preview\\pwsh.exe",
-      "commandLineArgs": "-NoExit -File \"Debug.ps1\"",
-      "workingDirectory": "bin/Debug/net9.0"
+      "commandLineArgs": "-NoExit -File \"Debug.ps1\""
     }
   }
 }
