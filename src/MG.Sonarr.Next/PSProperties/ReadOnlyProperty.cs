@@ -109,7 +109,7 @@ namespace MG.Sonarr.Next.PSProperties
         const string READ_ONLY = "read-only ";
         public override string ToString()
         {
-            ReadOnlySpan<char> typeName = this.PSTypeName.AsSpan().Trim(stackalloc char[] { '[', ']' });
+            ReadOnlySpan<char> typeName = this.PSTypeName.AsSpan().Trim(['[', ']']);
             ReadOnlySpan<char> name = this.Name;
             if (this.MaxValueCharacterLength <= 0 || this.ValueAsT is not ISpanFormattable spanFormattable)
             {
@@ -129,15 +129,14 @@ namespace MG.Sonarr.Next.PSProperties
             int length = READ_ONLY.Length + typeName.Length + valueStr.Length + name.Length + 2; // Magic number 2 comes from: 1 space and an equals sign.
             Span<char> chars = stackalloc char[length];
 
-            int position = 0;
-            READ_ONLY.CopyToSlice(chars, ref position);
-            typeName.CopyToSlice(chars, ref position);
+            READ_ONLY.CopyTo(chars, out int position);
+            position = typeName.CopyToSlice(chars, position);
             chars[position++] = ' ';
 
-            name.CopyToSlice(chars, ref position);
+            position = name.CopyToSlice(chars, position);
             chars[position++] = '=';
 
-            valueStr.CopyToSlice(chars, ref position);
+            position = valueStr.CopyToSlice(chars, position);
 
             return new string(chars.Slice(0, position));
         }
@@ -146,13 +145,12 @@ namespace MG.Sonarr.Next.PSProperties
             int length = 2 + READ_ONLY.Length + typeName.Length + name.Length + maxLength;
 
             Span<char> chars = stackalloc char[length];
-            int position = 0;
 
-            READ_ONLY.CopyToSlice(chars, ref position);
-            typeName.CopyToSlice(chars, ref position);
+            READ_ONLY.CopyTo(chars, out int position);
+            position = typeName.CopyToSlice(chars, position);
 
             chars[position++] = ' ';
-            name.CopyToSlice(chars, ref position);
+            position = name.CopyToSlice(chars, position);
 
             chars[position++] = '=';
             if (!formattable.TryFormat(chars.Slice(position), out int written, default, Statics.DefaultProvider))

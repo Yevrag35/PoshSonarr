@@ -3,24 +3,27 @@ using System.Collections;
 
 namespace MG.Sonarr.Next.Collections
 {
+    /// <summary>
+    /// Represents a read-only set containing zero or one string value, providing efficient set operations for
+    /// single-item scenarios.
+    /// </summary>
+    /// <remarks>This struct is optimized for cases where a set contains at most one string. All set
+    /// operations are performed using ordinal, case-insensitive string comparison.</remarks>
     internal readonly struct OneStringSet : IReadOnlySet<string>
     {
         const int COUNT = 1;
 
-        readonly bool _isNotEmpty;
         readonly string? _value;
 
         [MemberNotNullWhen(false, nameof(Value), nameof(_value))]
-        public bool IsEmpty => !_isNotEmpty;
+        public bool IsEmpty => string.IsNullOrEmpty(_value);
         public string Value => _value ?? string.Empty;
 
         int IReadOnlyCollection<string>.Count => COUNT;
 
         internal OneStringSet(string value)
         {
-            ArgumentNullException.ThrowIfNull(value);
             _value = value;
-            _isNotEmpty = true;
         }
 
         public IEnumerator<string> GetEnumerator()
@@ -49,7 +52,7 @@ namespace MG.Sonarr.Next.Collections
 
         bool IReadOnlySet<string>.Contains(string item)
         {
-            return !this.IsEmpty && _value.Equals(item, StringComparison.InvariantCultureIgnoreCase);
+            return !this.IsEmpty && _value.Equals(item, StringComparison.OrdinalIgnoreCase);
         }
         bool IReadOnlySet<string>.IsProperSubsetOf(IEnumerable<string> other)
         {
@@ -68,7 +71,7 @@ namespace MG.Sonarr.Next.Collections
                     break;
                 }
 
-                if (_value.Equals(s, StringComparison.InvariantCultureIgnoreCase))
+                if (_value.Equals(s, StringComparison.OrdinalIgnoreCase))
                 {
                     dub.Bool1 = true;
                 }
@@ -99,7 +102,7 @@ namespace MG.Sonarr.Next.Collections
 
             foreach (string s in other)
             {
-                if (_value.Equals(s, StringComparison.InvariantCultureIgnoreCase))
+                if (_value.Equals(s, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -116,7 +119,7 @@ namespace MG.Sonarr.Next.Collections
 
             foreach (string s in other)
             {
-                if (!_value.Equals(s, StringComparison.InvariantCultureIgnoreCase))
+                if (!_value.Equals(s, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -134,7 +137,7 @@ namespace MG.Sonarr.Next.Collections
 
             foreach (string s in other)
             {
-                if (_value.Equals(s, StringComparison.InvariantCultureIgnoreCase))
+                if (_value.Equals(s, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -152,7 +155,7 @@ namespace MG.Sonarr.Next.Collections
 
             foreach (string s in other)
             {
-                if (!_value.Equals(s, StringComparison.InvariantCultureIgnoreCase))
+                if (!_value.Equals(s, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }

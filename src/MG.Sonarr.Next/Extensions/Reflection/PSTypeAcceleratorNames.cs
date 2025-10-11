@@ -1,13 +1,21 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Frozen;
+using System.Collections.ObjectModel;
 
 namespace MG.Sonarr.Next.Extensions.Reflection;
 
+/// <summary>
+/// Provides a mapping between .NET types and their corresponding PowerShell type accelerator names.
+/// </summary>
+/// <remarks>Use this class to retrieve PowerShell type accelerator names for supported .NET types, or to obtain
+/// bracketed type accelerator representations. This is useful when generating or analyzing PowerShell scripts that
+/// reference types by their accelerator names. The set of mappings is based on common PowerShell type accelerators and
+/// is case-insensitive for name lookups.</remarks>
 public sealed class PSTypeAcceleratorNames
 {
     public static readonly PSTypeAcceleratorNames Shared = new(InitializeDictionaries());
 
-    private readonly ReadOnlyDictionary<Type, string> _typeToNames;
-    private readonly ReadOnlyDictionary<string, string> _namesToBrackets;
+    private readonly FrozenDictionary<Type, string> _typeToNames;
+    private readonly FrozenDictionary<string, string> _namesToBrackets;
 
     public string this[Type key] => this.TryGetName(key, out string? name)
         ? name
@@ -15,8 +23,8 @@ public sealed class PSTypeAcceleratorNames
 
     private PSTypeAcceleratorNames((Dictionary<Type, string> typeToNames, Dictionary<string, string> namesToBrackets) tuple)
     {
-        _typeToNames = new(tuple.typeToNames);
-        _namesToBrackets = new(tuple.namesToBrackets);
+        _typeToNames = tuple.typeToNames.ToFrozenDictionary();
+        _namesToBrackets = tuple.namesToBrackets.ToFrozenDictionary(tuple.namesToBrackets.Comparer);
     }
 
     [DebuggerStepThrough]
