@@ -1,6 +1,7 @@
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Services.Http.Queries;
+using Newtonsoft.Json.Linq;
 using System.Collections.Immutable;
 
 namespace MG.Sonarr.Next.Metadata
@@ -16,6 +17,11 @@ namespace MG.Sonarr.Next.Metadata
     [DebuggerDisplay(@"\{{Value}, {UrlBase}\}")]
     public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatable<MetadataTag>
     {
+        /// <summary>
+        /// The cached <see cref="ToString"/> string.
+        /// </summary>
+        private string? _toString;
+
         /// <summary>
         /// Gets the array of cmdlet names that data tagged with this instance can be piped to in PowerShell.
         /// </summary>
@@ -129,16 +135,7 @@ namespace MG.Sonarr.Next.Metadata
                 return this.UrlBase;
             }
 
-            int length = this.UrlBase.Length + 1 + id.Length;
-
-            return string.Create(length, (this.UrlBase, id), (chars, state) =>
-            {
-                state.UrlBase.CopyTo(chars);
-                int position = state.UrlBase.Length;
-                chars[position++] = '/';
-
-                state.id.CopyTo(chars.Slice(position));
-            });
+            return string.Concat(this.UrlBase, ['/'], id);
         }
         public string GetUrlForId(ReadOnlySpan<char> id)
         {
@@ -148,15 +145,7 @@ namespace MG.Sonarr.Next.Metadata
                 return this.UrlBase;
             }
 
-            Span<char> chars = stackalloc char[this.UrlBase.Length + 1 + id.Length];
-
-            int position = 0;
-            this.UrlBase.CopyToSlice(chars, ref position);
-            chars[position++] = '/';
-
-            id.CopyTo(chars.Slice(position));
-
-            return new string(chars);
+            return string.Concat(this.UrlBase, ['/'], id);
         }
         
         /// <exception cref="InvalidOperationException"/>
@@ -164,8 +153,7 @@ namespace MG.Sonarr.Next.Metadata
         {
             this.ThrowIfNotSupportId();
             Span<char> span = stackalloc char[this.UrlBase.Length + 1 + LengthConstants.INT128_MAX];
-            int position = 0;
-            this.UrlBase.CopyToSlice(span, ref position);
+            this.UrlBase.CopyTo(span, out int position);
 
             span[position++] = '/';
 
@@ -174,9 +162,8 @@ namespace MG.Sonarr.Next.Metadata
                 Debug.Fail($"Unable to format '{id}' into the BaseUrl.");
                 position = this.UrlBase.Length + 1;
 
-                id.ToString(null, formatProvider: Statics.DefaultProvider)
-                  .AsSpan()
-                  .CopyToSlice(span, ref position);
+                position = id.ToString(format: null, formatProvider: Statics.DefaultProvider)
+                             .CopyToSlice(span, position);
             }
 
             return new string(span.Slice(0, position));
@@ -186,17 +173,16 @@ namespace MG.Sonarr.Next.Metadata
             this.ThrowIfNotSupportId();
             Span<char> span = stackalloc char[this.UrlBase.Length + 2 + parameters.MaxLength + LengthConstants.INT128_MAX];
 
-            int position = 0;
-            this.UrlBase.CopyToSlice(span, ref position);
+            this.UrlBase.CopyTo(span, out int position);
 
             span[position++] = '/';
 
-            id.CopyToSlice(span, ref position, provider: Statics.DefaultProvider);
+            position = id.CopyToSlice(span, position, provider: Statics.DefaultProvider);
 
             if (parameters.Count > 0)
             {
                 span[position++] = '?';
-                parameters.CopyToSlice(span, ref position, provider: Statics.DefaultProvider);
+                position = parameters.CopyToSlice(span, position, provider: Statics.DefaultProvider);
             }
 
             return new string(span.Slice(0, position));
@@ -226,41 +212,50 @@ namespace MG.Sonarr.Next.Metadata
             }
         }
 
+        /// <summary>
+        /// Returns a string that represents the current <see cref="MetadataTag"/>, including its value and the list of pipe targets.
+        /// </summary>
+        /// <remarks>The returned string includes the names and values of the object's properties for
+        /// easier inspection and debugging.</remarks>
+        /// <returns>A string containing the object's value and its pipe targets in a formatted representation.</returns>
+        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in nameof()")]
         public override string ToString()
         {
-            int length = this.Value.Length + 22 + nameof(this.Value).Length + nameof(this.CanPipeTo).Length;
+            if (_toString is not null) return _toString;
 
-            if (this.CanPipeTo.Length > 0)
+            // {Value = <value>; CanPipeTo = {<comma[space]-separated list}} <-- Format
+            int length = this.Value.Length + nameof(Value).Length + nameof(CanPipeTo).Length;
+            foreach (string piped in this.CanPipeTo.AsSpan())
             {
-                length += this.CanPipeTo.Sum(x => x.Length) + (2 * (this.CanPipeTo.Length - 1));
+                length += piped.Length;
             }
 
-            return string.Create(length, this, (chars, state) =>
+            length += 12 + (2 * (this.CanPipeTo.Length - 1)); // 12 = the miscellaneous characters
+
+            return _toString = string.Create(length, this, (chars, state) =>
             {
                 int position = 0;
-                Span<char> sep = [' ', '=', ' '];
-                ref char space = ref sep[0];
-
-                Span<char> comma = [',', space];
+                ReadOnlySpan<char> sep = [' ', '=', ' '];
+                ReadOnlySpan<char> comma = [',', ' '];
 
                 chars[position++] = '{';
 
-                nameof(state.Value).CopyToSlice(chars, ref position);
-                sep.CopyToSlice(chars, ref position);
-                state.Value.CopyToSlice(chars, ref position);
-                comma.CopyToSlice(chars, ref position);
+                position = nameof(state.Value).CopyToSlice(chars, position);
+                position = sep.CopyToSlice(chars, position);
+                position = state.Value.CopyToSlice(chars, position);
+                position = comma.CopyToSlice(chars, position);
 
-                nameof(state.CanPipeTo).CopyToSlice(chars, ref position);
-                sep.CopyToSlice(chars, ref position);
+                position = nameof(state.CanPipeTo).CopyToSlice(chars, position);
+                position = sep.CopyToSlice(chars, position);
                 chars[position++] = '{';
 
                 int count = 0;
                 foreach (string s in state.CanPipeTo)
                 {
-                    s.CopyToSlice(chars, ref position);
+                    position = s.CopyToSlice(chars, position);
                     if (count < state.CanPipeTo.Length - 1)
                     {
-                        comma.CopyToSlice(chars, ref position);
+                        position = comma.CopyToSlice(chars, position);
                     }
 
                     count++;
