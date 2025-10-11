@@ -8,12 +8,11 @@ namespace MG.Sonarr.Next.Collections
     {
         const int COUNT = 1;
 
-        readonly bool _isNotEmpty;
         readonly string? _key;
         readonly string? _value;
 
         [MemberNotNullWhen(false, nameof(_key), nameof(_value))]
-        public bool IsEmpty => !_isNotEmpty;
+        public bool IsEmpty => string.IsNullOrEmpty(_key) || string.IsNullOrEmpty(_value);
         public string Key => _key ?? string.Empty;
         public string Value => _value ?? string.Empty;
 
@@ -60,7 +59,6 @@ namespace MG.Sonarr.Next.Collections
 
             _key = key;
             _value = value;
-            _isNotEmpty = true;
         }
         internal OneStringDictionary(KeyValuePair<string, string> pair)
             : this(pair.Key, pair.Value)

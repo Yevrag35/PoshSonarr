@@ -16,7 +16,7 @@ namespace MG.Sonarr.Next.Collections
         string BuildMessage();
     }
 
-    file sealed class EmptyReadOnlyErrorCollection : IErrorCollection
+    internal sealed class EmptyReadOnlyErrorCollection : IErrorCollection
     {
         public SonarrServerError this[int index] => null!;
 
@@ -24,7 +24,7 @@ namespace MG.Sonarr.Next.Collections
 
         public IEnumerator<SonarrServerError> GetEnumerator()
         {
-            yield break;
+            return Enumerable.Empty<SonarrServerError>().GetEnumerator();
         }
 
         public string BuildMessage()
