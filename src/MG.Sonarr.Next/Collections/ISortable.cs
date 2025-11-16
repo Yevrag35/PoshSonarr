@@ -1,8 +1,7 @@
-﻿namespace MG.Sonarr.Next.Collections
+﻿namespace MG.Sonarr.Next.Collections;
+
+public interface ISortable
 {
-    public interface ISortable
-    {
-        int Count { get; }
-        void Sort();
-    }
+	int Count { get; }
+	void Sort();
 }

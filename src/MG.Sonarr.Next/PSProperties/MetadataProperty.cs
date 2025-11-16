@@ -1,31 +1,30 @@
-using System.Management.Automation;
 using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Metadata;
+using System.Management.Automation;
 
-namespace MG.Sonarr.Next.PSProperties
+namespace MG.Sonarr.Next.PSProperties;
+
+public sealed class MetadataProperty : ReadOnlyProperty<MetadataTag>
 {
-    public sealed class MetadataProperty : ReadOnlyProperty<MetadataTag>
-    {
-        static readonly string _typeName = typeof(MetadataTag).GetName();
-        public MetadataTag Tag { get; internal set; }
-        public override string TypeNameOfValue => _typeName;
-        protected override MetadataTag ValueAsT => this.Tag;
+	static readonly string _typeName = typeof(MetadataTag).GetName();
+	public MetadataTag Tag { get; internal set; }
+	public override string TypeNameOfValue => _typeName;
+	protected override MetadataTag ValueAsT => this.Tag;
 
-        private MetadataProperty()
-            : this(MetadataTag.Empty)
-        {
-        }
-        public MetadataProperty(MetadataTag value)
-            : base(MetadataResolver.META_PROPERTY_NAME)
-        {
-            this.Tag = value;
-        }
+	private MetadataProperty()
+		: this(MetadataTag.Empty)
+	{
+	}
+	public MetadataProperty(MetadataTag value)
+		: base(MetadataResolver.META_PROPERTY_NAME)
+	{
+		this.Tag = value;
+	}
 
-        internal static readonly MetadataProperty Empty = new();
+	internal static readonly MetadataProperty Empty = new();
 
-        public override PSMemberInfo Copy()
-        {
-            return new MetadataProperty(this.Tag);
-        }
-    }
+	public override PSMemberInfo Copy()
+	{
+		return new MetadataProperty(this.Tag);
+	}
 }

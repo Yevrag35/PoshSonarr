@@ -9,41 +9,41 @@ namespace MG.Sonarr.Next.Shell.Services;
 
 internal static class ModuleServiceConfigurer
 {
-    internal static void AddConfiguration(IServiceCollection services)
-    {
-        services.AddScoped<ManualImportEdit>()
-                .AddScoped<ReleaseProfileObject>()
-                .AddSingleton<ConcurrentDictionary<Type, EqualityChecker>>(provider => [])
-                .AddGenericObjectPool<Dictionary<int, IEpisodeBySeriesPipeable>>(builder =>
-                {
-                    builder.SetConstructor(() => new Dictionary<int, IEpisodeBySeriesPipeable>(50))
-                           .SetDeconstructor(dict =>
-                           {
-                               dict.Clear();
-                               int cap = dict.EnsureCapacity(50);
-                               if (cap >= 1000)
-                               {
-                                   dict.TrimExcess(50);
-                               }
+	internal static void AddConfiguration(IServiceCollection services)
+	{
+		services.AddScoped<ManualImportEdit>()
+				.AddScoped<ReleaseProfileObject>()
+				.AddSingleton<ConcurrentDictionary<Type, EqualityChecker>>(provider => [])
+				.AddGenericObjectPool<Dictionary<int, IEpisodeBySeriesPipeable>>(builder =>
+				{
+					builder.SetConstructor(() => new Dictionary<int, IEpisodeBySeriesPipeable>(50))
+						   .SetDeconstructor(dict =>
+						   {
+							   dict.Clear();
+							   int cap = dict.EnsureCapacity(50);
+							   if (cap >= 1000)
+							   {
+								   dict.TrimExcess(50);
+							   }
 
-                               return true;
-                           });
-                })
-                .AddGenericObjectPool<HashSet<DayOfWeek>>(set =>
-                {
-                    set.Clear();
+							   return true;
+						   });
+				})
+				.AddGenericObjectPool<HashSet<DayOfWeek>>(set =>
+				{
+					set.Clear();
 
-                    if (set.EnsureCapacity(50) > 1000)
-                        set.TrimExcess(50);
+					if (set.EnsureCapacity(50) > 1000)
+						set.TrimExcess(50);
 
-                    return true;
-                })
-                .AddGenericObjectPool<SortedSet<SonarrProperty>>(set =>
-                {
-                    int count = set.Count;
-                    set.Clear();
+					return true;
+				})
+				.AddGenericObjectPool<SortedSet<SonarrProperty>>(set =>
+				{
+					int count = set.Count;
+					set.Clear();
 
-                    return count <= 3000;
-                });
-    }
+					return count <= 3000;
+				});
+	}
 }

@@ -2,6 +2,7 @@
 using System.Buffers;
 
 namespace MG.Sonarr.Next.Strings;
+
 public static class CharCollections
 {
 	public static readonly SearchValues<char> AllAlphaNumeric;
@@ -50,16 +51,16 @@ public static class CharCollections
 	/// <exception cref="ArgumentException">The buffer is too small.</exception>
 	public static void WriteAlphaLowercase(Span<char> buffer)
 	{
-        CopyCharactersTo(buffer, 'a', 'z');
-    }
+		CopyCharactersTo(buffer, 'a', 'z');
+	}
 	public static void WriteAlphaUppercase(Span<char> buffer)
 	{
 		CopyCharactersTo(buffer, 'A', 'Z');
 	}
 	public static void WriteNumbers(Span<char> buffer)
 	{
-        CopyCharactersTo(buffer, '0', '9');
-    }
+		CopyCharactersTo(buffer, '0', '9');
+	}
 	public static void WriteNumbers(Span<byte> buffer)
 	{
 		CopyCharactersTo(buffer, '0', '9');
@@ -73,7 +74,7 @@ public static class CharCollections
 		}
 	}
 
-    private static void CopyCharactersTo(Span<char> destination, char start, char end)
+	private static void CopyCharactersTo(Span<char> destination, char start, char end)
 	{
 		for (int i = 0; i < destination.Length; i++)
 		{

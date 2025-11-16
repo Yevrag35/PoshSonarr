@@ -5,137 +5,136 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
-namespace MG.Sonarr.Next.Json.Modifiers
+namespace MG.Sonarr.Next.Json.Modifiers;
+
+public static class JsonModifiers
 {
-    public static class JsonModifiers
-    {
-        public static void AddPrivateFieldsModifier(JsonTypeInfo typeInfo)
-        {
-            ArgumentNullException.ThrowIfNull(typeInfo);
+	public static void AddPrivateFieldsModifier(JsonTypeInfo typeInfo)
+	{
+		ArgumentNullException.ThrowIfNull(typeInfo);
 
-            if (typeInfo.Kind != JsonTypeInfoKind.Object)
-            {
-                return;
-            }
+		if (typeInfo.Kind != JsonTypeInfoKind.Object)
+		{
+			return;
+		}
 
-            Type attType = typeof(JsonIncludePrivateFieldsAttribute);
-            Type jsonNameType = typeof(JsonPropertyNameAttribute);
+		Type attType = typeof(JsonIncludePrivateFieldsAttribute);
+		Type jsonNameType = typeof(JsonPropertyNameAttribute);
 
-            if (!typeInfo.Type.IsDefined(attType, inherit: false))
-            {
-                return;
-            }
+		if (!typeInfo.Type.IsDefined(attType, inherit: false))
+		{
+			return;
+		}
 
-            CustomAttributeTypedArgument ctor = typeInfo.Type.CustomAttributes
-                .First(x => x.AttributeType == attType)
-                    .ConstructorArguments
-                        .FirstOrDefault();
+		CustomAttributeTypedArgument ctor = typeInfo.Type.CustomAttributes
+			.First(x => x.AttributeType == attType)
+				.ConstructorArguments
+					.FirstOrDefault();
 
-            if (ctor.Value is not ReadOnlyCollection<CustomAttributeTypedArgument> col)
-            {
-                return;
-            }
+		if (ctor.Value is not ReadOnlyCollection<CustomAttributeTypedArgument> col)
+		{
+			return;
+		}
 
-            foreach (CustomAttributeTypedArgument arg in col)
-            {
-                AddFieldToTypeInfo(typeInfo, jsonNameType, in arg);
-            }
-        }
+		foreach (CustomAttributeTypedArgument arg in col)
+		{
+			AddFieldToTypeInfo(typeInfo, jsonNameType, in arg);
+		}
+	}
 
-        private static void AddFieldToTypeInfo(JsonTypeInfo typeInfo, Type jsonNameType, in CustomAttributeTypedArgument argument)
-        {
-            if (argument.Value is not string fieldName)
-            {
-                return;
-            }
+	private static void AddFieldToTypeInfo(JsonTypeInfo typeInfo, Type jsonNameType, in CustomAttributeTypedArgument argument)
+	{
+		if (argument.Value is not string fieldName)
+		{
+			return;
+		}
 
-            if (!TryGetField(typeInfo, fieldName, out FieldInfo? fi))
-            {
-                return;
-            }
+		if (!TryGetField(typeInfo, fieldName, out FieldInfo? fi))
+		{
+			return;
+		}
 
-            var propInfo = typeInfo.CreateJsonPropertyInfo(
-                propertyType: fi.FieldType,
-                name: GetJsonName(fi, typeInfo, jsonNameType));
+		var propInfo = typeInfo.CreateJsonPropertyInfo(
+			propertyType: fi.FieldType,
+			name: GetJsonName(fi, typeInfo, jsonNameType));
 
-            propInfo.Get = fi.GetValue;
-            propInfo.Set = fi.SetValue;
+		propInfo.Get = fi.GetValue;
+		propInfo.Set = fi.SetValue;
 
-            typeInfo.Properties.Add(propInfo);
-        }
+		typeInfo.Properties.Add(propInfo);
+	}
 
-        private static string GetAdjustedFieldName(string fieldName)
-        {
-            Span<char> scratch = stackalloc char[fieldName.Length];
-            fieldName.CopyTo(scratch);
-            bool changed = false;
-            char underscore = '_';
+	private static string GetAdjustedFieldName(string fieldName)
+	{
+		Span<char> scratch = stackalloc char[fieldName.Length];
+		fieldName.CopyTo(scratch);
+		bool changed = false;
+		char underscore = '_';
 
-            if (scratch.StartsWith(underscore))
-            {
-                int index = scratch.IndexOfAnyExcept(underscore);
-                scratch = scratch.Slice(index);
-                if (scratch.IsEmpty)
-                {
-                    return fieldName;
-                }
+		if (scratch.StartsWith(underscore))
+		{
+			int index = scratch.IndexOfAnyExcept(underscore);
+			scratch = scratch.Slice(index);
+			if (scratch.IsEmpty)
+			{
+				return fieldName;
+			}
 
-                changed = true;
-            }
+			changed = true;
+		}
 
-            ref char c = ref scratch[0];
-            if (!char.IsUpper(c))
-            {
-                c = char.ToUpper(c);
-                changed = true;
-            }
+		ref char c = ref scratch[0];
+		if (!char.IsUpper(c))
+		{
+			c = char.ToUpper(c);
+			changed = true;
+		}
 
-            return changed ? new string(scratch) : fieldName;
-        }
-        private static string GetJsonName(MemberInfo memberInfo, JsonTypeInfo typeInfo, Type jsonNameType)
-        {
-            if (!memberInfo.IsDefined(jsonNameType, inherit: false))
-            {
-                return GetNonUnderscoreName(memberInfo.Name, typeInfo);
-            }
+		return changed ? new string(scratch) : fieldName;
+	}
+	private static string GetJsonName(MemberInfo memberInfo, JsonTypeInfo typeInfo, Type jsonNameType)
+	{
+		if (!memberInfo.IsDefined(jsonNameType, inherit: false))
+		{
+			return GetNonUnderscoreName(memberInfo.Name, typeInfo);
+		}
 
-            CustomAttributeTypedArgument arg = memberInfo.CustomAttributes
-                .First(x => x.AttributeType == jsonNameType)
-                    .ConstructorArguments
-                        .FirstOrDefault();
+		CustomAttributeTypedArgument arg = memberInfo.CustomAttributes
+			.First(x => x.AttributeType == jsonNameType)
+				.ConstructorArguments
+					.FirstOrDefault();
 
-            return arg.Value as string ?? string.Empty;
-        }
-        private static string GetNonUnderscoreName(string? fieldName, JsonTypeInfo typeInfo)
-        {
-            if (string.IsNullOrWhiteSpace(fieldName))
-            {
-                return string.Empty;
-            }
+		return arg.Value as string ?? string.Empty;
+	}
+	private static string GetNonUnderscoreName(string? fieldName, JsonTypeInfo typeInfo)
+	{
+		if (string.IsNullOrWhiteSpace(fieldName))
+		{
+			return string.Empty;
+		}
 
-            fieldName = GetAdjustedFieldName(fieldName);
+		fieldName = GetAdjustedFieldName(fieldName);
 
-            return typeInfo.Options.PropertyNamingPolicy?.ConvertName(fieldName) ?? fieldName;
-        }
-        private static bool TryGetField(JsonTypeInfo info, string fieldName, [NotNullWhen(true)] out FieldInfo? field)
-        {
-            field = null;
-            if (string.IsNullOrWhiteSpace(fieldName))
-            {
-                return false;
-            }
+		return typeInfo.Options.PropertyNamingPolicy?.ConvertName(fieldName) ?? fieldName;
+	}
+	private static bool TryGetField(JsonTypeInfo info, string fieldName, [NotNullWhen(true)] out FieldInfo? field)
+	{
+		field = null;
+		if (string.IsNullOrWhiteSpace(fieldName))
+		{
+			return false;
+		}
 
-            try
-            {
-                field = info.Type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e);
-                return false;
-            }
+		try
+		{
+			field = info.Type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+		}
+		catch (Exception e)
+		{
+			Debug.WriteLine(e);
+			return false;
+		}
 
-            return field is not null;
-        }
-    }
+		return field is not null;
+	}
 }

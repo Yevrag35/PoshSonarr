@@ -63,28 +63,28 @@ public static partial class ThrowHelper
 	{
 		throw new ArgumentException(ExMessages.Collections_ItemIsNull, paramName);
 	}
-    /// <summary>
-    /// Throws an <see cref="ArgumentOutOfRangeException"/> if the specified <paramref name="value"/> is negative  or
-    /// greater than the specified <paramref name="other"/>.
-    /// </summary>
-    /// <param name="value">The integer value to validate. Must not be negative and must not exceed <paramref name="other"/>.</param>
-    /// <param name="other">The upper limit, inclusive, that <paramref name="value"/> must not exceed. Must be less than or equal to <see
-    /// cref="int.MaxValue"/>.</param>
-    /// <param name="paramName">The name of the parameter being validated. This is automatically populated by the compiler if not explicitly
-    /// provided.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is negative or greater than <paramref name="other"/>.</exception>
-    public static void ThrowIfNegativeOrGreaterThan(int value, uint other, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+	/// <summary>
+	/// Throws an <see cref="ArgumentOutOfRangeException"/> if the specified <paramref name="value"/> is negative  or
+	/// greater than the specified <paramref name="other"/>.
+	/// </summary>
+	/// <param name="value">The integer value to validate. Must not be negative and must not exceed <paramref name="other"/>.</param>
+	/// <param name="other">The upper limit, inclusive, that <paramref name="value"/> must not exceed. Must be less than or equal to <see
+	/// cref="int.MaxValue"/>.</param>
+	/// <param name="paramName">The name of the parameter being validated. This is automatically populated by the compiler if not explicitly
+	/// provided.</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is negative or greater than <paramref name="other"/>.</exception>
+	public static void ThrowIfNegativeOrGreaterThan(int value, uint other, [CallerArgumentExpression(nameof(value))] string? paramName = null)
 	{
-        Debug.Assert(other is <= int.MaxValue and not 0, "The other value should never be 0 and always than or equal to int.MaxValue.");
-        if ((uint)value > other)
-        {
-            throw new ArgumentOutOfRangeException(paramName, value,
-                message: string.Format(
-                    CultureInfo.CurrentCulture,
-                    "{0} ('{1}') must not be negative but also not greater than '{2}'. (Parameter '{0}')\r\nActual value was {1}.",
-                    paramName,
-                    value,
-                    other));
-        }
-    }
+		Debug.Assert(other is <= int.MaxValue and not 0, "The other value should never be 0 and always than or equal to int.MaxValue.");
+		if ((uint)value > other)
+		{
+			throw new ArgumentOutOfRangeException(paramName, value,
+				message: string.Format(
+					CultureInfo.CurrentCulture,
+					"{0} ('{1}') must not be negative but also not greater than '{2}'. (Parameter '{0}')\r\nActual value was {1}.",
+					paramName,
+					value,
+					other));
+		}
+	}
 }

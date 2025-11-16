@@ -1,62 +1,61 @@
 using System.Collections;
 
-namespace MG.Sonarr.Next.Extensions
+namespace MG.Sonarr.Next.Extensions;
+
+public static class HashtableExtensions
 {
-    public static class HashtableExtensions
-    {
-        public static KeyValueEnumerator<TKey, TValue> EnumerateAsPairs<TKey, TValue>(this IDictionary table)
-        {
-            ArgumentNullException.ThrowIfNull(table);
-            return new KeyValueEnumerator<TKey, TValue>(table);
-        }
+	public static KeyValueEnumerator<TKey, TValue> EnumerateAsPairs<TKey, TValue>(this IDictionary table)
+	{
+		ArgumentNullException.ThrowIfNull(table);
+		return new KeyValueEnumerator<TKey, TValue>(table);
+	}
 
-        [StructLayout(LayoutKind.Auto)]
-        public ref struct KeyValueEnumerator<TKey, TValue>
-        {
-            private IDictionaryEnumerator? _enumerator;
+	[StructLayout(LayoutKind.Auto)]
+	public ref struct KeyValueEnumerator<TKey, TValue>
+	{
+		private IDictionaryEnumerator? _enumerator;
 
-            public KeyValuePair<TKey, TValue> Current { get; private set; }
+		public KeyValuePair<TKey, TValue> Current { get; private set; }
 
-            public KeyValueEnumerator(IDictionary dictionary)
-            {
-                _enumerator = dictionary.GetEnumerator();
-                this.Current = default;
-            }
+		public KeyValueEnumerator(IDictionary dictionary)
+		{
+			_enumerator = dictionary.GetEnumerator();
+			this.Current = default;
+		}
 
-            public readonly KeyValueEnumerator<TKey, TValue> GetEnumerator() => this;
+		public readonly KeyValueEnumerator<TKey, TValue> GetEnumerator() => this;
 
-            public bool MoveNext()
-            {
-                if (_enumerator is null || !_enumerator.MoveNext())
-                {
-                    return false;
-                }
-                
-                if (_enumerator.Key is not TKey tKey)
-                {
-                    throw new InvalidKeyTypeException(typeof(TKey), _enumerator.Key);
-                }
+		public bool MoveNext()
+		{
+			if (_enumerator is null || !_enumerator.MoveNext())
+			{
+				return false;
+			}
 
-                if (_enumerator.Value is not TValue tValue)
-                {
-                    throw new InvalidValueTypeException(typeof(TValue), _enumerator.Value);
-                }
-                
-                this.Current = new(tKey, tValue);
-                return true;
-            }
+			if (_enumerator.Key is not TKey tKey)
+			{
+				throw new InvalidKeyTypeException(typeof(TKey), _enumerator.Key);
+			}
 
-            public void Dispose()
-            {
-                _enumerator = null!;
-                this = default;
-            }
+			if (_enumerator.Value is not TValue tValue)
+			{
+				throw new InvalidValueTypeException(typeof(TValue), _enumerator.Value);
+			}
 
-            public readonly void Reset()
-            {
-                _enumerator?.Reset();
-            }
-        }
-    }
+			this.Current = new(tKey, tValue);
+			return true;
+		}
+
+		public void Dispose()
+		{
+			_enumerator = null!;
+			this = default;
+		}
+
+		public readonly void Reset()
+		{
+			_enumerator?.Reset();
+		}
+	}
 }
 

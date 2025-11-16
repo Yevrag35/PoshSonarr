@@ -2,6 +2,7 @@
 using System.Text;
 
 namespace MG.Sonarr.Next.Strings;
+
 public readonly partial struct Wildcard
 {
 	/// <summary>
@@ -40,7 +41,7 @@ public readonly partial struct Wildcard
 
 		return Encoding.UTF8.TryGetBytes(_pattern, utf8Destination, out bytesWritten);
 	}
-	
+
 	/// <summary>
 	/// Returns the underlying <see cref="string"/> instance of this <see cref="Wildcard"/> object; no
 	/// actual conversion is performed.

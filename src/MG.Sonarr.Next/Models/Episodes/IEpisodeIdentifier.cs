@@ -1,12 +1,11 @@
-namespace MG.Sonarr.Next.Models.Episodes
-{
-    public interface IEpisodeIdentifier
-    {
-        EpisodeRange EpisodeRange { get; }
-        bool IsAbsolute { get; }
-        int Season { get; }
+namespace MG.Sonarr.Next.Models.Episodes;
 
-        bool IsValid();
-    }
+public interface IEpisodeIdentifier
+{
+	EpisodeRange EpisodeRange { get; }
+	bool IsAbsolute { get; }
+	int Season { get; }
+
+	bool IsValid();
 }
 

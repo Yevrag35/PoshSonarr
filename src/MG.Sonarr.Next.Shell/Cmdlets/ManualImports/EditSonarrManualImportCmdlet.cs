@@ -9,131 +9,130 @@ using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Unions;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports
+namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports;
+
+[Cmdlet(VerbsData.Edit, "SonarrManualImport")]
+[MetadataCanPipe(Tag = Meta.MANUAL_IMPORT)]
+public sealed class EditSonarrManualImportCmdlet : SonarrApiCmdletBase
 {
-    [Cmdlet(VerbsData.Edit, "SonarrManualImport")]
-    [MetadataCanPipe(Tag = Meta.MANUAL_IMPORT)]
-    public sealed class EditSonarrManualImportCmdlet : SonarrApiCmdletBase
-    {
-        Either<int, SeriesObject> _series;
-        Either<int, EpisodeObject> _episode;
-        Either<int, QualityRevisionObject> _quality;
+	Either<int, SeriesObject> _series;
+	Either<int, EpisodeObject> _episode;
+	Either<int, QualityRevisionObject> _quality;
 
-        [Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
-        [Alias("Record")]
-        [ValidateNotNull]
-        [ValidateId(ValidateRangeKind.Positive)]
-        public ManualImportObject InputObject { get; set; } = null!;
+	[Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
+	[Alias("Record")]
+	[ValidateNotNull]
+	[ValidateId(ValidateRangeKind.Positive)]
+	public ManualImportObject InputObject { get; set; } = null!;
 
-        [Parameter]
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [ValidateId(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.PassAsZero)]
-        [ValidateType(typeof(int), typeof(SeriesObject))]
-        public Either<int, SeriesObject> Series
-        {
-            get => _series;
-            set => _series = value;
-        }
+	[Parameter]
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+	[ValidateId(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.PassAsZero)]
+	[ValidateType(typeof(int), typeof(SeriesObject))]
+	public Either<int, SeriesObject> Series
+	{
+		get => _series;
+		set => _series = value;
+	}
 
-        [Parameter]
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [ValidateId(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.PassAsZero)]
-        [ValidateType(typeof(int), typeof(EpisodeObject))]
-        public Either<int, EpisodeObject> Episode
-        {
-            get => _episode;
-            set => _episode = value;
-        }
+	[Parameter]
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+	[ValidateId(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.PassAsZero)]
+	[ValidateType(typeof(int), typeof(EpisodeObject))]
+	public Either<int, EpisodeObject> Episode
+	{
+		get => _episode;
+		set => _episode = value;
+	}
 
-        [Parameter]
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [ValidateId(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.PassAsZero)]
-        [ValidateType(typeof(int), typeof(QualityRevisionObject))]
-        public Either<int, QualityRevisionObject> Quality
-        {
-            get => _quality;
-            set => _quality = value;
-        }
+	[Parameter]
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+	[ValidateId(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.PassAsZero)]
+	[ValidateType(typeof(int), typeof(QualityRevisionObject))]
+	public Either<int, QualityRevisionObject> Quality
+	{
+		get => _quality;
+		set => _quality = value;
+	}
 
-        [Parameter]
-        public SwitchParameter PassThru { get; set; }
+	[Parameter]
+	public SwitchParameter PassThru { get; set; }
 
-        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
-        protected override void Begin(IServiceProvider provider)
-        {
-            var edit = provider.GetRequiredService<ManualImportEdit>();
-            if (this.HasParameter(Episode))
-            {
-                edit.Episode = this.GetObject(_episode, provider.GetMetadataTag(Meta.EPISODE));
-            }
+	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
+	protected override void Begin(IServiceProvider provider)
+	{
+		var edit = provider.GetRequiredService<ManualImportEdit>();
+		if (this.HasParameter(Episode))
+		{
+			edit.Episode = this.GetObject(_episode, provider.GetMetadataTag(Meta.EPISODE));
+		}
 
-            if (this.HasParameter(Quality))
-            {
-                edit.Quality = this.GetQualityRevision(_quality, provider.GetMetadataTag(Meta.QUALITY));
-            }
+		if (this.HasParameter(Quality))
+		{
+			edit.Quality = this.GetQualityRevision(_quality, provider.GetMetadataTag(Meta.QUALITY));
+		}
 
-            if (this.HasParameter(Series))
-            {
-                edit.Series = this.GetObject(_series, provider.GetMetadataTag(Meta.SERIES));
-            }
-        }
+		if (this.HasParameter(Series))
+		{
+			edit.Series = this.GetObject(_series, provider.GetMetadataTag(Meta.SERIES));
+		}
+	}
 
-        protected override void Process(IServiceProvider provider)
-        {
-            var edit = provider.GetRequiredService<ManualImportEdit>();
-            edit.EditImport(this.InputObject);
+	protected override void Process(IServiceProvider provider)
+	{
+		var edit = provider.GetRequiredService<ManualImportEdit>();
+		edit.EditImport(this.InputObject);
 
-            if (this.PassThru)
-            {
-                this.WriteObject(this.InputObject);
-            }
-        }
+		if (this.PassThru)
+		{
+			this.WriteObject(this.InputObject);
+		}
+	}
 
-        private T? GetObject<T>(Either<int, T> oneOf, MetadataTag tag)
-        {
-            if (oneOf.TryGetT2(out T? value, out int id))
-            {
-                return value;
-            }
+	private T? GetObject<T>(Either<int, T> oneOf, MetadataTag tag)
+	{
+		if (oneOf.TryGetT2(out T? value, out int id))
+		{
+			return value;
+		}
 
-            string url = tag.GetUrlForId(id);
-            var response = this.SendGetRequest<T>(url);
-            if (response.IsError)
-            {
-                this.WriteConditionalError(response.Error);
-                return default;
-            }
-            else
-            {
-                return response.Value;
-            }
-        }
+		string url = tag.GetUrlForId(id);
+		var response = this.SendGetRequest<T>(url);
+		if (response.IsError)
+		{
+			this.WriteConditionalError(response.Error);
+			return default;
+		}
+		else
+		{
+			return response.Value;
+		}
+	}
 
-        private QualityRevisionObject? GetQualityRevision(Either<int, QualityRevisionObject> oneOf, MetadataTag tag)
-        {
-            if (oneOf.TryGetT2(out QualityRevisionObject? qualityObj, out int qualityId))
-            {
-                return qualityObj;
-            }
+	private QualityRevisionObject? GetQualityRevision(Either<int, QualityRevisionObject> oneOf, MetadataTag tag)
+	{
+		if (oneOf.TryGetT2(out QualityRevisionObject? qualityObj, out int qualityId))
+		{
+			return qualityObj;
+		}
 
-            string url = tag.UrlBase;
-            var definitions = this.SendGetRequest<MetadataList<QualityDefinitionObject>>(url);
-            if (definitions.IsError)
-            {
-                this.WriteError(definitions.Error);
-                return null;
-            }
+		string url = tag.UrlBase;
+		var definitions = this.SendGetRequest<MetadataList<QualityDefinitionObject>>(url);
+		if (definitions.IsError)
+		{
+			this.WriteError(definitions.Error);
+			return null;
+		}
 
-            foreach (QualityDefinitionObject definition in definitions.Value)
-            {
-                PSPropertyInfo? info = definition.Properties[nameof(this.Quality)];
-                if (info?.Value is QualityObject quality && quality.Id == qualityId)
-                {
-                    return new QualityRevisionObject(quality);
-                }
-            }
+		foreach (QualityDefinitionObject definition in definitions.Value)
+		{
+			PSPropertyInfo? info = definition.Properties[nameof(this.Quality)];
+			if (info?.Value is QualityObject quality && quality.Id == qualityId)
+			{
+				return new QualityRevisionObject(quality);
+			}
+		}
 
-            return null;
-        }
-    }
+		return null;
+	}
 }

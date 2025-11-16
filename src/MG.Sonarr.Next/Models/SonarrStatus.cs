@@ -1,14 +1,13 @@
 ﻿using MG.Sonarr.Next.Services.Auth;
 
-namespace MG.Sonarr.Next.Models
-{
-    public sealed class SonarrStatus
-    {
-        public string? Authentication { get; set; }
+namespace MG.Sonarr.Next.Models;
 
-        public bool TryGetAuthType(out SonarrAuthType authType)
-        {
-            return Enum.TryParse(this.Authentication, ignoreCase: true, out authType);
-        }
-    }
+public sealed class SonarrStatus
+{
+	public string? Authentication { get; set; }
+
+	public bool TryGetAuthType(out SonarrAuthType authType)
+	{
+		return Enum.TryParse(this.Authentication, ignoreCase: true, out authType);
+	}
 }

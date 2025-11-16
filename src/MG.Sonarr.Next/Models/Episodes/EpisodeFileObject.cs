@@ -4,60 +4,59 @@ using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
-namespace MG.Sonarr.Next.Models.Episodes
+namespace MG.Sonarr.Next.Models.Episodes;
+
+[SonarrObject]
+public sealed class EpisodeFileObject : IdSonarrObject<EpisodeFileObject>,
+	IEpisodeFilePipeable,
+	IHasId,
+	IRenameFilePipeable,
+	ISeriesPipeable,
+	ISerializableNames<EpisodeFileObject>
 {
-    [SonarrObject]
-    public sealed class EpisodeFileObject : IdSonarrObject<EpisodeFileObject>,
-        IEpisodeFilePipeable,
-        IHasId,
-        IRenameFilePipeable,
-        ISeriesPipeable,
-        ISerializableNames<EpisodeFileObject>
-    {
-        const int CAPACITY = 14;
-        static readonly string _typeName = typeof(EpisodeFileObject).GetName();
+	const int CAPACITY = 14;
+	static readonly string _typeName = typeof(EpisodeFileObject).GetName();
 
-        int IEpisodeFilePipeable.EpisodeFileId => this.Id;
-        int IRenameFilePipeable.EpisodeFileId => this.Id;
-        public int SeriesId { get; private set; }
+	int IEpisodeFilePipeable.EpisodeFileId => this.Id;
+	int IRenameFilePipeable.EpisodeFileId => this.Id;
+	public int SeriesId { get; private set; }
 
-        public EpisodeFileObject()
-            : base(CAPACITY)
-        {
-        }
+	public EpisodeFileObject()
+		: base(CAPACITY)
+	{
+	}
 
-        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
-        {
-            return resolver[Meta.EPISODE_FILE];
-        }
+	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
+	{
+		return resolver[Meta.EPISODE_FILE];
+	}
 
-        protected override void OnDeserialized(bool alreadyCalled)
-        {
-            base.OnDeserialized(alreadyCalled);
+	protected override void OnDeserialized(bool alreadyCalled)
+	{
+		base.OnDeserialized(alreadyCalled);
 
-            if (this.TryGetProperty(nameof(this.SeriesId), out int seriesId))
-            {
-                this.SeriesId = seriesId;
-            }
-        }
+		if (this.TryGetProperty(nameof(this.SeriesId), out int seriesId))
+		{
+			this.SeriesId = seriesId;
+		}
+	}
 
-        protected override void SetPSTypeName()
-        {
-            base.SetPSTypeName();
-            this.TypeNames.Insert(0, _typeName);
-        }
+	protected override void SetPSTypeName()
+	{
+		base.SetPSTypeName();
+		this.TypeNames.Insert(0, _typeName);
+	}
 
-        int? IPipeable<IEpisodeFilePipeable>.GetId()
-        {
-            return this.Id;
-        }
-        int? IPipeable<IRenameFilePipeable>.GetId()
-        {
-            return this.Id;
-        }
-        int? IPipeable<ISeriesPipeable>.GetId()
-        {
-            return this.SeriesId;
-        }
-    }
+	int? IPipeable<IEpisodeFilePipeable>.GetId()
+	{
+		return this.Id;
+	}
+	int? IPipeable<IRenameFilePipeable>.GetId()
+	{
+		return this.Id;
+	}
+	int? IPipeable<ISeriesPipeable>.GetId()
+	{
+		return this.SeriesId;
+	}
 }

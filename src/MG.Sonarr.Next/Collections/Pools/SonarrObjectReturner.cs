@@ -1,75 +1,74 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace MG.Sonarr.Next.Collections.Pools
+namespace MG.Sonarr.Next.Collections.Pools;
+
+/// <summary>
+/// An interface exposing methods for returning objects back into their respective
+/// <see cref="IObjectPool{T}"/>.
+/// </summary>
+public interface IPoolReturner
 {
-    /// <summary>
-    /// An interface exposing methods for returning objects back into their respective
-    /// <see cref="IObjectPool{T}"/>.
-    /// </summary>
-    public interface IPoolReturner
-    {
-        /// <summary>
-        /// Returns a single object back into its <see cref="IObjectPool{T}"/>.
-        /// </summary>
-        /// <param name="obj">The object to return.</param>
-        void Return(object? obj);
-        /// <summary>
-        /// Returns a span of objects back into their respective <see cref="IObjectPool{T}"/> instances.
-        /// </summary>
-        /// <param name="span">The span of objects to return.</param>
-        void Return(ReadOnlySpan<object> span);
-    }
+	/// <summary>
+	/// Returns a single object back into its <see cref="IObjectPool{T}"/>.
+	/// </summary>
+	/// <param name="obj">The object to return.</param>
+	void Return(object? obj);
+	/// <summary>
+	/// Returns a span of objects back into their respective <see cref="IObjectPool{T}"/> instances.
+	/// </summary>
+	/// <param name="span">The span of objects to return.</param>
+	void Return(ReadOnlySpan<object> span);
+}
 
-    internal sealed class SonarrObjectReturner : IPoolReturner
-    {
-        readonly Dictionary<Type, IObjectPoolReturnable> _dict;
+internal sealed class SonarrObjectReturner : IPoolReturner
+{
+	readonly Dictionary<Type, IObjectPoolReturnable> _dict;
 
-        public SonarrObjectReturner(IEnumerable<IObjectPoolReturnable> returnables)
-        {
-            ArgumentNullException.ThrowIfNull(returnables);
+	public SonarrObjectReturner(IEnumerable<IObjectPoolReturnable> returnables)
+	{
+		ArgumentNullException.ThrowIfNull(returnables);
 
-            _dict = returnables.TryGetNonEnumeratedCount(out int count)
-                ? new(count)
-                : [];
+		_dict = returnables.TryGetNonEnumeratedCount(out int count)
+			? new(count)
+			: [];
 
-            foreach (IObjectPoolReturnable pool in returnables)
-            {
-                _dict.Add(pool.ReturnsType, pool);
-            }
-        }
+		foreach (IObjectPoolReturnable pool in returnables)
+		{
+			_dict.Add(pool.ReturnsType, pool);
+		}
+	}
 
-        public void Return(object? obj)
-        {
-            if (obj is null || !_dict.TryGetValue(obj.GetType(), out IObjectPoolReturnable? pool))
-            {
-                Debug.Fail("Should this really be null?");
-                return;
-            }
+	public void Return(object? obj)
+	{
+		if (obj is null || !_dict.TryGetValue(obj.GetType(), out IObjectPoolReturnable? pool))
+		{
+			Debug.Fail("Should this really be null?");
+			return;
+		}
 
-            pool.Return(obj);
-        }
-        public void Return(ReadOnlySpan<object> span)
-        {
-            if (span.IsEmpty)
-            {
-                Debug.Fail("Should this really be empty?");
-                return;
-            }
+		pool.Return(obj);
+	}
+	public void Return(ReadOnlySpan<object> span)
+	{
+		if (span.IsEmpty)
+		{
+			Debug.Fail("Should this really be empty?");
+			return;
+		}
 
-            foreach (object? obj in span)
-            {
-                Debug.Assert(obj is not null);
-                this.Return(obj);
-            }
-        }
-    }
+		foreach (object? obj in span)
+		{
+			Debug.Assert(obj is not null);
+			this.Return(obj);
+		}
+	}
+}
 
-    public static class ObjectReturnerDepedencyInjection
-    {
-        public static IServiceCollection AddObjectPoolReturner(this IServiceCollection services)
-        {
-            ArgumentNullException.ThrowIfNull(services);
-            return services.AddSingleton<IPoolReturner, SonarrObjectReturner>();
-        }
-    }
+public static class ObjectReturnerDepedencyInjection
+{
+	public static IServiceCollection AddObjectPoolReturner(this IServiceCollection services)
+	{
+		ArgumentNullException.ThrowIfNull(services);
+		return services.AddSingleton<IPoolReturner, SonarrObjectReturner>();
+	}
 }

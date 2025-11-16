@@ -1,16 +1,15 @@
-namespace MG.Sonarr.Next.Shell.Attributes
+namespace MG.Sonarr.Next.Shell.Attributes;
+
+[Flags]
+public enum PathType
 {
-    [Flags]
-    public enum PathType
-    {
-        None = 0,
-        Possible = 1,
+	None = 0,
+	Possible = 1,
 
-        Local = 2,
-        UNC = 4,
+	Local = 2,
+	UNC = 4,
 
-        Absolute = 16,
-        Relative = 32,
-    }
+	Absolute = 16,
+	Relative = 32,
 }
 

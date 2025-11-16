@@ -2,6 +2,7 @@
 using MG.Sonarr.Next.Extensions.Strings;
 
 namespace MG.Sonarr.Next.Strings;
+
 public readonly partial struct Wildcard
 {
 

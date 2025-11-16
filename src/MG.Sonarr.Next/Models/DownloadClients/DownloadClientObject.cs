@@ -4,41 +4,40 @@ using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
-namespace MG.Sonarr.Next.Models.DownloadClients
+namespace MG.Sonarr.Next.Models.DownloadClients;
+
+[SonarrObject]
+public sealed class DownloadClientObject : TagUpdateObject<DownloadClientObject>,
+	ISerializableNames<DownloadClientObject>,
+	ITestPipeable
 {
-    [SonarrObject]
-    public sealed class DownloadClientObject : TagUpdateObject<DownloadClientObject>,
-        ISerializableNames<DownloadClientObject>,
-        ITestPipeable
-    {
-        const int CAPACITY = 15;
-        static readonly string _typeName = typeof(DownloadClientObject).GetName();
+	const int CAPACITY = 15;
+	static readonly string _typeName = typeof(DownloadClientObject).GetName();
 
-        public string Name
-        {
-            get => this.GetStringOrEmpty();
-            set => this.SetValue(value);
-        }
+	public string Name
+	{
+		get => this.GetStringOrEmpty();
+		set => this.SetValue(value);
+	}
 
-        public DownloadClientObject()
-            : base(CAPACITY)
-        {
-        }
+	public DownloadClientObject()
+		: base(CAPACITY)
+	{
+	}
 
-        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
-        {
-            return resolver[Meta.DOWNLOAD_CLIENT];
-        }
+	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
+	{
+		return resolver[Meta.DOWNLOAD_CLIENT];
+	}
 
-        protected override void SetPSTypeName()
-        {
-            base.SetPSTypeName();
-            this.TypeNames.Insert(0, _typeName);
-        }
+	protected override void SetPSTypeName()
+	{
+		base.SetPSTypeName();
+		this.TypeNames.Insert(0, _typeName);
+	}
 
-        int? IPipeable<ITestPipeable>.GetId()
-        {
-            return this.Id;
-        }
-    }
+	int? IPipeable<ITestPipeable>.GetId()
+	{
+		return this.Id;
+	}
 }

@@ -8,43 +8,43 @@ namespace MG.Sonarr.Next.Services.Jobs;
 /// </summary>
 public sealed class ApiCmdletQueue
 {
-    private readonly ConcurrentQueue<IApiCmdlet> _queue;
+	private readonly ConcurrentQueue<IApiCmdlet> _queue;
 
-    /// <summary>
-    /// Gets the number of cmdlets contained in the <see cref="ApiCmdletQueue"/>.
-    /// </summary>
-    internal int Count => _queue.Count;
-    /// <summary>
-    /// Gets a value indicating whether the <see cref="ApiCmdletQueue"/> is empty.
-    /// </summary>
-    public bool IsEmpty => _queue.IsEmpty;
+	/// <summary>
+	/// Gets the number of cmdlets contained in the <see cref="ApiCmdletQueue"/>.
+	/// </summary>
+	internal int Count => _queue.Count;
+	/// <summary>
+	/// Gets a value indicating whether the <see cref="ApiCmdletQueue"/> is empty.
+	/// </summary>
+	public bool IsEmpty => _queue.IsEmpty;
 
-    public ApiCmdletQueue()
-    {
-        _queue = [];
-    }
+	public ApiCmdletQueue()
+	{
+		_queue = [];
+	}
 
-    public void Clear()
-    {
-        _queue.Clear();
-    }
-    public IApiCmdlet? Dequeue()
-    {
-        return _queue.TryDequeue(out IApiCmdlet? cmdlet)
-            ? cmdlet
-            : null;
-    }
-    public void Enqueue(IApiCmdlet cmdlet)
-    {
-        _queue.Enqueue(cmdlet);
-    }
+	public void Clear()
+	{
+		_queue.Clear();
+	}
+	public IApiCmdlet? Dequeue()
+	{
+		return _queue.TryDequeue(out IApiCmdlet? cmdlet)
+			? cmdlet
+			: null;
+	}
+	public void Enqueue(IApiCmdlet cmdlet)
+	{
+		_queue.Enqueue(cmdlet);
+	}
 
-    public bool TryPeek([NotNullWhen(true)] out IApiCmdlet? cmdlet)
-    {
-        return _queue.TryPeek(out cmdlet);
-    }
-    public bool TryDequeue([NotNullWhen(true)] out IApiCmdlet? cmdlet)
-    {
-        return _queue.TryDequeue(out cmdlet);
-    }
+	public bool TryPeek([NotNullWhen(true)] out IApiCmdlet? cmdlet)
+	{
+		return _queue.TryPeek(out cmdlet);
+	}
+	public bool TryDequeue([NotNullWhen(true)] out IApiCmdlet? cmdlet)
+	{
+		return _queue.TryDequeue(out cmdlet);
+	}
 }

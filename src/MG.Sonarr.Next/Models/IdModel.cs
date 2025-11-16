@@ -1,7 +1,6 @@
-﻿namespace MG.Sonarr.Next.Models
+﻿namespace MG.Sonarr.Next.Models;
+
+public sealed record IdModel : IHasId
 {
-    public sealed record IdModel : IHasId
-    {
-        public required int Id { get; init; }
-    }
+	public required int Id { get; init; }
 }

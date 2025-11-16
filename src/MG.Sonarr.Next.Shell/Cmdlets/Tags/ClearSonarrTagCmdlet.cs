@@ -7,145 +7,144 @@ using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Unions;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.Tags
+namespace MG.Sonarr.Next.Shell.Cmdlets.Tags;
+
+[Cmdlet(VerbsCommon.Clear, "SonarrTag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
+	DefaultParameterSetName = "None")]
+[MetadataCanPipe(Tag = Meta.DELAY_PROFILE)]
+[MetadataCanPipe(Tag = Meta.DOWNLOAD_CLIENT)]
+[MetadataCanPipe(Tag = Meta.INDEXER)]
+[MetadataCanPipe(Tag = Meta.RELEASE_PROFILE)]
+[MetadataCanPipe(Tag = Meta.SERIES)]
+[MetadataCanPipe(Tag = Meta.SERIES_ADD)]
+public sealed class ClearSonarrTagCmdlet : SonarrMetadataCmdlet
 {
-    [Cmdlet(VerbsCommon.Clear, "SonarrTag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
-        DefaultParameterSetName = "None")]
-    [MetadataCanPipe(Tag = Meta.DELAY_PROFILE)]
-    [MetadataCanPipe(Tag = Meta.DOWNLOAD_CLIENT)]
-    [MetadataCanPipe(Tag = Meta.INDEXER)]
-    [MetadataCanPipe(Tag = Meta.RELEASE_PROFILE)]
-    [MetadataCanPipe(Tag = Meta.SERIES)]
-    [MetadataCanPipe(Tag = Meta.SERIES_ADD)]
-    public sealed class ClearSonarrTagCmdlet : SonarrMetadataCmdlet
-    {
-        static readonly string _namePropertyName = nameof(Name);
-        SortedSet<int> _ids = null!;
-        WildcardSet _wcNames = null!;
-        Dictionary<string, ITagPipeable> _updates = null!;
+	static readonly string _namePropertyName = nameof(Name);
+	SortedSet<int> _ids = null!;
+	WildcardSet _wcNames = null!;
+	Dictionary<string, ITagPipeable> _updates = null!;
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
-        [ValidateIds(ValidateRangeKind.Positive, typeof(ITagPipeable))]
-        public ITagPipeable[] InputObject { get; set; } = [];
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+	[ValidateIds(ValidateRangeKind.Positive, typeof(ITagPipeable))]
+	public ITagPipeable[] InputObject { get; set; } = [];
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-        public int[] Id { get; set; } = [];
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	public int[] Id { get; set; } = [];
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Position = 0)]
-        public Either<string, int>[] Name { get; set; } = [];
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+	[Parameter(Position = 0)]
+	public Either<string, int>[] Name { get; set; } = [];
 
-        protected override int Capacity => 3;
-        protected override void OnCreatingScope(IServiceProvider provider)
-        {
-            base.OnCreatingScope(provider);
-            _ids = this.GetPooledObject<SortedSet<int>>();
-            _wcNames = this.GetPooledObject<WildcardSet>();
-            _updates = this.GetPooledObject<Dictionary<string, ITagPipeable>>();
+	protected override int Capacity => 3;
+	protected override void OnCreatingScope(IServiceProvider provider)
+	{
+		base.OnCreatingScope(provider);
+		_ids = this.GetPooledObject<SortedSet<int>>();
+		_wcNames = this.GetPooledObject<WildcardSet>();
+		_updates = this.GetPooledObject<Dictionary<string, ITagPipeable>>();
 
-            this.SetReturnables(_ids, _wcNames, _updates);
-        }
+		this.SetReturnables(_ids, _wcNames, _updates);
+	}
 
-        private static void AddUrlsFromMetadata(ITagPipeable[] array, Dictionary<string, ITagPipeable> updates)
-        {
-            foreach (ITagPipeable pipeable in array)
-            {
-                updates.TryAdd(pipeable.MetadataTag.GetUrlForId(pipeable.Id), pipeable);
-            }
+	private static void AddUrlsFromMetadata(ITagPipeable[] array, Dictionary<string, ITagPipeable> updates)
+	{
+		foreach (ITagPipeable pipeable in array)
+		{
+			updates.TryAdd(pipeable.MetadataTag.GetUrlForId(pipeable.Id), pipeable);
+		}
 
-            if (updates.Count == 0)
-            {
-                throw new ArgumentException(
-                    "No tag ID's were provided from the pipeline. Did you mean to use \"Clear-SonarrTag\"?");
-            }
-        }
+		if (updates.Count == 0)
+		{
+			throw new ArgumentException(
+				"No tag ID's were provided from the pipeline. Did you mean to use \"Clear-SonarrTag\"?");
+		}
+	}
 
-        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
-        {
-            return resolver[Meta.TAG];
-        }
+	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
+	{
+		return resolver[Meta.TAG];
+	}
 
-        protected override void Begin(IServiceProvider provider)
-        {
-            if (this.Id.Length > 0)
-            {
-                _ids.UnionWith(this.Id);
-            }
-            else if (this.Name.Length > 0)
-            {
-                this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
-            }
+	protected override void Begin(IServiceProvider provider)
+	{
+		if (this.Id.Length > 0)
+		{
+			_ids.UnionWith(this.Id);
+		}
+		else if (this.Name.Length > 0)
+		{
+			this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
+		}
 
-            if (_wcNames.Count > 0)
-            {
-                var all = this.GetAll<TagObject>();
+		if (_wcNames.Count > 0)
+		{
+			var all = this.GetAll<TagObject>();
 
-                foreach (var tag in all)
-                {
-                    if (_wcNames.IsAnyMatch(tag.Label))
-                    {
-                        _ = _ids.Add(tag.Id);
-                    }
-                }
-            }
-        }
-        protected override void Process(IServiceProvider provider)
-        {
-            if (this.InputObject.Length > 0)
-            {
-                AddUrlsFromMetadata(this.InputObject, _updates);
-            }
-        }
-        protected override void End(IServiceProvider provider)
-        {
-            if (this.InvokeCommand.HasErrors)
-            {
-                return;
-            }
+			foreach (var tag in all)
+			{
+				if (_wcNames.IsAnyMatch(tag.Label))
+				{
+					_ = _ids.Add(tag.Id);
+				}
+			}
+		}
+	}
+	protected override void Process(IServiceProvider provider)
+	{
+		if (this.InputObject.Length > 0)
+		{
+			AddUrlsFromMetadata(this.InputObject, _updates);
+		}
+	}
+	protected override void End(IServiceProvider provider)
+	{
+		if (this.InvokeCommand.HasErrors)
+		{
+			return;
+		}
 
-            foreach (var kvp in _updates)
-            {
-                if (!_ids.Overlaps(kvp.Value.Tags))
-                {
-                    this.WriteVerbose("No tags are being removed from the object.");
-                    continue;
-                }
+		foreach (var kvp in _updates)
+		{
+			if (!_ids.Overlaps(kvp.Value.Tags))
+			{
+				this.WriteVerbose("No tags are being removed from the object.");
+				continue;
+			}
 
-                if (this.ShouldProcess(
-                    target: kvp.Key,
-                    action: string.Format(
-                        "Removing tags: ({0})",
-                        string.Join(", ", _ids.Where(kvp.Value.Tags.Contains)))))
-                {
-                    kvp.Value.Tags.ExceptWith(_ids);
+			if (this.ShouldProcess(
+				target: kvp.Key,
+				action: string.Format(
+					"Removing tags: ({0})",
+					string.Join(", ", _ids.Where(kvp.Value.Tags.Contains)))))
+			{
+				kvp.Value.Tags.ExceptWith(_ids);
 
-                    var response = this.SendPutRequest(path: kvp.Key, body: kvp.Value);
-                    if (response.IsError)
-                    {
-                        kvp.Value.Reset();
-                        this.WriteConditionalError(response.Error);
-                    }
-                    else
-                    {
-                        kvp.Value.CommitTags();
-                    }
-                }
-            }
-        }
+				var response = this.SendPutRequest(path: kvp.Key, body: kvp.Value);
+				if (response.IsError)
+				{
+					kvp.Value.Reset();
+					this.WriteConditionalError(response.Error);
+				}
+				else
+				{
+					kvp.Value.CommitTags();
+				}
+			}
+		}
+	}
 
-        bool _disposed;
-        protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
-        {
-            if (disposing && !_disposed)
-            {
-                _ids = null!;
-                _wcNames = null!;
-                _disposed = true;
-            }
+	bool _disposed;
+	protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
+	{
+		if (disposing && !_disposed)
+		{
+			_ids = null!;
+			_wcNames = null!;
+			_disposed = true;
+		}
 
-            base.Dispose(disposing, factory);
-        }
-    }
+		base.Dispose(disposing, factory);
+	}
 }

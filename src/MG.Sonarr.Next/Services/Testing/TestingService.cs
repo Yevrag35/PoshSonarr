@@ -3,33 +3,32 @@ using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace MG.Sonarr.Next.Services.Testing
+namespace MG.Sonarr.Next.Services.Testing;
+
+public interface ITestingService
 {
-    public interface ITestingService
-    {
-        SonarrClientResult SendTest<T>(string path, T resource, CancellationToken token = default) where T : ITestPipeable;
-    }
+	SonarrClientResult SendTest<T>(string path, T resource, CancellationToken token = default) where T : ITestPipeable;
+}
 
-    internal sealed class TestingService : ITestingService
-    {
-        readonly ISonarrClient _client;
+internal sealed class TestingService : ITestingService
+{
+	readonly ISonarrClient _client;
 
-        public TestingService(ISonarrClient client)
-        {
-            _client = client;
-        }
+	public TestingService(ISonarrClient client)
+	{
+		_client = client;
+	}
 
-        public SonarrClientResult SendTest<T>(string path, T resource, CancellationToken token = default) where T : ITestPipeable
-        {
-            return _client.SendPost(path, resource, token);
-        }
-    }
+	public SonarrClientResult SendTest<T>(string path, T resource, CancellationToken token = default) where T : ITestPipeable
+	{
+		return _client.SendPost(path, resource, token);
+	}
+}
 
-    public static class TestingServiceDependencyInjection
-    {
-        public static IServiceCollection AddTestingService(this IServiceCollection services)
-        {
-            return services.AddScoped<ITestingService, TestingService>();
-        }
-    }
+public static class TestingServiceDependencyInjection
+{
+	public static IServiceCollection AddTestingService(this IServiceCollection services)
+	{
+		return services.AddScoped<ITestingService, TestingService>();
+	}
 }

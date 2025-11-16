@@ -10,125 +10,124 @@ using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.PSProperties;
 using System.Management.Automation;
 
-namespace MG.Sonarr.Next.Models.ManualImports
+namespace MG.Sonarr.Next.Models.ManualImports;
+
+[SonarrObject]
+public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
+	ISerializableNames<ManualImportObject>
 {
-    [SonarrObject]
-    public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
-        ISerializableNames<ManualImportObject>
-    {
-        const int CAPACITY = 13;
-        const string EPISODES = "Episodes";
-        const string QUALITY = "Quality";
-        const string SEASON_NUMBER = "SeasonNumber";
-        const string RELEASE_GROUP = "ReleaseGroup";
-        const string SERIES = "Series";
+	const int CAPACITY = 13;
+	const string EPISODES = "Episodes";
+	const string QUALITY = "Quality";
+	const string SEASON_NUMBER = "SeasonNumber";
+	const string RELEASE_GROUP = "ReleaseGroup";
+	const string SERIES = "Series";
 
-        static readonly string _typeName = typeof(ManualImportObject).GetName();
+	static readonly string _typeName = typeof(ManualImportObject).GetName();
 
-        public SortedSet<EpisodeObject> Episodes { get; private set; } = null!;
-        public string Name => this.GetStringOrEmpty();
-        public QualityRevisionObject? Quality
-        {
-            get => this.GetValue<QualityRevisionObject>();
-            set
-            {
-                if (value is not null)
-                {
-                    this.SetValue(value);
-                }
-            }
-        }
-        public SeriesObject? Series
-        {
-            get => this.GetValue<SeriesObject>();
-            set
-            {
-                if (value is not null)
-                {
-                    this.SetValue(value);
-                }
-            }
-        }
+	public SortedSet<EpisodeObject> Episodes { get; private set; } = null!;
+	public string Name => this.GetStringOrEmpty();
+	public QualityRevisionObject? Quality
+	{
+		get => this.GetValue<QualityRevisionObject>();
+		set
+		{
+			if (value is not null)
+			{
+				this.SetValue(value);
+			}
+		}
+	}
+	public SeriesObject? Series
+	{
+		get => this.GetValue<SeriesObject>();
+		set
+		{
+			if (value is not null)
+			{
+				this.SetValue(value);
+			}
+		}
+	}
 
-        public ManualImportObject()
-            : base(CAPACITY)
-        {
-        }
+	public ManualImportObject()
+		: base(CAPACITY)
+	{
+	}
 
-        public override int CompareTo(ManualImportObject? other)
-        {
-            return StringComparer.InvariantCultureIgnoreCase.Compare(this.Name, other?.Name);
-        }
+	public override int CompareTo(ManualImportObject? other)
+	{
+		return StringComparer.InvariantCultureIgnoreCase.Compare(this.Name, other?.Name);
+	}
 
-        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
-        {
-            return resolver[Meta.MANUAL_IMPORT];
-        }
+	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
+	{
+		return resolver[Meta.MANUAL_IMPORT];
+	}
 
-        public bool IsReadyToPost()
-        {
-            return this.Episodes.Count > 0
-                && this.Series is SeriesObject sObj
-                && sObj.Id > 0
-                && this.Quality is QualityRevisionObject qRev
-                && qRev.Quality.Id > 0;
-        }
+	public bool IsReadyToPost()
+	{
+		return this.Episodes.Count > 0
+			&& this.Series is SeriesObject sObj
+			&& sObj.Id > 0
+			&& this.Quality is QualityRevisionObject qRev
+			&& qRev.Quality.Id > 0;
+	}
 
-        protected override void OnDeserialized(bool alreadyCalled)
-        {
-            base.OnDeserialized(alreadyCalled);
+	protected override void OnDeserialized(bool alreadyCalled)
+	{
+		base.OnDeserialized(alreadyCalled);
 
-            this.StoreAndReplaceName();
-            this.AddMissingProperties();
-        }
+		this.StoreAndReplaceName();
+		this.AddMissingProperties();
+	}
 
-        private void StoreAndReplaceName()
-        {
-            string name = nameof(this.Name);
-            PSPropertyInfo? nameProp = this.Properties[name];
-            this.Properties.Remove(name);
-            this.Properties.Add(new ReadOnlyStringProperty(name, nameProp?.Value as string));
-        }
+	private void StoreAndReplaceName()
+	{
+		string name = nameof(this.Name);
+		PSPropertyInfo? nameProp = this.Properties[name];
+		this.Properties.Remove(name);
+		this.Properties.Add(new ReadOnlyStringProperty(name, nameProp?.Value as string));
+	}
 
-        private void AddMissingProperties()
-        {
-            var setProp = CreateIfMissing(this.Properties, EPISODES, static (name) =>
-            {
-                return new ReadOnlyCollectionProperty<EpisodeObject, SortedSet<EpisodeObject>>(EPISODES, []);
-            });
+	private void AddMissingProperties()
+	{
+		var setProp = CreateIfMissing(this.Properties, EPISODES, static (name) =>
+		{
+			return new ReadOnlyCollectionProperty<EpisodeObject, SortedSet<EpisodeObject>>(EPISODES, []);
+		});
 
-            this.Episodes = (SortedSet<EpisodeObject>)setProp.Value;
+		this.Episodes = (SortedSet<EpisodeObject>)setProp.Value;
 
-            CreateIfMissing(this.Properties, QUALITY, (name) =>
-            {
-                return new WritableSonarrProperty<QualityRevisionObject>(QUALITY);
-            });
-            CreateIfMissing(this.Properties, RELEASE_GROUP, static (name) => new StringNoteProperty(name, string.Empty));
-            CreateIfMissing(this.Properties, SERIES, static (name) => new WritableSonarrProperty<SeriesObject>(name));
-            CreateIfMissing(this.Properties, SEASON_NUMBER, static (name) =>
-            {
-                return new PSScriptProperty(name,
-                    ScriptBlock.Create("if (0 -lt $this.Episodes.Count) { $this.Episodes[0].SeasonNumber }"));
-            });
-        }
+		CreateIfMissing(this.Properties, QUALITY, (name) =>
+		{
+			return new WritableSonarrProperty<QualityRevisionObject>(QUALITY);
+		});
+		CreateIfMissing(this.Properties, RELEASE_GROUP, static (name) => new StringNoteProperty(name, string.Empty));
+		CreateIfMissing(this.Properties, SERIES, static (name) => new WritableSonarrProperty<SeriesObject>(name));
+		CreateIfMissing(this.Properties, SEASON_NUMBER, static (name) =>
+		{
+			return new PSScriptProperty(name,
+				ScriptBlock.Create("if (0 -lt $this.Episodes.Count) { $this.Episodes[0].SeasonNumber }"));
+		});
+	}
 
-        private static T CreateIfMissing<T>(PSMemberInfoCollection<T> collection, string propertyName, Func<string, T> createOnMissing) where T : PSMemberInfo
-        {
-            T? prop = collection[propertyName];
-            if (prop is null)
-            {
-                prop = createOnMissing(propertyName);
-                collection.Add(prop);
-            }
+	private static T CreateIfMissing<T>(PSMemberInfoCollection<T> collection, string propertyName, Func<string, T> createOnMissing) where T : PSMemberInfo
+	{
+		T? prop = collection[propertyName];
+		if (prop is null)
+		{
+			prop = createOnMissing(propertyName);
+			collection.Add(prop);
+		}
 
-            return prop;
-        }
+		return prop;
+	}
 
-        protected override void SetPSTypeName()
-        {
-            base.SetPSTypeName();
-            this.TypeNames.Insert(0, _typeName);
-        }
-    }
+	protected override void SetPSTypeName()
+	{
+		base.SetPSTypeName();
+		this.TypeNames.Insert(0, _typeName);
+	}
 }
 

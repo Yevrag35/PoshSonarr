@@ -5,92 +5,91 @@ using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders
+namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders;
+
+[Cmdlet(VerbsCommon.Remove, "SonarrRootFolder", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true,
+	DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+[MetadataCanPipe(Tag = Meta.ROOT_FOLDER)]
+public sealed class RemoveSonarrRootFolderCmdlet : SonarrMetadataCmdlet
 {
-    [Cmdlet(VerbsCommon.Remove, "SonarrRootFolder", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true,
-        DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-    [MetadataCanPipe(Tag = Meta.ROOT_FOLDER)]
-    public sealed class RemoveSonarrRootFolderCmdlet : SonarrMetadataCmdlet
-    {
-        SortedSet<int> _ids = null!;
+	SortedSet<int> _ids = null!;
 
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
-        [ValidateIds(ValidateRangeKind.Positive)]
-        public RootFolderObject[] InputObject { get; set; } = [];
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+	[ValidateIds(ValidateRangeKind.Positive)]
+	public RootFolderObject[] InputObject { get; set; } = [];
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-        [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id { get; set; } = [];
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[ValidateRange(ValidateRangeKind.Positive)]
+	public int[] Id { get; set; } = [];
 
-        [Parameter]
-        public SwitchParameter Force { get; set; }
+	[Parameter]
+	public SwitchParameter Force { get; set; }
 
-        protected override int Capacity => 1;
-        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
-        {
-            return resolver[Meta.ROOT_FOLDER];
-        }
-        protected override void OnCreatingScope(IServiceProvider provider)
-        {
-            base.OnCreatingScope(provider);
-            _ids = this.GetPooledObject<SortedSet<int>>();
-            this.GetReturnables()[0] = _ids;
-        }
+	protected override int Capacity => 1;
+	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
+	{
+		return resolver[Meta.ROOT_FOLDER];
+	}
+	protected override void OnCreatingScope(IServiceProvider provider)
+	{
+		base.OnCreatingScope(provider);
+		_ids = this.GetPooledObject<SortedSet<int>>();
+		this.GetReturnables()[0] = _ids;
+	}
 
-        protected override void Begin(IServiceProvider provider)
-        {
-            _ids.UnionWith(this.Id);
-        }
-        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
-        protected override void Process(IServiceProvider provider)
-        {
-            if (!this.HasParameter(InputObject))
-            {
-                return;
-            }
+	protected override void Begin(IServiceProvider provider)
+	{
+		_ids.UnionWith(this.Id);
+	}
+	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
+	protected override void Process(IServiceProvider provider)
+	{
+		if (!this.HasParameter(InputObject))
+		{
+			return;
+		}
 
-            foreach (RootFolderObject rootFol in this.InputObject)
-            {
-                if (rootFol.Id <= 0)
-                {
-                    continue;
-                }
+		foreach (RootFolderObject rootFol in this.InputObject)
+		{
+			if (rootFol.Id <= 0)
+			{
+				continue;
+			}
 
-                _ = _ids.Add(rootFol.Id);
-            }
-        }
-        protected override void End(IServiceProvider provider)
-        {
-            if (_ids.Count <= 0)
-            {
-                return;
-            }
+			_ = _ids.Add(rootFol.Id);
+		}
+	}
+	protected override void End(IServiceProvider provider)
+	{
+		if (_ids.Count <= 0)
+		{
+			return;
+		}
 
-            bool force = this.Force.ToBool();
+		bool force = this.Force.ToBool();
 
-            foreach (int id in _ids)
-            {
-                this.PerformDelete(id, force);
-            }
-        }
+		foreach (int id in _ids)
+		{
+			this.PerformDelete(id, force);
+		}
+	}
 
-        private void PerformDelete(int id, bool force)
-        {
-            string url = this.Tag.GetUrlForId(id);
+	private void PerformDelete(int id, bool force)
+	{
+		string url = this.Tag.GetUrlForId(id);
 
-            if (!force
-                &&
-                !this.ShouldProcess(url, "Deleting Root Folder"))
-            {
-                return;
-            }
+		if (!force
+			&&
+			!this.ShouldProcess(url, "Deleting Root Folder"))
+		{
+			return;
+		}
 
-            var response = this.SendDeleteRequest(url);
-            if (response.IsError)
-            {
-                this.WriteError(response.Error);
-            }
-        }
-    }
+		var response = this.SendDeleteRequest(url);
+		if (response.IsError)
+		{
+			this.WriteError(response.Error);
+		}
+	}
 }
 

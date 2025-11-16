@@ -4,96 +4,95 @@ using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
-namespace MG.Sonarr.Next.Models.Calendar
+namespace MG.Sonarr.Next.Models.Calendar;
+
+[SonarrObject]
+public sealed class CalendarObject : IdSonarrObject<CalendarObject>,
+	IEpisodeFilePipeable,
+	IEpisodePipeable,
+	IRenameFilePipeable,
+	ISeriesPipeable,
+	ISerializableNames<CalendarObject>,
+	ITagResolvable<CalendarObject>
 {
-    [SonarrObject]
-    public sealed class CalendarObject : IdSonarrObject<CalendarObject>,
-        IEpisodeFilePipeable,
-        IEpisodePipeable,
-        IRenameFilePipeable,
-        ISeriesPipeable,
-        ISerializableNames<CalendarObject>,
-        ITagResolvable<CalendarObject>
-    {
-        const int CAPACITY = 20;
-        static readonly string _typeName = typeof(CalendarObject).GetName();
-        public DateTimeOffset AirDateUtc { get; private set; }
-        public int EpisodeFileId { get; private set; }
-        int IEpisodePipeable.EpisodeId => this.Id;
-        public int SeriesId { get; private set; }
+	const int CAPACITY = 20;
+	static readonly string _typeName = typeof(CalendarObject).GetName();
+	public DateTimeOffset AirDateUtc { get; private set; }
+	public int EpisodeFileId { get; private set; }
+	int IEpisodePipeable.EpisodeId => this.Id;
+	public int SeriesId { get; private set; }
 
-        public CalendarObject()
-            : base(CAPACITY)
-        {
-        }
+	public CalendarObject()
+		: base(CAPACITY)
+	{
+	}
 
-        public override int CompareTo(CalendarObject? other)
-        {
-            if (other is null)
-            {
-                return -1;
-            }
+	public override int CompareTo(CalendarObject? other)
+	{
+		if (other is null)
+		{
+			return -1;
+		}
 
-            int compare = this.AirDateUtc.CompareTo(other.AirDateUtc);
-            if (compare == 0)
-            {
-                compare = this.Id.CompareTo(other.Id);
-            }
+		int compare = this.AirDateUtc.CompareTo(other.AirDateUtc);
+		if (compare == 0)
+		{
+			compare = this.Id.CompareTo(other.Id);
+		}
 
-            return compare;
-        }
+		return compare;
+	}
 
-        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
-        {
-            return GetTag(resolver);
-        }
+	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
+	{
+		return GetTag(resolver);
+	}
 
-        public static MetadataTag GetTag(IMetadataResolver resolver)
-        {
-            return resolver[Meta.CALENDAR];
-        }
+	public static MetadataTag GetTag(IMetadataResolver resolver)
+	{
+		return resolver[Meta.CALENDAR];
+	}
 
-        protected override void OnDeserialized(bool alreadyCalled)
-        {
-            base.OnDeserialized(alreadyCalled);
-            this.Properties.Remove("AirDate");
+	protected override void OnDeserialized(bool alreadyCalled)
+	{
+		base.OnDeserialized(alreadyCalled);
+		this.Properties.Remove("AirDate");
 
-            if (this.TryGetProperty(nameof(this.SeriesId), out int seriesId))
-            {
-                this.SeriesId = seriesId;
-            }
+		if (this.TryGetProperty(nameof(this.SeriesId), out int seriesId))
+		{
+			this.SeriesId = seriesId;
+		}
 
-            if (this.TryGetProperty(nameof(this.AirDateUtc), out DateTimeOffset airDateUtc))
-            {
-                this.AirDateUtc = airDateUtc;
-            }
+		if (this.TryGetProperty(nameof(this.AirDateUtc), out DateTimeOffset airDateUtc))
+		{
+			this.AirDateUtc = airDateUtc;
+		}
 
-            if (this.TryGetProperty(nameof(this.EpisodeFileId), out int epFileId))
-            {
-                this.EpisodeFileId = epFileId;
-            }
-        }
-        protected override void SetPSTypeName()
-        {
-            base.SetPSTypeName();
-            this.TypeNames.Insert(0, _typeName);
-        }
+		if (this.TryGetProperty(nameof(this.EpisodeFileId), out int epFileId))
+		{
+			this.EpisodeFileId = epFileId;
+		}
+	}
+	protected override void SetPSTypeName()
+	{
+		base.SetPSTypeName();
+		this.TypeNames.Insert(0, _typeName);
+	}
 
-        int? IPipeable<IEpisodePipeable>.GetId()
-        {
-            return this.Id;
-        }
-        int? IPipeable<IEpisodeFilePipeable>.GetId()
-        {
-            return this.EpisodeFileId;
-        }
-        int? IPipeable<ISeriesPipeable>.GetId()
-        {
-            return this.SeriesId;
-        }
-        int? IPipeable<IRenameFilePipeable>.GetId()
-        {
-            return this.EpisodeFileId;
-        }
-    }
+	int? IPipeable<IEpisodePipeable>.GetId()
+	{
+		return this.Id;
+	}
+	int? IPipeable<IEpisodeFilePipeable>.GetId()
+	{
+		return this.EpisodeFileId;
+	}
+	int? IPipeable<ISeriesPipeable>.GetId()
+	{
+		return this.SeriesId;
+	}
+	int? IPipeable<IRenameFilePipeable>.GetId()
+	{
+		return this.EpisodeFileId;
+	}
 }

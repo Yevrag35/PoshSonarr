@@ -1,34 +1,33 @@
 using System.Text.Json.Serialization;
 
-namespace MG.Sonarr.Next.Shell.Components
+namespace MG.Sonarr.Next.Shell.Components;
+
+public readonly struct TagRename
 {
-    public readonly struct TagRename
-    {
-        readonly string? _name;
-        readonly int _id;
-        readonly bool _isNotEmpty;
+	readonly string? _name;
+	readonly int _id;
+	readonly bool _isNotEmpty;
 
-        public int Id => _id;
+	public int Id => _id;
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-        [MemberNotNullWhen(false, nameof(_name))]
-        public bool IsEmpty => !_isNotEmpty;
+	[JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+	[MemberNotNullWhen(false, nameof(_name))]
+	public bool IsEmpty => !_isNotEmpty;
 
-        public string Label => _name ?? string.Empty;
+	public string Label => _name ?? string.Empty;
 
-        private TagRename(in int id, string newLabel)
-        {
-            _isNotEmpty = true;
-            _name = newLabel;
-            _id = id;
-        }
+	private TagRename(in int id, string newLabel)
+	{
+		_isNotEmpty = true;
+		_name = newLabel;
+		_id = id;
+	}
 
-        public static TagRename Create(int id, string newLabel)
-        {
-            ArgumentException.ThrowIfNullOrEmpty(newLabel);
+	public static TagRename Create(int id, string newLabel)
+	{
+		ArgumentException.ThrowIfNullOrEmpty(newLabel);
 
-            return new(id, newLabel);
-        }
-    }
+		return new(id, newLabel);
+	}
 }
 

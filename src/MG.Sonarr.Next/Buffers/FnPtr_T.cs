@@ -56,11 +56,11 @@ public readonly unsafe struct FnPtr<T0, T1, TResult>
 /// <typeparam name="TResult">The type of the value returned by the function.</typeparam>
 [StructLayout(LayoutKind.Sequential)]
 public readonly unsafe struct FnPtr<T0, T1, T2, TResult>
-    where T0 : allows ref struct
-    where T1 : allows ref struct
-    where T2 : allows ref struct
+	where T0 : allows ref struct
+	where T1 : allows ref struct
+	where T2 : allows ref struct
 {
-    private readonly delegate* managed<T0, T1, T2, TResult> _ptr;
+	private readonly delegate* managed<T0, T1, T2, TResult> _ptr;
 
 	/// <summary>
 	/// Gets a value indicating whether the current pointer is valid (i.e., has been initialized).
@@ -74,10 +74,10 @@ public readonly unsafe struct FnPtr<T0, T1, T2, TResult>
 	/// <param name="ptr">The managed function pointer to be encapsulated. Cannot be null.</param>
 	/// <exception cref="ArgumentNullException"><paramref name="ptr"/> is null.</exception>
 	public FnPtr(delegate* managed<T0, T1, T2, TResult> ptr)
-    {
+	{
 		ArgumentNullException.ThrowIfNull(ptr);
-        _ptr = ptr;
-    }
+		_ptr = ptr;
+	}
 
 	/// <summary>
 	/// Returns a pointer to the underlying function.
@@ -96,7 +96,7 @@ public readonly unsafe struct FnPtr<T0, T1, T2, TResult>
 	/// <param name="arg2">The third argument to pass to the delegate.</param>
 	/// <returns>The result of type <typeparamref name="TResult"/> returned by the delegate after invocation.</returns>
 	public TResult Invoke(T0 arg0, T1 arg1, T2 arg2)
-    {
-        return _ptr(arg0, arg1, arg2);
-    }
+	{
+		return _ptr(arg0, arg1, arg2);
+	}
 }

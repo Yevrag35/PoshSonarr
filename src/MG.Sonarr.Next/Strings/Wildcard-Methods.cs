@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 
 namespace MG.Sonarr.Next.Strings;
+
 public readonly partial struct Wildcard
 {
 	/// <summary>
@@ -140,7 +141,7 @@ public readonly partial struct Wildcard
 			WildcardMatchType.StartsWith => input.StartsWith(pattern.TrimEnd('*'), comparisonType),
 			WildcardMatchType.EndsWith => input.EndsWith(pattern.TrimStart('*'), comparisonType),
 			WildcardMatchType.None or _ => false,
-		}; 
+		};
 	}
 
 	#endregion
@@ -192,32 +193,32 @@ public readonly partial struct Wildcard
 			return string.Empty;
 		}
 
-        string resulting_pattern;
+		string resulting_pattern;
 
-        switch (matchType)
-        {
-            case WildcardMatchType.None:
-            default:
-                length = 0;
-                resulting_pattern = string.Empty;
-                break;
+		switch (matchType)
+		{
+			case WildcardMatchType.None:
+			default:
+				length = 0;
+				resulting_pattern = string.Empty;
+				break;
 
-            case WildcardMatchType.Like:
-            case WildcardMatchType.StartsWith:
-            case WildcardMatchType.EndsWith:
-            case WildcardMatchType.Exact:
-                length = patternString.Length;
+			case WildcardMatchType.Like:
+			case WildcardMatchType.StartsWith:
+			case WildcardMatchType.EndsWith:
+			case WildcardMatchType.Exact:
+				length = patternString.Length;
 				resulting_pattern = patternString;
-                break;
+				break;
 
-            case WildcardMatchType.All:
-                length = 1;
-                resulting_pattern = ALL_STRING;
-                break;
-        }
+			case WildcardMatchType.All:
+				length = 1;
+				resulting_pattern = ALL_STRING;
+				break;
+		}
 
-        return resulting_pattern;
-    }
+		return resulting_pattern;
+	}
 	private static string ConstructPattern(ReadOnlySpan<char> pattern, WildcardMatchType matchType, ref int length)
 	{
 		string resulting_pattern;
@@ -262,7 +263,7 @@ public readonly partial struct Wildcard
 		{
 			return WildcardMatchType.Exact;
 		}
-		
+
 		matchType = WildcardMatchType.Like;
 		if ('*' == pattern[^1] && !pattern.TrimEnd('*').ContainsAny(_wildcardChars))
 		{

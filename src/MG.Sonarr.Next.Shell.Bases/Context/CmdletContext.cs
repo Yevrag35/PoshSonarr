@@ -15,173 +15,172 @@ using MG.Sonarr.Next.Shell.Pools;
 using System.Reflection;
 using System.Text.Json;
 
-namespace MG.Sonarr.Next.Shell.Context
-{
+namespace MG.Sonarr.Next.Shell.Context;
+
 #if DEBUG
-    public static class CmdletContextExtensions
+public static class CmdletContextExtensions
 #else
     internal static class CmdletContextExtensions
 #endif
-    {
-        internal static IServiceScope CreateScope<T>(this T cmdlet) where T : PSCmdlet, IIsRunning<T>, IScopeCmdlet<T>
-        {
-            //if (!T.IsRunningCommand(cmdlet))
-            //{
-            //    throw new InvalidOperationException("Don't execute me weird.");
-            //}
+{
+	internal static IServiceScope CreateScope<T>(this T cmdlet) where T : PSCmdlet, IIsRunning<T>, IScopeCmdlet<T>
+	{
+		//if (!T.IsRunningCommand(cmdlet))
+		//{
+		//    throw new InvalidOperationException("Don't execute me weird.");
+		//}
 
-            return SonarrContext.GetProvider().CreateScope();
-        }
+		return SonarrContext.GetProvider().CreateScope();
+	}
 
-        internal static IServiceScope CreateScope(this ScopedTransformationAttribute attribute)
-        {
-            return SonarrContext.GetProvider().CreateScope();
-        }
+	internal static IServiceScope CreateScope(this ScopedTransformationAttribute attribute)
+	{
+		return SonarrContext.GetProvider().CreateScope();
+	}
 
 #if DEBUG
-        [Obsolete("Only used in interactive PowerShell testing. Never should be called in the code directly.", error: true)]
-        public static IMetadataResolver GetResolver()
-        {
-            return SonarrContext.GetProvider().GetRequiredService<IMetadataResolver>();
-        }
+	[Obsolete("Only used in interactive PowerShell testing. Never should be called in the code directly.", error: true)]
+	public static IMetadataResolver GetResolver()
+	{
+		return SonarrContext.GetProvider().GetRequiredService<IMetadataResolver>();
+	}
 
-        [Obsolete("Only used in interactive PowerShell testing. Never should be called in the code directly.", error: true)]
-        public static JsonSerializerOptions GetSerializerOptions()
-        {
-            return SonarrContext.GetProvider().GetRequiredService<ISonarrJsonOptions>().ForSerializing;
-        }
+	[Obsolete("Only used in interactive PowerShell testing. Never should be called in the code directly.", error: true)]
+	public static JsonSerializerOptions GetSerializerOptions()
+	{
+		return SonarrContext.GetProvider().GetRequiredService<ISonarrJsonOptions>().ForSerializing;
+	}
 #endif
 
-        internal static IServiceScope SetContext<T>(this T cmdlet, Assembly cmdletAssembly, Action<IServiceCollection> addAdditionalServices)
-            where T : PSCmdlet, IConnectContextCmdlet, IIsRunning<T>
-        {
-            return SonarrContext.Initialize(cmdlet.GetConnectionSettings(), cmdletAssembly, cmdlet.MyInvocation.BoundParameters, addAdditionalServices);
-        }
-        internal static void UnsetContext<T>(this T _) where T : IDisconnectContextCmdlet, IScopeCmdlet<T>
-        {
-            SonarrContext.Deinitialize();
-        }
-    }
+	internal static IServiceScope SetContext<T>(this T cmdlet, Assembly cmdletAssembly, Action<IServiceCollection> addAdditionalServices)
+		where T : PSCmdlet, IConnectContextCmdlet, IIsRunning<T>
+	{
+		return SonarrContext.Initialize(cmdlet.GetConnectionSettings(), cmdletAssembly, cmdlet.MyInvocation.BoundParameters, addAdditionalServices);
+	}
+	internal static void UnsetContext<T>(this T _) where T : IDisconnectContextCmdlet, IScopeCmdlet<T>
+	{
+		SonarrContext.Deinitialize();
+	}
+}
 
-    file static class SonarrContext
-    {
-        static ServiceProvider _provider = null!;
+file static class SonarrContext
+{
+	static ServiceProvider _provider = null!;
 
-        /// <exception cref="ContextNotSetException"/>
-        internal static IServiceProvider GetProvider()
-        {
-            return _provider ?? ThrowNotSet();
-        }
+	/// <exception cref="ContextNotSetException"/>
+	internal static IServiceProvider GetProvider()
+	{
+		return _provider ?? ThrowNotSet();
+	}
 
-        /// <exception cref="ContextNotSetException"></exception>
-        [DoesNotReturn]
-        private static IServiceProvider ThrowNotSet()
-        {
-            throw new ContextNotSetException(new CmdletScopeNotReadyException());
-        }
+	/// <exception cref="ContextNotSetException"></exception>
+	[DoesNotReturn]
+	private static IServiceProvider ThrowNotSet()
+	{
+		throw new ContextNotSetException(new CmdletScopeNotReadyException());
+	}
 
-        internal static void Deinitialize()
-        {
-            _provider.Dispose();
-            _provider = null!;
-        }
+	internal static void Deinitialize()
+	{
+		_provider.Dispose();
+		_provider = null!;
+	}
 
-        internal static IServiceScope Initialize(IConnectionSettings settings, Assembly cmdletAssembly, Dictionary<string, object?> boundParameters, Action<IServiceCollection> configureServices)
-        {
-            if (_provider is not null)
-            {
-                return _provider.CreateScope();
-            }
+	internal static IServiceScope Initialize(IConnectionSettings settings, Assembly cmdletAssembly, Dictionary<string, object?> boundParameters, Action<IServiceCollection> configureServices)
+	{
+		if (_provider is not null)
+		{
+			return _provider.CreateScope();
+		}
 
-            ServiceCollection services = new();
-            configureServices(services);
+		ServiceCollection services = new();
+		configureServices(services);
 
-            services
-                //.AddClock(mock => mock.GetNow = c => c.Now.AddDays(-7d))
-                .AddClock()
-                .AddMemoryCache()
-                .AddSingleton<ApiCmdletQueue>()
-                .AddSonarrClient(cmdletAssembly, settings, (provider, options) =>
-                {
-                    options.PropertyNamingPolicy = JsonSpanCamelCaseNamingPolicy.SpanPolicy;
-                    options.PropertyNameCaseInsensitive = true;
-                    options.WriteIndented = true;
-                })
-                .AddCommandTracker()
-                .AddTestingService();
+		services
+			//.AddClock(mock => mock.GetNow = c => c.Now.AddDays(-7d))
+			.AddClock()
+			.AddMemoryCache()
+			.AddSingleton<ApiCmdletQueue>()
+			.AddSonarrClient(cmdletAssembly, settings, (provider, options) =>
+			{
+				options.PropertyNamingPolicy = JsonSpanCamelCaseNamingPolicy.SpanPolicy;
+				options.PropertyNameCaseInsensitive = true;
+				options.WriteIndented = true;
+			})
+			.AddCommandTracker()
+			.AddTestingService();
 
-            AddObjectPools(services);
+		AddObjectPools(services);
 
-            ServiceProviderOptions providerOptions = new()
-            {
+		ServiceProviderOptions providerOptions = new()
+		{
 #if !RELEASE
-                ValidateOnBuild = true,
-                ValidateScopes = true,
+			ValidateOnBuild = true,
+			ValidateScopes = true,
 #else
                 ValidateOnBuild = false,
                 ValidateScopes = false,
 #endif
-            };
+		};
 
-            _provider = services.BuildServiceProvider(providerOptions);
-            return _provider.CreateScope();
-        }
+		_provider = services.BuildServiceProvider(providerOptions);
+		return _provider.CreateScope();
+	}
 
-        private static void AddObjectPools(IServiceCollection services)
-        {
-            services.AddObjectPoolReturner()
-                    .AddGenericObjectPool<QueryCol>(builder =>
-                    {
-                        builder.SetConstructor(() => new QueryCol(10))
-                               .SetDeconstructor(col =>
-                               {
-                                   col.Clear();
-                                   return true;
-                               });
-                    })
-                    .AddGenericObjectPool<SortedDictionary<int, string?>>(builder =>
-                    {
-                        builder.SetConstructor(() => [])
-                               .SetDeconstructor(col =>
-                               {
-                                   col.Clear();
-                                   return true;
-                               });
-                    })
-                    .AddGenericObjectPool<Dictionary<string, ITagPipeable>>(builder =>
-                    {
-                        builder.SetConstructor(() => new(5, StringComparer.OrdinalIgnoreCase))
-                               .SetDeconstructor(dict =>
-                               {
-                                   dict.Clear();
-                                   return true;
-                               });
-                    });
+	private static void AddObjectPools(IServiceCollection services)
+	{
+		services.AddObjectPoolReturner()
+				.AddGenericObjectPool<QueryCol>(builder =>
+				{
+					builder.SetConstructor(() => new QueryCol(10))
+						   .SetDeconstructor(col =>
+						   {
+							   col.Clear();
+							   return true;
+						   });
+				})
+				.AddGenericObjectPool<SortedDictionary<int, string?>>(builder =>
+				{
+					builder.SetConstructor(() => [])
+						   .SetDeconstructor(col =>
+						   {
+							   col.Clear();
+							   return true;
+						   });
+				})
+				.AddGenericObjectPool<Dictionary<string, ITagPipeable>>(builder =>
+				{
+					builder.SetConstructor(() => new(5, StringComparer.OrdinalIgnoreCase))
+						   .SetDeconstructor(dict =>
+						   {
+							   dict.Clear();
+							   return true;
+						   });
+				});
 
-            
-            AddPool<SortedSet<int>, SortedIntSetPool>(services);
-            AddQuickPool<WildcardSet, GenericResettableObjectPool<WildcardSet>>(services);
-            services.AddTransient<WildcardSet>();
-            
-        }
 
-        private static void AddQuickPool<T, TPool>(IServiceCollection services)
-            where TPool : class, IObjectPoolReturnable, IQuickPool<T>
-            where T : notnull, IResettable
-        {
-            services.AddSingleton<TPool>()
-                    .AddSingleton<IObjectPool<T>>(x => x.GetRequiredService<TPool>())
-                    .AddSingleton<IQuickPool<T>>(x => x.GetRequiredService<TPool>())
-                    .AddSingleton<IObjectPoolReturnable>(x => x.GetRequiredService<TPool>());
-        }
-        private static void AddPool<T, TPool>(IServiceCollection services) 
-            where TPool : class, IObjectPoolReturnable, IObjectPool<T>, new()
-            where T : notnull
-        {
-            TPool pool = new TPool();
-            services.AddSingleton<TPool>(pool)
-                    .AddSingleton<IObjectPool<T>>(x => x.GetRequiredService<TPool>())
-                    .AddSingleton<IObjectPoolReturnable>(x => x.GetRequiredService<TPool>());
-        }
-    }
+		AddPool<SortedSet<int>, SortedIntSetPool>(services);
+		AddQuickPool<WildcardSet, GenericResettableObjectPool<WildcardSet>>(services);
+		services.AddTransient<WildcardSet>();
+
+	}
+
+	private static void AddQuickPool<T, TPool>(IServiceCollection services)
+		where TPool : class, IObjectPoolReturnable, IQuickPool<T>
+		where T : notnull, IResettable
+	{
+		services.AddSingleton<TPool>()
+				.AddSingleton<IObjectPool<T>>(x => x.GetRequiredService<TPool>())
+				.AddSingleton<IQuickPool<T>>(x => x.GetRequiredService<TPool>())
+				.AddSingleton<IObjectPoolReturnable>(x => x.GetRequiredService<TPool>());
+	}
+	private static void AddPool<T, TPool>(IServiceCollection services)
+		where TPool : class, IObjectPoolReturnable, IObjectPool<T>, new()
+		where T : notnull
+	{
+		TPool pool = new TPool();
+		services.AddSingleton<TPool>(pool)
+				.AddSingleton<IObjectPool<T>>(x => x.GetRequiredService<TPool>())
+				.AddSingleton<IObjectPoolReturnable>(x => x.GetRequiredService<TPool>());
+	}
 }

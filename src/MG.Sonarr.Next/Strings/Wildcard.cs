@@ -94,7 +94,7 @@ public readonly partial struct Wildcard :
 		int length = 0;
 		_pattern = ConstructPattern(patternString, matchType, ref length);
 		_state = new(length: length, type: matchType);
-    }
+	}
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Wildcard"/> struct using the 
 	/// specified read-only span of <see cref="char"/> elements.
@@ -112,12 +112,12 @@ public readonly partial struct Wildcard :
 		int length = 0;
 		_pattern = ConstructPattern(pattern, matchType, ref length);
 		_state = new(length: length, type: matchType);
-    }
+	}
 	private Wildcard(ReadOnlySpan<char> pattern, WildcardMatchType matchType)
 	{
 		_pattern = pattern.ToString();
 		_state = new(length: _pattern.Length, type: matchType);
-    }
+	}
 	private Wildcard(bool isAll)
 	{
 		if (isAll)

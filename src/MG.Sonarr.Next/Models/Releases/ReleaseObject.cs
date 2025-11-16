@@ -5,124 +5,123 @@ using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
 
-namespace MG.Sonarr.Next.Models.Releases
+namespace MG.Sonarr.Next.Models.Releases;
+
+[SonarrObject]
+public sealed class ReleaseObject : SonarrObject,
+	IComparable<ReleaseObject>,
+	IJsonOnSerializing,
+	ISerializableNames<ReleaseObject>
 {
-    [SonarrObject]
-    public sealed class ReleaseObject : SonarrObject,
-        IComparable<ReleaseObject>,
-        IJsonOnSerializing,
-        ISerializableNames<ReleaseObject>
-    {
-        const int CAPACITY = 46;
-        static readonly string _typeName = typeof(ReleaseObject).GetName();
+	const int CAPACITY = 46;
+	static readonly string _typeName = typeof(ReleaseObject).GetName();
 
-        int _age;
-        Weight _weight;
-        double _ageHours;
-        double _ageMinutes;
+	int _age;
+	Weight _weight;
+	double _ageHours;
+	double _ageMinutes;
 
-        public TimeSpan Age { get; private set; }
-        public int IndexerId { get; private set; }
-        public string ReleaseUrl { get; private set; } = string.Empty;
-        public int TotalWeight => _weight.TotalWeight;
+	public TimeSpan Age { get; private set; }
+	public int IndexerId { get; private set; }
+	public string ReleaseUrl { get; private set; } = string.Empty;
+	public int TotalWeight => _weight.TotalWeight;
 
-        public ReleaseObject()
-            : base(CAPACITY)
-        {
-        }
+	public ReleaseObject()
+		: base(CAPACITY)
+	{
+	}
 
-        public int CompareTo(ReleaseObject? other)
-        {
-            int compare = Comparer<int?>.Default.Compare(this.TotalWeight, other?.TotalWeight);
-            if (compare != 0)
-            {
-                return compare;
-            }
+	public int CompareTo(ReleaseObject? other)
+	{
+		int compare = Comparer<int?>.Default.Compare(this.TotalWeight, other?.TotalWeight);
+		if (compare != 0)
+		{
+			return compare;
+		}
 
-            compare = Comparer<TimeSpan?>.Default.Compare(this.Age, other?.Age);
-            if (compare == 0)
-            {
-                compare = Comparer<int?>.Default.Compare(this.IndexerId, other?.IndexerId);
-                if (compare == 0)
-                {
-                    compare = StringComparer.InvariantCultureIgnoreCase.Compare(this.ReleaseUrl, other?.ReleaseUrl);
-                }
-            }
+		compare = Comparer<TimeSpan?>.Default.Compare(this.Age, other?.Age);
+		if (compare == 0)
+		{
+			compare = Comparer<int?>.Default.Compare(this.IndexerId, other?.IndexerId);
+			if (compare == 0)
+			{
+				compare = StringComparer.InvariantCultureIgnoreCase.Compare(this.ReleaseUrl, other?.ReleaseUrl);
+			}
+		}
 
-            return compare;
-        }
+		return compare;
+	}
 
-        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
-        {
-            return resolver[Meta.RELEASE];
-        }
+	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
+	{
+		return resolver[Meta.RELEASE];
+	}
 
-        public override void OnDeserialized()
-        {
-            base.OnDeserialized();
-            if (this.TryGetProperty(nameof(this.IndexerId), out int indexerId))
-            {
-                this.IndexerId = indexerId;
-            }
+	public override void OnDeserialized()
+	{
+		base.OnDeserialized();
+		if (this.TryGetProperty(nameof(this.IndexerId), out int indexerId))
+		{
+			this.IndexerId = indexerId;
+		}
 
-            if (this.TryGetProperty("AgeMinutes", out double value))
-            {
-                _ageMinutes = value;
-            }
+		if (this.TryGetProperty("AgeMinutes", out double value))
+		{
+			_ageMinutes = value;
+		}
 
-            if (this.TryGetProperty("AgeHours", out double hours))
-            {
-                _ageHours = hours;
-            }
+		if (this.TryGetProperty("AgeHours", out double hours))
+		{
+			_ageHours = hours;
+		}
 
-            if (this.TryGetProperty(nameof(this.Age), out int days))
-            {
-                _age = days;
-            }
+		if (this.TryGetProperty(nameof(this.Age), out int days))
+		{
+			_age = days;
+		}
 
-            if (this.TryGetNonNullProperty("Guid", out string? releaseUrl))
-            {
-                this.ReleaseUrl = releaseUrl;
-            }
+		if (this.TryGetNonNullProperty("Guid", out string? releaseUrl))
+		{
+			this.ReleaseUrl = releaseUrl;
+		}
 
-            _weight = new(this);
-            this.AddNumberProperty(nameof(this.TotalWeight), this.TotalWeight);
+		_weight = new(this);
+		this.AddNumberProperty(nameof(this.TotalWeight), this.TotalWeight);
 
-            this.Age = TimeSpan.FromMinutes(_ageMinutes);
-            this.Reset();
-        }
+		this.Age = TimeSpan.FromMinutes(_ageMinutes);
+		this.Reset();
+	}
 
-        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "<Pending>")]
-        public void OnSerializing()
-        {
-            _weight.SetRelease(this);
-            this.ReplaceNumberProperty(nameof(this.Age), _age);
-            this.UpdateProperty(this.IndexerId, propertyName: nameof(IndexerId));
-            this.UpdateProperty(x => x.ReleaseUrl);
-            this.AddNumberProperty("AgeHours", _ageHours);
-            this.AddNumberProperty("AgeMinutes", _ageMinutes);
-        }
+	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "<Pending>")]
+	public void OnSerializing()
+	{
+		_weight.SetRelease(this);
+		this.ReplaceNumberProperty(nameof(this.Age), _age);
+		this.UpdateProperty(this.IndexerId, propertyName: nameof(IndexerId));
+		this.UpdateProperty(x => x.ReleaseUrl);
+		this.AddNumberProperty("AgeHours", _ageHours);
+		this.AddNumberProperty("AgeMinutes", _ageMinutes);
+	}
 
-        public override void Reset()
-        {
-            this.Properties.RemoveMany("AgeHours", "AgeMinutes");
-            this.ReplaceStructProperty(nameof(this.Age), this.Age);
-            base.Reset();
-        }
+	public override void Reset()
+	{
+		this.Properties.RemoveMany("AgeHours", "AgeMinutes");
+		this.ReplaceStructProperty(nameof(this.Age), this.Age);
+		base.Reset();
+	}
 
-        protected override void SetPSTypeName()
-        {
-            base.SetPSTypeName();
-            this.TypeNames.Insert(0, _typeName);
-        }
+	protected override void SetPSTypeName()
+	{
+		base.SetPSTypeName();
+		this.TypeNames.Insert(0, _typeName);
+	}
 
-        static readonly HashSet<string> _capitalProps =
-        [
-            "Protocol",
-        ];
-        public static IReadOnlySet<string> GetPropertiesToCapitalize()
-        {
-            return _capitalProps;
-        }
-    }
+	static readonly HashSet<string> _capitalProps =
+	[
+		"Protocol",
+	];
+	public static IReadOnlySet<string> GetPropertiesToCapitalize()
+	{
+		return _capitalProps;
+	}
 }

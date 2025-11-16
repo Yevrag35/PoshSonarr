@@ -6,63 +6,62 @@ using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Output;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
+namespace MG.Sonarr.Next.Shell.Cmdlets.Commands;
+
+[Cmdlet(VerbsCommon.Get, "SonarrCommand", DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+[MetadataCanPipe(Tag = Meta.COMMAND)]
+[OutputType(typeof(ICommandOutput))]
+public sealed class GetSonarrCommandCmdlet : SonarrMetadataCmdlet
 {
-    [Cmdlet(VerbsCommon.Get, "SonarrCommand", DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-    [MetadataCanPipe(Tag = Meta.COMMAND)]
-    [OutputType(typeof(ICommandOutput))]
-    public sealed class GetSonarrCommandCmdlet : SonarrMetadataCmdlet
-    {
-        SortedSet<int> _ids = null!;
+	SortedSet<int> _ids = null!;
 
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
-        public ICommand[] InputObject { get; set; } = Array.Empty<ICommand>();
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+	public ICommand[] InputObject { get; set; } = Array.Empty<ICommand>();
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-        [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id { get; set; } = [];
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[ValidateRange(ValidateRangeKind.Positive)]
+	public int[] Id { get; set; } = [];
 
-        protected override int Capacity => 1;
-        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
-        {
-            return resolver[Meta.COMMAND];
-        }
-        protected override void OnCreatingScope(IServiceProvider provider)
-        {
-            base.OnCreatingScope(provider);
-            _ids = this.GetPooledObject<SortedSet<int>>();
-            this.SetReturnables(_ids);
-        }
+	protected override int Capacity => 1;
+	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
+	{
+		return resolver[Meta.COMMAND];
+	}
+	protected override void OnCreatingScope(IServiceProvider provider)
+	{
+		base.OnCreatingScope(provider);
+		_ids = this.GetPooledObject<SortedSet<int>>();
+		this.SetReturnables(_ids);
+	}
 
-        protected override void Begin(IServiceProvider provider)
-        {
-            _ids.UnionWith(this.Id ?? Array.Empty<int>());
-        }
-        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
-        protected override void Process(IServiceProvider provider)
-        {
-            if (this.HasParameter(InputObject) && this.InputObject.Length > 0)
-            {
-                foreach (ICommand cmd in this.InputObject)
-                {
-                    _ids.Add(cmd.Id);
-                }
-            }
-        }
-        protected override void End(IServiceProvider provider)
-        {
-            ICommandHistory history = provider.GetRequiredService<ICommandHistory>();
+	protected override void Begin(IServiceProvider provider)
+	{
+		_ids.UnionWith(this.Id ?? Array.Empty<int>());
+	}
+	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
+	protected override void Process(IServiceProvider provider)
+	{
+		if (this.HasParameter(InputObject) && this.InputObject.Length > 0)
+		{
+			foreach (ICommand cmd in this.InputObject)
+			{
+				_ids.Add(cmd.Id);
+			}
+		}
+	}
+	protected override void End(IServiceProvider provider)
+	{
+		ICommandHistory history = provider.GetRequiredService<ICommandHistory>();
 
-            foreach (int id in _ids)
-            {
-                string url = this.Tag.GetUrlForId(id);
-                var response = this.SendGetRequest<CommandObject>(url);
+		foreach (int id in _ids)
+		{
+			string url = this.Tag.GetUrlForId(id);
+			var response = this.SendGetRequest<CommandObject>(url);
 
-                if (this.TryWriteObject(response) && history.Remove(id))
-                {
-                    history.Add(response.Value);
-                }
-            }
-        }
-    }
+			if (this.TryWriteObject(response) && history.Remove(id))
+			{
+				history.Add(response.Value);
+			}
+		}
+	}
 }

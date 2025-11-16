@@ -2,30 +2,29 @@ using MG.Sonarr.Next.Extensions.Reflection;
 using System.Management.Automation;
 using System.Numerics;
 
-namespace MG.Sonarr.Next.PSProperties
-{
-    public static class ReadOnlyNumberProperty
-    {
-        public static ReadOnlyNumberProperty<T> Create<T>(string propertyName, T value) where T : unmanaged, INumber<T>
-        {
-            return new ReadOnlyNumberProperty<T>(propertyName, value);
-        }
-    }
-    public sealed class ReadOnlyNumberProperty<T> : ReadOnlyProperty<T> where T : unmanaged, INumber<T>
-    {
-        protected override int MaxValueCharacterLength => LengthConstants.INT128_MAX;
-        public T NumberValue { get; }
-        public override string TypeNameOfValue => typeof(T).GetName();
-        protected override T ValueAsT => this.NumberValue;
+namespace MG.Sonarr.Next.PSProperties;
 
-        public ReadOnlyNumberProperty(string propertyName, T value)
-            : base(propertyName)
-        {
-            this.NumberValue = value;
-        }
-        public override PSMemberInfo Copy()
-        {
-            return new ReadOnlyNumberProperty<T>(this.Name, this.NumberValue);
-        }
-    }
+public static class ReadOnlyNumberProperty
+{
+	public static ReadOnlyNumberProperty<T> Create<T>(string propertyName, T value) where T : unmanaged, INumber<T>
+	{
+		return new ReadOnlyNumberProperty<T>(propertyName, value);
+	}
+}
+public sealed class ReadOnlyNumberProperty<T> : ReadOnlyProperty<T> where T : unmanaged, INumber<T>
+{
+	protected override int MaxValueCharacterLength => LengthConstants.INT128_MAX;
+	public T NumberValue { get; }
+	public override string TypeNameOfValue => typeof(T).GetName();
+	protected override T ValueAsT => this.NumberValue;
+
+	public ReadOnlyNumberProperty(string propertyName, T value)
+		: base(propertyName)
+	{
+		this.NumberValue = value;
+	}
+	public override PSMemberInfo Copy()
+	{
+		return new ReadOnlyNumberProperty<T>(this.Name, this.NumberValue);
+	}
 }

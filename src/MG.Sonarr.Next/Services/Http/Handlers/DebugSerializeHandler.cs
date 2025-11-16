@@ -11,71 +11,71 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 
 public sealed class DebugSerializeHandler : DelegatingHandler
 {
-    private readonly ApiCmdletQueue _queue;
-    private readonly JsonSerializerOptions _serializingOptions;
-    
-    public DebugSerializeHandler(ApiCmdletQueue queue, ISonarrJsonOptions options)
-    {
-        _queue = queue;
-        _serializingOptions = options.ForDebugging;
-    }
+	private readonly ApiCmdletQueue _queue;
+	private readonly JsonSerializerOptions _serializingOptions;
 
-    protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
-    {
-        return this.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
-    }
+	public DebugSerializeHandler(ApiCmdletQueue queue, ISonarrJsonOptions options)
+	{
+		_queue = queue;
+		_serializingOptions = options.ForDebugging;
+	}
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-    {
-        if (!_queue.TryPeek(out IApiCmdlet? cmdlet))
-        {
-            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        }
+	protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
+	{
+		return this.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
+	}
 
-        HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        if (cmdlet.CanDebugSerializeAfter && response.Content is not null)
-        {
-            StringResponse parsed = await SerializeResponseAsync(response, cancellationToken).ConfigureAwait(false);
-            string jsonString = Messenger.Format(
-                provider: CultureInfo.CurrentCulture,
-                format: Messages.Debug_JSONResponse_Preamble,
-                parsed.ContentLength, parsed.JsonString);
+	protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+	{
+		if (!_queue.TryPeek(out IApiCmdlet? cmdlet))
+		{
+			return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+		}
 
-            cmdlet.WriteDebugPayload(jsonString);
-        }
+		HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+		if (cmdlet.CanDebugSerializeAfter && response.Content is not null)
+		{
+			StringResponse parsed = await SerializeResponseAsync(response, cancellationToken).ConfigureAwait(false);
+			string jsonString = Messenger.Format(
+				provider: CultureInfo.CurrentCulture,
+				format: Messages.Debug_JSONResponse_Preamble,
+				parsed.ContentLength, parsed.JsonString);
 
-        return response;
-    }
+			cmdlet.WriteDebugPayload(jsonString);
+		}
 
-    private static async Task<StringResponse> SerializeResponseAsync(HttpResponseMessage response, CancellationToken token)
-    {
-        using HttpContent content = response.Content;
-        using ArrayPoolMemoryStream memStream = new();
+		return response;
+	}
 
-        Stream stream = await content.ReadAsStreamAsync(token).ConfigureAwait(false);
+	private static async Task<StringResponse> SerializeResponseAsync(HttpResponseMessage response, CancellationToken token)
+	{
+		using HttpContent content = response.Content;
+		using ArrayPoolMemoryStream memStream = new();
 
-        await stream.CopyToAsync(memStream, token).ConfigureAwait(false);
+		Stream stream = await content.ReadAsStreamAsync(token).ConfigureAwait(false);
 
-        long length = memStream.Length;
-        string jsonString = memStream.ReadString(Encoding.UTF8);
+		await stream.CopyToAsync(memStream, token).ConfigureAwait(false);
 
-        memStream.Rewind();
-        response.Content = new StreamContent(await memStream.ToMemoryStreamAsync(token).ConfigureAwait(false));
-        content.Headers.CopyTo(response.Content.Headers);
+		long length = memStream.Length;
+		string jsonString = memStream.ReadString(Encoding.UTF8);
 
-        return new(length, jsonString);
-    }
+		memStream.Rewind();
+		response.Content = new StreamContent(await memStream.ToMemoryStreamAsync(token).ConfigureAwait(false));
+		content.Headers.CopyTo(response.Content.Headers);
 
-    [StructLayout(LayoutKind.Auto)]
-    private readonly struct StringResponse
-    {
-        public readonly long ContentLength;
-        public readonly string JsonString;
+		return new(length, jsonString);
+	}
 
-        public StringResponse(long contentLength, string jsonString)
-        {
-            ContentLength = contentLength;
-            JsonString = jsonString;
-        }
-    }
+	[StructLayout(LayoutKind.Auto)]
+	private readonly struct StringResponse
+	{
+		public readonly long ContentLength;
+		public readonly string JsonString;
+
+		public StringResponse(long contentLength, string jsonString)
+		{
+			ContentLength = contentLength;
+			JsonString = jsonString;
+		}
+	}
 }
