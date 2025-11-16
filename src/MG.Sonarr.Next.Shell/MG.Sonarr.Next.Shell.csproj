@@ -10,7 +10,7 @@
 	<FileVersion>2.0.0</FileVersion>
 	<Authors>Mike Garvey</Authors>
 	<Company>Yevrag35, LLC.</Company>
-	<Product>PoshSonarr .NET 9</Product>
+	<Product>PoshSonarr .NET 10</Product>
 	<Description>The binary library of the PoshSonarr PowerShell module.</Description>
 	<Copyright>Copyright © 2018-2025 Yevrag35, LLC.</Copyright>
 	<PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
