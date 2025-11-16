@@ -28,7 +28,7 @@ public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesName")]
-	[SupportsWildcards]
+	[SupportsWildcards, ValidateIds(ValidateRangeKind.Positive, typeof(Either<string, int>), NullBehavior = InputNullBehavior.Ignore)]
 	public Either<string, int>[] Name { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -64,7 +64,6 @@ public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
 		if (this.InputObject.Length > 0)
 		{
 			_ids.AddRange(this.InputObject);
-			//_ids.UnionWith(this.InputObject.Select(x => x.SeriesId));
 		}
 		else
 		{

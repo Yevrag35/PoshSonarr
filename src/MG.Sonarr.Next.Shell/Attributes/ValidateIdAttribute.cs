@@ -1,9 +1,10 @@
-using MG.Sonarr.Next.Components;
 using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Unions;
+using System.Collections.Concurrent;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Shell.Attributes;
 
@@ -17,7 +18,7 @@ public sealed class ValidateIdAttribute : ValidateArgumentsAttribute
 {
 	readonly bool _isValidatableType;
 	readonly Type _parameterType;
-	readonly IdPredicate _predicate;
+	readonly IdValidator _predicate;
 
 	/// <summary>
 	/// The range the "Id" value must be in to pass validation.
@@ -38,7 +39,7 @@ public sealed class ValidateIdAttribute : ValidateArgumentsAttribute
 		this.Kind = kind;
 		_parameterType = typeof(object);
 		_isValidatableType = false;
-		_predicate = IdValidationHelper.GetValidation(kind);
+		_predicate = IdValidationHelper.GetIdValidator(kind);
 	}
 
 	/// <summary>
@@ -53,14 +54,14 @@ public sealed class ValidateIdAttribute : ValidateArgumentsAttribute
 		this.Kind = kind;
 		_parameterType = parameterType;
 		_isValidatableType = IdValidationHelper.TryGetMethodInfo(parameterType);
-		_predicate = IdValidationHelper.GetValidation(kind);
+		_predicate = IdValidationHelper.GetIdValidator(kind);
 	}
 
 	protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
 	{
 		if (!_isValidatableType || arguments is null)
 		{
-			IdValidationHelper.DoValidation(argument: arguments, this.NullBehavior, _predicate);
+			IdValidationHelper.DoValidation(possibleId: null, this.NullBehavior, _predicate);
 			return;
 		}
 
@@ -75,7 +76,7 @@ public sealed class ValidateIdAttribute : ValidateArgumentsAttribute
 				$"Unable to validate argument as '{_parameterType.GetName()}'.", e);
 		}
 
-		IdValidationHelper.DoValidation(possibleId: possible, this.NullBehavior, _predicate);
+		IdValidationHelper.DoValidation(possible, this.NullBehavior, _predicate);
 	}
 }
 /// <summary>
@@ -89,7 +90,8 @@ public sealed class ValidateIdsAttribute : ValidateEnumeratedArgumentsAttribute
 {
 	readonly bool _isValidatableType;
 	readonly Type _parameterType;
-	readonly IdPredicate _predicate;
+	//readonly IdPredicate _predicate;
+	private readonly IdValidator _predicate;
 	/// <summary>
 	/// The range the "Id" value must be in to pass validation.
 	/// </summary>
@@ -109,7 +111,7 @@ public sealed class ValidateIdsAttribute : ValidateEnumeratedArgumentsAttribute
 		this.Kind = kind;
 		_parameterType = typeof(object);
 		_isValidatableType = false;
-		_predicate = IdValidationHelper.GetValidation(kind);
+		_predicate = IdValidationHelper.GetIdValidator(kind);
 	}
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ValidateIdsAttribute"/> class. 
@@ -123,14 +125,15 @@ public sealed class ValidateIdsAttribute : ValidateEnumeratedArgumentsAttribute
 		this.Kind = kind;
 		_parameterType = parameterType;
 		_isValidatableType = IdValidationHelper.TryGetMethodInfo(parameterType);
-		_predicate = IdValidationHelper.GetValidation(kind);
+		//_predicate = IdValidationHelper.GetValidation(kind);
+		_predicate = IdValidationHelper.GetIdValidator(kind);
 	}
 
 	protected override void ValidateElement(object element)
 	{
 		if (!_isValidatableType || element is null)
 		{
-			IdValidationHelper.DoValidation(argument: element, this.NullBehavior, _predicate);
+			IdValidationHelper.DoValidation(possibleId: null, this.NullBehavior, _predicate);
 			return;
 		}
 
@@ -150,26 +153,45 @@ public sealed class ValidateIdsAttribute : ValidateEnumeratedArgumentsAttribute
 }
 
 /// <summary>
-/// A validation delegate used for validating "Id" properties of type <see cref="int"/>.
+/// Provides a delegate-based mechanism for validating integer identifiers and determining their range classification.
 /// </summary>
-/// <param name="id">The ID value to validate.</param>
-/// <param name="kind">
-///     When the delegate returns, this parameter will be populated with the <see cref="ValidateRangeKind"/>
-///     value that best matches the type of validation used. Normally, used in the construction for a failed 
-///     validation <see cref="Exception.Message"/>.
-/// </param>
-/// <returns>
-///     <see langword="true"/>, if <paramref name="id"/> passes validation; otherwise, <see langword="false"/>.
-/// </returns>
-delegate bool IdPredicate(int id, out ValidateRangeKind kind);
-delegate int? GetIdDelegate(object element);
+/// <remarks>This struct encapsulates a function pointer used to validate IDs and classify them according to a
+/// specified range kind. It is intended for internal use where performance and direct delegate invocation are required.
+/// The struct is immutable and thread-safe.</remarks>
+[StructLayout(LayoutKind.Sequential, Size = 8)]
+internal readonly unsafe struct IdValidator
+{
+	private readonly delegate* managed<int, out ValidateRangeKind, bool> _ptr;
+
+	internal IdValidator(delegate* managed<int, out ValidateRangeKind, bool> ptr)
+	{
+		ArgumentNullException.ThrowIfNull(ptr);
+		_ptr = ptr;
+	}
+
+	internal bool Invoke(int id, out ValidateRangeKind kind)
+	{
+		return _ptr(id, out kind);
+	}
+}
+
+/// <summary>
+/// Provides helper methods for validating and retrieving identifiers from objects that implement pipeable interfaces.
+/// </summary>
+/// <remarks>This class is intended for internal use in scenarios where object identifiers must be validated or
+/// extracted according to specific rules. It supports validation of identifier values against defined range constraints
+/// and facilitates retrieval of identifiers from types implementing the <see cref="IPipeable{T}"/> interface. All members are static
+/// and thread-safe.</remarks>
 file static class IdValidationHelper
 {
-	static readonly Dictionary<Type, GetIdDelegate> _getIds = new(5);
-	//static readonly MethodInfo _getIdMethod = typeof(IdValidationHelper).GetMethod(nameof(GetId), BindingFlags.Static | BindingFlags.NonPublic)
-	//	?? throw new MethodException("Unable to find 'GetId' method...??!?");
+	/// <summary>
+	/// Represents a method that retrieves an identifier for the specified element.
+	/// </summary>
+	/// <param name="element">The element for which to obtain an identifier. Cannot be null.</param>
+	/// <returns>An integer representing the identifier of the element, or null if no identifier is available.</returns>
+	delegate int? GetIdDelegate(object element);
 
-	internal static void DoValidation(int? possibleId, InputNullBehavior nullBehavior, IdPredicate predicate)
+	internal static void DoValidation(int? possibleId, InputNullBehavior nullBehavior, IdValidator predicate)
 	{
 		if (!possibleId.HasValue)
 		{
@@ -206,43 +228,26 @@ file static class IdValidationHelper
 
 		ValidateId(possibleId.Value, predicate);
 	}
-
-	/// <exception cref="ValidationMetadataException"/>
-	internal static void DoValidation(object? argument, InputNullBehavior nullBehavior, IdPredicate predicate)
-	{
-		int? possibleId = argument switch
-		{
-			IHasId idObj => idObj.Id,
-			Either<string, int> stringOrInt when stringOrInt.IsT2 => stringOrInt.AsT2,
-			Either<int, string> intOrString when intOrString.IsT1 => intOrString.AsT1,
-			PSObject pso => GetIdFromPSObject(pso),
-			int id => id,
-			_ => null,
-		};
-
-		DoValidation(possibleId, nullBehavior, predicate);
-	}
 	internal static int? ExecuteMethod(Type parameterType, object element)
 	{
 		ArgumentNullException.ThrowIfNull(element);
 
-		return _getIds[parameterType](element);
+		return s_getIds[parameterType](element);
 	}
-	internal static IdPredicate GetValidation(ValidateRangeKind kind)
+	internal static unsafe IdValidator GetIdValidator(ValidateRangeKind kind)
 	{
 		return kind switch
 		{
-			ValidateRangeKind.NonNegative => MustBeNonNegative,
-			ValidateRangeKind.Negative => MustBeNegative,
-			ValidateRangeKind.NonPositive => MustBeNonPositive,
-			ValidateRangeKind.Positive or _ => MustBePositive,
+			ValidateRangeKind.NonNegative => new(&MustBeNonNegative),
+			ValidateRangeKind.Negative => new(&MustBeNegative),
+			ValidateRangeKind.NonPositive => new(&MustBeNonPositive),
+			ValidateRangeKind.Positive or _ => new(&MustBePositive),
 		};
 	}
 
-	/// <exception cref="ValidationMetadataException"></exception>
-	private static void ValidateId(int id, IdPredicate validationFunc)
+	private static void ValidateId(int id, IdValidator validatorPtr)
 	{
-		if (!validationFunc(id, out ValidateRangeKind kind))
+		if (!validatorPtr.Invoke(id, out ValidateRangeKind kind))
 		{
 			throw new ValidationMetadataException($"The argument's ID is not in the acceptable range of values. Expected value to be '{kind}'.");
 		}
@@ -269,12 +274,6 @@ file static class IdValidationHelper
 		return id <= 0;
 	}
 
-	private static int? GetIdFromPSObject(PSObject pso)
-	{
-		PSPropertyInfo? ppi = pso?.Properties[Constants.ID];
-		return ppi?.Value as int?;
-	}
-
 	/// <exception cref="ValidationMetadataException"></exception>
 	[DoesNotReturn]
 	private static void ThrowIsNull(object? argument)
@@ -288,26 +287,58 @@ file static class IdValidationHelper
 		throw new ValidationMetadataException($"{nameof(argument)}'s ID value MUST be null.");
 	}
 
-	internal static bool TryGetMethodInfo(Type parameterType)
+	// Delegate caching
+	static IdValidationHelper()
 	{
-		if (_getIds.ContainsKey(parameterType))
-		{
-			return true;
-		}
-		else if (!TryGetMatchingPipeableInterface(parameterType))
-		{
-			return false;
-		}
+		GetIdDelegate fromEither = getIdFromEither;
 
-		MethodInfo genMeth = _method.MakeGenericMethod(parameterType);
-		GetIdDelegate getter = genMeth.CreateDelegate<GetIdDelegate>();
-		return _getIds.TryAdd(parameterType, getter);
+		s_fallbackNull = _ => null;
+		s_fromPso = pso =>
+		{
+			PSPropertyInfo? ppi = ((PSObject)pso).Properties[Constants.ID];
+			return ppi?.Value as int?;
+		};
+		s_getIds = new(
+		[
+			new(typeof(PSObject), s_fromPso),
+			new(typeof(Either<int, string>), fromEither),
+			new(typeof(Either<string, int>), fromEither),
+		]);
+		s_method = typeof(IdValidationHelper).GetMethod(nameof(GetIdFromPipeable), BindingFlags.Static | BindingFlags.NonPublic)
+			?? throw new MethodException("Unable to find 'GetIdFromObject' method...??!?");
+
+		static int? getIdFromEither(object either)
+		{
+			return either switch
+			{
+				Either<int, string> asFirst when asFirst.IsT1 => asFirst.AsT1,
+				Either<string, int> asSecond when asSecond.IsT2 => asSecond.AsT2,
+				_ => null,
+			};
+		}
 	}
 
-	private static readonly MethodInfo _method = typeof(IdValidationHelper)
-		.GetMethod(nameof(GetIdFromObject), BindingFlags.Static | BindingFlags.NonPublic) ?? throw new MethodException("Unable to find 'GetIdFromObject' method...??!?");
+	private static readonly GetIdDelegate s_fallbackNull;
+	private static readonly GetIdDelegate s_fromPso;
+	private static readonly ConcurrentDictionary<Type, GetIdDelegate> s_getIds;
+	private static readonly MethodInfo s_method;
+	internal static bool TryGetMethodInfo(Type parameterType)
+	{
+		return s_getIds.GetOrAdd(parameterType, CreateDelegate) != s_fallbackNull;
+	}
 
-	private static int? GetIdFromObject<T>(object element) where T : IPipeable<T>
+	private static GetIdDelegate CreateDelegate(Type parameterType)
+	{
+		if (!TryGetMatchingPipeableInterface(parameterType))
+		{
+			return typeof(PSObject).IsAssignableFrom(parameterType) ? s_fromPso : s_fallbackNull;
+		}
+
+		MethodInfo genMeth = s_method.MakeGenericMethod(parameterType);
+		return genMeth.CreateDelegate<GetIdDelegate>();
+	}
+	
+	private static int? GetIdFromPipeable<T>(object element) where T : IPipeable<T>
 	{
 		return ((T)element).GetId();
 	}
