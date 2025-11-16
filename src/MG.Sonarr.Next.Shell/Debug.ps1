@@ -48,6 +48,12 @@ if (-not [string]::IsNullOrWhitespace($ConfigJson)) {
 	$NoApiInPath = $config["NoApiInPath"] -as [bool]
 }
 
+function resolveVariables([string]$text) {
+	$varName = $text -replace '\{\s*?(\w+)\s*\}', '$1'
+	try { return (Get-Variable -Name $varName -ErrorAction Stop).Value -as [string] }
+	catch { return $text }
+}
+
 if (-not [System.IO.Path]::IsPathFullyQualified($BuildDependenciesJson)) {
 
 	$BuildDependenciesJson = "$PSScriptRoot\$BuildDependenciesJson"
@@ -136,4 +142,6 @@ Write-Host "Debugging PoshSonarr PowerShell Module" -ForegroundColor Cyan
 Write-Host "`n"
 #$VerbosePreference = "Continue"
 $debugSettings = Get-Content -Path "$PSScriptRoot\debugging.json" | ConvertFrom-Json -AsHashtable
-Connect-SonarrInstance -Url $debugSettings.Instance.Url -ApiKey $debugSettings.Instance.ApiKey -PassThru
+$instance = $debugSettings.Instance
+
+Connect-SonarrInstance -Url (resolveVariables $instance.Url) -ApiKey (resolveVariables $instance.ApiKey) -PassThru
