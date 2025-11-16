@@ -13,17 +13,19 @@ namespace MG.Sonarr.Next.Collections;
 public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 {
     private const int DEFAULT_CAPACITY = 5;
-    private static readonly WildcardEqualityComparer _comparer = new();
+    private static readonly WildcardEqualityComparer s_comparer = new();
 
-    private readonly HashSet<Wildcard> _set;
+	private readonly int _capacity;
+    private HashSet<Wildcard>? _set;
+	private Wildcard? _single;
 
     /// <summary>
     /// Gets the number of wildcard patterns are contained in the <see cref="WildcardSet"/>.
     /// </summary>
     public int Count
     {
-        [DebuggerStepThrough]
-        get => _set.Count;
+		[DebuggerStepThrough]
+		get => _set?.Count ?? (_single.HasValue ? 1 : 0);
     }
 
     /// <summary>
@@ -42,10 +44,24 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
     private WildcardSet(scoped ReadOnlySpan<Wildcard> values)
         : this(values.Length)
     {
-        foreach (Wildcard ws in values)
-        {
-            _ = _set.Add(ws);
-        }
+		switch (values.Length)
+		{
+			case 0:
+				return;
+
+			case 1:
+				_single = values[0];
+				return;
+
+			default:
+				_set = new(_capacity, s_comparer);
+				for (int i = 0; i < values.Length; i++)
+				{
+					_ = _set.Add(values[i]);
+				}
+
+				break;
+		}
     }
 
     /// <summary>
@@ -55,12 +71,13 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
     [DebuggerStepThrough]
     private WildcardSet(int capacity)
     {
-        _set = new(capacity, _comparer);
+		_capacity = capacity;
+        //_set = new(capacity, s_comparer);
 #if NET9_0_OR_GREATER
-        _alternate = _set.GetAlternateLookup<ReadOnlySpan<char>>();
+        //_alternate = _set.GetAlternateLookup<ReadOnlySpan<char>>();
     }
 
-    private readonly HashSet<Wildcard>.AlternateLookup<ReadOnlySpan<char>> _alternate;
+    private HashSet<Wildcard>.AlternateLookup<ReadOnlySpan<char>> _alternate;
 #else
     }
 #endif
@@ -200,7 +217,12 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
         return false;
     }
 
-    public bool Remove(Wildcard value)
+	/// <summary>
+	/// Removes the specified wildcard from the set if it exists.
+	/// </summary>
+	/// <param name="value">The wildcard to remove from the set. Cannot be null.</param>
+	/// <returns><see langword="true"/> if the wildcard was successfully removed; otherwise, <see langword="false"/>.</returns>
+	public bool Remove(Wildcard value)
     {
         return _set.Remove(value);
     }

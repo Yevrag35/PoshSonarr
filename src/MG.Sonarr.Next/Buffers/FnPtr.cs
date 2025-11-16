@@ -1,31 +1,42 @@
 ﻿namespace MG.Sonarr.Next.Buffers;
 
-/// <summary>
-/// Represents a strongly-typed managed function pointer with three parameters and a return value.
-/// </summary>
-/// <remarks>Use this struct to encapsulate and invoke managed function pointers with three parameters in a
-/// type-safe manner. This is intended for advanced scenarios where direct function pointer invocation is required, performance-critical code.
-/// The struct is immutable and does not own the lifetime of the underlying
-/// function pointer.</remarks>
-/// <typeparam name="T0">The type of the first parameter passed to the function. Must be a type that allows ref struct constraints.</typeparam>
-/// <typeparam name="T1">The type of the second parameter passed to the function. Must be a type that allows ref struct constraints.</typeparam>
-/// <typeparam name="T2">The type of the third parameter passed to the function. Must be a type that allows ref struct constraints.</typeparam>
-/// <typeparam name="TResult">The type of the value returned by the function.</typeparam>
-[StructLayout(LayoutKind.Sequential)]
-public readonly unsafe struct FnPtr<T0, T1, T2, TResult>
-    where T0 : allows ref struct
-    where T1 : allows ref struct
-    where T2 : allows ref struct
+public static class FnPtr
 {
-    private readonly delegate* managed<T0, T1, T2, TResult> _ptr;
+	/// <summary>
+	/// Throws an exception if the specified function pointer is not valid or has not been initialized.
+	/// </summary>
+	/// <typeparam name="T0">The type of the first parameter of the function pointer.</typeparam>
+	/// <typeparam name="T1">The type of the second parameter of the function pointer.</typeparam>
+	/// <typeparam name="T2">The type of the third parameter of the function pointer.</typeparam>
+	/// <typeparam name="TResult">The return type of the function pointer.</typeparam>
+	/// <param name="ptr">The function pointer to validate. Must be initialized and valid.</param>
+	/// <param name="paramName">The name of the parameter to include in the exception message if validation fails. This is typically provided
+	/// automatically and should not be set manually.</param>
+	/// <exception cref="ArgumentNullException">Thrown if <paramref name="ptr"/> is not valid or has not been initialized.</exception>
+	[StackTraceHidden]
+	public static unsafe void ThrowIfInvalid<T0, T1, TResult>(FnPtr<T0, T1, TResult> ptr, [CallerArgumentExpression(nameof(ptr))] string? paramName = null)
+		where T0 : allows ref struct
+		where T1 : allows ref struct
+	{
+		ArgumentNullException.ThrowIfNull(ptr.AsPointer(), paramName);
+	}
 
-    public FnPtr(delegate* managed<T0, T1, T2, TResult> ptr)
-    {
-        _ptr = ptr;
-    }
-
-    public TResult Invoke(T0 arg0, T1 arg1, T2 arg2)
-    {
-        return _ptr(arg0, arg1, arg2);
-    }
+	/// <summary>
+	/// Throws an exception if the specified function pointer is not valid or has not been initialized.
+	/// </summary>
+	/// <typeparam name="T0">The type of the first parameter of the function pointer.</typeparam>
+	/// <typeparam name="T1">The type of the second parameter of the function pointer.</typeparam>
+	/// <typeparam name="T2">The type of the third parameter of the function pointer.</typeparam>
+	/// <typeparam name="TResult">The return type of the function pointer.</typeparam>
+	/// <param name="ptr">The function pointer to validate. Must be initialized and valid.</param>
+	/// <param name="paramName">The name of the parameter to include in the exception message if validation fails. This is typically provided
+	/// automatically and should not be set manually.</param>
+	/// <exception cref="ArgumentNullException">Thrown if <paramref name="ptr"/> is not valid or has not been initialized.</exception>
+	public static unsafe void ThrowIfInvalid<T0, T1, T2, TResult>(FnPtr<T0, T1, T2, TResult> ptr, [CallerArgumentExpression(nameof(ptr))] string? paramName = null)
+		where T0 : allows ref struct
+		where T1 : allows ref struct
+		where T2 : allows ref struct
+	{
+		ArgumentNullException.ThrowIfNull(ptr.AsPointer(), paramName);
+	}
 }

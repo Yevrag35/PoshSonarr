@@ -153,18 +153,23 @@ namespace MG.Sonarr.Next.Metadata
         {
             _list.RemoveAt(index);
         }
-        /// <summary>
-        /// Removes all elements from the collection that match the specified predicate, using the provided arguments.
-        /// </summary>
-        /// <typeparam name="TArg1">The type of the first argument passed to the predicate.</typeparam>
-        /// <typeparam name="TArg2">The type of the second argument passed to the predicate.</typeparam>
-        /// <param name="arg1">The first argument to pass to the predicate for each element.</param>
-        /// <param name="arg2">The second argument to pass to the predicate for each element.</param>
-        /// <param name="predicate">A function pointer that determines whether an element should be removed. The function receives the element,
-        /// <paramref name="arg1"/>, and <paramref name="arg2"/> as parameters, and returns <see langword="true"/> to
-        /// remove the element; otherwise, <see langword="false"/>.</param>
-        internal void RemoveAll<TArg1, TArg2>(TArg1 arg1, TArg2 arg2, FnPtr<T, TArg1, TArg2, bool> predicate)
-        {
+		/// <summary>
+		/// Removes all elements from the collection that match the specified predicate, using the provided arguments.
+		/// </summary>
+		/// <typeparam name="TArg1">The type of the first argument passed to the predicate.</typeparam>
+		/// <typeparam name="TArg2">The type of the second argument passed to the predicate.</typeparam>
+		/// <param name="arg1">The first argument to pass to the predicate for each element.</param>
+		/// <param name="arg2">The second argument to pass to the predicate for each element.</param>
+		/// <param name="predicate">A function pointer that determines whether an element should be removed. The function receives the element,
+		/// <paramref name="arg1"/>, and <paramref name="arg2"/> as parameters, and returns <see langword="true"/> to
+		/// remove the element; otherwise, <see langword="false"/>.</param>
+		/// <exception cref="ArgumentException"><paramref name="predicate"/> is not a valid function pointer.</exception>
+		internal void RemoveAll<TArg1, TArg2>(TArg1 arg1, TArg2 arg2, FnPtr<T, TArg1, TArg2, bool> predicate)
+			where TArg1 : allows ref struct
+			where TArg2 : allows ref struct
+		{
+			FnPtr.ThrowIfInvalid(predicate);
+
             int listCount = _list.Count;
             if (listCount == 0)
                 return;
@@ -178,6 +183,7 @@ namespace MG.Sonarr.Next.Metadata
             }
         }
 
+		/// <inheritdoc/>
         public void SetTag(IMetadataResolver resolver)
         {
             foreach (T item in CollectionsMarshal.AsSpan(_list))
@@ -206,11 +212,11 @@ namespace MG.Sonarr.Next.Metadata
         /// <param name="result">When this method returns, contains the first item that matches the predicate if found; otherwise, the
         /// default value for type <c>T</c>. This parameter is passed uninitialized.</param>
         /// <returns><see langword="true"/> if a matching item is found; otherwise, <see langword="false"/>.</returns>
-        internal unsafe bool TryFind<TState>(TState state, delegate*<T, TState, bool> predicate, [NotNullWhen(true)] out T? result)
+        internal bool TryFind<TState>(TState state, FnPtr<T, TState, bool> predicate, [NotNullWhen(true)] out T? result)
         {
-            foreach (T item in CollectionsMarshal.AsSpan(_list))
+			foreach (T item in CollectionsMarshal.AsSpan(_list))
             {
-                if (predicate(item, state))
+                if (predicate.Invoke(item, state))
                 {
                     result = item;
                     return true;
