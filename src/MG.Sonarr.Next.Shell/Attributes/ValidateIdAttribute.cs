@@ -90,7 +90,6 @@ public sealed class ValidateIdsAttribute : ValidateEnumeratedArgumentsAttribute
 {
 	readonly bool _isValidatableType;
 	readonly Type _parameterType;
-	//readonly IdPredicate _predicate;
 	private readonly IdValidator _predicate;
 	/// <summary>
 	/// The range the "Id" value must be in to pass validation.
@@ -125,7 +124,6 @@ public sealed class ValidateIdsAttribute : ValidateEnumeratedArgumentsAttribute
 		this.Kind = kind;
 		_parameterType = parameterType;
 		_isValidatableType = IdValidationHelper.TryGetMethodInfo(parameterType);
-		//_predicate = IdValidationHelper.GetValidation(kind);
 		_predicate = IdValidationHelper.GetIdValidator(kind);
 	}
 
