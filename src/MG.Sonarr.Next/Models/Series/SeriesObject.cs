@@ -22,8 +22,8 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 	IQualityProfilePipeable,
 	IReleasePipeableBySeries,
 	ISerializableNames<SeriesObject>,
-	ISeriesPipeable,
-	IValidatableId<IEpisodeBySeriesPipeable>
+	ISeriesPipeable
+	//IValidatableId<IEpisodeBySeriesPipeable>
 {
 	const int CAPACITY = 46;
 	private const string FIRST_AIRED = "FirstAired";
@@ -140,7 +140,7 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 	}
 
 	const int DICT_CAPACITY = 2;
-	protected private static readonly Lazy<JsonNameHolder> _names = new(GetJsonNames);
+	private protected static readonly Lazy<JsonNameHolder> _names = new(GetJsonNames);
 	private static readonly HashSet<string> _capitalProps = new(DICT_CAPACITY)
 	{
 		"SeriesType", "Status",

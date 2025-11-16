@@ -162,15 +162,12 @@ public sealed class ValidateIdsAttribute : ValidateEnumeratedArgumentsAttribute
 ///     <see langword="true"/>, if <paramref name="id"/> passes validation; otherwise, <see langword="false"/>.
 /// </returns>
 delegate bool IdPredicate(int id, out ValidateRangeKind kind);
+delegate int? GetIdDelegate(object element);
 file static class IdValidationHelper
 {
-	static readonly Dictionary<Type, MethodInfo> _getIds = new(5);
-	static readonly MethodInfo _getIdMethod = typeof(IdValidationHelper).GetMethod(nameof(GetId), BindingFlags.Static | BindingFlags.NonPublic)
-		?? throw new MethodException("Unable to find 'GetId' method...??!?");
-	private static int? GetId<T>(T pipeable) where T : IValidatableId<T>, IPipeable<T>
-	{
-		return T.GetValidatableId(pipeable);
-	}
+	static readonly Dictionary<Type, GetIdDelegate> _getIds = new(5);
+	//static readonly MethodInfo _getIdMethod = typeof(IdValidationHelper).GetMethod(nameof(GetId), BindingFlags.Static | BindingFlags.NonPublic)
+	//	?? throw new MethodException("Unable to find 'GetId' method...??!?");
 
 	internal static void DoValidation(int? possibleId, InputNullBehavior nullBehavior, IdPredicate predicate)
 	{
@@ -229,7 +226,7 @@ file static class IdValidationHelper
 	{
 		ArgumentNullException.ThrowIfNull(element);
 
-		return (int?)_getIds[parameterType].Invoke(null, [element]);
+		return _getIds[parameterType](element);
 	}
 	internal static IdPredicate GetValidation(ValidateRangeKind kind)
 	{
@@ -302,8 +299,17 @@ file static class IdValidationHelper
 			return false;
 		}
 
-		MethodInfo genMeth = _getIdMethod.MakeGenericMethod(parameterType);
-		return _getIds.TryAdd(parameterType, genMeth);
+		MethodInfo genMeth = _method.MakeGenericMethod(parameterType);
+		GetIdDelegate getter = genMeth.CreateDelegate<GetIdDelegate>();
+		return _getIds.TryAdd(parameterType, getter);
+	}
+
+	private static readonly MethodInfo _method = typeof(IdValidationHelper)
+		.GetMethod(nameof(GetIdFromObject), BindingFlags.Static | BindingFlags.NonPublic) ?? throw new MethodException("Unable to find 'GetIdFromObject' method...??!?");
+
+	private static int? GetIdFromObject<T>(object element) where T : IPipeable<T>
+	{
+		return ((T)element).GetId();
 	}
 	private static bool TryGetMatchingPipeableInterface(Type parameterType)
 	{
@@ -313,29 +319,18 @@ file static class IdValidationHelper
 			return false;
 		}
 
-		DoubleBool dub = DoubleBool.InitializeNew();
-
 		foreach (Type @interface in interfaces.OrderByDescending(x => x.Name))
 		{
 			if (InterfaceGenericsEqual(@interface, parameterType))
 			{
-				if (@interface.Name.StartsWith("IValidatableId", StringComparison.Ordinal))
+				if (@interface.Name.StartsWith(nameof(IPipeable<>), StringComparison.Ordinal))
 				{
-					dub.Bool1 = true;
+					return true;
 				}
-				else if (@interface.Name.StartsWith("IPipeable", StringComparison.Ordinal))
-				{
-					dub.Bool2 = true;
-				}
-			}
-
-			if (dub)
-			{
-				break;
 			}
 		}
 
-		return dub;
+		return false;
 	}
 
 	private static bool InterfaceGenericsEqual(Type interfaceType, Type parameterType)
