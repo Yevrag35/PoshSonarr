@@ -1,3 +1,4 @@
+using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.DownloadClients;
@@ -61,10 +62,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients
             
             if (all.Count > 0 && (names.Count > 0 || ids.Count > 0))
             {
-                unsafe
-                {
-                    all.RemoveAll(names, ids, &removeIf);
-                }
+                FnPtr<DownloadClientObject, WildcardSet, SortedSet<int>, bool> removePtr;
+                unsafe { removePtr = new(&removeIf); }
+                
+                all.RemoveAll(names, ids, removePtr);
             }
 
             return all;

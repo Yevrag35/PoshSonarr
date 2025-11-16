@@ -1,3 +1,4 @@
+using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Json;
 
@@ -86,8 +87,7 @@ namespace MG.Sonarr.Next.Metadata
         /// <inheritdoc cref="List{T}.AddRange(IEnumerable{T})"/>
         public void AddRange(IEnumerable<T> collection)
         {
-            collection ??= Enumerable.Empty<T>();
-            _list.AddRange(collection);
+            _list.AddRange(collection ?? []);
         }
         /// <summary>
         /// Returns a read-only span over the elements in the collection.
@@ -153,20 +153,17 @@ namespace MG.Sonarr.Next.Metadata
         {
             _list.RemoveAt(index);
         }
-        //internal unsafe void RemoveAll<TState>(ref TState state, delegate*<T, ref TState, bool> predicate)
-        //{
-        //    int listCount = _list.Count;
-        //    if (listCount == 0) return;
-
-        //    for (int i = listCount - 1; i >= 0; i--)
-        //    {
-        //        if (predicate(_list[i], ref state))
-        //        {
-        //            _list.RemoveAt(i);
-        //        }
-        //    }
-        //}
-        internal unsafe void RemoveAll<TArg1, TArg2>(TArg1 arg1, TArg2 arg2, delegate*<T, TArg1, TArg2, bool> predicate)
+        /// <summary>
+        /// Removes all elements from the collection that match the specified predicate, using the provided arguments.
+        /// </summary>
+        /// <typeparam name="TArg1">The type of the first argument passed to the predicate.</typeparam>
+        /// <typeparam name="TArg2">The type of the second argument passed to the predicate.</typeparam>
+        /// <param name="arg1">The first argument to pass to the predicate for each element.</param>
+        /// <param name="arg2">The second argument to pass to the predicate for each element.</param>
+        /// <param name="predicate">A function pointer that determines whether an element should be removed. The function receives the element,
+        /// <paramref name="arg1"/>, and <paramref name="arg2"/> as parameters, and returns <see langword="true"/> to
+        /// remove the element; otherwise, <see langword="false"/>.</param>
+        internal void RemoveAll<TArg1, TArg2>(TArg1 arg1, TArg2 arg2, FnPtr<T, TArg1, TArg2, bool> predicate)
         {
             int listCount = _list.Count;
             if (listCount == 0)
@@ -174,7 +171,7 @@ namespace MG.Sonarr.Next.Metadata
 
             for (int i = listCount - 1; i >= 0; i--)
             {
-                if (predicate(_list[i], arg1, arg2))
+                if (predicate.Invoke(_list[i], arg1, arg2))
                 {
                     _list.RemoveAt(i);
                 }

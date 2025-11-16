@@ -3,13 +3,33 @@ using MG.Sonarr.Next.Json;
 
 namespace MG.Sonarr.Next.Metadata
 {
-    public interface IPipeable<TSelf> : IJsonSonarrMetadata
+    /// <summary>
+    /// Defines a contract for types that support pipeable operations and provide Sonarr metadata in JSON format.
+    /// </summary>
+    /// <typeparam name="TSelf">The type that implements the IPipeable interface.</typeparam>
+    public interface IPipeable<TSelf> : IJsonSonarrMetadata where TSelf : IPipeable<TSelf>
     {
+        /// <summary>
+        /// Gets the unique identifier of the implementation to pass along to PowerShell piping.
+        /// </summary>
+        /// <returns>
+        /// The unique identifier of the implementation, or <see langword="null"/> if not applicable.
+        /// </returns>
         int? GetId();
     }
 
-    public interface IValidatableId<TPipeable> where TPipeable : IPipeable<TPipeable>
+    /// <summary>
+    /// Defines a contract for types that provide a validatable identifier and support pipeable operations.
+    /// </summary>
+    /// <typeparam name="TPipeable">The type that implements both <see cref="IValidatableId{TPipeable}"/> and <see cref="IPipeable{TPipeable}"/>,
+    /// representing a pipeable entity with a validatable identifier.</typeparam>
+    public interface IValidatableId<TPipeable> where TPipeable : IValidatableId<TPipeable>, IPipeable<TPipeable>
     {
+        /// <summary>
+        /// Retrieves the identifier of the specified pipeable object for validation purposes.
+        /// </summary>
+        /// <param name="pipeable">The pipeable object from which to obtain the identifier. Cannot be null.</param>
+        /// <returns>The identifier of the pipeable object if available; otherwise, null.</returns>
         static virtual int? GetValidatableId(TPipeable pipeable)
         {
             return pipeable.GetId();
@@ -27,7 +47,9 @@ namespace MG.Sonarr.Next.Metadata
         /// The series ID of the implementation.
         /// </summary>
         int SeriesId { get; }
-
+        /// <summary>
+        /// The display title of the implementation.
+        /// </summary>
         string Title { get; }
     }
     /// <summary>
@@ -114,11 +136,24 @@ namespace MG.Sonarr.Next.Metadata
         /// </summary>
         int SeriesId { get; }
     }
+    /// <summary>
+    /// Defines a contract for a pipeable operation that renames an episode file within a series, supporting metadata
+    /// tagging and validation.
+    /// </summary>
+    /// <remarks>Implementations of this interface are intended to participate in processing pipelines that
+    /// handle file renaming tasks. The interface also supports JSON metadata tagging and validation of identifiers,
+    /// enabling integration with systems that require these capabilities.</remarks>
     public interface IRenameFilePipeable : IJsonMetadataTaggable,
         IPipeable<IRenameFilePipeable>,
         IValidatableId<IRenameFilePipeable>
     {
+        /// <summary>
+        /// Gets the episode file ID of the implementation.
+        /// </summary>
         int EpisodeFileId { get; }
+        /// <summary>
+        /// Gets the series ID of the implementation.
+        /// </summary>
         int SeriesId { get; }
     }
     /// <summary>
@@ -171,11 +206,19 @@ namespace MG.Sonarr.Next.Metadata
         /// </remarks>
         void Reset();
     }
-
+    /// <summary>
+    /// Represents a pipeable test entity that provides Sonarr metadata and supports validation by identifier.
+    /// </summary>
+    /// <remarks>Implementations of this interface can be used in data processing pipelines and must provide a
+    /// unique identifier via the <see cref="Id"/> property. This interface extends metadata and validation capabilities
+    /// for test entities within Sonarr-related workflows.</remarks>
     public interface ITestPipeable : IJsonSonarrMetadata,
         IPipeable<ITestPipeable>,
         IValidatableId<ITestPipeable>
     {
+        /// <summary>
+        /// Gets the unique identifier of the implementation.
+        /// </summary>
         int Id { get; }
     }
 }
