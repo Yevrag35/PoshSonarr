@@ -64,4 +64,10 @@
 	  <ProjectReference Include="..\MG.Sonarr.Next.Standard\MG.Sonarr.Next.Standard.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Compile Update="Metadata\MetadataList-Enumerator.cs">
+	    <DependentUpon>MetadataList_T.cs</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
 </Project>

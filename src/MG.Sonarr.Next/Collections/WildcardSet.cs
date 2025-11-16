@@ -16,8 +16,7 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 	private static readonly WildcardEqualityComparer s_comparer = new();
 
 	private readonly int _capacity;
-	private HashSet<Wildcard>? _set;
-	private Wildcard? _single;
+	private readonly HashSet<Wildcard> _set;
 
 	/// <summary>
 	/// Gets the number of wildcard patterns are contained in the <see cref="WildcardSet"/>.
@@ -25,7 +24,7 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 	public int Count
 	{
 		[DebuggerStepThrough]
-		get => _set?.Count ?? (_single.HasValue ? 1 : 0);
+		get => _set.Count;
 	}
 
 	/// <summary>
@@ -44,23 +43,9 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 	private WildcardSet(scoped ReadOnlySpan<Wildcard> values)
 		: this(values.Length)
 	{
-		switch (values.Length)
+		foreach (Wildcard wc in values)
 		{
-			case 0:
-				return;
-
-			case 1:
-				_single = values[0];
-				return;
-
-			default:
-				_set = new(_capacity, s_comparer);
-				for (int i = 0; i < values.Length; i++)
-				{
-					_ = _set.Add(values[i]);
-				}
-
-				break;
+			_ = _set.Add(wc);
 		}
 	}
 
@@ -71,13 +56,12 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 	[DebuggerStepThrough]
 	private WildcardSet(int capacity)
 	{
-		_capacity = capacity;
-		//_set = new(capacity, s_comparer);
+		_set = new(capacity, s_comparer);
 #if NET9_0_OR_GREATER
-		//_alternate = _set.GetAlternateLookup<ReadOnlySpan<char>>();
+		_alternate = _set.GetAlternateLookup<ReadOnlySpan<char>>();
 	}
 
-	private HashSet<Wildcard>.AlternateLookup<ReadOnlySpan<char>> _alternate;
+	private readonly HashSet<Wildcard>.AlternateLookup<ReadOnlySpan<char>> _alternate;
 #else
     }
 #endif

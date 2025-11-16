@@ -31,11 +31,12 @@ public sealed partial class MetadataList<T>
 	[StructLayout(LayoutKind.Auto)]
 	public struct Enumerator : IEnumerator<T>
 	{
-		private readonly MetadataList<T> _list;
+		private MetadataList<T> _list;
 		private int _index;
+		private T _current;
 
 		/// <inheritdoc/>
-		public readonly T Current => _list._list[_index];
+		public readonly T Current => _current;
 
 		/// <inheritdoc/>
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -49,6 +50,7 @@ public sealed partial class MetadataList<T>
 		{
 			_list = list;
 			_index = -1;
+			_current = default!;
 		}
 
 		/// <inheritdoc/>
@@ -58,6 +60,7 @@ public sealed partial class MetadataList<T>
 			if ((uint)index < (uint)_list._list.Count)
 			{
 				_index = index;
+				_current = Unsafe.Add(ref MemoryMarshal.GetReference(_list.AsSpan()), index);
 				return true;
 			}
 
@@ -67,15 +70,16 @@ public sealed partial class MetadataList<T>
 
 		/// <inheritdoc/>
 		[DebuggerStepThrough]
-		readonly void IDisposable.Dispose()
+		void IDisposable.Dispose()
 		{
-			// Nothing to dispose
+			this = default;
 		}
 		/// <inheritdoc/>
 		[DebuggerStepThrough]
 		void IEnumerator.Reset()
 		{
 			_index = -1;
+			_current = default!;
 		}
 	}
 }
