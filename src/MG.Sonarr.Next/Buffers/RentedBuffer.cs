@@ -76,7 +76,7 @@ public static class RentedBuffer
 		}
 
 		buffer = new(minimumLength: minimumLength, preValidated: true, useEntireCapacity: false);
-		return buffer.Buffer;
+		return buffer.Span;
 	}
 	/// <summary>
 	/// Rents a buffer with either the specified span or an <see cref="int"/> length that will be rented from <see cref="ArrayPool{T}"/>.

@@ -80,19 +80,14 @@ public static partial class CharSpanExtensions
 
 			if (index == 0)
 			{
-				slice = slice.Slice(1);
+				slice = slice[1..];
 				continue;
 			}
 
-			written = slice.Slice(0, index).CopyToSlice(destination, written);
-			if (index < slice.Length - 1)
-			{
-				slice = slice.Slice(index + 1);
-			}
-			else
-			{
-				slice = [];
-			}
+			written = slice[..index].CopyToSlice(destination, written);
+			slice = index < slice.Length - 1
+				? slice[(index + 1)..]
+				: [];
 		}
 
 		return written;

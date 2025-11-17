@@ -16,7 +16,7 @@ public readonly partial struct Wildcard
 	/// the match type <see cref="WildcardMatchType.All"/> or is already a "like" pattern, then returns the current instance.
 	/// </para>
 	/// </returns>
-	public readonly Wildcard ToContainsLike()
+	public Wildcard ToContainsLike()
 	{
 		if (this.IsEmpty)
 		{
@@ -34,31 +34,25 @@ public readonly partial struct Wildcard
 			return this;
 		}
 
-		RentedBuffer<char> buffer = [];
-		try
-		{
-			int length = _pattern.Length + 2;
-			Span<char> chars = length <= MAX_STACKALLOC
+		int length = pattern.Length + 2;
+		using (var buffer = RentedBuffer.Rent<char>(
+			length <= MAX_STACKALLOC
 				? stackalloc char[length]
-				: RentedBuffer.Rent(length, ref buffer);
-
+				: length))
+		{
 			int pos = 0;
 			if (pattern[0] != '*')
 			{
-				chars[pos++] = '*';
+				buffer[pos++] = '*';
 			}
 
-			pattern.CopyToSlice(chars, ref pos);
+			pos = pattern.CopyToSlice(buffer.Span, pos);
 			if (pattern[^1] != '*')
 			{
-				chars[pos++] = '*';
+				buffer[pos++] = '*';
 			}
 
-			return new(chars.Slice(0, pos), WildcardMatchType.Like);
-		}
-		finally
-		{
-			buffer.Dispose();
+			return new(buffer[..pos], WildcardMatchType.Like);
 		}
 	}
 
@@ -76,7 +70,7 @@ public readonly partial struct Wildcard
 	/// If the current instance is already an exact pattern, returns the current instance unchanged.
 	/// </para>
 	/// </returns>
-	public readonly Wildcard ToExact()
+	public Wildcard ToExact()
 	{
 		if (this.MatchType == WildcardMatchType.Exact)
 		{
@@ -91,19 +85,13 @@ public readonly partial struct Wildcard
 		ReadOnlySpan<char> pattern = _pattern;
 		int length = _state.Length;
 
-		RentedBuffer<char> buffer = [];
-		try
-		{
-			Span<char> chars = length <= MAX_STACKALLOC
+		using (var buffer = RentedBuffer.Rent<char>(
+			length <= MAX_STACKALLOC
 				? stackalloc char[length]
-				: RentedBuffer.Rent(length, ref buffer);
-
-			int written = pattern.RemoveAny(chars, _wildcardChars);
-			return new(chars.Slice(0, written), WildcardMatchType.Exact);
-		}
-		finally
+				: length))
 		{
-			buffer.Dispose();
+			int written = pattern.RemoveAny(buffer.Span, _wildcardChars);
+			return new(buffer[..written], WildcardMatchType.Exact);
 		}
 	}
 }

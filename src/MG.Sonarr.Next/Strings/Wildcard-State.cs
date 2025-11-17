@@ -6,14 +6,14 @@ public readonly partial struct Wildcard
 	private readonly struct State
 	{
 		private readonly WildcardMatchType _type;
-		private readonly ushort _length;
+		private readonly int _length;
 
 		public int Length => _length;
 		public WildcardMatchType Type => _type;
 
 		internal State(int length, WildcardMatchType type)
 		{
-			_length = (ushort)length;
+			_length = length;
 			_type = type;
 		}
 

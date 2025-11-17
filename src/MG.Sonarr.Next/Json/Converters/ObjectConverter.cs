@@ -61,7 +61,12 @@ public sealed class ObjectConverter : JsonConverter<object>
 			throw new JsonException("Unable to deserialize into an array of object instances.");
 	}
 
-	internal T ConvertToObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options, IReadOnlyDictionary<string, string>? replaceNames, IReadOnlySet<string>? propertiesToCapitalize) where T : PSObject, new()
+	internal T ConvertToObject<T>(
+		ref Utf8JsonReader reader,
+		JsonSerializerOptions options,
+		IReadOnlyDictionary<string, string>? replaceNames,
+		IReadOnlySet<string>? propertiesToCapitalize)
+			where T : PSObject, new()
 	{
 		var pso = new T();
 		replaceNames ??= EmptyNameDictionary.Empty<string>();
@@ -96,11 +101,12 @@ public sealed class ObjectConverter : JsonConverter<object>
 						o = this.ConvertToEnumerable(ref reader, pn, options);
 						break;
 
-					case JsonTokenType.String:
-						o = !reader.ValueSpan.IsEmpty
-							? this.ReadString(ref reader, options, pn, propertiesToCapitalize)
-							: string.Empty;
+					case JsonTokenType.String when reader.ValueSpan.IsEmpty:
+						o = string.Empty;
+						break;
 
+					case JsonTokenType.String:
+						o = this.ReadString(ref reader, options, pn, propertiesToCapitalize);
 						break;
 
 					case JsonTokenType.Number:
@@ -108,8 +114,11 @@ public sealed class ObjectConverter : JsonConverter<object>
 						break;
 
 					case JsonTokenType.True:
+						o = true;
+						break;
+
 					case JsonTokenType.False:
-						o = ReadBoolean(ref reader, options);
+						o = false;
 						break;
 
 					case JsonTokenType.None:
@@ -121,8 +130,6 @@ public sealed class ObjectConverter : JsonConverter<object>
 					case JsonTokenType.EndObject:
 					case JsonTokenType.EndArray:
 					case JsonTokenType.PropertyName:
-						goto default;
-
 					default:
 						throw new JsonException("Unable to deserialize the value(s).");
 				}
@@ -150,7 +157,7 @@ public sealed class ObjectConverter : JsonConverter<object>
 
 		foreach (SplitEntry section in chars.SpanSplit(quotes, backs))
 		{
-			section.Chars.CopyTo(scratch.Slice(position));
+			section.Chars.CopyTo(scratch[position..]);
 			position += section.Chars.Length;
 
 			if (!section.Separator.IsEmpty)
@@ -159,92 +166,41 @@ public sealed class ObjectConverter : JsonConverter<object>
 			}
 		}
 
-		return new string(scratch.Slice(0, position));
-	}
-
-	private static bool ReadBoolean(ref Utf8JsonReader reader, JsonSerializerOptions options)
-	{
-		Span<char> chars = stackalloc char[5];
-		int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
-
-		return bool.TryParse(chars.Slice(0, written), out bool result) && result;
+		return new string(scratch[..position]);
 	}
 	private static ValueType ReadNumber(ref Utf8JsonReader reader, JsonSerializerOptions options)
 	{
-		int length = Encoding.UTF8.GetMaxCharCount(reader.ValueSpan.Length);
-		Span<char> chars = stackalloc char[length];
-		int written = Encoding.UTF8.GetChars(reader.ValueSpan, chars);
+		double number = reader.GetDouble();
+		if (double.IsInteger(number))
+		{
+			return number <= int.MaxValue && number >= int.MinValue
+				? (int)number
+				: (long)number;
+		}
 
-		chars = chars.Slice(0, written);
-		if (int.TryParse(chars, Statics.DefaultProvider, out int intNum))
-		{
-			return intNum;
-		}
-		else if (long.TryParse(chars, Statics.DefaultProvider, out long longNum))
-		{
-			return longNum;
-		}
-		else if (double.TryParse(chars, Statics.DefaultProvider, out double dubNum))
-		{
-			return dubNum;
-		}
-		else if (decimal.TryParse(chars, Statics.DefaultProvider, out decimal decNum))
-		{
-			return decNum;
-		}
-		else
-		{
-			return int.MinValue;
-		}
+		return number;
 	}
 
-	private object ReadObject<TParent>(ref Utf8JsonReader reader, JsonSerializerOptions options, string pn) where TParent : PSObject
+	private PSObject ReadObject<TParent>(ref Utf8JsonReader reader, JsonSerializerOptions options, string pn) where TParent : PSObject
 	{
 		Type parentType = typeof(TParent);
-		switch (pn)
+		return pn switch
 		{
-			case Constants.PROPERTY_DATA:
-				if (!parentType.Equals(typeof(HistoryObject)))
-				{
-					goto default;
-				}
-
-				return this.ReadPSObject<ReleaseObject>(ref reader, options);
-
-			case Constants.PROPERTY_EPISODE:
-				return this.ReadPSObject<EpisodeObject>(ref reader, options);
-
-			case Constants.PROPERTY_EPISODE_FILE:
-				return this.ReadPSObject<EpisodeFileObject>(ref reader, options);
-
-			case Constants.PROPERTY_QUALITY:
-				if (parentType.Equals(typeof(QualityRevisionObject))
-					||
-					parentType.Equals(typeof(QualityDefinitionObject)))
-				{
-					return this.ReadPSObject<QualityObject>(ref reader, options);
-				}
-				else if (parentType.Equals(typeof(ManualImportObject)))
-				{
-					return this.ReadPSObject<QualityRevisionObject>(ref reader, options);
-				}
-
-				goto default;
-
-			case Constants.PROPERTY_REVISION:
-				if (parentType.Equals(typeof(QualityRevisionObject)))
-				{
-					return this.ReadPSObject<RevisionObject>(ref reader, options);
-				}
-
-				goto default;
-
-			case Constants.PROPERTY_SERIES:
-				return this.ReadPSObject<SeriesObject>(ref reader, options);
-
-			default:
-				return this.ConvertToObject<PSObject>(ref reader, options, null, null);
-		}
+			Constants.PROPERTY_DATA when parentType.Equals(typeof(HistoryObject)) => this.ReadPSObject<ReleaseObject>(ref reader, options),
+			Constants.PROPERTY_EPISODE => this.ReadPSObject<EpisodeObject>(ref reader, options),
+			Constants.PROPERTY_EPISODE_FILE => this.ReadPSObject<EpisodeFileObject>(ref reader, options),
+			Constants.PROPERTY_QUALITY when parentType.Equals(typeof(QualityRevisionObject))
+											||
+											parentType.Equals(typeof(QualityDefinitionObject)) => this.ReadPSObject<QualityObject>(ref reader, options),
+			Constants.PROPERTY_QUALITY when parentType.Equals(typeof(ManualImportObject)) => this.ReadPSObject<QualityRevisionObject>(ref reader, options),
+			Constants.PROPERTY_REVISION when parentType.Equals(typeof(QualityRevisionObject)) => this.ReadPSObject<RevisionObject>(ref reader, options),
+			Constants.PROPERTY_SERIES => this.ReadPSObject<SeriesObject>(ref reader, options),
+			_ => this.ConvertToObject<PSObject>(
+								ref reader,
+								options,
+								replaceNames: null,
+								propertiesToCapitalize: null),
+		};
 	}
 	private T ReadPSObject<T>(ref Utf8JsonReader reader, JsonSerializerOptions options) where T : SonarrObject, ISerializableNames<T>, new()
 	{
@@ -289,7 +245,7 @@ public sealed class ObjectConverter : JsonConverter<object>
 		}
 		else if (DateTimeOffset.TryParse(chars, Statics.DefaultProvider, DateTimeStyles.AssumeUniversal, out DateTimeOffset offset))
 		{
-			return propertyName.AsSpan().EndsWith(['U', 'T', 'C'], StringComparison.OrdinalIgnoreCase)
+			return propertyName.EndsWith(['U', 'T', 'C'], StringComparison.OrdinalIgnoreCase)
 				? offset
 				: offset.ToLocalTime();
 		}
@@ -312,14 +268,13 @@ public sealed class ObjectConverter : JsonConverter<object>
 		}
 
 		int length = reader.ValueSpan.Length;
-		RentedBuffer<char> buffer = RentedBuffer.Rent<char>(
+
+		using (RentedBuffer<char> buffer = RentedBuffer.Rent<char>(
 			length <= MAX_STACKALLOC
 				? stackalloc char[length]
-				: length);
-
-		try
+				: length))
 		{
-			int written = reader.CopyString(buffer);
+			int written = reader.CopyString(buffer.Span);
 
 			if (capitalize.Contains(propertyName) && char.IsLower(buffer[0]))
 			{
@@ -341,10 +296,6 @@ public sealed class ObjectConverter : JsonConverter<object>
 			}
 
 			return result;
-		}
-		finally
-		{
-			buffer.Dispose();
 		}
 	}
 

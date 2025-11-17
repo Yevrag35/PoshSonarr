@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Http.Requests;
 using Microsoft.Extensions.Caching.Memory;
@@ -74,16 +73,17 @@ public sealed class AuthHandler : DelegatingHandler
 	private static void AddBasicToRequest(AuthedRequestMessage request)
 	{
 		NetworkCredential creds = request.Credentials;
-		string coupled = string.Create(creds.UserName.Length + creds.Password.Length + 1, creds,
-			(chars, state) =>
-		{
-			int position = 0;
-			state.UserName.CopyToSlice(chars, ref position);
-			chars[position++] = ':';
-			state.Password.CopyTo(chars.Slice(position));
-		});
+		int length = creds.UserName.Length + creds.SecurePassword.Length + 1;
 
-		string base64Auth = Convert.ToBase64String(Encoding.UTF8.GetBytes(coupled));
+		ReadOnlySpan<byte> colon = ":"u8;
+		Span<byte> utf8Bytes = stackalloc byte[Encoding.UTF8.GetMaxByteCount(length)];
+		int written = Encoding.UTF8.GetBytes(creds.UserName, utf8Bytes);
+		colon.CopyTo(utf8Bytes[written..]);
+		written += colon.Length;
+
+		written += Encoding.UTF8.GetBytes(creds.Password, utf8Bytes[written..]);
+
+		string base64Auth = Convert.ToBase64String(utf8Bytes[..written]);
 		request.Headers.Authorization = new AuthenticationHeaderValue(BASIC, base64Auth);
 	}
 

@@ -144,4 +144,4 @@ Write-Host "`n"
 $debugSettings = Get-Content -Path "$PSScriptRoot\debugging.json" | ConvertFrom-Json -AsHashtable
 $instance = $debugSettings.Instance
 
-Connect-SonarrInstance -Url (resolveVariables $instance.Url) -ApiKey (resolveVariables $instance.ApiKey) -PassThru
+#Connect-SonarrInstance -Url (resolveVariables $instance.Url) -ApiKey (resolveVariables $instance.ApiKey) -PassThru

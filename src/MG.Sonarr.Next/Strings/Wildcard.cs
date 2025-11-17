@@ -40,7 +40,7 @@ public readonly partial struct Wildcard :
 	/// <param name="index">The position in the current string.</param>
 	/// <returns>The char object at the specified index.</returns>
 	/// <exception cref="ArgumentOutOfRangeException"/>
-	public readonly ref readonly char this[int index] => ref _pattern.AsSpan()[index];
+	public char this[int index] => _pattern.AsSpan()[index];
 
 	/// <summary>
 	/// Indicates whether the <see cref="Wildcard"/> contains any wildcard characters ('?' or '*') in

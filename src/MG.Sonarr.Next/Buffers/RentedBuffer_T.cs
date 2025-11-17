@@ -33,7 +33,7 @@ public ref partial struct RentedBuffer<T> : IDisposable
 	/// <summary>
 	/// Gets the span of elements in the rented buffer.
 	/// </summary>
-	public readonly Span<T> Buffer => _span;
+	public readonly Span<T> Span => _span;
 	/// <summary>
 	/// The number of elements that the buffer can store.
 	/// </summary>
@@ -283,17 +283,7 @@ public ref partial struct RentedBuffer<T> : IDisposable
 		}
 	}
 
-	public readonly ReadOnlySpan<T> AsSpan()
-	{
-		return _span;
-	}
-
 	private const string EMPTY_TOSTRING = "{IsEmpty = true}";
-
-	public static implicit operator Span<T>(RentedBuffer<T> buffer)
-	{
-		return buffer._span;
-	}
 
 	/// <summary>
 	/// Enumerates the elements of a <see cref="RentedBuffer{T}"/>.

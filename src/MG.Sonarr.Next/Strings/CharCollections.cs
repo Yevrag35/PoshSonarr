@@ -39,7 +39,7 @@ public static class CharCollections
 			buffer[i - inclusiveStart] = (byte)i;
 		}
 
-		SearchValues<byte> values = SearchValues.Create(buffer.Buffer);
+		SearchValues<byte> values = SearchValues.Create(buffer.Span);
 
 		buffer.Dispose();
 		return values;
