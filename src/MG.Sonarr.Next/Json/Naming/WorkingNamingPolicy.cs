@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace MG.Sonarr.Next.Json.Naming;
 
 [StructLayout(LayoutKind.Auto)]

@@ -12,7 +12,6 @@ using System.Management.Automation;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Reflection;
 using System.Text.Json.Nodes;
 
 namespace MG.Sonarr.Next.Services.Http.Clients;

@@ -1,6 +1,3 @@
-using System.Buffers;
-using System.Text;
-
 namespace MG.Sonarr.Next.Services.Http.IO;
 
 public sealed class ArrayPoolMemoryStream : Stream

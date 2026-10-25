@@ -6,7 +6,6 @@ using MG.Sonarr.Next.Services.Http.Requests;
 using System.Management.Automation;
 using System.Net;
 using System.Net.Http.Json;
-using System.Text;
 
 namespace MG.Sonarr.Next.Services.Http.Clients;
 

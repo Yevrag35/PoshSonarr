@@ -2,7 +2,6 @@ using MG.Sonarr.Next.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Immutable;
 using System.Management.Automation;
-using System.Reflection;
 
 namespace MG.Sonarr.Next.Metadata;
 

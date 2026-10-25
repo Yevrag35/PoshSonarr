@@ -5,7 +5,6 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Headers;
-using System.Text;
 
 namespace MG.Sonarr.Next.Services.Http.Handlers;
 

@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Text;
+using System.Collections.Concurrent;
 
 namespace MG.Sonarr.Next.Strings;
 

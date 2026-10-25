@@ -1,6 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Unions;
-using System.Collections;
 
 namespace MG.Sonarr.Next.Services.Http.Queries;
 

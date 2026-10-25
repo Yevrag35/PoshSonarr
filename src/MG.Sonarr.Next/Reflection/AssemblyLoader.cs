@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace MG.Sonarr.Next.Reflection;
 
 /// <summary>

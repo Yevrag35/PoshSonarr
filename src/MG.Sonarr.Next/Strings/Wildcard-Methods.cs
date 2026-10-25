@@ -1,5 +1,3 @@
-﻿using System.Collections;
-
 namespace MG.Sonarr.Next.Strings;
 
 public readonly partial struct Wildcard

@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Components;
-using System.Collections;
 
 namespace MG.Sonarr.Next.Collections;
 

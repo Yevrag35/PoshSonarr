@@ -1,5 +1,3 @@
-using System.Collections;
-
 namespace MG.Sonarr.Next.Collections;
 
 internal static class EmptyNameDictionary

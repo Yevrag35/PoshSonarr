@@ -34,8 +34,16 @@
 
 	<ItemGroup>
 		<Using Include="MG.Sonarr.Next.Exceptions" />
+		<Using Include="MG.Sonarr.Next.Extensions" />
+		<Using Include="System.Buffers" />
+		<Using Include="System.Collections" />
+		<Using Include="System.Diagnostics" />
+		<Using Include="System.Diagnostics.CodeAnalysis" />
+		<Using Include="System.IO" />
+		<Using Include="System.Reflection" />
 		<Using Include="System.Runtime.CompilerServices" />
 		<Using Include="System.Runtime.InteropServices" />
+		<Using Include="System.Text" />
 		<Using Include="System.Text.Json" />
 	</ItemGroup>
 

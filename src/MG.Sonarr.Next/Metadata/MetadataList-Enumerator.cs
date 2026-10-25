@@ -1,5 +1,3 @@
-﻿using System.Collections;
-
 namespace MG.Sonarr.Next.Metadata;
 
 public sealed partial class MetadataList<T>

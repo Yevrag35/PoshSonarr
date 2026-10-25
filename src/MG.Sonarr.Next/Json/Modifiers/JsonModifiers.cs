@@ -1,7 +1,6 @@
-﻿using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Json.Attributes;
 using System.Collections.ObjectModel;
-using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 

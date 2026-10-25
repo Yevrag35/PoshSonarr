@@ -13,7 +13,6 @@ using MG.Sonarr.Next.Models.Releases;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.PSProperties;
 using System.Management.Automation;
-using System.Text;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Json.Converters;

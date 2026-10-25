@@ -1,5 +1,3 @@
-using System.Buffers;
-
 namespace MG.Sonarr.Next.Models;
 
 public readonly struct ShortOverview

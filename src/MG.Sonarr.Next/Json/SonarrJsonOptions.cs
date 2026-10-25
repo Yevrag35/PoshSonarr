@@ -14,7 +14,6 @@ using MG.Sonarr.Next.Reflection;
 using MG.Sonarr.Resources;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Immutable;
-using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;

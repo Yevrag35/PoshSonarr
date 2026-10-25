@@ -1,11 +1,9 @@
-﻿using MG.Sonarr.Next.Json;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Services.Http.Extensions;
 using MG.Sonarr.Next.Services.Http.IO;
 using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Strings;
 using MG.Sonarr.Resources;
-using System.Buffers;
-using System.Text;
 
 namespace MG.Sonarr.Next.Services.Http.Handlers;
 

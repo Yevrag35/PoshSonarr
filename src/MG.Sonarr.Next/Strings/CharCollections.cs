@@ -1,5 +1,4 @@
-﻿using MG.Sonarr.Next.Buffers;
-using System.Buffers;
+using MG.Sonarr.Next.Buffers;
 
 namespace MG.Sonarr.Next.Strings;
 
@@ -29,20 +28,20 @@ public static class CharCollections
 	{
 		int length = inclusiveEnd - inclusiveStart + 1;
 
-		RentedBuffer<byte> buffer = [];
-		Span<byte> bytes = length <= MAX_STACKALLOC
-			? stackalloc byte[length]
-			: RentedBuffer.Rent<byte>(length, ref buffer);
-
-		for (int i = inclusiveStart; i <= inclusiveEnd; i++)
+		using (var buffer = RentedBuffer.Rent<byte>(
+			length <= MAX_STACKALLOC
+				? stackalloc byte[length]
+				: length))
 		{
-			buffer[i - inclusiveStart] = (byte)i;
+			for (int i = inclusiveStart; i <= inclusiveEnd; i++)
+			{
+				buffer[i - inclusiveStart] = (byte)i;
+			}
+
+			SearchValues<byte> values = SearchValues.Create(buffer.Span);
+
+			return values;
 		}
-
-		SearchValues<byte> values = SearchValues.Create(buffer.Span);
-
-		buffer.Dispose();
-		return values;
 	}
 	/// <summary>
 	/// Writes the lowercase alphabet to the buffer.

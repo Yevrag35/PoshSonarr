@@ -1,6 +1,5 @@
-﻿using MG.Sonarr.Next.Buffers;
+using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Extensions.Strings;
-using System.Text;
 
 namespace MG.Sonarr.Next.Strings;
 
@@ -155,18 +154,16 @@ public readonly partial struct Wildcard
 
 		int length = Encoding.UTF8.GetMaxCharCount(utf8Text.Length);
 
-		RentedBuffer<char> array = [];
+		using (var buffer = RentedBuffer.Rent<char>(
+			length <= MAX_STACKALLOC
+				? stackalloc char[length]
+				: length))
+		{
+			int written = Encoding.UTF8.GetChars(utf8Text, buffer.Span);
+			Wildcard result = Parse(buffer.Slice(0, written));
 
-		Span<char> buffer = length <= MAX_STACKALLOC
-			? stackalloc char[MAX_STACKALLOC]
-			: RentedBuffer.Rent(length, ref array);
-
-		int written = Encoding.UTF8.GetChars(utf8Text, buffer);
-		Wildcard result = Parse(buffer.Slice(0, written));
-
-		array.Dispose();
-
-		return result;
+			return result;
+		}
 	}
 
 	/// <summary>Tries to parse a span of UTF-8 characters into a <see cref="Wildcard"/> instance.</summary>

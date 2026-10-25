@@ -1,6 +1,3 @@
-using System.Buffers;
-using System.Text;
-
 namespace MG.Sonarr.Next.Json.Naming;
 
 public sealed class JsonSpanCamelCaseNamingPolicy : JsonNamingPolicy

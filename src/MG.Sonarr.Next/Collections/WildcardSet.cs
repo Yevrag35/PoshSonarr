@@ -1,7 +1,5 @@
-﻿using MG.Sonarr.Next.Collections.Pools;
+using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Strings;
-using System.Buffers;
-using System.Collections;
 
 namespace MG.Sonarr.Next.Collections;
 
