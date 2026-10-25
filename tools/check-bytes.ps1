@@ -60,7 +60,7 @@
 	.\tools\check-bytes.ps1 . -Fix
 	# the whole repo except ignored files, fixing what -Fix can
 .EXAMPLE
-	.\tools\check-bytes.ps1 -Base dev
+	.\tools\check-bytes.ps1 -Base realDev
 	# everything this branch changed, compared with dev
 .EXAMPLE
 	pwsh -NoProfile -File tools/check-bytes.ps1 CLAUDE.md
