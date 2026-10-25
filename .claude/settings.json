@@ -1,0 +1,15 @@
+{
+  "env": { "CLAUDE_CODE_THRIFTY_SONIC": "0" },
+  "permissions": {
+	"ask": [
+      "Bash(git push *)",
+      "Bash(gh pr create *)"
+	],
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(dotnet build:*)",
+      "Bash(git mv *)",
+      "Bash(dotnet clean *)"
+    ]
+  }
+}

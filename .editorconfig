@@ -3,22 +3,22 @@
 ###############################
 root = true
 
-[obsolete/*]
-generated_code = true
-
 # All files
 [*]
 tab_width = 4
-end_of_line = crlf
+end_of_line = lf
 indent_style = tab
+charset = utf-8
 
-# XML project files
+# XML project files (tab_width matches indent_size, so each level is one tab)
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
 indent_size = 2
+tab_width = 2
 
-# XML config files
+# XML config files (tab_width matches indent_size, so each level is one tab)
 [*.{props,targets,ruleset,config,nuspec,resx,vsixmanifest,vsct}]
 indent_size = 2
+tab_width = 2
 
 [*.cs]
 
@@ -33,15 +33,14 @@ dotnet_diagnostic.MA0048.severity = none
 dotnet_diagnostic.MA0053.severity = suggestion
 # MA0016: Prefer using collection abstraction instead of implementation
 dotnet_diagnostic.MA0016.severity = none
+dotnet_diagnostic.MA0037.severity = none
+dotnet_diagnostic.MA0046.severity = none
 
-# CS0649: Field 'CharacterModel._dotds' is never assigned to, and will always have its default value null
-dotnet_diagnostic.CS0649.severity = none
 dotnet_diagnostic.IDE0290.severity = none
+
 csharp_indent_labels = one_less_than_current
-csharp_using_directive_placement = outside_namespace:error
 csharp_prefer_simple_using_statement = true:silent
 csharp_prefer_braces = true:suggestion
-csharp_style_namespace_declarations = file_scoped:error
 csharp_style_prefer_method_group_conversion = true:silent
 csharp_style_prefer_top_level_statements = false:silent
 csharp_style_expression_bodied_methods = false:suggestion
@@ -71,7 +70,6 @@ csharp_style_prefer_readonly_struct = true:suggestion
 csharp_style_allow_blank_lines_between_consecutive_braces_experimental = false:warning
 csharp_style_allow_embedded_statements_on_same_line_experimental = true:silent
 csharp_style_allow_blank_line_after_colon_in_constructor_initializer_experimental = false:error
-csharp_style_prefer_primary_constructors = false:warning
 csharp_prefer_system_threading_lock = true:suggestion
 csharp_prefer_static_anonymous_function = true:suggestion
 
@@ -118,14 +116,8 @@ dotnet_naming_style.pascal_case.required_suffix =
 dotnet_naming_style.pascal_case.word_separator =
 dotnet_naming_style.pascal_case.capitalization = pascal_case
 
-dotnet_naming_style.pascal_case.required_prefix =
-dotnet_naming_style.pascal_case.required_suffix =
-dotnet_naming_style.pascal_case.word_separator =
-dotnet_naming_style.pascal_case.capitalization = pascal_case
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
-tab_width = 4
 indent_size = 4
-end_of_line = crlf
 dotnet_style_coalesce_expression = true:suggestion
 dotnet_style_null_propagation = true:suggestion
 dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
@@ -178,7 +170,7 @@ MA0053.class_with_virtual_member_shoud_be_sealed = true
 dotnet_diagnostic.MA0026.severity = none
 
 ############################################################
-# Custom naming rules – static readonly, static props, const
+# Custom naming rules - static readonly, static props, const
 ############################################################
 
 dotnet_naming_symbols.static_readonly_fields.applicable_kinds          = field

@@ -39,7 +39,7 @@ Function Find-SolutionFile() {
     )
 
     $private:curDir = Get-CurrentDir -ScriptPath $ScriptPath
-    [array] $files = Get-ChildItem -Path $private:curDir -Filter "*.sln" -ErrorAction Stop
+    [array] $files = Get-ChildItem -Path $private:curDir -Filter "*.slnx" -ErrorAction Stop
     if ($files.Count -le 0) {
         exit 901
     }
