@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<!--
+		MG.Sonarr.Next.Shell references every other project under src/, so referencing it alone gets the whole dependency
+		closure copied next to the exe, which is what the harness's MG.Sonarr*.dll search enumerates. A project that the
+		Shell project doesn't reference needs a ProjectReference of its own here.
+	-->
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\MG.Sonarr.Next.Shell\MG.Sonarr.Next.Shell.csproj" />
+	</ItemGroup>
+
+</Project>

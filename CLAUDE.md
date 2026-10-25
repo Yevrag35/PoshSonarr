@@ -35,6 +35,10 @@ Run these from the repository root. Building needs a .NET 10 SDK.
 - `pwsh -NoProfile -File tools/check-bytes.ps1` checks every file changed since `HEAD`, plus untracked files, for a BOM, CRLF, stray CRs, invalid UTF-8, and similar problems. Pass file paths, separated by spaces, to check only those; add `-Base realDev` to cover everything the branch changed, and `-Fix` to strip a BOM and turn CRLF into LF. The script needs PowerShell 7.6 or later.
 - Not every file in the codebase adheres to the LF rule yet, so don't be alarmed when encountering one. Simply fix if the file is being edited currently or leave alone if not.
 
+### Disassembly
+
+- `pwsh -NoProfile -File tools/MG.Sonarr.Tools.Asm/run-asmdump.ps1 <Class> [Method] -DontOpen` writes RyuJIT's FullOpts disassembly of the methods it names to `.temp/asm_<Class>[_<Method>].txt`. It builds the solution in Release first, which also packages the module, and without `-DontOpen` it opens a viewer on the desktop.
+
 ## Projects
 
 Each project under `src/` references the one before it:
@@ -44,7 +48,9 @@ Each project under `src/` references the one before it:
 3. `MG.Sonarr.Next.Shell.Bases` (net10.0): the cmdlet base classes and the connection context.
 4. `MG.Sonarr.Next.Shell` (net10.0): the cmdlets, the format and type files (`src/MG.Sonarr.Next.Shell/PSFormats/`, `src/MG.Sonarr.Next.Shell/PSTypes/`), and the debugging and packaging inputs.
 
-`src/Directory.Build.props` holds the shared assembly metadata, the `Version` (which is also the module version), and the compiler settings: C# `preview`, unsafe code allowed, and implicit usings plus a few extra global usings. Each `.csproj` can add more global usings through `<Using>` items. `src/Directory.Packages.props` manages package versions centrally; `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` must stay on the same version.
+The solution also holds `tools/MG.Sonarr.Tools.Asm` (net10.0), the console app behind the disassembly script, which isn't part of the module. It references `MG.Sonarr.Next.Shell` to reach every project's types, and `src/Directory.Build.props` doesn't apply to it.
+
+`src/Directory.Build.props` holds the shared assembly metadata, the `Version` (which is also the module version), and the compiler settings: C# `latest`, unsafe code allowed, and implicit usings plus a few extra global usings. Each `.csproj` can add more global usings through `<Using>` items. `src/Directory.Packages.props` manages package versions centrally; `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` must stay on the same version.
 
 ## Architecture
 

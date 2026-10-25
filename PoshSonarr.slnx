@@ -11,6 +11,9 @@
 		<File Path=".tasks/clean_project.ps1" />
 		<File Path=".tasks/publish_module.ps1" />
 	</Folder>
+	<Folder Name="/Tools/">
+		<Project Path="tools/MG.Sonarr.Tools.Asm/MG.Sonarr.Tools.Asm.csproj" />
+	</Folder>
 	<Project Path="src/MG.Sonarr.Next.Shell.Bases/MG.Sonarr.Next.Shell.Bases.csproj" />
 	<Project Path="src/MG.Sonarr.Next.Shell/MG.Sonarr.Next.Shell.csproj" />
 	<Project Path="src/MG.Sonarr.Next/MG.Sonarr.Next.csproj" />
