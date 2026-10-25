@@ -1,25 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-	<LangVersion>preview</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-	<RootNamespace>MG.Sonarr.Next</RootNamespace>
-	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<Version>2.0.0</Version>
-	<AssemblyVersion>2.0.0</AssemblyVersion>
-	<FileVersion>2.0.0</FileVersion>
-	<Authors>Mike Garvey</Authors>
-	<Company>Yevrag35, LLC.</Company>
-	<Product>PoshSonarr Services Library .NET 10</Product>
-	<Description>The service library for the PoshSonarr PowerShell module.</Description>
-	<Copyright>Copyright © 2018-2025 Yevrag35, LLC.</Copyright>
-	<PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
-	<PackageProjectUrl>https://github.com/Yevrag35/PoshSonarr</PackageProjectUrl>
-	<RepositoryUrl>https://github.com/Yevrag35/PoshSonarr</RepositoryUrl>
-	<RepositoryType>Git</RepositoryType>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<RootNamespace>MG.Sonarr.Next</RootNamespace>
+		<Product>PoshSonarr Services Library .NET 10</Product>
+		<Description>The service library for the PoshSonarr PowerShell module.</Description>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="MG.Sonarr.Next.Shell;MG.Sonarr.Next.Shell.Bases" />
@@ -27,18 +14,18 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
-		<PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.6.0-preview.5" />
-		<PackageReference Include="System.Management.Automation" Version="7.6.0-preview.5" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+		<PackageReference Include="Microsoft.Extensions.Http" />
+		<PackageReference Include="Microsoft.PowerShell.Commands.Utility" />
+		<PackageReference Include="System.Management.Automation" />
 	</ItemGroup>
 
-  <ItemGroup>
-	<Compile Update="**\*-*.cs">
-		<DependentUpon>$([System.Text.RegularExpressions.Regex]::Replace('$([System.String]::Copy(%(Filename)))', '^(.+)\-.+$', '$1.cs'))</DependentUpon>
-	</Compile>
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Update="**\*-*.cs">
+			<DependentUpon>$([System.Text.RegularExpressions.Regex]::Replace('$([System.String]::Copy(%(Filename)))', '^(.+)\-.+$', '$1.cs'))</DependentUpon>
+		</Compile>
+	</ItemGroup>
 
 	<ItemGroup>
 		<Compile Remove="Json\Converters\Spans\UtcTimeToLocalConverter.cs" />
@@ -47,27 +34,23 @@
 
 	<ItemGroup>
 		<Using Include="MG.Sonarr.Next.Exceptions" />
-		<Using Include="System.Diagnostics" />
-		<Using Include="System.Diagnostics.CodeAnalysis" />
-		<Using Include="System.Globalization" />
-		<Using Include="System.Linq.Expressions" />
 		<Using Include="System.Runtime.CompilerServices" />
 		<Using Include="System.Runtime.InteropServices" />
 		<Using Include="System.Text.Json" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Services\Time\" />
+		<Folder Include="Services\Time\" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\MG.Sonarr.Next.Standard\MG.Sonarr.Next.Standard.csproj" />
+		<ProjectReference Include="..\MG.Sonarr.Next.Standard\MG.Sonarr.Next.Standard.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="Metadata\MetadataList-Enumerator.cs">
-	    <DependentUpon>MetadataList_T.cs</DependentUpon>
-	  </Compile>
+		<Compile Update="Metadata\MetadataList-Enumerator.cs">
+			<DependentUpon>MetadataList_T.cs</DependentUpon>
+		</Compile>
 	</ItemGroup>
 
 </Project>

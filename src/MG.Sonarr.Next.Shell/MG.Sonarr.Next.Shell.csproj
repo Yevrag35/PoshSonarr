@@ -1,37 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-	<LangVersion>preview</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-	<Version>2.0.0</Version>
-	<AssemblyVersion>2.0.0</AssemblyVersion>
-	<FileVersion>2.0.0</FileVersion>
-	<Authors>Mike Garvey</Authors>
-	<Company>Yevrag35, LLC.</Company>
-	<Product>PoshSonarr .NET 10</Product>
-	<Description>The binary library of the PoshSonarr PowerShell module.</Description>
-	<Copyright>Copyright © 2018-2025 Yevrag35, LLC.</Copyright>
-	<PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
-	<PackageProjectUrl>https://github.com/Yevrag35/PoshSonarr</PackageProjectUrl>
-	<RepositoryUrl>https://github.com/Yevrag35/PoshSonarr</RepositoryUrl>
-	<RepositoryType>Git</RepositoryType>
-	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<Product>PoshSonarr .NET 10</Product>
+		<Description>The binary library of the PoshSonarr PowerShell module.</Description>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="build_dependencies.json" />
-    <None Remove="Debug.ps1" />
-    <None Remove="PSFormats\EpisodeObject.Format.ps1xml" />
-    <None Remove="PSFormats\MetadataTag.Format.ps1xml" />
-    <None Remove="PSFormats\RenameObject.Format.ps1xml" />
-    <None Remove="PSFormats\SeriesObject.Format.ps1xml" />
-    <None Remove="PSFormats\SonarrProperty.Format.ps1xml" />
-    <None Remove="PSFormats\SonarrTag.Format.ps1xml" />
-    <None Remove="PSFormats\SystemStatus.Format.ps1xml" />
-    <None Remove="PSTypes\SonarrObjects.Type.ps1xml" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="build_dependencies.json" />
+		<None Remove="Debug.ps1" />
+		<None Remove="PSFormats\EpisodeObject.Format.ps1xml" />
+		<None Remove="PSFormats\MetadataTag.Format.ps1xml" />
+		<None Remove="PSFormats\RenameObject.Format.ps1xml" />
+		<None Remove="PSFormats\SeriesObject.Format.ps1xml" />
+		<None Remove="PSFormats\SonarrProperty.Format.ps1xml" />
+		<None Remove="PSFormats\SonarrTag.Format.ps1xml" />
+		<None Remove="PSFormats\SystemStatus.Format.ps1xml" />
+		<None Remove="PSTypes\SonarrObjects.Type.ps1xml" />
+	</ItemGroup>
 
 	<Target Name="ReleaseModuleAfterBuild" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Release'">
 		<Exec Command="pwsh.exe -NoExit -File &quot;$(SolutionDir)\.tasks\publish_module.ps1&quot; -BuildDependenciesJson &quot;$(ProjectDir)build_dependencies.json&quot; -OutputPath &quot;$(TargetDir)&quot;" />
@@ -63,49 +50,45 @@
 		</Content>
 	</ItemGroup>
 	<ItemGroup>
-	  <Content Include="PSFormats\EpisodeObject.Format.ps1xml">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="PSFormats\MetadataTag.Format.ps1xml">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="PSFormats\RenameObject.Format.ps1xml">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="PSFormats\SonarrProperty.Format.ps1xml">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="PSFormats\SonarrTag.Format.ps1xml">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="PSFormats\SeriesObject.Format.ps1xml">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="PSFormats\SystemStatus.Format.ps1xml">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="PSTypes\SonarrObjects.Type.ps1xml">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
+		<Content Include="PSFormats\EpisodeObject.Format.ps1xml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="PSFormats\MetadataTag.Format.ps1xml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="PSFormats\RenameObject.Format.ps1xml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="PSFormats\SonarrProperty.Format.ps1xml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="PSFormats\SonarrTag.Format.ps1xml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="PSFormats\SeriesObject.Format.ps1xml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="PSFormats\SystemStatus.Format.ps1xml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="PSTypes\SonarrObjects.Type.ps1xml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>
 		<Using Include="MG.Sonarr.Next.Strings" />
 		<Using Include="MG.Sonarr.Next.Shell.Context" />
 		<Using Include="Microsoft.Extensions.DependencyInjection" />
-		<Using Include="System.Diagnostics" />
-		<Using Include="System.Diagnostics.CodeAnalysis" />
-		<Using Include="System.Globalization" />
-		<Using Include="System.Linq.Expressions" />
 		<Using Include="System.Management.Automation" />
 	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\MG.Sonarr.Next.Shell.Bases\MG.Sonarr.Next.Shell.Bases.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\MG.Sonarr.Next.Shell.Bases\MG.Sonarr.Next.Shell.Bases.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Validation\" />
-  </ItemGroup>
+	<ItemGroup>
+		<Folder Include="Validation\" />
+	</ItemGroup>
 
 </Project>

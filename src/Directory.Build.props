@@ -1,0 +1,47 @@
+<Project>
+
+	<!-- Authorship and repository metadata shared by every assembly. -->
+	<PropertyGroup>
+		<Authors>Mike Garvey</Authors>
+		<Company>Yevrag35, LLC.</Company>
+		<Copyright>Copyright © 2018-2025 Yevrag35, LLC.</Copyright>
+		<PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
+		<PackageProjectUrl>https://github.com/Yevrag35/PoshSonarr</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/Yevrag35/PoshSonarr</RepositoryUrl>
+		<RepositoryType>Git</RepositoryType>
+	</PropertyGroup>
+
+	<!--
+		AssemblyVersion and FileVersion reuse Version verbatim so the SDK does not pad them to four parts.
+		A Release build of MG.Sonarr.Next.Shell writes PoshSonarr.psd1 with ModuleVersion read from the built DLL, so Version
+		is the module's version too.
+	-->
+	<PropertyGroup>
+		<Version>2.0.0</Version>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<FileVersion>$(Version)</FileVersion>
+	</PropertyGroup>
+
+	<!--
+		Compiler settings shared by every project. LangVersion and ImplicitUsings fit the net10.0 projects; the netstandard2.0
+		projects compile as C# 8, which has no global usings, so each of them overrides both. A property here can't test
+		TargetFramework instead, because a single-target project sets TargetFramework after this file is imported.
+	-->
+	<PropertyGroup>
+		<LangVersion>preview</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
+
+	<!--
+		Global usings shared by every project that turns ImplicitUsings on. MSBuild evaluates item conditions after every
+		property, so this one sees the value a project sets in its own file.
+	-->
+	<ItemGroup Condition="'$(ImplicitUsings)' == 'enable' or '$(ImplicitUsings)' == 'true'">
+		<Using Include="System.Diagnostics" />
+		<Using Include="System.Diagnostics.CodeAnalysis" />
+		<Using Include="System.Globalization" />
+		<Using Include="System.Linq.Expressions" />
+	</ItemGroup>
+
+</Project>

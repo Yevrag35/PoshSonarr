@@ -4,6 +4,8 @@
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
+    <File Path="src/Directory.Build.props" />
+    <File Path="src/Directory.Packages.props" />
   </Folder>
   <Folder Name="/Tasks/">
     <File Path=".tasks/clean_project.ps1" />

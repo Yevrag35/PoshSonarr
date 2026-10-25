@@ -1,0 +1,12 @@
+<Project>
+
+	<!--
+		MSBuild imports only the nearest Directory.Build.props, so this file keeps src/Directory.Build.props out of the
+		projects here. Turning ImportDirectoryPackagesProps off does the same for src/Directory.Packages.props, so they keep
+		their own versions, frameworks, language settings, and package versions.
+	-->
+	<PropertyGroup>
+		<ImportDirectoryPackagesProps>false</ImportDirectoryPackagesProps>
+	</PropertyGroup>
+
+</Project>
