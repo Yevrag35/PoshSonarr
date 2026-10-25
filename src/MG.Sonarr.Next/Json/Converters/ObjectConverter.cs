@@ -153,7 +153,6 @@ public sealed class ObjectConverter : JsonConverter<object>
 		ReadOnlySpan<char> quotes = ['\\', '"'];
 		ReadOnlySpan<char> backs = ['\\', '\\'];
 		Span<char> scratch = stackalloc char[chars.Length];
-
 		foreach (SplitEntry section in chars.SpanSplit(quotes, backs))
 		{
 			section.Chars.CopyTo(scratch[position..]);

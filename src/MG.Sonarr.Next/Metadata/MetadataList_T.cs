@@ -181,7 +181,7 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 		where TArg1 : allows ref struct
 		where TArg2 : allows ref struct
 	{
-		FnPtr.ThrowIfInvalid(predicate);
+		FnPtr.ThrowIfNull(predicate);
 
 		int listCount = _list.Count;
 		if (listCount == 0)

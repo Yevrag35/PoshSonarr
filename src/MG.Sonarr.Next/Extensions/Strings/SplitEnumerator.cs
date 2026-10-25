@@ -1,43 +1,4 @@
-﻿namespace MG.Sonarr.Next.Extensions.Strings;
-
-[DebuggerStepThrough]
-[StructLayout(LayoutKind.Auto)]
-public ref struct SplitEnumerator
-{
-	ReadOnlySpan<char> _str;
-	readonly ReadOnlySpan<char> _splitBy;
-
-	public SplitEntry Current { get; private set; }
-
-	public SplitEnumerator(ReadOnlySpan<char> str, ReadOnlySpan<char> splitBy)
-	{
-		_str = str;
-		_splitBy = splitBy;
-	}
-
-	public readonly SplitEnumerator GetEnumerator() => this;
-
-	public bool MoveNext()
-	{
-		ReadOnlySpan<char> span = _str;
-		if (span.Length <= 0)
-		{
-			return false;
-		}
-
-		int index = span.IndexOf(_splitBy);
-		if (index < 0)
-		{
-			_str = ReadOnlySpan<char>.Empty;
-			this.Current = new SplitEntry(span, _splitBy);
-			return true;
-		}
-
-		this.Current = new SplitEntry(span.Slice(0, index), span.Slice(index, _splitBy.Length));
-		_str = span.Slice(index + _splitBy.Length);
-		return true;
-	}
-}
+namespace MG.Sonarr.Next.Extensions.Strings;
 
 /// <summary>
 /// Represents a segment of characters and its associated separator, typically produced when splitting a string or

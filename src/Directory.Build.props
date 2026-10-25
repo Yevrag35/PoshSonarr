@@ -24,7 +24,7 @@
 
 	<!-- Compiler settings shared by every project. A project can override any of them in its own file. -->
 	<PropertyGroup>
-		<LangVersion>preview</LangVersion>
+		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>

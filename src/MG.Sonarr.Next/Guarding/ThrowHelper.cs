@@ -1,5 +1,3 @@
-﻿using MG.Sonarr.Resources;
-
 namespace MG.Sonarr.Next.Guarding;
 
 /// <summary>
@@ -25,44 +23,20 @@ public static partial class ThrowHelper
 	/// </param>
 	/// <exception cref="ArgumentException">The buffer is too small for the operation to be performed.</exception>
 	[DoesNotReturn]
-	public static void BufferTooSmall(int requiredMinimum, int actualValue, string? parameterName = null, IFormatProvider? provider = null)
+	public static void BufferTooSmall(int requiredMinimum, int actualValue, [CallerArgumentExpression(nameof(actualValue))] string? parameterName = null, IFormatProvider? provider = null)
 	{
+		const string msg = "The buffer is too small to be used as a copy destination. Expected minimum length: {0}, Received length: {1}";
 		Debug.Assert(requiredMinimum > actualValue);
-		provider ??= CultureInfo.CurrentCulture;
 
 		string message = string.Format(
 			provider: provider,
-			format: ExMessages.Buffer_TooSmall,
+			format: msg,
 			arg0: requiredMinimum,
 			arg1: actualValue);
 
 		throw new ArgumentException(message, parameterName);
 	}
 
-	/// <summary>
-	/// Throws an <see cref="ArgumentException"/> with a message that indicates that the collection is empty when it should not be.
-	/// </summary>
-	/// <param name="paramName">
-	/// The parameter name of the collection that is empty.
-	/// </param>
-	/// <exception cref="ArgumentException"/>
-	[DoesNotReturn]
-	public static void CollectionIsEmpty(string? paramName)
-	{
-		throw new ArgumentException(ExMessages.Collections_ExpectedOneOrMore, paramName);
-	}
-	/// <summary>
-	/// Throws an <see cref="ArgumentException"/> with a message that indicates an element in the collection/span is <see langword="null"/>.
-	/// </summary>
-	/// <param name="paramName">
-	/// The parameter name of collection/span that contains a <see langword="null"/> element.
-	/// </param>
-	/// <exception cref="ArgumentException"/>
-	[DoesNotReturn]
-	public static void ItemInCollectionIsNull(string? paramName)
-	{
-		throw new ArgumentException(ExMessages.Collections_ItemIsNull, paramName);
-	}
 	/// <summary>
 	/// Throws an <see cref="ArgumentOutOfRangeException"/> if the specified <paramref name="value"/> is negative  or
 	/// greater than the specified <paramref name="other"/>.
@@ -85,6 +59,81 @@ public static partial class ThrowHelper
 					paramName,
 					value,
 					other));
+		}
+	}
+	/// <summary>
+	/// Throws an <see cref="ArgumentOutOfRangeException"/> if the specified <paramref name="value"/> is negative  or
+	/// greater than or equal to the specified <paramref name="other"/>.
+	/// </summary>
+	/// <remarks>This method is typically used to validate input parameters to ensure they fall within an acceptable
+	/// range.</remarks>
+	/// <param name="value">The integer value to validate.</param>
+	/// <param name="other">The upper bound that <paramref name="value"/> must be less than. Must be less than or equal to <see
+	/// cref="int.MaxValue"/>.</param>
+	/// <param name="paramName">The name of the parameter being validated. This is automatically populated by the compiler when using  <see
+	/// cref="CallerArgumentExpressionAttribute"/>.</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is negative or greater than or equal to <paramref name="other"/>.</exception>
+	[StackTraceHidden, MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void ThrowIfNegativeOrGreaterThanOrEqualTo(int value, uint other, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+	{
+		ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(unchecked((uint)value), other, paramName);
+	}
+	/// <summary>
+	/// Throws an <see cref="ArgumentOutOfRangeException"/> if the specified <paramref name="value"/> is negative  or
+	/// greater than the specified <paramref name="other"/>.
+	/// </summary>
+	/// <remarks>This method is typically used to validate input parameters to ensure they fall within an acceptable
+	/// range.</remarks>
+	/// <param name="value">The integer value to validate. Must not be negative and must not exceed <paramref name="other"/>.</param>
+	/// <param name="other">The upper limit, inclusive, that <paramref name="value"/> must not exceed. Must be less than or equal to <see
+	/// cref="int.MaxValue"/>.</param>
+	/// <param name="paramName">The name of the parameter being validated. This is automatically populated by the compiler if not explicitly
+	/// provided.</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is negative or greater than <paramref name="other"/>.</exception>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void ThrowIfNegativeOrGreaterThan(long value, ulong other, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+	{
+		ArgumentOutOfRangeException.ThrowIfGreaterThan(unchecked((ulong)value), other, paramName);
+	}
+
+	/// <summary>
+	/// Casts the specified value to the given type parameter if possible, or throws an exception if the value is not of
+	/// the expected type.
+	/// </summary>
+	/// <remarks>Use this method to ensure that an object is of a specific type at runtime. If the value is <see
+	/// langword="null"/>, the method returns <see langword="null"/> without throwing an exception.</remarks>
+	/// <typeparam name="T">The type to which the value is expected to be cast.</typeparam>
+	/// <param name="value">The object to validate and cast to type <typeparamref name="T"/>. May be <see langword="null"/>.</param>
+	/// <param name="paramName">The name of the parameter being validated. This is typically provided automatically by the compiler and is used in
+	/// exception messages.</param>
+	/// <returns>The value cast to type <typeparamref name="T"/>, or <see langword="null"/> if <paramref name="value"/> is <see
+	/// langword="null"/>.</returns>
+	/// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is not null and is not of type <typeparamref name="T"/>.</exception>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[return: NotNullIfNotNull(nameof(value))]
+	public static T? ThrowIfNot<T>(object? value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+	{
+		const string msg = "Value of parameter '{0}' is of type '{1}' but must be of type '{2}'.";
+
+		return value switch
+		{
+			null => default,
+			not T => throwMsg(paramName, value),
+			_ when typeof(T).IsValueType => (T)value,
+			_ => Unsafe.As<object, T>(ref value),
+		};
+
+		[DoesNotReturn, StackTraceHidden, MethodImpl(MethodImplOptions.NoInlining)]
+		static T? throwMsg(string? paramName, object value)
+		{
+			throw new ArgumentException(
+				paramName: paramName,
+				message: string.Format(
+					CultureInfo.CurrentCulture,
+					msg,
+					paramName,
+					value.GetType().FullName,
+					typeof(T).FullName));
 		}
 	}
 }
