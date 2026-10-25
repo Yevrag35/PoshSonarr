@@ -1,12 +1,10 @@
-using MG.Sonarr.Next;
-using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Guarding;
 using MG.Sonarr.Next.Unions;
 using System.ComponentModel;
 using System.Numerics;
 
-namespace Realta.Buffers;
+namespace MG.Sonarr.Next.Buffers;
 
 /// <summary>
 /// A ref struct that provides a way to build strings without allocating memory on the heap until the <see cref="string"/> is constructed.
