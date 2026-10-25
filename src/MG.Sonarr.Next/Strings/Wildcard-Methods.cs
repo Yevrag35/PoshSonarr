@@ -1,13 +1,14 @@
 ﻿using System.Collections;
 
 namespace MG.Sonarr.Next.Strings;
+
 public readonly partial struct Wildcard
 {
 	/// <summary>
 	/// Creates a new read-only span over the <see cref="Wildcard"/> object.
 	/// </summary>
 	/// <returns>The read-only span representation of the <see cref="Wildcard"/>.</returns>
-	[DebuggerStepThrough]
+	[DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public ReadOnlySpan<char> AsSpan()
 	{
 		return _pattern.AsSpan();
@@ -19,7 +20,7 @@ public readonly partial struct Wildcard
 	/// <param name="start">The zero-based index at which to begin this slice.</param>
 	/// <returns>The read-only span representation of the <see cref="Wildcard"/>.</returns>
 	/// <inheritdoc cref="MemoryExtensions.AsSpan(string?, int)" path="/exception[1]"/>
-	[DebuggerStepThrough]
+	[DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public ReadOnlySpan<char> AsSpan(int start)
 	{
 		return _pattern.AsSpan(start);
@@ -32,7 +33,7 @@ public readonly partial struct Wildcard
 	/// <param name="length">The desired length for the slice.</param>
 	/// <returns>The read-only span representation of the <see cref="Wildcard"/>.</returns>
 	/// <inheritdoc cref="MemoryExtensions.AsSpan(string?, int, int)" path="/exception"/>
-	[DebuggerStepThrough]
+	[DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public ReadOnlySpan<char> AsSpan(int start, int length)
 	{
 		return _pattern.AsSpan(start, length);
@@ -45,25 +46,23 @@ public readonly partial struct Wildcard
 	/// An enumerator that can be used to iterate through the <see cref="Wildcard"/> instance's <see cref="char"/> elements.
 	/// </returns>
 	[DebuggerStepThrough]
-	public CharEnumerator GetEnumerator()
+	public Enumerator GetEnumerator()
 	{
-		if (this.IsEmpty)
-		{
-			return string.Empty.GetEnumerator();
-		}
-
-		return _pattern.GetEnumerator();
-	}
-	/// <inheritdoc/>
-	readonly IEnumerator<char> IEnumerable<char>.GetEnumerator()
-	{
-		return this.GetEnumerator();
+		return new(this);
 	}
 	/// <inheritdoc/>
 	[DebuggerStepThrough]
-	readonly IEnumerator IEnumerable.GetEnumerator()
+	IEnumerator<char> IEnumerable<char>.GetEnumerator()
 	{
-		return this.GetEnumerator();
+		return _pattern is not null
+			? _pattern.GetEnumerator()
+			: string.Empty.GetEnumerator();
+	}
+	/// <inheritdoc/>
+	[DebuggerStepThrough]
+	IEnumerator IEnumerable.GetEnumerator()
+	{
+		return ((IEnumerable<char>)this).GetEnumerator();
 	}
 
 	#region MATCHING
@@ -140,7 +139,7 @@ public readonly partial struct Wildcard
 			WildcardMatchType.StartsWith => input.StartsWith(pattern.TrimEnd('*'), comparisonType),
 			WildcardMatchType.EndsWith => input.EndsWith(pattern.TrimStart('*'), comparisonType),
 			WildcardMatchType.None or _ => false,
-		}; 
+		};
 	}
 
 	#endregion
@@ -192,32 +191,32 @@ public readonly partial struct Wildcard
 			return string.Empty;
 		}
 
-        string resulting_pattern;
+		string resulting_pattern;
 
-        switch (matchType)
-        {
-            case WildcardMatchType.None:
-            default:
-                length = 0;
-                resulting_pattern = string.Empty;
-                break;
+		switch (matchType)
+		{
+			case WildcardMatchType.None:
+			default:
+				length = 0;
+				resulting_pattern = string.Empty;
+				break;
 
-            case WildcardMatchType.Like:
-            case WildcardMatchType.StartsWith:
-            case WildcardMatchType.EndsWith:
-            case WildcardMatchType.Exact:
-                length = patternString.Length;
+			case WildcardMatchType.Like:
+			case WildcardMatchType.StartsWith:
+			case WildcardMatchType.EndsWith:
+			case WildcardMatchType.Exact:
+				length = patternString.Length;
 				resulting_pattern = patternString;
-                break;
+				break;
 
-            case WildcardMatchType.All:
-                length = 1;
-                resulting_pattern = ALL_STRING;
-                break;
-        }
+			case WildcardMatchType.All:
+				length = 1;
+				resulting_pattern = ALL_STRING;
+				break;
+		}
 
-        return resulting_pattern;
-    }
+		return resulting_pattern;
+	}
 	private static string ConstructPattern(ReadOnlySpan<char> pattern, WildcardMatchType matchType, ref int length)
 	{
 		string resulting_pattern;
@@ -262,7 +261,7 @@ public readonly partial struct Wildcard
 		{
 			return WildcardMatchType.Exact;
 		}
-		
+
 		matchType = WildcardMatchType.Like;
 		if ('*' == pattern[^1] && !pattern.TrimEnd('*').ContainsAny(_wildcardChars))
 		{
@@ -334,4 +333,37 @@ public readonly partial struct Wildcard
 	}
 
 	#endregion
+
+	[StructLayout(LayoutKind.Auto)]
+	public ref struct Enumerator
+	{
+		private int _index;
+		private readonly int _length;
+		private char _current;
+		private readonly ref char _start;
+
+		public readonly char Current => _current;
+
+		internal Enumerator(Wildcard wildcard)
+		{
+			_index = -1;
+			_length = wildcard._state.Length;
+			_start = ref MemoryMarshal.GetReference<char>(wildcard);
+			_current = default;
+		}
+
+		public bool MoveNext()
+		{
+			int newIndex = _index + 1;
+			if ((uint)newIndex < (uint)_length)
+			{
+				_index = newIndex;
+				_current = Unsafe.Add(ref _start, _index);
+				return true;
+			}
+
+			_index = _length;
+			return false;
+		}
+	}
 }

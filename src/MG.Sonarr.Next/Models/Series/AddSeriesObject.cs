@@ -8,131 +8,130 @@ using MG.Sonarr.Next.PSProperties;
 using MG.Sonarr.Next.Shell.Models.Series;
 using System.Text.Json.Serialization;
 
-namespace MG.Sonarr.Next.Models.Series
+namespace MG.Sonarr.Next.Models.Series;
+
+[SonarrObject]
+public sealed class AddSeriesObject : SeriesObject,
+	IComparable<AddSeriesObject>,
+	IJsonOnSerializing,
+	ISerializableNames<AddSeriesObject>
 {
-    [SonarrObject]
-    public sealed class AddSeriesObject : SeriesObject,
-        IComparable<AddSeriesObject>,
-        IJsonOnSerializing,
-        ISerializableNames<AddSeriesObject>
-    {
-        const int CAPACITY = 50;
-        const string ROOT_FOLDER_PATH = "RootFolderPath";
-        static readonly string _typeName = typeof(AddSeriesObject).GetName();
-        private string? _path;
-        private string? _pathProp;
+	const int CAPACITY = 50;
+	const string ROOT_FOLDER_PATH = "RootFolderPath";
+	static readonly string _typeName = typeof(AddSeriesObject).GetName();
+	private string? _path;
+	private string? _pathProp;
 
-        public SeriesAddOptions? AddOptions { get; set; }
-        public bool IsFullPath { get; set; }
-        public bool IsMonitored
-        {
-            get => this.GetValue<bool>();
-            set => this.SetValue(value);
-        }
-        public int ProfileId
-        {
-            set => this.SetValue(value);
-        }
-        public string Path
-        {
-            get => _path ??= string.Empty;
-            set => _path = value;
-        }
-        public string SeriesType
-        {
-            get => this.GetStringOrEmpty();
-            set => this.SetValue(value);
-        }
-        public bool UseSeasonFolders
-        {
-            get => this.GetValue<bool>();
-            set => this.SetValue(value);
-        }
+	public SeriesAddOptions? AddOptions { get; set; }
+	public bool IsFullPath { get; set; }
+	public bool IsMonitored
+	{
+		get => this.GetValue<bool>();
+		set => this.SetValue(value);
+	}
+	public int ProfileId
+	{
+		set => this.SetValue(value);
+	}
+	public string Path
+	{
+		get => _path ??= string.Empty;
+		set => _path = value;
+	}
+	public string SeriesType
+	{
+		get => this.GetStringOrEmpty();
+		set => this.SetValue(value);
+	}
+	public bool UseSeasonFolders
+	{
+		get => this.GetValue<bool>();
+		set => this.SetValue(value);
+	}
 
-        public AddSeriesObject()
-            : base(CAPACITY)
-        {
-        }
+	public AddSeriesObject()
+		: base(CAPACITY)
+	{
+	}
 
-        public int CompareTo(AddSeriesObject? other)
-        {
-            return this.CompareTo((SeriesObject?)other);
-        }
-        public override int CompareTo(SeriesObject? other)
-        {
-            return StringComparer.InvariantCultureIgnoreCase.Compare(this.Title, other?.Title);
-        }
-        private protected override int? GetSeriesId()
-        {
-            return null;
-        }
-        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
-        {
-            return resolver[Meta.SERIES_ADD];
-        }
+	public int CompareTo(AddSeriesObject? other)
+	{
+		return this.CompareTo((SeriesObject?)other);
+	}
+	public override int CompareTo(SeriesObject? other)
+	{
+		return StringComparer.InvariantCultureIgnoreCase.Compare(this.Title, other?.Title);
+	}
+	private protected override int? GetSeriesId()
+	{
+		return null;
+	}
+	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
+	{
+		return resolver[Meta.SERIES_ADD];
+	}
 
-        protected override void OnDeserialized(bool alreadyCalled)
-        {
-            base.OnDeserialized(alreadyCalled);
-            this.Properties.RemoveMany(Constants.ID, "Added");
-            this.Properties.Remove("LanguageProfileId");
-            this.Properties.Add(ReadOnlyNumberProperty.Create("LanguageProfileId", 1));
+	protected override void OnDeserialized(bool alreadyCalled)
+	{
+		base.OnDeserialized(alreadyCalled);
+		this.Properties.RemoveMany(Constants.ID, "Added");
+		this.Properties.Remove("LanguageProfileId");
+		this.Properties.Add(ReadOnlyNumberProperty.Create("LanguageProfileId", 1));
 
-            if (this.TryGetNonNullProperty(Constants.SERIES_TYPE, out string? seriesType))
-            {
-                this.SeriesType = seriesType;
-            }
+		if (this.TryGetNonNullProperty(Constants.SERIES_TYPE, out string? seriesType))
+		{
+			this.SeriesType = seriesType;
+		}
 
-            if (this.TryGetNonNullProperty(Constants.SEASONS, out object[]? array) && array.Length > 1)
-            {
-                this.Properties[Constants.USE_SEASON_FOLDER].Value = true;
-                this.UseSeasonFolders = true;
-            }
-        }
-        public override void OnSerializing()
-        {
-            this.UpdateProperty(x => x.AddOptions, x => x.Title);
-            this.SetPath();
-            base.OnSerializing();
-        }
-        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Using nameof()")]
-        private void SetPath()
-        {
-            if (this.IsFullPath)
-            {
-                this.UpdateProperty(x => x.Path);
-                _pathProp = nameof(Path);
-            }
-            else
-            {
-                this.SetValue(this.Path, ROOT_FOLDER_PATH);
-                _pathProp = ROOT_FOLDER_PATH;
-            }
-        }
-        protected override void SetPSTypeName()
-        {
-            base.SetPSTypeName();
-            Debugger.Assert(() =>
-            {
-                return this.TypeNames.Count > 0 && this.TypeNames[0] == typeof(SeriesObject).GetName();
-            });
+		if (this.TryGetNonNullProperty(Constants.SEASONS, out object[]? array) && array.Length > 1)
+		{
+			this.Properties[Constants.USE_SEASON_FOLDER].Value = true;
+			this.UseSeasonFolders = true;
+		}
+	}
+	public override void OnSerializing()
+	{
+		this.UpdateProperty(x => x.AddOptions, x => x.Title);
+		this.SetPath();
+		base.OnSerializing();
+	}
+	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Using nameof()")]
+	private void SetPath()
+	{
+		if (this.IsFullPath)
+		{
+			this.UpdateProperty(x => x.Path);
+			_pathProp = nameof(Path);
+		}
+		else
+		{
+			this.SetValue(this.Path, ROOT_FOLDER_PATH);
+			_pathProp = ROOT_FOLDER_PATH;
+		}
+	}
+	protected override void SetPSTypeName()
+	{
+		base.SetPSTypeName();
+		Debugger.Assert(() =>
+		{
+			return this.TypeNames.Count > 0 && this.TypeNames[0] == typeof(SeriesObject).GetName();
+		});
 
-            this.TypeNames[0] = _typeName;  // Should overwrite 'SeriesObject'.
-        }
-        internal override bool ShouldBeReadOnly(string propertyName, Type parentType)
-        {
-            return true;
-        }
-        protected override void OnReset()
-        {
-            if (!string.IsNullOrEmpty(_pathProp))
-            {
-                this.Properties.Remove(_pathProp);
-                this.IsFullPath = false;
-            }
+		this.TypeNames[0] = _typeName;  // Should overwrite 'SeriesObject'.
+	}
+	internal override bool ShouldBeReadOnly(string propertyName, Type parentType)
+	{
+		return true;
+	}
+	protected override void OnReset()
+	{
+		if (!string.IsNullOrEmpty(_pathProp))
+		{
+			this.Properties.Remove(_pathProp);
+			this.IsFullPath = false;
+		}
 
-            this.AddOptions = null;
-            base.OnReset();
-        }
-    }
+		this.AddOptions = null;
+		base.OnReset();
+	}
 }

@@ -5,74 +5,73 @@ using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Unions;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers
+namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers;
+
+[Cmdlet(VerbsCommon.Get, "SonarrIndexer")]
+public sealed class GetSonarrIndexerCmdlet : SonarrMetadataCmdlet
 {
-    [Cmdlet(VerbsCommon.Get, "SonarrIndexer")]
-    public sealed class GetSonarrIndexerCmdlet : SonarrMetadataCmdlet
-    {
-        static readonly string _namePropertyName = nameof(Name);
+	static readonly string _namePropertyName = nameof(Name);
 
-        SortedSet<int> _ids = null!;
-        WildcardSet _wcNames = null!;
+	SortedSet<int> _ids = null!;
+	WildcardSet _wcNames = null!;
 
-        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-        public int[] Id { get; set; } = [];
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	public int[] Id { get; set; } = [];
 
-        [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByIndexerNameOrId")]
-        public Either<string, int>[] Name { get; set; } = [];
-         
-        protected override int Capacity => 2;
-        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
-        {
-            return resolver[Meta.INDEXER];
-        }
-        protected override void OnCreatingScope(IServiceProvider provider)
-        {
-            base.OnCreatingScope(provider);
-            _ids = this.GetPooledObject<SortedSet<int>>();
-            _wcNames = this.GetPooledObject<WildcardSet>();
+	[Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByIndexerNameOrId")]
+	public Either<string, int>[] Name { get; set; } = [];
 
-            this.SetReturnables(_ids, _wcNames);
-        }
+	protected override int Capacity => 2;
+	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
+	{
+		return resolver[Meta.INDEXER];
+	}
+	protected override void OnCreatingScope(IServiceProvider provider)
+	{
+		base.OnCreatingScope(provider);
+		_ids = this.GetPooledObject<SortedSet<int>>();
+		_wcNames = this.GetPooledObject<WildcardSet>();
 
-        protected override void Begin(IServiceProvider provider)
-        {
-            _ids.UnionWith(this.Id);
-            if (this.HasParameter(this.Name))
-            {
-                this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
-            }
-        }
+		this.SetReturnables(_ids, _wcNames);
+	}
 
-        protected override void Process(IServiceProvider provider)
-        {
-            IList<IndexerObject> indexers = _ids.Count > 0 && _wcNames.Count == 0
-                ? this.GetById<IndexerObject>(_ids)
-                : this.GetByName(_wcNames, _ids);
+	protected override void Begin(IServiceProvider provider)
+	{
+		_ids.UnionWith(this.Id);
+		if (this.HasParameter(this.Name))
+		{
+			this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
+		}
+	}
 
-            this.WriteCollection(indexers);
-        }
+	protected override void Process(IServiceProvider provider)
+	{
+		IList<IndexerObject> indexers = _ids.Count > 0 && _wcNames.Count == 0
+			? this.GetById<IndexerObject>(_ids)
+			: this.GetByName(_wcNames, _ids);
 
-        private MetadataList<IndexerObject> GetByName(WildcardSet names, SortedSet<int> ids)
-        {
-            var response = this.GetAll<IndexerObject>();
-            if (response.Count == 0 || names.Count == 0)
-            {
-                return response;
-            }
+		this.WriteCollection(indexers);
+	}
 
-            for (int i = response.Count - 1; i >= 0; i--)
-            {
-                var item = response[i];
-                if (!ids.Contains(item.Id)
-                    &&
-                    !names.IsAnyMatch(item.Name))
-                {
-                    response.RemoveAt(i);
-                }
-            }
+	private MetadataList<IndexerObject> GetByName(WildcardSet names, SortedSet<int> ids)
+	{
+		var response = this.GetAll<IndexerObject>();
+		if (response.Count == 0 || names.Count == 0)
+		{
+			return response;
+		}
 
-            return response;
-        }
-    }
+		for (int i = response.Count - 1; i >= 0; i--)
+		{
+			var item = response[i];
+			if (!ids.Contains(item.Id)
+				&&
+				!names.IsAnyMatch(item.Name))
+			{
+				response.RemoveAt(i);
+			}
+		}
+
+		return response;
+	}
 }

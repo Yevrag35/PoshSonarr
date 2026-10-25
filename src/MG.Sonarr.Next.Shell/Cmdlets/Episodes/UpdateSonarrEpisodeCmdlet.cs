@@ -3,53 +3,52 @@ using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Shell.Attributes;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes
+namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes;
+
+[Cmdlet(VerbsData.Update, "SonarrEpisode", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Low)]
+[MetadataCanPipe(Tag = Meta.EPISODE)]
+public sealed class UpdateSonarrEpisodeCmdlet : SonarrApiCmdletBase
 {
-    [Cmdlet(VerbsData.Update, "SonarrEpisode", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Low)]
-    [MetadataCanPipe(Tag = Meta.EPISODE)]
-    public sealed class UpdateSonarrEpisodeCmdlet : SonarrApiCmdletBase
-    {
-        [Parameter(Mandatory = true, ValueFromPipeline = true)]
-        [ValidateIds(ValidateRangeKind.Positive)]
-        public EpisodeObject[] InputObject { get; set; } = [];
+	[Parameter(Mandatory = true, ValueFromPipeline = true)]
+	[ValidateIds(ValidateRangeKind.Positive)]
+	public EpisodeObject[] InputObject { get; set; } = [];
 
-        protected override void Process(IServiceProvider provider)
-        {
-            if (this.InputObject.Length <= 0)
-            {
-                return;
-            }
+	protected override void Process(IServiceProvider provider)
+	{
+		if (this.InputObject.Length <= 0)
+		{
+			return;
+		}
 
-            foreach (var ep in this.InputObject)
-            {
-                if (this.IsValid(ep))
-                {
-                    this.SendUpdate(ep);
-                }
-            }
-        }
+		foreach (var ep in this.InputObject)
+		{
+			if (this.IsValid(ep))
+			{
+				this.SendUpdate(ep);
+			}
+		}
+	}
 
-        private bool IsValid([NotNullWhen(true)] IHasId? value)
-        {
-            if (value is null or { Id: <= 0})
-            {
-                this.WriteWarning("An episode with an invalid ID was passed. It will be ignored.");
-                return false;
-            }
+	private bool IsValid([NotNullWhen(true)] IHasId? value)
+	{
+		if (value is null or { Id: <= 0 })
+		{
+			this.WriteWarning("An episode with an invalid ID was passed. It will be ignored.");
+			return false;
+		}
 
-            return true;
-        }
-        private void SendUpdate(EpisodeObject episode)
-        {
-            Debug.Assert(episode is not null, "Episode should not be null here.");
-            string url = episode.MetadataTag.GetUrlForId(episode.Id);
-            if (!this.ShouldProcess(url, "Update Episode"))
-            {
-                return;   
-            }
+		return true;
+	}
+	private void SendUpdate(EpisodeObject episode)
+	{
+		Debug.Assert(episode is not null, "Episode should not be null here.");
+		string url = episode.MetadataTag.GetUrlForId(episode.Id);
+		if (!this.ShouldProcess(url, "Update Episode"))
+		{
+			return;
+		}
 
-            var response = this.SendPutRequest(url, episode);
-            this.TryCommitFromResponse(episode, response);
-        }
-    }
+		var response = this.SendPutRequest(url, episode);
+		this.TryCommitFromResponse(episode, response);
+	}
 }

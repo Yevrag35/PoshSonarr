@@ -4,78 +4,77 @@ using MG.Sonarr.Next.Models.Notifications;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications
+namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications;
+
+[Cmdlet(VerbsCommon.Get, "SonarrNotification", DefaultParameterSetName = "None")]
+public sealed class GetSonarrNotificationCmdlet : SonarrMetadataCmdlet
 {
-    [Cmdlet(VerbsCommon.Get, "SonarrNotification", DefaultParameterSetName = "None")]
-    public sealed class GetSonarrNotificationCmdlet : SonarrMetadataCmdlet
-    {
-        SortedSet<int> _ids = null!;
-        WildcardSet _wcNames = null!;
+	SortedSet<int> _ids = null!;
+	WildcardSet _wcNames = null!;
 
-        [Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-        public int[] Id { get; set; } = Array.Empty<int>();
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	public int[] Id { get; set; } = Array.Empty<int>();
 
-        [Parameter(Position = 0)]
-        public string[] Name { get; set; } = Array.Empty<string>();
+	[Parameter(Position = 0)]
+	public string[] Name { get; set; } = Array.Empty<string>();
 
-        protected override int Capacity => 2;
-        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
-        {
-            return resolver[Meta.NOTIFICATION];
-        }
-        protected override void OnCreatingScope(IServiceProvider provider)
-        {
-            base.OnCreatingScope(provider);
-            _ids = this.GetPooledObject<SortedSet<int>>();
-            _wcNames = this.GetPooledObject<WildcardSet>();
+	protected override int Capacity => 2;
+	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
+	{
+		return resolver[Meta.NOTIFICATION];
+	}
+	protected override void OnCreatingScope(IServiceProvider provider)
+	{
+		base.OnCreatingScope(provider);
+		_ids = this.GetPooledObject<SortedSet<int>>();
+		_wcNames = this.GetPooledObject<WildcardSet>();
 
-            this.SetReturnables(_ids, _wcNames);
-        }
+		this.SetReturnables(_ids, _wcNames);
+	}
 
-        protected override void Begin(IServiceProvider provider)
-        {
-            _ids.UnionWith(this.Id);
-            if (this.HasParameter(this.Name))
-            {
-                _wcNames.UnionWith(this.Name);
-            }
-        }
+	protected override void Begin(IServiceProvider provider)
+	{
+		_ids.UnionWith(this.Id);
+		if (this.HasParameter(this.Name))
+		{
+			_wcNames.UnionWith(this.Name);
+		}
+	}
 
-        protected override void Process(IServiceProvider provider)
-        {
-            bool gotIds = false;
-            if (_ids.Count > 0)
-            {
-                gotIds = true;
-                var fromIds = this.GetById<NotificationObject>(_ids);
-                this.WriteCollection(fromIds);
-            }
+	protected override void Process(IServiceProvider provider)
+	{
+		bool gotIds = false;
+		if (_ids.Count > 0)
+		{
+			gotIds = true;
+			var fromIds = this.GetById<NotificationObject>(_ids);
+			this.WriteCollection(fromIds);
+		}
 
-            if (_wcNames.Count > 0 || !gotIds)
-            {
-                var fromNames = this.GetByName(_wcNames, _ids);
-                this.WriteCollection(fromNames);
-            }
-        }
+		if (_wcNames.Count > 0 || !gotIds)
+		{
+			var fromNames = this.GetByName(_wcNames, _ids);
+			this.WriteCollection(fromNames);
+		}
+	}
 
-        private MetadataList<NotificationObject> GetByName(WildcardSet names, SortedSet<int> ids)
-        {
-            var response = this.GetAll<NotificationObject>();
-            if (response.Count <= 0 || names.Count <= 0)
-            {
-                return response;
-            }
+	private MetadataList<NotificationObject> GetByName(WildcardSet names, SortedSet<int> ids)
+	{
+		var response = this.GetAll<NotificationObject>();
+		if (response.Count <= 0 || names.Count <= 0)
+		{
+			return response;
+		}
 
-            for (int i = response.Count - 1; i >= 0; i--)
-            {
-                var item = response[i];
-                if (ids.Contains(item.Id) || !names.IsAnyMatch(item.Name))
-                {
-                    response.RemoveAt(i);
-                }
-            }
+		for (int i = response.Count - 1; i >= 0; i--)
+		{
+			var item = response[i];
+			if (ids.Contains(item.Id) || !names.IsAnyMatch(item.Name))
+			{
+				response.RemoveAt(i);
+			}
+		}
 
-            return response;
-        }
-    }
+		return response;
+	}
 }

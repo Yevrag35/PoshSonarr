@@ -11,10 +11,10 @@ param  (
 	[string] $ConfigJson,
 
 	[Parameter(Mandatory = $false, ParameterSetName = "ByExplicitApiKeyAndUrl")]
-	[string] $ApiKey = $skey,
+	[string] $ApiKey,
 
 	[Parameter(Mandatory = $false, ParameterSetName = "ByExplicitApiKeyAndUrl")]
-	[string] $SonarrUrl = $surl,
+	[string] $SonarrUrl,
 
 	[Parameter(Mandatory = $false, ParameterSetName = "ByExplicitApiKeyAndUrl")]
 	[switch] $NoApiInPath,
@@ -46,6 +46,12 @@ if (-not [string]::IsNullOrWhitespace($ConfigJson)) {
 	$SonarrUrl = $config["Url"] -as [string]
 	$ApiKey = $config["ApiKey"] -as [string]
 	$NoApiInPath = $config["NoApiInPath"] -as [bool]
+}
+
+function resolveVariables([string]$text) {
+	$varName = $text -replace '\{\s*?(\w+)\s*\}', '$1'
+	try { return (Get-Variable -Name $varName -ErrorAction Stop).Value -as [string] }
+	catch { return $text }
 }
 
 if (-not [System.IO.Path]::IsPathFullyQualified($BuildDependenciesJson)) {
@@ -135,9 +141,7 @@ Write-Host ""
 Write-Host "Debugging PoshSonarr PowerShell Module" -ForegroundColor Cyan
 Write-Host "`n"
 #$VerbosePreference = "Continue"
-if (-not ([string]::IsNullOrWhitespace($SonarrUrl) -or [string]::IsNullOrWhitespace($ApiKey))) {
+$debugSettings = Get-Content -Path "$PSScriptRoot\debugging.json" | ConvertFrom-Json -AsHashtable
+$instance = $debugSettings.Instance
 
-	$status = Connect-SonarrInstance -Url $SonarrUrl -ApiKey $ApiKey -PassThru
-	$status
-	#$s = Get-SonarrSeries asdfm*
-}
+#Connect-SonarrInstance -Url (resolveVariables $instance.Url) -ApiKey (resolveVariables $instance.ApiKey) -PassThru

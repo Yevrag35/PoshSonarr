@@ -1,40 +1,38 @@
 using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
-namespace MG.Sonarr.Next.Models.Profiles
+namespace MG.Sonarr.Next.Models.Profiles;
+
+[SonarrObject]
+public sealed class LanguageProfileObject : IdSonarrObject<LanguageProfileObject>,
+	ISerializableNames<LanguageProfileObject>
 {
-    [SonarrObject]
-    public sealed class LanguageProfileObject : IdSonarrObject<LanguageProfileObject>,
-        ISerializableNames<LanguageProfileObject>
-    {
-        const int CAPACITY = 6;
-        static readonly string _typeName = typeof(LanguageProfileObject).GetName();
+	const int CAPACITY = 6;
+	static readonly string _typeName = typeof(LanguageProfileObject).GetName();
 
-        public string Name
-        {
-            get => this.GetStringOrEmpty();
-            set => this.SetValue(value);
-        }
-        public LanguageProfileObject()
-            : base(CAPACITY)
-        {
-        }
+	public string Name
+	{
+		get => this.GetStringOrEmpty();
+		set => this.SetValue(value);
+	}
+	public LanguageProfileObject()
+		: base(CAPACITY)
+	{
+	}
 
-        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
-        {
-            ArgumentNullException.ThrowIfNull(resolver);
+	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
+	{
+		ArgumentNullException.ThrowIfNull(resolver);
 
-            return resolver[Meta.LANGUAGE];
-        }
+		return resolver[Meta.LANGUAGE];
+	}
 
-        protected override void SetPSTypeName()
-        {
-            base.SetPSTypeName();
-            this.TypeNames.Insert(0, _typeName);
-        }
-    }
+	protected override void SetPSTypeName()
+	{
+		base.SetPSTypeName();
+		this.TypeNames.Insert(0, _typeName);
+	}
 }

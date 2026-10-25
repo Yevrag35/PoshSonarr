@@ -1,29 +1,28 @@
 ﻿using MG.Sonarr.Next.Collections.Pools;
 
-namespace MG.Sonarr.Next.Shell.Pools
+namespace MG.Sonarr.Next.Shell.Pools;
+
+public sealed class StopwatchPool : SonarrObjectPool<Stopwatch>
 {
-    public sealed class StopwatchPool : SonarrObjectPool<Stopwatch>
-    {
-        const int MAX_CAPACITY = 10;
+	const int MAX_CAPACITY = 10;
 
-        protected override int MaxPoolCapacity => MAX_CAPACITY;
+	protected override int MaxPoolCapacity => MAX_CAPACITY;
 
-        protected override Stopwatch Construct()
-        {
-            return new();
-        }
+	protected override Stopwatch Construct()
+	{
+		return new();
+	}
 
-        protected override bool ResetObject(Stopwatch obj)
-        {
-            ArgumentNullException.ThrowIfNull(obj);
+	protected override bool ResetObject(Stopwatch obj)
+	{
+		ArgumentNullException.ThrowIfNull(obj);
 
-            if (obj.IsRunning)
-            {
-                obj.Stop();
-            }
+		if (obj.IsRunning)
+		{
+			obj.Stop();
+		}
 
-            obj.Reset();
-            return true;
-        }
-    }
+		obj.Reset();
+		return true;
+	}
 }

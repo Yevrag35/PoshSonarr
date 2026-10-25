@@ -5,101 +5,100 @@ using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
-namespace MG.Sonarr.Next.Models.RemotePaths
+namespace MG.Sonarr.Next.Models.RemotePaths;
+
+[SonarrObject]
+public sealed class RemotePathObject : IdSonarrObject<RemotePathObject>,
+	ISerializableNames<RemotePathObject>
 {
-    [SonarrObject]
-    public sealed class RemotePathObject : IdSonarrObject<RemotePathObject>,
-        ISerializableNames<RemotePathObject>
-    {
-        const int CAPACITY = 5;
-        static readonly string _typeName = typeof(RemotePathObject).GetName();
+	const int CAPACITY = 5;
+	static readonly string _typeName = typeof(RemotePathObject).GetName();
 
-        public string HostName { get; private set; } = string.Empty;
-        public string LocalPath { get; private set; } = string.Empty;
-        public string RemotePath { get; private set; } = string.Empty;
+	public string HostName { get; private set; } = string.Empty;
+	public string LocalPath { get; private set; } = string.Empty;
+	public string RemotePath { get; private set; } = string.Empty;
 
-        public RemotePathObject() : base(CAPACITY)
-        {
-        }
+	public RemotePathObject() : base(CAPACITY)
+	{
+	}
 
-        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
-        {
-            return resolver[Meta.REMOTE_PATH_MAPPING];
-        }
+	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
+	{
+		return resolver[Meta.REMOTE_PATH_MAPPING];
+	}
 
-        public void ApplyFromPost(RemotePathBody body)
-        {
-            if (!body.Id.HasValue && this.Id != body.Id)
-            {
-                throw new ArgumentException("The body must represent an existing remote path and must match this object.");
-            }
+	public void ApplyFromPost(RemotePathBody body)
+	{
+		if (!body.Id.HasValue && this.Id != body.Id)
+		{
+			throw new ArgumentException("The body must represent an existing remote path and must match this object.");
+		}
 
-            this.HostName = body.Host;
-            this.LocalPath = body.LocalPath;
-            this.RemotePath = body.RemotePath;
+		this.HostName = body.Host;
+		this.LocalPath = body.LocalPath;
+		this.RemotePath = body.RemotePath;
 
-            this.Commit();
-        }
+		this.Commit();
+	}
 
-        
-        public override void Commit()
-        {
-            base.Commit();
-            this.UpdateProperties();
-        }
 
-        protected override void OnDeserialized(bool alreadyCalled)
-        {
-            if (this.TryGetNonNullProperty(nameof(this.HostName), out string? host))
-            {
-                this.HostName = host;
-            }
+	public override void Commit()
+	{
+		base.Commit();
+		this.UpdateProperties();
+	}
 
-            if (this.TryGetNonNullProperty(nameof(this.LocalPath), out string? localPath))
-            {
-                this.LocalPath = localPath;
-            }
+	protected override void OnDeserialized(bool alreadyCalled)
+	{
+		if (this.TryGetNonNullProperty(nameof(this.HostName), out string? host))
+		{
+			this.HostName = host;
+		}
 
-            if (this.TryGetNonNullProperty(nameof(this.RemotePath), out string? remotePath))
-            {
-                this.RemotePath = remotePath;
-            }
-        }
+		if (this.TryGetNonNullProperty(nameof(this.LocalPath), out string? localPath))
+		{
+			this.LocalPath = localPath;
+		}
 
-        public override void Reset()
-        {
-            base.Reset();
-            this.UpdateProperties();
-        }
+		if (this.TryGetNonNullProperty(nameof(this.RemotePath), out string? remotePath))
+		{
+			this.RemotePath = remotePath;
+		}
+	}
 
-        protected override void SetPSTypeName()
-        {
-            base.SetPSTypeName();
-            this.TypeNames.Insert(0, _typeName);
-        }
+	public override void Reset()
+	{
+		base.Reset();
+		this.UpdateProperties();
+	}
 
-        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Because of 'nameof()'")]
-        private void UpdateProperties()
-        {
-            this.UpdateProperty(this.HostName, propertyName: nameof(HostName));
-            this.UpdateProperty(this.LocalPath, propertyName: nameof(LocalPath));
-            this.UpdateProperty(this.RemotePath, propertyName: nameof(RemotePath));
-        }
+	protected override void SetPSTypeName()
+	{
+		base.SetPSTypeName();
+		this.TypeNames.Insert(0, _typeName);
+	}
 
-        private static readonly Lazy<JsonNameHolder> _names = new(GetJsonNames);
-        private static JsonNameHolder GetJsonNames()
-        {
-            return JsonNameHolder.FromSingleNamePair("Host", "HostName");
-        }
+	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Because of 'nameof()'")]
+	private void UpdateProperties()
+	{
+		this.UpdateProperty(this.HostName, propertyName: nameof(HostName));
+		this.UpdateProperty(this.LocalPath, propertyName: nameof(LocalPath));
+		this.UpdateProperty(this.RemotePath, propertyName: nameof(RemotePath));
+	}
 
-        public static IReadOnlyDictionary<string, string> GetDeserializedNames()
-        {
-            return _names.Value.DeserializationNames;
-        }
-        public static IReadOnlyDictionary<string, string> GetSerializedNames()
-        {
-            return _names.Value.SerializationNames;
-        }
-    }
+	private static readonly Lazy<JsonNameHolder> _names = new(GetJsonNames);
+	private static JsonNameHolder GetJsonNames()
+	{
+		return JsonNameHolder.FromSingleNamePair("Host", "HostName");
+	}
+
+	public static IReadOnlyDictionary<string, string> GetDeserializedNames()
+	{
+		return _names.Value.DeserializationNames;
+	}
+	public static IReadOnlyDictionary<string, string> GetSerializedNames()
+	{
+		return _names.Value.SerializationNames;
+	}
 }
 

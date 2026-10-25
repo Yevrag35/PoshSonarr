@@ -1,182 +1,181 @@
-using MG.Sonarr.Next.Services.Http.Clients;
-using MG.Sonarr.Next.Services.Http;
-using IOFile = System.IO.File;
-using IOPath = System.IO.Path;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.System;
+using MG.Sonarr.Next.Services.Http;
+using MG.Sonarr.Next.Services.Http.Clients;
+using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Shell.Attributes;
 using System.Net;
-using MG.Sonarr.Next.Json;
 using System.Text.Json;
-using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Services.Jobs;
+using IOFile = System.IO.File;
+using IOPath = System.IO.Path;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs
+namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs;
+
+[Cmdlet(VerbsData.Save, "SonarrLogFile", DefaultParameterSetName = "ByExplicitUrl")]
+[Alias("Download-SonarrLogFile")]
+[MetadataCanPipe(Tag = Meta.LOG_FILE)]
+[OutputType(typeof(FileInfo))]
+public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
 {
-    [Cmdlet(VerbsData.Save, "SonarrLogFile", DefaultParameterSetName = "ByExplicitUrl")]
-    [Alias("Download-SonarrLogFile")]
-    [MetadataCanPipe(Tag = Meta.LOG_FILE)]
-    [OutputType(typeof(FileInfo))]
-    public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
-    {
-        private bool _noFileName;
-        private ISonarrDownloadClient Downloader { get; set; } = null!;
-        public bool CanWriteVerbose => this.VerbosePreference is not (ActionPreference.SilentlyContinue or ActionPreference.Ignore);
-        private ApiCmdletQueue Queue { get; set; } = null!;
+	private bool _noFileName;
+	private ISonarrDownloadClient Downloader { get; set; } = null!;
+	public bool CanWriteVerbose => this.VerbosePreference is not (ActionPreference.SilentlyContinue or ActionPreference.Ignore);
+	private ApiCmdletQueue Queue { get; set; } = null!;
 
-        [Parameter(Mandatory = true, ParameterSetName = "ByExplicitUrl")]
-        [ValidateUrl(UriKind.Relative)]
-        public string LogUri { get; set; } = string.Empty;
+	[Parameter(Mandatory = true, ParameterSetName = "ByExplicitUrl")]
+	[ValidateUrl(UriKind.Relative)]
+	public string LogUri { get; set; } = string.Empty;
 
-        [Parameter]
-        public SwitchParameter Force { get; set; }
+	[Parameter]
+	public SwitchParameter Force { get; set; }
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
-        public LogFileObject InputObject
-        {
-            get => null!;
-            set => this.LogUri = value?.DownloadUrl ?? string.Empty;
-        }
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
+	public LogFileObject InputObject
+	{
+		get => null!;
+		set => this.LogUri = value?.DownloadUrl ?? string.Empty;
+	}
 
-        [Parameter(Mandatory = true, Position = 0)]
-        [ValidateNotNullOrEmpty]
-        public string Path { get; set; } = string.Empty;
+	[Parameter(Mandatory = true, Position = 0)]
+	[ValidateNotNullOrEmpty]
+	public string Path { get; set; } = string.Empty;
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [MaybeNull]
-        [Parameter(Mandatory = false)]
-        public PSCredential Credential
-        {
-            get => null;
-            set => _creds = value?.GetNetworkCredential();
-        }
-        NetworkCredential? _creds;
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+	[MaybeNull]
+	[Parameter(Mandatory = false)]
+	public PSCredential Credential
+	{
+		get => null;
+		set => _creds = value?.GetNetworkCredential();
+	}
+	NetworkCredential? _creds;
 
-        public bool CanDebugSerializeBefore => false;
-        public bool CanDebugSerializeAfter => false;
+	public bool CanDebugSerializeBefore => false;
+	public bool CanDebugSerializeAfter => false;
 
-        protected override void OnCreatingScope(IServiceProvider provider)
-        {
-            base.OnCreatingScope(provider);
-            this.Downloader = provider.GetRequiredService<ISonarrDownloadClient>();
-            this.Queue = provider.GetRequiredService<ApiCmdletQueue>();
-        }
+	protected override void OnCreatingScope(IServiceProvider provider)
+	{
+		base.OnCreatingScope(provider);
+		this.Downloader = provider.GetRequiredService<ISonarrDownloadClient>();
+		this.Queue = provider.GetRequiredService<ApiCmdletQueue>();
+	}
 
-        protected override void Begin(IServiceProvider provider)
-        {
-            ReadOnlySpan<char> originalPath = this.Path.AsSpan();
-            this.Path = this.GetAbsolutePath(this.Path);
-            if (!originalPath.Equals(this.Path, StringComparison.InvariantCulture))
-            {
-                this.WriteDebug($"{nameof(this.Path)} resolved to -> {this.Path}");
-            }
+	protected override void Begin(IServiceProvider provider)
+	{
+		ReadOnlySpan<char> originalPath = this.Path.AsSpan();
+		this.Path = this.GetAbsolutePath(this.Path);
+		if (!originalPath.Equals(this.Path, StringComparison.InvariantCulture))
+		{
+			this.WriteDebug($"{nameof(this.Path)} resolved to -> {this.Path}");
+		}
 
-            if (IsFileExtensionNotTxtOrLog(this.Path, out bool isEmpty))
-            {
-                this.StopCmdlet(
-                    new ArgumentException("If a target file extension is provided, it must be '.txt' or '.log'.")
-                        .ToRecord(ErrorCategory.InvalidArgument, this.Path));
+		if (IsFileExtensionNotTxtOrLog(this.Path, out bool isEmpty))
+		{
+			this.StopCmdlet(
+				new ArgumentException("If a target file extension is provided, it must be '.txt' or '.log'.")
+					.ToRecord(ErrorCategory.InvalidArgument, this.Path));
 
-                return;
-            }
-            else if (isEmpty)
-            {
-                this.WriteDebug($"No file name detected in provided path. Will add from {nameof(this.LogUri)} or incoming {nameof(this.InputObject)}");
-                _noFileName = true;
-            }
-        }
-        protected override void Process(IServiceProvider provider)
-        {
-            this.Queue.Enqueue(this);
-            string downloadPath = this.MakeFilePath(this.Path, this.LogUri, _noFileName);
-            if (!this.Force && IOFile.Exists(downloadPath))
-            {
-                this.WriteError(new IOException($"The file '{downloadPath}' already exists.")
-                    .ToRecord(ErrorCategory.WriteError, downloadPath));
+			return;
+		}
+		else if (isEmpty)
+		{
+			this.WriteDebug($"No file name detected in provided path. Will add from {nameof(this.LogUri)} or incoming {nameof(this.InputObject)}");
+			_noFileName = true;
+		}
+	}
+	protected override void Process(IServiceProvider provider)
+	{
+		this.Queue.Enqueue(this);
+		string downloadPath = this.MakeFilePath(this.Path, this.LogUri, _noFileName);
+		if (!this.Force && IOFile.Exists(downloadPath))
+		{
+			this.WriteError(new IOException($"The file '{downloadPath}' already exists.")
+				.ToRecord(ErrorCategory.WriteError, downloadPath));
 
-                return;
-            }
+			return;
+		}
 
-            this.WriteVerbose($"Writing response to -> {downloadPath}");
-            var response = this.Downloader.DownloadToPathAsync(this.LogUri, downloadPath, _creds).GetAwaiter().GetResult();
+		this.WriteVerbose($"Writing response to -> {downloadPath}");
+		var response = this.Downloader.DownloadToPathAsync(this.LogUri, downloadPath, _creds).GetAwaiter().GetResult();
 
-            if (response.IsError)
-            {
-                this.WriteError(response.Error);
-                return;
-            }
+		if (response.IsError)
+		{
+			this.WriteError(response.Error);
+			return;
+		}
 
-            if (!string.IsNullOrWhiteSpace(response.Value))
-            {
-                FileInfo fi = new(downloadPath);
-                this.WriteObject(fi);
-            }
-        }
+		if (!string.IsNullOrWhiteSpace(response.Value))
+		{
+			FileInfo fi = new(downloadPath);
+			this.WriteObject(fi);
+		}
+	}
 
-        private string GetAbsolutePath(string providedPath)
-        {
-            string path = this.GetUnresolvedProviderPathFromPSPath(providedPath);
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentException("The provided path is invalid.", new DirectoryNotFoundException($"Unable to resolve the path -> {providedPath}"));
-            }
+	private string GetAbsolutePath(string providedPath)
+	{
+		string path = this.GetUnresolvedProviderPathFromPSPath(providedPath);
+		if (string.IsNullOrWhiteSpace(path))
+		{
+			throw new ArgumentException("The provided path is invalid.", new DirectoryNotFoundException($"Unable to resolve the path -> {providedPath}"));
+		}
 
-            return path;
-        }
-        private static bool IsFileExtensionNotTxtOrLog(ReadOnlySpan<char> path, out bool isEmpty)
-        {
-            ReadOnlySpan<char> fileExt = IOPath.GetExtension(path);
-            isEmpty = fileExt.IsEmpty;
-            return !isEmpty
-                   &&
-                   !fileExt.Equals(stackalloc char[] { '.', 't', 'x', 't' },
-                        StringComparison.InvariantCultureIgnoreCase)
-                   &&
-                   !fileExt.Equals(stackalloc char[] { '.', 'l', 'o', 'g' },
-                        StringComparison.InvariantCultureIgnoreCase);
-        }
-        private string MakeFilePath(string dirPath, string logUrl, bool noFileExtension)
-        {
-            if (!noFileExtension)
-            {
-                return dirPath;
-            }
+		return path;
+	}
+	private static bool IsFileExtensionNotTxtOrLog(ReadOnlySpan<char> path, out bool isEmpty)
+	{
+		ReadOnlySpan<char> fileExt = IOPath.GetExtension(path);
+		isEmpty = fileExt.IsEmpty;
+		return !isEmpty
+			   &&
+			   !fileExt.Equals(stackalloc char[] { '.', 't', 'x', 't' },
+					StringComparison.InvariantCultureIgnoreCase)
+			   &&
+			   !fileExt.Equals(stackalloc char[] { '.', 'l', 'o', 'g' },
+					StringComparison.InvariantCultureIgnoreCase);
+	}
+	private string MakeFilePath(string dirPath, string logUrl, bool noFileExtension)
+	{
+		if (!noFileExtension)
+		{
+			return dirPath;
+		}
 
-            string fileName = IOPath.GetFileName(logUrl);
-            this.WriteDebug($"Appending file name to {nameof(this.Path)} -> {fileName}");
-            return IOPath.Combine(dirPath, fileName);
-        }
-        public void WriteDebugPayload(string jsonPayload)
-        {
-            if (this.Host?.UI is not null)
-            {
-                this.Host.UI.WriteDebugLine(jsonPayload);
-            }
-        }
-        public void WriteVerboseBefore(IHttpRequestDetails request)
-        {
-            this.WriteVerbose($"Sending {request.RequestMethod} request -> {request.RequestUrl}");
-        }
-        public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
-        {
-            if (this.VerbosePreference != ActionPreference.SilentlyContinue)
-            {
-                options ??= provider.GetService<ISonarrJsonOptions>()?.ForSerializing;
-                this.WriteVerbose(JsonSerializer.Serialize(response, options));
-            }
-        }
+		string fileName = IOPath.GetFileName(logUrl);
+		this.WriteDebug($"Appending file name to {nameof(this.Path)} -> {fileName}");
+		return IOPath.Combine(dirPath, fileName);
+	}
+	public void WriteDebugPayload(string jsonPayload)
+	{
+		if (this.Host?.UI is not null)
+		{
+			this.Host.UI.WriteDebugLine(jsonPayload);
+		}
+	}
+	public void WriteVerboseBefore(IHttpRequestDetails request)
+	{
+		this.WriteVerbose($"Sending {request.RequestMethod} request -> {request.RequestUrl}");
+	}
+	public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
+	{
+		if (this.VerbosePreference != ActionPreference.SilentlyContinue)
+		{
+			options ??= provider.GetService<ISonarrJsonOptions>()?.ForSerializing;
+			this.WriteVerbose(JsonSerializer.Serialize(response, options));
+		}
+	}
 
-        bool _disposed;
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && !_disposed)
-            {
-                this.Queue.Clear();
-                _disposed = true;
-            }
+	bool _disposed;
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing && !_disposed)
+		{
+			this.Queue.Clear();
+			_disposed = true;
+		}
 
-            base.Dispose(disposing);
-        }
-    }
+		base.Dispose(disposing);
+	}
 }

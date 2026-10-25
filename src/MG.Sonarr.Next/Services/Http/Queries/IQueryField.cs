@@ -2,6 +2,6 @@
 
 public interface IQueryField : ISpanFormattable
 {
-    string Key { get; }
-    int MaxLength { get; }
+	string Key { get; }
+	int MaxLength { get; }
 }

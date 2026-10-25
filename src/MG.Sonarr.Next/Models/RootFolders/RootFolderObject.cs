@@ -3,29 +3,28 @@ using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
-namespace MG.Sonarr.Next.Models.RootFolders
+namespace MG.Sonarr.Next.Models.RootFolders;
+
+[SonarrObject]
+public sealed class RootFolderObject : IdSonarrObject<RootFolderObject>,
+	ISerializableNames<RootFolderObject>
 {
-    [SonarrObject]
-    public sealed class RootFolderObject : IdSonarrObject<RootFolderObject>,
-        ISerializableNames<RootFolderObject>
-    {
-        const int CAPACITY = 9;
-        static readonly string _typeName = typeof(RootFolderObject).GetName();
+	const int CAPACITY = 9;
+	static readonly string _typeName = typeof(RootFolderObject).GetName();
 
-        public RootFolderObject()
-            : base(CAPACITY)
-        {
-        }
+	public RootFolderObject()
+		: base(CAPACITY)
+	{
+	}
 
-        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
-        {
-            return resolver[Meta.ROOT_FOLDER];
-        }
+	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
+	{
+		return resolver[Meta.ROOT_FOLDER];
+	}
 
-        protected override void SetPSTypeName()
-        {
-            base.SetPSTypeName();
-            this.TypeNames.Insert(0, _typeName);
-        }
-    }
+	protected override void SetPSTypeName()
+	{
+		base.SetPSTypeName();
+		this.TypeNames.Insert(0, _typeName);
+	}
 }

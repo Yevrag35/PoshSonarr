@@ -6,89 +6,88 @@ using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
 
-namespace MG.Sonarr.Next.Models.Indexers
+namespace MG.Sonarr.Next.Models.Indexers;
+
+[SonarrObject]
+public sealed class IndexerObject : TagUpdateObject<IndexerObject>,
+	IJsonOnSerializing,
+	ISerializableNames<IndexerObject>,
+	ITestPipeable
 {
-    [SonarrObject]
-    public sealed class IndexerObject : TagUpdateObject<IndexerObject>,
-        IJsonOnSerializing,
-        ISerializableNames<IndexerObject>,
-        ITestPipeable
-    {
-        const int CAPACITY = 17;
-        static readonly string _typeName = typeof(IndexerObject).GetName();
+	const int CAPACITY = 17;
+	static readonly string _typeName = typeof(IndexerObject).GetName();
 
-        public bool EnableRss
-        {
-            get => this.GetValue<bool>();
-        }
-        public bool EnableAutomaticSearch
-        {
-            get => this.GetValue<bool>();
-        }
-        public bool EnableInteractiveSearch
-        {
-            get => this.GetValue<bool>();
-        }
-        public string Name { get; private set; } = string.Empty;
-        public int Priority
-        {
-            get => this.GetValue<int>();
-            set => this.SetValue(value);
-        }
-        public string Protocol { get; private set; } = string.Empty;
+	public bool EnableRss
+	{
+		get => this.GetValue<bool>();
+	}
+	public bool EnableAutomaticSearch
+	{
+		get => this.GetValue<bool>();
+	}
+	public bool EnableInteractiveSearch
+	{
+		get => this.GetValue<bool>();
+	}
+	public string Name { get; private set; } = string.Empty;
+	public int Priority
+	{
+		get => this.GetValue<int>();
+		set => this.SetValue(value);
+	}
+	public string Protocol { get; private set; } = string.Empty;
 
-        public IndexerObject()
-            : base(CAPACITY)
-        {
-        }
+	public IndexerObject()
+		: base(CAPACITY)
+	{
+	}
 
-        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
-        {
-            return resolver[Meta.INDEXER];
-        }
+	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
+	{
+		return resolver[Meta.INDEXER];
+	}
 
-        protected override void OnCommit()
-        {
-            this.Name = this.GetValue<string>() ?? string.Empty;
-            this.Protocol = this.GetValue<string>() ?? string.Empty;
-            base.OnCommit();
-        }
-        protected override void OnDeserialized(bool alreadyCalled)
-        {
-            base.OnDeserialized(alreadyCalled);
-            if (this.TryGetNonNullProperty(nameof(this.Name), out string? name))
-            {
-                this.Name = name;
-            }
+	protected override void OnCommit()
+	{
+		this.Name = this.GetValue<string>() ?? string.Empty;
+		this.Protocol = this.GetValue<string>() ?? string.Empty;
+		base.OnCommit();
+	}
+	protected override void OnDeserialized(bool alreadyCalled)
+	{
+		base.OnDeserialized(alreadyCalled);
+		if (this.TryGetNonNullProperty(nameof(this.Name), out string? name))
+		{
+			this.Name = name;
+		}
 
-            if (this.TryGetNonNullProperty(nameof(this.Protocol), out string? pro))
-            {
-                this.Protocol = pro;
-            }
-        }
-        public void OnSerializing()
-        {
-            int priority = this.Priority;
-            if (priority < 0 || priority > 100)
-            {
-                this.Priority = 25;
-            }
+		if (this.TryGetNonNullProperty(nameof(this.Protocol), out string? pro))
+		{
+			this.Protocol = pro;
+		}
+	}
+	public void OnSerializing()
+	{
+		int priority = this.Priority;
+		if (priority < 0 || priority > 100)
+		{
+			this.Priority = 25;
+		}
 
-            string? name = this.GetValue<string>(nameof(this.Name));
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                this.UpdateProperty(x => x.Name);
-            }
-        }
-        protected override void SetPSTypeName()
-        {
-            base.SetPSTypeName();
-            this.TypeNames.Insert(0, _typeName);
-        }
+		string? name = this.GetValue<string>(nameof(this.Name));
+		if (string.IsNullOrWhiteSpace(name))
+		{
+			this.UpdateProperty(x => x.Name);
+		}
+	}
+	protected override void SetPSTypeName()
+	{
+		base.SetPSTypeName();
+		this.TypeNames.Insert(0, _typeName);
+	}
 
-        public int? GetId()
-        {
-            return this.Id;
-        }
-    }
+	public int? GetId()
+	{
+		return this.Id;
+	}
 }

@@ -7,121 +7,120 @@ using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Unions;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities
+namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities;
+
+[Cmdlet(VerbsCommon.Get, "SonarrQualityProfile", DefaultParameterSetName = "ByProfileName")]
+[Alias("Get-SonarrProfile")]
+[MetadataCanPipe(Tag = Meta.SERIES)]
+public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
 {
-    [Cmdlet(VerbsCommon.Get, "SonarrQualityProfile", DefaultParameterSetName = "ByProfileName")]
-    [Alias("Get-SonarrProfile")]
-    [MetadataCanPipe(Tag = Meta.SERIES)]
-    public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
-    {
-        static readonly string _namePropertyName = nameof(Name);
-        SortedSet<int> _ids = null!;
-        WildcardSet _wcNames = null!;
+	static readonly string _namePropertyName = nameof(Name);
+	SortedSet<int> _ids = null!;
+	WildcardSet _wcNames = null!;
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
-        [ValidateIds(ValidateRangeKind.Positive, typeof(IQualityProfilePipeable))]
-        public IQualityProfilePipeable[] InputObject { get; set; } = [];
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
+	[ValidateIds(ValidateRangeKind.Positive, typeof(IQualityProfilePipeable))]
+	public IQualityProfilePipeable[] InputObject { get; set; } = [];
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-        [ValidateRange(ValidateRangeKind.Positive)]
-        public int[] Id { get; set; } = [];
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[ValidateRange(ValidateRangeKind.Positive)]
+	public int[] Id { get; set; } = [];
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByProfileName")]
-        [SupportsWildcards]
-        public Either<string, int>[] Name { get; set; } = [];
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+	[Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByProfileName")]
+	[SupportsWildcards]
+	public Either<string, int>[] Name { get; set; } = [];
 
-        protected override int Capacity => 2;
-        protected override void OnCreatingScope(IServiceProvider provider)
-        {
-            base.OnCreatingScope(provider);
-            _ids = this.GetPooledObject<SortedSet<int>>();
-            _wcNames = this.GetPooledObject<WildcardSet>();
-            this.SetReturnables(_ids, _wcNames);
-        }
+	protected override int Capacity => 2;
+	protected override void OnCreatingScope(IServiceProvider provider)
+	{
+		base.OnCreatingScope(provider);
+		_ids = this.GetPooledObject<SortedSet<int>>();
+		_wcNames = this.GetPooledObject<WildcardSet>();
+		this.SetReturnables(_ids, _wcNames);
+	}
 
-        protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
-        {
-            return resolver[Meta.QUALITY_PROFILE];
-        }
+	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
+	{
+		return resolver[Meta.QUALITY_PROFILE];
+	}
 
-        [SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
-        protected override void Begin(IServiceProvider provider)
-        {
-            _ids.UnionWith(this.Id);
-            if (this.Name.Length > 0)
-            {
-                this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
-            }
-        }
-        protected override void Process(IServiceProvider provider)
-        {
-            if (this.InputObject.Length > 0)
-            {
-                _ids.UnionWith(
-                    this.InputObject.Where(x => x.QualityProfileId > 0).Select(x => x.QualityProfileId));
-            }
-        }
-        protected override void End(IServiceProvider provider)
-        {
-            if (this.InvokeCommand.HasErrors)
-            {
-                return;
-            }
+	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
+	protected override void Begin(IServiceProvider provider)
+	{
+		_ids.UnionWith(this.Id);
+		if (this.Name.Length > 0)
+		{
+			this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
+		}
+	}
+	protected override void Process(IServiceProvider provider)
+	{
+		if (this.InputObject.Length > 0)
+		{
+			_ids.UnionWith(
+				this.InputObject.Where(x => x.QualityProfileId > 0).Select(x => x.QualityProfileId));
+		}
+	}
+	protected override void End(IServiceProvider provider)
+	{
+		if (this.InvokeCommand.HasErrors)
+		{
+			return;
+		}
 
-            List<QualityProfileObject> list = new(_ids.Count + _wcNames.Count);
+		List<QualityProfileObject> list = new(_ids.Count + _wcNames.Count);
 
-            bool addedIds = false;
-            if (_ids.Count > 0)
-            {
-                IEnumerable<QualityProfileObject> profiles = this.GetById<QualityProfileObject>(_ids);
-                list.AddRange(profiles);
-                addedIds = true;
-            }
+		bool addedIds = false;
+		if (_ids.Count > 0)
+		{
+			IEnumerable<QualityProfileObject> profiles = this.GetById<QualityProfileObject>(_ids);
+			list.AddRange(profiles);
+			addedIds = true;
+		}
 
-            if (_wcNames.Count > 0 || !addedIds)
-            {
-                var all = this.GetAll<QualityProfileObject>();
-                if (all.Count > 0)
-                {
-                    FilterByProfileName(all, _wcNames, _ids);
-                }
+		if (_wcNames.Count > 0 || !addedIds)
+		{
+			var all = this.GetAll<QualityProfileObject>();
+			if (all.Count > 0)
+			{
+				FilterByProfileName(all, _wcNames, _ids);
+			}
 
-                list.AddRange(all);
-            }
+			list.AddRange(all);
+		}
 
-            this.WriteCollection(list);
-        }
-        private static void FilterByProfileName(MetadataList<QualityProfileObject> list, WildcardSet names, SortedSet<int> ids)
-        {
-            if (ids.Count == 0 && names.Count == 0)
-            {
-                return;
-            }
+		this.WriteCollection(list);
+	}
+	private static void FilterByProfileName(MetadataList<QualityProfileObject> list, WildcardSet names, SortedSet<int> ids)
+	{
+		if (ids.Count == 0 && names.Count == 0)
+		{
+			return;
+		}
 
-            for (int i = list.Count - 1; i >= 0; i--)
-            {
-                QualityProfileObject item = list[i];
-                if (ids.Contains(item.Id) || !names.IsAnyMatch(item.Name))
-                {
-                    list.RemoveAt(i);
-                }
-            }
-        }
+		for (int i = list.Count - 1; i >= 0; i--)
+		{
+			QualityProfileObject item = list[i];
+			if (ids.Contains(item.Id) || !names.IsAnyMatch(item.Name))
+			{
+				list.RemoveAt(i);
+			}
+		}
+	}
 
-        bool _disposed;
-        protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
-        {
-            if (disposing && !_disposed)
-            {
-                _ids = null!;
-                _wcNames = null!;
-                _disposed = true;
-            }
+	bool _disposed;
+	protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
+	{
+		if (disposing && !_disposed)
+		{
+			_ids = null!;
+			_wcNames = null!;
+			_disposed = true;
+		}
 
-            base.Dispose(disposing, factory);
-        }
-    }
+		base.Dispose(disposing, factory);
+	}
 }

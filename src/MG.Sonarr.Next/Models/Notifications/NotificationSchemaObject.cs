@@ -4,40 +4,39 @@ using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
 
-namespace MG.Sonarr.Next.Models.Notifications
+namespace MG.Sonarr.Next.Models.Notifications;
+
+[SonarrObject]
+public sealed class NotificationSchemaObject : TagUpdateObject<NotificationSchemaObject>,
+	IJsonOnSerializing,
+	ISchemaObject,
+	ISerializableNames<NotificationSchemaObject>
 {
-    [SonarrObject]
-    public sealed class NotificationSchemaObject : TagUpdateObject<NotificationSchemaObject>,
-        IJsonOnSerializing,
-        ISchemaObject,
-        ISerializableNames<NotificationSchemaObject>
-    {
-        const int CAPACITY = 38;
-        static readonly string _typeName = typeof(NotificationSchemaObject).GetName();
-        public bool IsTaggable => true;
+	const int CAPACITY = 38;
+	static readonly string _typeName = typeof(NotificationSchemaObject).GetName();
+	public bool IsTaggable => true;
 
-        public NotificationSchemaObject()
-            : base(CAPACITY)
-        {
-        }
+	public NotificationSchemaObject()
+		: base(CAPACITY)
+	{
+	}
 
-        protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
-        {
-            return resolver[Meta.NOTIFICATION];
-        }
-        protected override void OnDeserialized(bool alreadyCalled)
-        {
-            base.OnDeserialized(alreadyCalled);
-            this.Properties.Remove(nameof(this.Id));
-        }
-        public void OnSerializing()
-        {
-            this.Properties.Remove(nameof(this.Id));
-        }
-        protected override void SetPSTypeName()
-        {
-            base.SetPSTypeName();
-            this.TypeNames.Insert(0, _typeName);
-        }
-    }
+	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
+	{
+		return resolver[Meta.NOTIFICATION];
+	}
+	protected override void OnDeserialized(bool alreadyCalled)
+	{
+		base.OnDeserialized(alreadyCalled);
+		this.Properties.Remove(nameof(this.Id));
+	}
+	public void OnSerializing()
+	{
+		this.Properties.Remove(nameof(this.Id));
+	}
+	protected override void SetPSTypeName()
+	{
+		base.SetPSTypeName();
+		this.TypeNames.Insert(0, _typeName);
+	}
 }

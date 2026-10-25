@@ -1,30 +1,29 @@
 using System.Management.Automation;
 
-namespace MG.Sonarr.Next.PSProperties
+namespace MG.Sonarr.Next.PSProperties;
+
+public static class ReadOnlyStructProperty
 {
-    public static class ReadOnlyStructProperty
-    {
-        public static ReadOnlyStructProperty<T> Create<T>(string propertyName, T value) where T : struct
-        {
-            return new ReadOnlyStructProperty<T>(propertyName, value);
-        }
-    }
+	public static ReadOnlyStructProperty<T> Create<T>(string propertyName, T value) where T : struct
+	{
+		return new ReadOnlyStructProperty<T>(propertyName, value);
+	}
+}
 
-    public sealed class ReadOnlyStructProperty<T> : ReadOnlyProperty<T> where T : struct
-    {
-        public T StructValue { get; }
-        protected override T ValueAsT => this.StructValue;
+public sealed class ReadOnlyStructProperty<T> : ReadOnlyProperty<T> where T : struct
+{
+	public T StructValue { get; }
+	protected override T ValueAsT => this.StructValue;
 
-        public ReadOnlyStructProperty(string propertyName, T value)
-            : base(propertyName)
-        {
-            this.StructValue = value;
-        }
+	public ReadOnlyStructProperty(string propertyName, T value)
+		: base(propertyName)
+	{
+		this.StructValue = value;
+	}
 
-        public override PSMemberInfo Copy()
-        {
-            return new ReadOnlyStructProperty<T>(this.Name, this.StructValue);
-        }
-    }
+	public override PSMemberInfo Copy()
+	{
+		return new ReadOnlyStructProperty<T>(this.Name, this.StructValue);
+	}
 }
 

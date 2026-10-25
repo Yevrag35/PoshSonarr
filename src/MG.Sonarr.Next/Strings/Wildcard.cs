@@ -1,6 +1,5 @@
 ﻿using System.Buffers;
 using System.ComponentModel;
-using System.Runtime.InteropServices;
 
 namespace MG.Sonarr.Next.Strings;
 
@@ -41,7 +40,7 @@ public readonly partial struct Wildcard :
 	/// <param name="index">The position in the current string.</param>
 	/// <returns>The char object at the specified index.</returns>
 	/// <exception cref="ArgumentOutOfRangeException"/>
-	public readonly ref readonly char this[int index] => ref _pattern.AsSpan()[index];
+	public char this[int index] => _pattern.AsSpan()[index];
 
 	/// <summary>
 	/// Indicates whether the <see cref="Wildcard"/> contains any wildcard characters ('?' or '*') in
@@ -95,7 +94,7 @@ public readonly partial struct Wildcard :
 		int length = 0;
 		_pattern = ConstructPattern(patternString, matchType, ref length);
 		_state = new(length: length, type: matchType);
-    }
+	}
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Wildcard"/> struct using the 
 	/// specified read-only span of <see cref="char"/> elements.
@@ -113,12 +112,12 @@ public readonly partial struct Wildcard :
 		int length = 0;
 		_pattern = ConstructPattern(pattern, matchType, ref length);
 		_state = new(length: length, type: matchType);
-    }
+	}
 	private Wildcard(ReadOnlySpan<char> pattern, WildcardMatchType matchType)
 	{
 		_pattern = pattern.ToString();
 		_state = new(length: _pattern.Length, type: matchType);
-    }
+	}
 	private Wildcard(bool isAll)
 	{
 		if (isAll)

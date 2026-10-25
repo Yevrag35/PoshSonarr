@@ -5,60 +5,59 @@ using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Shell.Extensions;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets.Commands
+namespace MG.Sonarr.Next.Shell.Cmdlets.Commands;
+
+[Cmdlet(VerbsCommon.Get, "SonarrCommandHistory", DefaultParameterSetName = "None")]
+public sealed class GetSonarrCommandHistory : SonarrCmdletBase
 {
-    [Cmdlet(VerbsCommon.Get, "SonarrCommandHistory", DefaultParameterSetName = "None")]
-    public sealed class GetSonarrCommandHistory : SonarrCmdletBase
-    {
-        [Parameter(Mandatory = true, ParameterSetName = "ShowAll")]
-        public SwitchParameter All { get; set; }
+	[Parameter(Mandatory = true, ParameterSetName = "ShowAll")]
+	public SwitchParameter All { get; set; }
 
-        [Parameter(Mandatory = true, ParameterSetName = "RefreshUnfinished")]
-        public SwitchParameter Refresh { get; set; }
+	[Parameter(Mandatory = true, ParameterSetName = "RefreshUnfinished")]
+	public SwitchParameter Refresh { get; set; }
 
-        protected override void Process(IServiceProvider provider)
-        {
-            var history = provider.GetRequiredService<ICommandHistory>();
+	protected override void Process(IServiceProvider provider)
+	{
+		var history = provider.GetRequiredService<ICommandHistory>();
 
-            IEnumerable<ICommand> commands;
-            if (this.Refresh)
-            {
-                commands = this.RefreshUnfinished(provider, history);
-            }
-            else if (!this.All)
-            {
-                commands = history.Where(x => !x.IsCompleted);
-            }
-            else
-            {
-                commands = history;
-            }
+		IEnumerable<ICommand> commands;
+		if (this.Refresh)
+		{
+			commands = this.RefreshUnfinished(provider, history);
+		}
+		else if (!this.All)
+		{
+			commands = history.Where(x => !x.IsCompleted);
+		}
+		else
+		{
+			commands = history;
+		}
 
-            this.WriteResults(commands);
-        }
+		this.WriteResults(commands);
+	}
 
-        private IEnumerable<ICommand> RefreshUnfinished(IServiceProvider provider, ICommandHistory history)
-        {
-            var client = provider.GetRequiredService<ISonarrClient>();
-            var tag = provider.GetRequiredService<IMetadataResolver>()[Meta.COMMAND];
+	private IEnumerable<ICommand> RefreshUnfinished(IServiceProvider provider, ICommandHistory history)
+	{
+		var client = provider.GetRequiredService<ISonarrClient>();
+		var tag = provider.GetRequiredService<IMetadataResolver>()[Meta.COMMAND];
 
-            foreach (ICommand command in history.Where(x => !x.IsCompleted))
-            {
-                SonarrClientResult<CommandObject> response = client.SendGet<CommandObject>(tag.GetUrlForId(command.Id));
-                if (response.IsError)
-                {
-                    this.WriteConditionalError(response.Error);
-                }
-                else if (response.Value.IsCompleted)
-                {
-                    history[response.Value.Id] = response.Value;
-                    yield return response.Value;
-                }
-            }
-        }
-        private void WriteResults(IEnumerable<ICommand> commands)
-        {
-            this.WriteCollection(commands.OrderBy(x => x.Started));
-        }
-    }
+		foreach (ICommand command in history.Where(x => !x.IsCompleted))
+		{
+			SonarrClientResult<CommandObject> response = client.SendGet<CommandObject>(tag.GetUrlForId(command.Id));
+			if (response.IsError)
+			{
+				this.WriteConditionalError(response.Error);
+			}
+			else if (response.Value.IsCompleted)
+			{
+				history[response.Value.Id] = response.Value;
+				yield return response.Value;
+			}
+		}
+	}
+	private void WriteResults(IEnumerable<ICommand> commands)
+	{
+		this.WriteCollection(commands.OrderBy(x => x.Started));
+	}
 }

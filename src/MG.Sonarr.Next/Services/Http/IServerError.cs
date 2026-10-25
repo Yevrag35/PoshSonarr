@@ -1,11 +1,10 @@
-﻿namespace MG.Sonarr.Next.Services.Http
+﻿namespace MG.Sonarr.Next.Services.Http;
+
+public interface IServerError
 {
-    public interface IServerError
-    {
-        string? Description { get; }
-        string? Message { get; }
-        string? Title { get; }
-        int? StatusCode { get; }
-        string? TraceId { get; }
-    }
+	string? Description { get; }
+	string? Message { get; }
+	string? Title { get; }
+	int? StatusCode { get; }
+	string? TraceId { get; }
 }
