@@ -9,7 +9,7 @@ param (
     [Parameter(Mandatory = $false, ParameterSetName = "ByProjectName")]
     [string] $SolutionFilePath,
 
-    # "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\Microsoft.Build.dll"
+    # "$env:ProgramFiles\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\Microsoft.Build.dll"
     [Parameter(Mandatory = $true, ParameterSetName = "ByProjectName")]
     [string[]] $ProjectName
 )
