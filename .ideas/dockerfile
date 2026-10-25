@@ -1,0 +1,31 @@
+
+FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-bookworm-slim
+
+ARG SONARR_VERSION=4.0.20.3014
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        sqlite3 \
+        mediainfo && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt
+
+RUN curl -fsSL \
+    "https://github.com/Sonarr/Sonarr/releases/download/v${SONARR_VERSION}/Sonarr.main.${SONARR_VERSION}.linux-x64.tar.gz" \
+    | tar -xz -C /opt
+
+RUN groupadd -g 1000 sonarr && \
+    useradd -u 1000 -g sonarr -d /config sonarr && \
+    mkdir -p /config && \
+    chown -R sonarr:sonarr /config
+
+USER sonarr
+
+EXPOSE 8989
+
+VOLUME ["/config"]
+
+ENTRYPOINT ["/opt/Sonarr/Sonarr", "-nobrowser", "-data=/config"]
