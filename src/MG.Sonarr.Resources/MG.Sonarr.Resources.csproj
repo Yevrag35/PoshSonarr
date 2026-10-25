@@ -2,9 +2,6 @@
 
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
-		<!-- C# 8 has no global usings, so implicit usings stay off. -->
-		<LangVersion>latest</LangVersion>
-		<ImplicitUsings>disable</ImplicitUsings>
 		<RootNamespace>MG.Sonarr.Resources</RootNamespace>
 	</PropertyGroup>
 

@@ -44,7 +44,7 @@ Each project under `src/` references the one before it:
 3. `MG.Sonarr.Next.Shell.Bases` (net10.0): the cmdlet base classes and the connection context.
 4. `MG.Sonarr.Next.Shell` (net10.0): the cmdlets, the format and type files (`src/MG.Sonarr.Next.Shell/PSFormats/`, `src/MG.Sonarr.Next.Shell/PSTypes/`), and the debugging and packaging inputs.
 
-`src/Directory.Build.props` holds the shared assembly metadata, the `Version` (which is also the module version), and the compiler settings: C# `preview`, unsafe code allowed, and implicit usings plus a few extra global usings. `MG.Sonarr.Resources` turns implicit usings off, so code there needs explicit `using` directives. Each `.csproj` can add more global usings through `<Using>` items. `src/Directory.Packages.props` manages package versions centrally; `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` must stay on the same version.
+`src/Directory.Build.props` holds the shared assembly metadata, the `Version` (which is also the module version), and the compiler settings: C# `preview`, unsafe code allowed, and implicit usings plus a few extra global usings. Each `.csproj` can add more global usings through `<Using>` items. `src/Directory.Packages.props` manages package versions centrally; `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` must stay on the same version.
 
 ## Architecture
 
