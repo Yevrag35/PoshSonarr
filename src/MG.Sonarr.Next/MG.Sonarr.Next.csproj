@@ -44,7 +44,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\MG.Sonarr.Next.Standard\MG.Sonarr.Next.Standard.csproj" />
+		<ProjectReference Include="..\MG.Sonarr.Resources\MG.Sonarr.Resources.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

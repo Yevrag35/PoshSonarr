@@ -1,23 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<!-- C# 8 has no global usings, so implicit usings stay off. -->
-		<LangVersion>8</LangVersion>
+		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<RootNamespace>MG.Sonarr.Resources</RootNamespace>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<InternalsVisibleTo Include="MG.Sonarr.Next.Standard" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Nullable">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
 
 	<ItemGroup>
 		<Compile Update="ExMessages.Designer.cs">

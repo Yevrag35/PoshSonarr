@@ -22,11 +22,7 @@
 		<FileVersion>$(Version)</FileVersion>
 	</PropertyGroup>
 
-	<!--
-		Compiler settings shared by every project. LangVersion and ImplicitUsings fit the net10.0 projects; the netstandard2.0
-		projects compile as C# 8, which has no global usings, so each of them overrides both. A property here can't test
-		TargetFramework instead, because a single-target project sets TargetFramework after this file is imported.
-	-->
+	<!-- Compiler settings shared by every project. A project can override any of them in its own file. -->
 	<PropertyGroup>
 		<LangVersion>preview</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>

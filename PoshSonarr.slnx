@@ -13,6 +13,5 @@
   </Folder>
   <Project Path="src/MG.Sonarr.Next.Shell.Bases/MG.Sonarr.Next.Shell.Bases.csproj" />
   <Project Path="src/MG.Sonarr.Next.Shell/MG.Sonarr.Next.Shell.csproj" />
-  <Project Path="src/MG.Sonarr.Next.Standard/MG.Sonarr.Next.Standard.csproj" />
   <Project Path="src/MG.Sonarr.Next/MG.Sonarr.Next.csproj" />
 </Solution>

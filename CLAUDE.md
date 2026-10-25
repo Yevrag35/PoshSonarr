@@ -38,13 +38,12 @@ Run these from the repository root. Building needs a .NET 10 SDK.
 
 Each project under `src/` references the one before it:
 
-1. `MG.Sonarr.Resources` (netstandard2.0): message strings in `src/MG.Sonarr.Resources/Messages.resx` and exception messages in `src/MG.Sonarr.Resources/ExMessages.resx`, with public generated designer classes.
-2. `MG.Sonarr.Next.Standard` (netstandard2.0): shared attributes, base exceptions, and reflection helpers.
-3. `MG.Sonarr.Next` (net10.0): the services library, with the HTTP client, JSON handling, metadata tags, and the object models.
-4. `MG.Sonarr.Next.Shell.Bases` (net10.0): the cmdlet base classes and the connection context.
-5. `MG.Sonarr.Next.Shell` (net10.0): the cmdlets, the format and type files (`src/MG.Sonarr.Next.Shell/PSFormats/`, `src/MG.Sonarr.Next.Shell/PSTypes/`), and the debugging and packaging inputs.
+1. `MG.Sonarr.Resources` (net10.0): message strings in `src/MG.Sonarr.Resources/Messages.resx` and exception messages in `src/MG.Sonarr.Resources/ExMessages.resx`, with public generated designer classes.
+2. `MG.Sonarr.Next` (net10.0): the services library, with the HTTP client, JSON handling, metadata tags, the object models, and the module's base exceptions.
+3. `MG.Sonarr.Next.Shell.Bases` (net10.0): the cmdlet base classes and the connection context.
+4. `MG.Sonarr.Next.Shell` (net10.0): the cmdlets, the format and type files (`src/MG.Sonarr.Next.Shell/PSFormats/`, `src/MG.Sonarr.Next.Shell/PSTypes/`), and the debugging and packaging inputs.
 
-`src/Directory.Build.props` holds the shared assembly metadata, the `Version` (which is also the module version), and the compiler settings: C# `preview`, unsafe code allowed, and implicit usings plus a few extra global usings. The two netstandard2.0 projects override it to C# 8 with implicit usings off, so code there needs explicit `using` directives and C# 8 syntax. Each `.csproj` can add more global usings through `<Using>` items. `src/Directory.Packages.props` manages package versions centrally; `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` must stay on the same version.
+`src/Directory.Build.props` holds the shared assembly metadata, the `Version` (which is also the module version), and the compiler settings: C# `preview`, unsafe code allowed, and implicit usings plus a few extra global usings. `MG.Sonarr.Resources` turns implicit usings off, so code there needs explicit `using` directives. Each `.csproj` can add more global usings through `<Using>` items. `src/Directory.Packages.props` manages package versions centrally; `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` must stay on the same version.
 
 ## Architecture
 
@@ -82,5 +81,5 @@ The base classes in `src/MG.Sonarr.Next.Shell.Bases/Cmdlets/` form one chain: `S
 - Every text file is UTF-8 without a BOM, with LF line endings. The Edit tool keeps whatever BOM and line endings a file already has, so run the byte check on changed files before committing and fix what it reports.
 - Indent with tabs in every file type, Markdown, JSON, XML, and PowerShell included. Project and XML config files set a tab width of 2, which is still one tab per level.
 - The repo can sit at a different root on each machine, and a session can move to another machine at any point, so write every path in a checked-in file, commands included, relative to the repo root, and take the root from the current working directory. Root a location outside the repo in an environment variable, `$env:PROGRAMFILES` in prose and PowerShell and `$PROGRAMFILES` in Bash (Git Bash imports Windows variables in uppercase), and build paths in scripts from `$PSScriptRoot` or an MSBuild property such as `$(SolutionDir)`.
-- The `.editorconfig` C# style isn't enforced at build time, so match the surrounding code: file-scoped namespaces (block-scoped in the C# 8 projects), `this.` on properties and methods but not fields, `_camelCase` private fields, keyword type names such as `string` and `int`, and regular constructors instead of primary ones.
+- The `.editorconfig` C# style isn't enforced at build time, so match the surrounding code: file-scoped namespaces, `this.` on properties and methods but not fields, `_camelCase` private fields, keyword type names such as `string` and `int`, and regular constructors instead of primary ones.
 - PRs target `realDev`; `master` only takes release PRs from `realDev`.
