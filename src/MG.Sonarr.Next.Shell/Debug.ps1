@@ -1,43 +1,61 @@
-[CmdletBinding(SupportsShouldProcess=$true, PositionalBinding = $false, DefaultParameterSetName = "ByExplicitApiKeyAndUrl")]
+[CmdletBinding(SupportsShouldProcess=$true, PositionalBinding = $false)]
 param  (
 	[Parameter()]
 	[string] $LibraryName = 'MG.Sonarr.Next.Shell',
 
-	[Parameter(Mandatory = $true, ParameterSetName = "ByConfigFile")]
-	[ValidateNotNullOrEmpty()]
-	[string] $ConfigJson,
-
-	[Parameter(Mandatory = $false, ParameterSetName = "ByExplicitApiKeyAndUrl")]
+	[Parameter()]
 	[string] $ApiKey,
 
-	[Parameter(Mandatory = $false, ParameterSetName = "ByExplicitApiKeyAndUrl")]
+	[Parameter()]
 	[string] $SonarrUrl,
 
-	[Parameter(Mandatory = $false, ParameterSetName = "ByExplicitApiKeyAndUrl")]
+	[Parameter()]
 	[switch] $NoApiInPath
 )
 
-if (-not [string]::IsNullOrWhitespace($ConfigJson)) {
+function readEnvFile([string]$path) {
+	$settings = @{}
+	foreach ($line in Get-Content -Path $path) {
+		$name, $value = $line.Trim() -split '=', 2
+		if ($null -eq $value -or $name.StartsWith("#")) {
+			continue
+		}
 
-	if (-not [System.IO.Path]::IsPathFullyQualified($ConfigJson)) {
-		$ConfigJson = "$PSScriptRoot\$ConfigJson"
+		# Drop the quotes around a quoted value.
+		$value = $value.Trim()
+		if ($value -match '^(["''])(.*)\1$') {
+			$value = $Matches[2]
+		}
+
+		$settings[$name.Trim()] = $value
 	}
 
-	$config = Get-Content -Path $ConfigJson | ConvertFrom-Json -Depth 10 -AsHashtable
-	if ($config.ContainsKey("Instance")) {
-
-		$config = $config["Instance"]
-	}
-
-	$SonarrUrl = $config["Url"] -as [string]
-	$ApiKey = $config["ApiKey"] -as [string]
-	$NoApiInPath = $config["NoApiInPath"] -as [bool]
+	return $settings
 }
 
-function resolveVariables([string]$text) {
-	$varName = $text -replace '\{\s*?(\w+)\s*\}', '$1'
-	try { return (Get-Variable -Name $varName -ErrorAction Stop).Value -as [string] }
-	catch { return $text }
+# The script runs from the Shell project's build output, so this walks up to the folder that holds the solution.
+function findRepoRoot([string]$path) {
+	for ($dir = $path; $dir; $dir = Split-Path -Path $dir -Parent) {
+		if (Test-Path -Path "$dir\PoshSonarr.slnx" -PathType Leaf) {
+			return $dir
+		}
+	}
+}
+
+# The .env file at the repo root supplies each connection setting that isn't passed as a parameter.
+$repoRoot = findRepoRoot $PSScriptRoot
+if ($repoRoot -and (Test-Path -Path "$repoRoot\.env" -PathType Leaf)) {
+
+	$settings = readEnvFile "$repoRoot\.env"
+	if (-not $PSBoundParameters.ContainsKey("SonarrUrl")) {
+		$SonarrUrl = $settings["SONARR_URL"]
+	}
+	if (-not $PSBoundParameters.ContainsKey("ApiKey")) {
+		$ApiKey = $settings["SONARR_API_KEY"]
+	}
+	if (-not $PSBoundParameters.ContainsKey("NoApiInPath")) {
+		$NoApiInPath = $settings["SONARR_NO_API_IN_PATH"] -eq "true"
+	}
 }
 
 $myDesktop = [System.Environment]::GetFolderPath("Desktop")
@@ -59,7 +77,9 @@ Write-Host ""
 Write-Host "Debugging PoshSonarr PowerShell Module" -ForegroundColor Cyan
 Write-Host "`n"
 #$VerbosePreference = "Continue"
-$debugSettings = Get-Content -Path "$PSScriptRoot\debugging.json" | ConvertFrom-Json -AsHashtable
-$instance = $debugSettings.Instance
-
-#Connect-SonarrInstance -Url (resolveVariables $instance.Url) -ApiKey (resolveVariables $instance.ApiKey) -PassThru
+if ([string]::IsNullOrWhiteSpace($SonarrUrl) -or [string]::IsNullOrWhiteSpace($ApiKey)) {
+	Write-Warning "Not connecting to Sonarr. Set SONARR_URL and SONARR_API_KEY in the .env file at the repo root, or pass -SonarrUrl and -ApiKey."
+}
+else {
+	Connect-SonarrInstance -Url $SonarrUrl -ApiKey $ApiKey -NoApiInPath:$NoApiInPath -PassThru
+}

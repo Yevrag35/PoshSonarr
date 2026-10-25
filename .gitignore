@@ -4,6 +4,9 @@
 # Claude scratch directory
 .temp/
 
+# Debugging settings for the development Sonarr instance, API key included
+.env
+
 # User-specific files
 *.suo
 *.user

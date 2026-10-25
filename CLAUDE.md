@@ -22,14 +22,14 @@ Run these from the repository root. Building needs a .NET 10 SDK.
 
 ### Debugging
 
-- After a Debug build, `pwsh -NoExit -File src/MG.Sonarr.Next.Shell/bin/Debug/net10.0/Debug.ps1` opens a session on it: the script imports the module and loads the format and type files. The Visual Studio launch profiles run the same script.
+- After a Debug build, `pwsh -NoExit -File src/MG.Sonarr.Next.Shell/bin/Debug/net10.0/Debug.ps1` opens a session on it: the script imports the module, loads the format and type files, and connects to the development instance. The Visual Studio launch profiles run the same script.
 - Connect with `Connect-SonarrInstance -Url <url> -ApiKey <key>` (alias `Connect-Sonarr`). Add `-NoApiInPath` (alias `-NoApiPrefix`) when a reverse proxy removes `/api` from the path.
-- `src/MG.Sonarr.Next.Shell/debugging.json` names the development instance. Its `ApiKey` is a `{name}` placeholder for a PowerShell variable that holds the key, so a real key never goes in the file.
+- `.env` in the repo root holds the development instance's settings as `KEY=value` lines: `SONARR_URL`, `SONARR_API_KEY`, and `SONARR_NO_API_IN_PATH=true` when a reverse proxy removes `/api`. Git ignores the file, so the real API key goes in it; on a machine that lacks one, copy `.env.example` to `.env` and fill in the key. The script's `-SonarrUrl`, `-ApiKey`, and `-NoApiInPath` parameters take precedence over the file, and when it ends up without a URL or key, the script warns and skips connecting.
 
 ### Tests
 
 - After a Debug build, `Invoke-Pester .tests/PoshSonarr.Tests.ps1` runs the tests; add `-FullNameFilter 'Get-SonarrSeries*'` to run one block.
-- They're Pester 5.5+ integration tests that need a live, connected Sonarr instance, which may not be reachable from every machine, and they expect particular series to exist on it. `.tests/setup.ps1` imports the module first by dot-sourcing the `Debug.ps1` in the Shell project's build output. There are no unit tests.
+- They're Pester 5.5+ integration tests that need a live, connected Sonarr instance, which may not be reachable from every machine, and they expect particular series to exist on it. `.tests/setup.ps1` imports the module first by dot-sourcing the `Debug.ps1` in the Shell project's build output, which also connects to the instance that `.env` names. There are no unit tests.
 
 ### Byte checks
 
@@ -88,6 +88,6 @@ The base classes in `src/MG.Sonarr.Next.Shell.Bases/Cmdlets/` form one chain: `S
 
 - Every text file is UTF-8 without a BOM, with LF line endings. The Edit tool keeps whatever BOM and line endings a file already has, so run the byte check on changed files before committing and fix what it reports.
 - Indent with tabs in every file type, Markdown, JSON, XML, and PowerShell included. Project and XML config files set a tab width of 2, which is still one tab per level.
-- The repo can sit at a different root on each machine, and a session can move to another machine at any point, so write every path in a checked-in file, commands included, relative to the repo root, and take the root from the current working directory. Root a location outside the repo in an environment variable, `$env:PROGRAMFILES` in prose and PowerShell and `$PROGRAMFILES` in Bash (Git Bash imports Windows variables in uppercase), and build paths in scripts from `$PSScriptRoot` or an MSBuild property such as `$(SolutionDir)`.
+- The repo can sit at a different root on each machine, and a session can move to another machine at any point, so write every path in a checked-in file, commands included, relative to the repo root, and take the root from the current working directory. Root a location outside the repo in an environment variable: `$env:PROGRAMFILES` in prose and PowerShell, `$PROGRAMFILES` in Bash (Git Bash imports Windows variables in uppercase), and `%PROGRAMFILES%` in a Visual Studio launch profile, which Visual Studio expands. Build paths in scripts from `$PSScriptRoot` or an MSBuild property such as `$(SolutionDir)`.
 - The `.editorconfig` C# style isn't enforced at build time, so match the surrounding code: file-scoped namespaces, `this.` on properties and methods but not fields, `_camelCase` private fields, keyword type names such as `string` and `int`, and regular constructors instead of primary ones.
 - PRs target `realDev`; `master` only takes release PRs from `realDev`.
