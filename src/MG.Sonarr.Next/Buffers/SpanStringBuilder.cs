@@ -16,7 +16,7 @@ namespace Realta.Buffers;
 /// </remarks>
 [DebuggerDisplay("{ToString(),nq}")]
 [StructLayout(LayoutKind.Auto), DebuggerStepThrough]
-public ref struct SpanStringBuilder
+internal ref struct SpanStringBuilder
 {
 	/// <summary>
 	/// Creates a new <see cref="SpanStringBuilder"/> instance from a <see cref="RefEither{T1, T2}"/> that can either be a <see cref="Span{T}"/> of characters or an integer representing the desired capacity.
