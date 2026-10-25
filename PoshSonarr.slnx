@@ -1,17 +1,17 @@
 <Solution>
-  <Folder Name="/Resources/">
-    <Project Path="src/MG.Sonarr.Resources/MG.Sonarr.Resources.csproj" />
-  </Folder>
-  <Folder Name="/Solution Items/">
-    <File Path=".editorconfig" />
-    <File Path="src/Directory.Build.props" />
-    <File Path="src/Directory.Packages.props" />
-  </Folder>
-  <Folder Name="/Tasks/">
-    <File Path=".tasks/clean_project.ps1" />
-    <File Path=".tasks/publish_module.ps1" />
-  </Folder>
-  <Project Path="src/MG.Sonarr.Next.Shell.Bases/MG.Sonarr.Next.Shell.Bases.csproj" />
-  <Project Path="src/MG.Sonarr.Next.Shell/MG.Sonarr.Next.Shell.csproj" />
-  <Project Path="src/MG.Sonarr.Next/MG.Sonarr.Next.csproj" />
+	<Folder Name="/Resources/">
+		<Project Path="src/MG.Sonarr.Resources/MG.Sonarr.Resources.csproj" />
+	</Folder>
+	<Folder Name="/Solution Items/">
+		<File Path=".editorconfig" />
+		<File Path="src/Directory.Build.props" />
+		<File Path="src/Directory.Packages.props" />
+	</Folder>
+	<Folder Name="/Tasks/">
+		<File Path=".tasks/clean_project.ps1" />
+		<File Path=".tasks/publish_module.ps1" />
+	</Folder>
+	<Project Path="src/MG.Sonarr.Next.Shell.Bases/MG.Sonarr.Next.Shell.Bases.csproj" />
+	<Project Path="src/MG.Sonarr.Next.Shell/MG.Sonarr.Next.Shell.csproj" />
+	<Project Path="src/MG.Sonarr.Next/MG.Sonarr.Next.csproj" />
 </Solution>

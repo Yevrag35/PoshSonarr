@@ -1,13 +1,13 @@
 <Project>
-  <PropertyGroup>
-    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.13" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.13" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.13" />
-    <!-- Requires System.Management.Automation at its own version or later, so the two move together. -->
-    <PackageVersion Include="Microsoft.PowerShell.Commands.Utility" Version="7.6.8" />
-    <PackageVersion Include="System.Management.Automation" Version="7.6.8" />
-  </ItemGroup>
+	<PropertyGroup>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.13" />
+		<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.13" />
+		<PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.13" />
+		<!-- Requires System.Management.Automation at its own version or later, so the two move together. -->
+		<PackageVersion Include="Microsoft.PowerShell.Commands.Utility" Version="7.6.8" />
+		<PackageVersion Include="System.Management.Automation" Version="7.6.8" />
+	</ItemGroup>
 </Project>
