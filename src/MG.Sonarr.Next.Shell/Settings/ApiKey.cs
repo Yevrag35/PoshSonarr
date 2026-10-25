@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Shell.Exceptions;
 using System.Runtime.InteropServices;
 using System.Security;
