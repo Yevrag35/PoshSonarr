@@ -1,32 +1,26 @@
-﻿using System;
-using System.Diagnostics;
+namespace MG.Sonarr.Next.Exceptions;
 
-#nullable enable
-
-namespace MG.Sonarr.Next.Exceptions
+[DebuggerStepThrough]
+public sealed class ModuleStartupException : Exception
 {
-	[DebuggerStepThrough]
-	public sealed class ModuleStartupException : Exception
+	public Type? OffendingStartupType { get; }
+
+	public ModuleStartupException(string? message)
+		: this(message, offendingType: null, innerException: null)
 	{
-		public Type? OffendingStartupType { get; }
+	}
+	public ModuleStartupException(string? message, Type? offendingType)
+		: this(message, offendingType, innerException: null)
+	{
+	}
+	public ModuleStartupException(string? message, Exception? innerException)
+		: this(message, offendingType: null, innerException)
+	{
+	}
 
-		public ModuleStartupException(string? message)
-			: this(message, offendingType: null, innerException: null)
-		{
-		}
-		public ModuleStartupException(string? message, Type? offendingType)
-			: this(message, offendingType, innerException: null)
-		{
-		}
-		public ModuleStartupException(string? message, Exception? innerException)
-			: this(message, offendingType: null, innerException)
-		{
-		}
-
-		public ModuleStartupException(string? message, Type? offendingType, Exception? innerException)
-			: base(message, innerException)
-		{
-			this.OffendingStartupType = offendingType;
-		}
+	public ModuleStartupException(string? message, Type? offendingType, Exception? innerException)
+		: base(message, innerException)
+	{
+		this.OffendingStartupType = offendingType;
 	}
 }
