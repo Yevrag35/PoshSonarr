@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<!--
+		MG.Sonarr.Next.Shell references the module's other projects, so referencing it alone gets every MG.Sonarr assembly
+		copied next to the exe, which is what the harness's MG.Sonarr*.dll search enumerates. A project that the Shell project
+		doesn't reference needs a ProjectReference of its own here.
+	-->
+	<ItemGroup>
+		<ProjectReference Include="..\MG.Sonarr.Next.Shell\MG.Sonarr.Next.Shell.csproj" />
+	</ItemGroup>
+
+	<!--
+		The harness runs outside PowerShell, so it needs PowerShell's assemblies beside it to load the types built on them,
+		and MG.Sonarr.Next keeps their runtime assets out of every project that references it. Referencing the packages here
+		brings them back, along with everything they depend on.
+	-->
+	<ItemGroup>
+		<PackageReference Include="Microsoft.PowerShell.Commands.Utility" />
+		<PackageReference Include="System.Management.Automation" />
+	</ItemGroup>
+
+</Project>

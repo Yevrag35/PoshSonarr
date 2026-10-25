@@ -1,21 +1,21 @@
 ---
 name: poshsonarr-asm-dump
-description: Dump and read the RyuJIT FullOpts disassembly of PoshSonarr methods with `tools/MG.Sonarr.Tools.Asm/run-asmdump.ps1`, and the JIT's inlining decisions with `-Inlines`. Covers running it from a session, why it builds the solution in Release, where dumps and their previous baselines land, selecting a method, its overloads, constructors, an accessor or indexer, an explicit interface implementation, a local function, a lambda's display class, a nested type, and generic types and methods (shared `__Canon` code, nullable and constrained type arguments), what the `direct`, `invoked`, `thunked`, and `virtual?` tags mean and which methods the harness runs to compile them, reading the inline trace and its reasons, and why a dump comes back empty. Use it to verify a claim about generated code instead of reasoning it out, such as whether a call inlines and why not, whether a bounds check or a span's reference hoist survives, or whether a refactor changed the emitted code, to compare assembly before and after an edit, to find out why a hot path runs slower than expected, and whenever a dump comes back empty or a method is tagged `virtual?`.
+description: Dump and read the RyuJIT FullOpts disassembly of PoshSonarr methods with `src/MG.Sonarr.Tools.Asm/run-asmdump.ps1`, and the JIT's inlining decisions with `-Inlines`. Covers running it from a session, why it builds the solution in Release, where dumps and their previous baselines land, selecting a method, its overloads, constructors, an accessor or indexer, an explicit interface implementation, a local function, a lambda's display class, a nested type, and generic types and methods (shared `__Canon` code, nullable and constrained type arguments), what the `direct`, `invoked`, `thunked`, and `virtual?` tags mean and which methods the harness runs to compile them, reading the inline trace and its reasons, and why a dump comes back empty. Use it to verify a claim about generated code instead of reasoning it out, such as whether a call inlines and why not, whether a bounds check or a span's reference hoist survives, or whether a refactor changed the emitted code, to compare assembly before and after an edit, to find out why a hot path runs slower than expected, and whenever a dump comes back empty or a method is tagged `virtual?`.
 ---
 
 # Dumping RyuJIT disassembly for PoshSonarr methods
 
-`tools/MG.Sonarr.Tools.Asm` is a console project in the solution, in its `/Tools/` folder, that force-compiles named methods at RyuJIT FullOpts so that `DOTNET_JitDisasm` can print their disassembly. When a change or an answer depends on what the JIT generates, verify it with a dump instead of reasoning it out.
+`src/MG.Sonarr.Tools.Asm` is a console project in the solution, in its `/Tools/` folder, that force-compiles named methods at RyuJIT FullOpts so that `DOTNET_JitDisasm` can print their disassembly. When a change or an answer depends on what the JIT generates, verify it with a dump instead of reasoning it out.
 
 Run it through the script beside it, never the exe:
 
 ```powershell
-.\tools\MG.Sonarr.Tools.Asm\run-asmdump.ps1 <Class> [Method] [-switches]
+.\src\MG.Sonarr.Tools.Asm\run-asmdump.ps1 <Class> [Method] [-switches]
 ```
 
 - In a session, always pass `-DontOpen`. Without it, a successful run opens WinMerge or Notepad++ on the desktop. Read the file that the script's `output :` line names instead.
-- From the Bash tool, run `pwsh -NoProfile -File tools/MG.Sonarr.Tools.Asm/run-asmdump.ps1 Wildcard IsMatch -DontOpen`, with single quotes around any argument that holds `<`, `>`, `|`, `?`, or a backtick.
-- The script derives the JIT pattern, the harness's arguments, and the dump's file name from the same `-Class` and `-Method`, sets `DOTNET_TieredCompilation=0` and `DOTNET_JitDisasm` for the run only, and restores the session's values afterwards. `Get-Help .\tools\MG.Sonarr.Tools.Asm\run-asmdump.ps1 -Full` prints every parameter.
+- From the Bash tool, run `pwsh -NoProfile -File src/MG.Sonarr.Tools.Asm/run-asmdump.ps1 Wildcard IsMatch -DontOpen`, with single quotes around any argument that holds `<`, `>`, `|`, `?`, or a backtick.
+- The script derives the JIT pattern, the harness's arguments, and the dump's file name from the same `-Class` and `-Method`, sets `DOTNET_TieredCompilation=0` and `DOTNET_JitDisasm` for the run only, and restores the session's values afterwards. `Get-Help .\src\MG.Sonarr.Tools.Asm\run-asmdump.ps1 -Full` prints every parameter.
 - When you measure something about the harness or the JIT that later work could depend on, add it here with the .NET version and the date, stated as a rule rather than as a story.
 
 ## Builds
@@ -47,7 +47,8 @@ Run it through the script beside it, never the exe:
 
 - A property name selects its `get_` and `set_` accessors. For an indexer renamed with `[IndexerName("X")]`, pass `X`. A method's overloads are always selected together.
 - To find a member's exact name, pass a method name that doesn't exist. The harness then lists every method declared on the type, compiler-generated ones included.
-- The type search covers the `MG.Sonarr*` assemblies that the harness reaches through its reference to `MG.Sonarr.Next.Shell`, which references every other project under `src/`. A type in a project outside that closure needs a `ProjectReference` in `tools/MG.Sonarr.Tools.Asm/MG.Sonarr.Tools.Asm.csproj` first.
+- The type search covers the `MG.Sonarr*` assemblies that the harness reaches through its reference to `MG.Sonarr.Next.Shell`, which references the module's other projects. A type in a project outside that closure needs a `ProjectReference` in `src/MG.Sonarr.Tools.Asm/MG.Sonarr.Tools.Asm.csproj` first.
+- The harness references the `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` packages itself, because the module's projects keep PowerShell's assemblies out of every project that references them. Keep those references: without them, a type built on one of PowerShell's, such as `SonarrCmdletBase`, can't load, and the search reports no type of that name (measured 2026-10-25 on .NET 10.0.13).
 - The default pattern, `*<Class>*:*`, covers the whole class on purpose: it also catches state machines, local functions, and lambda display classes that a `*Class:Method` pattern would miss. It holds only what the harness compiles because, with tiering off, little else is JIT-compiled at all: a whole run compiled 39 methods, and everything else it ran was precompiled (measured 2026-10-25 on .NET 10.0.13). A `-Pattern` of your own needs a leading `*`, because the JIT matches the namespace-qualified class name.
 
 ### Generic types and methods

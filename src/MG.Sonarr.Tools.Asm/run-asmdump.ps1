@@ -16,7 +16,7 @@
 	only a solution build defines that property. So every build here also packages the module. The
 	build shows its output only when it fails, and then only its errors.
 
-	Layout: this script lives inside the MG.Sonarr.Tools.Asm project folder under tools\, but its
+	Layout: this script lives inside the MG.Sonarr.Tools.Asm project folder under src\, but its
 	output does not - dumps and their prev\ baselines land in <repo>\.temp, which is gitignored, so a
 	dump is never staged for commit.
 
@@ -32,7 +32,7 @@
 	given machine.
 
 	The harness searches MG.Sonarr* assemblies only. Its ProjectReference to MG.Sonarr.Next.Shell
-	transitively covers every project under src\, and -Assembly narrows the search to one of them.
+	transitively covers the module's projects, and -Assembly narrows the search to one of them.
 
 	Newslot virtual methods on a class (every interface implementation - C# emits an implicit one as
 	`virtual final newslot` - and every virtual member that is not an override):
@@ -60,26 +60,26 @@
 	since every path the script uses is derived from its own location, not the caller's.
 
 .EXAMPLE
-	.\tools\MG.Sonarr.Tools.Asm\run-asmdump.ps1 Wildcard IsMatch
+	.\src\MG.Sonarr.Tools.Asm\run-asmdump.ps1 Wildcard IsMatch
 .EXAMPLE
-	.\tools\MG.Sonarr.Tools.Asm\run-asmdump.ps1 WildcardSet
+	.\src\MG.Sonarr.Tools.Asm\run-asmdump.ps1 WildcardSet
 	# every declared method + constructor of the class
 .EXAMPLE
-	.\tools\MG.Sonarr.Tools.Asm\run-asmdump.ps1 RentedBuffer AsSpan -TypeArgs char
+	.\src\MG.Sonarr.Tools.Asm\run-asmdump.ps1 RentedBuffer AsSpan -TypeArgs char
 .EXAMPLE
-	.\tools\MG.Sonarr.Tools.Asm\run-asmdump.ps1 PooledBuffer+Enumerator MoveNext -TypeArgs int
+	.\src\MG.Sonarr.Tools.Asm\run-asmdump.ps1 PooledBuffer+Enumerator MoveNext -TypeArgs int
 	# a nested type inside a generic one; -TypeArgs closes the outer type
 .EXAMPLE
-	.\tools\MG.Sonarr.Tools.Asm\run-asmdump.ps1 SonarrCmdletBase -Assembly Next.Shell.Bases
+	.\src\MG.Sonarr.Tools.Asm\run-asmdump.ps1 SonarrCmdletBase -Assembly Next.Shell.Bases
 .EXAMPLE
-	.\tools\MG.Sonarr.Tools.Asm\run-asmdump.ps1 SpanStringBuilder Append -Pattern '*SpanStringBuilder:Append*' -Summary
+	.\src\MG.Sonarr.Tools.Asm\run-asmdump.ps1 SpanStringBuilder Append -Pattern '*SpanStringBuilder:Append*' -Summary
 .EXAMPLE
-	.\tools\MG.Sonarr.Tools.Asm\run-asmdump.ps1 Wildcard IsMatch -Inlines
+	.\src\MG.Sonarr.Tools.Asm\run-asmdump.ps1 Wildcard IsMatch -Inlines
 	# also writes asm_Wildcard_IsMatch.inlines.txt - why each call did or did not inline
 .EXAMPLE
-	.\tools\MG.Sonarr.Tools.Asm\run-asmdump.ps1 Wildcard IsMatch   # first run: Notepad++
+	.\src\MG.Sonarr.Tools.Asm\run-asmdump.ps1 Wildcard IsMatch   # first run: Notepad++
 	# ...edit the source...
-	.\tools\MG.Sonarr.Tools.Asm\run-asmdump.ps1 Wildcard IsMatch   # second run: WinMerge, old vs new
+	.\src\MG.Sonarr.Tools.Asm\run-asmdump.ps1 Wildcard IsMatch   # second run: WinMerge, old vs new
 #>
 [CmdletBinding()]
 param (
@@ -171,7 +171,7 @@ $harnessName = 'MG.Sonarr.Tools.Asm'
 $harnessProj = Join-Path $PSScriptRoot "$harnessName.csproj"
 $exe = Join-Path $PSScriptRoot "bin\Release\net10.0\$harnessName.exe"
 
-# The script sits in a project folder under tools\, two levels below the repo root. Everything it
+# The script sits in a project folder under src\, two levels below the repo root. Everything it
 # reaches outside that folder - the solution it builds and the .temp output dir - hangs off $repoRoot,
 # so assert the layout rather than let a future move silently build and dump against the wrong place.
 $repoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
@@ -185,7 +185,7 @@ $notepadPlusPlus = $env:POSHSONARR_ASM_VIEWER ? $env:POSHSONARR_ASM_VIEWER : (Jo
 $slnxPath = Join-Path $repoRoot 'PoshSonarr.slnx'
 if (-not (Test-Path -LiteralPath $slnxPath)) {
 
-	Note "expected PoshSonarr.slnx in $repoRoot - this script must sit in a project folder under tools\ at the repo root" Red
+	Note "expected PoshSonarr.slnx in $repoRoot - this script must sit in a project folder under src\ at the repo root" Red
 	exit 1
 }
 if (-not (Test-Path -LiteralPath $harnessProj)) {

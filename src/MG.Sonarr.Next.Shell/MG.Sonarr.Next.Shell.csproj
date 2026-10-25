@@ -15,8 +15,16 @@
 		<NoWarn>1701;1702;IDE0130</NoWarn>
 	</PropertyGroup>
 
+	<!--
+		PowerShell looks for a module's dependencies in the module's folder, not in the NuGet cache, so this project copies
+		its NuGet packages' runtime assemblies into its output folder, which a class library's build leaves out by default.
+		MG.Sonarr.Next excludes the runtime assets of PowerShell's own packages, so no part of PowerShell is copied.
+	-->
+	<PropertyGroup>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+	</PropertyGroup>
+
 	<ItemGroup>
-		<None Remove="build_dependencies.json" />
 		<None Remove="Debug.ps1" />
 		<None Remove="PSFormats\EpisodeObject.Format.ps1xml" />
 		<None Remove="PSFormats\MetadataTag.Format.ps1xml" />
@@ -29,7 +37,7 @@
 	</ItemGroup>
 
 	<Target Name="ReleaseModuleAfterBuild" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Release'">
-		<Exec Command="pwsh.exe -NoExit -File &quot;$(SolutionDir)\.tasks\publish_module.ps1&quot; -BuildDependenciesJson &quot;$(ProjectDir)build_dependencies.json&quot; -OutputPath &quot;$(TargetDir)&quot;" />
+		<Exec Command="pwsh.exe -NoExit -File &quot;$(SolutionDir)\.tasks\publish_module.ps1&quot; -OutputPath &quot;$(TargetDir)&quot;" />
 	</Target>
 
 	<ItemGroup Condition="'$(Configuration)' != 'Release'">
@@ -39,9 +47,6 @@
 		<Content Include="debugging.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Content>
-		<Content Include="build_dependencies.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
 	</ItemGroup>
 	<ItemGroup Condition="'$(Configuration)' == 'Release'">
 		<Content Include="Debug.ps1">
@@ -49,10 +54,6 @@
 			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
 		</Content>
 		<Content Include="debugging.json">
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
-		</Content>
-		<Content Include="build_dependencies.json">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
 		</Content>

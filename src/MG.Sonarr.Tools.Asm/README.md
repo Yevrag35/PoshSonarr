@@ -9,7 +9,7 @@ A developer tool, never shipped with the module. It force-compiles named PoshSon
 Run it from the repo root:
 
 ```powershell
-.\tools\MG.Sonarr.Tools.Asm\run-asmdump.ps1 <Class> [Method] [-switches]
+.\src\MG.Sonarr.Tools.Asm\run-asmdump.ps1 <Class> [Method] [-switches]
 ```
 
 | Example | What it does |
@@ -25,7 +25,7 @@ Run it from the repo root:
 
 A property name resolves to its `get_`/`set_` accessors. Pass a method name that doesn't exist to make the harness list every method declared on the type, which is the quickest way to find a compiler-generated name.
 
-`Get-Help .\tools\MG.Sonarr.Tools.Asm\run-asmdump.ps1 -Full` prints the help for every parameter.
+`Get-Help .\src\MG.Sonarr.Tools.Asm\run-asmdump.ps1 -Full` prints the help for every parameter.
 
 ## Building
 
@@ -62,4 +62,6 @@ A 0-byte dump means the `DOTNET_JitDisasm` pattern matched nothing that compiled
 
 ## Project references
 
-The single `ProjectReference` to `MG.Sonarr.Next.Shell` transitively covers every project under `src\`, which is what gets the whole dependency closure copied next to the exe. The harness enumerates `MG.Sonarr*.dll` in its own output folder to build the type search, so a project the Shell project doesn't reference needs a `ProjectReference` of its own in `MG.Sonarr.Tools.Asm.csproj` before its types can be dumped.
+The single `ProjectReference` to `MG.Sonarr.Next.Shell` transitively covers the module's projects, which is what gets every `MG.Sonarr` assembly copied next to the exe. The harness enumerates `MG.Sonarr*.dll` in its own output folder to build the type search, so a project the Shell project doesn't reference needs a `ProjectReference` of its own in `MG.Sonarr.Tools.Asm.csproj` before its types can be dumped.
+
+The module's projects keep PowerShell's assemblies out of their build output, since PowerShell supplies them to the module. The harness runs outside PowerShell, so it references the `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` packages itself, which copies them and everything they depend on next to the exe. Without them, a type built on one of PowerShell's, such as a cmdlet base class, can't load, and the type search doesn't find it.

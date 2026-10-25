@@ -25,8 +25,16 @@
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 		<PackageReference Include="Microsoft.Extensions.Http" />
-		<PackageReference Include="Microsoft.PowerShell.Commands.Utility" />
-		<PackageReference Include="System.Management.Automation" />
+	</ItemGroup>
+
+	<!--
+		PowerShell supplies these assemblies itself, so these references exclude the packages' runtime and native assets. NuGet
+		applies the exclusion to the packages they depend on as well, and to every project that references this one, so no
+		part of PowerShell is copied into the module's folder.
+	-->
+	<ItemGroup>
+		<PackageReference Include="Microsoft.PowerShell.Commands.Utility" ExcludeAssets="runtime;native" />
+		<PackageReference Include="System.Management.Automation" ExcludeAssets="runtime;native" />
 	</ItemGroup>
 
 	<ItemGroup>

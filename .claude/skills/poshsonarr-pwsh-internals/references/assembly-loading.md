@@ -6,11 +6,12 @@ Measured 2026-10-25 on PowerShell 7.6.8 with the module's Debug build.
 
 - PowerShell 7.6.8 ships one Microsoft.Extensions assembly in its own folder, `Microsoft.Extensions.ObjectPool` 10.0.0.0, and none of the others that the module uses.
 - After a cmdlet ran, even one that failed for want of a connection, `Microsoft.Extensions.DependencyInjection` and `Microsoft.Extensions.DependencyInjection.Abstractions` 10.0.0.0 were loaded from the build's folder, beside the module's own assemblies, and no other Microsoft.Extensions assembly was.
-- `MG.Sonarr.Next.Shell.dll` references `System.Runtime` 10.0.0.0 and `System.Management.Automation` 7.6.0.5, the assembly version in the `7.6.0-preview.5` package that it compiles against. PowerShell 7.6.8 runs `System.Management.Automation` 7.6.0.500, and loads and runs the build.
+- Importing the build's DLL, before any cmdlet runs, loads `Microsoft.Extensions.DependencyInjection.Abstractions` from the build's folder and no other Microsoft.Extensions assembly. When the folder lacks it, the import fails with "Could not load file or assembly 'Microsoft.Extensions.DependencyInjection.Abstractions, Version=10.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60'. The system cannot find the file specified.", although the package is in the NuGet cache and the build's deps.json lists it (measured 2026-10-25 on PowerShell 7.6.9).
+- `MG.Sonarr.Next.Shell.dll` references `System.Runtime` 10.0.0.0 and `System.Management.Automation` 7.6+, and PowerShell 7.6+ loads and runs the build, including one compiled against a 7.6 preview of the package.
 
 ## Type names and lazy loading
 
-PowerShell resolves a type name only against assemblies that are already loaded, and the runtime loads an assembly the first time code needs it. Importing a module's DLL doesn't load the assemblies it references, so until a cmdlet runs, a type from one of them isn't found: `'<type name>' -as [type]` is `$null` and a type literal fails with "Unable to find type" (seen 2026-10-07 on PowerShell 7).
+PowerShell resolves a type name only against assemblies that are already loaded, and the runtime loads an assembly the first time code needs it. Importing a module's DLL loads only the referenced assemblies that the import itself needs, which for PoshSonarr's dependencies is `Microsoft.Extensions.DependencyInjection.Abstractions` alone, so until a cmdlet runs, a type from one of the others isn't found: `'<type name>' -as [type]` is `$null` and a type literal fails with "Unable to find type" (seen 2026-10-07 on PowerShell 7).
 
 ## Loading a build's DLLs in a script
 
@@ -39,7 +40,7 @@ Measured 2026-10-25 on PowerShell 7.6.8 with a throwaway binary module laid out 
 
 - The manifest's `PowerShellVersion` is the first PowerShell release whose .NET can load what the module targets: 7.6 for `net10.0`. PowerShell 7.5 and earlier run on .NET 9 or earlier, which can't load an assembly that references `System.Runtime` 10.0.0.0, and the manifest's check turns that load failure into `Modules_InsufficientPowerShellVersion`, which names the version that the module needs. The check admits every 7.6 prerelease.
 - Generate `CmdletsToExport` and `AliasesToExport` from the same cmdlet classes, and leave no cmdlet that declares an alias out of `CmdletsToExport`: its alias is exported anyway, and calling it fails.
-- Ship every Microsoft.Extensions assembly that the module uses in the module's folder, since PowerShell supplies only `ObjectPool`. They load the first time code needs them, so a test that only imports the module can't show that one is missing; run a cmdlet.
-- A build against a preview of the `System.Management.Automation` package references that preview's assembly version, such as 7.6.0.5, which PowerShell 7.6.8, running 7.6.0.500, loads.
+- Ship every Microsoft.Extensions assembly that the module uses in the module's folder, since PowerShell supplies only `ObjectPool` and doesn't look for one in the NuGet cache. The import loads only `Microsoft.Extensions.DependencyInjection.Abstractions`, and the others load the first time code needs them, so a test that only imports the module can't show that one of the others is missing; run a cmdlet.
+- A build against a 7.6 preview of the `System.Management.Automation` package references that preview's assembly version, which PowerShell 7.6+ loads.
 - Run each build of the module in its own process. PowerShell 7 can't load two builds of the same assembly in one, and the first one loaded answers for both.
 - A test or a script that names a type from one of the module's dependencies runs a cmdlet first, or loads the assembly, because the type isn't found by name right after the import.

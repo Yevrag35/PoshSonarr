@@ -15,13 +15,14 @@ Run these from the repository root. Building needs a .NET 10 SDK.
 ### Build
 
 - Build from the Bash tool with exactly `dotnet build PoshSonarr.slnx -c Debug --nologo -v q --no-incremental 2>&1 | tail -30`, not from PowerShell, and never with an absolute path, which Bash's backslash escaping mangles. `--no-incremental` makes every project recompile and report its warnings, while an incremental build skips compiling up-to-date projects and reports nothing for them, so don't run a plain build first.
-- To package the module, run the same command with `-c Release`. A post-build step runs `.tasks/publish_module.ps1` with `pwsh.exe`, which copies the NuGet runtime dependencies listed in `src/MG.Sonarr.Next.Shell/build_dependencies.json` from the NuGet cache into the output folder (a class library's build output leaves them out, and PowerShell supplies `System.Management.Automation` itself), then writes the manifest.
+- To package the module, run the same command with `-c Release`. A post-build step runs `.tasks/publish_module.ps1` with `pwsh.exe`, which writes the manifest into the output folder.
+- Every build, Debug or Release, copies the runtime assemblies of the module's NuGet dependencies into the Shell project's output folder, where PowerShell looks for them, because that project sets `CopyLocalLockFileAssemblies`, which a class library leaves off by default. PowerShell supplies `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` itself, so their references in `src/MG.Sonarr.Next/MG.Sonarr.Next.csproj` exclude their runtime and native assets, and NuGet carries that exclusion to the packages they depend on and to every project that references `MG.Sonarr.Next`.
 - Build the solution, never a single project file. The Release post-build step finds its script through `$(SolutionDir)`, which a project-file build leaves undefined.
 - There is no lint step. No analyzer package is referenced and `EnforceCodeStyleInBuild` is off, so `dotnet build` accepts code that breaks the `.editorconfig` style rules, even the ones set to `error`.
 
 ### Debugging
 
-- After a Debug build, `pwsh -NoExit -File src/MG.Sonarr.Next.Shell/bin/Debug/net10.0/Debug.ps1` opens a session on it: the script copies the same dependencies into the output folder, imports the module, and loads the format and type files. The Visual Studio launch profiles run the same script.
+- After a Debug build, `pwsh -NoExit -File src/MG.Sonarr.Next.Shell/bin/Debug/net10.0/Debug.ps1` opens a session on it: the script imports the module and loads the format and type files. The Visual Studio launch profiles run the same script.
 - Connect with `Connect-SonarrInstance -Url <url> -ApiKey <key>` (alias `Connect-Sonarr`). Add `-NoApiInPath` (alias `-NoApiPrefix`) when a reverse proxy removes `/api` from the path.
 - `src/MG.Sonarr.Next.Shell/debugging.json` names the development instance. Its `ApiKey` is a `{name}` placeholder for a PowerShell variable that holds the key, so a real key never goes in the file.
 
@@ -37,18 +38,18 @@ Run these from the repository root. Building needs a .NET 10 SDK.
 
 ### Disassembly
 
-- `pwsh -NoProfile -File tools/MG.Sonarr.Tools.Asm/run-asmdump.ps1 <Class> [Method] -DontOpen` writes RyuJIT's FullOpts disassembly of the methods it names to `.temp/asm_<Class>[_<Method>].txt`. It builds the solution in Release first, which also packages the module, and without `-DontOpen` it opens a viewer on the desktop.
+- `pwsh -NoProfile -File src/MG.Sonarr.Tools.Asm/run-asmdump.ps1 <Class> [Method] -DontOpen` writes RyuJIT's FullOpts disassembly of the methods it names to `.temp/asm_<Class>[_<Method>].txt`. It builds the solution in Release first, which also packages the module, and without `-DontOpen` it opens a viewer on the desktop.
 
 ## Projects
 
-Each project under `src/` references the one before it:
+The module's projects under `src/` each reference the one before it:
 
 1. `MG.Sonarr.Resources` (net10.0): message strings in `src/MG.Sonarr.Resources/Messages.resx` and exception messages in `src/MG.Sonarr.Resources/ExMessages.resx`, with public generated designer classes.
 2. `MG.Sonarr.Next` (net10.0): the services library, with the HTTP client, JSON handling, metadata tags, the object models, and the module's base exceptions.
 3. `MG.Sonarr.Next.Shell.Bases` (net10.0): the cmdlet base classes and the connection context.
 4. `MG.Sonarr.Next.Shell` (net10.0): the cmdlets, the format and type files (`src/MG.Sonarr.Next.Shell/PSFormats/`, `src/MG.Sonarr.Next.Shell/PSTypes/`), and the debugging and packaging inputs.
 
-The solution also holds `tools/MG.Sonarr.Tools.Asm` (net10.0), the console app behind the disassembly script, which isn't part of the module. It references `MG.Sonarr.Next.Shell` to reach every project's types, and `src/Directory.Build.props` doesn't apply to it.
+`src/` also holds `MG.Sonarr.Tools.Asm` (net10.0), the console app behind the disassembly script, which isn't part of the module. It references `MG.Sonarr.Next.Shell` to reach the types of every module project, and because it runs outside PowerShell, it references `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` itself, which brings back the PowerShell assemblies that the module's projects leave out.
 
 `src/Directory.Build.props` holds the shared assembly metadata, the `Version` (which is also the module version), and the compiler settings: C# `latest`, unsafe code allowed, and implicit usings plus a few extra global usings. Each `.csproj` can add more global usings through `<Using>` items. `src/Directory.Packages.props` manages package versions centrally; `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` must stay on the same version.
 
@@ -81,7 +82,7 @@ The base classes in `src/MG.Sonarr.Next.Shell.Bases/Cmdlets/` form one chain: `S
 
 ### Module manifest
 
-`.tasks/publish_module.ps1` builds the manifest with `MG.Sonarr.Next.Shell.Build.Module`, which exports every public `[Cmdlet]` class in the Shell assembly along with its `[Alias]` names, plus every `*.Format.ps1xml` and `*.Type.ps1xml` file in the output folder. A new cmdlet needs only its attributes. A new format or type file needs that suffix and a `Content` item with `CopyToOutputDirectory` in `src/MG.Sonarr.Next.Shell/MG.Sonarr.Next.Shell.csproj`. A new runtime NuGet dependency also needs an entry in `src/MG.Sonarr.Next.Shell/build_dependencies.json`.
+`.tasks/publish_module.ps1` builds the manifest with `MG.Sonarr.Next.Shell.Build.Module`, which exports every public `[Cmdlet]` class in the Shell assembly along with its `[Alias]` names, plus every `*.Format.ps1xml` and `*.Type.ps1xml` file in the output folder. A new cmdlet needs only its attributes. A new format or type file needs that suffix and a `Content` item with `CopyToOutputDirectory` in `src/MG.Sonarr.Next.Shell/MG.Sonarr.Next.Shell.csproj`. A new NuGet dependency needs nothing more, since the build copies it into the output folder, unless PowerShell supplies it, in which case its `PackageReference` takes `ExcludeAssets="runtime;native"`, as the ones for `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` do.
 
 ## Conventions
 
