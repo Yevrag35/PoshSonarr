@@ -48,7 +48,7 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 	public ListSortDirection SortDirection { get; set; }
 
 	[Parameter(ParameterSetName = BY_PAGING)]
-	[ArgumentCompletions("Data", "Date", "EpisodeId", "EventType", "Id", "Lanugage", "Quality", "SeriesId", "SourceTitle")]
+	[ArgumentCompletions("Data", "Date", "EpisodeId", "EventType", "Id", "Language", "Quality", "SeriesId", "SourceTitle")]
 	[ValidateNotNullOrEmpty]
 	[PSDefaultValue(Value = "Id")]
 	public string SortKey { get; set; } = "Id";
