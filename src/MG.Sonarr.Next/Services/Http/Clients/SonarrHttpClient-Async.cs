@@ -22,11 +22,11 @@ public partial interface ISonarrClient
 
 internal sealed partial class SonarrHttpClient
 {
-	public Task<SonarrClientResult> SendDeleteAsync(string path, CancellationToken token = default)
+	public async Task<SonarrClientResult> SendDeleteAsync(string path, CancellationToken token = default)
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Delete, path, _scopeFactory);
 
-		return this.SendNoResultRequestAsync(request, path, token);
+		return await this.SendNoResultRequestAsync(request, path, token);
 	}
 	public async Task<SonarrClientResult<T>> SendGetAsync<T>(string path, CancellationToken token = default)
 	{
@@ -71,19 +71,19 @@ internal sealed partial class SonarrHttpClient
 			return SonarrClientResult.FromException(e, category, response.StatusCode, response);
 		}
 	}
-	public Task<SonarrClientResult> SendPostAsync(string path, CancellationToken token = default)
+	public async Task<SonarrClientResult> SendPostAsync(string path, CancellationToken token = default)
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
 
-		return this.SendNoResultRequestAsync(request, path, token);
+		return await this.SendNoResultRequestAsync(request, path, token);
 	}
-	public Task<SonarrClientResult<T>> SendPostAsync<T>(string path, CancellationToken token = default)
+	public async Task<SonarrClientResult<T>> SendPostAsync<T>(string path, CancellationToken token = default)
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
 
-		return this.SendResultRequestAsync<T>(request, path, token);
+		return await this.SendResultRequestAsync<T>(request, path, token);
 	}
-	public Task<SonarrClientResult> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
+	public async Task<SonarrClientResult> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
 		string json = JsonSerializer.Serialize(body, _options.ForSerializing);
@@ -91,7 +91,7 @@ internal sealed partial class SonarrHttpClient
 		//request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
 		request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-		return this.SendNoResultRequestAsync(request, path, token);
+		return await this.SendNoResultRequestAsync(request, path, token);
 	}
 	public async Task<SonarrClientResult<TOutput>> SendPostAsync<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull
 	{
@@ -107,12 +107,12 @@ internal sealed partial class SonarrHttpClient
 
 		return response;
 	}
-	public Task<SonarrClientResult> SendPutAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
+	public async Task<SonarrClientResult> SendPutAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Put, path, _scopeFactory);
 		request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
 
-		return this.SendNoResultRequestAsync(request, path, token);
+		return await this.SendNoResultRequestAsync(request, path, token);
 	}
 
 	private async Task<SonarrClientResult> SendNoResultRequestAsync(HttpRequestMessage request, string path, CancellationToken token)

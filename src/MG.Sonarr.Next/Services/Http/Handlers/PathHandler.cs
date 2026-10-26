@@ -19,7 +19,7 @@ public sealed class PathHandler : DelegatingHandler
 
 	protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
 	{
-		if (request is not AuthedRequestMessage && !request.Options.ContainsMetadata(Ping))
+		if (ShouldSetPath(request))
 		{
 			this.SetPath(request);
 		}
@@ -29,7 +29,7 @@ public sealed class PathHandler : DelegatingHandler
 
 	protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
 	{
-		if (request is not AuthedRequestMessage)
+		if (ShouldSetPath(request))
 		{
 			this.SetPath(request);
 		}
@@ -37,9 +37,14 @@ public sealed class PathHandler : DelegatingHandler
 		return base.SendAsync(request, cancellationToken);
 	}
 
+	private static bool ShouldSetPath(HttpRequestMessage request)
+	{
+		return request is not AuthedRequestMessage && !request.Options.ContainsMetadata(Ping);
+	}
+
 	private void SetPath(HttpRequestMessage request)
 	{
-		ReadOnlySpan<char> path = request.RequestUri?.GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+		ReadOnlySpan<char> path = request.RequestUri?.GetComponents(UriComponents.PathAndQuery, UriFormat.UriEscaped);
 		if (path.StartsWith('/'))
 		{
 			path = path.TrimStart('/');

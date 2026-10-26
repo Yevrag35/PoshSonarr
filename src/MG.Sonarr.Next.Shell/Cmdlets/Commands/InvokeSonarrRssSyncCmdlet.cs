@@ -1,5 +1,4 @@
-﻿using MG.Sonarr.Next.Models.Commands;
-using MG.Sonarr.Next.Services.Http;
+using MG.Sonarr.Next.Models.Commands;
 using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 
@@ -18,7 +17,7 @@ public sealed class InvokeSonarrRssSyncCmdlet : TimedCmdlet
 	{
 		ArgumentNullException.ThrowIfNull(provider);
 		var tracker = provider.GetRequiredService<ICommandTracker>();
-		var queue = provider.GetRequiredService<Queue<IApiCmdlet>>();
+		var queue = provider.GetRequiredService<ApiCmdletQueue>();
 		queue.Enqueue(this);
 
 		this.StartTimer();

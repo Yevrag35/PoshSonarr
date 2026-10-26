@@ -1,9 +1,10 @@
-﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
+using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Exceptions;
 using System.Net;
@@ -21,7 +22,7 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 {
 	bool _noFileName;
 	ISonarrDownloadClient Downloader { get; set; } = null!;
-	Queue<IApiCmdlet> Queue { get; set; } = null!;
+	ApiCmdletQueue Queue { get; set; } = null!;
 
 	public bool CanDebugSerializeAfter => false;
 	public bool CanDebugSerializeBefore => this.VerbosePreference != ActionPreference.SilentlyContinue;
@@ -60,7 +61,7 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 	{
 		base.OnCreatingScope(provider);
 		this.Downloader = provider.GetRequiredService<ISonarrDownloadClient>();
-		this.Queue = provider.GetRequiredService<Queue<IApiCmdlet>>();
+		this.Queue = provider.GetRequiredService<ApiCmdletQueue>();
 	}
 
 	protected override void Begin(IServiceProvider provider)
@@ -159,10 +160,10 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 	}
 	public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
 	{
-		if (this.VerbosePreference != ActionPreference.SilentlyContinue)
+		if (this.VerbosePreference != ActionPreference.SilentlyContinue && this.Host?.UI is not null)
 		{
 			options ??= provider.GetService<ISonarrJsonOptions>()?.ForSerializing;
-			this.WriteVerbose(JsonSerializer.Serialize(response, options));
+			this.Host.UI.WriteVerboseLine(JsonSerializer.Serialize(response, options));
 		}
 	}
 

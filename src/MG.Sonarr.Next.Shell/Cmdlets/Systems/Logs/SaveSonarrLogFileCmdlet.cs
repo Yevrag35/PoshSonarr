@@ -160,10 +160,10 @@ public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
 	}
 	public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
 	{
-		if (this.VerbosePreference != ActionPreference.SilentlyContinue)
+		if (this.VerbosePreference != ActionPreference.SilentlyContinue && this.Host?.UI is not null)
 		{
 			options ??= provider.GetService<ISonarrJsonOptions>()?.ForSerializing;
-			this.WriteVerbose(JsonSerializer.Serialize(response, options));
+			this.Host.UI.WriteVerboseLine(JsonSerializer.Serialize(response, options));
 		}
 	}
 
