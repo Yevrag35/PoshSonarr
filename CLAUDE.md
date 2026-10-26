@@ -22,14 +22,14 @@ Run these from the repository root. Building needs a .NET 10 SDK.
 
 ### Debugging
 
-- After a Debug build, `pwsh -NoExit -File src/MG.Sonarr.Next.Shell/bin/Debug/net10.0/Debug.ps1` opens a session on it: the script imports the module, loads the format and type files, and connects to the development instance. The Visual Studio launch profiles run the same script.
-- Connect with `Connect-SonarrInstance -Url <url> -ApiKey <key>` (alias `Connect-Sonarr`). Add `-NoApiInPath` (alias `-NoApiPrefix`) when a reverse proxy removes `/api` from the path.
-- `.env` in the repo root holds the development instance's settings as `KEY=value` lines: `SONARR_URL`, `SONARR_API_KEY`, and `SONARR_NO_API_IN_PATH=true` when a reverse proxy removes `/api`. Git ignores the file, so the real API key goes in it; on a machine that lacks one, copy `.env.example` to `.env` and fill in the key. The script's `-SonarrUrl`, `-ApiKey`, and `-NoApiInPath` parameters take precedence over the file, and when it ends up without a URL or key, the script warns and skips connecting.
+- Never connect to a Sonarr instance. Don't run `Debug.ps1`, `Connect-SonarrInstance`, or the Pester tests, and don't send requests to the instance that `.env` names. When a change needs checking against a live instance, ask the user to do it.
+- `Debug.ps1`, in the Shell project, is for the user's interactive debugging only, and the tests never reference it. After a Debug build, `pwsh -NoExit -File src/MG.Sonarr.Next.Shell/bin/Debug/net10.0/Debug.ps1` opens a session on it: the script imports the module, loads the format and type files, and connects to the development instance. The Visual Studio launch profiles run the same script.
+- `Connect-SonarrInstance -Url <url> -ApiKey <key>` (alias `Connect-Sonarr`) makes the connection, and `-NoApiInPath` (alias `-NoApiPrefix`) is for a reverse proxy that removes `/api` from the path.
+- `.env` in the repo root holds the development instance's settings as `KEY=value` lines: `SONARR_URL`, `SONARR_API_KEY`, and `SONARR_NO_API_IN_PATH=true` when a reverse proxy removes `/api`. Git ignores the file, so the real API key goes in it; on a machine that lacks one, the user copies `.env.example` to `.env` and fills in the key. The script's `-SonarrUrl`, `-ApiKey`, and `-NoApiInPath` parameters take precedence over the file, and when it ends up without a URL or key, the script warns and skips connecting.
 
 ### Tests
 
-- After a Debug build, `Invoke-Pester .tests/PoshSonarr.Tests.ps1` runs the tests; add `-FullNameFilter 'Get-SonarrSeries*'` to run one block.
-- They're Pester 5.5+ integration tests that need a live, connected Sonarr instance, which may not be reachable from every machine, and they expect particular series to exist on it. `.tests/setup.ps1` imports the module first by dot-sourcing the `Debug.ps1` in the Shell project's build output, which also connects to the instance that `.env` names. There are no unit tests.
+- Testing isn't set up yet. The Pester files in `.tests/` are incomplete: don't run them, treat them as working, or fix them up so they run, and never write a test that connects to an instance or references `Debug.ps1`. `.tests/setup.ps1` throws before the suite imports the module, so `Invoke-Pester` stops there.
 
 ### Byte checks
 
