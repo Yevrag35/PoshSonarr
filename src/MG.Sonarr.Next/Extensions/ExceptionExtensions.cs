@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Extensions.Reflection;
+using MG.Sonarr.Next.Extensions.Reflection;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Extensions;
@@ -16,8 +16,7 @@ public static class ExceptionExtensions
 	[return: NotNullIfNotNull(nameof(exception))]
 	public static string? GetTypeName(this Exception? exception)
 	{
-		Type? type = exception?.GetType();
-		return type.GetNameOrNull();
+		return exception?.GetType() is Type eType ? eType.GetName() : null;
 	}
 
 	/// <summary>
@@ -35,7 +34,7 @@ public static class ExceptionExtensions
 	[return: NotNullIfNotNull(nameof(exception))]
 	public static ErrorRecord? ToRecord(this Exception? exception)
 	{
-		return ToRecord(exception, ErrorCategory.NotSpecified, null);
+		return ToRecord(exception, ErrorCategory.NotSpecified, targetObj: null);
 	}
 
 	/// <summary>
@@ -52,7 +51,7 @@ public static class ExceptionExtensions
 	[return: NotNullIfNotNull(nameof(exception))]
 	public static ErrorRecord? ToRecord(this Exception? exception, ErrorCategory category)
 	{
-		return ToRecord(exception, category, null);
+		return ToRecord(exception, category, targetObj: null);
 	}
 
 	/// <summary>
@@ -79,7 +78,10 @@ public static class ExceptionExtensions
 			return null;
 		}
 
-		Type type = exception.GetType();
-		return new ErrorRecord(exception, type.FullName ?? type.Name, category, targetObj);
+		return new ErrorRecord(
+			exception: exception,
+			errorId: exception.GetTypeName(),
+			errorCategory: category,
+			targetObject: targetObj);
 	}
 }

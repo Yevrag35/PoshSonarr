@@ -35,7 +35,7 @@ public static class TypeExtensions
 	[return: NotNullIfNotNull(nameof(otherValue))]
 	public static string? GetNameOr(this Type? type, string? otherValue)
 	{
-		return !(type is null)
+		return type is not null
 			? type.GetName()
 			: otherValue;
 	}
