@@ -1,5 +1,3 @@
-using MG.Sonarr.Next.Components;
-
 namespace MG.Sonarr.Next.Collections;
 
 /// <summary>
@@ -18,7 +16,7 @@ internal readonly struct OneStringSet : IReadOnlySet<string>
 	public bool IsEmpty => string.IsNullOrEmpty(_value);
 	public string Value => _value ?? string.Empty;
 
-	int IReadOnlyCollection<string>.Count => COUNT;
+	int IReadOnlyCollection<string>.Count => this.IsEmpty ? 0 : COUNT;
 
 	internal OneStringSet(string value)
 	{
@@ -58,32 +56,34 @@ internal readonly struct OneStringSet : IReadOnlySet<string>
 		ArgumentNullException.ThrowIfNull(other);
 		if (this.IsEmpty)
 		{
-			return true;
+			return other.Any();
 		}
 
-		DoubleBool dub = DoubleBool.InitializeNew();
+		bool isSubset = false;
+		bool hasExtra = false;
 
 		foreach (string s in other)
 		{
-			if (dub)
-			{
-				break;
-			}
-
 			if (_value.Equals(s, StringComparison.OrdinalIgnoreCase))
 			{
-				dub.Bool1 = true;
+				isSubset = true;
 			}
 			else
 			{
-				dub.Bool2 = true;
+				hasExtra = true;
+			}
+
+			if (isSubset && hasExtra)
+			{
+				return true;
 			}
 		}
 
-		return dub;
+		return false;
 	}
 	bool IReadOnlySet<string>.IsProperSupersetOf(IEnumerable<string> other)
 	{
+		ArgumentNullException.ThrowIfNull(other);
 		if (this.IsEmpty)
 		{
 			return false;
@@ -111,6 +111,7 @@ internal readonly struct OneStringSet : IReadOnlySet<string>
 	}
 	bool IReadOnlySet<string>.IsSupersetOf(IEnumerable<string> other)
 	{
+		ArgumentNullException.ThrowIfNull(other);
 		if (this.IsEmpty)
 		{
 			return !other.Any();
@@ -152,15 +153,19 @@ internal readonly struct OneStringSet : IReadOnlySet<string>
 			return !other.Any();
 		}
 
+		bool isSubset = false;
+
 		foreach (string s in other)
 		{
 			if (!_value.Equals(s, StringComparison.OrdinalIgnoreCase))
 			{
 				return false;
 			}
+
+			isSubset = true;
 		}
 
-		return true;
+		return isSubset;
 	}
 }
 

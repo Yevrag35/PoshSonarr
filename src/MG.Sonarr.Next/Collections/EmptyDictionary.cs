@@ -121,10 +121,14 @@ internal readonly struct EmptyNameDictionary<T> : IEquatable<EmptyNameDictionary
 	/// Determines whether the current set is a proper subset of a specified collection.
 	/// </summary>
 	/// <param name="other">The collection to compare to the current set.</param>
-	/// <returns><see langword="false"/> because the set is empty.</returns>
+	/// <returns>
+	/// <see langword="true"/> if the specified collection has at least one element; otherwise, <see langword="false"/>.
+	/// </returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
 	public bool IsProperSubsetOf(IEnumerable<T> other)
 	{
-		return !other.Any();
+		ArgumentNullException.ThrowIfNull(other);
+		return other.Any();
 	}
 
 	/// <summary>
@@ -132,8 +136,10 @@ internal readonly struct EmptyNameDictionary<T> : IEquatable<EmptyNameDictionary
 	/// </summary>
 	/// <param name="other">The collection to compare to the current set.</param>
 	/// <returns><see langword="false"/> because the set is empty.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
 	public bool IsProperSupersetOf(IEnumerable<T> other)
 	{
+		ArgumentNullException.ThrowIfNull(other);
 		return false;
 	}
 
@@ -142,8 +148,10 @@ internal readonly struct EmptyNameDictionary<T> : IEquatable<EmptyNameDictionary
 	/// </summary>
 	/// <param name="other">The collection to compare to the current set.</param>
 	/// <returns><see langword="true"/> because the set is empty.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
 	public bool IsSubsetOf(IEnumerable<T> other)
 	{
+		ArgumentNullException.ThrowIfNull(other);
 		return true;
 	}
 
@@ -152,10 +160,12 @@ internal readonly struct EmptyNameDictionary<T> : IEquatable<EmptyNameDictionary
 	/// </summary>
 	/// <param name="other">The collection to compare to the current set.</param>
 	/// <returns>
-	/// <see langword="true"/> if the specified other set is empty; otherwise, <see langword="false"/>.
+	/// <see langword="true"/> if the specified collection is empty; otherwise, <see langword="false"/>.
 	/// </returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
 	public bool IsSupersetOf(IEnumerable<T> other)
 	{
+		ArgumentNullException.ThrowIfNull(other);
 		return !other.Any();
 	}
 
@@ -164,8 +174,10 @@ internal readonly struct EmptyNameDictionary<T> : IEquatable<EmptyNameDictionary
 	/// </summary>
 	/// <param name="other">The collection to compare to the current set.</param>
 	/// <returns><see langword="false"/> because the set is empty.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
 	public bool Overlaps(IEnumerable<T> other)
 	{
+		ArgumentNullException.ThrowIfNull(other);
 		return false;
 	}
 
@@ -174,9 +186,11 @@ internal readonly struct EmptyNameDictionary<T> : IEquatable<EmptyNameDictionary
 	/// </summary>
 	/// <param name="other">The collection to compare to the current set.</param>
 	/// <returns><see langword="true"/> if the specified collection is also empty; otherwise, <see langword="false"/>.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
 	public bool SetEquals(IEnumerable<T> other)
 	{
-		return other is not null && !other.Any();
+		ArgumentNullException.ThrowIfNull(other);
+		return !other.Any();
 	}
 
 	/// <inheritdoc/>
