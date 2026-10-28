@@ -51,7 +51,11 @@ public sealed class ReadOnlyTagsProperty : ReadOnlyProperty<SortedSet<int>>
 			builder.Append(',');
 		}
 
-		builder.TrimEnd(',');
+		if (this.Tags.Count > 0)
+		{
+			builder.BackspaceIf(',');
+		}
+
 		builder.Append('}');
 
 		return builder.ToString();

@@ -1,5 +1,5 @@
+using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Extensions.Reflection;
-using MG.Sonarr.Next.Extensions.Strings;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties;
@@ -65,7 +65,7 @@ public class ReadOnlyProperty : PSPropertyInfo
 public abstract class ReadOnlyProperty<T> : ReadOnlyProperty
 {
 	protected virtual int MaxValueCharacterLength { get; }
-	protected virtual string PSTypeName => typeof(T).GetPSTypeName();
+	protected virtual string PSTypeName => typeof(T).GetPSTypeName(removeBrackets: true);
 	public override string TypeNameOfValue => typeof(T).GetName();
 
 	/// <summary>
@@ -106,10 +106,11 @@ public abstract class ReadOnlyProperty<T> : ReadOnlyProperty
 			$"The property '{this.Name}' only can be set with values of type '{this.TypeNameOfValue}'.");
 	}
 
+	const int MAX_STACKALLOC = 256;
 	const string READ_ONLY = "read-only ";
 	public override string ToString()
 	{
-		ReadOnlySpan<char> typeName = this.PSTypeName.AsSpan().Trim(['[', ']']);
+		ReadOnlySpan<char> typeName = this.PSTypeName;
 		ReadOnlySpan<char> name = this.Name;
 		if (this.MaxValueCharacterLength <= 0 || this.ValueAsT is not ISpanFormattable spanFormattable)
 		{
@@ -127,37 +128,35 @@ public abstract class ReadOnlyProperty<T> : ReadOnlyProperty
 		valueStr = valueStr.Trim();
 
 		int length = READ_ONLY.Length + typeName.Length + valueStr.Length + name.Length + 2; // Magic number 2 comes from: 1 space and an equals sign.
-		Span<char> chars = stackalloc char[length];
+		using SpanStringBuilder builder = SpanStringBuilder.Create(
+			length <= MAX_STACKALLOC
+				? stackalloc char[length]
+				: length);
 
-		READ_ONLY.CopyTo(chars, out int position);
-		position = typeName.CopyToSlice(chars, position);
-		chars[position++] = ' ';
+		builder.Append(READ_ONLY);
+		builder.Append(typeName);
+		builder.Append(' ');
+		builder.Append(name);
+		builder.Append('=');
+		builder.Append(valueStr);
 
-		position = name.CopyToSlice(chars, position);
-		chars[position++] = '=';
-
-		position = valueStr.CopyToSlice(chars, position);
-
-		return new string(chars.Slice(0, position));
+		return builder.ToString();
 	}
 	private static string ToStringWithSpan(ReadOnlySpan<char> typeName, ReadOnlySpan<char> name, ISpanFormattable formattable, int maxLength)
 	{
 		int length = 2 + READ_ONLY.Length + typeName.Length + name.Length + maxLength;
+		using SpanStringBuilder builder = SpanStringBuilder.Create(
+			length <= MAX_STACKALLOC
+				? stackalloc char[length]
+				: length);
 
-		Span<char> chars = stackalloc char[length];
+		builder.Append(READ_ONLY);
+		builder.Append(typeName);
+		builder.Append(' ');
+		builder.Append(name);
+		builder.Append('=');
+		builder.Append(formattable, maxLength, format: default, Statics.DefaultProvider);
 
-		READ_ONLY.CopyTo(chars, out int position);
-		position = typeName.CopyToSlice(chars, position);
-
-		chars[position++] = ' ';
-		position = name.CopyToSlice(chars, position);
-
-		chars[position++] = '=';
-		if (!formattable.TryFormat(chars.Slice(position), out int written, default, Statics.DefaultProvider))
-		{
-			chars.Slice(position, written).Fill(' ');
-		}
-
-		return new string(chars.Slice(0, position + written).TrimEnd());
+		return builder.ToString();
 	}
 }

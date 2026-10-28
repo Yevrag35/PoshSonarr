@@ -10,6 +10,10 @@ namespace MG.Sonarr.Next.PSProperties;
 
 public abstract class WritableProperty : PSPropertyInfo
 {
+	/// <summary>
+	/// The largest buffer, in characters, that <see cref="ToString"/> allocates on the stack instead of renting a pooled
+	/// array.
+	/// </summary>
 	private protected const int MAX_STACKALLOC = 256;
 
 	public sealed override bool IsGettable => true;
@@ -85,7 +89,7 @@ public abstract class WritableProperty : PSPropertyInfo
 
 	public override string ToString()
 	{
-		ReadOnlySpan<char> typeName = this.PSTypeName.AsSpan().Trim(stackalloc char[] { '[', ']' });
+		ReadOnlySpan<char> typeName = this.PSTypeName;
 		ReadOnlySpan<char> valueStr = this.GetValueAsString();
 		ReadOnlySpan<char> name = this.Name;
 
@@ -121,7 +125,7 @@ public abstract class WritableProperty : PSPropertyInfo
 public abstract class WritableProperty<T> : WritableProperty
 {
 	protected virtual int MaxValueCharacterLength { get; }
-	protected override string PSTypeName => typeof(T).GetPSTypeName();
+	protected override string PSTypeName => typeof(T).GetPSTypeName(removeBrackets: true);
 	public sealed override object? Value
 	{
 		get => this.ValueAsT;
@@ -145,11 +149,9 @@ public abstract class WritableProperty<T> : WritableProperty
 	}
 	public sealed override string ToString()
 	{
-		ReadOnlySpan<char> typeName = this.PSTypeName.AsSpan().Trim(stackalloc char[] { '[', ']' });
-		ReadOnlySpan<char> name = this.Name;
 		return this.MaxValueCharacterLength <= 0 || this.ValueAsT is not ISpanFormattable spanFormattable
-			? ToStringNoSpan(typeName, this.ValueAsT, name)
-			: ToStringWithSpan(typeName, name, spanFormattable, this.MaxValueCharacterLength);
+			? base.ToString()
+			: ToStringWithSpan(this.PSTypeName, this.Name, spanFormattable, this.MaxValueCharacterLength);
 	}
 	public override bool ValueIsProper(object? value)
 	{
@@ -169,24 +171,6 @@ public abstract class WritableProperty<T> : WritableProperty
 		builder.Append(name);
 		builder.Append('=');
 		builder.Append(formattable, maxLength, format: default, Statics.DefaultProvider);
-
-		return builder.ToString();
-	}
-	private static string ToStringNoSpan(ReadOnlySpan<char> typeName, T? valueAsT, ReadOnlySpan<char> name)
-	{
-		ReadOnlySpan<char> valueStr = valueAsT?.ToString();
-
-		int length = typeName.Length + valueStr.Length + name.Length + 2; // Magic number 2 comes from: 1 space and an equals sign.
-		using SpanStringBuilder builder = SpanStringBuilder.Create(
-			length <= MAX_STACKALLOC
-				? stackalloc char[length]
-				: length);
-
-		builder.Append(typeName);
-		builder.Append(' ');
-		builder.Append(name);
-		builder.Append('=');
-		builder.Append(valueStr);
 
 		return builder.ToString();
 	}

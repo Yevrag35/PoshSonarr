@@ -355,13 +355,15 @@ internal ref struct SpanStringBuilder
 		if (maxLength <= max_stack)
 		{
 			Span<char> temp = stackalloc char[maxLength];
-			if (formattable.TryFormat(temp, out int written, format, provider))
+			if (!formattable.TryFormat(temp, out int written, format, provider))
 			{
-				if (written > 0)
-				{
-					this.EnsureCapacity(unchecked((uint)written));
-					this.AppendCore(temp.UnsafeSlice(0, written));
-				}
+				ThrowFormatException(formattable, maxLength);
+			}
+
+			if (written > 0)
+			{
+				this.EnsureCapacity(unchecked((uint)written));
+				this.AppendCore(temp.UnsafeSlice(0, written));
 			}
 
 			return;
@@ -377,16 +379,28 @@ internal ref struct SpanStringBuilder
 		var slice = _chars.UnsafeSlice(_position, maxLength);
 		if (!formattable.TryFormat(slice, out int written, format, provider))
 		{
-			throwFormatEx(maxLength);
+			ThrowFormatException(formattable, maxLength);
 		}
 
 		_position += written;
+	}
 
-		[DoesNotReturn, StackTraceHidden, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
-		static void throwFormatEx(int maxLength)
-		{
-			throw new FormatException($"The value of type '{typeof(T)}' could not be formatted into the provided buffer of length {maxLength}.");
-		}
+	/// <summary>
+	/// Throws a <see cref="FormatException"/> for a value that could not be formatted within the maximum length its
+	/// caller allowed.
+	/// </summary>
+	/// <remarks>
+	/// The message names the runtime type of <paramref name="formattable"/>, because <typeparamref name="T"/> is
+	/// <see cref="ISpanFormattable"/> itself when a caller holds the value through the interface.
+	/// </remarks>
+	/// <typeparam name="T">The <see cref="ISpanFormattable"/> type that the caller holds <paramref name="formattable"/> as.</typeparam>
+	/// <param name="formattable">The value that failed to format.</param>
+	/// <param name="maxLength">The maximum number of characters that the value had to fit in.</param>
+	/// <exception cref="FormatException">Thrown when this method is called.</exception>
+	[DoesNotReturn, StackTraceHidden, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+	private static void ThrowFormatException<T>(T formattable, int maxLength) where T : ISpanFormattable
+	{
+		throw new FormatException($"The value of type '{formattable.GetType()}' could not be formatted into the provided buffer of length {maxLength}.");
 	}
 
 	/// <summary>
@@ -637,6 +651,33 @@ internal ref struct SpanStringBuilder
 	public readonly ReadOnlySpan<char> AsSpan(int start, int length)
 	{
 		return _chars.Slice(start, length);
+	}
+
+	/// <summary>
+	/// Removes the last character from the <see cref="SpanStringBuilder"/>.
+	/// </summary>
+	/// <remarks>
+	/// The method does nothing when the builder is empty; it does not throw.
+	/// </remarks>
+	public void Backspace()
+	{
+		_position = Math.Max(_position - 1, 0);
+	}
+	/// <summary>
+	/// Removes the last character from the <see cref="SpanStringBuilder"/> if it equals <paramref name="value"/>.
+	/// </summary>
+	/// <remarks>
+	/// <para>The method does nothing when the builder is empty or ends with a different character; it does not
+	/// throw.</para>
+	/// <para>It removes at most one character, while <see cref="TrimEnd(char)"/> removes every trailing occurrence.</para>
+	/// </remarks>
+	/// <param name="value">The character to compare with the last character in the builder.</param>
+	public void BackspaceIf(char value)
+	{
+		if (_position > 0 && _chars.Ref(_position - 1) == value)
+		{
+			_position--;
+		}
 	}
 
 	/// <summary>

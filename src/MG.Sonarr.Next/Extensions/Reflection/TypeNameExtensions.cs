@@ -21,15 +21,17 @@ public static class TypeNameExtensions
 		return GetPSTypeName(type, removeBrackets: false);
 	}
 	/// <summary>
-	/// Gets the PowerShell type name for the specified .NET type, optionally removing array or generic type
-	/// brackets from the result.
+	/// Gets the PowerShell type name for the specified .NET type, optionally without its enclosing brackets.
 	/// </summary>
-	/// <remarks>This method uses PowerShell's type accelerator names when available. If the type is
-	/// not accelerated, the full type name is returned, optionally with brackets based on the <paramref
-	/// name="removeBrackets"/> parameter.</remarks>
+	/// <remarks>
+	/// <para>This method uses PowerShell's type accelerator name when the type has one, such as <c>int</c> for
+	/// <see cref="int"/>, and otherwise the full type name in PowerShell's notation.</para>
+	/// <para><paramref name="removeBrackets"/> strips only the enclosing pair, so a generic or array type name keeps its
+	/// own brackets: <c>[string[]]</c> becomes <c>string[]</c>.</para>
+	/// </remarks>
 	/// <param name="type">The .NET type for which to retrieve the PowerShell type name. Cannot be null.</param>
-	/// <param name="removeBrackets">Specifies whether to remove array or generic type brackets from the returned type name. Set to <see
-	/// langword="true"/> to exclude brackets; otherwise, <see langword="false"/> to include them.</param>
+	/// <param name="removeBrackets"><see langword="true"/> to remove the enclosing pair of brackets from the name; otherwise,
+	/// <see langword="false"/>.</param>
 	/// <returns>A string containing the PowerShell type name corresponding to the specified .NET type. If no accelerated
 	/// name is found, returns the full type name.</returns>
 	public static string GetPSTypeName(this Type type, bool removeBrackets)
