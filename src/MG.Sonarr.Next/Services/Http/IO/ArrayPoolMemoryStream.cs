@@ -11,9 +11,7 @@ namespace MG.Sonarr.Next.Services.Http.IO;
 /// <para>This class is designed to minimize memory allocations by utilizing an array pool. It supports reading
 /// and writing operations, and the buffer can be cleared before returning to the pool based on the ClearOnReturn
 /// property. The stream's length and position can be managed, and it provides methods to convert the stream contents to
-/// an array or an ArraySegment.</para>
-/// <para>It is <see cref="ICacheable"/>, so a <see cref="LeaseCache{TKey, TValue}"/> can hold it as a value. A cache that evicts it
-/// should release it through <see cref="Retire"/>, which never invalidates a view that is still reading.</para>
+/// an array or an <see cref="ArraySlice{T}"/>.</para>
 /// </remarks>
 [DebuggerDisplay(@"\{Length = {Length}, Position = {Position}, Capacity = {Capacity}\}"), DebuggerStepThrough]
 public sealed class ArrayPoolMemoryStream : Stream
@@ -57,8 +55,12 @@ public sealed class ArrayPoolMemoryStream : Stream
 	public bool ClearOnReturn { get; set; }
 
 	/// <summary>
-	/// Gets the number of active (undisposed) views created by <see cref="CreateView()"/> and its overloads.
+	/// Gets the number of active views that hold a lease on the stream's buffer.
 	/// </summary>
+	/// <remarks>
+	/// No member of the stream creates a view, so the count stays at zero.
+	/// </remarks>
+	/// <value>The number of views that haven't been disposed.</value>
 	public int ActiveViewCount => Volatile.Read(ref _viewState) & VIEW_COUNT_MASK;
 
 	/// <summary>
@@ -67,8 +69,13 @@ public sealed class ArrayPoolMemoryStream : Stream
 	public int Capacity => _buffer?.Length ?? 0;
 
 	/// <summary>
-	/// Gets a value indicating whether <see cref="Retire"/> has been called on this stream.
+	/// Gets a value that indicates whether the stream is retired, which closes it to new views and returns its buffer to
+	/// the pool once the last view is disposed.
 	/// </summary>
+	/// <remarks>
+	/// No member of the stream retires it, so the value stays <see langword="false"/>.
+	/// </remarks>
+	/// <value><see langword="true"/> if the stream is retired; otherwise, <see langword="false"/>.</value>
 	public bool IsRetired => (Volatile.Read(ref _viewState) & RETIRED_FLAG) != 0;
 
 	/// <inheritdoc/>
