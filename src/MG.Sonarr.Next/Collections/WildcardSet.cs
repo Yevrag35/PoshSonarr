@@ -158,25 +158,13 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 	/// </returns>
 	public bool IsAnyMatch(ReadOnlySpan<char> value)
 	{
-		int count = _set.Count;
-		Wildcard[] array = ArrayPool<Wildcard>.Shared.Rent(count);
-		try
+		foreach (Wildcard wildcard in _set)
 		{
-			_set.CopyTo(array);
-			ref Wildcard first = ref MemoryMarshal.GetArrayDataReference(array);
-
-			for (int i = 0; i < count; i++)
-			{
-				if (Unsafe.Add(ref first, i).IsMatch(value))
-					return true;
-			}
-
-			return false;
+			if (wildcard.IsMatch(value))
+				return true;
 		}
-		finally
-		{
-			ArrayPool<Wildcard>.Shared.Return(array);
-		}
+
+		return false;
 	}
 
 	/// <summary>
