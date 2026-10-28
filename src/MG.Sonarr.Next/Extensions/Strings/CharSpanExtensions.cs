@@ -9,34 +9,6 @@ namespace MG.Sonarr.Next.Extensions.Strings;
 public static partial class CharSpanExtensions
 {
 	/// <summary>
-	/// Copies the contents of this <see cref="ReadOnlySpan{T}"/> into a destination 
-	/// <see cref="Span{T}"/> and advances the given ref <see cref="int"/> the number 
-	/// of characters that were copied.
-	/// </summary>
-	/// <param name="spanValue">The source read-only span whose characters are copied.</param>
-	/// <param name="span">The span to copy items into.</param>
-	/// <param name="position">
-	///     The ref <see cref="int"/> to add the number of the characters to if copying was
-	///     successful.
-	/// </param>
-	[Obsolete("Use the overload that returns int.")]
-	public static void CopyToSlice(this ReadOnlySpan<char> spanValue, Span<char> span, ref int position)
-	{
-		if (spanValue.TryCopyTo(span.Slice(position)))
-		{
-			position += spanValue.Length;
-		}
-	}
-	[Obsolete("Use the overload that returns int.")]
-	public static void CopyToSlice<T>(this T value, Span<char> destination, ref int position, ReadOnlySpan<char> format = default, IFormatProvider? provider = null)
-		where T : ISpanFormattable
-	{
-		if (value.TryFormat(destination.Slice(position), out int written, format, provider))
-		{
-			position += written;
-		}
-	}
-	/// <summary>
 	/// Determines whether the specified span is enclosed by the given opening and closing characters.
 	/// </summary>
 	/// <param name="readOnlySpan">The span of characters to examine for enclosure.</param>

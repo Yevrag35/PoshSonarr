@@ -1,5 +1,5 @@
 using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Renames;
 using MG.Sonarr.Next.Services.Http.Queries;
@@ -64,13 +64,17 @@ public sealed class TestSonarrRenameCmdlet : SonarrApiCmdletBase
 
 	private static string GetUrl(QueryCol parameters)
 	{
-		ReadOnlySpan<char> endpoint = Constants.RENAME.AsSpan();
-		Span<char> span = stackalloc char[endpoint.Length + parameters.MaxLength + 1];
+		const int max_stackalloc = 256;
 
-		int position = 0;
-		endpoint.CopyToSlice(span, ref position);
+		int length = Constants.RENAME.Length + parameters.MaxLength + 1;
+		using var builder = SpanStringBuilder.Create(
+			length <= max_stackalloc
+				? stackalloc char[length]
+				: length);
 
-		_ = parameters.TryFormat(span.Slice(position), out int written);
-		return new string(span.Slice(0, position + written));
+		builder.Append(Constants.RENAME);
+		builder.Append(parameters, parameters.MaxLength);
+
+		return builder.ToString();
 	}
 }

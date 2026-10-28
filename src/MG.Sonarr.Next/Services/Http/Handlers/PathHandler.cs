@@ -1,3 +1,4 @@
+using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Http.Extensions;
@@ -44,6 +45,8 @@ public sealed class PathHandler : DelegatingHandler
 
 	private void SetPath(HttpRequestMessage request)
 	{
+		const int max_stackalloc = 256;
+
 		ReadOnlySpan<char> path = request.RequestUri?.GetComponents(UriComponents.PathAndQuery, UriFormat.UriEscaped);
 		if (path.StartsWith('/'))
 		{
@@ -57,24 +60,27 @@ public sealed class PathHandler : DelegatingHandler
 
 		ReadOnlySpan<char> authority = request.RequestUri?.GetComponents(UriComponents.SchemeAndServer, UriFormat.Unescaped);
 
+		int length = path.Length + API.Length + V3.Length + authority.Length;
+		using var builder = SpanStringBuilder.Create(
+			length <= max_stackalloc
+				? stackalloc char[length]
+				: length);
 
-		Span<char> span = stackalloc char[path.Length + API.Length + V3.Length + authority.Length];
-		int position = 0;
-		authority.CopyToSlice(span, ref position);
+		builder.Append(authority);
 
 		if (!_noApiInPath)
 		{
-			API.CopyToSlice(span, ref position);
+			builder.Append(API);
 		}
 
-		V3.CopyToSlice(span, ref position);
+		builder.Append(V3);
 		if (path.StartsWith('/', StringComparison.Ordinal))
 		{
-			position--;
+			builder.Backspace();
 		}
 
-		path.CopyToSlice(span, ref position);
+		builder.Append(path);
 
-		request.RequestUri = new Uri(new string(span.Slice(0, position)), UriKind.Absolute);
+		request.RequestUri = new Uri(builder.ToString(), UriKind.Absolute);
 	}
 }

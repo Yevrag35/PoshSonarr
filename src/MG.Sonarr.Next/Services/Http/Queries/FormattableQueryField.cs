@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Next.Extensions.Strings;
 
 namespace MG.Sonarr.Next.Services.Http.Queries;
 
@@ -30,13 +30,13 @@ public readonly struct FormattableQueryField : IQueryField
 
 	public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 	{
-		charsWritten = 0;
 		if (this.IsDefaultOrEmpty)
 		{
+			charsWritten = 0;
 			return false;
 		}
 
-		_key.CopyToSlice(destination, ref charsWritten);
+		_key.AsSpan().CopyTo(destination, out charsWritten);
 		destination[charsWritten++] = '=';
 
 		if (_value.TryWrite(destination.Slice(charsWritten), out int written, format, provider))

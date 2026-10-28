@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Buffers;
-using MG.Sonarr.Next.Extensions.Strings;
 
 namespace MG.Sonarr.Next.Strings;
 
@@ -63,8 +62,12 @@ public readonly partial struct Wildcard
 
 	public static Wildcard ParseAs(WildcardMatchType matchType, params ReadOnlySpan<char> value)
 	{
-		Span<char> chars = stackalloc char[value.Length + 2];
-		int pos = 0;
+		int length = value.Length + 2;
+		using var builder = SpanStringBuilder.Create(
+			length <= MAX_STACKALLOC
+				? stackalloc char[length]
+				: length);
+
 		switch (matchType)
 		{
 			case WildcardMatchType.None when !value.IsEmpty:
@@ -72,21 +75,21 @@ public readonly partial struct Wildcard
 
 			case WildcardMatchType.Like:
 				value = value.Trim('*');
-				chars[pos++] = '*';
-				value.CopyToSlice(chars, ref pos);
-				chars[pos++] = '*';
+				builder.Append('*');
+				builder.Append(value);
+				builder.Append('*');
 				break;
 
 			case WildcardMatchType.StartsWith:
 				value = value.Trim('*');
-				value.CopyToSlice(chars, ref pos);
-				chars[pos++] = '*';
+				builder.Append(value);
+				builder.Append('*');
 				break;
 
 			case WildcardMatchType.EndsWith:
 				value = value.Trim('*');
-				chars[pos++] = '*';
-				value.CopyToSlice(chars, ref pos);
+				builder.Append('*');
+				builder.Append(value);
 				break;
 
 			case WildcardMatchType.Exact when value.Trim('*').ContainsAny(_wildcardChars):
@@ -94,7 +97,7 @@ public readonly partial struct Wildcard
 
 			case WildcardMatchType.Exact:
 				value = value.Trim('*');
-				value.CopyToSlice(chars, ref pos);
+				builder.Append(value);
 				break;
 
 			case WildcardMatchType.All when value.Length == 1 && '*' == value[0]:
@@ -107,7 +110,7 @@ public readonly partial struct Wildcard
 				return Empty;
 		}
 
-		return new(chars.Slice(0, pos), matchType);
+		return new(builder.AsSpan(), matchType);
 	}
 
 	#region I_SPAN_PARSABLE IMPLEMENTATIONS

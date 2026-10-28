@@ -1,3 +1,4 @@
+using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Extensions.Strings;
 
 namespace MG.Sonarr.Next.Services.Http.Queries;
@@ -193,17 +194,22 @@ public static class QueryColExtensions
 {
 	public static string GetUrl(this QueryCol? collection, string baseUrl)
 	{
+		const int max_stackalloc = 256;
+
 		if (collection is null || collection.Count == 0)
 		{
 			return baseUrl;
 		}
 
-		Span<char> span = stackalloc char[baseUrl.Length + 1 + collection.MaxLength];
-		int position = 0;
+		int length = baseUrl.Length + collection.MaxLength + 1;
+		using var builder = SpanStringBuilder.Create(
+			length <= max_stackalloc
+				? stackalloc char[length]
+				: length);
 
-		baseUrl.CopyToSlice(span, ref position);
-		collection.CopyToSlice(span, ref position, provider: Statics.DefaultProvider);
+		builder.Append(baseUrl);
+		builder.Append(collection, collection.MaxLength);
 
-		return new string(span.Slice(0, position));
+		return builder.ToString();
 	}
 }

@@ -13,7 +13,7 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 	private const int DEFAULT_CAPACITY = 5;
 	private static readonly WildcardEqualityComparer s_comparer = new();
 
-	private readonly int _capacity;
+	//private readonly int _capacity;
 	private readonly HashSet<Wildcard> _set;
 
 	/// <summary>

@@ -1,5 +1,5 @@
-﻿using MG.Sonarr.Next.Exceptions;
-using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Next.Buffers;
+using MG.Sonarr.Next.Exceptions;
 
 namespace MG.Sonarr.Next.Shell.Exceptions;
 
@@ -39,39 +39,43 @@ public sealed class SonarrParameterException : PoshSonarrException
 
 	private static string GetTypeString(in ParameterErrorType type)
 	{
+		const int max_stackalloc = 256;
+
 		string typeStr = type.ToString();
 		ReadOnlySpan<char> typeSpan = typeStr;
 		scoped ReadOnlySpan<char> splitBy = stackalloc char[] { ',', ' ' };
 		int count = GetErrorCount(typeSpan, splitBy);
 
-		Span<char> destination = stackalloc char[typeSpan.Length + 4];
+		int length = typeSpan.Length + 4;
+		using var builder = SpanStringBuilder.Create(
+			length <= max_stackalloc
+				? stackalloc char[length]
+				: length);
+
 		if (count < 2)
 		{
-			typeSpan.Slice(0, 1).ToLower(destination, Statics.DefaultCulture);
-			typeSpan.Slice(1).CopyTo(destination.Slice(1));
-			return new string(destination.Slice(0, typeSpan.Length));
+			typeSpan.Slice(0, 1).ToLower(builder.AppendSpan(1), Statics.DefaultCulture);
+			builder.Append(typeSpan.Slice(1));
+			return builder.ToString();
 		}
 
-		int written = 0;
 		int i = 0;
 		//foreach (ReadOnlySpan<char> section in typeSpan.SpanSplit(splitBy))
 		foreach (Range range in typeSpan.Split(splitBy))
 		{
 			ReadOnlySpan<char> section = typeSpan[range];
-			section.Slice(0, 1).ToLower(destination.Slice(written), Statics.DefaultCulture);
-			written++;
-
-			section.Slice(1).CopyToSlice(destination, ref written);
+			section.Slice(0, 1).ToLower(builder.AppendSpan(1), Statics.DefaultCulture);
+			builder.Append(section.Slice(1));
 
 			if (i < count - 1)
 			{
 				if (count > 2)
 				{
-					splitBy.CopyToSlice(destination, ref written);
+					builder.Append(splitBy);
 				}
 				else
 				{
-					splitBy.Slice(1).CopyToSlice(destination, ref written);
+					builder.Append(splitBy.Slice(1));
 				}
 			}
 
@@ -79,11 +83,11 @@ public sealed class SonarrParameterException : PoshSonarrException
 
 			if (i == count - 1)
 			{
-				AND.CopyToSlice(destination, ref written);
+				builder.Append(AND);
 			}
 		}
 
-		return new string(destination.Slice(0, written));
+		return builder.ToString();
 	}
 
 	private static int GetErrorCount(ReadOnlySpan<char> typeSpan, ReadOnlySpan<char> splitBy)

@@ -1,5 +1,5 @@
-﻿using MG.Sonarr.Next.Extensions.Reflection;
-using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Next.Buffers;
+using MG.Sonarr.Next.Extensions.Reflection;
 
 namespace MG.Sonarr.Next.Shell.Attributes;
 
@@ -78,6 +78,8 @@ public sealed class ValidateUrlAttribute : ValidateArgumentsAttribute
 	/// <returns></returns>
 	public override string ToString()
 	{
+		const int max_stackalloc = 256;
+
 		ReadOnlySpan<char> name = nameof(ValidateUrlAttribute);
 		ReadOnlySpan<char> uriKind = nameof(UriKind);
 		ReadOnlySpan<char> value = this.MustBeKind.ToString();
@@ -86,18 +88,22 @@ public sealed class ValidateUrlAttribute : ValidateArgumentsAttribute
 
 		// 5 = the number of constant characters beside the names and value.
 		// i.e. - '[', '(', '.', ')', ']'
-		Span<char> span = stackalloc char[name.Length + uriKind.Length + value.Length + 5];
-		int position = 0;
-		span[position++] = '[';
+		int length = name.Length + uriKind.Length + value.Length + 5;
+		using var builder = SpanStringBuilder.Create(
+			length <= max_stackalloc
+				? stackalloc char[length]
+				: length);
 
-		name.CopyToSlice(span, ref position);
-		span[position++] = '(';
-		uriKind.CopyToSlice(span, ref position);
+		builder.Append('[');
 
-		span[position++] = '.';
-		value.CopyToSlice(span, ref position);
-		(stackalloc char[2] { ')', ']' }).CopyToSlice(span, ref position);
+		builder.Append(name);
+		builder.Append('(');
+		builder.Append(uriKind);
 
-		return new string(span.Slice(0, position));
+		builder.Append('.');
+		builder.Append(value);
+		builder.Append(")]");
+
+		return builder.ToString();
 	}
 }

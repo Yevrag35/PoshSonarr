@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.PSProperties;
 
 namespace MG.Sonarr.Next.Models;
@@ -18,7 +18,7 @@ public abstract class TagUpdateObject<TSelf> : IdSonarrObject<TSelf>,
 {
 	private SortedSet<int>? _tags;
 	private int[]? _originalTags;
-	private int _originalTagCount;
+	//private int _originalTagCount;
 
 	/// <summary>
 	/// Gets or sets a value indicating whether tag changes must be persisted via the Sonarr API.
