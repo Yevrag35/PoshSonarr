@@ -26,7 +26,7 @@ PoshSonarr splits a large C# type by concern into a main file, `TypeName.cs`, an
 - The type's fields and constructors, static ones included, such as the services that `SonarrHttpClient` takes in its constructor, along with the constants and static fields that the concern files share, such as `Wildcard`'s `DEFAULT_COMPARISON`. Look there for an existing field before you add one, and add new fields and constructors there.
 - Other types that go with the main type, such as `SonarrClientDependencyInjection`, which registers `SonarrHttpClient`, in `SonarrHttpClient.cs`, and the `WildcardMatchType` enum in `Wildcard.cs`.
 
-A `-State` concern file holds a nested `State` type, the type of the main file's `_state` field, rather than fields of the outer type, as `Wildcard-State.cs` and `RentedBuffer-State.cs` do.
+A `-State` concern file holds a nested `State` type, the type of the main file's `_state` field, rather than fields of the outer type, as `Wildcard-State.cs` and `RentedBuffer_T-State.cs` do.
 
 ## Doc comments
 
@@ -39,7 +39,7 @@ A concern file can hold the part of an interface that its members implement. `So
 
 ## File-local types
 
-A `file` type is visible only in the file that declares it, so the type's other files can't use one that a concern file declares, such as `RentedBufferConstants` in `RentedBuffer-State.cs` or `ListMarshal` in `MetadataList_T-Marshalling.cs`. Code that needs one goes in that file.
+A `file` type is visible only in the file that declares it, so the type's other files can't use one that a concern file declares, such as `RentedBufferConstants` in `RentedBuffer_T-State.cs` or `ListMarshal` in `MetadataList_T-Marshalling.cs`. Code that needs one goes in that file.
 
 ## Nesting in Solution Explorer
 

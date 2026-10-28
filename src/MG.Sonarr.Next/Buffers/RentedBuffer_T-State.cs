@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Buffers;
+namespace MG.Sonarr.Next.Buffers;
 
 file static class RentedBufferConstants
 {
