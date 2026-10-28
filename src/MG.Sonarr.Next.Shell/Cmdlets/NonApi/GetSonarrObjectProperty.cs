@@ -36,6 +36,7 @@ public sealed class GetSonarrObjectProperty : PoolableCmdlet
 
 		foreach (PSObject pso in this.InputObject)
 		{
+			string objectType = pso.GetType().GetPSTypeName(removeBrackets: true);
 			foreach (PSPropertyInfo property in pso.Properties)
 			{
 				if (includeRo || property.IsSettable)
@@ -45,7 +46,7 @@ public sealed class GetSonarrObjectProperty : PoolableCmdlet
 						CurrentValue = property.Value,
 						IsReadOnly = !property.IsSettable,
 						Name = property.Name,
-						ObjectType = pso.GetType().GetPSTypeName(removeBrackets: true),
+						ObjectType = objectType,
 						Type = property.TypeNameOfValue,
 					});
 				}

@@ -1,4 +1,3 @@
-﻿using MG.Sonarr.Next.Components;
 using MG.Sonarr.Next.Extensions.Strings;
 using System.Collections.Concurrent;
 using System.Management.Automation;
@@ -43,18 +42,52 @@ public static class TypeNameExtensions
 		return _typeNameCache.GetOrAdd(new PSTypeKey(type, includeBrackets: !removeBrackets), GetTypeName);
 	}
 
+	/// <summary>
+	/// Gets the PowerShell type name for the type that the specified cache key holds.
+	/// </summary>
+	/// <remarks>
+	/// A name without brackets loses only the enclosing pair, so a generic or array name keeps its own brackets:
+	/// <c>[string[]]</c> becomes <c>string[]</c>.
+	/// </remarks>
+	/// <param name="key">The cache key that holds the type and whether its name keeps the enclosing brackets.</param>
+	/// <returns>The PowerShell type name, with or without its enclosing brackets as <paramref name="key"/> specifies.</returns>
 	private static string GetTypeName(PSTypeKey key)
 	{
-		string name = LanguagePrimitives.ConvertTypeNameToPSTypeName(key.KeyedType!.FullName);
+		string name = LanguagePrimitives.ConvertTypeNameToPSTypeName(key.KeyedType.FullName);
 		if (!key.IncludeBrackets && name.EnclosedIn('[', ']'))
 		{
-			name = name.AsSpan(1, name.Length - 2)
-					   .TrimStart('[')
-					   .TrimEnd(']')
-					   .Trim()
-					   .ToString();
+			name = name[1..^1];
 		}
 
 		return name;
+	}
+
+	/// <summary>
+	/// Represents a key of the type name cache: a type and whether its name keeps the enclosing brackets.
+	/// </summary>
+	[DebuggerStepThrough]
+	[StructLayout(LayoutKind.Auto)]
+	private readonly record struct PSTypeKey : IEquatable<PSTypeKey>
+	{
+		/// <summary>
+		/// The type to name.
+		/// </summary>
+		public readonly Type KeyedType;
+
+		/// <summary>
+		/// A value that indicates whether the name keeps its enclosing brackets.
+		/// </summary>
+		public readonly bool IncludeBrackets;
+
+		/// <summary>
+		/// Initializes a new <see cref="PSTypeKey"/> instance with the specified type and bracket choice.
+		/// </summary>
+		/// <param name="type">The type to name.</param>
+		/// <param name="includeBrackets"><see langword="true"/> to keep the enclosing brackets in the name; otherwise, <see langword="false"/>.</param>
+		internal PSTypeKey(Type type, bool includeBrackets)
+		{
+			KeyedType = type;
+			IncludeBrackets = includeBrackets;
+		}
 	}
 }
