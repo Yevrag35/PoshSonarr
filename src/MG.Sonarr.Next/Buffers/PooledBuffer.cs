@@ -188,11 +188,14 @@ public struct PooledBuffer<T> : IDisposable
 	/// <param name="index">The zero-based starting index of the slice.</param>
 	/// <param name="length">The desired length of the slice.</param>
 	/// <returns>A span over <paramref name="length"/> elements of the backing array starting at <paramref name="index"/>.</returns>
-	/// <exception cref="ArgumentOutOfRangeException"/>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="index"/> is negative or greater than
+	/// <see cref="Length"/>, or when <paramref name="length"/> is negative or greater than the number of elements from
+	/// <paramref name="index"/> to the end of the buffer.</exception>
 	public readonly Span<T> AsSpan(int index, int length)
 	{
-		return _array is { Length: > 0 } arr && (uint)length <= _length - index
-			? MemoryMarshal.CreateSpan(ref arr.Ref(index), length)
+		this.ThrowIfOutOfRange(index, length);
+		return length != 0
+			? _array!.AsUnsafeSpan(index, length)
 			: [];
 	}
 	/// <summary>
@@ -213,15 +216,18 @@ public struct PooledBuffer<T> : IDisposable
 	/// <param name="index">The zero-based starting index of the slice.</param>
 	/// <param name="length">The desired length of the slice.</param>
 	/// <returns>A <see cref="Memory{T}"/> over <paramref name="length"/> elements of the backing array starting at <paramref name="index"/>.</returns>
-	/// <exception cref="ArgumentOutOfRangeException"/>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="index"/> is negative or greater than
+	/// <see cref="Length"/>, or when <paramref name="length"/> is negative or greater than the number of elements from
+	/// <paramref name="index"/> to the end of the buffer.</exception>
 	public readonly Memory<T> AsMemory(int index, int length)
 	{
-		return _array is { Length: > 0 } && (uint)length <= (uint)_length - (uint)index
+		this.ThrowIfOutOfRange(index, length);
+		return length != 0
 			? CreateMemory(_array, index, length)
 			: Memory<T>.Empty;
 	}
 	/// <summary>
-	/// Returns a <see cref="ReadOnlyMemory{T}"/> over the logical length of the buffer.
+	/// Returns a <see cref="ReadOnlyMemory{T}"/> over a slice of the buffer.
 	/// </summary>
 	/// <param name="index">The zero-based starting index of the slice.</param>
 	/// <param name="length">The desired length of the slice.</param>
@@ -229,9 +235,13 @@ public struct PooledBuffer<T> : IDisposable
 	/// A <see cref="ReadOnlyMemory{T}"/> over <paramref name="length"/> elements of the
 	/// backing array starting at <paramref name="index"/>.
 	/// </returns>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="index"/> is negative or greater than
+	/// <see cref="Length"/>, or when <paramref name="length"/> is negative or greater than the number of elements from
+	/// <paramref name="index"/> to the end of the buffer.</exception>
 	public readonly ReadOnlyMemory<T> AsReadOnlyMemory(int index, int length)
 	{
-		return _array is { Length: > 0 } && (uint)length <= (uint)_length - (uint)index
+		this.ThrowIfOutOfRange(index, length);
+		return length != 0
 			? CreateReadOnlyMemory(_array, index, length)
 			: ReadOnlyMemory<T>.Empty;
 	}
@@ -307,6 +317,24 @@ public struct PooledBuffer<T> : IDisposable
 	public readonly T[]? GetRawArray() => _array;
 
 	/// <summary>
+	/// Determines whether a slice that starts at <paramref name="index"/> and covers <paramref name="length"/> elements
+	/// lies within the logical length of the buffer.
+	/// </summary>
+	/// <remarks>
+	/// Comparing as unsigned values rejects a negative argument along with one that's too large, and the subtraction
+	/// can't overflow once <paramref name="index"/> is known to lie within the buffer.
+	/// </remarks>
+	/// <param name="index">The zero-based starting index of the slice.</param>
+	/// <param name="length">The number of elements in the slice.</param>
+	/// <returns><see langword="true"/> if neither value is negative and the slice ends at or before <see cref="Length"/>;
+	/// otherwise, <see langword="false"/>.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private readonly bool IsInRange(int index, int length)
+	{
+		return (uint)index <= (uint)_length && (uint)length <= (uint)(_length - index);
+	}
+
+	/// <summary>
 	/// Forms a slice out of the current buffer, beginning at the specified starting index and extending to the end.
 	/// </summary>
 	/// <param name="start">The zero-based starting index of the slice.</param>
@@ -322,11 +350,46 @@ public struct PooledBuffer<T> : IDisposable
 	/// <param name="start">The zero-based starting index of the slice.</param>
 	/// <param name="length">The desired length of the slice.</param>
 	/// <returns>A <see cref="Span{T}"/> representing the slice.</returns>
-	/// <exception cref="ArgumentOutOfRangeException"/>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="start"/> is negative or greater than
+	/// <see cref="Length"/>, or when <paramref name="length"/> is negative or greater than the number of elements from
+	/// <paramref name="start"/> to the end of the buffer.</exception>
 	public readonly Span<T> Slice(int start, int length)
 	{
 		return this.AsSpan(start, length);
 	}
+
+	/// <summary>
+	/// Throws an <see cref="ArgumentOutOfRangeException"/> when a slice that starts at <paramref name="index"/> and covers
+	/// <paramref name="length"/> elements doesn't lie within the logical length of the buffer.
+	/// </summary>
+	/// <param name="index">The zero-based starting index of the slice.</param>
+	/// <param name="length">The number of elements in the slice.</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="index"/> is negative or greater than
+	/// <see cref="Length"/>, or when <paramref name="length"/> is negative or greater than the number of elements from
+	/// <paramref name="index"/> to the end of the buffer.</exception>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private readonly void ThrowIfOutOfRange(int index, int length)
+	{
+		if (!this.IsInRange(index, length))
+		{
+			ThrowOutOfRange(index, length, _length);
+		}
+	}
+
+	/// <summary>
+	/// Throws an <see cref="ArgumentOutOfRangeException"/> that names the argument that puts a slice outside the buffer.
+	/// </summary>
+	/// <param name="index">The zero-based starting index of the slice.</param>
+	/// <param name="length">The number of elements in the slice.</param>
+	/// <param name="bufferLength">The logical length of the buffer.</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown unconditionally.</exception>
+	[DoesNotReturn, StackTraceHidden, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+	private static void ThrowOutOfRange(int index, int length, int bufferLength)
+	{
+		throw new ArgumentOutOfRangeException(
+			paramName: (uint)index > (uint)bufferLength ? nameof(index) : nameof(length));
+	}
+
 	/// <summary>
 	/// Returns a string representation of the pooled buffer.
 	/// </summary>
