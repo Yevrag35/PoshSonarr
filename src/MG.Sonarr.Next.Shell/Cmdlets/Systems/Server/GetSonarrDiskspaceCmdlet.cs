@@ -1,13 +1,12 @@
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.System;
+using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server;
 
 [Cmdlet(VerbsCommon.Get, "SonarrDiskspace")]
 public sealed class GetSonarrDiskspaceCmdlet : SonarrApiCmdletBase
 {
-	const string TYPE_NAME = "MG.Sonarr.Next.Models.System.Diskspace";
-
 	protected override void Process(IServiceProvider provider)
 	{
 		ArgumentNullException.ThrowIfNull(provider);
@@ -18,10 +17,6 @@ public sealed class GetSonarrDiskspaceCmdlet : SonarrApiCmdletBase
 			return;
 		}
 
-		foreach (DiskspaceObject pso in response.Value)
-		{
-			pso.TypeNames.Insert(0, TYPE_NAME);
-			this.WriteObject(pso);
-		}
+		this.WriteCollection(response.Value);
 	}
 }

@@ -1,5 +1,6 @@
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.PSProperties;
@@ -14,6 +15,7 @@ public sealed class DiskspaceObject : SonarrObject,
 {
 	const int CAPACITY = 6;
 	const string LABEL = "Label";
+	static readonly string _typeName = typeof(DiskspaceObject).GetName();
 
 	public Size FreeSpace { get; private set; }
 	public string Path { get; private set; } = string.Empty;
@@ -56,6 +58,11 @@ public sealed class DiskspaceObject : SonarrObject,
 		{
 			this.TotalSpace = new Size(in ts);
 		}
+	}
+	protected override void SetPSTypeName()
+	{
+		base.SetPSTypeName();
+		this.TypeNames.Insert(0, _typeName);
 	}
 }
 

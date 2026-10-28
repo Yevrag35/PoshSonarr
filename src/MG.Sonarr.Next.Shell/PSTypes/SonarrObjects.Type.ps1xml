@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?> 
+<?xml version="1.0" encoding="utf-8" ?> 
 <Types>
 	<Type>
 		<Name>MG.Sonarr.Next.Models.Config.NamingConfigObject</Name>
@@ -55,7 +55,7 @@
 		</Members>
 	</Type>
 	<Type>
-		<Name>MG.Sonarr.Next.Models.System.Diskspace</Name>
+		<Name>MG.Sonarr.Next.Models.System.DiskspaceObject</Name>
 		<Members>
 			<ScriptProperty>
 				<Name>FreeSpaceInGB</Name>
