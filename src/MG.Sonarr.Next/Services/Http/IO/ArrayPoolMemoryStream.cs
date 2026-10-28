@@ -17,14 +17,14 @@ namespace MG.Sonarr.Next.Services.Http.IO;
 public sealed class ArrayPoolMemoryStream : Stream
 {
 	private const int DEFAULT_INITIAL_CAPACITY = 8192;
-	private const int RETIRED_FLAG = 1 << 30;
-	private const int VIEW_COUNT_MASK = RETIRED_FLAG - 1;
+	//private const int RETIRED_FLAG = 1 << 30;
+	//private const int VIEW_COUNT_MASK = RETIRED_FLAG - 1;
 
 	private readonly ArrayPool<byte> _pool;
 	private byte[]? _buffer;              // null => disposed
 	private int _length;
 	private int _position;
-	private int _viewState;               // RETIRED_FLAG bit | active view count
+	//private int _viewState;               // RETIRED_FLAG bit | active view count
 
 	/// <summary>
 	/// Occurs when the stream is disposed, allowing subscribers to be notified before the underlying buffer is returned to the pool.
@@ -54,29 +54,24 @@ public sealed class ArrayPoolMemoryStream : Stream
 	/// </summary>
 	public bool ClearOnReturn { get; set; }
 
-	/// <summary>
-	/// Gets the number of active views that hold a lease on the stream's buffer.
-	/// </summary>
-	/// <remarks>
-	/// No member of the stream creates a view, so the count stays at zero.
-	/// </remarks>
-	/// <value>The number of views that haven't been disposed.</value>
-	public int ActiveViewCount => Volatile.Read(ref _viewState) & VIEW_COUNT_MASK;
+	///// <summary>
+	///// Gets the number of active views, created by <see cref="CreateView()"/> and its overloads, that hold a lease on the
+	///// stream's buffer.
+	///// </summary>
+	///// <value>The number of views that haven't been disposed.</value>
+	//public int ActiveViewCount => Volatile.Read(ref _viewState) & VIEW_COUNT_MASK;
 
 	/// <summary>
 	/// The current capacity of the underlying rented buffer.
 	/// </summary>
 	public int Capacity => _buffer?.Length ?? 0;
 
-	/// <summary>
-	/// Gets a value that indicates whether the stream is retired, which closes it to new views and returns its buffer to
-	/// the pool once the last view is disposed.
-	/// </summary>
-	/// <remarks>
-	/// No member of the stream retires it, so the value stays <see langword="false"/>.
-	/// </remarks>
-	/// <value><see langword="true"/> if the stream is retired; otherwise, <see langword="false"/>.</value>
-	public bool IsRetired => (Volatile.Read(ref _viewState) & RETIRED_FLAG) != 0;
+	///// <summary>
+	///// Gets a value that indicates whether <see cref="Retire"/> has been called, which closes the stream to new views and
+	///// returns its buffer to the pool once the last view is disposed.
+	///// </summary>
+	///// <value><see langword="true"/> if the stream is retired; otherwise, <see langword="false"/>.</value>
+	//public bool IsRetired => (Volatile.Read(ref _viewState) & RETIRED_FLAG) != 0;
 
 	/// <inheritdoc/>
 	[MemberNotNullWhen(true, nameof(_buffer))]
@@ -583,8 +578,8 @@ public sealed class ArrayPoolMemoryStream : Stream
 		if (buf.Length >= minCapacity)
 			return;
 
-		Debug.Assert((Volatile.Read(ref _viewState) & VIEW_COUNT_MASK) == 0,
-			"Growing the stream would return a buffer that active views still read.");
+		//Debug.Assert((Volatile.Read(ref _viewState) & VIEW_COUNT_MASK) == 0,
+		//	"Growing the stream would return a buffer that active views still read.");
 
 		// Growth policy: double until sufficient, capping at int.MaxValue
 		int newCapacity = buf.Length;
