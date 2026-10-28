@@ -167,7 +167,7 @@ public struct PooledBuffer<T> : IDisposable
 	{
 		// The null check is not redundant with the bounds test: a zero-length rent leaves this instance default, and
 		// a (0, 0) request satisfies the bounds arm while there is no array for ArraySliceMarshal.Create to wrap.
-		return _array is not null && length <= _length - index
+		return _array is not null && this.IsInRange(index, length)
 			? ArraySliceMarshal.Create(_array, index, length)
 			: default;
 	}
