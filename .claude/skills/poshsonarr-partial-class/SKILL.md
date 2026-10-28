@@ -1,6 +1,6 @@
 ---
 name: poshsonarr-partial-class
-description: When a request points you at a concern file of a split C# type in PoshSonarr, `TypeName-Concern.cs` (such as `SonarrHttpClient-Async.cs`, `Wildcard-Parsing.cs`, `SonarrCmdletBase-Write.cs`, or `RentedBuffer_T-State.cs`), also read the type's main file, `TypeName.cs` in the same folder, before you reason about or edit it, because the main file holds the type's doc comment, attributes, base list, generic constraints, fields, and constructors. Covers finding a concern file's main file and the type's other files, what a `_T` or `_2` suffix means and the non-generic type that shares the name without one, the item in `src/MG.Sonarr.Next/MG.Sonarr.Next.csproj` that nests concern files under their main file and the project entries that override it, how the compiler merges a split type's doc comments, an interface split beside its implementation, `file` types in concern files, and how to name and declare a new concern file. Use it whenever a request names a hyphenated `.cs` file or a partial type, and before you read or edit a concern file, add a member, field, constructor, interface member, or doc comment to a split type, split a type, or add, rename, or move one of its files. Skip it for a hyphenated file whose type isn't `partial`.
+description: When a request points you at a concern file of a split C# type in PoshSonarr, `TypeName-Concern.cs` (such as `SonarrHttpClient-Async.cs`, `Wildcard-Parsing.cs`, `SonarrCmdletBase-Write.cs`, or `MetadataList_T-Marshalling.cs`), also read the type's main file, `TypeName.cs` in the same folder, before you reason about or edit it, because the main file holds the type's doc comment, attributes, base list, generic constraints, fields, and constructors. Covers finding a concern file's main file and the type's other files, what a `_T` or `_2` suffix means and the non-generic type that shares the name without one, the item in `src/MG.Sonarr.Next/MG.Sonarr.Next.csproj` that nests concern files under their main file and the project entries that override it, how the compiler merges a split type's doc comments, an interface split beside its implementation, `file` types in concern files, and how to name and declare a new concern file. Use it whenever a request names a hyphenated `.cs` file or a partial type, and before you read or edit a concern file, add a member, field, constructor, interface member, or doc comment to a split type, split a type, or add, rename, or move one of its files. Skip it for a hyphenated file whose type isn't `partial`.
 ---
 
 # Partial types in PoshSonarr
@@ -14,7 +14,7 @@ PoshSonarr splits a large C# type by concern into a main file, `TypeName.cs`, an
 ## Finding the main file
 
 - Take the concern file's name without `.cs`, keep the part before the last hyphen, and add `.cs`. The main file is in the same folder: `SonarrHttpClient-Async.cs` belongs to `SonarrHttpClient.cs`, and `SonarrCmdletBase-Write.cs` to `SonarrCmdletBase.cs`.
-- A `_T` or `_2` suffix is part of the name and marks a generic type, `_T` for one type parameter named `T` and a number for that many type parameters. `RentedBuffer_T-State.cs` belongs to `RentedBuffer_T.cs`, which declares `RentedBuffer<T>`, and `Either_2.cs` declares `Either<T1, T2>`.
+- A `_T` or `_2` suffix is part of the name and marks a generic type, `_T` for one type parameter named `T` and a number for that many type parameters. `MetadataList_T-Marshalling.cs` belongs to `MetadataList_T.cs`, which declares `MetadataList<T>`, and `Either_2.cs` declares `Either<T1, T2>`.
 - The same name without the suffix holds a different type, a non-generic static class with factory methods for the generic one. `MetadataList.cs` declares `MetadataList`, and `MetadataList_T.cs` declares `MetadataList<T>`. Check that the main file declares the same type as the concern file, with the same type parameters.
 - A project file can name a concern file's main file outright, with a `<Compile Update>` item for that one file that sets `<DependentUpon>`. That entry wins over the file's name, so look for one when the derived file doesn't exist or declares another type.
 - The compiler joins a type's declarations by namespace and name, whatever their files are called. To find every file of a type, search its project for the type's `partial` declarations, such as with `partial struct Wildcard\b`, rather than going by file names or by a comment that lists the files.
@@ -26,7 +26,7 @@ PoshSonarr splits a large C# type by concern into a main file, `TypeName.cs`, an
 - The type's fields and constructors, static ones included, such as the services that `SonarrHttpClient` takes in its constructor, along with the constants and static fields that the concern files share, such as `Wildcard`'s `DEFAULT_COMPARISON`. Look there for an existing field before you add one, and add new fields and constructors there.
 - Other types that go with the main type, such as `SonarrClientDependencyInjection`, which registers `SonarrHttpClient`, in `SonarrHttpClient.cs`, and the `WildcardMatchType` enum in `Wildcard.cs`.
 
-A `-State` concern file holds a nested `State` type, the type of the main file's `_state` field, rather than fields of the outer type, as `Wildcard-State.cs` and `RentedBuffer_T-State.cs` do.
+A `-State` concern file holds a nested `State` type, the type of the main file's `_state` field, rather than fields of the outer type, as `Wildcard-State.cs` and `RentedBuffer-State.cs` do.
 
 ## Doc comments
 
@@ -39,7 +39,7 @@ A concern file can hold the part of an interface that its members implement. `So
 
 ## File-local types
 
-A `file` type is visible only in the file that declares it, so the type's other files can't use one that a concern file declares, such as `RentedBufferConstants` in `RentedBuffer_T-State.cs` or `ListMarshal` in `MetadataList_T-Marshalling.cs`. Code that needs one goes in that file.
+A `file` type is visible only in the file that declares it, so the type's other files can't use one that a concern file declares, such as `RentedBufferConstants` in `RentedBuffer-State.cs` or `ListMarshal` in `MetadataList_T-Marshalling.cs`. Code that needs one goes in that file.
 
 ## Nesting in Solution Explorer
 
