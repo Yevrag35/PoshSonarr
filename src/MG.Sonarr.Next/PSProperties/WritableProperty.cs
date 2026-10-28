@@ -1,6 +1,6 @@
+using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions.Reflection;
-using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Fields;
 using System.Collections.Immutable;
@@ -10,6 +10,8 @@ namespace MG.Sonarr.Next.PSProperties;
 
 public abstract class WritableProperty : PSPropertyInfo
 {
+	private protected const int MAX_STACKALLOC = 256;
+
 	public sealed override bool IsGettable => true;
 	public sealed override bool IsSettable => true;
 	public sealed override PSMemberTypes MemberType => PSMemberTypes.NoteProperty;
@@ -88,18 +90,18 @@ public abstract class WritableProperty : PSPropertyInfo
 		ReadOnlySpan<char> name = this.Name;
 
 		int length = typeName.Length + valueStr.Length + name.Length + 2; // Magic number 2 comes from: 1 space and an equals sign.
-		Span<char> chars = stackalloc char[length];
+		using SpanStringBuilder builder = SpanStringBuilder.Create(
+			length <= MAX_STACKALLOC
+				? stackalloc char[length]
+				: length);
 
-		int position = 0;
-		typeName.CopyToSlice(chars, ref position);
-		chars[position++] = ' ';
+		builder.Append(typeName);
+		builder.Append(' ');
+		builder.Append(name);
+		builder.Append('=');
+		builder.Append(valueStr);
 
-		name.CopyToSlice(chars, ref position);
-		chars[position++] = '=';
-
-		valueStr.CopyToSlice(chars, ref position);
-
-		return new string(chars.Slice(0, position));
+		return builder.ToString();
 	}
 
 	public abstract bool ValueIsProper(object? value);
@@ -157,39 +159,35 @@ public abstract class WritableProperty<T> : WritableProperty
 	private static string ToStringWithSpan(ReadOnlySpan<char> typeName, ReadOnlySpan<char> name, ISpanFormattable formattable, int maxLength)
 	{
 		int length = 2 + typeName.Length + name.Length + maxLength;
+		using SpanStringBuilder builder = SpanStringBuilder.Create(
+			length <= MAX_STACKALLOC
+				? stackalloc char[length]
+				: length);
 
-		Span<char> chars = stackalloc char[length];
-		int position = 0;
+		builder.Append(typeName);
+		builder.Append(' ');
+		builder.Append(name);
+		builder.Append('=');
+		builder.Append(formattable, maxLength, format: default, Statics.DefaultProvider);
 
-		typeName.CopyToSlice(chars, ref position);
-
-		chars[position++] = ' ';
-		name.CopyToSlice(chars, ref position);
-
-		chars[position++] = '=';
-		if (!formattable.TryFormat(chars.Slice(position), out int written, default, Statics.DefaultProvider))
-		{
-			chars.Slice(position, written).Fill(' ');
-		}
-
-		return new string(chars.Slice(0, position + written).TrimEnd());
+		return builder.ToString();
 	}
 	private static string ToStringNoSpan(ReadOnlySpan<char> typeName, T? valueAsT, ReadOnlySpan<char> name)
 	{
 		ReadOnlySpan<char> valueStr = valueAsT?.ToString();
 
 		int length = typeName.Length + valueStr.Length + name.Length + 2; // Magic number 2 comes from: 1 space and an equals sign.
-		Span<char> chars = stackalloc char[length];
+		using SpanStringBuilder builder = SpanStringBuilder.Create(
+			length <= MAX_STACKALLOC
+				? stackalloc char[length]
+				: length);
 
-		int position = 0;
-		typeName.CopyToSlice(chars, ref position);
-		chars[position++] = ' ';
+		builder.Append(typeName);
+		builder.Append(' ');
+		builder.Append(name);
+		builder.Append('=');
+		builder.Append(valueStr);
 
-		name.CopyToSlice(chars, ref position);
-		chars[position++] = '=';
-
-		valueStr.CopyToSlice(chars, ref position);
-
-		return new string(chars.Slice(0, position));
+		return builder.ToString();
 	}
 }

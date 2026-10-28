@@ -1,4 +1,4 @@
-using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Next.Buffers;
 using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties;
@@ -7,7 +7,7 @@ public sealed class ReadOnlyTagsProperty : ReadOnlyProperty<SortedSet<int>>
 {
 	const string AS_STRING = "read-only SortedSet[int] Tags=";
 	const string AS_EMPTY = AS_STRING + "{}";
-	const int MAX_STRING_LENGTH = 256;
+	const int MAX_STACKALLOC = 256;
 
 	public SortedSet<int> Tags { get; internal set; }
 	protected override SortedSet<int> ValueAsT => this.Tags;
@@ -37,34 +37,24 @@ public sealed class ReadOnlyTagsProperty : ReadOnlyProperty<SortedSet<int>>
 			+
 			(this.Tags.Count - 1);
 
-		if (length > MAX_STRING_LENGTH)
-		{
-			return string.Concat(AS_STRING, '{', string.Join(',', this.Tags), '}');
-		}
+		using SpanStringBuilder builder = SpanStringBuilder.Create(
+			length <= MAX_STACKALLOC
+				? stackalloc char[length]
+				: length);
 
-		Span<char> span = stackalloc char[length];
-		int position = 0;
-		AS_STRING.AsSpan().CopyToSlice(span, ref position);
+		builder.Append(AS_STRING);
+		builder.Append('{');
 
-		span[position++] = '{';
-
-		int i = 0;
 		foreach (int id in this.Tags)
 		{
-			_ = id.TryFormat(span.Slice(position), out int written);
-			position += written;
-
-			if (i < this.Tags.Count - 1)
-			{
-				span[position++] = ',';
-			}
-
-			i++;
+			builder.Append(id, LengthConstants.INT_MAX);
+			builder.Append(',');
 		}
 
-		span[position++] = '}';
+		builder.TrimEnd(',');
+		builder.Append('}');
 
-		return new string(span.Slice(0, position));
+		return builder.ToString();
 	}
 }
 

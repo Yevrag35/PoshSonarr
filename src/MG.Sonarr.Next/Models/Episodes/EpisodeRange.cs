@@ -1,3 +1,4 @@
+using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Extensions.Strings;
 
 namespace MG.Sonarr.Next.Models.Episodes;
@@ -64,35 +65,26 @@ public readonly struct EpisodeRange
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in nameof()")]
 	public override string ToString()
 	{
+		const string START = "Start";
+		const string END = "End";
+		const int max_length = 5 + 3 + 8 + (LengthConstants.INT_MAX * 2);
+
 		if (this.AllMatch)
 		{
 			return "All Match";
 		}
 
-		ReadOnlySpan<char> startName = nameof(Start);
-		ReadOnlySpan<char> endName = nameof(End);
-
-		int length = startName.Length + endName.Length
-			+ 8
-			+ (LengthConstants.INT_MAX * 2);
-
-		Span<char> span = stackalloc char[length];
 		ReadOnlySpan<char> separator = [' ', '=', ' '];
 
-		int position = 0;
-		startName.CopyToSlice(span, ref position);
-		separator.CopyToSlice(span, ref position);
+		using SpanStringBuilder builder = new(stackalloc char[max_length]);
+		builder.Append(START);
+		builder.Append(separator);
+		builder.Append(this.Start, LengthConstants.INT_MAX);
+		builder.Append(';');
+		builder.Append(END);
+		builder.Append(separator);
+		builder.Append(this.End, LengthConstants.INT_MAX);
 
-		_ = this.Start.TryFormat(span.Slice(position), out int written);
-		position += written;
-
-		span[position++] = ';';
-		endName.CopyToSlice(span, ref position);
-		separator.CopyToSlice(span, ref position);
-
-		_ = this.End.TryFormat(span.Slice(position), out written);
-		position += written;
-
-		return new string(span.Slice(0, position));
+		return builder.ToString();
 	}
 }

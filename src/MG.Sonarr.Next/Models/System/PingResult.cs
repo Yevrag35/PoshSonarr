@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Services.Http;
 using System.Management.Automation;
 using System.Net;
@@ -33,14 +33,12 @@ public sealed class PingResult
 			return codeStr;
 		}
 
-		Span<char> span = stackalloc char[codeStr.Length + 6];
-		_ = asInt.TryFormat(span, out int written, default, Statics.DefaultProvider);
-		int position = written;
+		using SpanStringBuilder builder = new(codeStr.Length + 6);
+		builder.Append(asInt, LengthConstants.INT_MAX, format: default, Statics.DefaultProvider);
+		builder.AppendChars(' ', '(');
+		builder.Append(codeStr);
+		builder.Append(')');
 
-		(stackalloc char[] { ' ', '(' }).CopyToSlice(span, ref position);
-		codeStr.CopyToSlice(span, ref position);
-
-		span[position++] = ')';
-		return new string(span.Slice(0, position));
+		return builder.ToString();
 	}
 }
