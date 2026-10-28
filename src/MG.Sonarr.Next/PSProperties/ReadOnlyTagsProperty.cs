@@ -5,10 +5,6 @@ namespace MG.Sonarr.Next.PSProperties;
 
 public sealed class ReadOnlyTagsProperty : ReadOnlyProperty<SortedSet<int>>
 {
-	const string AS_STRING = "read-only SortedSet[int] Tags=";
-	const string AS_EMPTY = AS_STRING + "{}";
-	const int MAX_STACKALLOC = 256;
-
 	public SortedSet<int> Tags { get; internal set; }
 	protected override SortedSet<int> ValueAsT => this.Tags;
 
@@ -20,13 +16,16 @@ public sealed class ReadOnlyTagsProperty : ReadOnlyProperty<SortedSet<int>>
 
 	public override PSMemberInfo Copy()
 	{
-		return this;
-		//return new ReadOnlyTagsProperty(new SortedSet<int>(this.Tags));
+		return new ReadOnlyTagsProperty([.. this.Tags]);
 	}
 
 	public override string ToString()
 	{
-		if (this.Tags.Count <= 0)
+		const string AS_STRING = "read-only SortedSet[int] Tags=";
+		const string AS_EMPTY = AS_STRING + "{}";
+		const int MAX_STACKALLOC = 256;
+
+		if (this.Tags.Count == 0)
 		{
 			return AS_EMPTY;
 		}
@@ -51,10 +50,7 @@ public sealed class ReadOnlyTagsProperty : ReadOnlyProperty<SortedSet<int>>
 			builder.Append(',');
 		}
 
-		if (this.Tags.Count > 0)
-		{
-			builder.BackspaceIf(',');
-		}
+		builder.BackspaceIf(',');
 
 		builder.Append('}');
 
