@@ -9,7 +9,7 @@ namespace MG.Sonarr.Next.Extensions.Reflection;
 /// </summary>
 public static class TypeNameExtensions
 {
-	private static readonly ConcurrentDictionary<PSTypeKey, string> _typeNameCache = [];
+	private static readonly ConcurrentDictionary<PSTypeKey, string> s_typeNameCache = [];
 
 	/// <summary>
 	/// Returns the PowerShell type name for the specified .NET type.
@@ -39,7 +39,7 @@ public static class TypeNameExtensions
 			return acceleratedName;
 		}
 
-		return _typeNameCache.GetOrAdd(new PSTypeKey(type, includeBrackets: !removeBrackets), GetTypeName);
+		return s_typeNameCache.GetOrAdd(new PSTypeKey(KeyedType: type, IncludeBrackets: !removeBrackets), GetTypeName);
 	}
 
 	/// <summary>
@@ -54,40 +54,20 @@ public static class TypeNameExtensions
 	private static string GetTypeName(PSTypeKey key)
 	{
 		string name = LanguagePrimitives.ConvertTypeNameToPSTypeName(key.KeyedType.FullName);
+		Debug.Assert(name is not null, "LanguagePrimitives.ConvertTypeNameToPSTypeName returned null for a non-null type name.");
+
 		if (!key.IncludeBrackets && name.EnclosedIn('[', ']'))
 		{
 			name = name[1..^1];
 		}
 
-		return name;
+		return name ?? string.Empty;
 	}
 
 	/// <summary>
 	/// Represents a key of the type name cache: a type and whether its name keeps the enclosing brackets.
 	/// </summary>
-	[DebuggerStepThrough]
-	[StructLayout(LayoutKind.Auto)]
-	private readonly record struct PSTypeKey : IEquatable<PSTypeKey>
-	{
-		/// <summary>
-		/// The type to name.
-		/// </summary>
-		public readonly Type KeyedType;
-
-		/// <summary>
-		/// A value that indicates whether the name keeps its enclosing brackets.
-		/// </summary>
-		public readonly bool IncludeBrackets;
-
-		/// <summary>
-		/// Initializes a new <see cref="PSTypeKey"/> instance with the specified type and bracket choice.
-		/// </summary>
-		/// <param name="type">The type to name.</param>
-		/// <param name="includeBrackets"><see langword="true"/> to keep the enclosing brackets in the name; otherwise, <see langword="false"/>.</param>
-		internal PSTypeKey(Type type, bool includeBrackets)
-		{
-			KeyedType = type;
-			IncludeBrackets = includeBrackets;
-		}
-	}
+	/// <param name="KeyedType">The type to name.</param>
+	/// <param name="IncludeBrackets">A value that indicates whether the name keeps its enclosing brackets.</param>
+	private readonly record struct PSTypeKey(Type KeyedType, bool IncludeBrackets);
 }
