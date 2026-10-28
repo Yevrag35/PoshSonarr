@@ -1,18 +1,13 @@
 using MG.Sonarr.Next.Exceptions;
-using MG.Sonarr.Next.Extensions;
 using System.Collections;
-using System.Reflection;
 
 namespace MG.Sonarr.Next.Shell.Attributes;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 public sealed class ValidateDictionaryAttribute : ValidateArgumentsAttribute
 {
-	static readonly MethodInfo _validate = typeof(ValidateDictionaryAttribute)
-		.GetMethod(nameof(ValidateElements), BindingFlags.NonPublic | BindingFlags.Static)
-			?? throw new MethodException("Unable to find method.");
-
 	readonly bool _valueTypeIsObject;
+	readonly bool _valueTypeAllowsNull;
 
 	public Type KeyType { get; }
 	public Type ValueType { get; }
@@ -32,6 +27,7 @@ public sealed class ValidateDictionaryAttribute : ValidateArgumentsAttribute
 		ArgumentNullException.ThrowIfNull(valueType);
 
 		_valueTypeIsObject = valueTypeIsObject;
+		_valueTypeAllowsNull = !valueType.IsValueType || Nullable.GetUnderlyingType(valueType) is not null;
 		this.KeyType = GetNonNullableKeyType(keyType);
 		this.ValueType = valueType;
 	}
@@ -49,34 +45,30 @@ public sealed class ValidateDictionaryAttribute : ValidateArgumentsAttribute
 			return;
 		}
 
-		MethodInfo genValidate = GetGenericValidation(this.KeyType, this.ValueType);
-
-		try
+		foreach (DictionaryEntry entry in dict)
 		{
-			genValidate.Invoke(null, new object[] { dict });
-		}
-		catch (TargetInvocationException ex)
-		{
-			if (ex.InnerException is InvalidTypeException invalidType)
+			if (!this.KeyType.IsInstanceOfType(entry.Key))
 			{
-				throw new ValidationMetadataException(invalidType.Message, invalidType);
+				throw ToValidationException(new InvalidKeyTypeException(this.KeyType, entry.Key));
 			}
 
-			throw;
+			if (!_valueTypeIsObject && !this.IsValidValue(entry.Value))
+			{
+				throw ToValidationException(new InvalidValueTypeException(this.ValueType, entry.Value));
+			}
 		}
 	}
 
-	private static MethodInfo GetGenericValidation(Type keyType, Type valueType)
+	private bool IsValidValue(object? value)
 	{
-		return _validate.MakeGenericMethod(new Type[] { keyType, valueType });
+		return value is null
+			? _valueTypeAllowsNull
+			: this.ValueType.IsInstanceOfType(value);
 	}
-	private static void ValidateElements<TKey, TValue>(IDictionary dictionary)
+
+	private static ValidationMetadataException ToValidationException(InvalidTypeException invalidType)
 	{
-		foreach (var kvp in dictionary.EnumerateAsPairs<TKey, TValue>())
-		{
-			Debug.Assert(kvp.Key is not null);
-			Debug.Assert(kvp.Value is TValue);
-		}
+		return new ValidationMetadataException(invalidType.Message, invalidType);
 	}
 }
 
