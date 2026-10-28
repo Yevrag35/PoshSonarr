@@ -1,0 +1,33 @@
+---
+exclude_paths:
+  # Files that aren't code, at any depth. Codacy's Java globs need '**.md', not
+  # '**/*.md', to match files at the repo root as well.
+  - '**.editorconfig'
+  - '**.example'
+  - '**.json'
+  - '**.md'
+  - '**.props'
+  - '**.slnx'
+  - '**.txt'
+  - '**.xml'
+  - '**.yaml'
+  - '**.yml'
+  - 'LICENSE'
+  # AI assistant instructions and working notes
+  - '.claude/**'
+  - '.github/**'
+  - '.ideas/**'
+  - '.img/**'
+  - '.tasks/**'
+  - '.tools/**'
+  # Committed build outputs; PoshSonarr.psm1 and PoshSonarr.psd1 are still scanned
+  - 'PoshSonarr/Core/**'
+  - 'PoshSonarr/DotNet/**'
+  - 'PoshSonarr/Formats/**'
+  - 'PoshSonarr/Next/**'
+  # Legacy Archive
+  - 'src/Legacy/**'
+  # ASM Dump Project
+  - 'src/MG.Sonarr.Tools.Asm/**'
+  # Tests
+  - '.tests/**'
