@@ -237,7 +237,7 @@ public ref partial struct RentedBuffer<T> : IDisposable
 
 		T[] newArray = Rent.Array<T>(newMinimumCapacity);
 		var newSpan = newArray.AsUnsafeSpan(0);
-		Copy(_span, newSpan);
+		_span.UnsafeCopy(newSpan);
 
 		if (_state.IsRented)
 		{
@@ -250,35 +250,6 @@ public ref partial struct RentedBuffer<T> : IDisposable
 		_span = newArray;
 		_length = newArray.Length;
 		return newArray.Length;
-	}
-
-	/// <summary>
-	/// Copies the contents of the source span to the destination span.
-	/// </summary>
-	/// <param name="source">The source span to copy from.</param>
-	/// <param name="destination">The destination span to copy to.</param>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static void Copy(ReadOnlySpan<T> source, Span<T> destination)
-	{
-		// If the type contains references, we cannot use Unsafe.CopyBlockUnaligned because it would not correctly handle the references.
-		// 'Unsafe.CopyBlockUnaligned' has no GC write barrier so the card table for that region is never marked 'dirty'. A later gen0 collection won't scan the destination as a root,
-		// see the reference object as dead, and reclaim it - leaving a dangling reference in the buffer.
-		// Compounding the issue, the destination is 100% of the time a pooled array which always get fast-tracked promoted to gen2 quickly.
-		//
-		// This whole setup was written though, because 9 times out of 10, T is a primitive type (e.g. - char).
-
-		if (RuntimeHelpers.IsReferenceOrContainsReferences<T>()) // This is a constant call at runtime meaning the JIT will only produce one of the 2 branches below for a given type T.
-		{
-			source.CopyTo(destination);
-			return;
-		}
-
-		uint size = (uint)Unsafe.SizeOf<T>();
-		uint sourceCount = size * (uint)source.Length;
-		ref byte sourceRef = ref Unsafe.As<T, byte>(ref MemoryMarshal.GetReference(source));
-		ref byte destinationRef = ref Unsafe.As<T, byte>(ref destination.Ref());
-
-		Unsafe.CopyBlockUnaligned(ref destinationRef, ref sourceRef, sourceCount);
 	}
 
 	/// <summary>
