@@ -1,0 +1,32 @@
+name: poshsonarr-testbed
+
+services:
+  sonarr:
+    build:
+      context: .
+      args:
+        SONARR_VERSION: "4.0.20.3014"
+        SONARR_SHA256: "1fc48544b5a3401b2fc3df8d0642c1e6a73a28e41a351169edd9cd8f54770db5"
+    platform: linux/amd64
+    restart: "no"
+    environment:
+      SONARR__AUTH__APIKEY: "0123456789abcdef0123456789abcdef"
+      SONARR__AUTH__METHOD: "External"
+      SONARR__APP__INSTANCENAME: "Sonarr Testbed"
+      SONARR__LOG__ANALYTICSENABLED: "false"
+    ports:
+      - "127.0.0.1:${SONARR_TESTBED_PORT:-18989}:8989"
+    volumes:
+      - config:/config
+      - tv:/tv
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null -H \"X-Api-Key: $$SONARR__AUTH__APIKEY\" http://127.0.0.1:8989/api/v3/system/status || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+      start_interval: 2s
+
+volumes:
+  config:
+  tv:

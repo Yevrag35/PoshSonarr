@@ -28,6 +28,15 @@ Run these from the repository root. Building needs a .NET 10 SDK.
 - `Connect-SonarrInstance -Url <url> -ApiKey <key>` (alias `Connect-Sonarr`) makes the connection, and `-NoApiInPath` (alias `-NoApiPrefix`) is for a reverse proxy that removes `/api` from the path.
 - `.env` in the repo root holds the development instance's settings as `KEY=value` lines: `SONARR_URL`, `SONARR_API_KEY`, and `SONARR_NO_API_IN_PATH=true` when a reverse proxy removes `/api`. Git ignores the file, so the real API key goes in it; on a machine that lacks one, the user copies `.env.example` to `.env` and fills in the key. The script's `-SonarrUrl`, `-ApiKey`, and `-NoApiInPath` parameters take precedence over the file, and when it ends up without a URL or key, the script warns and skips connecting.
 
+### Testbed
+
+- `pwsh -NoProfile -File testbed/sonarr/start.ps1` builds the testbed's image if the Dockerfile or `compose.yaml` changed, starts the container, and waits for its health check. Then it checks from the host that the port answers with the pinned version and the instance name `Sonarr Testbed`, and only after that creates whatever the baseline lacks: a tag labeled `testbed-baseline` and a root folder at `/tv`. Running it again creates nothing. `-TimeoutSeconds`, 120 by default, bounds the wait for the health check, and building the image doesn't count against it.
+- `pwsh -NoProfile -File testbed/sonarr/stop.ps1` stops the container and keeps its volumes. `pwsh -NoProfile -File testbed/sonarr/reset.ps1` removes the container and both volumes, then does everything `start.ps1` does.
+- `pwsh -NoProfile -File testbed/sonarr/logs.ps1` shows the last 200 lines of Sonarr's log, and `-Tail <count>` shows another number. Its `-Follow` streams until it's interrupted, so run it only in the background.
+- Each script works from any directory and exits 1 when something fails, and a failure while starting first shows the container's state and the last 200 lines of its log.
+- Connect the module with `Connect-SonarrInstance -Url http://127.0.0.1:18989 -ApiKey 0123456789abcdef0123456789abcdef`, without `-NoApiInPath`. The API is at `http://127.0.0.1:18989/api/v3/`, with the key in the `X-Api-Key` header, and a request with no key or a wrong one gets a 401.
+- `testbed/sonarr/compose.yaml` holds every testbed setting: the Sonarr version and its download's digest, the key, the instance name, and the default port. A `docker compose` command run by hand takes `--project-name poshsonarr-testbed --file testbed/sonarr/compose.yaml`, as the scripts' calls do, because `COMPOSE_PROJECT_NAME` outranks the file's own `name:`. From Git Bash, an `exec` that passes a container path such as `/config/sonarr.db` needs `MSYS_NO_PATHCONV=1`, or Git Bash rewrites the path into a Windows one.
+
 ### Tests
 
 - Testing isn't set up yet. The Pester files in `.tests/` are incomplete: don't run them, treat them as working, or fix them up so they run. Never write a test that connects to an instance other than the Docker testbed, or one that references `Debug.ps1`. `.tests/setup.ps1` throws before the suite imports the module, so `Invoke-Pester` stops there.
