@@ -1,4 +1,3 @@
-using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Guarding;
 using MG.Sonarr.Next.Unions;
 using System.ComponentModel;
@@ -21,6 +20,7 @@ internal ref struct SpanStringBuilder
 	/// </summary>
 	/// <param name="either">A union that contains either a <see cref="Span{T}"/> of characters or an integer representing the desired capacity.</param>
 	/// <returns>A new <see cref="SpanStringBuilder"/> instance.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static SpanStringBuilder Create(RefEither<Span<char>, int> either)
 	{
 		return either.IsT1 ? new(either.AsT1) : rentFromLength(either.AsT2);
