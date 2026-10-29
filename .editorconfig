@@ -20,6 +20,11 @@ tab_width = 2
 indent_size = 2
 tab_width = 2
 
+# YAML files (YAML forbids tabs in indentation, so each level is two spaces)
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
 [*.cs]
 
 dotnet_style_qualification_for_event = true:suggestion

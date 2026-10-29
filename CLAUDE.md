@@ -22,14 +22,15 @@ Run these from the repository root. Building needs a .NET 10 SDK.
 
 ### Debugging
 
-- Never connect to a Sonarr instance. Don't run `Debug.ps1`, `Connect-SonarrInstance`, or the Pester tests, and don't send requests to the instance that `.env` names. When a change needs checking against a live instance, ask the user to do it.
+- Never connect to a Sonarr instance other than the Docker testbed. Don't run `Debug.ps1` or the Pester tests, don't point `Connect-SonarrInstance` at any other instance, and don't send requests to the instance that `.env` names. When a change needs checking against any instance but the testbed, ask the user to do it.
+- The Docker testbed is the disposable Sonarr container that the `poshsonarr-testbed` Compose project in `testbed/sonarr/` runs, published on `127.0.0.1` at port 18989 unless `SONARR_TESTBED_PORT` sets another, with the fixed API key `0123456789abcdef0123456789abcdef`. Building its image, starting, stopping, resetting, and testing it, and sending it requests, `Connect-SonarrInstance` included, are allowed. Docker commands touch only that project's containers, volumes, and image.
 - `Debug.ps1`, in the Shell project, is for the user's interactive debugging only, and the tests never reference it. After a Debug build, `pwsh -NoExit -File src/MG.Sonarr.Next.Shell/bin/Debug/net10.0/Debug.ps1` opens a session on it: the script imports the module, loads the format and type files, and connects to the development instance. The Visual Studio launch profiles run the same script.
 - `Connect-SonarrInstance -Url <url> -ApiKey <key>` (alias `Connect-Sonarr`) makes the connection, and `-NoApiInPath` (alias `-NoApiPrefix`) is for a reverse proxy that removes `/api` from the path.
 - `.env` in the repo root holds the development instance's settings as `KEY=value` lines: `SONARR_URL`, `SONARR_API_KEY`, and `SONARR_NO_API_IN_PATH=true` when a reverse proxy removes `/api`. Git ignores the file, so the real API key goes in it; on a machine that lacks one, the user copies `.env.example` to `.env` and fills in the key. The script's `-SonarrUrl`, `-ApiKey`, and `-NoApiInPath` parameters take precedence over the file, and when it ends up without a URL or key, the script warns and skips connecting.
 
 ### Tests
 
-- Testing isn't set up yet. The Pester files in `.tests/` are incomplete: don't run them, treat them as working, or fix them up so they run, and never write a test that connects to an instance or references `Debug.ps1`. `.tests/setup.ps1` throws before the suite imports the module, so `Invoke-Pester` stops there.
+- Testing isn't set up yet. The Pester files in `.tests/` are incomplete: don't run them, treat them as working, or fix them up so they run. Never write a test that connects to an instance other than the Docker testbed, or one that references `Debug.ps1`. `.tests/setup.ps1` throws before the suite imports the module, so `Invoke-Pester` stops there.
 
 ### Byte checks
 
@@ -89,7 +90,7 @@ The base classes in `src/MG.Sonarr.Next.Shell.Bases/Cmdlets/` form one chain: `S
 ## Conventions
 
 - Every text file is UTF-8 without a BOM, with LF line endings. The Edit tool keeps whatever BOM and line endings a file already has, so run the byte check on changed files before committing and fix what it reports.
-- Indent with tabs in every file type, Markdown, JSON, XML, and PowerShell included. Project and XML config files set a tab width of 2, which is still one tab per level.
+- Indent with tabs in every file type, Markdown, JSON, XML, and PowerShell included. Project and XML config files set a tab width of 2, which is still one tab per level. YAML is the one exception: it forbids tabs in indentation, so YAML files indent with two spaces per level, as `.editorconfig` sets.
 - The repo can sit at a different root on each machine, and a session can move to another machine at any point, so write every path in a checked-in file, commands included, relative to the repo root, and take the root from the current working directory. Root a location outside the repo in an environment variable: `$env:PROGRAMFILES` in prose and PowerShell, `$PROGRAMFILES` in Bash (Git Bash imports Windows variables in uppercase), and `%PROGRAMFILES%` in a Visual Studio launch profile, which Visual Studio expands. Build paths in scripts from `$PSScriptRoot` or an MSBuild property such as `$(SolutionDir)`.
 - The `.editorconfig` C# style isn't enforced at build time, so match the surrounding code: file-scoped namespaces, `this.` on properties and methods but not fields, `_camelCase` private fields, keyword type names such as `string` and `int`, and regular constructors instead of primary ones.
 - PRs target `realDev`; `master` only takes release PRs from `realDev`.
