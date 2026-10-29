@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-PoshSonarr is a binary PowerShell module, written in C#, that manages a Sonarr PVR instance through Sonarr's v3 API. The assemblies target `net10.0`, so the module loads only in PowerShell 7.6 or later, the first release on .NET 10. `MG.Sonarr.Next.Shell.dll` is the module's root assembly, and a Release build writes the `PoshSonarr.psd1` manifest next to it.
+PoshSonarr is a binary PowerShell module, written in C#, that manages a Sonarr PVR instance through Sonarr's v3 API. The module's assemblies target `net10.0`, so the module loads only in PowerShell 7.6 or later, the first release on .NET 10. `MG.Sonarr.Next.Shell.dll` is the module's root assembly, and a Release build writes the `PoshSonarr.psd1` manifest next to it.
 
 `src/Legacy` is a historical folder that is not a part of any workflow or active development.
 
@@ -18,7 +18,7 @@ Run these from the repository root. Building needs a .NET 10 SDK.
 - To package the module, run the same command with `-c Release`. A post-build step runs `.tasks/publish_module.ps1` with `pwsh.exe`, which writes the manifest into the output folder.
 - Every build, Debug or Release, copies the runtime assemblies of the module's NuGet dependencies into the Shell project's output folder, where PowerShell looks for them, because that project sets `CopyLocalLockFileAssemblies`, which a class library leaves off by default. PowerShell supplies `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` itself, so their references in `src/MG.Sonarr.Next/MG.Sonarr.Next.csproj` exclude their runtime and native assets, and NuGet carries that exclusion to the packages they depend on and to every project that references `MG.Sonarr.Next`.
 - Build the solution, never a single project file. The Release post-build step finds its script through `$(SolutionDir)`, which a project-file build leaves undefined.
-- There is no lint step. No analyzer package is referenced and `EnforceCodeStyleInBuild` is off, so `dotnet build` accepts code that breaks the `.editorconfig` style rules, even the ones set to `error`.
+- There is no lint step. No style analyzer package is referenced and `EnforceCodeStyleInBuild` is off, so `dotnet build` accepts code that breaks the `.editorconfig` style rules, even the ones set to `error`.
 
 ### Debugging
 
@@ -51,7 +51,9 @@ The module's projects under `src/` each reference the one before it:
 
 `src/` also holds `MG.Sonarr.Tools.Asm` (net10.0), the console app behind the disassembly script, which isn't part of the module. It references `MG.Sonarr.Next.Shell` to reach the types of every module project, and because it runs outside PowerShell, it references `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` itself, which brings back the PowerShell assemblies that the module's projects leave out.
 
-`src/Directory.Build.props` holds the shared assembly metadata, the `Version` (which is also the module version), and the compiler settings: C# `latest`, unsafe code allowed, and implicit usings plus a few extra global usings. Each `.csproj` can add more global usings through `<Using>` items. `src/Directory.Packages.props` manages package versions centrally; `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` must stay on the same version.
+`src/` also holds `MG.Sonarr.Next.Generators` (netstandard2.0, so that both the SDK's compiler and Visual Studio's can load it), the module's source generators, in the `Analyzers` solution folder. `MG.Sonarr.Next` references it as an analyzer rather than as an assembly, so it reaches no output folder. Each generator injects its attribute, internal and in the `MG.Sonarr.Next.Generators` namespace, into the referencing project: `[GenerateEnumToString]` gives an enum a `<Enum>Extensions` class of formatting, validation, and parsing members, which copy through `SpanUnsafeExtensions` wherever the compilation can reach it, and `[RegisterService]` gives a class an `Add*` registration method on `IServiceCollection`, or reports `PSNR100` or `PSNR101` when the container couldn't build the registration. A new diagnostic needs a row in the project's `AnalyzerReleases.Unshipped.md`, or RS2000 warns. Referencing the generators from a project that `MG.Sonarr.Next`'s `InternalsVisibleTo` names makes CS0436 warn on the injected types, because that project also sees `MG.Sonarr.Next`'s internal copies of them.
+
+`src/Directory.Build.props` holds the shared assembly metadata, the `Version` (which is also the module version), and the compiler settings: C# `latest`, unsafe code allowed, and implicit usings plus a few extra global usings. Each `.csproj` can add more global usings through `<Using>` items. `src/Directory.Packages.props` manages package versions centrally; `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` must stay on the same version. Its `Microsoft.CodeAnalysis.CSharp` version pins only the generators' own reference, since transitive pinning is off, and it can't be newer than the compiler in the .NET SDK or Visual Studio, which won't load a generator built against a newer Roslyn.
 
 ## Architecture
 

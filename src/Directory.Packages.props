@@ -3,6 +3,11 @@
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
 	<ItemGroup>
+		<!--
+			A generator built against a newer Roslyn than the compiler that loads it fails to load (CS9057), so this stays at or
+			below the compiler version in the .NET SDK and in Visual Studio.
+		-->
+		<PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
 		<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.14" />
 		<PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.14" />
 		<!-- Requires System.Management.Automation at its own version or later, so the two move together. -->

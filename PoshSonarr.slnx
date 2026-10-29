@@ -1,4 +1,7 @@
 <Solution>
+	<Folder Name="/Analyzers/">
+		<Project Path="src/MG.Sonarr.Next.Generators/MG.Sonarr.Next.Generators.csproj" />
+	</Folder>
 	<Folder Name="/Resources/">
 		<Project Path="src/MG.Sonarr.Resources/MG.Sonarr.Resources.csproj" />
 	</Folder>

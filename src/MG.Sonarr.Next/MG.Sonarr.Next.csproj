@@ -72,6 +72,14 @@
 		<ProjectReference Include="..\MG.Sonarr.Resources\MG.Sonarr.Resources.csproj" />
 	</ItemGroup>
 
+	<!--
+		The generators run inside the compiler, so this reference loads the project as an analyzer and keeps its assembly out
+		of this project's references and output folder.
+	-->
+	<ItemGroup>
+		<ProjectReference Include="..\MG.Sonarr.Next.Generators\MG.Sonarr.Next.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<Compile Update="Metadata\MetadataList-Enumerator.cs">
 			<DependentUpon>MetadataList_T.cs</DependentUpon>
