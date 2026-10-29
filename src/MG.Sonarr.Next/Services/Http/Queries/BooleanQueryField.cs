@@ -7,10 +7,7 @@ namespace MG.Sonarr.Next.Services.Http.Queries;
 [CollectionBuilder(typeof(BooleanQueryField), nameof(CreateFromSpan))]
 public readonly struct BooleanQueryField : IQueryField, IEnumerable<Either<string, bool>>
 {
-	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	static readonly string s_True = bool.TrueString.ToLower();
-	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	static readonly string s_False = bool.FalseString.ToLower();
+	private const string TRUE = "true", FALSE = "false";
 
 	private readonly string? _key;
 	private readonly bool _value;
@@ -27,7 +24,7 @@ public readonly struct BooleanQueryField : IQueryField, IEnumerable<Either<strin
 		ArgumentException.ThrowIfNullOrWhiteSpace(key);
 		_key = key;
 		_value = value;
-		_maxLength = key.Length + 1 + s_False.Length;
+		_maxLength = key.Length + 1 + FALSE.Length;
 		_isNotEmpty = true;
 	}
 
@@ -91,7 +88,7 @@ public readonly struct BooleanQueryField : IQueryField, IEnumerable<Either<strin
 
 		destination[charsWritten++] = '=';
 
-		string value = _value ? s_True : s_False;
+		string value = _value ? TRUE : FALSE;
 		return value.AsSpan().TryCopyToSlice(destination, ref charsWritten);
 	}
 	[DebuggerStepThrough]

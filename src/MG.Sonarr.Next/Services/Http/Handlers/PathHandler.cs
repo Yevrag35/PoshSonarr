@@ -74,11 +74,6 @@ public sealed class PathHandler : DelegatingHandler
 		}
 
 		builder.Append(V3);
-		if (path.StartsWith('/', StringComparison.Ordinal))
-		{
-			builder.Backspace();
-		}
-
 		builder.Append(path);
 
 		request.RequestUri = new Uri(builder.ToString(), UriKind.Absolute);
