@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.DownloadClients;
@@ -13,6 +13,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients;
 [MetadataCanPipe(Tag = Meta.DOWNLOAD_CLIENT_SCHEMA), OutputType(typeof(IDownloadClientOutput))]
 public sealed class NewSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 {
+	public override bool CanDebugSerializeBefore => false;
+
 	[Parameter(Mandatory = true, ValueFromPipeline = true)]
 	public DownloadClientSchemaObject Schema { get; set; } = null!;
 

@@ -50,6 +50,7 @@ internal sealed partial class SonarrHttpClient
 		const string pingPath = "/ping";
 		using ApiKeyRequestMessage request = new(HttpMethod.Head, pingPath, _scopeFactory);
 		request.Options.TryAdd(PathHandler.Ping, true);
+		_cmdletAccessor.AttachTo(request);
 
 		using var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
 		try
@@ -118,6 +119,7 @@ internal sealed partial class SonarrHttpClient
 	private async Task<SonarrClientResult> SendNoResultRequestAsync(HttpRequestMessage request, string path, CancellationToken token)
 	{
 		HttpResponseMessage? response = null;
+		_cmdletAccessor.AttachTo(request);
 		try
 		{
 			response = await _client.SendAsync(request, token);
@@ -128,7 +130,7 @@ internal sealed partial class SonarrHttpClient
 			_ = TryParseResponse(response, _options.ForDeserializing, out SonarrServerError? pso, disposeResponse: false, token);
 			SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
 
-			var result = SonarrClientResult.FromException(sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);
+			var result = SonarrClientResult.FromException(sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
 			if (string.IsNullOrEmpty(result.RequestUrl))
 			{
 				result.RequestUrl = path;
@@ -138,7 +140,7 @@ internal sealed partial class SonarrHttpClient
 		}
 		catch (Exception ex)
 		{
-			var result = SonarrClientResult.FromException(ex, ErrorCategory.ConnectionError, response?.StatusCode ?? HttpStatusCode.Unused, response);
+			var result = SonarrClientResult.FromException(ex, ErrorCategory.ConnectionError, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
 			if (string.IsNullOrEmpty(result.RequestUrl))
 			{
 				result.RequestUrl = path;
@@ -154,6 +156,7 @@ internal sealed partial class SonarrHttpClient
 	private async Task<SonarrClientResult<T>> SendResultRequestAsync<T>(HttpRequestMessage request, string path, CancellationToken token)
 	{
 		HttpResponseMessage? response = null;
+		_cmdletAccessor.AttachTo(request);
 
 		try
 		{
@@ -165,7 +168,7 @@ internal sealed partial class SonarrHttpClient
 			_ = TryParseResponse(response, _options.ForDeserializing, out SonarrServerError? pso, disposeResponse: false, token);
 			SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
 
-			var result = SonarrClientResult.FromException<T>(sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? HttpStatusCode.Unused, response);
+			var result = SonarrClientResult.FromException<T>(sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
 			if (string.IsNullOrEmpty(result.RequestUrl))
 			{
 				result.RequestUrl = path;

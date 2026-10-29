@@ -17,8 +17,6 @@ public sealed class InvokeSonarrRssSyncCmdlet : TimedCmdlet
 	{
 		ArgumentNullException.ThrowIfNull(provider);
 		var tracker = provider.GetRequiredService<ICommandTracker>();
-		var queue = provider.GetRequiredService<ApiCmdletQueue>();
-		queue.Enqueue(this);
 
 		this.StartTimer();
 		var response = tracker.SendRssSync(this.Priority, this.UpdateScheduledTask.ToBool());

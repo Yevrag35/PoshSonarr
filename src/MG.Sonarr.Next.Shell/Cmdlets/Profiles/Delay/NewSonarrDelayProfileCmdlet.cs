@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Models.Tags;
@@ -37,6 +37,7 @@ public sealed class NewSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 	public Either<string, int>[] Tags { get; set; } = [];
 
 	protected override int Capacity => 2;
+	public override bool CanDebugSerializeBefore => false;
 
 	private SortedSet<int> _tagIds = null!;
 	private WildcardSet _tagNames = null!;

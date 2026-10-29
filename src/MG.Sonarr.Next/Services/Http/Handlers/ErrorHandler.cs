@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Services.Http.Extensions;
 using MG.Sonarr.Next.Services.Http.IO;
@@ -71,14 +71,11 @@ internal sealed class ErrorHandler : DelegatingHandler
 		ValueTask disposeTask = stream.DisposeAsync();
 		try
 		{
-			memStream.Rewind();
+			if (TryReadError(memStream, options, out ServerError? error))
+			{
+				response.AddMetadata(ErrorKey, error);
+			}
 
-			var error = await JsonSerializer.DeserializeAsync<ServerError>(memStream, options, token).ConfigureAwait(false)
-				?? throw new JsonException("Unable to deserialize the error response content.");
-
-			response.AddMetadata(ErrorKey, error);
-
-			memStream.Rewind();
 			response.Content = new StreamContent(await memStream.ToMemoryStreamAsync(token).ConfigureAwait(false));
 			originalContent.Headers.CopyTo(response.Content.Headers);
 
@@ -88,6 +85,28 @@ internal sealed class ErrorHandler : DelegatingHandler
 		{
 			await disposeTask.ConfigureAwait(false);
 		}
+	}
+
+	private static bool TryReadError(ArrayPoolMemoryStream stream, JsonSerializerOptions options, [NotNullWhen(true)] out ServerError? error)
+	{
+		// Sonarr answers a failed validation with an array of errors, which the response reader parses.
+		ReadOnlySpan<byte> json = stream.AsJsonSpan();
+		if (!json.StartsWith((byte)'{'))
+		{
+			error = null;
+			return false;
+		}
+
+		try
+		{
+			error = JsonSerializer.Deserialize<ServerError>(json, options);
+		}
+		catch (JsonException)
+		{
+			error = null; // A malformed body still reaches the response reader as it came.
+		}
+
+		return error is not null;
 	}
 
 	private sealed class ServerError : IServerError

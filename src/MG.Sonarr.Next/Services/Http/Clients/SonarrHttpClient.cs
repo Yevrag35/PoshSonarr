@@ -35,15 +35,17 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	const string TEST_API = "/system/status";
 
 	readonly HttpClient _client;
+	readonly ApiCmdletAccessor _cmdletAccessor;
 	ISonarrJsonOptions _options;
 	readonly IMetadataResolver _resolver;
 	readonly IResponseReader _responseReader;
 	readonly IServiceScopeFactory _scopeFactory;
 	readonly IConnectionSettings _settings;
 
-	public SonarrHttpClient(HttpClient client, IConnectionSettings settings, ISonarrJsonOptions options, IMetadataResolver resolver, IResponseReader reader, IServiceScopeFactory scopeFactory)
+	public SonarrHttpClient(HttpClient client, IConnectionSettings settings, ISonarrJsonOptions options, IMetadataResolver resolver, IResponseReader reader, ApiCmdletAccessor cmdletAccessor, IServiceScopeFactory scopeFactory)
 	{
 		_client = client;
+		_cmdletAccessor = cmdletAccessor;
 		_options = options;
 		_resolver = resolver;
 		_responseReader = reader;
@@ -113,6 +115,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	{
 		HttpResponseMessage? response = null;
 		using TestRequestMessage request = new(TEST_API, _scopeFactory);
+		_cmdletAccessor.AttachTo(request);
 
 		try
 		{
@@ -120,7 +123,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 			response = _client.Send(request, token);
 			if (response.IsSuccessStatusCode)
 			{
-				SonarrAuthType authType = TryParseResponse(
+				_settings.AuthType = TryParseResponse(
 					response,
 					options: _options.ForDeserializing,
 					result: out SonarrStatus? status,
@@ -148,6 +151,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	private SonarrClientResult SendNoResultRequest(HttpRequestMessage request, string path, CancellationToken token)
 	{
 		HttpResponseMessage? response = null;
+		_cmdletAccessor.AttachTo(request);
 		try
 		{
 			response = _client.Send(request, token);
@@ -181,6 +185,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	private SonarrClientResult<T> SendResultRequest<T>(HttpRequestMessage request, string path, CancellationToken token)
 	{
 		HttpResponseMessage? response = null;
+		_cmdletAccessor.AttachTo(request);
 
 		try
 		{
@@ -233,8 +238,12 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	private static SonarrClientResult ParseMessage(string url, HttpResponseMessage response, CancellationToken token)
 	{
 		JsonNode? node = JsonNode.Parse(response.Content.ReadAsStream(token));
+		string? message = node is System.Text.Json.Nodes.JsonObject obj && obj["message"] is JsonValue value && value.TryGetValue(out string? text)
+			? text
+			: null;
+
 		var result =
-			SonarrClientResult.FromException(new HttpResponseException(node?.AsObject()["message"]?.ToJsonString(), response), ErrorCategory.ResourceUnavailable, response.StatusCode);
+			SonarrClientResult.FromException(new HttpResponseException(message, response), ErrorCategory.ResourceUnavailable, response.StatusCode);
 
 		if (string.IsNullOrEmpty(result.RequestUrl))
 		{
@@ -284,6 +293,8 @@ public static class SonarrClientDependencyInjection
 				.AddMetadata(cmdletAssembly)
 				.AddResponseReader()
 				.AddSingleton(settings)
+				.AddSingleton(new CookieContainer())
+				.AddScoped<ApiCmdletAccessor>()
 				//.AddSignalRClient()
 				.AddSonarrDownloadClient()
 				.AddSonarrJsonOptions(configureJson)

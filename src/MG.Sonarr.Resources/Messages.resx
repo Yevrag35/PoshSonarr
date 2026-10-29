@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -138,6 +138,10 @@
   </data>
   <data name="Debug_JSONResponse_Preamble" xml:space="preserve">
     <value>HTTP Response (size in bytes: {0}) -&gt; {1}</value>
+    <comment>{0} - the content length in bytes, {1} - the serialized JSON payload.</comment>
+  </data>
+  <data name="Debug_JSONRequest_Preamble" xml:space="preserve">
+    <value>HTTP Request (size in bytes: {0}) -&gt; {1}</value>
     <comment>{0} - the content length in bytes, {1} - the serialized JSON payload.</comment>
   </data>
 </root>

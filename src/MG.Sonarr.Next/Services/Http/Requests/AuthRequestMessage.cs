@@ -1,11 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 
 namespace MG.Sonarr.Next.Services.Http.Requests;
 
 internal sealed class AuthedRequestMessage : SonarrRequestMessage
 {
-	const string LOGIN_PART = "/login?returnUrl=/";
 	const string PASSWORD = "password";
 	const string USERNAME = "username";
 	static readonly NetworkCredential _blankCreds = new();
@@ -21,26 +20,6 @@ internal sealed class AuthedRequestMessage : SonarrRequestMessage
 		: base(method, requestUri, scopeFactory)
 	{
 		this.Credentials = credentials ?? _blankCreds;
-	}
-
-	public Uri GetLoginUrl()
-	{
-		if (this.RequestUri is null)
-		{
-			return new Uri(LOGIN_PART, UriKind.Relative);
-		}
-
-		string authority = this.RequestUri
-			.GetComponents(UriComponents.SchemeAndServer, UriFormat.Unescaped);
-
-		int length = authority.Length + LOGIN_PART.Length;
-		string fullUri = string.Create(length, authority, (chars, state) =>
-		{
-			state.CopyTo(chars);
-			LOGIN_PART.CopyTo(chars.Slice(state.Length));
-		});
-
-		return new Uri(fullUri, UriKind.Absolute);
 	}
 
 	/// <exception cref="UnauthorizedAccessException"></exception>

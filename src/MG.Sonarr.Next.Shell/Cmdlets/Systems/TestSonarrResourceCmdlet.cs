@@ -1,7 +1,6 @@
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Services.Http;
-using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Services.Testing;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
@@ -16,7 +15,6 @@ public sealed class TestSonarrResourceCmdlet : TimedCmdlet
 	const string TEST = "/test";
 	const string TEST_ALL = "/testall";
 	ITestingService _tester = null!;
-	ApiCmdletQueue _queue = null!;
 
 	[Parameter(Mandatory = true, ValueFromPipeline = true)]
 	[ValidateNotNull]
@@ -26,7 +24,6 @@ public sealed class TestSonarrResourceCmdlet : TimedCmdlet
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_queue = provider.GetRequiredService<ApiCmdletQueue>();
 		_tester = provider.GetRequiredService<ITestingService>();
 	}
 
@@ -34,7 +31,6 @@ public sealed class TestSonarrResourceCmdlet : TimedCmdlet
 	{
 		foreach (ITestPipeable testable in this.InputObject)
 		{
-			_queue.Enqueue(this);
 			this.StartTimer();
 			SonarrClientResult response = this.SendSingleTest(testable);
 			var obj = new

@@ -3,7 +3,6 @@ using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
-using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -86,8 +85,6 @@ public sealed class ConnectSonarrInstanceCmdlet : ConnectCmdlet, IApiCmdlet
 
 		using IServiceScope scope = this.ConnectContext(ModuleServiceConfigurer.AddConfiguration);
 
-		var queue = scope.ServiceProvider.GetService<ApiCmdletQueue>();
-		queue?.Enqueue(this);
 		var client = scope.ServiceProvider.GetRequiredService<ISonarrClient>();
 
 		ISonarrResponse result = this.SendTest(client, scope.ServiceProvider, this.PassThru);

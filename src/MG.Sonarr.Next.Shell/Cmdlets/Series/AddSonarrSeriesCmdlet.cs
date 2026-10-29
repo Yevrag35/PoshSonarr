@@ -19,6 +19,7 @@ public sealed class AddSonarrSeriesCmdlet : SonarrApiCmdletBase//, IDynamicParam
 	private SeriesAddOptions? _usingOptions;
 	internal SeriesAddOptions AddOptions => _usingOptions ??= _addOptions ?? SeriesAddOptions.Default;
 	private MetadataTag Tag { get; set; } = null!;
+	public override bool CanDebugSerializeBefore => false;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = true, ValueFromPipeline = true)]

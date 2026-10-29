@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Next.Extensions.Strings;
 using System.Collections.ObjectModel;
 using System.Net;
 
@@ -31,7 +31,7 @@ public static class HttpStatusCodeExtensions
 		return string.Create(codeStr.Length + 6, (codeStr, statusCode), (chars, state) =>
 		{
 			_ = ((int)state.statusCode).TryFormat(chars, out int written, default, Statics.DefaultProvider);
-			written = chars.Slice(written).Push(' ', '(');
+			written += chars.Slice(written).Push(' ', '(');
 
 			written = codeStr.CopyToSlice(chars, written);
 			chars[written++] = ')';

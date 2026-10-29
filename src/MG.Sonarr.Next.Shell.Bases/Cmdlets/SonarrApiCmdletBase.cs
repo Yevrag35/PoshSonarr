@@ -2,7 +2,6 @@ using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
-using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Unions;
 
@@ -16,13 +15,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets;
 public abstract class SonarrApiCmdletBase : TimedCmdlet
 {
 	private ISonarrClient _client = null!;
-	private ApiCmdletQueue _queue = null!;
 
 	private protected override void OnCreatingScopeInternal(IServiceProvider provider)
 	{
 		base.OnCreatingScopeInternal(provider);
 		_client = provider.GetRequiredService<ISonarrClient>();
-		_queue = provider.GetRequiredService<ApiCmdletQueue>();
 	}
 
 	/// <summary>
@@ -36,7 +33,6 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	protected SonarrClientResult SendDeleteRequest(string path, CancellationToken token = default)
 	{
 		this.StartTimer();
-		_queue.Enqueue(this);
 
 		return _client.SendDeleteAsync(path, token).GetAwaiter().GetResult();
 	}
@@ -53,7 +49,6 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	protected SonarrClientResult<T> SendGetRequest<T>(string path, CancellationToken token = default)
 	{
 		this.StartTimer();
-		_queue.Enqueue(this);
 		return _client.SendGetAsync<T>(path, token).GetAwaiter().GetResult();
 	}
 
@@ -68,7 +63,6 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	protected SonarrClientResult<T> SendPostRequest<T>(string path, CancellationToken token = default)
 	{
 		this.StartTimer();
-		_queue.Enqueue(this);
 		return _client.SendPostAsync<T>(path, token).GetAwaiter().GetResult();
 	}
 	/// <summary>
@@ -85,7 +79,6 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	protected SonarrClientResult SendPostRequest<T>(string path, T body, CancellationToken token = default) where T : notnull
 	{
 		this.StartTimer();
-		_queue.Enqueue(this);
 		return _client.SendPostAsync(path, body, token).GetAwaiter().GetResult();
 	}
 	/// <summary>
@@ -104,7 +97,6 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	protected Either<TOutput, SonarrErrorRecord> SendPostRequest<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull
 	{
 		this.StartTimer();
-		_queue.Enqueue(this);
 		SonarrClientResult<TOutput> response = _client.SendPostAsync<TBody, TOutput>(path, body, token).GetAwaiter().GetResult();
 		return !response.IsError
 			? response.Value
@@ -125,7 +117,6 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 		where T : notnull
 	{
 		this.StartTimer();
-		_queue.Enqueue(this);
 		return _client.SendPutAsync(path, body, token).GetAwaiter().GetResult();
 	}
 

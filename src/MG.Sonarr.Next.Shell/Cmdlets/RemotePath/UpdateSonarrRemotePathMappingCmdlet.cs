@@ -13,6 +13,7 @@ public sealed class UpdateSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	RemotePathBody? _body;
 
 	protected override bool CaptureDebugPreference => true;
+	public override bool CanDebugSerializeBefore => false;
 
 	[Parameter(ValueFromPipelineByPropertyName = true)]
 	[ValidateNotNullOrEmpty]

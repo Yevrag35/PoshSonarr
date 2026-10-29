@@ -3,7 +3,6 @@
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.14" />
 		<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.14" />
 		<PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.14" />
 		<!-- Requires System.Management.Automation at its own version or later, so the two move together. -->

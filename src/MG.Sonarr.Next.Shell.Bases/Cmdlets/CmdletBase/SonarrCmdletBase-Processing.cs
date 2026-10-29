@@ -1,6 +1,5 @@
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Shell.Context;
 using MG.Sonarr.Next.Shell.Extensions;
 
@@ -195,7 +194,6 @@ public abstract partial class SonarrCmdletBase
 	[DebuggerStepThrough]
 	protected sealed override void EndProcessing()
 	{
-		ApiCmdletQueue? queue = null;
 		_scope ??= this.CreateScope();
 
 		try
@@ -204,9 +202,6 @@ public abstract partial class SonarrCmdletBase
 			{
 				this.End(_scope.ServiceProvider);
 			}
-
-			queue = _scope?.ServiceProvider.GetService<ApiCmdletQueue>();
-			queue?.Clear();
 		}
 		catch (PipelineStoppedException)
 		{
@@ -219,7 +214,6 @@ public abstract partial class SonarrCmdletBase
 		}
 		finally
 		{
-			queue?.Clear();
 			this.Cleanup();
 		}
 
@@ -259,8 +253,6 @@ public abstract partial class SonarrCmdletBase
 
 		try
 		{
-			ApiCmdletQueue queue = _scope.ServiceProvider.GetRequiredService<ApiCmdletQueue>();
-			queue.Clear();
 			this.Stop(_scope.ServiceProvider);
 			this.ThrowTerminatingError(this.Error);
 		}

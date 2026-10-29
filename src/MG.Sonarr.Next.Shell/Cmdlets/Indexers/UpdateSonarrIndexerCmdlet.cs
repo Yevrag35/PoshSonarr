@@ -10,6 +10,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers;
 [MetadataCanPipe(Tag = Meta.INDEXER)]
 public sealed class UpdateSonarrIndexerCmdlet : SonarrApiCmdletBase
 {
+	public override bool CanDebugSerializeBefore => false;
+
 	[Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
 	[ValidateId(ValidateRangeKind.Positive)]
 	[ValidateNotNull]

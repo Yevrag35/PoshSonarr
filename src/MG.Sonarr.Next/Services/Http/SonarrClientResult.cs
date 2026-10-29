@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Services.Http.Handlers;
@@ -156,7 +156,10 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 			: response?.RequestMessage?.RequestUri?.ToString();
 
 		SonarrErrorRecord error = new(exception, name, errorCategory, requestUri);
-		return new SonarrClientResult(error);
+		return new SonarrClientResult(error)
+		{
+			StatusCode = statusCode,
+		};
 	}
 	/// <summary>
 	/// Creates a new <see cref="SonarrClientResult{T}"/> representing a failed operation due to the specified
@@ -183,7 +186,10 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 			: response?.RequestMessage?.RequestUri?.ToString();
 
 		SonarrErrorRecord error = new(exception, name, errorCategory, requestUri);
-		return new SonarrClientResult<T>(error);
+		return new SonarrClientResult<T>(error)
+		{
+			StatusCode = statusCode,
+		};
 	}
 	/// <summary>
 	/// Creates a new result representing a failed operation due to a Sonarr HTTP exception.

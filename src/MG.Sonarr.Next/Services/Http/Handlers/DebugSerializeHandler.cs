@@ -1,7 +1,5 @@
-using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Services.Http.Extensions;
 using MG.Sonarr.Next.Services.Http.IO;
-using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Strings;
 using MG.Sonarr.Resources;
 
@@ -9,15 +7,6 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 
 public sealed class DebugSerializeHandler : DelegatingHandler
 {
-	private readonly ApiCmdletQueue _queue;
-	private readonly JsonSerializerOptions _serializingOptions;
-
-	public DebugSerializeHandler(ApiCmdletQueue queue, ISonarrJsonOptions options)
-	{
-		_queue = queue;
-		_serializingOptions = options.ForDebugging;
-	}
-
 	protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
 	{
 		return this.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
@@ -25,9 +14,15 @@ public sealed class DebugSerializeHandler : DelegatingHandler
 
 	protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
 	{
-		if (!_queue.TryPeek(out IApiCmdlet? cmdlet))
+		if (!ApiCmdletAccessor.TryGetCmdlet(request, out IApiCmdlet? cmdlet))
 		{
 			return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+		}
+
+		if (cmdlet.CanDebugSerializeBefore && request.Content is not null)
+		{
+			string requestString = await SerializeRequestAsync(request.Content, cancellationToken).ConfigureAwait(false);
+			cmdlet.WriteDebugPayload(requestString);
 		}
 
 		HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -43,6 +38,18 @@ public sealed class DebugSerializeHandler : DelegatingHandler
 		}
 
 		return response;
+	}
+
+	private static async Task<string> SerializeRequestAsync(HttpContent content, CancellationToken token)
+	{
+		// A buffered body is sent from its buffer, so reading it here leaves it in place for the send.
+		await content.LoadIntoBufferAsync(token).ConfigureAwait(false);
+		string jsonString = await content.ReadAsStringAsync(token).ConfigureAwait(false);
+
+		return Messenger.Format(
+			provider: CultureInfo.CurrentCulture,
+			format: Messages.Debug_JSONRequest_Preamble,
+			content.Headers.ContentLength ?? Encoding.UTF8.GetByteCount(jsonString), jsonString);
 	}
 
 	private static async Task<StringResponse> SerializeResponseAsync(HttpResponseMessage response, CancellationToken token)

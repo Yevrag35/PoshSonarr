@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Http.IO;
+using MG.Sonarr.Next.Services.Http.IO;
 
 namespace MG.Sonarr.Next.Services.Http.Extensions;
 
@@ -33,5 +33,24 @@ internal static class MemoryStreamExtensions
 		memStream.Rewind();
 
 		return memStream;
+	}
+
+	/// <summary>
+	/// Returns the populated contents of the stream from their first JSON token on, past a UTF-8 byte order mark and any
+	/// JSON whitespace.
+	/// </summary>
+	/// <param name="stream">The stream that holds a buffered body.</param>
+	/// <returns>A read-only span over the stream's contents from their first JSON token, which is empty when the contents
+	/// hold nothing else.</returns>
+	/// <exception cref="ObjectDisposedException">Thrown when <paramref name="stream"/> has been disposed.</exception>
+	internal static ReadOnlySpan<byte> AsJsonSpan(this ArrayPoolMemoryStream stream)
+	{
+		ReadOnlySpan<byte> json = stream.AsMemory().Span;
+		if (json.StartsWith(Encoding.UTF8.Preamble))
+		{
+			json = json[Encoding.UTF8.Preamble.Length..];
+		}
+
+		return json.TrimStart(" \t\r\n"u8);
 	}
 }

@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Json.Naming;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Jobs;
@@ -30,7 +31,7 @@ public static class CmdletContextExtensions
 		//    throw new InvalidOperationException("Don't execute me weird.");
 		//}
 
-		return SonarrContext.GetProvider().CreateScope();
+		return SonarrContext.GetProvider().CreateScope().WithCmdlet(cmdlet);
 	}
 
 	internal static IServiceScope CreateScope(this ScopedTransformationAttribute attribute)
@@ -55,11 +56,32 @@ public static class CmdletContextExtensions
 	internal static IServiceScope SetContext<T>(this T cmdlet, Assembly cmdletAssembly, Action<IServiceCollection> addAdditionalServices)
 		where T : PSCmdlet, IConnectContextCmdlet, IIsRunning<T>
 	{
-		return SonarrContext.Initialize(cmdlet.GetConnectionSettings(), cmdletAssembly, cmdlet.MyInvocation.BoundParameters, addAdditionalServices);
+		return SonarrContext.Initialize(cmdlet.GetConnectionSettings(), cmdletAssembly, cmdlet.MyInvocation.BoundParameters, addAdditionalServices)
+			.WithCmdlet(cmdlet);
 	}
 	internal static void UnsetContext<T>(this T _) where T : IDisconnectContextCmdlet, IScopeCmdlet<T>
 	{
 		SonarrContext.Deinitialize();
+	}
+
+	/// <summary>
+	/// Records the cmdlet that the specified scope belongs to, when the cmdlet is an <see cref="IApiCmdlet"/>.
+	/// </summary>
+	/// <remarks>
+	/// The clients that the scope resolves put the cmdlet in each request that they send, where the HTTP handlers find it to
+	/// write its verbose and debug output. Any other cmdlet leaves the scope without one.
+	/// </remarks>
+	/// <param name="scope">The scope that was created for <paramref name="cmdlet"/>.</param>
+	/// <param name="cmdlet">The cmdlet that runs in <paramref name="scope"/>.</param>
+	/// <returns><paramref name="scope"/>, for chaining.</returns>
+	private static IServiceScope WithCmdlet(this IServiceScope scope, PSCmdlet cmdlet)
+	{
+		if (cmdlet is IApiCmdlet apiCmdlet)
+		{
+			scope.ServiceProvider.GetRequiredService<ApiCmdletAccessor>().Cmdlet = apiCmdlet;
+		}
+
+		return scope;
 	}
 }
 
@@ -99,8 +121,6 @@ file static class SonarrContext
 		services
 			//.AddClock(mock => mock.GetNow = c => c.Now.AddDays(-7d))
 			.AddClock()
-			.AddMemoryCache()
-			.AddSingleton<ApiCmdletQueue>()
 			.AddSonarrClient(cmdletAssembly, settings, (provider, options) =>
 			{
 				options.PropertyNamingPolicy = JsonSpanCamelCaseNamingPolicy.SpanPolicy;

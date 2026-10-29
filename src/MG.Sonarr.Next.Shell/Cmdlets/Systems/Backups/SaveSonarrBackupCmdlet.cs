@@ -4,7 +4,6 @@ using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
-using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Exceptions;
 using System.Net;
@@ -22,7 +21,6 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 {
 	bool _noFileName;
 	ISonarrDownloadClient Downloader { get; set; } = null!;
-	ApiCmdletQueue Queue { get; set; } = null!;
 
 	public bool CanDebugSerializeAfter => false;
 	public bool CanDebugSerializeBefore => this.VerbosePreference != ActionPreference.SilentlyContinue;
@@ -61,7 +59,6 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 	{
 		base.OnCreatingScope(provider);
 		this.Downloader = provider.GetRequiredService<ISonarrDownloadClient>();
-		this.Queue = provider.GetRequiredService<ApiCmdletQueue>();
 	}
 
 	protected override void Begin(IServiceProvider provider)
@@ -89,8 +86,6 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 	}
 	protected override void Process(IServiceProvider provider)
 	{
-		this.Queue.Enqueue(this);
-
 		string downloadPath = this.MakeFilePath(this.Path, this.BackupUri, _noFileName);
 		if (!this.Force && IOFile.Exists(downloadPath))
 		{
@@ -165,17 +160,5 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 			options ??= provider.GetService<ISonarrJsonOptions>()?.ForSerializing;
 			this.Host.UI.WriteVerboseLine(JsonSerializer.Serialize(response, options));
 		}
-	}
-
-	bool _disposed;
-	protected override void Dispose(bool disposing)
-	{
-		if (disposing && !_disposed)
-		{
-			this.Queue.Clear();
-			_disposed = true;
-		}
-
-		base.Dispose(disposing);
 	}
 }

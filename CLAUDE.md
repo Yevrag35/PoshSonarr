@@ -65,12 +65,12 @@ The base classes in `src/MG.Sonarr.Next.Shell.Bases/Cmdlets/` form one chain: `S
 
 - `SonarrCmdletBase` seals PowerShell's processing methods. Cmdlets override `Begin`, `Process`, `End`, and `Stop`, which receive the scoped `IServiceProvider`, and set up state in `OnCreatingScope` rather than a constructor. Exceptions thrown from them become error records.
 - `PoolableCmdlet` rents objects from pools registered in DI and returns them when the cmdlet is disposed.
-- `SonarrApiCmdletBase` provides the synchronous `Send*Request` helpers. Each call queues the cmdlet on the singleton `ApiCmdletQueue`, which is how the HTTP handlers reach the running cmdlet to write its verbose and debug output, so API calls go through these helpers.
+- `SonarrApiCmdletBase` provides the synchronous `Send*Request` helpers, which API calls go through. Each call starts the timer that the cmdlet's verbose output reports. The HTTP handlers reach the running cmdlet, to write its verbose and debug output, through the request: the cmdlet's DI scope holds it in an `ApiCmdletAccessor`, and the clients that the scope resolves put it in the options of every request they send.
 - `SonarrMetadataCmdlet` binds a cmdlet to one metadata tag, and so to one endpoint, and adds get-all, filter, and get-by-ID helpers.
 
 ### HTTP pipeline
 
-`ISonarrClient` (`SonarrHttpClient`, registered by `SonarrClientDependencyInjection.AddSonarrClient`) is a typed `HttpClient` that sends the API key in the `X-Api-Key` header. A request passes through `PathHandler`, `VerboseHandler`, `DebugSerializeHandler`, `TestingHandler`, and `ErrorHandler`, in that order, before reaching `SonarrClientHandler`. The endpoint paths in `Constants` are relative; `PathHandler` adds the `/api/v3` prefix, or `/v3` under `-NoApiInPath`. Calls return a `SonarrClientResult` or `SonarrClientResult<T>`, which carries an error record instead of throwing.
+`ISonarrClient` (`SonarrHttpClient`, registered by `SonarrClientDependencyInjection.AddSonarrClient`) is a typed `HttpClient` that sends the API key in the `X-Api-Key` header. A request passes through `PathHandler`, `VerboseHandler`, `DebugSerializeHandler`, `TestingHandler`, and `ErrorHandler`, in that order, before reaching `SonarrClientHandler`. The endpoint paths in `Constants` are relative; `PathHandler` puts the URL base from `-Url`, if any, and the `/api/v3` prefix, or `/v3` under `-NoApiInPath`, in front of them. Calls return a `SonarrClientResult` or `SonarrClientResult<T>`, which carries an error record instead of throwing.
 
 ### Objects and metadata tags
 

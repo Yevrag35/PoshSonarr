@@ -14,6 +14,8 @@ public sealed class UpdateSonarrSeriesCmdlet : SonarrApiCmdletBase
 {
 	List<SeriesObject> _list = null!;
 
+	public override bool CanDebugSerializeBefore => false;
+
 	[Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
 	[ValidateIds(ValidateRangeKind.Positive)]
 	public SeriesObject[] InputObject { get; set; } = [];

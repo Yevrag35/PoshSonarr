@@ -4,7 +4,6 @@ using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
-using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Shell.Attributes;
 using System.Net;
 using System.Text.Json;
@@ -22,7 +21,6 @@ public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
 	private bool _noFileName;
 	private ISonarrDownloadClient Downloader { get; set; } = null!;
 	public bool CanWriteVerbose => this.VerbosePreference is not (ActionPreference.SilentlyContinue or ActionPreference.Ignore);
-	private ApiCmdletQueue Queue { get; set; } = null!;
 
 	[Parameter(Mandatory = true, ParameterSetName = "ByExplicitUrl")]
 	[ValidateUrl(UriKind.Relative)]
@@ -60,7 +58,6 @@ public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
 	{
 		base.OnCreatingScope(provider);
 		this.Downloader = provider.GetRequiredService<ISonarrDownloadClient>();
-		this.Queue = provider.GetRequiredService<ApiCmdletQueue>();
 	}
 
 	protected override void Begin(IServiceProvider provider)
@@ -88,7 +85,6 @@ public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
 	}
 	protected override void Process(IServiceProvider provider)
 	{
-		this.Queue.Enqueue(this);
 		string downloadPath = this.MakeFilePath(this.Path, this.LogUri, _noFileName);
 		if (!this.Force && IOFile.Exists(downloadPath))
 		{
@@ -165,17 +161,5 @@ public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
 			options ??= provider.GetService<ISonarrJsonOptions>()?.ForSerializing;
 			this.Host.UI.WriteVerboseLine(JsonSerializer.Serialize(response, options));
 		}
-	}
-
-	bool _disposed;
-	protected override void Dispose(bool disposing)
-	{
-		if (disposing && !_disposed)
-		{
-			this.Queue.Clear();
-			_disposed = true;
-		}
-
-		base.Dispose(disposing);
 	}
 }

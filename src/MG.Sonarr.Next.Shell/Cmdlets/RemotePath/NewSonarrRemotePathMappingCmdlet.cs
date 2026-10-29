@@ -15,6 +15,7 @@ public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	const string DOT_HOST = ".";
 
 	protected override bool CaptureDebugPreference => true;
+	public override bool CanDebugSerializeBefore => false;
 
 	[Parameter(Mandatory = true)]
 	[ValidateNotNullOrEmpty]

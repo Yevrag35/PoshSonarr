@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.ManualImports;
 using MG.Sonarr.Next.Services.Http;
@@ -11,6 +11,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports;
 [MetadataCanPipe(Tag = Meta.MANUAL_IMPORT)]
 public class InvokeSonarrManualImportCmdlet : SonarrMetadataCmdlet
 {
+	public override bool CanDebugSerializeBefore => false;
+
 	[Parameter(Mandatory = true, ValueFromPipeline = true), AllowEmptyCollection]
 	public ManualImportObject[] InputObject { get; set; } = [];
 
