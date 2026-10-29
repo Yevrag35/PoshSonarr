@@ -298,21 +298,6 @@ internal ref struct SpanStringBuilder
 	}
 
 	/// <summary>
-	/// Appends the string representation of a specified <typeparamref name="T"/> value to this instance.
-	/// </summary>
-	/// <typeparam name="T">The type of <see cref="INumber{TSelf}"/> being appended.</typeparam>
-	/// <param name="number">The number to append.</param>
-	/// <param name="provider">The format provider to use.</param>
-	/// <inheritdoc cref="EnsureCapacity(pint)" path="/exception"/>
-	[Obsolete("Prefer the overload that accepts a maximum length for performance reasons.")]
-	public void Append<T>(T number, IFormatProvider? provider = null) where T : unmanaged, IBinaryInteger<T>, IMinMaxValue<T>
-	{
-		int length = number.GetLength();
-		this.EnsureCapacity(new pint(length, true));
-		_position = number.CopyToSlice(_chars, _position, default, provider);
-	}
-
-	/// <summary>
 	/// Appends the characters from the specified <see cref="ReadOnlySpan{T}"/> to the current instance.
 	/// </summary>
 	/// <param name="value">The span containing the characters to append.</param>

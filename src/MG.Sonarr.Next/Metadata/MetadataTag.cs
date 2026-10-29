@@ -1,4 +1,4 @@
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Services.Http.Queries;
 using System.Collections.Immutable;
@@ -16,6 +16,8 @@ namespace MG.Sonarr.Next.Metadata;
 [DebuggerDisplay(@"\{{Value}, {UrlBase}\}")]
 public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatable<MetadataTag>
 {
+	private const int MAX_STACKALLOC = 256;
+
 	/// <summary>
 	/// The cached <see cref="ToString"/> string.
 	/// </summary>
@@ -156,12 +158,12 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 
 		span[position++] = '/';
 
-		if (!id.TryCopyToSlice(span, ref position, provider: Statics.DefaultProvider))
+		if (!id.TryCopyToSlice(span, ref position))
 		{
 			Debug.Fail($"Unable to format '{id}' into the BaseUrl.");
 			position = this.UrlBase.Length + 1;
 
-			position = id.ToString(format: null, formatProvider: Statics.DefaultProvider)
+			position = id.ToString(format: null, formatProvider: null)
 						 .CopyToSlice(span, position);
 		}
 
@@ -170,21 +172,25 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	public string GetUrlForId<T>(T id, QueryCol parameters) where T : ISpanFormattable
 	{
 		this.ThrowIfNotSupportId();
-		Span<char> span = stackalloc char[this.UrlBase.Length + 2 + parameters.MaxLength + LengthConstants.INT128_MAX];
+		int length = this.UrlBase.Length + 2 + parameters.MaxLength + LengthConstants.INT128_MAX;
 
-		this.UrlBase.CopyTo(span, out int position);
+		using var builder = SpanStringBuilder.Create(
+			length <= MAX_STACKALLOC
+				? stackalloc char[length]
+				: length);
 
-		span[position++] = '/';
+		unsafe { builder.Append(this.UrlBase.Length + 1, this.UrlBase, &writeUrlBase); }
 
-		position = id.CopyToSlice(span, position, provider: Statics.DefaultProvider);
+		builder.Append(id, LengthConstants.INT128_MAX);
+		builder.Append(parameters, parameters.MaxLength);
 
-		if (parameters.Count > 0)
+		return builder.ToString();
+
+		static void writeUrlBase(Span<char> buffer, string urlBase)
 		{
-			span[position++] = '?';
-			position = parameters.CopyToSlice(span, position, provider: Statics.DefaultProvider);
+			urlBase.CopyTo(buffer.UnsafeSlice(0, urlBase.Length));
+			buffer.Ref(urlBase.Length) = '/'; 
 		}
-
-		return new string(span.Slice(0, position));
 	}
 
 	private bool IsNullOrReferenceEquals([NotNullWhen(false)] MetadataTag? other, out bool isEqual)
@@ -232,7 +238,7 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 
 		length += 12 + (2 * (this.CanPipeTo.Length - 1)); // 12 = the miscellaneous characters
 
-		return _toString = string.Create(length, this, (chars, state) =>
+		return _toString = string.Create(length, this, static (chars, state) =>
 		{
 			int position = 0;
 			ReadOnlySpan<char> sep = [' ', '=', ' '];

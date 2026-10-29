@@ -36,12 +36,17 @@ public static class TypeNameExtensions
 	/// name is found, returns the full type name.</returns>
 	public static string GetPSTypeName(this Type type, bool removeBrackets)
 	{
-		if (PSTypeAcceleratorNames.Shared.TryGetName(type, includeBrackets: !removeBrackets, out string? acceleratedName))
+		if (PSTypeAcceleratorNames.Shared.TryGetName(
+			type: type,
+			includeBrackets: !removeBrackets,
+			acceleratedName: out string? acceleratedName))
 		{
 			return acceleratedName;
 		}
 
-		return s_typeNameCache.GetOrAdd(new PSTypeKey(KeyedType: type, IncludeBrackets: !removeBrackets), GetTypeName);
+		return s_typeNameCache.GetOrAdd(
+			key: new PSTypeKey(KeyedType: type, IncludeBrackets: !removeBrackets),
+			valueFactory: GetTypeName);
 	}
 
 	/// <summary>
@@ -55,12 +60,12 @@ public static class TypeNameExtensions
 	/// <returns>The PowerShell type name, with or without its enclosing brackets as <paramref name="key"/> specifies.</returns>
 	private static string GetTypeName(PSTypeKey key)
 	{
-		string name = LanguagePrimitives.ConvertTypeNameToPSTypeName(key.KeyedType.FullName);
-		Debug.Assert(name is not null, "LanguagePrimitives.ConvertTypeNameToPSTypeName returned null for a non-null type name.");
+		string? name = LanguagePrimitives.ConvertTypeNameToPSTypeName(key.KeyedType.FullName);
+		Debug.Assert(name is not null, $"{nameof(LanguagePrimitives)}.{nameof(LanguagePrimitives.ConvertTypeNameToPSTypeName)} returned null for a non-null type name.");
 
 		if (!key.IncludeBrackets && name.EnclosedIn('[', ']'))
 		{
-			name = name[1..^1];
+			name = new(name.AsSpan().UnsafeSlice(1, name.Length - 2));
 		}
 
 		return name ?? string.Empty;

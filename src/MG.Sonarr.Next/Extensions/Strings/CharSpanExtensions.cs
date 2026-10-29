@@ -9,6 +9,18 @@ namespace MG.Sonarr.Next.Extensions.Strings;
 public static partial class CharSpanExtensions
 {
 	/// <summary>
+	/// Determines whether the specified span is enclosed by the given character.
+	/// </summary>
+	/// <param name="readOnlySpan">The span of characters to examine for enclosure.</param>
+	/// <param name="value">The character that should appear at the start and end of the span.</param>
+	/// <returns><see langword="true"/> if the span begins and ends with the specified character; otherwise,
+	/// <see langword="false"/>.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool EnclosedIn(this ReadOnlySpan<char> readOnlySpan, char value)
+	{
+		return EnclosedInCore(readOnlySpan, value, value);
+	}
+	/// <summary>
 	/// Determines whether the specified span is enclosed by the given opening and closing characters.
 	/// </summary>
 	/// <param name="readOnlySpan">The span of characters to examine for enclosure.</param>
@@ -16,6 +28,7 @@ public static partial class CharSpanExtensions
 	/// <param name="closingChar">The character that should appear at the end of the span.</param>
 	/// <returns><see langword="true"/> if the span begins with the opening character and ends with the closing character; otherwise,
 	/// <see langword="false"/>.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool EnclosedIn(this ReadOnlySpan<char> readOnlySpan, char openingChar, char closingChar)
 	{
 		return EnclosedInCore(readOnlySpan, openingChar, closingChar);
@@ -155,7 +168,6 @@ public static partial class CharSpanExtensions
 		return index != -1;
 	}
 
-	#region PRIVATE METHODS
 	private static bool EnclosedInCore(ReadOnlySpan<char> readOnlySpan, char opening, char closing)
 	{
 		if (readOnlySpan.Length < 2)
@@ -176,6 +188,4 @@ public static partial class CharSpanExtensions
 
 		return result;
 	}
-
-	#endregion
 }

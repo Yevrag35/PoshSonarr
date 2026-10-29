@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Buffers;
+using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Extensions.Strings;
 
 namespace MG.Sonarr.Next.Strings;
@@ -29,31 +29,29 @@ public readonly partial struct Wildcard
 		}
 
 		ReadOnlySpan<char> pattern = _pattern;
-		if (this.MatchType == WildcardMatchType.Like && pattern.EnclosedIn('*', '*'))
+		if (this.MatchType == WildcardMatchType.Like && pattern.EnclosedIn('*'))
 		{
 			return this;
 		}
 
 		int length = pattern.Length + 2;
-		using (var buffer = RentedBuffer.Rent<char>(
+		using var builder = SpanStringBuilder.Create(
 			length <= MAX_STACKALLOC
 				? stackalloc char[length]
-				: length))
+				: length);
+
+		if (pattern.Ref() != '*')
 		{
-			int pos = 0;
-			if (pattern[0] != '*')
-			{
-				buffer[pos++] = '*';
-			}
-
-			pos = pattern.CopyToSlice(buffer.Span, pos);
-			if (pattern[^1] != '*')
-			{
-				buffer[pos++] = '*';
-			}
-
-			return new(buffer[..pos], WildcardMatchType.Like);
+			builder.Append('*');
 		}
+
+		builder.Append(pattern);
+		if (builder.Length > 1 && pattern.Ref(pattern.Length - 1) != '*')
+		{
+			builder.Append('*');
+		}
+
+		return new(builder.AsSpan(), WildcardMatchType.Like);
 	}
 
 	/// <summary>
