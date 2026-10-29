@@ -1,10 +1,9 @@
-﻿using MG.Sonarr.Next.Json.Naming;
 using MG.Sonarr.Next.Models;
 using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Json.Converters;
 
-public sealed class SonarrObjectConverter<T> : JsonConverter<T> where T : SonarrObject, ISerializableNames<T>, new()
+public sealed class SonarrObjectConverter<T> : ByPolicyJsonConverter<T> where T : SonarrObject, ISerializableNames<T>, new()
 {
 	readonly ObjectConverter _converter;
 	readonly IReadOnlyDictionary<string, string> _deserializedNames;
@@ -12,6 +11,7 @@ public sealed class SonarrObjectConverter<T> : JsonConverter<T> where T : Sonarr
 	readonly IReadOnlyDictionary<string, string> _serializedNames;
 
 	public SonarrObjectConverter(ObjectConverter converter)
+		: base(converter.NamingPolicy)
 	{
 		_converter = converter;
 		_deserializedNames = T.GetDeserializedNames();
@@ -38,13 +38,9 @@ public sealed class SonarrObjectConverter<T> : JsonConverter<T> where T : Sonarr
 			serializing.OnSerializing();
 		}
 
-		if (value is null)
+		if (!writer.TryWriteNullValue(value))
 		{
-			writer.WriteNullValue();
-			return;
+			_converter.WritePSObject(writer, options, value, _serializedNames);
 		}
-
-		WorkingNamingPolicy policy = new(options);
-		_converter.WritePSObject(writer, options, value, ref policy, _serializedNames);
 	}
 }

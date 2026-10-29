@@ -13,16 +13,16 @@ using MG.Sonarr.Next.Models.Releases;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.PSProperties;
 using System.Management.Automation;
-using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Json.Converters;
 
-public sealed class ObjectConverter : JsonConverter<object>
+public sealed class ObjectConverter : ByPolicyJsonConverter<object>//JsonConverter<object>
 {
 	const int MAX_STACKALLOC = 256;
 	readonly ObjectConverterConfiguration _config;
 
-	public ObjectConverter(IMetadataResolver resolver, Action<IObjectConverterConfig> configure)
+	public ObjectConverter(IMetadataResolver resolver, WorkingNamingPolicy policy, Action<IObjectConverterConfig> configure)
+		: base(policy)
 	{
 		ObjectConverterConfiguration config = new(resolver);
 		configure(config);
@@ -334,21 +334,17 @@ public sealed class ObjectConverter : JsonConverter<object>
 
 	public override void Write(Utf8JsonWriter writer, object? value, JsonSerializerOptions options)
 	{
-		if (value is null)
-		{
-			writer.WriteNullValue();
-			return;
-		}
-
 		if (value is PSObject pso)
 		{
-			WorkingNamingPolicy policy = new(options);
-			this.WritePSObject(writer, options, pso, ref policy);
+			this.WritePSObject(writer, options, pso);
 		}
 		else if (value is PSCustomObject)
 		{
-			writer.WriteStartObject();
-			writer.WriteEndObject();
+			writer.WriteEmptyObject();
+		}
+		else if (value is null)
+		{
+			writer.WriteNullValue();
 		}
 		else
 		{
@@ -356,7 +352,7 @@ public sealed class ObjectConverter : JsonConverter<object>
 		}
 	}
 
-	internal void WritePSObject(Utf8JsonWriter writer, JsonSerializerOptions options, PSObject pso, ref readonly WorkingNamingPolicy policy, IReadOnlyDictionary<string, string>? replaceNames = null)
+	internal void WritePSObject(Utf8JsonWriter writer, JsonSerializerOptions options, PSObject pso, IReadOnlyDictionary<string, string>? replaceNames = null)
 	{
 		replaceNames ??= EmptyNameDictionary.Empty<string>();
 		var globalReplace = _config.GlobalReplaceNames.SerializationNames;
@@ -364,7 +360,7 @@ public sealed class ObjectConverter : JsonConverter<object>
 		writer.WriteStartObject();
 
 		PSPropertyInfo[] props = [.. pso.Properties.Where(x => x.MemberType == PSMemberTypes.NoteProperty && x.IsGettable)];
-		bool containsMetadata = props.Any(x => x.Name == "MetadataTag");
+		var policy = this.NamingPolicy;
 
 		foreach (PSPropertyInfo prop in props)
 		{

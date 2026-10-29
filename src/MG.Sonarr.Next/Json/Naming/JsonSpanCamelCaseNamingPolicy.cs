@@ -1,55 +1,97 @@
 namespace MG.Sonarr.Next.Json.Naming;
 
+/// <summary>
+/// Provides a naming policy for converting JSON property names to camel case using spans.
+/// </summary>
 public sealed class JsonSpanCamelCaseNamingPolicy : JsonNamingPolicy
 {
-	//private const int MaxStackAlloc = 128;
 	private static readonly JsonNamingPolicy s_camelCase = CamelCase;
+	/// <summary>
+	/// Gets the singleton instance of the <see cref="JsonSpanCamelCaseNamingPolicy"/> class.
+	/// </summary>
 	public static readonly JsonSpanCamelCaseNamingPolicy SpanPolicy = new();
 
+	/// <summary>
+	/// Converts the specified name to camel case.
+	/// </summary>
+	/// <param name="name">The name to convert.</param>
+	/// <returns>The camel case version of the name.</returns>
 	public override string ConvertName(string name)
 	{
 		return s_camelCase.ConvertName(name);
 	}
-	public Span<char> ConvertSpan(Span<char> span)
+
+	/// <summary>
+	/// Converts the specified span of characters to camel case.
+	/// </summary>
+	/// <param name="span">The span of characters to convert.</param>
+	/// <returns>The camel case version of the span.</returns>
+	public Span<char> ConvertName(Span<char> span)
 	{
 		FixCasing(span);
 		return span;
 	}
-	public Span<byte> ConvertSpan(Span<byte> utf8Text)
+
+	/// <summary>
+	/// Converts the specified span of UTF-8 bytes to camel case.
+	/// </summary>
+	/// <param name="utf8Text">The span of UTF-8 bytes to convert.</param>
+	/// <returns>The camel case version of the span.</returns>
+	public Span<byte> ConvertName(Span<byte> utf8Text)
 	{
 		FixCasing(utf8Text);
 		return utf8Text;
 	}
 
+	/// <summary>
+	/// Converts the initial characters of the specified span to lowercase according to custom casing rules.
+	/// </summary>
+	/// <remarks>This method updates the contents of the provided span directly. Only the first few characters are
+	/// affected, based on the casing and spacing of the input. The operation stops when a non-uppercase character or a
+	/// space is encountered after the first character.</remarks>
+	/// <param name="chars">A span of characters whose initial casing will be modified in place. The span must be writable.</param>
 	private static void FixCasing(Span<char> chars)
 	{
+		if (chars.IsEmpty)
+		{
+			return;
+		}
+
+		ref char c = ref chars.Ref();
 		for (int i = 0; i < chars.Length; i++)
 		{
-			ref char current = ref chars[i];
-
-			if (i == 1 && !char.IsUpper(current))
-			{
+			if (i == 1 && !char.IsUpper(c.Offset(i))) // JIT loses track of i here, for some reason,
+			{                                         // so we help it out for just this one index access with i.
 				break;
 			}
 
-			bool hasNext = i + 1 < chars.Length;
+			int next = i + 1;
 
 			// Stop when next char is already lowercase.
-			if (i > 0 && hasNext && !char.IsUpper(chars[i + 1]))
+			if (i > 0 && next < chars.Length && !char.IsUpper(c.Offset(next)))
 			{
 				// If the next char is a space, lowercase current char before exiting.
-				if (chars[i + 1] == ' ')
+				if (c.Offset(next) == ' ')
 				{
-					current = char.ToLowerInvariant(current);
+					chars[i] = char.ToLowerInvariant(chars[i]);
 				}
 
 				break;
 			}
 
-			current = char.ToLowerInvariant(current);
+			chars[i] = char.ToLowerInvariant(chars[i]);
 		}
 	}
 
+	/// <summary>
+	/// Converts the initial bytes of the specified UTF-8 span to lowercase, applying the same camel-case rules as
+	/// <see cref="FixCasing(Span{char})"/>.
+	/// </summary>
+	/// <remarks>This method updates the contents of the provided span directly. Only the leading run of ASCII
+	/// uppercase letters is affected; the operation stops when a non-uppercase byte or a space is encountered after the
+	/// first byte. Bytes outside the ASCII uppercase range (including every byte of a multi-byte UTF-8 sequence) are
+	/// left untouched, so the length of the span never changes.</remarks>
+	/// <param name="utf8Bytes">A span of UTF-8 bytes whose initial casing is modified in place. The span must be writable.</param>
 	private static void FixCasing(Span<byte> utf8Bytes)
 	{
 		if (utf8Bytes.IsEmpty)
@@ -57,30 +99,49 @@ public sealed class JsonSpanCamelCaseNamingPolicy : JsonNamingPolicy
 			return;
 		}
 
-		// Decode the first rune from the span.
-		var status = Rune.DecodeFromUtf8(utf8Bytes, out Rune firstRune, out int bytesConsumed);
-		Debug.Assert(status == OperationStatus.Done);
-		if (status != OperationStatus.Done)
+		ref byte firstByte = ref utf8Bytes.Ref();
+		for (int i = 0; i < utf8Bytes.Length; i++)
 		{
-			throw new JsonException("Invalid UTF-8 sequence.");
-		}
-
-		// Encode the lowercase rune back into the span.
-		Span<byte> tempSlice = utf8Bytes.Slice(0, bytesConsumed);
-
-		// Convert the first rune to lowercase.
-		Rune lowerRune = Rune.ToLowerInvariant(firstRune);
-
-		// Check if a change is needed
-		if (firstRune != lowerRune)
-		{
-			// Re-encode the lowercase rune back into the span.
-			// Note: Encoding might not change byte count since TitleCase generally implies simple capital letters.
-			int written = lowerRune.EncodeToUtf8(tempSlice);
-			if (bytesConsumed != written)
+			if (i == 1 && !IsAsciiUpper(firstByte.Offset(i)))
 			{
-				throw new JsonException("Unexpected change in byte length when converting to lowercase");
+				break;
 			}
+
+			int next = i + 1;
+
+			// Stop when the next byte is already lowercase (or begins a non-ASCII sequence).
+			if (i > 0 && next < utf8Bytes.Length && !IsAsciiUpper(firstByte.Offset(next)))
+			{
+				// If the next byte is a space, lowercase the current byte before exiting.
+				if (firstByte.Offset(next) == (byte)' ')
+				{
+					firstByte.Offset(i) = ToAsciiLower(firstByte.Offset(i));
+				}
+
+				break;
+			}
+
+			firstByte.Offset(i) = ToAsciiLower(firstByte.Offset(i));
 		}
+	}
+
+	/// <summary>
+	/// Determines whether the specified byte is an ASCII uppercase letter.
+	/// </summary>
+	/// <param name="b">The byte to test.</param>
+	/// <returns><see langword="true"/> if <paramref name="b"/> is in the range <c>A</c> to <c>Z</c> inclusive; otherwise, <see langword="false"/>.</returns>
+	private static bool IsAsciiUpper(byte b)
+	{
+		return b is >= (byte)'A' and <= (byte)'Z';
+	}
+
+	/// <summary>
+	/// Converts the specified byte to its ASCII lowercase form, leaving any byte that is not an ASCII uppercase letter unchanged.
+	/// </summary>
+	/// <param name="b">The byte to convert.</param>
+	/// <returns>The ASCII lowercase form of <paramref name="b"/> when it is an uppercase letter; otherwise, <paramref name="b"/> unchanged.</returns>
+	private static byte ToAsciiLower(byte b)
+	{
+		return IsAsciiUpper(b) ? (byte)(b + 32) : b;
 	}
 }

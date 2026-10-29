@@ -1,12 +1,18 @@
-﻿using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Buffers;
+using MG.Sonarr.Next.Extensions.Reflection;
+using MG.Sonarr.Next.Json.Naming;
 using MG.Sonarr.Next.Services.Http;
 using System.Management.Automation;
-using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Json.Converters;
 
-public sealed class SonarrResponseConverter : JsonConverter<ISonarrResponse>
+public sealed class SonarrResponseConverter : ByPolicyJsonConverter<ISonarrResponse>
 {
+	public SonarrResponseConverter(WorkingNamingPolicy namingPolicy)
+		: base(namingPolicy)
+	{
+	}
+
 	public override bool CanConvert(Type typeToConvert)
 	{
 		return typeof(ISonarrResponse).IsAssignableFrom(typeToConvert);
@@ -22,54 +28,47 @@ public sealed class SonarrResponseConverter : JsonConverter<ISonarrResponse>
 		ArgumentNullException.ThrowIfNull(writer);
 		if (value is null)
 		{
-			writer.WriteStartObject();
-			writer.WriteEndObject();
+			writer.WriteEmptyObject();
 			return;
 		}
 
 		if (value.IsError)
 		{
 			writer.WriteStartObject();
-			WriteAsError(writer, value.Error, value, options);
+			WriteAsError(writer, value.Error, value, this.NamingPolicy);
 			writer.WriteEndObject();
 		}
 		else
 		{
-			WriteAsSuccess(writer, value, options);
+			WriteAsSuccess(writer, value);
 		}
 	}
 
-	private static void WriteAsError(Utf8JsonWriter writer, ErrorRecord record, ISonarrResponse value, JsonSerializerOptions? options)
+	private static void WriteAsError(Utf8JsonWriter writer, ErrorRecord record, ISonarrResponse value, WorkingNamingPolicy policy)
 	{
+		const int max_stackalloc = 128;
+
 		Type errType = record.Exception.GetType();
-		writer.WriteString(options.ConvertName(nameof(value.RequestUrl)), value.RequestUrl);
-		writer.WriteNumber(options.ConvertName(nameof(value.StatusCode)), (int)value.StatusCode);
-		writer.WriteString(options.ConvertName("Status"), value.StatusCode.ToString());
-		writer.WriteString(options.ConvertName("ErrorType"), errType.FullName ?? errType.Name);
-		writer.WriteString(options.ConvertName(nameof(Exception.Message)), record.Exception.GetBaseException().Message);
+		writer.WriteString(policy, value.RequestUrl);
+		writer.WriteNumber(policy, "StatusCode"u8, (int)value.StatusCode);
+		writer.WriteFormattable(policy, "Status"u8, value.StatusCode, max_stackalloc);
+		writer.WriteString(policy, "ErrorType"u8, errType.GetName());
+		writer.WriteString(policy, record.Exception.GetBaseException().Message);
 	}
 
-	const string RECEIVED = "Received response -> ";
-	private static void WriteAsSuccess(Utf8JsonWriter writer, ISonarrResponse value, JsonSerializerOptions? options)
+	[SkipLocalsInit]
+	private static void WriteAsSuccess(Utf8JsonWriter writer, ISonarrResponse value)
 	{
-		int length = RECEIVED.Length + 50;
+		const string RECEIVED = "Received response -> ";
+		const int buffer_size = 256;
 
-		Span<char> span = stackalloc char[length];
-		RECEIVED.CopyTo(span);
-		int position = RECEIVED.Length;
+		using SpanStringBuilder builder = new(stackalloc char[buffer_size]);
+		builder.Append(RECEIVED);
+		builder.Append((int)value.StatusCode, LengthConstants.INT_MAX);
+		builder.AppendChars(' ', '(');
+		builder.Append(value.StatusCode);
+		builder.Append(')');
 
-		((int)value.StatusCode).TryFormat(span.Slice(position), out int written);
-		position += written;
-
-		span[position++] = ' ';
-		span[position++] = '(';
-
-		ReadOnlySpan<char> v = value.StatusCode.ToString();
-		v.CopyTo(span.Slice(position));
-		position += v.Length;
-
-		span[position++] = ')';
-
-		writer.WriteRawValue(span.Slice(0, position), skipInputValidation: true);
+		writer.WriteRawValue(builder.AsSpan(), skipInputValidation: true);
 	}
 }

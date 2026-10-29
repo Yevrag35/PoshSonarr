@@ -1,10 +1,10 @@
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json.Converters;
 using MG.Sonarr.Next.Json.Converters.Spans;
 using MG.Sonarr.Next.Json.Modifiers;
+using MG.Sonarr.Next.Json.Naming;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
@@ -114,14 +114,15 @@ public static class SonarrJsonDependencyInjection
 	private static void AddAllConverters(IServiceProvider provider, JsonSerializerOptions options)
 	{
 		IMetadataResolver resolver = provider.GetRequiredService<IMetadataResolver>();
+		WorkingNamingPolicy policy = new(options);
 
-		DateOnlyConverter doSpanConverter = new();
-		TimeOnlyConverter timeConverter = new();
-		TimeSpanConverter timeSpanConverter = new();
-		AlwaysStringConverter alwaysStringConverter = new();
-
-		ObjectConverter objCon = new(resolver, config =>
+		ObjectConverter objCon = new(resolver, policy, config =>
 		{
+			DateOnlyConverter doSpanConverter = new();
+			TimeOnlyConverter timeConverter = new();
+			TimeSpanConverter timeSpanConverter = new();
+			AlwaysStringConverter alwaysStringConverter = new();
+
 			config.AddConvertProperties(EnumerateConverterProperties())
 				  .AddGlobalReplaceNames(EnumerateGlobalReplaceNames())
 				  .AddIgnoreProperties(EnumerateIgnoreProperties())
@@ -143,8 +144,8 @@ public static class SonarrJsonDependencyInjection
 
 		options.Converters.AddMany(
 			objCon,
-			new PostCommandWriter(),
-			new SonarrResponseConverter(),
+			new PostCommandWriter(policy),
+			new SonarrResponseConverter(policy),
 			new ImmutableArrayConverter<FieldObject>(),
 			new ImmutableArrayConverter<ManualImportObject>(),
 			new ImmutableArrayConverter<SelectOptionObject>());

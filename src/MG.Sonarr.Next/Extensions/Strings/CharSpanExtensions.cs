@@ -153,6 +153,22 @@ public static partial class CharSpanExtensions
 	}
 
 	/// <summary>
+	/// Attempts to find the last occurrence of a specified character within the span.
+	/// </summary>
+	/// <remarks>This method does not throw an exception if the character is not found. Instead, it returns <see
+	/// langword="false"/>  and sets <paramref name="index"/> to -1.</remarks>
+	/// <param name="chars">The <see cref="ReadOnlySpan{T}"/> of characters to search.</param>
+	/// <param name="c">The character to locate within the span.</param>
+	/// <param name="index">When this method returns, contains the zero-based index of the last occurrence of the specified character,  if
+	/// found; otherwise, -1.</param>
+	/// <returns><see langword="true"/> if the specified character is found in the span; otherwise, <see langword="false"/>.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool TryLastIndexOf(this ReadOnlySpan<char> chars, char c, out int index)
+	{
+		index = chars.LastIndexOf(c);
+		return index >= 0;
+	}
+	/// <summary>
 	/// Attempts to find the last occurrence of a specified substring within the current span using the specified string
 	/// comparison.
 	/// </summary>
@@ -162,6 +178,7 @@ public static partial class CharSpanExtensions
 	/// <param name="index">When this method returns, contains the zero-based index of the last occurrence of <paramref name="value"/> within
 	/// <paramref name="chars"/>, if found; otherwise, -1.</param>
 	/// <returns><see langword="true"/> if the substring is found within the span; otherwise, <see langword="false"/>.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool TryLastIndexOf(this ReadOnlySpan<char> chars, [ConstantExpected] string value, StringComparison comparisonType, out int index)
 	{
 		index = chars.LastIndexOf(value, comparisonType);

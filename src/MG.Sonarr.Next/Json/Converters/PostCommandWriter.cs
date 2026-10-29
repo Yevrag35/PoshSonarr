@@ -1,44 +1,41 @@
-﻿using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Json.Naming;
 using MG.Sonarr.Next.Models.Commands;
-using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Json.Converters;
 
-public sealed class PostCommandWriter : JsonConverter<PostCommand>
+public sealed class PostCommandWriter : ByPolicyJsonConverter<PostCommand>//JsonConverter<PostCommand>
 {
+	public PostCommandWriter(WorkingNamingPolicy namingPolicy)
+		: base(namingPolicy)
+	{
+	}
+
 	public override PostCommand? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 	{
 		throw new NotSupportedException();
 	}
 
-	const string SEND_UPDATES = "SendUpdatesToClient";
+	//const string SEND_UPDATES = "SendUpdatesToClient";
 	const string TRIGGER = "Trigger";
-	const string MANUAL = "manual";
 	public override void Write(Utf8JsonWriter writer, PostCommand value, JsonSerializerOptions options)
 	{
+		const string MANUAL = "manual";
+
 		ArgumentNullException.ThrowIfNull(writer);
 		writer.WriteStartObject();
+		var policy = this.NamingPolicy;
 
-		if (value is null)
+		if (!writer.TryWriteEndObject(value))
 		{
+			writer.WriteString(policy, value.Name);
+			writer.WriteString(policy, value.CommandName);
+
+			writer.WriteBoolean(policy, "SendUpdatesToClient"u8, true);
+			writer.WriteBoolean(policy, value.UpdateScheduledTask);
+			writer.WriteString(policy, "Trigger"u8, MANUAL);
+
+			writer.WriteString(policy, "Priority"u8, value.Priority.ToStringFast());
 			writer.WriteEndObject();
-			return;
 		}
-
-		writer.WriteString(options.ConvertName(nameof(value.Name)), value.Name);
-		writer.WriteString(options.ConvertName(nameof(value.CommandName)), value.CommandName);
-
-		writer.WriteBoolean(options.ConvertName(SEND_UPDATES), true);
-		writer.WriteBoolean(options.ConvertName(nameof(value.UpdateScheduledTask)), value.UpdateScheduledTask);
-		writer.WriteString(options.ConvertName(TRIGGER), MANUAL);
-
-		writer.WritePropertyName(options.ConvertName(nameof(value.Priority)));
-
-		ReadOnlySpan<char> asSpan = value.Priority.ToString();
-		Span<char> priSpan = stackalloc char[asSpan.Length];
-		asSpan.ToLower(priSpan, Statics.DefaultCulture);
-
-		writer.WriteStringValue(priSpan);
-		writer.WriteEndObject();
 	}
 }

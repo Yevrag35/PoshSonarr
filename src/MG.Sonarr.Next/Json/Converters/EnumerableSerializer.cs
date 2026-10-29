@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Json.Converters;
 
@@ -11,19 +11,16 @@ public sealed class EnumerableSerializer<T> : JsonConverter<IEnumerable<T>> wher
 
 	public override void Write(Utf8JsonWriter writer, IEnumerable<T> value, JsonSerializerOptions options)
 	{
-		if (value is null)
+		if (!writer.TryWriteNullValue(value))
 		{
-			writer.WriteNullValue();
-			return;
-		}
+			Type type = typeof(T);
+			writer.WriteStartArray();
+			foreach (T item in value)
+			{
+				writer.WriteRawValue(JsonSerializer.Serialize(item, type, options));
+			}
 
-		Type type = typeof(T);
-		writer.WriteStartArray();
-		foreach (T item in value)
-		{
-			writer.WriteRawValue(JsonSerializer.Serialize(item, type, options));
+			writer.WriteEndArray();
 		}
-
-		writer.WriteEndArray();
 	}
 }
