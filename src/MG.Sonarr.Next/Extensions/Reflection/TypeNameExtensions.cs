@@ -61,7 +61,9 @@ public static class TypeNameExtensions
 	private static string GetTypeName(PSTypeKey key)
 	{
 		string? name = LanguagePrimitives.ConvertTypeNameToPSTypeName(key.KeyedType.FullName);
-		Debug.Assert(name is not null, $"{nameof(LanguagePrimitives)}.{nameof(LanguagePrimitives.ConvertTypeNameToPSTypeName)} returned null for a non-null type name.");
+		Debug.Assert(
+			condition: name is not null,
+			message: $"{nameof(LanguagePrimitives)}.{nameof(LanguagePrimitives.ConvertTypeNameToPSTypeName)} returned null for a non-null type name.");
 
 		if (!key.IncludeBrackets && name.EnclosedIn('[', ']'))
 		{
