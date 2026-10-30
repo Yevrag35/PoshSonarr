@@ -2,11 +2,11 @@
 
 <#
 .SYNOPSIS
-	Build PoshSonarr, stage it, and run its Pester suite against the Sonarr testbed.
+	Build PoshSonarr, stage it, and run its Pester suite against the Sonarr sandbox.
 
 .DESCRIPTION
 	Runs the Pester suite in .tests/ against a Debug build of the module, imported by a manifest written for it, in a new
-	PowerShell process that connects to the Docker testbed and nothing else. In order, it:
+	PowerShell process that connects to the Docker sandbox and nothing else. In order, it:
 
 	1. Checks that Pester 6.2.0 or a later 6.x is installed, and stops with the command that installs it when it isn't.
 	2. Builds the solution in Debug, unless -NoBuild reuses the last build.
@@ -14,7 +14,7 @@
 	   process holds a file in the folder, such as a PowerShell session that imported the module from it, it stops
 	   without deleting anything.
 	4. Writes the copy's manifest, PoshSonarr.psd1, with .tasks/publish_module.ps1, the script that a Release build runs.
-	5. Resets the testbed with testbed/sonarr/reset.ps1 when -Reset asks, and otherwise checks that the testbed answers
+	5. Resets the sandbox with sandbox/sonarr/reset.ps1 when -Reset asks, and otherwise checks that the sandbox answers
 	   with its pinned version and instance name.
 	6. Runs Pester in a new process, in which POSHSONARR_TEST_MANIFEST names the staged manifest. Pester runs the files
 	   one after another, leaves out the tests tagged Restart unless -Tag names Restart, writes detailed output, and saves
@@ -27,7 +27,7 @@
 	pwsh -NoProfile -File .tests/run.ps1
 .EXAMPLE
 	pwsh -NoProfile -File .tests/run.ps1 -Reset
-	# resets the testbed to its baseline first
+	# resets the sandbox to its baseline first
 .EXAMPLE
 	pwsh -NoProfile -File .tests/run.ps1 -NoBuild -Path .tests/Connection.Tests.ps1
 	# one file, on the last build
@@ -51,7 +51,7 @@ param (
 	[Parameter(Mandatory = $false)]
 	[switch] $NoBuild,
 
-	# Resets the testbed to its baseline before the tests run.
+	# Resets the sandbox to its baseline before the tests run.
 	[Parameter(Mandatory = $false)]
 	[switch] $Reset
 )
@@ -131,16 +131,16 @@ try {
 
 	if ($Reset) {
 
-		Write-Host 'Resetting the testbed.' -ForegroundColor Cyan
-		& $pwsh -NoProfile -NonInteractive -File (Join-Path $repoRoot 'testbed/sonarr/reset.ps1')
+		Write-Host 'Resetting the sandbox.' -ForegroundColor Cyan
+		& $pwsh -NoProfile -NonInteractive -File (Join-Path $repoRoot 'sandbox/sonarr/reset.ps1')
 		if ($LASTEXITCODE -ne 0) {
-			throw "testbed/sonarr/reset.ps1 failed with exit code $LASTEXITCODE."
+			throw "sandbox/sonarr/reset.ps1 failed with exit code $LASTEXITCODE."
 		}
 	}
 	else {
 
-		Import-Module (Join-Path $repoRoot 'testbed/sonarr/testbed.psm1') -Force
-		Assert-TestbedReady
+		Import-Module (Join-Path $repoRoot 'sandbox/sonarr/sandbox.psm1') -Force
+		Assert-SandboxReady
 	}
 
 	# Pester's output reaches this console through the new process, so this console decides whether it gets colors: ANSI

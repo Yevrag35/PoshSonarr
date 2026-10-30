@@ -4,7 +4,7 @@ Use PowerShell for host-side commands and scripts so I can operate everything fr
 
 1. Project layout and isolation
 
-Create the harness under `testbed/sonarr/`, following existing repository conventions where appropriate. Include the Dockerfile, `compose.yaml`, configuration/bootstrap files, PowerShell scripts, and a README.
+Create the harness under `sandbox/sonarr/`, following existing repository conventions where appropriate. Include the Dockerfile, `compose.yaml`, configuration/bootstrap files, PowerShell scripts, and a README.
 
 Use a dedicated Compose project and project-scoped named volume for `/config`. Mount no existing Sonarr configuration or real media folders. All reset operations must affect only this test environment.
 
@@ -48,7 +48,7 @@ On startup failure, show useful container logs and return a nonzero exit code. D
 
 After readiness, seed a small baseline through Sonarr's API:
 
-- A tag named `testbed-baseline`.
+- A tag named `sandbox-baseline`.
 - A root folder at `/tv`.
 
 Make seeding idempotent. Obtain resource IDs from API responses rather than hard-coding them.

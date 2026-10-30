@@ -14,7 +14,7 @@ RUN : "${SONARR_VERSION:?compose.yaml passes SONARR_VERSION}" "${SONARR_SHA256:?
 	&& mkdir -p /opt/sonarr/bin \
 	&& tar -xzf /tmp/sonarr.tar.gz -C /opt/sonarr/bin --strip-components=1 --no-same-owner \
 	&& rm /tmp/sonarr.tar.gz \
-	&& printf 'UpdateMethod=Docker\nPackageVersion=%s\nPackageAuthor=PoshSonarr testbed\n' "${SONARR_VERSION}" > /opt/sonarr/package_info
+	&& printf 'UpdateMethod=Docker\nPackageVersion=%s\nPackageAuthor=PoshSonarr sandbox\n' "${SONARR_VERSION}" > /opt/sonarr/package_info
 
 RUN groupadd -g 1000 sonarr \
 	&& useradd -u 1000 -g sonarr -d /config -M -s /usr/sbin/nologin sonarr \

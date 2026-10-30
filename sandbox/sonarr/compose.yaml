@@ -1,4 +1,4 @@
-name: poshsonarr-testbed
+name: poshsonarr-sandbox
 
 services:
   sonarr:
@@ -14,10 +14,10 @@ services:
     environment:
       SONARR__AUTH__APIKEY: "0123456789abcdef0123456789abcdef"
       SONARR__AUTH__METHOD: "External"
-      SONARR__APP__INSTANCENAME: "Sonarr Testbed"
+      SONARR__APP__INSTANCENAME: "Sonarr Sandbox"
       SONARR__LOG__ANALYTICSENABLED: "false"
     ports:
-      - "127.0.0.1:${SONARR_TESTBED_PORT:-18989}:8989"
+      - "127.0.0.1:${SONARR_SANDBOX_PORT:-18989}:8989"
     volumes:
       - config:/config
       - tv:/tv

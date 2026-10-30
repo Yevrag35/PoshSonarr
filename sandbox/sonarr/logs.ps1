@@ -2,7 +2,7 @@
 
 <#
 .SYNOPSIS
-	Show the Sonarr testbed's logs.
+	Show the Sonarr sandbox's logs.
 
 .DESCRIPTION
 	Shows the last 200 lines of Sonarr's log, or as many as -Tail says. -Service skyhook shows the
@@ -10,11 +10,11 @@
 	-Follow keeps streaming new lines until Ctrl+C. Exits 1 when Compose fails.
 
 .EXAMPLE
-	pwsh -NoProfile -File testbed/sonarr/logs.ps1
+	pwsh -NoProfile -File sandbox/sonarr/logs.ps1
 .EXAMPLE
-	pwsh -NoProfile -File testbed/sonarr/logs.ps1 -Tail 50 -Follow
+	pwsh -NoProfile -File sandbox/sonarr/logs.ps1 -Tail 50 -Follow
 .EXAMPLE
-	pwsh -NoProfile -File testbed/sonarr/logs.ps1 -Service skyhook
+	pwsh -NoProfile -File sandbox/sonarr/logs.ps1 -Service skyhook
 #>
 [CmdletBinding()]
 param (
@@ -34,14 +34,14 @@ param (
 )
 
 $ErrorActionPreference = 'Stop'
-Import-Module (Join-Path $PSScriptRoot 'testbed.psm1') -Force
+Import-Module (Join-Path $PSScriptRoot 'sandbox.psm1') -Force
 
 $arguments = @('logs', '--tail', $Tail)
 if ($Follow) {
 	$arguments += '--follow'
 }
 try {
-	Invoke-TestbedCompose @arguments $Service
+	Invoke-SandboxCompose @arguments $Service
 }
 catch {
 	Write-Error -ErrorRecord $_ -ErrorAction Continue

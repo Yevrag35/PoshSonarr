@@ -2,20 +2,20 @@
 
 <#
 .SYNOPSIS
-	Return the Sonarr testbed to its baseline: remove its containers and volumes, then start it fresh.
+	Return the Sonarr sandbox to its baseline: remove its containers and volumes, then start it fresh.
 
 .DESCRIPTION
-	Runs down --volumes --remove-orphans on the poshsonarr-testbed Compose project, which removes the
+	Runs down --volumes --remove-orphans on the poshsonarr-sandbox Compose project, which removes the
 	project's containers, its network, and its config and tv volumes, and with them everything
 	Sonarr stored. Nothing outside the project is touched, and the images stay for the next build to
 	reuse. Then it runs start.ps1, which builds if needed, starts, waits, checks, seeds the baseline
 	and the series, and prints the connection values.
 
-	When something fails, it exits 1, and a failure while start.ps1 starts the testbed or adds the
+	When something fails, it exits 1, and a failure while start.ps1 starts the sandbox or adds the
 	seeded series first shows the containers' state and the last 200 lines of each one's log.
 
 .EXAMPLE
-	pwsh -NoProfile -File testbed/sonarr/reset.ps1
+	pwsh -NoProfile -File sandbox/sonarr/reset.ps1
 #>
 [CmdletBinding()]
 param (
@@ -27,10 +27,10 @@ param (
 )
 
 $ErrorActionPreference = 'Stop'
-Import-Module (Join-Path $PSScriptRoot 'testbed.psm1') -Force
+Import-Module (Join-Path $PSScriptRoot 'sandbox.psm1') -Force
 
 try {
-	Invoke-TestbedCompose down --volumes --remove-orphans
+	Invoke-SandboxCompose down --volumes --remove-orphans
 }
 catch {
 	Write-Error -ErrorRecord $_ -ErrorAction Continue
