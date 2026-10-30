@@ -11,3 +11,7 @@ internal interface IDisconnectContextCmdlet
 {
 }
 
+internal interface ITestContextCmdlet
+{
+}
+

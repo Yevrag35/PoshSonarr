@@ -104,6 +104,7 @@ A `Describe` block names the cmdlet that it tests, and each `It` says what the c
 - The module's HTTP client never throws. A failed call comes back as a result, and the cmdlet writes its error record, usually without ending the statement. Some cmdlets end the statement instead, such as `Connect-SonarrInstance` when its check of the URL and key fails.
 - Test a failure by running the cmdlet with `-ErrorAction Stop` in a script block that `Should -Throw` checks, or by collecting its records with `-ErrorVariable`. Assert on the record's category, its target, and the HTTP status where the record carries one, and on message text only when the message is what's under test.
 - `-ErrorAction` doesn't hide an error that ends the statement, so a script block that runs the cmdlet with `-ErrorAction SilentlyContinue` throws only for such an error.
+- Pester 6.2's `Should -Throw -ErrorId` compares the whole `FullyQualifiedErrorId`, so pass all of it, such as `ParameterArgumentValidationError,MG.Sonarr.Next.Shell.Cmdlets.Systems.TestSonarrHostCmdlet` for an argument that fails a cmdlet's validation. That error's exception, a `ParameterBindingValidationException`, isn't public, so check for its base type, `ParameterBindingException`.
 - Pester runs every test inside a `try` block, where an error that ends its statement and one that ends the script both jump to the `catch`. To test how far an error reaches, run the command with `Invoke-TestProcess`, followed by a statement that writes a line, and check for that line.
 
 ### Bugs that a test finds

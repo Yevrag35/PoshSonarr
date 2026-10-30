@@ -102,13 +102,74 @@ Describe 'Disconnect-SonarrInstance' {
 }
 
 Describe 'Test-SonarrHost' {
-	It 'succeeds with the testbed''s URL and key' {
-		(Test-SonarrHost -Url $TestbedSettings.BaseUrl -ApiKey $TestbedSettings.ApiKey -ErrorAction Stop).status | Should -BeExactly 'OK'
+	It 'returns the testbed''s status, or $true with -Quiet' {
+		$status = @(Test-SonarrHost -Url $TestbedSettings.BaseUrl -ApiKey $TestbedSettings.ApiKey -ErrorAction Stop)
+		$status | Should -HaveCount 1
+		$status[0].psobject.TypeNames[0] | Should -BeExactly 'MG.Sonarr.Next.Models.System.SystemStatusObject'
+		[string] $status[0].Version | Should -BeExactly $TestbedSettings.Version
+		$status[0].InstanceName | Should -BeExactly $TestbedSettings.InstanceName
+
 		Test-SonarrHost -Url $TestbedSettings.BaseUrl -ApiKey $TestbedSettings.ApiKey -Quiet -ErrorAction Stop | Should -BeTrue
 	}
 
 	It 'fails with a wrong key' {
-		Set-ItResult -Skipped -Because 'Test-SonarrHost should report a wrong key, but it calls /ping, which Sonarr answers without checking the key'
+		# Without -Quiet, the 401 is an error that -ErrorAction can hide, as Connect-SonarrInstance's can't be.
+		Test-SonarrHost -Url $TestbedSettings.BaseUrl -ApiKey $wrongKey -ErrorVariable testErrors -ErrorAction SilentlyContinue |
+			Should -BeNullOrEmpty
+		$testErrors | Should -HaveCount 1
+		$testErrors[0].Exception | Should -BeOfType ([Microsoft.PowerShell.Commands.HttpResponseException])
+		$testErrors[0].Exception.StatusCode | Should -Be ([System.Net.HttpStatusCode]::Unauthorized)
+		$testErrors[0].CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ResourceUnavailable)
+		$testErrors[0].TargetObject | Should -Be "$($TestbedSettings.BaseUrl)/api/v3/system/status"
+
+		Test-SonarrHost -Url $TestbedSettings.BaseUrl -ApiKey $wrongKey -Quiet -ErrorVariable quietErrors | Should -BeFalse
+		$quietErrors | Should -BeNullOrEmpty
+	}
+
+	It 'fails with -NoApiInPath, for a URL that doesn''t reach Sonarr''s API' {
+		Test-SonarrHost -Url $TestbedSettings.BaseUrl -ApiKey $TestbedSettings.ApiKey -NoApiInPath -ErrorVariable testErrors -ErrorAction SilentlyContinue |
+			Should -BeNullOrEmpty
+		$testErrors | Should -HaveCount 1
+		$testErrors[0].Exception | Should -BeOfType ([Microsoft.PowerShell.Commands.HttpResponseException])
+		$testErrors[0].Exception.StatusCode | Should -Be ([System.Net.HttpStatusCode]::ServiceUnavailable)
+		$testErrors[0].CategoryInfo.Category | Should -Be ([System.Management.Automation.ErrorCategory]::ResourceUnavailable)
+		$testErrors[0].TargetObject | Should -Be "$($TestbedSettings.BaseUrl)/v3/system/status"
+
+		Test-SonarrHost -Url $TestbedSettings.BaseUrl -ApiKey $TestbedSettings.ApiKey -NoApiInPath -Quiet | Should -BeFalse
+	}
+
+	It 'leaves the connection as it was' {
 		Test-SonarrHost -Url $TestbedSettings.BaseUrl -ApiKey $wrongKey -Quiet | Should -BeFalse
+		(Get-SonarrStatus -ErrorAction Stop).InstanceName | Should -BeExactly $TestbedSettings.InstanceName
+	}
+
+	It 'takes -SkipCertificateCheck and -Timeout' {
+		# The testbed serves plain HTTP, so -SkipCertificateCheck has no certificate to skip, and the test passes with it.
+		Test-SonarrHost -Url $TestbedSettings.BaseUrl -ApiKey $TestbedSettings.ApiKey -SkipCertificateCheck -Timeout '00:00:30' -Quiet -ErrorAction Stop |
+			Should -BeTrue
+	}
+
+	It 'turns away a timeout of <Timeout>, which HttpClient doesn''t take' -ForEach @(
+		@{ Timeout = [timespan]::Zero }
+		@{ Timeout = [timespan]::FromDays(30) }
+	) {
+		$record = { Test-SonarrHost -Url $TestbedSettings.BaseUrl -ApiKey $TestbedSettings.ApiKey -Timeout $Timeout } |
+			Should -Throw -ExceptionType ([System.Management.Automation.ParameterBindingException]) -ErrorId 'ParameterArgumentValidationError,MG.Sonarr.Next.Shell.Cmdlets.Systems.TestSonarrHostCmdlet' -PassThru
+		$record.Exception.ParameterName | Should -BeExactly 'Timeout'
+	}
+
+	Context 'without a connection' {
+		BeforeEach {
+			Disconnect-SonarrInstance -ErrorAction Stop
+		}
+
+		AfterEach {
+			Connect-Testbed
+		}
+
+		It 'tests the host without connecting' {
+			Test-SonarrHost -Url $TestbedSettings.BaseUrl -ApiKey $TestbedSettings.ApiKey -Quiet -ErrorAction Stop | Should -BeTrue
+			{ Get-SonarrTag -ErrorAction Stop } | Should -Throw -ExceptionType ([MG.Sonarr.Next.Shell.Exceptions.ContextNotSetException])
+		}
 	}
 }
