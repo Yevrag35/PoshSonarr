@@ -19,6 +19,7 @@ Run these from the repository root. Building needs a .NET 10 SDK.
 - Every build, Debug or Release, copies the runtime assemblies of the module's NuGet dependencies into the Shell project's output folder, where PowerShell looks for them, because that project sets `CopyLocalLockFileAssemblies`, which a class library leaves off by default. PowerShell supplies `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` itself, so their references in `src/MG.Sonarr.Next/MG.Sonarr.Next.csproj` exclude their runtime and native assets, and NuGet carries that exclusion to the packages they depend on and to every project that references `MG.Sonarr.Next`.
 - Build the solution, never a single project file. The Release post-build step finds its script through `$(SolutionDir)`, which a project-file build leaves undefined.
 - There is no lint step. No style analyzer package is referenced and `EnforceCodeStyleInBuild` is off, so `dotnet build` accepts code that breaks the `.editorconfig` style rules, even the ones set to `error`.
+- The code-quality (`CA`) rules that `.editorconfig` sets to `warning` do run in the build, and each warning from one marks a bug to fix: an `await` without `ConfigureAwait(false)`, a `CancellationToken` that isn't passed on, a blocking call inside an async method, a call that depends on the current culture or compares strings linguistically, or an unused private field. The SDK doesn't run these rules on the generators' `netstandard2.0` project, so code there needs the same care without the warnings.
 
 ### Debugging
 

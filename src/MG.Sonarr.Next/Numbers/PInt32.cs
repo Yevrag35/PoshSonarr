@@ -458,7 +458,7 @@ public readonly struct PInt32 : IComparable<PInt32>, IEquatable<PInt32>
 	/// <returns>The underlying value formatted as a string.</returns>
 	public override string ToString()
 	{
-		return _value.ToString();
+		return _value.ToString(CultureInfo.CurrentCulture);
 	}
 }
 

@@ -122,6 +122,7 @@ public static class SonarrJsonDependencyInjection
 			TimeOnlyConverter timeConverter = new();
 			TimeSpanConverter timeSpanConverter = new();
 			AlwaysStringConverter alwaysStringConverter = new();
+			AlwaysStringConverter exactStringConverter = new(trim: false);
 
 			config.AddConvertProperties(EnumerateConverterProperties())
 				  .AddGlobalReplaceNames(EnumerateGlobalReplaceNames())
@@ -138,7 +139,18 @@ public static class SonarrJsonDependencyInjection
 						new("CleanTitle", alwaysStringConverter),
 						new("SortTitle", alwaysStringConverter),
 						new("Title", alwaysStringConverter),
-						new("TorrentInfoHash", alwaysStringConverter)
+						new("TorrentInfoHash", alwaysStringConverter),
+						new("Label", alwaysStringConverter),
+						// Keyed by the names that EnumerateGlobalReplaceNames gives these properties.
+						new("CHMODFolder", alwaysStringConverter),
+						new("CHOWNGroup", alwaysStringConverter),
+						// Credentials go back to Sonarr exactly as they came, whitespace included.
+						new("Username", exactStringConverter),
+						new("Password", exactStringConverter),
+						new("PasswordConfirmation", exactStringConverter),
+						new("SslCertPassword", exactStringConverter),
+						new("ProxyUsername", exactStringConverter),
+						new("ProxyPassword", exactStringConverter)
 				  );
 		});
 

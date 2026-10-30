@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Shell.Extensions;
@@ -45,7 +45,7 @@ public static class EitherExtensions
 	{
 #if NET9_0_OR_GREATER
 		Span<char> chars = stackalloc char[LengthConstants.INT_MAX];
-		_ = value.TryFormat(chars, out int written);
+		_ = value.TryFormat(chars, out int written, provider: CultureInfo.InvariantCulture);
 		chars = chars.Slice(0, written);
 		set.Add(chars);
 #else

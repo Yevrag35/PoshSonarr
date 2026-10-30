@@ -155,7 +155,7 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 
 	private static async Task<bool> WriteFileAsync(HttpResponseMessage response, string path, CancellationToken token)
 	{
-		Stream stream = response.Content.ReadAsStream(token);
+		Stream stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
 		await using (stream.ConfigureAwait(false))
 		{
 			if (stream.CanSeek && stream.Length <= 0)

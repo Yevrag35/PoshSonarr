@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Models.Notifications;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -41,7 +41,7 @@ public sealed class UpdateSonarrNotificationCmdlet : SonarrApiCmdletBase
 			}
 
 			if (!this.Force && !this.ShouldContinue(
-				query: string.Format("Are you sure you want to update the notifcation: {0}", notification.Id),
+				query: string.Format(CultureInfo.CurrentCulture, "Are you sure you want to update the notification: {0}", notification.Id),
 				caption: url,
 				ref yesToAll,
 				ref noToAll))

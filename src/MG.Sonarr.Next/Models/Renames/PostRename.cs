@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Json.Converters;
+using MG.Sonarr.Next.Json.Converters;
 using MG.Sonarr.Next.Metadata;
 using System.Text.Json.Serialization;
 
@@ -61,6 +61,6 @@ public sealed class PostRename
 	public override string ToString()
 	{
 		string idsStr = string.Join(',', _ids);
-		return string.Format(FORMAT, this.SeriesId, idsStr);
+		return string.Format(CultureInfo.InvariantCulture, FORMAT, this.SeriesId, idsStr);
 	}
 }

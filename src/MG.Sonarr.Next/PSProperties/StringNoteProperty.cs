@@ -1,4 +1,4 @@
-﻿using System.Management.Automation;
+using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties;
 
@@ -43,7 +43,7 @@ public sealed class StringNoteProperty : WritableProperty<string>
 			null => string.Empty,
 			string strVal => strVal,
 			IFormattable formattable => formattable.ToString(null, Statics.DefaultProvider),
-			IConvertible icon => Convert.ToString(icon) ?? string.Empty,
+			IConvertible icon => Convert.ToString(icon, Statics.DefaultProvider) ?? string.Empty,
 
 			_ => this.ThrowNotType<string>(),
 		};

@@ -36,7 +36,7 @@ public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 
 	protected override void Begin(IServiceProvider provider)
 	{
-		if (LOCALHOST.Equals(this.HostName, StringComparison.InvariantCultureIgnoreCase) || DOT_HOST.Equals(this.HostName))
+		if (LOCALHOST.Equals(this.HostName, StringComparison.OrdinalIgnoreCase) || DOT_HOST.Equals(this.HostName, StringComparison.Ordinal))
 		{
 			this.LocalPath = this.GetResolvedPath(this.LocalPath);
 			this.HostName = GetLocalHostName(Environment.MachineName);

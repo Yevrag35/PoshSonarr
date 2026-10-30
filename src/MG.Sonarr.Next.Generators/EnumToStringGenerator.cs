@@ -1014,12 +1014,12 @@ namespace MG.Sonarr.Next.Generators
 			array ??= new EnumMember[members.Length];
 			try
 			{
-				long value = Convert.ToInt64(field.ConstantValue!);
+				long value = Convert.ToInt64(field.ConstantValue!, CultureInfo.InvariantCulture);
 				array[count++] = new EnumMember(field.Name, value);
 			}
 			catch (OverflowException)
 			{
-				ulong value = Convert.ToUInt64(field.ConstantValue!);
+				ulong value = Convert.ToUInt64(field.ConstantValue!, CultureInfo.InvariantCulture);
 				array[count++] = new EnumMember(field.Name, value);
 			}
 		}
@@ -1144,8 +1144,8 @@ namespace MG.Sonarr.Next.Generators
 		public override string ToString()
 		{
 			return _kind == 0
-					? unchecked((long)_value).ToString()
-					: _value.ToString();
+					? unchecked((long)_value).ToString(CultureInfo.InvariantCulture)
+					: _value.ToString(CultureInfo.InvariantCulture);
 		}
 
 		/// <summary>Determines whether this value equals another, comparing both bits and kind.</summary>

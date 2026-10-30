@@ -29,10 +29,10 @@ public sealed class ReadOnlySetProperty<T> : ReadOnlyProperty<SortedSet<T>>
 	{
 		if (this.SetValues.Count <= 0)
 		{
-			return string.Format(AS_EMPTY, _genName, this.Name);
+			return string.Format(CultureInfo.CurrentCulture, AS_EMPTY, _genName, this.Name);
 		}
 
-		return string.Format(AS_VALUES, _genName, this.Name, string.Join(',', this.SetValues));
+		return string.Format(CultureInfo.CurrentCulture, AS_VALUES, _genName, this.Name, string.Join(',', this.SetValues));
 	}
 }
 

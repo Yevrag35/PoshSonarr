@@ -295,17 +295,17 @@ public sealed class ArrayPoolMemoryStream : Stream
 	/// Returns the populated contents of the stream as a span over the underlying buffer.
 	/// </summary>
 	/// <remarks>
-	/// It is not supported to write to the returned span concurrently with writing to the stream itself, as that may cause the buffer to be reallocated and invalidate the span.
-	/// <para>
-	/// Only use this method to populate the stream's underlying buffer when using the <see cref="ArrayPoolMemoryStream"/> as a passed, read-only stream.
-	/// </para>
+	/// <para>The span covers the bytes from the start of the stream up to <see cref="Length"/>. Changing a byte through it
+	/// changes the stream's contents, while <see cref="Write(ReadOnlySpan{byte})"/> and its overloads are what add bytes.</para>
+	/// <para>The span aliases the pooled buffer, so a write that grows the stream, or disposing the stream, leaves the span
+	/// over an array that's back in the pool.</para>
 	/// </remarks>
 	/// <returns>A <see cref="Span{T}"/> over the bytes written to the stream.</returns>
 	/// <inheritdoc cref="EnsureNotDisposed" path="/exception"/>
 	public Span<byte> AsSpan()
 	{
 		this.EnsureNotDisposed();
-		return _buffer.AsSpan();
+		return _buffer.AsSpan(0, _length);
 	}
 	/// <summary>
 	/// Returns a read-only span over the populated contents of the stream, starting at the specified index and with the specified length.
@@ -319,6 +319,7 @@ public sealed class ArrayPoolMemoryStream : Stream
 	internal ReadOnlySpan<byte> AsSpan(int start, int length)
 	{
 		this.EnsureNotDisposed();
+		ValidateContentsRange(start, length, _length);
 		return new ReadOnlySpan<byte>(_buffer, start, length);
 	}
 	/// <summary>
@@ -343,6 +344,7 @@ public sealed class ArrayPoolMemoryStream : Stream
 	public ReadOnlyMemory<byte> AsMemory(int start, int length)
 	{
 		this.EnsureNotDisposed();
+		ValidateContentsRange(start, length, _length);
 		return new ReadOnlyMemory<byte>(_buffer, start, length);
 	}
 
@@ -525,6 +527,7 @@ public sealed class ArrayPoolMemoryStream : Stream
 	{
 		this.EnsureNotDisposed();
 		this.EnsureCapacityForAppend(1);
+		this.ClearGapBeforePosition();
 		_buffer![_position] = value;
 		_position++;
 		if (_position > _length)
@@ -551,10 +554,25 @@ public sealed class ArrayPoolMemoryStream : Stream
 	private void WriteCore(ReadOnlySpan<byte> source)
 	{
 		this.EnsureCapacityForAppend(source.Length);
+		this.ClearGapBeforePosition();
 		source.CopyTo(new Span<byte>(_buffer!, _position, source.Length));
 		_position += source.Length;
 		if (_position > _length)
 			_length = _position;
+	}
+
+	/// <summary>
+	/// Zeroes the bytes between the end of the stream's contents and the position, when a seek has moved the position
+	/// past the end, so that a write there doesn't expose bytes that the pooled buffer held before it was rented.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="MemoryStream"/> zeroes the same gap, as <see cref="SetLength(long)"/> does for the bytes it adds. Call
+	/// it after <see cref="EnsureCapacityForAppend(int)"/>, which makes the buffer reach the position.
+	/// </remarks>
+	private void ClearGapBeforePosition()
+	{
+		if (_position > _length)
+			Array.Clear(_buffer!, _length, _position - _length);
 	}
 
 	private void EnsureCapacityForAppend(int appendCount)
@@ -654,6 +672,22 @@ public sealed class ArrayPoolMemoryStream : Stream
 
 		if ((uint)count > buffer.Length - offset)
 			throw new ArgumentOutOfRangeException(nameof(count));
+	}
+	/// <summary>
+	/// Throws an <see cref="ArgumentOutOfRangeException"/> when a range doesn't lie within the stream's contents.
+	/// </summary>
+	/// <param name="start">The index that the range starts at.</param>
+	/// <param name="length">The number of bytes in the range.</param>
+	/// <param name="contentLength">The stream's length.</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="start"/> or <paramref name="length"/> is negative, or when the range ends past <paramref name="contentLength"/>.</exception>
+	[DebuggerStepThrough]
+	private static void ValidateContentsRange(int start, int length, int contentLength)
+	{
+		if ((uint)start > (uint)contentLength)
+			throw new ArgumentOutOfRangeException(nameof(start));
+
+		if ((uint)length > (uint)(contentLength - start))
+			throw new ArgumentOutOfRangeException(nameof(length));
 	}
 	[DebuggerStepThrough]
 	private static void ValidateWriteArgs(byte[] buffer, int offset, int count)

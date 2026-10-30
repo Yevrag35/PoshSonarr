@@ -196,6 +196,7 @@ public sealed class ConnectSonarrInstanceCmdlet : ConnectCmdlet, IApiCmdlet
 		if (this.IsVerboseNotSilentAndUICanWrite(out PSHostUserInterface? hostUI))
 		{
 			string msg = Messenger.Format(
+				provider: CultureInfo.CurrentCulture,
 				format: Messages.Verbose_SendingRequest_Format,
 				[request.RequestMethod, request.RequestUrl]);
 

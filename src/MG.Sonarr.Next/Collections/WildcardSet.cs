@@ -93,7 +93,7 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 	public bool Add(int value)
 	{
 		Span<char> chars = stackalloc char[LengthConstants.INT_MAX];
-		_ = value.TryFormat(chars, out int written);
+		_ = value.TryFormat(chars, out int written, provider: CultureInfo.InvariantCulture);
 		chars = chars.Slice(0, written);
 #if NET9_0_OR_GREATER
 

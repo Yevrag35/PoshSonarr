@@ -111,6 +111,7 @@ public sealed class AddSonarrTagCmdlet : SonarrMetadataCmdlet
 			if (this.ShouldProcess(
 				target: kvp.Key,
 				action: string.Format(
+					CultureInfo.CurrentCulture,
 					"Adding tags: ({0})",
 					string.Join(", ", _ids.Where(x => !kvp.Value.Tags.Contains(x))))))
 			{

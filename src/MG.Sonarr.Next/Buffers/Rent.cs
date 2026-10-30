@@ -29,8 +29,12 @@ public static class Rent
 	/// <summary>
 	/// Returns an array to the shared array pool for reuse.
 	/// </summary>
-	/// <remarks>If the array is null or has a length of zero, this method does nothing. Arrays containing reference
-	/// types or references are always cleared before being returned to the pool to prevent memory leaks.</remarks>
+	/// <remarks>
+	/// <para>If the array is null or has a length of zero, this method does nothing. Arrays containing reference
+	/// types or references are always cleared before being returned to the pool to prevent memory leaks.</para>
+	/// <para>In debug builds, an array that isn't cleared is filled with <c>0xDD</c> bytes before it goes back to the
+	/// pool, so code that reads the array after returning it reads junk rather than its old contents.</para>
+	/// </remarks>
 	/// <typeparam name="T">The type of elements in the array.</typeparam>
 	/// <param name="array">The array to return to the pool. Can be null.</param>
 	/// <param name="clearArray">true to clear the contents of the array before returning it to the pool; otherwise, false. If the array contains
@@ -39,7 +43,32 @@ public static class Rent
 	{
 		if (array is { Length: > 0 })
 		{
-			ArrayPool<T>.Shared.Return(array, clearArray || RuntimeHelpers.IsReferenceOrContainsReferences<T>());
+			bool clear = clearArray || RuntimeHelpers.IsReferenceOrContainsReferences<T>();
+			if (!clear)
+			{
+				Poison(array);
+			}
+
+			ArrayPool<T>.Shared.Return(array, clear);
 		}
+	}
+
+	/// <summary>
+	/// Fills every byte of an array of unmanaged elements with <c>0xDD</c>, in debug builds only.
+	/// </summary>
+	/// <remarks>
+	/// The element type must not be or hold a reference, since the junk bytes would read as object references.
+	/// </remarks>
+	/// <typeparam name="T">The type of elements in the array.</typeparam>
+	/// <param name="array">The array to fill.</param>
+	[Conditional("DEBUG")]
+	private static void Poison<T>(T[] array)
+	{
+		const byte POISON = 0xDD;
+		Debug.Assert(!RuntimeHelpers.IsReferenceOrContainsReferences<T>(), "Junk bytes in a reference would corrupt the heap.");
+
+		T poison = default!;
+		Unsafe.InitBlockUnaligned(ref Unsafe.As<T, byte>(ref poison), POISON, (uint)Unsafe.SizeOf<T>());
+		array.AsSpan().Fill(poison);
 	}
 }

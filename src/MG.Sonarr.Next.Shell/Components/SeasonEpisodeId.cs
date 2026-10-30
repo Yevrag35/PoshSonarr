@@ -158,17 +158,17 @@ public readonly struct SeasonEpisodeId : IEpisodeIdentifier
 	{
 		Span<char> span = stackalloc char[3 + (LengthConstants.INT_MAX * 2)];
 		span[0] = 'S';
-		this.Season.TryFormat(span.Slice(1), out int written);
+		this.Season.TryFormat(span.Slice(1), out int written, provider: CultureInfo.InvariantCulture);
 		int pos = 1 + written;
 
 		span[pos++] = 'E';
-		_ = this.EpisodeRange.Start.TryFormat(span.Slice(pos), out written);
+		_ = this.EpisodeRange.Start.TryFormat(span.Slice(pos), out written, provider: CultureInfo.InvariantCulture);
 		pos += written;
 
 		if (!this.EpisodeRange.IsSingle)
 		{
 			span[pos++] = '-';
-			_ = this.EpisodeRange.End.TryFormat(span.Slice(pos), out written);
+			_ = this.EpisodeRange.End.TryFormat(span.Slice(pos), out written, provider: CultureInfo.InvariantCulture);
 			pos += written;
 		}
 

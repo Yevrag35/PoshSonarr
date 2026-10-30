@@ -21,7 +21,6 @@ public sealed class GetSonarrQualityDefinitionCmdlet : SonarrMetadataCmdlet
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int[] Id { get; set; } = [];
 
-	const string NAME = " -Name ";
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = false, Position = 0)]
 	[SupportsWildcards]
