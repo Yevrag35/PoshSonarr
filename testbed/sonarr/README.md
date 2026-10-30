@@ -16,6 +16,7 @@ Run these from the repository root. Each works from any other directory too.
 | `pwsh -NoProfile -File testbed/sonarr/start.ps1` | Builds the images whose files changed, Sonarr's and the mock metadata service's, starts both, and waits for Sonarr's health check. Then it checks from the host that the port answers with the pinned version and the instance name `Sonarr Testbed`, creates whatever the baseline lacks, adds whichever seeded series is missing, and prints the connection values. `-TimeoutSeconds`, 120 by default, bounds the wait for the health check, and building the images doesn't count against it. |
 | `pwsh -NoProfile -File testbed/sonarr/stop.ps1` | Stops both services and keeps their containers and Sonarr's volumes, so the next start brings back the same data. |
 | `pwsh -NoProfile -File testbed/sonarr/reset.ps1` | Removes the containers and both volumes, and with them everything Sonarr stored, then does everything `start.ps1` does. It takes the same `-TimeoutSeconds`. |
+| `pwsh -NoProfile -File testbed/sonarr/test.ps1` | Runs the smoke tests against the running testbed and prints a PASS or FAIL line for each check. The Smoke tests section says what they check. |
 | `pwsh -NoProfile -File testbed/sonarr/logs.ps1` | Shows the last 200 lines of Sonarr's log. `-Tail <count>` shows another number, `-Service skyhook` shows the mock metadata service's log, with a line for each request Sonarr made to it, and `-Follow` keeps streaming new lines until Ctrl+C. |
 
 Each script exits 1 when something fails, and a failure while starting or while adding the seeded series first shows the containers' state and the last 200 lines of each one's log.
@@ -36,7 +37,27 @@ The mock's image generates a throwaway self-signed certificate when it's built, 
 
 The seeded series are monitored, in `/tv`, with all their episodes monitored and no searches. Sonarr counts an episode as aired once its air time plus the show's 30-minute runtime has passed, so `wanted/missing` reports the 9 episodes that aired, and the calendar from 2099-01-01 to 2099-01-31 holds the other 3. A lookup for `tvdb:<id>` finds that one show and any other term finds all three, and adding a TVDB ID that the mock lacks gets a 400 that says "A series with this ID was not found". `logs.ps1 -Service skyhook` shows each request Sonarr made to the mock. After every refresh, Sonarr warns that the `/tv` root folder is empty, because the testbed holds no media files.
 
-To change a show or add one, edit or add its file in `skyhook/v1/tvdb/shows/en/`, named for its TVDB ID, and make the same change in `skyhook/v1/tvdb/search/en/index.json`, which holds every show's object in one array. Then run `reset.ps1`: `start.ps1` alone rebuilds the mock, but Sonarr keeps what it fetched until it refreshes the show. A show's JSON needs its `malIds` and `aniListIds` lists, even when they're empty, because Sonarr stores them in database columns that can't be null. A new show joins the seeded ones through the `$seededShows` list in `testbed.psm1`.
+To change a show or add one, edit or add its file in `skyhook/v1/tvdb/shows/en/`, named for its TVDB ID, and make the same change in `skyhook/v1/tvdb/search/en/index.json`, which holds every show's object in one array. Then run `reset.ps1`: `start.ps1` alone rebuilds the mock, but Sonarr keeps what it fetched until it refreshes the show. A show's JSON needs its `malIds` and `aniListIds` lists, even when they're empty, because Sonarr stores them in database columns that can't be null. A new show joins the seeded ones through the `$seededShows` list in `testbed.psm1`. `test.ps1` expects the shows, the episode counts, and the totals that this section gives, so update it along with them.
+
+## Smoke tests
+
+`test.ps1` checks that the running testbed is the one this README describes. It sends raw HTTP requests to the API rather than going through PoshSonarr, so it tests the testbed, not the module. It expects the baseline, as `start.ps1` and `reset.ps1` leave it, and first makes the same status call that they make, so that it sends nothing to another server that answers on the port. Its checks come in these groups, in this order:
+
+| Group | Checks |
+|---|---|
+| Identity | `system/status` answers 200 with the pinned version, the instance name `Sonarr Testbed`, and `isDocker` true. |
+| Keys | `system/status` and `tag` each answer 401 to a request without a key and to one with a wrong key. |
+| Update lock | `system/status` reports `packageUpdateMechanism` `docker`, and `config/host` reports `updateAutomatically` false and `updateMechanism` `docker`. |
+| Baseline | The `testbed-baseline` tag exists, and so does the `/tv` root folder, with `accessible` true. |
+| Seeded series | `series` lists TVDB IDs 9000001 and 9000002, each has 6 episodes, and the `testbed-baseline` tag lists Testbed Ended Show. |
+| Mock lookup | `series/lookup` finds Testbed Lookup Show alone for `tvdb:9000003` and all three shows for `testbed`, and `config/host` reports `certificateValidation` `disabledForLocalAddresses`. |
+| Wanted and calendar | `wanted/missing` reports 9 episodes, and the calendar from 2099-01-01 to 2099-01-31 holds 3. These run before the round trips, which add a show with two aired episodes for a while. |
+| Unknown show | Adding TVDB ID 9009999, which the mock lacks, gets a 400 that says "A series with this ID was not found". |
+| Tag round trip | For a tag labeled `testbed-temp-` and 8 random hex digits, POST returns 201 with an ID, GET returns the label, PUT with a new label returns 202, GET returns the new label, DELETE returns 200, and GET then returns 404. |
+| Series round trip | For Testbed Lookup Show, POST returns 201 with an ID, Sonarr finishes adding the show, with its 2 episodes, within 60 seconds, GET returns 200, PUT with `monitored` false returns 202, DELETE returns 200, and GET then returns 404. |
+| Container | Sonarr runs as UID 1000, and port 8989 is published on `127.0.0.1`. |
+
+Each check prints a PASS or FAIL line that starts with its group, and a failed check shows what the testbed answered. The script exits 1 when any check fails or the testbed isn't answering. A round trip deletes what it added even when one of its checks fails, so a run leaves the testbed as it found it. An interrupted run can leave its tag or Testbed Lookup Show behind, and with the show still there, the next run fails until `reset.ps1` brings back the baseline. Each run leaves an error and a warning in Sonarr's log for the show that the mock lacks, besides the warning about the empty `/tv` root folder that adding Testbed Lookup Show brings.
 
 ## Connecting
 
@@ -109,6 +130,7 @@ From Git Bash, set `MSYS_NO_PATHCONV=1` first, or Git Bash rewrites container pa
 - **Docker isn't running.** A command that fails with "failed to connect to the docker API" needs Docker Desktop started.
 - **Sonarr doesn't become healthy.** `logs.ps1` shows what Sonarr reported. A slow machine may need a longer `-TimeoutSeconds`.
 - **Adding a seeded series fails.** `start.ps1` shows both services' logs. When the mock's log has no request from Sonarr, Sonarr didn't reach it, and a 409 that names a column of the `Series` table means a show's JSON lacks a field that Sonarr's database requires.
+- **A smoke test fails.** Its line shows what the testbed answered. Tests of your own, or a `test.ps1` run that was interrupted, can leave the testbed off its baseline, so run `reset.ps1` and then `test.ps1` again first. A failure that comes back from a fresh baseline is real, and `logs.ps1`, or `logs.ps1 -Service skyhook` for the mock, shows Sonarr's side of the request.
 
 ## What the testbed can't test
 

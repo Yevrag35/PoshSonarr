@@ -10,8 +10,9 @@
 	call from the host, through the published port, and goes on only when Sonarr answers with the
 	pinned version and the testbed's instance name. Next, it creates whatever the baseline lacks, a
 	tag labeled testbed-baseline and a root folder at /tv. Then it makes sure Sonarr accepts the
-	mock's certificate, adds whichever of the two seeded shows Sonarr lacks, and waits for their
-	episodes. Last, it prints the connection values. Running it again creates nothing.
+	mock's certificate, adds whichever of the two seeded shows Sonarr lacks, and waits until Sonarr
+	has finished adding them, episodes included. Last, it prints the connection values. Running it
+	again creates nothing.
 
 	When something fails, it exits 1. A failure while starting or seeding the series first shows the
 	containers' state and the last 200 lines of each one's log.

@@ -225,16 +225,63 @@ function Initialize-TestbedBaseline {
 	}
 }
 
+# Waits until Sonarr has finished adding each series it's given. Sonarr answers an add before the
+# series has episodes, because it fetches them in a refresh that it queues. After storing them, the
+# refresh runs the post-add actions, which set which episodes are monitored, save the series again,
+# and last clear its addOptions. So a series counts as added once it has as many episodes as it
+# should and no addOptions, and from then on a request that changes it can't race Sonarr's own save.
+# -TimeoutSeconds bounds the wait for all of them together, and running out throws.
+function Wait-TestbedSeries {
+	[CmdletBinding()]
+	param (
+		# Each series to wait for, as an object with its Id, its Title, and the EpisodeCount it should
+		# reach.
+		[Parameter(Mandatory = $true)]
+		[object[]] $Series,
+
+		# How long to wait for all of them, in seconds.
+		[Parameter(Mandatory = $false)]
+		[ValidateRange(1, [int]::MaxValue)]
+		[int] $TimeoutSeconds = 60
+	)
+
+	$deadline = [datetime]::UtcNow.AddSeconds($TimeoutSeconds)
+	$pending = $Series
+	while ($true) {
+
+		$pending = @(foreach ($item in $pending) {
+
+			$stored = (Invoke-TestbedApi "series/$($item.Id)" -ExpectStatus 200).Body
+			$episodes = (Invoke-TestbedApi "episode?seriesId=$($item.Id)" -ExpectStatus 200).Body
+			if ($null -ne $stored.addOptions -or $episodes.Count -lt $item.EpisodeCount) {
+				$item
+			}
+		})
+		if ($pending.Count -eq 0) {
+			return
+		}
+		if ([datetime]::UtcNow -ge $deadline) {
+
+			$states = foreach ($item in $pending) {
+
+				$episodes = (Invoke-TestbedApi "episode?seriesId=$($item.Id)" -ExpectStatus 200).Body
+				'{0} ({1} of {2} episodes)' -f $item.Title, $episodes.Count, $item.EpisodeCount
+			}
+			throw ("Sonarr didn't finish adding {0} within {1} seconds." -f ($states -join ' and '), $TimeoutSeconds)
+		}
+		Start-Sleep -Milliseconds 500
+	}
+}
+
 # Makes sure Sonarr has the seeded shows from the mock metadata service: Testbed Ended Show, tagged
 # testbed-baseline, and Testbed Continuing Show. First it makes sure that certificateValidation is
 # disabledForLocalAddresses, so that Sonarr accepts the mock's self-signed certificate. The setting
 # lives in the database, which a reset wipes, so every run checks it, and because PUT config/host
 # saves every field it's sent, the whole resource that GET returned goes back. Then each show that GET
 # series doesn't list by TVDB ID gets added: monitored, in /tv, with season folders and all its
-# episodes monitored, and with no searches. Sonarr answers the add before the show has episodes,
-# because it fetches them in a refresh that it queues, so this waits until each new show has as many
-# as its fixture, for at most -TimeoutSeconds. A failure shows the containers and both services'
-# logs.
+# episodes monitored, and with no searches. Last, it waits until Sonarr has finished adding the new
+# shows, each with as many episodes as its fixture, for at most -TimeoutSeconds. A failure shows the
+# containers and both services' logs.
 function Initialize-TestbedSeries {
 	[CmdletBinding()]
 	param (
@@ -242,7 +289,7 @@ function Initialize-TestbedSeries {
 		[Parameter(Mandatory = $true)]
 		[int] $BaselineTagId,
 
-		# How long to wait for the new shows' episodes, in seconds.
+		# How long to wait for Sonarr to finish adding the new shows, in seconds.
 		[Parameter(Mandatory = $false)]
 		[ValidateRange(1, [int]::MaxValue)]
 		[int] $TimeoutSeconds = 60
@@ -268,7 +315,7 @@ function Initialize-TestbedSeries {
 		if ($null -eq $qualityProfile) {
 			throw 'Sonarr has no quality profile named Any.'
 		}
-		$waiting = foreach ($show in $missing) {
+		$added = foreach ($show in $missing) {
 
 			$fixture = Get-Content -Raw -LiteralPath (Join-Path $showFixtures "$($show.TvdbId).json") | ConvertFrom-Json
 			$body = @{
@@ -294,25 +341,7 @@ function Initialize-TestbedSeries {
 				EpisodeCount = $fixture.episodes.Count
 			}
 		}
-
-		$deadline = [datetime]::UtcNow.AddSeconds($TimeoutSeconds)
-		while ($true) {
-
-			$waiting = @(foreach ($series in $waiting) {
-
-				$episodes =(Invoke-TestbedApi "episode?seriesId=$($series.Id)" -ExpectStatus 200).Body
-				if ($episodes.Count -lt $series.EpisodeCount) {
-					$series
-				}
-			})
-			if ($waiting.Count -eq 0) {
-				break
-			}
-			if ([datetime]::UtcNow -ge $deadline) {
-				throw ("Sonarr didn't fetch all the episodes of {0} within {1} seconds." -f ($waiting.Title -join ' and '), $TimeoutSeconds)
-			}
-			Start-Sleep -Milliseconds 500
-		}
+		Wait-TestbedSeries -Series $added -TimeoutSeconds $TimeoutSeconds
 	}
 	catch {
 
@@ -321,4 +350,4 @@ function Initialize-TestbedSeries {
 	}
 }
 
-Export-ModuleMember -Function Invoke-TestbedCompose, Get-TestbedSettings, Invoke-TestbedApi, Start-Testbed, Assert-TestbedReady, Initialize-TestbedBaseline, Initialize-TestbedSeries
+Export-ModuleMember -Function Invoke-TestbedCompose, Get-TestbedSettings, Invoke-TestbedApi, Start-Testbed, Assert-TestbedReady, Initialize-TestbedBaseline, Wait-TestbedSeries, Initialize-TestbedSeries

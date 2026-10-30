@@ -2,17 +2,17 @@
 
 <#
 .SYNOPSIS
-	Return the Sonarr testbed to its baseline: remove its container and volumes, then start it fresh.
+	Return the Sonarr testbed to its baseline: remove its containers and volumes, then start it fresh.
 
 .DESCRIPTION
 	Runs down --volumes --remove-orphans on the poshsonarr-testbed Compose project, which removes the
 	project's containers, its network, and its config and tv volumes, and with them everything
-	Sonarr stored. Nothing outside the project is touched, and the image stays for the next build to
-	reuse. Then it runs start.ps1, which builds if needed, starts, waits, checks, seeds the baseline,
-	and prints the connection values.
+	Sonarr stored. Nothing outside the project is touched, and the images stay for the next build to
+	reuse. Then it runs start.ps1, which builds if needed, starts, waits, checks, seeds the baseline
+	and the series, and prints the connection values.
 
-	When something fails, it exits 1, and a failure in start.ps1 first shows the container's state
-	and the last 200 lines of its logs.
+	When something fails, it exits 1, and a failure while start.ps1 starts the testbed or adds the
+	seeded series first shows the containers' state and the last 200 lines of each one's log.
 
 .EXAMPLE
 	pwsh -NoProfile -File testbed/sonarr/reset.ps1
