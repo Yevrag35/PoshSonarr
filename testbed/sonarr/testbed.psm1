@@ -22,6 +22,16 @@ $projectName = 'poshsonarr-testbed'
 # Get-TestbedSettings runs docker compose config, so the API helpers read it once and keep it here.
 $settings = $null
 
+# The mock metadata service's show fixtures, one file per TVDB ID.
+$showFixtures = Join-Path $PSScriptRoot 'skyhook/v1/tvdb/shows/en'
+
+# The mock's shows that seeding adds, by TVDB ID, and whether each gets the testbed-baseline tag. The
+# third show, 9000003, stays on the mock alone, for tests to look up, add, and delete.
+$seededShows = @(
+	[pscustomobject]@{ TvdbId = 9000001; Tagged = $true }
+	[pscustomobject]@{ TvdbId = 9000002; Tagged = $false }
+)
+
 # Runs docker compose on the testbed's project with the arguments it's given, and throws when it
 # exits nonzero. This is a simple function rather than an advanced one so that docker's own flags
 # pass through: an advanced function would bind -d to -Debug and -v to -Verbose.
@@ -42,8 +52,8 @@ function Get-TestbedSettings {
 	}
 }
 
-# Shows the project's containers and the last 200 lines of its logs, for a failure to point at. A
-# failure in here is reported and skipped, so it can't take the place of the one that asked for it.
+# Shows the project's containers and the last 200 lines of each one's log, for a failure to point at.
+# A failure in here is reported and skipped, so it can't take the place of the one that asked for it.
 function Show-TestbedDiagnostics {
 
 	Write-Host 'Testbed containers:' -ForegroundColor Yellow
@@ -141,10 +151,11 @@ function Invoke-TestbedApi {
 	return $result
 }
 
-# Builds the image when the Dockerfile or compose.yaml changed, starts the project, and waits for
-# Sonarr's health check. up reuses an existing image even after either file changes, so --build goes
-# on every call, and the layer cache makes an unchanged rebuild quick. --wait exits nonzero when the
-# container exits or turns unhealthy, and --wait-timeout bounds the wait.
+# Builds the images whose inputs changed, Sonarr's and the mock metadata service's, starts the
+# project, and waits for Sonarr's health check. up reuses an existing image even after its
+# Dockerfile, the files it copies, or its build arguments change, so --build goes on every call, and
+# the layer cache makes an unchanged rebuild quick. --wait exits nonzero when a container exits or
+# turns unhealthy, and --wait-timeout bounds the wait.
 function Start-Testbed {
 	param (
 		[Parameter(Mandatory = $false)]
@@ -214,4 +225,100 @@ function Initialize-TestbedBaseline {
 	}
 }
 
-Export-ModuleMember -Function Invoke-TestbedCompose, Get-TestbedSettings, Invoke-TestbedApi, Start-Testbed, Assert-TestbedReady, Initialize-TestbedBaseline
+# Makes sure Sonarr has the seeded shows from the mock metadata service: Testbed Ended Show, tagged
+# testbed-baseline, and Testbed Continuing Show. First it makes sure that certificateValidation is
+# disabledForLocalAddresses, so that Sonarr accepts the mock's self-signed certificate. The setting
+# lives in the database, which a reset wipes, so every run checks it, and because PUT config/host
+# saves every field it's sent, the whole resource that GET returned goes back. Then each show that GET
+# series doesn't list by TVDB ID gets added: monitored, in /tv, with season folders and all its
+# episodes monitored, and with no searches. Sonarr answers the add before the show has episodes,
+# because it fetches them in a refresh that it queues, so this waits until each new show has as many
+# as its fixture, for at most -TimeoutSeconds. A failure shows the containers and both services'
+# logs.
+function Initialize-TestbedSeries {
+	[CmdletBinding()]
+	param (
+		# The testbed-baseline tag's ID, as Initialize-TestbedBaseline returns it.
+		[Parameter(Mandatory = $true)]
+		[int] $BaselineTagId,
+
+		# How long to wait for the new shows' episodes, in seconds.
+		[Parameter(Mandatory = $false)]
+		[ValidateRange(1, [int]::MaxValue)]
+		[int] $TimeoutSeconds = 60
+	)
+
+	try {
+
+		$hostConfig = (Invoke-TestbedApi config/host -ExpectStatus 200).Body
+		if ($hostConfig.certificateValidation -ne 'disabledForLocalAddresses') {
+
+			$hostConfig.certificateValidation = 'disabledForLocalAddresses'
+			$null = Invoke-TestbedApi config/host -Method Put -Body $hostConfig -ExpectStatus 202
+			Write-Host 'Set certificateValidation to disabledForLocalAddresses.'
+		}
+
+		$existing = (Invoke-TestbedApi series -ExpectStatus 200).Body
+		$missing = @($seededShows | Where-Object TvdbId -notin $existing.tvdbId)
+		if ($missing.Count -eq 0) {
+			return
+		}
+
+		$qualityProfile = (Invoke-TestbedApi qualityprofile -ExpectStatus 200).Body | Where-Object name -eq 'Any'
+		if ($null -eq $qualityProfile) {
+			throw 'Sonarr has no quality profile named Any.'
+		}
+		$waiting = foreach ($show in $missing) {
+
+			$fixture = Get-Content -Raw -LiteralPath (Join-Path $showFixtures "$($show.TvdbId).json") | ConvertFrom-Json
+			$body = @{
+				tvdbId           = $show.TvdbId
+				title            = $fixture.title
+				qualityProfileId = $qualityProfile.id
+				rootFolderPath   = '/tv'
+				monitored        = $true
+				seasonFolder     = $true
+				seriesType       = 'standard'
+				tags             = @(if ($show.Tagged) { $BaselineTagId })
+				addOptions       = @{
+					monitor                      = 'all'
+					searchForMissingEpisodes     = $false
+					searchForCutoffUnmetEpisodes = $false
+				}
+			}
+			$series = (Invoke-TestbedApi series -Method Post -Body $body -ExpectStatus 201).Body
+			Write-Host "Added $($series.title), series ID $($series.id)."
+			[pscustomobject]@{
+				Id           = $series.id
+				Title        = $series.title
+				EpisodeCount = $fixture.episodes.Count
+			}
+		}
+
+		$deadline = [datetime]::UtcNow.AddSeconds($TimeoutSeconds)
+		while ($true) {
+
+			$waiting = @(foreach ($series in $waiting) {
+
+				$episodes =(Invoke-TestbedApi "episode?seriesId=$($series.Id)" -ExpectStatus 200).Body
+				if ($episodes.Count -lt $series.EpisodeCount) {
+					$series
+				}
+			})
+			if ($waiting.Count -eq 0) {
+				break
+			}
+			if ([datetime]::UtcNow -ge $deadline) {
+				throw ("Sonarr didn't fetch all the episodes of {0} within {1} seconds." -f ($waiting.Title -join ' and '), $TimeoutSeconds)
+			}
+			Start-Sleep -Milliseconds 500
+		}
+	}
+	catch {
+
+		Show-TestbedDiagnostics
+		throw
+	}
+}
+
+Export-ModuleMember -Function Invoke-TestbedCompose, Get-TestbedSettings, Invoke-TestbedApi, Start-Testbed, Assert-TestbedReady, Initialize-TestbedBaseline, Initialize-TestbedSeries

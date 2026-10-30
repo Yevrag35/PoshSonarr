@@ -1,0 +1,32 @@
+{
+	"tvdbId": 9000002,
+	"malIds": [],
+	"aniListIds": [],
+	"title": "Testbed Continuing Show",
+	"overview": "A made-up show that the testbed's mock metadata service serves.",
+	"slug": "testbed-continuing-show",
+	"firstAired": "2021-03-01",
+	"lastAired": "2021-03-15",
+	"status": "continuing",
+	"runtime": 30,
+	"timeOfDay": { "hours": 20, "minutes": 0 },
+	"network": "Testbed Network",
+	"originalLanguage": "eng",
+	"genres": ["Drama"],
+	"contentRating": "TV-PG",
+	"rating": { "count": 0, "value": 0 },
+	"actors": [],
+	"images": [],
+	"seasons": [
+		{ "seasonNumber": 1, "images": [] },
+		{ "seasonNumber": 2, "images": [] }
+	],
+	"episodes": [
+		{ "tvdbId": 9100201, "seasonNumber": 1, "episodeNumber": 1, "title": "Pilot", "airDate": "2021-03-01", "airDateUtc": "2021-03-01T20:00:00Z", "runtime": 30, "overview": "" },
+		{ "tvdbId": 9100202, "seasonNumber": 1, "episodeNumber": 2, "title": "The Second Week", "airDate": "2021-03-08", "airDateUtc": "2021-03-08T20:00:00Z", "runtime": 30, "overview": "" },
+		{ "tvdbId": 9100203, "seasonNumber": 1, "episodeNumber": 3, "title": "The Third Week", "airDate": "2021-03-15", "airDateUtc": "2021-03-15T20:00:00Z", "runtime": 30, "overview": "" },
+		{ "tvdbId": 9100204, "seasonNumber": 2, "episodeNumber": 1, "title": "The Return", "airDate": "2099-01-05", "airDateUtc": "2099-01-05T20:00:00Z", "runtime": 30, "overview": "" },
+		{ "tvdbId": 9100205, "seasonNumber": 2, "episodeNumber": 2, "title": "The Middle", "airDate": "2099-01-12", "airDateUtc": "2099-01-12T20:00:00Z", "runtime": 30, "overview": "" },
+		{ "tvdbId": 9100206, "seasonNumber": 2, "episodeNumber": 3, "title": "The Cliffhanger", "airDate": "2099-01-19", "airDateUtc": "2099-01-19T20:00:00Z", "runtime": 30, "overview": "" }
+	]
+}

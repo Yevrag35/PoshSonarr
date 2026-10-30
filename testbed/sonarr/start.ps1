@@ -2,18 +2,19 @@
 
 <#
 .SYNOPSIS
-	Start the Sonarr testbed, wait until it's ready, and seed its baseline.
+	Start the Sonarr testbed, wait until it's ready, and seed its baseline and series.
 
 .DESCRIPTION
-	Builds the image when the Dockerfile or compose.yaml changed, starts the poshsonarr-testbed
-	Compose project, and waits for Sonarr's health check. Then it makes one status call from the
-	host, through the published port, and goes on only when Sonarr answers with the pinned version
-	and the testbed's instance name. Last, it creates whatever the baseline lacks, a tag labeled
-	testbed-baseline and a root folder at /tv, and prints the connection values. Running it again
-	creates nothing.
+	Builds the images whose inputs changed, Sonarr's and the mock metadata service's, starts the
+	poshsonarr-testbed Compose project, and waits for Sonarr's health check. Then it makes one status
+	call from the host, through the published port, and goes on only when Sonarr answers with the
+	pinned version and the testbed's instance name. Next, it creates whatever the baseline lacks, a
+	tag labeled testbed-baseline and a root folder at /tv. Then it makes sure Sonarr accepts the
+	mock's certificate, adds whichever of the two seeded shows Sonarr lacks, and waits for their
+	episodes. Last, it prints the connection values. Running it again creates nothing.
 
-	When something fails, it shows the container's state and the last 200 lines of its logs, and
-	exits 1.
+	When something fails, it exits 1. A failure while starting or seeding the series first shows the
+	containers' state and the last 200 lines of each one's log.
 
 .EXAMPLE
 	pwsh -NoProfile -File testbed/sonarr/start.ps1
@@ -37,7 +38,8 @@ try {
 
 	Start-Testbed -TimeoutSeconds $TimeoutSeconds
 	Assert-TestbedReady
-	$null = Initialize-TestbedBaseline
+	$baseline = Initialize-TestbedBaseline
+	Initialize-TestbedSeries -BaselineTagId $baseline.TagId
 
 	$settings = Get-TestbedSettings
 	Write-Host ''

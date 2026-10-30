@@ -1,6 +1,6 @@
 # Sonarr testbed
 
-A disposable Sonarr instance in Docker for testing PoshSonarr against. It runs Sonarr 4.0.20.3014, pinned and unable to update itself, listens only on this machine's loopback address, and starts unattended with a fixed API key. Its data lives in two Docker volumes that belong to it alone, so nothing it does reaches another Sonarr instance or real media, and a reset returns it to a known baseline.
+A disposable Sonarr instance in Docker for testing PoshSonarr against. It runs Sonarr 4.0.20.3014, pinned and unable to update itself, listens only on this machine's loopback address, and starts unattended with a fixed API key. Beside it runs a mock of Sonarr's metadata service that serves three made-up shows, so series and episodes work offline and come out the same every time. Its data lives in two Docker volumes that belong to it alone, so nothing it does reaches another Sonarr instance or real media, and a reset returns it to a known baseline.
 
 ## Requirements
 
@@ -13,14 +13,30 @@ Run these from the repository root. Each works from any other directory too.
 
 | Command | What it does |
 |---|---|
-| `pwsh -NoProfile -File testbed/sonarr/start.ps1` | Builds the image if the Dockerfile or `compose.yaml` changed, starts Sonarr, and waits for its health check. Then it checks from the host that the port answers with the pinned version and the instance name `Sonarr Testbed`, creates whatever the baseline lacks, and prints the connection values. `-TimeoutSeconds`, 120 by default, bounds the wait for the health check, and building the image doesn't count against it. |
-| `pwsh -NoProfile -File testbed/sonarr/stop.ps1` | Stops Sonarr and keeps the container and its volumes, so the next start brings back the same data. |
-| `pwsh -NoProfile -File testbed/sonarr/reset.ps1` | Removes the container and both volumes, and with them everything Sonarr stored, then does everything `start.ps1` does. It takes the same `-TimeoutSeconds`. |
-| `pwsh -NoProfile -File testbed/sonarr/logs.ps1` | Shows the last 200 lines of Sonarr's log. `-Tail <count>` shows another number, and `-Follow` keeps streaming new lines until Ctrl+C. |
+| `pwsh -NoProfile -File testbed/sonarr/start.ps1` | Builds the images whose files changed, Sonarr's and the mock metadata service's, starts both, and waits for Sonarr's health check. Then it checks from the host that the port answers with the pinned version and the instance name `Sonarr Testbed`, creates whatever the baseline lacks, adds whichever seeded series is missing, and prints the connection values. `-TimeoutSeconds`, 120 by default, bounds the wait for the health check, and building the images doesn't count against it. |
+| `pwsh -NoProfile -File testbed/sonarr/stop.ps1` | Stops both services and keeps their containers and Sonarr's volumes, so the next start brings back the same data. |
+| `pwsh -NoProfile -File testbed/sonarr/reset.ps1` | Removes the containers and both volumes, and with them everything Sonarr stored, then does everything `start.ps1` does. It takes the same `-TimeoutSeconds`. |
+| `pwsh -NoProfile -File testbed/sonarr/logs.ps1` | Shows the last 200 lines of Sonarr's log. `-Tail <count>` shows another number, `-Service skyhook` shows the mock metadata service's log, with a line for each request Sonarr made to it, and `-Follow` keeps streaming new lines until Ctrl+C. |
 
-Each script exits 1 when something fails, and a failure while starting first shows the container's state and the last 200 lines of its log.
+Each script exits 1 when something fails, and a failure while starting or while adding the seeded series first shows the containers' state and the last 200 lines of each one's log.
 
-The baseline is what a new Sonarr install holds, plus a tag labeled `testbed-baseline` and a root folder at `/tv`. `start.ps1` creates whichever of the two is missing and changes nothing else, so it's safe to run again, and whatever you create stays until `reset.ps1`.
+The baseline is what a new Sonarr install holds, plus a tag labeled `testbed-baseline` and a root folder at `/tv`. On top of it, `start.ps1` makes Sonarr accept the mock's certificate and adds the two seeded series that the next section describes. Each run creates only what's missing and changes nothing else, so it's safe to run again, and whatever you create stays until `reset.ps1`.
+
+## Seeded series
+
+Sonarr gets every series and episode from its metadata service, SkyHook, at `https://skyhook.sonarr.tv`. The Compose project's second service, `skyhook`, stands in for it: nginx serving fixed JSON for three made-up shows from the files under `skyhook/v1/tvdb/`. Docker's DNS answers `skyhook.sonarr.tv` with the mock's address for Sonarr's container, so adding, looking up, and refreshing a series all run against the fixtures, without internet access and with the same results every time. The mock publishes no port, so nothing outside the project's network reaches it.
+
+The mock's image generates a throwaway self-signed certificate when it's built, so no key lives in the repository. Sonarr accepts it because its `certificateValidation` setting, in `config/host`, is `disabledForLocalAddresses`, which skips the check for a host whose addresses are all private, as the mock's is, and still checks hosts on the internet. The setting lives in Sonarr's database, which a reset wipes, so `start.ps1` sets it whenever it isn't.
+
+| TVDB ID | Title | Status | Episodes, airing at 20:00 UTC | Seeded |
+|---|---|---|---|---|
+| 9000001 | Testbed Ended Show | ended | S1E1–3 and S2E1–3, weekly from 2020-01-06 to 2020-02-10 | Yes, with the `testbed-baseline` tag |
+| 9000002 | Testbed Continuing Show | continuing | S1E1–3, weekly from 2021-03-01 to 2021-03-15, and S2E1–3, weekly from 2099-01-05 to 2099-01-19 | Yes |
+| 9000003 | Testbed Lookup Show | ended | S1E1–2, on 2019-05-06 and 2019-05-13 | No, it's left to look up, add, and delete |
+
+The seeded series are monitored, in `/tv`, with all their episodes monitored and no searches. Sonarr counts an episode as aired once its air time plus the show's 30-minute runtime has passed, so `wanted/missing` reports the 9 episodes that aired, and the calendar from 2099-01-01 to 2099-01-31 holds the other 3. A lookup for `tvdb:<id>` finds that one show and any other term finds all three, and adding a TVDB ID that the mock lacks gets a 400 that says "A series with this ID was not found". `logs.ps1 -Service skyhook` shows each request Sonarr made to the mock. After every refresh, Sonarr warns that the `/tv` root folder is empty, because the testbed holds no media files.
+
+To change a show or add one, edit or add its file in `skyhook/v1/tvdb/shows/en/`, named for its TVDB ID, and make the same change in `skyhook/v1/tvdb/search/en/index.json`, which holds every show's object in one array. Then run `reset.ps1`: `start.ps1` alone rebuilds the mock, but Sonarr keeps what it fetched until it refreshes the show. A show's JSON needs its `malIds` and `aniListIds` lists, even when they're empty, because Sonarr stores them in database columns that can't be null. A new show joins the seeded ones through the `$seededShows` list in `testbed.psm1`.
 
 ## Connecting
 
@@ -92,6 +108,7 @@ From Git Bash, set `MSYS_NO_PATHCONV=1` first, or Git Bash rewrites container pa
 
 - **Docker isn't running.** A command that fails with "failed to connect to the docker API" needs Docker Desktop started.
 - **Sonarr doesn't become healthy.** `logs.ps1` shows what Sonarr reported. A slow machine may need a longer `-TimeoutSeconds`.
+- **Adding a seeded series fails.** `start.ps1` shows both services' logs. When the mock's log has no request from Sonarr, Sonarr didn't reach it, and a 409 that names a column of the `Series` table means a show's JSON lacks a field that Sonarr's database requires.
 
 ## What the testbed can't test
 
@@ -99,7 +116,7 @@ These need services that the testbed leaves out on purpose.
 
 | Tests of | Need |
 |---|---|
-| Series, episodes, the calendar, and wanted/missing | Sonarr's metadata service, SkyHook, on the internet. Adding a series fetches it from there, so the results follow live data. |
+| Real shows and their live metadata | Sonarr's real metadata service, SkyHook, and internet access |
 | Indexers, release searches, RSS sync | Real or mock indexers, such as a mock Newznab or Torznab server |
 | Download clients, the queue, grabbing releases | A download client, such as a SABnzbd or qBittorrent container |
 | Episodes with files, manual import, renaming, media info | Media files under `/tv` |

@@ -9,6 +9,8 @@ services:
         SONARR_SHA256: "1fc48544b5a3401b2fc3df8d0642c1e6a73a28e41a351169edd9cd8f54770db5"
     platform: linux/amd64
     restart: "no"
+    depends_on:
+      - skyhook
     environment:
       SONARR__AUTH__APIKEY: "0123456789abcdef0123456789abcdef"
       SONARR__AUTH__METHOD: "External"
@@ -26,6 +28,15 @@ services:
       retries: 3
       start_period: 90s
       start_interval: 2s
+
+  skyhook:
+    build:
+      context: ./skyhook
+    restart: "no"
+    networks:
+      default:
+        aliases:
+          - skyhook.sonarr.tv
 
 volumes:
   config:
