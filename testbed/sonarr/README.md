@@ -37,7 +37,7 @@ The mock's image generates a throwaway self-signed certificate when it's built, 
 
 The seeded series are monitored, in `/tv`, with all their episodes monitored and no searches. Sonarr counts an episode as aired once its air time plus the show's 30-minute runtime has passed, so `wanted/missing` reports the 9 episodes that aired, and the calendar from 2099-01-01 to 2099-01-31 holds the other 3. A lookup for `tvdb:<id>` finds that one show and any other term finds all three, and adding a TVDB ID that the mock lacks gets a 400 that says "A series with this ID was not found". `logs.ps1 -Service skyhook` shows each request Sonarr made to the mock. After every refresh, Sonarr warns that the `/tv` root folder is empty, because the testbed holds no media files.
 
-To change a show or add one, edit or add its file in `skyhook/v1/tvdb/shows/en/`, named for its TVDB ID, and make the same change in `skyhook/v1/tvdb/search/en/index.json`, which holds every show's object in one array. Then run `reset.ps1`: `start.ps1` alone rebuilds the mock, but Sonarr keeps what it fetched until it refreshes the show. A show's JSON needs its `malIds` and `aniListIds` lists, even when they're empty, because Sonarr stores them in database columns that can't be null. A new show joins the seeded ones through the `$seededShows` list in `testbed.psm1`. `test.ps1` expects the shows, the episode counts, and the totals that this section gives, so update it along with them.
+To change a show or add one, edit or add its file in `skyhook/v1/tvdb/shows/en/`, named for its TVDB ID, and make the same change in `skyhook/v1/tvdb/search/en/index.json`, which holds every show's object in one array. Then run `reset.ps1`: `start.ps1` alone rebuilds the mock, but Sonarr keeps what it fetched until it refreshes the show. A show's JSON needs its `malIds` and `aniListIds` lists, even when they're empty, because Sonarr stores them in database columns that can't be null. A new show joins the seeded ones through the `$seededShows` list in `testbed.psm1`. `test.ps1` and PoshSonarr's Pester suite, through the `$Fixtures` table in `.tests/setup.ps1`, each expect the shows, the episode counts, and the totals that this section gives, so update both along with them.
 
 ## Smoke tests
 
@@ -143,5 +143,4 @@ These need services that the testbed leaves out on purpose.
 | Download clients, the queue, grabbing releases | A download client, such as a SABnzbd or qBittorrent container |
 | Episodes with files, manual import, renaming, media info | Media files under `/tv` |
 | Notifications and connections | External services or mock receivers |
-| PoshSonarr's cmdlets, through Pester | A working Pester suite in `.tests/` |
 | Running the testbed in CI | A GitHub Actions workflow with Docker |

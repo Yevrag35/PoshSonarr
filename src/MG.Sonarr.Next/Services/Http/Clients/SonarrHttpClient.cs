@@ -237,13 +237,10 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 
 	private static SonarrClientResult ParseMessage(string url, HttpResponseMessage response, CancellationToken token)
 	{
-		JsonNode? node = JsonNode.Parse(response.Content.ReadAsStream(token));
-		string? message = node is System.Text.Json.Nodes.JsonObject obj && obj["message"] is JsonValue value && value.TryGetValue(out string? text)
-			? text
-			: null;
+		string message = ReadMessage(response, token) ?? response.StatusCode.ToResponseString();
 
 		var result =
-			SonarrClientResult.FromException(new HttpResponseException(message, response), ErrorCategory.ResourceUnavailable, response.StatusCode);
+			SonarrClientResult.FromException(new HttpResponseException(message, response), ErrorCategory.ResourceUnavailable, response.StatusCode, response);
 
 		if (string.IsNullOrEmpty(result.RequestUrl))
 		{
@@ -251,6 +248,23 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		}
 
 		return result;
+	}
+
+	// Not every error response has a JSON body with a message: Sonarr answers a wrong API key with a 401 and an empty body,
+	// and a server in front of Sonarr can answer with a body that isn't JSON at all.
+	private static string? ReadMessage(HttpResponseMessage response, CancellationToken token)
+	{
+		try
+		{
+			JsonNode? node = JsonNode.Parse(response.Content.ReadAsStream(token));
+			return node is System.Text.Json.Nodes.JsonObject obj && obj["message"] is JsonValue value && value.TryGetValue(out string? text)
+				? text
+				: null;
+		}
+		catch (JsonException)
+		{
+			return null;
+		}
 	}
 
 	private static bool TryParseResponse<T>([NotNullWhen(true)] HttpResponseMessage? response, JsonSerializerOptions? options, [NotNullWhen(true)] out T? result, bool disposeResponse, CancellationToken cancellationToken)

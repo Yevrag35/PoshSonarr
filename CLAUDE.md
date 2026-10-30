@@ -22,7 +22,7 @@ Run these from the repository root. Building needs a .NET 10 SDK.
 
 ### Debugging
 
-- Never connect to a Sonarr instance other than the Docker testbed. Don't run `Debug.ps1` or the Pester tests, don't point `Connect-SonarrInstance` at any other instance, and don't send requests to the instance that `.env` names. When a change needs checking against any instance but the testbed, ask the user to do it.
+- Never connect to a Sonarr instance other than the Docker testbed. Don't run `Debug.ps1`, don't point `Connect-SonarrInstance` or `Test-SonarrHost` at any other instance, and don't send requests to the instance that `.env` names. When a change needs checking against any instance but the testbed, ask the user to do it.
 - The Docker testbed is the disposable Sonarr container that the `poshsonarr-testbed` Compose project in `testbed/sonarr/` runs, published on `127.0.0.1` at port 18989 unless `SONARR_TESTBED_PORT` sets another, with the fixed API key `0123456789abcdef0123456789abcdef`. Building its images, starting, stopping, resetting, and testing it, and sending it requests, `Connect-SonarrInstance` included, are allowed. Docker commands touch only that project's containers, volumes, and images.
 - `Debug.ps1`, in the Shell project, is for the user's interactive debugging only, and the tests never reference it. After a Debug build, `pwsh -NoExit -File src/MG.Sonarr.Next.Shell/bin/Debug/net10.0/Debug.ps1` opens a session on it: the script imports the module, loads the format and type files, and connects to the development instance. The Visual Studio launch profiles run the same script.
 - `Connect-SonarrInstance -Url <url> -ApiKey <key>` (alias `Connect-Sonarr`) makes the connection, and `-NoApiInPath` (alias `-NoApiPrefix`) is for a reverse proxy that removes `/api` from the path.
@@ -41,7 +41,9 @@ Run these from the repository root. Building needs a .NET 10 SDK.
 
 ### Tests
 
-- Testing isn't set up yet. The Pester files in `.tests/` are incomplete: don't run them, treat them as working, or fix them up so they run. Never write a test that connects to an instance other than the Docker testbed, or one that references `Debug.ps1`. `.tests/setup.ps1` throws before the suite imports the module, so `Invoke-Pester` stops there.
+- `pwsh -NoProfile -File .tests/run.ps1` builds the solution in Debug, copies the module into `.temp/pester/`, writes its manifest there, and runs the Pester suite in `.tests/` against the testbed in a new PowerShell process. It exits 1 when a test fails. `-NoBuild` reuses the last build, `-Reset` resets the testbed first, `-Path` runs only the files it names, and `-Tag` runs only the tests with those tags. The `Restart` tests run only when `-Tag Restart` selects them. Any session may run the suite.
+- Run the suite only through the runner: `setup.ps1` stops a run that `Invoke-Pester` starts directly. The suite needs Pester 6.2 or a later 6.x.
+- Never write a test that connects to an instance other than the Docker testbed, reads `.env`, or references `Debug.ps1`. Tests find the fixtures by TVDB ID, title, or label, remove what they create, and restore any setting they change.
 
 ### Byte checks
 
@@ -71,7 +73,7 @@ The module's projects under `src/` each reference the one before it:
 
 ### Connection context
 
-`Connect-SonarrInstance` builds a single static `ServiceProvider` (`SonarrContext` in `src/MG.Sonarr.Next.Shell.Bases/Context/CmdletContext.cs`). It holds the HTTP client, JSON options, metadata tags, object pools, and the Shell project's own services from `ModuleServiceConfigurer` (`src/MG.Sonarr.Next.Shell/Services/ServiceInitializer.cs`), and `Disconnect-SonarrInstance` disposes it. Every other cmdlet opens a DI scope on that provider for the length of its run, so until a connection exists, cmdlets fail with `ContextNotSetException`. Builds other than Release turn on the container's `ValidateOnBuild` and `ValidateScopes` checks.
+`Connect-SonarrInstance` builds a single static `ServiceProvider` (`SonarrContext` in `src/MG.Sonarr.Next.Shell.Bases/Context/CmdletContext.cs`), replacing the one that an earlier connection built, and disposes it again when its check of the URL and key fails. It holds the HTTP client, JSON options, metadata tags, object pools, and the Shell project's own services from `ModuleServiceConfigurer` (`src/MG.Sonarr.Next.Shell/Services/ServiceInitializer.cs`), and `Disconnect-SonarrInstance` disposes it. Every other cmdlet opens a DI scope on that provider for the length of its run, so until a connection exists, cmdlets fail with `ContextNotSetException`. Builds other than Release turn on the container's `ValidateOnBuild` and `ValidateScopes` checks.
 
 ### Cmdlet base classes
 

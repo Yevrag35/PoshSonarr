@@ -110,9 +110,10 @@ file static class SonarrContext
 
 	internal static IServiceScope Initialize(IConnectionSettings settings, Assembly cmdletAssembly, Dictionary<string, object?> boundParameters, Action<IServiceCollection> configureServices)
 	{
+		// A new connection replaces the current one, so its test and the cmdlets after it use the settings it was given.
 		if (_provider is not null)
 		{
-			return _provider.CreateScope();
+			Deinitialize();
 		}
 
 		ServiceCollection services = new();
