@@ -153,7 +153,7 @@ public readonly partial struct Wildcard
 				goto case StringComparison.Ordinal;
 
 			case StringComparison.CurrentCultureIgnoreCase:
-				return char.ToUpper(x) == char.ToUpper(y);
+				return char.ToUpper(x, CultureInfo.CurrentCulture) == char.ToUpper(y, CultureInfo.CurrentCulture);
 
 			case StringComparison.InvariantCulture:
 				goto case StringComparison.Ordinal;

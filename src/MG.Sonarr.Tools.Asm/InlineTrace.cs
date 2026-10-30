@@ -80,11 +80,11 @@ internal sealed class InlineTrace : EventListener
 		}
 
 		StringBuilder file = new();
-		file.AppendLine($"; JIT inlining decisions for methods matching '{_filter}'");
+		file.AppendLine(CultureInfo.InvariantCulture, $"; JIT inlining decisions for methods matching '{_filter}'");
 		file.AppendLine("; A FAIL line ends with the JIT's reason. [in X] names the inliner when it is not the method being compiled.");
 		if (!drained)
 		{
-			file.AppendLine($"; INCOMPLETE: the end sentinel did not arrive within {s_drainTimeout.TotalSeconds:0} s, so later decisions may be missing.");
+			file.AppendLine(CultureInfo.InvariantCulture, $"; INCOMPLETE: the end sentinel did not arrive within {s_drainTimeout.TotalSeconds:0} s, so later decisions may be missing.");
 			Console.Error.WriteLine($"warn: inline trace incomplete - its end sentinel did not arrive within {s_drainTimeout.TotalSeconds:0} s");
 		}
 

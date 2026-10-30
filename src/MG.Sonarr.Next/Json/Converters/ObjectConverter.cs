@@ -274,9 +274,9 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>//JsonConvert
 		{
 			int written = reader.CopyString(buffer.Span);
 
-			if (capitalize.Contains(propertyName) && char.IsLower(buffer[0]))
+			if (written > 0 && capitalize.Contains(propertyName) && char.IsLower(buffer[0]))
 			{
-				buffer[0] = char.ToUpper(buffer[0]);
+				buffer[0] = char.ToUpperInvariant(buffer[0]);
 			}
 
 			object? result;

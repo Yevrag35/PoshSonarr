@@ -20,7 +20,7 @@ public class InvalidTypeException : PoshSonarrException
 
 		string actual = actualType?.GetName() ?? "null";
 
-		return string.Format(msgFormat, keyType.GetName(), actual);
+		return string.Format(CultureInfo.CurrentCulture, msgFormat, keyType.GetName(), actual);
 	}
 }
 

@@ -43,6 +43,22 @@ dotnet_diagnostic.MA0046.severity = none
 
 dotnet_diagnostic.IDE0290.severity = none
 
+# Code-quality rules that catch bugs. Unlike the style rules, the build enforces these.
+# CA2007: Await with ConfigureAwait, since the cmdlets block on the HTTP client's tasks
+dotnet_diagnostic.CA2007.severity = warning
+# CA2016: Forward a method's CancellationToken to the calls that take one
+dotnet_diagnostic.CA2016.severity = warning
+# CA1849: Await the asynchronous counterpart of a blocking call inside an async method
+dotnet_diagnostic.CA1849.severity = warning
+# CA1304, CA1305: Pass a culture or format provider, InvariantCulture for text that Sonarr or a URL reads
+dotnet_diagnostic.CA1304.severity = warning
+dotnet_diagnostic.CA1305.severity = warning
+# CA1309, CA1310: Compare strings that aren't linguistic text with an ordinal comparison
+dotnet_diagnostic.CA1309.severity = warning
+dotnet_diagnostic.CA1310.severity = warning
+# CA1823: Remove unused private fields
+dotnet_diagnostic.CA1823.severity = warning
+
 csharp_indent_labels = one_less_than_current
 csharp_prefer_simple_using_statement = true:silent
 csharp_prefer_braces = true:suggestion

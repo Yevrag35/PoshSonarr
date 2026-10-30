@@ -60,7 +60,6 @@ public sealed class BackupObject : IdSonarrObject<BackupObject>,
 		this.TypeNames.Insert(0, _typeName);
 	}
 
-	const int DICT_CAPACITY = 1;
 	private static readonly Lazy<JsonNameHolder> _names = new(GetJsonNames);
 
 	private static JsonNameHolder GetJsonNames()

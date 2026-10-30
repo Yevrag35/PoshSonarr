@@ -29,7 +29,7 @@ internal static class MemoryStreamExtensions
 		stream.Rewind();
 		MemoryStream memStream = new(checked((int)stream.Length));
 
-		await stream.CopyToAsync(memStream).ConfigureAwait(false);
+		await stream.CopyToAsync(memStream, cancellationToken).ConfigureAwait(false);
 		memStream.Rewind();
 
 		return memStream;

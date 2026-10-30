@@ -76,7 +76,9 @@ public sealed class GetSonarrTagCmdlet : SonarrMetadataCmdlet
 
 		IList<TagObject> tags = _ids.Count > 0 && _wcNames.Count == 0
 			? this.GetById<TagObject>(_ids)
-			: this.GetAllAndFilter<TagObject>(_ids, _wcNames);
+			: this.ParameterSetName == BY_PIPELINE || this.HasParameter(this.Name)
+				? this.GetAllAndFilter<TagObject>(_ids, _wcNames)
+				: this.GetAll<TagObject>();
 
 		this.WriteCollection(tags);
 	}

@@ -26,13 +26,13 @@ internal sealed partial class SonarrHttpClient
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Delete, path, _scopeFactory);
 
-		return await this.SendNoResultRequestAsync(request, path, token);
+		return await this.SendNoResultRequestAsync(request, path, token).ConfigureAwait(false);
 	}
 	public async Task<SonarrClientResult<T>> SendGetAsync<T>(string path, CancellationToken token = default)
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Get, path, _scopeFactory);
 
-		var response = await this.SendResultRequestAsync<T>(request, path, token);
+		var response = await this.SendResultRequestAsync<T>(request, path, token).ConfigureAwait(false);
 		if (response.IsDataTaggable(out IJsonMetadataTaggable? taggable))
 		{
 			taggable.SetTag(_resolver);
@@ -76,13 +76,13 @@ internal sealed partial class SonarrHttpClient
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
 
-		return await this.SendNoResultRequestAsync(request, path, token);
+		return await this.SendNoResultRequestAsync(request, path, token).ConfigureAwait(false);
 	}
 	public async Task<SonarrClientResult<T>> SendPostAsync<T>(string path, CancellationToken token = default)
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
 
-		return await this.SendResultRequestAsync<T>(request, path, token);
+		return await this.SendResultRequestAsync<T>(request, path, token).ConfigureAwait(false);
 	}
 	public async Task<SonarrClientResult> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
 	{
@@ -92,7 +92,7 @@ internal sealed partial class SonarrHttpClient
 		//request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
 		request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-		return await this.SendNoResultRequestAsync(request, path, token);
+		return await this.SendNoResultRequestAsync(request, path, token).ConfigureAwait(false);
 	}
 	public async Task<SonarrClientResult<TOutput>> SendPostAsync<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull
 	{
@@ -100,7 +100,7 @@ internal sealed partial class SonarrHttpClient
 
 		request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
 
-		var response = await this.SendResultRequestAsync<TOutput>(request, path, token);
+		var response = await this.SendResultRequestAsync<TOutput>(request, path, token).ConfigureAwait(false);
 		if (response.IsDataTaggable(out IJsonMetadataTaggable? taggable))
 		{
 			taggable.SetTag(_resolver);
@@ -113,7 +113,7 @@ internal sealed partial class SonarrHttpClient
 		using ApiKeyRequestMessage request = new(HttpMethod.Put, path, _scopeFactory);
 		request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
 
-		return await this.SendNoResultRequestAsync(request, path, token);
+		return await this.SendNoResultRequestAsync(request, path, token).ConfigureAwait(false);
 	}
 
 	private async Task<SonarrClientResult> SendNoResultRequestAsync(HttpRequestMessage request, string path, CancellationToken token)
@@ -122,8 +122,8 @@ internal sealed partial class SonarrHttpClient
 		_cmdletAccessor.AttachTo(request);
 		try
 		{
-			response = await _client.SendAsync(request, token);
-			return await _responseReader.ReadNoResultAsync(new(path, request, response), path, token);
+			response = await _client.SendAsync(request, token).ConfigureAwait(false);
+			return await _responseReader.ReadNoResultAsync(new(path, request, response), path, token).ConfigureAwait(false);
 		}
 		catch (HttpRequestException httpEx)
 		{
@@ -160,8 +160,8 @@ internal sealed partial class SonarrHttpClient
 
 		try
 		{
-			response = await _client.SendAsync(request, token);
-			return await _responseReader.ReadResultAsync<T>(new(path, request, response), path, token);
+			response = await _client.SendAsync(request, token).ConfigureAwait(false);
+			return await _responseReader.ReadResultAsync<T>(new(path, request, response), path, token).ConfigureAwait(false);
 		}
 		catch (HttpRequestException httpEx)
 		{

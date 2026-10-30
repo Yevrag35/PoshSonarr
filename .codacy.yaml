@@ -29,5 +29,6 @@ exclude_paths:
   - 'src/Legacy/**'
   # ASM Dump Project
   - 'src/MG.Sonarr.Tools.Asm/**'
-  # Tests
+  # Tests and the Docker sandbox
   - '.tests/**'
+  - 'sandbox/**'

@@ -13,7 +13,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems;
 public sealed class TestSonarrResourceCmdlet : TimedCmdlet
 {
 	const string TEST = "/test";
-	const string TEST_ALL = "/testall";
 	ITestingService _tester = null!;
 
 	[Parameter(Mandatory = true, ValueFromPipeline = true)]

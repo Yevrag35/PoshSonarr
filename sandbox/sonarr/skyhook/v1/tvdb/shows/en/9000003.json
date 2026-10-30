@@ -1,0 +1,27 @@
+{
+	"tvdbId": 9000003,
+	"malIds": [],
+	"aniListIds": [],
+	"title": "Sandbox Lookup Show",
+	"overview": "A made-up show that the sandbox's mock metadata service serves.",
+	"slug": "sandbox-lookup-show",
+	"firstAired": "2019-05-06",
+	"lastAired": "2019-05-13",
+	"status": "ended",
+	"runtime": 30,
+	"timeOfDay": { "hours": 20, "minutes": 0 },
+	"network": "Sandbox Network",
+	"originalLanguage": "eng",
+	"genres": ["Drama"],
+	"contentRating": "TV-PG",
+	"rating": { "count": 0, "value": 0 },
+	"actors": [],
+	"images": [],
+	"seasons": [
+		{ "seasonNumber": 1, "images": [] }
+	],
+	"episodes": [
+		{ "tvdbId": 9100301, "seasonNumber": 1, "episodeNumber": 1, "title": "Pilot", "airDate": "2019-05-06", "airDateUtc": "2019-05-06T20:00:00Z", "runtime": 30, "overview": "" },
+		{ "tvdbId": 9100302, "seasonNumber": 1, "episodeNumber": 2, "title": "The Finale", "airDate": "2019-05-13", "airDateUtc": "2019-05-13T20:00:00Z", "runtime": 30, "overview": "" }
+	]
+}

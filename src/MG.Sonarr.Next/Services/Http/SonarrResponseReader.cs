@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.Errors;
@@ -38,7 +38,7 @@ internal sealed class SonarrResponseReader : IResponseReader
 			return new(call.Response, call.RequestUri);
 		}
 
-		string? content = await call.Response.Content.ReadAsStringAsync(token);
+		string? content = await call.Response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
 		IErrorCollection deserializedError = GetErrorFromContent(content, _options);
 		SonarrHttpException httpEx = new(call.Request, call.Response, deserializedError, null);
 		SonarrErrorRecord record = new(httpEx, targetObj);
@@ -59,7 +59,7 @@ internal sealed class SonarrResponseReader : IResponseReader
 
 		if (IsSuccessCode(call.Response.StatusCode, call.Method, out bool isIgnorable))
 		{
-			var oneOf = await this.ReadContentAsync<T>(call.Response, targetObj, token);
+			var oneOf = await this.ReadContentAsync<T>(call.Response, targetObj, token).ConfigureAwait(false);
 
 			unsafe
 			{
@@ -69,7 +69,7 @@ internal sealed class SonarrResponseReader : IResponseReader
 			}
 		}
 
-		string? content = await call.Response.Content.ReadAsStringAsync(token);
+		string? content = await call.Response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
 		IErrorCollection deserializedError = GetErrorFromContent(content, _options);
 		SonarrHttpException httpEx = new(call.Request, call.Response, deserializedError, null);
 		SonarrErrorRecord record = new(httpEx, targetObj);
@@ -117,7 +117,7 @@ internal sealed class SonarrResponseReader : IResponseReader
 	{
 		try
 		{
-			return await response.Content.ReadFromJsonAsync<T>(_options, token)
+			return await response.Content.ReadFromJsonAsync<T>(_options, token).ConfigureAwait(false)
 				?? throw new JsonException("Unable to deserialize the response content.");
 		}
 		catch (Exception e)

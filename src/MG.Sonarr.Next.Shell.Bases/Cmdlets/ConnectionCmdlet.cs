@@ -58,3 +58,14 @@ public abstract class DisconnectCmdlet : PSCmdlet,
 	}
 }
 
+public abstract class TestConnectionCmdlet : PSCmdlet,
+	ITestContextCmdlet
+{
+	// The provider holds the services that a connection with the settings would have, but it isn't the module's
+	// connection, so a test leaves the connection as it was. The caller disposes the provider.
+	protected ServiceProvider CreateTestContext(IConnectionSettings settings, Action<IServiceCollection> addAdditionalServices)
+	{
+		return this.BuildTestContext(settings, this.GetType().Assembly, addAdditionalServices);
+	}
+}
+

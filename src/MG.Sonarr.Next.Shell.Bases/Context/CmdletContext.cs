@@ -63,6 +63,11 @@ public static class CmdletContextExtensions
 	{
 		SonarrContext.Deinitialize();
 	}
+	internal static ServiceProvider BuildTestContext<T>(this T _, IConnectionSettings settings, Assembly cmdletAssembly, Action<IServiceCollection> addAdditionalServices)
+		where T : PSCmdlet, ITestContextCmdlet
+	{
+		return SonarrContext.Build(settings, cmdletAssembly, addAdditionalServices);
+	}
 
 	/// <summary>
 	/// Records the cmdlet that the specified scope belongs to, when the cmdlet is an <see cref="IApiCmdlet"/>.
@@ -102,19 +107,26 @@ file static class SonarrContext
 		throw new ContextNotSetException(new CmdletScopeNotReadyException());
 	}
 
+	// Disconnecting without a connection does nothing.
 	internal static void Deinitialize()
 	{
-		_provider.Dispose();
+		_provider?.Dispose();
 		_provider = null!;
 	}
 
 	internal static IServiceScope Initialize(IConnectionSettings settings, Assembly cmdletAssembly, Dictionary<string, object?> boundParameters, Action<IServiceCollection> configureServices)
 	{
-		if (_provider is not null)
-		{
-			return _provider.CreateScope();
-		}
+		// A new connection replaces the current one, so its test and the cmdlets after it use the settings it was given.
+		Deinitialize();
 
+		_provider = Build(settings, cmdletAssembly, configureServices);
+		return _provider.CreateScope();
+	}
+
+	// Builds the services of a connection with the specified settings. Initialize makes them the module's connection,
+	// and a test of a connection uses them on their own.
+	internal static ServiceProvider Build(IConnectionSettings settings, Assembly cmdletAssembly, Action<IServiceCollection> configureServices)
+	{
 		ServiceCollection services = new();
 		configureServices(services);
 
@@ -143,8 +155,7 @@ file static class SonarrContext
 #endif
 		};
 
-		_provider = services.BuildServiceProvider(providerOptions);
-		return _provider.CreateScope();
+		return services.BuildServiceProvider(providerOptions);
 	}
 
 	private static void AddObjectPools(IServiceCollection services)

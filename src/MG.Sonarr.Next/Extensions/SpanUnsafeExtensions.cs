@@ -88,9 +88,9 @@ internal static class SpanUnsafeExtensions
 		/// Uses <see cref="Unsafe.Add{T}(ref T, int)"/> to offset the span's pinned reference and
 		/// <see cref="MemoryMarshal.CreateSpan{T}(ref T, int)"/> to construct the result without
 		/// any range validation. In debug builds, <see cref="Debug.Assert(bool, string)"/> verifies that
-		/// neither <paramref name="start"/> nor <c>start + length</c> exceeds <c>span.Length</c>. A
-		/// <paramref name="start"/> equal to <c>span.Length</c> is in range and yields an empty span,
-		/// matching <c>span[start..]</c>.
+		/// <paramref name="start"/> doesn't exceed <c>span.Length</c> and that <paramref name="length"/> is
+		/// non-negative and ends within it. A <paramref name="start"/> equal to <c>span.Length</c> is in range
+		/// and yields an empty span, matching <c>span[start..]</c>.
 		/// </remarks>
 		/// <param name="span">The source span.</param>
 		/// <param name="start">The zero-based offset at which the slice begins.</param>
@@ -100,7 +100,7 @@ internal static class SpanUnsafeExtensions
 		private static ReadOnlySpan<T> SliceCore(ReadOnlySpan<T> span, int start, int length)
 		{
 			Debug.Assert((uint)start <= (uint)span.Length, "start index out of range");
-			Debug.Assert((uint)(start + length) <= (uint)span.Length, "length out of range");
+			Debug.Assert((ulong)(uint)start + (uint)length <= (uint)span.Length, "length out of range");
 			return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(span), start), length);
 		}
 	}
@@ -157,9 +157,9 @@ internal static class SpanUnsafeExtensions
 		/// Uses <see cref="Unsafe.Add{T}(ref T, int)"/> to offset the span's pinned reference and
 		/// <see cref="MemoryMarshal.CreateSpan{T}(ref T, int)"/> to construct the result without
 		/// any range validation. In debug builds, <see cref="Debug.Assert(bool, string)"/> verifies that
-		/// neither <paramref name="start"/> nor <c>start + length</c> exceeds <c>span.Length</c>. A
-		/// <paramref name="start"/> equal to <c>span.Length</c> is in range and yields an empty span,
-		/// matching <c>span[start..]</c>.
+		/// <paramref name="start"/> doesn't exceed <c>source.Length</c> and that <paramref name="length"/> is
+		/// non-negative and ends within it. A <paramref name="start"/> equal to <c>source.Length</c> is in range
+		/// and yields an empty span, matching <c>source[start..]</c>.
 		/// </remarks>
 		/// <param name="source">The source span.</param>
 		/// <param name="start">The zero-based offset at which the slice begins.</param>
@@ -169,7 +169,7 @@ internal static class SpanUnsafeExtensions
 		private static Span<T> SliceMutableCore(Span<T> source, int start, int length)
 		{
 			Debug.Assert((uint)start <= (uint)source.Length, "start index out of range");
-			Debug.Assert((uint)(start + length) <= (uint)source.Length, "length out of range");
+			Debug.Assert((ulong)(uint)start + (uint)length <= (uint)source.Length, "length out of range");
 			return MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(source), start), length);
 		}
 	}
@@ -204,7 +204,7 @@ internal static class SpanUnsafeExtensions
 		{
 			Debug.Assert(array is not null, "array cannot be null");
 			Debug.Assert((uint)index <= (uint)array.Length, "start index out of range");
-			Debug.Assert((uint)(index + length) <= (uint)array.Length, "length out of range");
+			Debug.Assert((ulong)(uint)index + (uint)length <= (uint)array.Length, "length out of range");
 			return MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(array), index), length);
 		}
 

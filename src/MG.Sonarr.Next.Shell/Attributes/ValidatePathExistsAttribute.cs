@@ -19,7 +19,7 @@ public sealed class ValidatePathExistsAttribute : ValidateArgumentsAttribute
 		{
 			string strVal => strVal,
 			IFormattable formattable => formattable.ToString(null, Statics.DefaultProvider),
-			IConvertible convertible => Convert.ToString(convertible) ?? string.Empty,
+			IConvertible convertible => Convert.ToString(convertible, Statics.DefaultProvider) ?? string.Empty,
 			_ => ThrowIncorrectType<string>(arguments),
 		};
 	}

@@ -10,10 +10,10 @@ public sealed record SonarrProperty : IComparable<SonarrProperty>
 
 	public int CompareTo(SonarrProperty? other)
 	{
-		int compare = this.ObjectType.CompareTo(other?.ObjectType);
+		int compare = string.Compare(this.ObjectType, other?.ObjectType, StringComparison.OrdinalIgnoreCase);
 		if (compare == 0)
 		{
-			compare = this.Name.CompareTo(other?.Name);
+			compare = string.Compare(this.Name, other?.Name, StringComparison.OrdinalIgnoreCase);
 		}
 
 		return compare;

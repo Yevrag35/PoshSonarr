@@ -79,7 +79,7 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 			return isEqual ? 0 : -1;
 		}
 
-		return this.Value.CompareTo(other.Value);
+		return string.Compare(this.Value, other.Value, StringComparison.OrdinalIgnoreCase);
 	}
 
 	public bool Equals(MetadataTag? other)

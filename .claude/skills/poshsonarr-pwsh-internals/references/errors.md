@@ -39,6 +39,7 @@ Measured 2026-10-25 on PowerShell 7.6.8 with throwaway cmdlets that write an err
 ## Measuring traps
 
 - Inside any `try` block, an error that ends a statement and one that ends the script both jump to `catch`, and Pester runs every test inside one. To tell them apart, run the command in a new process, outside any `try` block, with another statement after it. When that statement runs, the error ended only its own statement.
+- A `pwsh` process that writes `-OutputFormat xml`, as one does when PowerShell passes it a script block, stops at the first error that ends a statement, a .NET method's exception included, and exits 1. Under `-File`, and under `-Command` or `-EncodedCommand` with a string and text output, the same error ends only its statement, and the script goes on (measured 2026-10-29 on PowerShell 7.6.9, with `Connect-SonarrInstance`, an advanced function's `ThrowTerminatingError`, and `[int]::Parse('x')`). So the new process for that check gets its script as a file or a string, never as a script block.
 
 ## What it means for PoshSonarr
 

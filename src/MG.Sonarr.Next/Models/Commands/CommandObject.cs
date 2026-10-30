@@ -24,7 +24,7 @@ public sealed class CommandObject : IdSonarrObject<CommandObject>,
 	PSObject? _body;
 
 	public DateTimeOffset? Ended { get; private set; }
-	public bool IsCompleted => COMPLETED.Equals(this.Status, StringComparison.InvariantCultureIgnoreCase);
+	public bool IsCompleted => COMPLETED.Equals(this.Status, StringComparison.OrdinalIgnoreCase);
 	public string Name { get; private set; } = string.Empty;
 	public DateTimeOffset Started { get; private set; }
 	public string Status { get; private set; } = string.Empty;

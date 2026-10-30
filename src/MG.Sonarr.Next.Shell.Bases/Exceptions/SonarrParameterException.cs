@@ -34,7 +34,7 @@ public sealed class SonarrParameterException : PoshSonarrException
 			? MSG_FORMAT
 			: MSG_ADD_FORMAT;
 
-		return string.Format(format, paramName, GetTypeString(in type), additionalMsg);
+		return string.Format(CultureInfo.CurrentCulture, format, paramName, GetTypeString(in type), additionalMsg);
 	}
 
 	private static string GetTypeString(in ParameterErrorType type)

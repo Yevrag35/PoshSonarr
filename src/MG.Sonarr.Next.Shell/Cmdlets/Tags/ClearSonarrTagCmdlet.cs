@@ -116,6 +116,7 @@ public sealed class ClearSonarrTagCmdlet : SonarrMetadataCmdlet
 			if (this.ShouldProcess(
 				target: kvp.Key,
 				action: string.Format(
+					CultureInfo.CurrentCulture,
 					"Removing tags: ({0})",
 					string.Join(", ", _ids.Where(kvp.Value.Tags.Contains)))))
 			{

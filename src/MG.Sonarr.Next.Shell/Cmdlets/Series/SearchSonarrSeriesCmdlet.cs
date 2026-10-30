@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Shell.Extensions;
 using System.Net;
@@ -37,7 +37,7 @@ public sealed class SearchSonarrSeriesCmdlet : SonarrApiCmdletBase
 	{
 		string path = this.HasParameter(Name)
 			? GetSearchByNamePath(_wildcardStr)
-			: string.Format(SEARCH_ID_QUERY, this.TVDbId);
+			: string.Format(CultureInfo.InvariantCulture, SEARCH_ID_QUERY, this.TVDbId);
 
 		var result = this.SendGetRequest<List<AddSeriesObject>>(path);
 		if (result.IsError)
@@ -73,7 +73,7 @@ public sealed class SearchSonarrSeriesCmdlet : SonarrApiCmdletBase
 			? ((string)name).Replace('*', ' ').Replace('?', ' ').Trim()
 			: (string)name;
 
-		return string.Format(SEARCH_STR_QUERY, WebUtility.UrlEncode(use));
+		return string.Format(CultureInfo.InvariantCulture, SEARCH_STR_QUERY, WebUtility.UrlEncode(use));
 	}
 
 	private static bool StrictlyMatches(string value, in Wildcard stringToMatch)

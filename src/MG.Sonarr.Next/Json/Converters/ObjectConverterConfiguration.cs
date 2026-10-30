@@ -15,7 +15,6 @@ public interface IObjectConverterConfig
 internal sealed class ObjectConverterConfiguration : IObjectConverterConfig
 {
 	readonly Dictionary<string, Type> _convertProps;
-	//readonly Dictionary<string, string> _globalReplaceNames;
 	JsonNameHolder _globalReplaceNames;
 	readonly HashSet<string> _ignoreProps;
 	readonly Dictionary<string, SpanConverter> _spanConverters;

@@ -16,7 +16,6 @@ public sealed class PostCommandWriter : ByPolicyJsonConverter<PostCommand>//Json
 	}
 
 	//const string SEND_UPDATES = "SendUpdatesToClient";
-	const string TRIGGER = "Trigger";
 	public override void Write(Utf8JsonWriter writer, PostCommand value, JsonSerializerOptions options)
 	{
 		const string MANUAL = "manual";

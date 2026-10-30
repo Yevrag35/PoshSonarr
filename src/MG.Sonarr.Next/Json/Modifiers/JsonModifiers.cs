@@ -85,7 +85,7 @@ public static class JsonModifiers
 		ref char c = ref scratch[0];
 		if (!char.IsUpper(c))
 		{
-			c = char.ToUpper(c);
+			c = char.ToUpperInvariant(c);
 			changed = true;
 		}
 

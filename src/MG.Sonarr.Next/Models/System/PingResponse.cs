@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.System;
 
@@ -10,5 +10,5 @@ public sealed class PingResponse
 
 	[MemberNotNullWhen(true, nameof(Response))]
 	[JsonIgnore(Condition = JsonIgnoreCondition.Always)]
-	public bool IsPong => PONG.Equals(this.Response, StringComparison.InvariantCultureIgnoreCase);
+	public bool IsPong => PONG.Equals(this.Response, StringComparison.OrdinalIgnoreCase);
 }

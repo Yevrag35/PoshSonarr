@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Resources;
+using MG.Sonarr.Resources;
 
 namespace MG.Sonarr.Next.Strings;
 
@@ -45,7 +45,7 @@ public readonly struct TimedValue : IFormattable
 		string unit = !this.WillUseSeconds ? Messages.Timer_Unit_Milliseconds : Messages.Timer_Unit_Seconds;
 
 		Span<char> buffer = stackalloc char[LengthConstants.DOUBLE_MAX];
-		_ = value.TryFormat(buffer, out int written);
+		_ = value.TryFormat(buffer, out int written, provider: provider);
 
 		return string.Concat(buffer.Slice(0, written), unit);
 	}
