@@ -103,8 +103,9 @@ public sealed class ConnectSonarrInstanceCmdlet : ConnectCmdlet, IApiCmdlet
 			return client.SendTest();
 		}
 
-		var tag = provider.GetMetadataTag(Meta.STATUS);
-		var response = client.SendGetAsync<SystemStatusObject>(tag.UrlBase).GetAwaiter().GetResult();
+		// The status comes from the same test, so a wrong key or a URL that doesn't reach Sonarr's API fails as it does
+		// without -PassThru.
+		var response = client.SendTest<SystemStatusObject>();
 		if (!response.IsError)
 		{
 			var settings = provider.GetRequiredService<IConnectionSettings>();

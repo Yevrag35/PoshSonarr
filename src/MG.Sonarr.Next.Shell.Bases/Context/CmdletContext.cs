@@ -102,19 +102,17 @@ file static class SonarrContext
 		throw new ContextNotSetException(new CmdletScopeNotReadyException());
 	}
 
+	// Disconnecting without a connection does nothing.
 	internal static void Deinitialize()
 	{
-		_provider.Dispose();
+		_provider?.Dispose();
 		_provider = null!;
 	}
 
 	internal static IServiceScope Initialize(IConnectionSettings settings, Assembly cmdletAssembly, Dictionary<string, object?> boundParameters, Action<IServiceCollection> configureServices)
 	{
 		// A new connection replaces the current one, so its test and the cmdlets after it use the settings it was given.
-		if (_provider is not null)
-		{
-			Deinitialize();
-		}
+		Deinitialize();
 
 		ServiceCollection services = new();
 		configureServices(services);

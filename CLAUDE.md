@@ -73,7 +73,7 @@ The module's projects under `src/` each reference the one before it:
 
 ### Connection context
 
-`Connect-SonarrInstance` builds a single static `ServiceProvider` (`SonarrContext` in `src/MG.Sonarr.Next.Shell.Bases/Context/CmdletContext.cs`), replacing the one that an earlier connection built, and disposes it again when its check of the URL and key fails. It holds the HTTP client, JSON options, metadata tags, object pools, and the Shell project's own services from `ModuleServiceConfigurer` (`src/MG.Sonarr.Next.Shell/Services/ServiceInitializer.cs`), and `Disconnect-SonarrInstance` disposes it. Every other cmdlet opens a DI scope on that provider for the length of its run, so until a connection exists, cmdlets fail with `ContextNotSetException`. Builds other than Release turn on the container's `ValidateOnBuild` and `ValidateScopes` checks.
+`Connect-SonarrInstance` builds a single static `ServiceProvider` (`SonarrContext` in `src/MG.Sonarr.Next.Shell.Bases/Context/CmdletContext.cs`), replacing the one that an earlier connection built, and disposes it again when its check of the URL and key fails. It holds the HTTP client, JSON options, metadata tags, object pools, and the Shell project's own services from `ModuleServiceConfigurer` (`src/MG.Sonarr.Next.Shell/Services/ServiceInitializer.cs`), and `Disconnect-SonarrInstance` disposes it, or does nothing when there's no connection. Every other cmdlet opens a DI scope on that provider for the length of its run, so until a connection exists, cmdlets fail with `ContextNotSetException`. Builds other than Release turn on the container's `ValidateOnBuild` and `ValidateScopes` checks.
 
 ### Cmdlet base classes
 

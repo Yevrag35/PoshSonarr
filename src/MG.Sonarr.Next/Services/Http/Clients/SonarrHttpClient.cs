@@ -28,6 +28,7 @@ public partial interface ISonarrClient
 	SonarrClientResult<TOutput> SendPost<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull;
 	SonarrClientResult SendPut<T>(string path, T body, CancellationToken token = default) where T : notnull;
 	SonarrClientResult SendTest(CancellationToken token = default);
+	SonarrClientResult<T> SendTest<T>(CancellationToken token = default);
 }
 
 internal sealed partial class SonarrHttpClient : ISonarrClient
@@ -113,34 +114,42 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	}
 	public SonarrClientResult SendTest(CancellationToken token = default)
 	{
+		SonarrClientResult<SonarrStatus> result = this.SendTest<SonarrStatus>(token);
+		if (!result.IsError)
+		{
+			_settings.AuthType = result.Value.TryGetAuthType(out SonarrAuthType parsedAuth)
+				? parsedAuth : SonarrAuthType.None;
+		}
+
+		return result;
+	}
+	public SonarrClientResult<T> SendTest<T>(CancellationToken token = default)
+	{
 		HttpResponseMessage? response = null;
 		using TestRequestMessage request = new(TEST_API, _scopeFactory);
 		_cmdletAccessor.AttachTo(request);
 
 		try
 		{
-
 			response = _client.Send(request, token);
-			if (response.IsSuccessStatusCode)
+			if (!response.IsSuccessStatusCode)
 			{
-				_settings.AuthType = TryParseResponse(
-					response,
-					options: _options.ForDeserializing,
-					result: out SonarrStatus? status,
-					disposeResponse: false,
-					cancellationToken: token)
-					&&
-					status.TryGetAuthType(out SonarrAuthType parsedAuth)
-						? parsedAuth : SonarrAuthType.None;
+				return ParseMessage<T>(TEST_API, response, token);
 			}
 
-			return response.IsSuccessStatusCode
-				? new(response, TEST_API)
-				: ParseMessage(TEST_API, response, token);
+			var result = _responseReader.ReadResultAsync<T>(new(TEST_API, request, response), TEST_API, token)
+				.GetAwaiter().GetResult();
+
+			if (result.IsDataTaggable(out IJsonMetadataTaggable? taggable))
+			{
+				taggable.SetTag(_resolver);
+			}
+
+			return result;
 		}
 		catch (Exception e)
 		{
-			return SonarrClientResult.FromException(e, ErrorCategory.ConnectionError, response?.StatusCode ?? (HttpStatusCode)599, response);
+			return SonarrClientResult.FromException<T>(e, ErrorCategory.ConnectionError, response?.StatusCode ?? (HttpStatusCode)599, response);
 		}
 		finally
 		{
@@ -235,12 +244,12 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		return result;
 	}
 
-	private static SonarrClientResult ParseMessage(string url, HttpResponseMessage response, CancellationToken token)
+	private static SonarrClientResult<T> ParseMessage<T>(string url, HttpResponseMessage response, CancellationToken token)
 	{
 		string message = ReadMessage(response, token) ?? response.StatusCode.ToResponseString();
 
 		var result =
-			SonarrClientResult.FromException(new HttpResponseException(message, response), ErrorCategory.ResourceUnavailable, response.StatusCode, response);
+			SonarrClientResult.FromException<T>(new HttpResponseException(message, response), ErrorCategory.ResourceUnavailable, response.StatusCode, response);
 
 		if (string.IsNullOrEmpty(result.RequestUrl))
 		{
