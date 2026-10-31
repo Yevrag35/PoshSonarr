@@ -89,7 +89,7 @@ internal sealed class AuthedRequestMessage : SonarrRequestMessage
 	/// Returns the login form's fields for the specified credentials.
 	/// </summary>
 	/// <param name="credential">The credentials whose user name and password the fields hold.</param>
-	/// <returns>The <c>username</c> field, then the <c>password</c> field, produced lazily.</returns>
+	/// <returns>An array containing the <c>username</c> field, then the <c>password</c> field.</returns>
 	private static KeyValuePair<string, string>[] GetFormContents(NetworkCredential credential)
 	{
 		return

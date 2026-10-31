@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Services.Http.Handlers;
 using System.Management.Automation;
@@ -202,7 +201,6 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 	/// <returns>A <see cref="SonarrClientResult{T}"/> containing error information about the failed operation.</returns>
 	public static SonarrClientResult<T> FromException<T>(SonarrHttpException exception, ErrorCategory errorCategory, HttpStatusCode statusCode, HttpResponseMessage? response = null)
 	{
-		string name = exception.GetTypeName();
 		SonarrErrorRecord error = new(exception, response, exception.RequestUri);
 
 		return new SonarrClientResult<T>(error);
@@ -219,6 +217,7 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 	/// <returns>A <see cref="SonarrClientResult{T}"/> representing a 'Not Found' response. The result has <see cref="IsIgnoreable"/> 
 	/// set to <see langword="true"/> and <see cref="StatusCode"/> set to <see
 	/// cref="System.Net.HttpStatusCode.NotFound"/>.</returns>
+	[SuppressMessage("Style", "IDE0022")]
 	public static SonarrClientResult<T> NotFound<T>() => new(_notFound)
 	{
 		IsIgnoreable = true,
