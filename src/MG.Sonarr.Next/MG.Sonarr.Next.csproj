@@ -43,11 +43,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Remove="Json\Converters\Spans\UtcTimeToLocalConverter.cs" />
-		<None Include="Json\Converters\Spans\UtcTimeToLocalConverter.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<Using Include="MG.Sonarr.Next.Exceptions" />
 		<Using Include="MG.Sonarr.Next.Extensions" />
 		<Using Include="MG.Sonarr.Next.Numbers.PInt32" Alias="pint" />

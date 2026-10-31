@@ -20,19 +20,49 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace MG.Sonarr.Next.Json;
 
+/// <summary>
+/// Exposes configured JSON serializer option sets used by Sonarr operations.
+/// </summary>
 public interface ISonarrJsonOptions
 {
+	/// <summary>
+	/// Gets options used for debug-friendly JSON output.
+	/// </summary>
+	/// <value>The serializer options for debugging output.</value>
 	JsonSerializerOptions ForDebugging { get; }
+
+	/// <summary>
+	/// Gets options used for JSON deserialization.
+	/// </summary>
+	/// <value>The serializer options for deserialization.</value>
 	JsonSerializerOptions ForDeserializing { get; }
+
+	/// <summary>
+	/// Gets options used for JSON serialization.
+	/// </summary>
+	/// <value>The serializer options for serialization.</value>
 	JsonSerializerOptions ForSerializing { get; }
 }
 
+/// <summary>
+/// Represents the default implementation of <see cref="ISonarrJsonOptions"/>.
+/// </summary>
 internal sealed class SonarrJsonOptions : ISonarrJsonOptions
 {
+	/// <inheritdoc cref="ISonarrJsonOptions.ForDebugging"/>
 	public JsonSerializerOptions ForDebugging { get; }
+
+	/// <inheritdoc cref="ISonarrJsonOptions.ForDeserializing"/>
 	public JsonSerializerOptions ForDeserializing { get; }
+
+	/// <inheritdoc cref="ISonarrJsonOptions.ForSerializing"/>
 	public JsonSerializerOptions ForSerializing { get; }
 
+	/// <summary>
+	/// Initializes a new <see cref="SonarrJsonOptions"/> instance.
+	/// </summary>
+	/// <param name="setupDeserializer">The callback that configures deserialization options.</param>
+	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="setupDeserializer"/> is null.</exception>
 	public SonarrJsonOptions(Action<JsonSerializerOptions> setupDeserializer)
 	{
 		ArgumentNullException.ThrowIfNull(setupDeserializer);
@@ -56,6 +86,10 @@ internal sealed class SonarrJsonOptions : ISonarrJsonOptions
 		};
 	}
 
+	/// <summary>
+	/// Applies camel-casing to a character span.
+	/// </summary>
+	/// <param name="chars">The characters to transform.</param>
 	[Obsolete("Complete rework", error: true)]
 	internal static void ApplyCamelCasing(Span<char> chars)
 	{
@@ -85,8 +119,17 @@ internal sealed class SonarrJsonOptions : ISonarrJsonOptions
 	}
 }
 
+/// <summary>
+/// Provides dependency injection registrations for Sonarr JSON services.
+/// </summary>
 public static class SonarrJsonDependencyInjection
 {
+	/// <summary>
+	/// Adds Sonarr JSON options services to the specified service collection.
+	/// </summary>
+	/// <param name="services">The service collection to update.</param>
+	/// <param name="configureOptions">The callback that configures serializer options.</param>
+	/// <returns>The same <see cref="IServiceCollection"/> instance so additional calls can be chained.</returns>
 	public static IServiceCollection AddSonarrJsonOptions(this IServiceCollection services, Action<IServiceProvider, JsonSerializerOptions> configureOptions)
 	{
 		return services.AddSingleton<ISonarrJsonOptions>(provider =>
@@ -111,6 +154,11 @@ public static class SonarrJsonDependencyInjection
 		});
 	}
 
+	/// <summary>
+	/// Adds all Sonarr JSON converters to the specified serializer options.
+	/// </summary>
+	/// <param name="provider">The service provider used to resolve dependencies.</param>
+	/// <param name="options">The serializer options to update.</param>
 	private static void AddAllConverters(IServiceProvider provider, JsonSerializerOptions options)
 	{
 		IMetadataResolver resolver = provider.GetRequiredService<IMetadataResolver>();
@@ -168,6 +216,11 @@ public static class SonarrJsonDependencyInjection
 		options.Converters.AddMany(CollectionsMarshal.AsSpan(sonarrConverters));
 	}
 
+	/// <summary>
+	/// Constructs all Sonarr object converters from discovered Sonarr object types.
+	/// </summary>
+	/// <param name="converter">The shared object converter dependency.</param>
+	/// <returns>A list of constructed Sonarr object converters.</returns>
 	private static List<JsonConverter> ConstructSonarrObjectConverters(ObjectConverter converter)
 	{
 		List<JsonConverter> output = new(10);
@@ -187,6 +240,14 @@ public static class SonarrJsonDependencyInjection
 		return output;
 	}
 
+	/// <summary>
+	/// Constructs a closed generic JSON converter instance.
+	/// </summary>
+	/// <param name="genericClassType">The open generic converter type.</param>
+	/// <param name="typeParams">The type arguments for the generic converter type.</param>
+	/// <param name="activatorArgs">The constructor arguments for the converter instance.</param>
+	/// <returns>The constructed converter instance.</returns>
+	/// <exception cref="System.InvalidOperationException">Thrown when the converter instance cannot be created.</exception>
 	private static JsonConverter ConstructConverter(Type genericClassType, Type[] typeParams, object[] activatorArgs)
 	{
 		Type constructedClassType = genericClassType.MakeGenericType(typeParams);
@@ -196,6 +257,10 @@ public static class SonarrJsonDependencyInjection
 		return constructed;
 	}
 
+	/// <summary>
+	/// Enumerates property-type pairs that use converter-specific property handling.
+	/// </summary>
+	/// <returns>The configured converter property mappings.</returns>
 	private static KeyValuePair<string, Type>[] EnumerateConverterProperties()
 	{
 		return [
@@ -212,6 +277,11 @@ public static class SonarrJsonDependencyInjection
 			 new("Tags", typeof(SortedSet<int>)),
 		 ];
 	}
+
+	/// <summary>
+	/// Enumerates global property name replacements used during object conversion.
+	/// </summary>
+	/// <returns>The configured replacement mappings.</returns>
 	private static KeyValuePair<string, string>[] EnumerateGlobalReplaceNames()
 	{
 		return [
@@ -221,6 +291,11 @@ public static class SonarrJsonDependencyInjection
 			 new("TvdbId", "TVDbId"),
 		 ];
 	}
+
+	/// <summary>
+	/// Enumerates property names ignored by object conversion.
+	/// </summary>
+	/// <returns>The ignored property names.</returns>
 	private static string[] EnumerateIgnoreProperties()
 	{
 		return [
@@ -229,6 +304,10 @@ public static class SonarrJsonDependencyInjection
 		 ];
 	}
 
+	/// <summary>
+	/// Gets exported Sonarr object types from marked assemblies.
+	/// </summary>
+	/// <returns>The discovered Sonarr object types.</returns>
 	private static IEnumerable<Type> GetSonarrObjectTypes()
 	{
 		Assembly[] assemblies = AssemblyLoader.GetAppDomainAssemblies(AppDomain.CurrentDomain);
@@ -251,7 +330,13 @@ public static class SonarrJsonDependencyInjection
 											  typeof(SonarrObject).IsAssignableFrom(t)));
 	}
 
-	/// <exception cref="ModuleStartupException"></exception>
+	/// <summary>
+	/// Throws when no converters were constructed.
+	/// </summary>
+	/// <param name="condition"><see langword="true"/> to throw; otherwise, <see langword="false"/>.</param>
+	/// <param name="offender">The converter list used for count reporting.</param>
+	/// <param name="paramName">The argument name used for exception reporting.</param>
+	/// <exception cref="ModuleStartupException">Thrown when <paramref name="condition"/> is <see langword="true"/>.</exception>
 	private static void ThrowIfMissingConverters([DoesNotReturnIf(true)] bool condition, List<JsonConverter> offender, [CallerArgumentExpression(nameof(offender))] string? paramName = null)
 	{
 		if (condition)

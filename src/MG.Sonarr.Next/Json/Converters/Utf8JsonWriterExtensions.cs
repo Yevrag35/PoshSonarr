@@ -5,14 +5,35 @@ using MG.Sonarr.Next.Json.Naming;
 namespace MG.Sonarr.Next.Json.Converters;
 
 /// <summary>
-/// Provides extension methods for <see cref="Utf8JsonWriter"/> that integrate a 
-/// <see cref="WorkingNamingPolicy"/> into the JSON writing process, allowing property names 
-/// to be formatted according to a specified naming policy.
+/// Provides extension methods for <see cref="Utf8JsonWriter"/> that write a property's name through a
+/// <see cref="WorkingNamingPolicy"/> and then its value.
 /// </summary>
+/// <remarks>
+/// <para>
+/// The overloads without a property name take it from the expression passed as the value, through
+/// <see cref="CallerArgumentExpressionAttribute"/>, and keep only the part after its last period, so
+/// <c>writer.WriteString(policy, value.Name)</c> writes a property named <c>Name</c> before the policy converts it.
+/// </para>
+/// <para>
+/// Each method writes into the object that the writer has open.
+/// </para>
+/// </remarks>
 public static class Utf8JsonWriterExtensions
 {
+	/// <summary>
+	/// The longest buffer, in elements, that a formatting method allocates on the stack instead of renting.
+	/// </summary>
 	private const int MAX_STACKALLOC = 256;
 
+	/// <summary>
+	/// Ends the object that the writer has open when a value is <see langword="null"/>.
+	/// </summary>
+	/// <param name="writer">The writer whose open object is ended.</param>
+	/// <param name="value">The value to check.</param>
+	/// <returns>
+	/// <see langword="true"/> if <paramref name="value"/> is <see langword="null"/> and the object was ended;
+	/// otherwise, <see langword="false"/>.
+	/// </returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool TryWriteEndObject(this Utf8JsonWriter writer, [NotNullWhen(false)] object? value)
 	{
@@ -25,6 +46,15 @@ public static class Utf8JsonWriterExtensions
 
 		return result;
 	}
+	/// <summary>
+	/// Writes a JSON null when a value is <see langword="null"/>.
+	/// </summary>
+	/// <param name="writer">The writer to write the null to.</param>
+	/// <param name="value">The value to check.</param>
+	/// <returns>
+	/// <see langword="true"/> if <paramref name="value"/> is <see langword="null"/> and a JSON null was written;
+	/// otherwise, <see langword="false"/>.
+	/// </returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static bool TryWriteNullValue(this Utf8JsonWriter writer, [NotNullWhen(false)] object? value)
 	{
@@ -39,14 +69,14 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a boolean property value to the JSON output using the specified naming policy.
+	/// Writes a property with a Boolean value, named after the expression passed as the value.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy to format the property name.</param>
-	/// <param name="value">The boolean value to write.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="value">The value to write.</param>
 	/// <param name="propertyName">
-	/// The name of the property, which is automatically formatted to remove any path prefixes.
-	/// This parameter is captured using the caller argument expression.
+	/// The property's name, which the compiler fills with the expression passed as <paramref name="value"/>. Only the
+	/// part after its last period is used.
 	/// </param>
 	public static void WriteBoolean(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
@@ -59,12 +89,12 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a boolean property value to the JSON output using a UTF-8 encoded property name.
+	/// Writes a property with a Boolean value, named by a UTF-8 name.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy to format the property name.</param>
-	/// <param name="utf8PropertyName">The UTF-8 encoded property name.</param>
-	/// <param name="value">The boolean value to write.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="utf8PropertyName">The property's name, in UTF-8.</param>
+	/// <param name="value">The value to write.</param>
 	public static void WriteBoolean(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		ReadOnlySpan<byte> utf8PropertyName,
@@ -75,13 +105,12 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a nullable boolean property value to the JSON output using a UTF-8 encoded property name.
-	/// If the value is <see langword="null"/>, a JSON null value is written.
+	/// Writes a property with a nullable Boolean value, named by a UTF-8 name.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy to format the property name.</param>
-	/// <param name="utf8PropertyName">The UTF-8 encoded property name.</param>
-	/// <param name="value">The nullable boolean value to write.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="utf8PropertyName">The property's name, in UTF-8.</param>
+	/// <param name="value">The value to write, or <see langword="null"/> to write a JSON null.</param>
 	public static void WriteBoolean(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		ReadOnlySpan<byte> utf8PropertyName,
@@ -96,13 +125,13 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes an empty JSON array to the output.
+	/// Writes an empty JSON array.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the empty array is written.</param>
 	/// <remarks>
-	/// This method is equivalent to calling <see cref="Utf8JsonWriter.WriteStartArray()"/> followed immediately by
+	/// The method is the same as calling <see cref="Utf8JsonWriter.WriteStartArray()"/> and then
 	/// <see cref="Utf8JsonWriter.WriteEndArray"/>.
 	/// </remarks>
+	/// <param name="writer">The writer to write the array to.</param>
 	public static void WriteEmptyArray(this Utf8JsonWriter writer)
 	{
 		writer.WriteStartArray();
@@ -110,13 +139,13 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes an empty JSON object to the output.
+	/// Writes an empty JSON object.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the empty object is written.</param>
 	/// <remarks>
-	/// This method is equivalent to calling <see cref="Utf8JsonWriter.WriteStartObject()"/> followed immediately by
+	/// The method is the same as calling <see cref="Utf8JsonWriter.WriteStartObject()"/> and then
 	/// <see cref="Utf8JsonWriter.WriteEndObject"/>.
 	/// </remarks>
+	/// <param name="writer">The writer to write the object to.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void WriteEmptyObject(this Utf8JsonWriter writer)
 	{
@@ -125,23 +154,26 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a property whose value implements <see cref="ISpanFormattable"/> to the JSON output.
-	/// The value is formatted into a character buffer before being written as a string.
+	/// Writes a property with a formattable value as a string, named by a UTF-8 name.
 	/// </summary>
-	/// <typeparam name="T">The type of the formattable value.</typeparam>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
+	/// <remarks>
+	/// The value is formatted into a buffer of <paramref name="maxLength"/> characters, on the stack when that's up to
+	/// 256 and rented otherwise, which goes back to its pool before the method returns.
+	/// </remarks>
+	/// <typeparam name="T">The type of the value.</typeparam>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="utf8PropertyName">The property's name, in UTF-8.</param>
 	/// <param name="value">The value to format and write.</param>
-	/// <param name="maxLength">
-	/// The maximum length for the formatted output. Determines the buffer size used for formatting.
+	/// <param name="maxLength">The most characters that the formatted value can take.</param>
+	/// <param name="format">The format to apply, or empty for the type's default format.</param>
+	/// <param name="provider">
+	/// The provider of culture-specific formatting, or <see langword="null"/> for the current culture.
 	/// </param>
-	/// <param name="propertyName">
-	/// The name of the property, which is automatically formatted to remove any path prefixes.
-	/// This parameter is captured using the caller argument expression.
-	/// </param>
-	/// <param name="format">An optional format string to apply during formatting.</param>
-	/// <param name="provider">An optional format provider to use during formatting.</param>
-	/// <exception cref="FormatException">Thrown if the value cannot be formatted into the provided buffer.</exception>
+	/// <exception cref="FormatException">
+	/// Thrown when the formatted value doesn't fit in <paramref name="maxLength"/> characters, or when the value can't
+	/// be formatted.
+	/// </exception>
 	public static void WriteFormattable<T>(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		ReadOnlySpan<byte> utf8PropertyName,
@@ -168,23 +200,29 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a property whose value implements <see cref="ISpanFormattable"/> to the JSON output.
-	/// The value is formatted into a character buffer before being written as a string.
+	/// Writes a property with a formattable value as a string, named after the expression passed as the value.
 	/// </summary>
-	/// <typeparam name="T">The type of the formattable value.</typeparam>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
+	/// <remarks>
+	/// The value is formatted into a buffer of <paramref name="maxLength"/> characters, on the stack when that's up to
+	/// 256 and rented otherwise, which goes back to its pool before the method returns.
+	/// </remarks>
+	/// <typeparam name="T">The type of the value.</typeparam>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
 	/// <param name="value">The value to format and write.</param>
-	/// <param name="maxLength">
-	/// The maximum length for the formatted output. Determines the buffer size used for formatting.
-	/// </param>
+	/// <param name="maxLength">The most characters that the formatted value can take.</param>
 	/// <param name="propertyName">
-	/// The name of the property, which is automatically formatted to remove any path prefixes.
-	/// This parameter is captured using the caller argument expression.
+	/// The property's name, which the compiler fills with the expression passed as <paramref name="value"/>. Only the
+	/// part after its last period is used.
 	/// </param>
-	/// <param name="format">An optional format string to apply during formatting.</param>
-	/// <param name="provider">An optional format provider to use during formatting.</param>
-	/// <exception cref="FormatException">Thrown if the value cannot be formatted into the provided buffer.</exception>
+	/// <param name="format">The format to apply, or empty for the type's default format.</param>
+	/// <param name="provider">
+	/// The provider of culture-specific formatting, or <see langword="null"/> for the current culture.
+	/// </param>
+	/// <exception cref="FormatException">
+	/// Thrown when the formatted value doesn't fit in <paramref name="maxLength"/> characters, or when the value can't
+	/// be formatted.
+	/// </exception>
 	public static void WriteFormattable<T>(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		T value,
@@ -212,14 +250,14 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes an integer property value to the JSON output using the specified naming policy.
+	/// Writes a property with an <see cref="int"/> value, named after the expression passed as the value.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="value">The integer value to write.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="value">The value to write.</param>
 	/// <param name="propertyName">
-	/// The name of the property, automatically formatted to remove any path prefixes.
-	/// Captured via the caller argument expression.
+	/// The property's name, which the compiler fills with the expression passed as <paramref name="value"/>. Only the
+	/// part after its last period is used.
 	/// </param>
 	public static void WriteNumber(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
@@ -232,15 +270,14 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a nullable integer property value to the JSON output using the specified naming policy.
-	/// If the value is <see langword="null"/>, a JSON null is written.
+	/// Writes a property with a nullable <see cref="int"/> value, named after the expression passed as the value.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="value">The nullable integer value to write.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="value">The value to write, or <see langword="null"/> to write a JSON null.</param>
 	/// <param name="propertyName">
-	/// The name of the property, automatically formatted to remove any path prefixes.
-	/// Captured via the caller argument expression.
+	/// The property's name, which the compiler fills with the expression passed as <paramref name="value"/>. Only the
+	/// part after its last period is used.
 	/// </param>
 	public static void WriteNumber(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
@@ -258,12 +295,12 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes an integer property value to the JSON output using a UTF-8 encoded property name.
+	/// Writes a property with an <see cref="int"/> value, named by a UTF-8 name.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="utf8PropertyName">The UTF-8 encoded property name.</param>
-	/// <param name="value">The integer value to write.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="utf8PropertyName">The property's name, in UTF-8.</param>
+	/// <param name="value">The value to write.</param>
 	public static void WriteNumber(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		ReadOnlySpan<byte> utf8PropertyName,
@@ -274,14 +311,14 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a long integer property value to the JSON output using the specified naming policy.
+	/// Writes a property with a <see cref="long"/> value, named after the expression passed as the value.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="value">The long integer value to write.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="value">The value to write.</param>
 	/// <param name="propertyName">
-	/// The name of the property, automatically formatted to remove any path prefixes.
-	/// Captured via the caller argument expression.
+	/// The property's name, which the compiler fills with the expression passed as <paramref name="value"/>. Only the
+	/// part after its last period is used.
 	/// </param>
 	public static void WriteNumber(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
@@ -294,14 +331,14 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a double precision floating-point property value to the JSON output using the specified naming policy.
+	/// Writes a property with a <see cref="double"/> value, named after the expression passed as the value.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="value">The double value to write.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="value">The value to write.</param>
 	/// <param name="propertyName">
-	/// The name of the property, automatically formatted to remove any path prefixes.
-	/// Captured via the caller argument expression.
+	/// The property's name, which the compiler fills with the expression passed as <paramref name="value"/>. Only the
+	/// part after its last period is used.
 	/// </param>
 	public static void WriteNumber(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
@@ -314,15 +351,19 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes an object property to the JSON output using a specified type for serialization.
+	/// Writes a property with a value serialized as a specified type, named after the expression passed as the
+	/// value.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="value">The object value to write.</param>
-	/// <param name="valueType">The type of the value, used for serialization.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">
+	/// The naming policy that the property's name is written with, whose serializer options the value is serialized
+	/// with.
+	/// </param>
+	/// <param name="value">The value to write.</param>
+	/// <param name="valueType">The type to serialize the value as.</param>
 	/// <param name="propertyName">
-	/// The name of the property, automatically formatted to remove any path prefixes.
-	/// Captured via the caller argument expression.
+	/// The property's name, which the compiler fills with the expression passed as <paramref name="value"/>. Only the
+	/// part after its last period is used.
 	/// </param>
 	public static void WriteObject(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
@@ -336,15 +377,18 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes an object property to the JSON output using the runtime type of the value.
-	/// If the value is <see langword="null"/>, a JSON null is written.
+	/// Writes a property with a value serialized as its runtime type, named after the expression passed as the
+	/// value.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="value">The object value to write.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">
+	/// The naming policy that the property's name is written with, whose serializer options the value is serialized
+	/// with.
+	/// </param>
+	/// <param name="value">The value to write, or <see langword="null"/> to write a JSON null.</param>
 	/// <param name="propertyName">
-	/// The name of the property, automatically formatted to remove any path prefixes.
-	/// Captured via the caller argument expression.
+	/// The property's name, which the compiler fills with the expression passed as <paramref name="value"/>. Only the
+	/// part after its last period is used.
 	/// </param>
 	public static void WriteObjectOfBaseType(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
@@ -364,13 +408,15 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes an object property to the JSON output using the runtime type of the value and a UTF-8 encoded property name.
-	/// If the value is <see langword="null"/>, a JSON null is written.
+	/// Writes a property with a value serialized as its runtime type, named by a UTF-8 name.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="utf8PropertyName">The UTF-8 encoded property name.</param>
-	/// <param name="value">The object value to write.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">
+	/// The naming policy that the property's name is written with, whose serializer options the value is serialized
+	/// with.
+	/// </param>
+	/// <param name="utf8PropertyName">The property's name, in UTF-8.</param>
+	/// <param name="value">The value to write, or <see langword="null"/> to write a JSON null.</param>
 	public static void WriteObjectOfBaseType(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		ReadOnlySpan<byte> utf8PropertyName,
@@ -388,13 +434,15 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes an object property to the JSON output using the runtime type of the value and a property name provided as a read-only span of characters.
-	/// If the value is <see langword="null"/>, a JSON null is written.
+	/// Writes a property with a value serialized as its runtime type, named by a span of characters.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="value">The object value to write.</param>
-	/// <param name="propertyName">The name of the property, provided as a read-only span of characters.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">
+	/// The naming policy that the property's name is written with, whose serializer options the value is serialized
+	/// with.
+	/// </param>
+	/// <param name="value">The value to write, or <see langword="null"/> to write a JSON null.</param>
+	/// <param name="propertyName">The property's name, used whole.</param>
 	public static void WriteObjectOfBaseType(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		object? value,
@@ -412,14 +460,16 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes an object of type <typeparamref name="T"/> to the JSON output using a UTF-8 encoded property name.
-	/// If the value is <see langword="null"/>, a JSON null is written.
+	/// Writes a property with a value serialized as <typeparamref name="T"/>, named by a UTF-8 name.
 	/// </summary>
-	/// <typeparam name="T">The type of the object to write.</typeparam>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="utf8PropertyName">The UTF-8 encoded property name.</param>
-	/// <param name="value">The object value to write.</param>
+	/// <typeparam name="T">The type to serialize the value as.</typeparam>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">
+	/// The naming policy that the property's name is written with, whose serializer options the value is serialized
+	/// with.
+	/// </param>
+	/// <param name="utf8PropertyName">The property's name, in UTF-8.</param>
+	/// <param name="value">The value to write, or <see langword="null"/> to write a JSON null.</param>
 	public static void WriteObject<T>(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		ReadOnlySpan<byte> utf8PropertyName,
@@ -437,11 +487,11 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a property name and starts a JSON array.
+	/// Writes a property's name, given as a span of characters, and starts a JSON array as its value.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the array is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="propertyName">The name of the property, provided as a read-only span of characters.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="propertyName">The property's name, used whole.</param>
 	public static void WriteStartArray(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		ReadOnlySpan<char> propertyName)
@@ -451,11 +501,11 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a UTF-8 encoded property name and starts a JSON array.
+	/// Writes a property's UTF-8 name and starts a JSON array as its value.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the array is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="utf8PropertyName">The UTF-8 encoded property name.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="utf8PropertyName">The property's name, in UTF-8.</param>
 	public static void WriteStartArray(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		ReadOnlySpan<byte> utf8PropertyName)
@@ -465,11 +515,11 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a property name and starts a JSON object.
+	/// Writes a property's name, given as a span of characters, and starts a JSON object as its value.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the object is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="propertyName">The name of the property, provided as a read-only span of characters.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="propertyName">The property's name, used whole.</param>
 	public static void WriteStartObject(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		ReadOnlySpan<char> propertyName)
@@ -479,11 +529,11 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a UTF-8 encoded property name and starts a JSON object.
+	/// Writes a property's UTF-8 name and starts a JSON object as its value.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the object is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="utf8PropertyName">The UTF-8 encoded property name.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="utf8PropertyName">The property's name, in UTF-8.</param>
 	public static void WriteStartObject(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		ReadOnlySpan<byte> utf8PropertyName)
@@ -493,12 +543,12 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a DateTime value as a string property to the JSON output using a UTF-8 encoded property name.
+	/// Writes a property with a <see cref="DateTime"/> value as an ISO 8601 string, named by a UTF-8 name.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="utf8PropertyName">The UTF-8 encoded property name.</param>
-	/// <param name="dateTime">The DateTime value to write.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="utf8PropertyName">The property's name, in UTF-8.</param>
+	/// <param name="dateTime">The value to write.</param>
 	public static void WriteString(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		ReadOnlySpan<byte> utf8PropertyName,
@@ -509,12 +559,12 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a string property to the JSON output using a UTF-8 encoded property name.
+	/// Writes a property with a string value, named by a UTF-8 name.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the string is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="utf8PropertyName">The UTF-8 encoded property name.</param>
-	/// <param name="value">The string value to write.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="utf8PropertyName">The property's name, in UTF-8.</param>
+	/// <param name="value">The value to write, or <see langword="null"/> to write a JSON null.</param>
 	public static void WriteString(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		ReadOnlySpan<byte> utf8PropertyName,
@@ -525,13 +575,12 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a string property, provided as a read-only span of characters, to the JSON output 
-	/// using a UTF-8 encoded property name.
+	/// Writes a property with a string value, given as a span of characters, named by a UTF-8 name.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the string is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="utf8PropertyName">The UTF-8 encoded property name.</param>
-	/// <param name="value">The string value as a read-only span of characters to write.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="utf8PropertyName">The property's name, in UTF-8.</param>
+	/// <param name="value">The value to write.</param>
 	public static void WriteString(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		ReadOnlySpan<byte> utf8PropertyName,
@@ -541,13 +590,12 @@ public static class Utf8JsonWriterExtensions
 		writer.WriteStringValue(value);
 	}
 	/// <summary>
-	/// Writes a string property, provided as a read-only span of UTF-8 bytes, to the JSON output
-	/// using a UTF-8 encoded property name.
+	/// Writes a property with a string value, given as UTF-8 bytes, named by a UTF-8 name.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the string is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="utf8PropertyName">The UTF-8 encoded property name.</param>
-	/// <param name="utf8Value">The string value as a read-only span of UTF-8 bytes to write.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="utf8PropertyName">The property's name, in UTF-8.</param>
+	/// <param name="utf8Value">The value to write, in UTF-8.</param>
 	public static void WriteString(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		ReadOnlySpan<byte> utf8PropertyName,
@@ -558,15 +606,15 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a string property to the JSON output using a property name provided as a string.
-	/// The property name is formatted to remove any prefixed paths before being used.
+	/// Writes a property with a string value, given as a span of characters, named after the expression passed as
+	/// the value.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the string is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="value">The string value to write.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="value">The value to write.</param>
 	/// <param name="propertyName">
-	/// The property name, which is processed to remove any path prefixes.
-	/// Captured via the caller argument expression.
+	/// The property's name, which the compiler fills with the expression passed as <paramref name="value"/>. Only the
+	/// part after its last period is used.
 	/// </param>
 	public static void WriteString(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
@@ -579,15 +627,14 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a string property to the JSON output using a property name provided as a string.
-	/// The property name is formatted to remove any prefixed paths before being used.
+	/// Writes a property with a string value, named after the expression passed as the value.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the string is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="value">The string value to write.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="value">The value to write, or <see langword="null"/> to write a JSON null.</param>
 	/// <param name="propertyName">
-	/// The property name, which is processed to remove any path prefixes.
-	/// Captured via the caller argument expression.
+	/// The property's name, which the compiler fills with the expression passed as <paramref name="value"/>. Only the
+	/// part after its last period is used.
 	/// </param>
 	public static void WriteString(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
@@ -600,24 +647,29 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a property whose value implements <see cref="IUtf8SpanFormattable"/> to the JSON output.
-	/// The value is formatted into a rented byte buffer and written as a string.
+	/// Writes a property with a UTF-8 formattable value as a string, named after the expression passed as the value.
 	/// </summary>
-	/// <typeparam name="T">The type of the formattable value.</typeparam>
-	/// <param name="writer">The JSON writer to which the value is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
+	/// <remarks>
+	/// The value is formatted into a byte buffer sized for the UTF-8 encoding of <paramref name="maxLength"/>
+	/// characters, on the stack when that's up to 256 bytes and rented otherwise, which goes back to its pool before
+	/// the method returns.
+	/// </remarks>
+	/// <typeparam name="T">The type of the value.</typeparam>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
 	/// <param name="value">The value to format and write.</param>
-	/// <param name="maxLength">
-	/// The maximum length (in characters) for the formatted value. This value is converted to the maximum byte count 
-	/// for the buffer allocation.
-	/// </param>
+	/// <param name="maxLength">The most characters that the formatted value can take.</param>
 	/// <param name="propertyName">
-	/// The property name, automatically formatted to remove any path prefixes.
-	/// Captured via the caller argument expression.
+	/// The property's name, which the compiler fills with the expression passed as <paramref name="value"/>. Only the
+	/// part after its last period is used.
 	/// </param>
-	/// <param name="format">An optional format string to apply during formatting.</param>
-	/// <param name="provider">An optional format provider to use during formatting.</param>
-	/// <exception cref="FormatException">Thrown if the value cannot be formatted into the provided buffer.</exception>
+	/// <param name="format">The format to apply, or empty for the type's default format.</param>
+	/// <param name="provider">
+	/// The provider of culture-specific formatting, or <see langword="null"/> for the current culture.
+	/// </param>
+	/// <exception cref="FormatException">
+	/// Thrown when the formatted value doesn't fit in the buffer, or when the value can't be formatted.
+	/// </exception>
 	public static void WriteUtf8Formattable<T>(this Utf8JsonWriter writer,
 		WorkingNamingPolicy policy,
 		T value,
@@ -647,13 +699,13 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Formats the property name by returning the substring after the last occurrence of a period.
-	/// If no period is found, the original property name is returned.
+	/// Gets the part of a property name after its last period, or the whole name when it has none.
 	/// </summary>
-	/// <param name="propertyName">The property name to format.</param>
-	/// <returns>
-	/// A read-only span of characters representing the formatted property name.
-	/// </returns>
+	/// <remarks>
+	/// A name that ends in a period is returned whole.
+	/// </remarks>
+	/// <param name="propertyName">The property name, usually an expression such as <c>value.Name</c>.</param>
+	/// <returns>A slice of <paramref name="propertyName"/>.</returns>
 	private static ReadOnlySpan<char> FormatPropertyName(ReadOnlySpan<char> propertyName)
 	{
 		if (TryGetLastIndexOfPeriod(propertyName, out int index))
@@ -665,14 +717,15 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Attempts to find the last index of a period in the property name.
+	/// Tries to find the last period in a property name that has at least one character after it.
 	/// </summary>
 	/// <param name="propertyName">The property name to search.</param>
 	/// <param name="index">
-	/// When this method returns, contains the index position of the period if found and valid; otherwise, an undefined value.
+	/// When this method returns, the index of the last period if the name has one; otherwise, an unspecified value.
 	/// </param>
 	/// <returns>
-	/// <see langword="true"/> if a period is found and it is not the last character; otherwise, <see langword="false"/>.
+	/// <see langword="true"/> if the name has a period that isn't its last character; otherwise,
+	/// <see langword="false"/>.
 	/// </returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static bool TryGetLastIndexOfPeriod(ReadOnlySpan<char> propertyName, out int index)
@@ -682,11 +735,11 @@ public static class Utf8JsonWriterExtensions
 	}
 
 	/// <summary>
-	/// Writes a JSON null value for a property using the specified naming policy.
+	/// Writes a property with a JSON null value, named by the part of a name after its last period.
 	/// </summary>
-	/// <param name="writer">The JSON writer to which the null value is written.</param>
-	/// <param name="policy">A reference to the working naming policy used to format the property name.</param>
-	/// <param name="propertyName">The name of the property for which a null value is written.</param>
+	/// <param name="writer">The writer to write the property to.</param>
+	/// <param name="policy">The naming policy that the property's name is written with.</param>
+	/// <param name="propertyName">The property's name, of which only the part after its last period is used.</param>
 	private static void WriteNullValue(Utf8JsonWriter writer, WorkingNamingPolicy policy, ReadOnlySpan<char> propertyName)
 	{
 		ReadOnlySpan<char> propName = FormatPropertyName(propertyName);
