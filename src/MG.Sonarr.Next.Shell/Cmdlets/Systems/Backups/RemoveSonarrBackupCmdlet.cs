@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups;
 [Cmdlet(VerbsCommon.Remove, "SonarrBackup", SupportsShouldProcess = true,
 	DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
 [Alias("Delete-SonarrBackup")]
-[MetadataCanPipe(Tag = Meta.BACKUP)]
+[MetadataCanPipe(Tag = Meta.Backup)]
 public sealed class RemoveSonarrBackupCmdlet : SonarrMetadataCmdlet
 {
 	SortedSet<int> _ids = null!;
@@ -32,7 +32,7 @@ public sealed class RemoveSonarrBackupCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.BACKUP];
+		return resolver[Meta.Backup];
 	}
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{

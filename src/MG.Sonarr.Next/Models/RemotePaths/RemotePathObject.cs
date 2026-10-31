@@ -12,7 +12,7 @@ namespace MG.Sonarr.Next.Models.RemotePaths;
 /// machine.
 /// </summary>
 /// <remarks>
-/// The object carries the <see cref="Meta.REMOTE_PATH_MAPPING"/> tag. Sonarr's <c>host</c> field is the
+/// The object carries the <see cref="Meta.RemotePathMapping"/> tag. Sonarr's <c>host</c> field is the
 /// <c>HostName</c> property, both ways. <see cref="HostName"/>, <see cref="LocalPath"/>, and
 /// <see cref="RemotePath"/> are copies, which <see cref="Commit"/> and <see cref="Reset"/> write back to their
 /// properties.
@@ -58,10 +58,10 @@ public sealed class RemotePathObject : IdSonarrObject<RemotePathObject>,
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	/// <param name="existing">The object's current tag, which the method ignores.</param>
-	/// <returns>The <see cref="Meta.REMOTE_PATH_MAPPING"/> tag from <paramref name="resolver"/>.</returns>
+	/// <returns>The <see cref="Meta.RemotePathMapping"/> tag from <paramref name="resolver"/>.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.REMOTE_PATH_MAPPING];
+		return resolver[Meta.RemotePathMapping];
 	}
 
 	/// <summary>

@@ -44,7 +44,7 @@ public sealed class NewSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.DELAY_PROFILE];
+		return resolver[Meta.DelayProfile];
 	}
 
 	protected override void OnCreatingScope(IServiceProvider provider)
@@ -65,7 +65,7 @@ public sealed class NewSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 
 		if (_tagNames.Count > 0)
 		{
-			MetadataTag tag = provider.GetMetadataTag(Meta.TAG);
+			MetadataTag tag = provider.GetMetadataTag(Meta.Tag);
 			this.ProcessNames(_tagNames, _tagIds, tag);
 		}
 	}

@@ -8,7 +8,7 @@ public sealed class GetSonarrNotificationSchemaCmdlet : SonarrApiCmdletBase
 {
 	protected override void Process(IServiceProvider provider)
 	{
-		var response = this.SendGetRequest<MetadataList<NotificationSchemaObject>>(Constants.NOTIFICATION_SCHEMA);
+		var response = this.SendGetRequest<MetadataList<NotificationSchemaObject>>(Constants.NotificationSchema);
 		_ = this.TryWriteObject(response);
 	}
 }

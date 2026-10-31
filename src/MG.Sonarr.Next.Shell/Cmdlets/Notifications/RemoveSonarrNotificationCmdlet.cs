@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Models.Notifications;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -7,7 +7,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications;
 
 [Cmdlet(VerbsCommon.Remove, "SonarrNotification", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true,
 	DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-[MetadataCanPipe(Tag = Meta.NOTIFICATION)]
+[MetadataCanPipe(Tag = Meta.Notification)]
 public sealed class RemoveSonarrNotificationCmdlet : SonarrApiCmdletBase
 {
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -28,7 +28,7 @@ public sealed class RemoveSonarrNotificationCmdlet : SonarrApiCmdletBase
 
 	protected override void Process(IServiceProvider provider)
 	{
-		var tag = provider.GetMetadataTag(Meta.NOTIFICATION);
+		var tag = provider.GetMetadataTag(Meta.Notification);
 
 		if (this.Id <= 0)
 		{

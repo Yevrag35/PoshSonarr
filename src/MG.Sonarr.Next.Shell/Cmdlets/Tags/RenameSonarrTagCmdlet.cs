@@ -9,7 +9,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags;
 
 [Cmdlet(VerbsCommon.Rename, "SonarrTag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
 	DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-[MetadataCanPipe(Tag = Meta.TAG)]
+[MetadataCanPipe(Tag = Meta.Tag)]
 public sealed class RenameSonarrTagCmdlet : SonarrApiCmdletBase
 {
 	TagObject? _pipedObject;
@@ -45,7 +45,7 @@ public sealed class RenameSonarrTagCmdlet : SonarrApiCmdletBase
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_tag = provider.GetRequiredService<IMetadataResolver>()[Meta.TAG];
+		_tag = provider.GetRequiredService<IMetadataResolver>()[Meta.Tag];
 	}
 
 	protected override void Process(IServiceProvider provider)

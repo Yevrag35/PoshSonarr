@@ -107,10 +107,10 @@ public sealed class RevisionObject : SonarrObject,
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	/// <param name="existing">The object's current tag, which this method ignores.</param>
-	/// <returns>The resolver's <see cref="Meta.REVISION"/> tag.</returns>
+	/// <returns>The resolver's <see cref="Meta.QualityRevision"/> tag.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.REVISION];
+		return resolver[Meta.QualityRevision];
 	}
 	/// <summary>
 	/// Puts the type's full name first in the object's PowerShell type names, ahead of the name that the base class

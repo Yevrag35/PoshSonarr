@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Services.Http.Queries;
@@ -76,12 +76,12 @@ public sealed class GetSonarrWantedMissingCmdlet : SonarrApiCmdletBase
 	{
 		if (parameters.Count == 0)
 		{
-			return Constants.WANTEDMISSING;
+			return Constants.WantedMissing;
 		}
 
-		Span<char> span = stackalloc char[Constants.WANTEDMISSING.Length + 1 + parameters.MaxLength];
-		Constants.WANTEDMISSING.CopyTo(span);
-		int position = Constants.WANTEDMISSING.Length;
+		Span<char> span = stackalloc char[Constants.WantedMissing.Length + 1 + parameters.MaxLength];
+		Constants.WantedMissing.CopyTo(span);
+		int position = Constants.WantedMissing.Length;
 
 		_ = parameters.TryFormat(span.Slice(position), out int written);
 		return new string(span.Slice(0, position + written));

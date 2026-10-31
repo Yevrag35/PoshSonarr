@@ -28,7 +28,7 @@ public sealed class ReadOnlyTagsProperty : ReadOnlyProperty<SortedSet<int>>
 	/// </summary>
 	/// <param name="set">The set of tag IDs that the property holds.</param>
 	public ReadOnlyTagsProperty(SortedSet<int> set)
-		: base(Constants.TAGS)
+		: base(Constants.Tags)
 	{
 		this.Tags = set;
 	}

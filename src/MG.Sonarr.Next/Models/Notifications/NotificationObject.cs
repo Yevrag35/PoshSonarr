@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Models.Notifications;
 /// Represents a notification connection that Sonarr sends events to.
 /// </summary>
 /// <remarks>
-/// The object carries the <see cref="Meta.NOTIFICATION"/> tag, and pipes its ID as an <see cref="ITestPipeable"/>,
+/// The object carries the <see cref="Meta.Notification"/> tag, and pipes its ID as an <see cref="ITestPipeable"/>,
 /// so the connection can be tested. Once it's deserialized, it has an <c>IsEnabled</c> property that tells whether
 /// any of its <c>On...</c> triggers is on.
 /// </remarks>
@@ -64,10 +64,10 @@ public class NotificationObject : TagUpdateObject<NotificationObject>,
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	/// <param name="existing">The object's current tag, which the method ignores.</param>
-	/// <returns>The <see cref="Meta.NOTIFICATION"/> tag from <paramref name="resolver"/>.</returns>
+	/// <returns>The <see cref="Meta.Notification"/> tag from <paramref name="resolver"/>.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.NOTIFICATION];
+		return resolver[Meta.Notification];
 	}
 
 	/// <summary>

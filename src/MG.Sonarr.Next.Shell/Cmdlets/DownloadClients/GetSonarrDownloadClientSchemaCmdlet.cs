@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.DownloadClients;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
@@ -20,7 +20,7 @@ public sealed class GetSonarrDownloadClientSchemaCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.DOWNLOAD_CLIENT_SCHEMA];
+		return resolver[Meta.DownloadClientSchema];
 	}
 
 	protected override void OnCreatingScope(IServiceProvider provider)

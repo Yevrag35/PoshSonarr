@@ -26,7 +26,7 @@ public sealed class RemoveSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.DOWNLOAD_CLIENT];
+		return resolver[Meta.DownloadClient];
 	}
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{

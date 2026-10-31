@@ -10,7 +10,7 @@ public sealed class GetSonarrDiskspaceCmdlet : SonarrApiCmdletBase
 	protected override void Process(IServiceProvider provider)
 	{
 		ArgumentNullException.ThrowIfNull(provider);
-		var response = this.SendGetRequest<MetadataList<DiskspaceObject>>(Constants.DISKSPACE);
+		var response = this.SendGetRequest<MetadataList<DiskspaceObject>>(Constants.DiskSpace);
 		if (response.IsError)
 		{
 			this.WriteError(response.Error);

@@ -75,10 +75,10 @@ public sealed class QualityDefinitionObject : SonarrObject,
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	/// <param name="existing">The object's current tag, which this method ignores.</param>
-	/// <returns>The resolver's <see cref="Meta.QUALITY_DEFINITION"/> tag.</returns>
+	/// <returns>The resolver's <see cref="Meta.QualityDefinition"/> tag.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.QUALITY_DEFINITION];
+		return resolver[Meta.QualityDefinition];
 	}
 	/// <summary>
 	/// Finishes the object after the JSON converter reads it, and copies its ID.

@@ -83,7 +83,7 @@ public class HostObject : SonarrObject,
 	/// <returns>The resolver's tag for the host config endpoint.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.HOST];
+		return resolver[Meta.HostConfig];
 	}
 	/// <summary>
 	/// Finishes deserializing the settings, copying the <c>Id</c> property into <see cref="Id"/> and removing it.
@@ -166,7 +166,7 @@ public sealed class NoKeyHostObject : HostObject,
 	/// </summary>
 	static readonly ImmutableArray<string> _removeProperties =
 	[
-		Constants.API_KEY, Constants.PASSWORD, Constants.PROXY_PASSWORD,
+		Constants.ApiKey, Constants.Password, Constants.ProxyPassword,
 	];
 	/// <summary>
 	/// The full name of the type, which <see cref="SetPSTypeName"/> puts in place of the base's type name.

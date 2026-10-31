@@ -16,7 +16,7 @@ namespace MG.Sonarr.Next.Models.ManualImports;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The object carries the <see cref="Meta.MANUAL_IMPORT"/> tag. Once it's deserialized, <see cref="Name"/> is
+/// The object carries the <see cref="Meta.ManualImport"/> tag. Once it's deserialized, <see cref="Name"/> is
 /// read-only in PowerShell, and the object has every property that an import needs, added when Sonarr leaves it out:
 /// an <c>Episodes</c> set, a writable <c>Quality</c> and <c>Series</c>, a <c>ReleaseGroup</c>, and a
 /// <c>SeasonNumber</c> script property.
@@ -137,10 +137,10 @@ public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	/// <param name="existing">The object's current tag, which the method ignores.</param>
-	/// <returns>The <see cref="Meta.MANUAL_IMPORT"/> tag from <paramref name="resolver"/>.</returns>
+	/// <returns>The <see cref="Meta.ManualImport"/> tag from <paramref name="resolver"/>.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.MANUAL_IMPORT];
+		return resolver[Meta.ManualImport];
 	}
 
 	/// <summary>

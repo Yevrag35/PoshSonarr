@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Commands;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
@@ -40,7 +40,7 @@ public sealed class GetSonarrCommandHistory : SonarrCmdletBase
 	private IEnumerable<ICommand> RefreshUnfinished(IServiceProvider provider, ICommandHistory history)
 	{
 		var client = provider.GetRequiredService<ISonarrClient>();
-		var tag = provider.GetRequiredService<IMetadataResolver>()[Meta.COMMAND];
+		var tag = provider.GetRequiredService<IMetadataResolver>()[Meta.Command];
 
 		foreach (ICommand command in history.Where(x => !x.IsCompleted))
 		{

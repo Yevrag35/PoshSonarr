@@ -29,7 +29,7 @@ public sealed record SonarrTag : IHasId, IJsonSonarrMetadata
 	/// Gets the tag's metadata tag.
 	/// </summary>
 	/// <value>
-	/// The <see cref="Meta.TAG"/> tag once <see cref="SetTag(IMetadataResolver)"/> has run; otherwise,
+	/// The <see cref="Meta.Tag"/> tag once <see cref="SetTag(IMetadataResolver)"/> has run; otherwise,
 	/// <see cref="MetadataTag.Empty"/>.
 	/// </value>
 	[JsonIgnore(Condition = JsonIgnoreCondition.Always)]
@@ -41,6 +41,6 @@ public sealed record SonarrTag : IHasId, IJsonSonarrMetadata
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	public void SetTag(IMetadataResolver resolver)
 	{
-		this.MetadataTag = resolver[Meta.TAG];
+		this.MetadataTag = resolver[Meta.Tag];
 	}
 }

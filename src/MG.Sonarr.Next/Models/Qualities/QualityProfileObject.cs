@@ -46,10 +46,10 @@ public sealed class QualityProfileObject : IdSonarrObject<QualityProfileObject>,
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	/// <param name="existing">The object's current tag, which this method ignores.</param>
-	/// <returns>The resolver's <see cref="Meta.QUALITY_PROFILE"/> tag.</returns>
+	/// <returns>The resolver's <see cref="Meta.QualityProfile"/> tag.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.QUALITY_PROFILE];
+		return resolver[Meta.QualityProfile];
 	}
 
 	/// <summary>

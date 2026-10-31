@@ -25,7 +25,7 @@ public sealed class ReadOnlySetProperty<T> : ReadOnlyProperty<SortedSet<T>>
 	/// <summary>
 	/// The PowerShell name of <typeparamref name="T"/>, in brackets.
 	/// </summary>
-	private string _genName;
+	private string? _genName;
 
 	/// <summary>
 	/// Gets the set that the property holds.

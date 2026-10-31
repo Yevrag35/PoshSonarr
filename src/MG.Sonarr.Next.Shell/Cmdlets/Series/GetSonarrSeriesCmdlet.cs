@@ -15,10 +15,10 @@ using MG.Sonarr.Next.Unions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series;
 
 [Cmdlet(VerbsCommon.Get, "SonarrSeries", DefaultParameterSetName = "BySeriesName")]
-[MetadataCanPipe(Tag = Meta.CALENDAR)]
-[MetadataCanPipe(Tag = Meta.EPISODE)]
-[MetadataCanPipe(Tag = Meta.EPISODE_FILE)]
-[MetadataCanPipe(Tag = Meta.RENAMABLE)]
+[MetadataCanPipe(Tag = Meta.Calendar)]
+[MetadataCanPipe(Tag = Meta.Episode)]
+[MetadataCanPipe(Tag = Meta.EpisodeFile)]
+[MetadataCanPipe(Tag = Meta.Renamable)]
 [OutputType(typeof(ISeriesOutput))]
 public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
 {
@@ -52,7 +52,7 @@ public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
 	}
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.SERIES];
+		return resolver[Meta.Series];
 	}
 
 	protected override void Begin(IServiceProvider provider)
@@ -112,7 +112,7 @@ public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
 		for (int i = result.Value.Count - 1; i >= 0; i--)
 		{
 			PSObject item = result.Value[i];
-			if (!item.TryGetProperty(Constants.TITLE, out string? title)
+			if (!item.TryGetProperty(Constants.Title, out string? title)
 				||
 				title is null
 				||

@@ -7,7 +7,7 @@ using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases;
 
 [Cmdlet(VerbsData.Update, "SonarrReleaseProfile", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
-[MetadataCanPipe(Tag = Meta.RELEASE_PROFILE)]
+[MetadataCanPipe(Tag = Meta.ReleaseProfile)]
 public sealed class UpdateSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 {
 	[Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0)]
@@ -16,7 +16,7 @@ public sealed class UpdateSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.RELEASE_PROFILE];
+		return resolver[Meta.ReleaseProfile];
 	}
 
 	protected override void Process(IServiceProvider provider)

@@ -96,7 +96,7 @@ public sealed class CalendarObject : IdSonarrObject<CalendarObject>,
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the tags.</param>
 	/// <param name="existing">The tag that the object already has, which the calendar entry doesn't use.</param>
-	/// <returns>The <see cref="Meta.CALENDAR"/> tag from <paramref name="resolver"/>.</returns>
+	/// <returns>The <see cref="Meta.Calendar"/> tag from <paramref name="resolver"/>.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
 		return GetTag(resolver);
@@ -106,10 +106,10 @@ public sealed class CalendarObject : IdSonarrObject<CalendarObject>,
 	/// Gets the metadata tag of the calendar endpoint without an instance.
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the tags.</param>
-	/// <returns>The <see cref="Meta.CALENDAR"/> tag from <paramref name="resolver"/>.</returns>
+	/// <returns>The <see cref="Meta.Calendar"/> tag from <paramref name="resolver"/>.</returns>
 	public static MetadataTag GetTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.CALENDAR];
+		return resolver[Meta.Calendar];
 	}
 
 	/// <summary>

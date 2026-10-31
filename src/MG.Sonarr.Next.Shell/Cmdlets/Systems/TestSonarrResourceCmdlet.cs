@@ -8,8 +8,8 @@ using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems;
 
 [Cmdlet(VerbsDiagnostic.Test, "SonarrResource")]
-[MetadataCanPipe(Tag = Meta.DOWNLOAD_CLIENT)]
-[MetadataCanPipe(Tag = Meta.INDEXER)]
+[MetadataCanPipe(Tag = Meta.DownloadClient)]
+[MetadataCanPipe(Tag = Meta.Indexer)]
 public sealed class TestSonarrResourceCmdlet : TimedCmdlet
 {
 	const string TEST = "/test";

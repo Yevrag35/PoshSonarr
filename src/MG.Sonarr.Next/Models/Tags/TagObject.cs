@@ -76,10 +76,10 @@ public sealed class TagObject : SonarrObject,
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	/// <param name="existing">The object's current tag, which this method ignores.</param>
-	/// <returns>The resolver's <see cref="Meta.TAG"/> tag.</returns>
+	/// <returns>The resolver's <see cref="Meta.Tag"/> tag.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.TAG];
+		return resolver[Meta.Tag];
 	}
 
 	/// <summary>
@@ -96,7 +96,7 @@ public sealed class TagObject : SonarrObject,
 			this.Id = id;
 		}
 
-		if (this.TryGetProperty(Constants.LABEL, out string? label))
+		if (this.TryGetProperty(Constants.Label, out string? label))
 		{
 			this.Label = label ?? string.Empty;
 		}

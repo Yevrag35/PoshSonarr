@@ -21,7 +21,7 @@ public sealed class GetSonarrNotificationCmdlet : SonarrMetadataCmdlet
 	protected override int Capacity => 2;
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.NOTIFICATION];
+		return resolver[Meta.Notification];
 	}
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{

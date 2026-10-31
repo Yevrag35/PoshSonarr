@@ -18,7 +18,7 @@ public sealed class GetSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	protected override int Capacity => 1;
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.REMOTE_PATH_MAPPING];
+		return resolver[Meta.RemotePathMapping];
 	}
 
 	protected override void OnCreatingScope(IServiceProvider provider)

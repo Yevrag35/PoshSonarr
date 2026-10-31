@@ -34,11 +34,11 @@ internal sealed class MetadataResolver : IMetadataResolver
 	/// <summary>
 	/// The name of the note property that holds an object's tag.
 	/// </summary>
-	public static readonly string META_PROPERTY_NAME = "MetadataTag";
+	internal const string MetaPropertyName = "MetadataTag";
 	/// <summary>
 	/// The character that starts every tag's name.
 	/// </summary>
-	public const char META_PREFIX = '#';
+	internal const char MetaPrefix = '#';
 	/// <summary>
 	/// The tags, keyed by name without regard to case.
 	/// </summary>

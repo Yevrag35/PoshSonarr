@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Models.System;
+using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Server;
@@ -8,7 +8,7 @@ public sealed class GetSonarrStatusCmdlet : SonarrApiCmdletBase
 {
 	protected override void Process(IServiceProvider provider)
 	{
-		var tag = provider.GetMetadataTag(Meta.STATUS);
+		var tag = provider.GetMetadataTag(Meta.Status);
 
 		var result = this.SendGetRequest<SystemStatusObject>(tag.UrlBase);
 		if (result.IsError)

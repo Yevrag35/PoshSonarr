@@ -8,7 +8,7 @@ public sealed class GetSonarrNamingConfigCmdlet : SonarrApiCmdletBase
 {
 	protected override void Process(IServiceProvider provider)
 	{
-		var tag = provider.GetMetadataTag(Meta.NAMING_CONFIG);
+		var tag = provider.GetMetadataTag(Meta.NamingConfig);
 		var response = this.SendGetRequest<NamingConfigObject>(tag.UrlBase);
 
 		_ = this.TryWriteObject(response);

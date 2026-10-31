@@ -7,7 +7,7 @@ using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients;
 
 [Cmdlet(VerbsData.Update, "SonarrDownloadClient", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
-[MetadataCanPipe(Tag = Meta.DOWNLOAD_CLIENT)]
+[MetadataCanPipe(Tag = Meta.DownloadClient)]
 public sealed class UpdateSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 {
 	[Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
@@ -16,7 +16,7 @@ public sealed class UpdateSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.DOWNLOAD_CLIENT];
+		return resolver[Meta.DownloadClient];
 	}
 
 	protected override void Process(IServiceProvider provider)

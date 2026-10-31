@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Models.DownloadClients;
 /// Represents a download client that Sonarr sends releases to.
 /// </summary>
 /// <remarks>
-/// The object carries the <see cref="Meta.DOWNLOAD_CLIENT"/> tag, and pipes its ID as an <see cref="ITestPipeable"/>,
+/// The object carries the <see cref="Meta.DownloadClient"/> tag, and pipes its ID as an <see cref="ITestPipeable"/>,
 /// so the client can be tested.
 /// </remarks>
 [SonarrObject]
@@ -54,10 +54,10 @@ public sealed class DownloadClientObject : TagUpdateObject<DownloadClientObject>
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	/// <param name="existing">The object's current tag, which the method ignores.</param>
-	/// <returns>The <see cref="Meta.DOWNLOAD_CLIENT"/> tag from <paramref name="resolver"/>.</returns>
+	/// <returns>The <see cref="Meta.DownloadClient"/> tag from <paramref name="resolver"/>.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.DOWNLOAD_CLIENT];
+		return resolver[Meta.DownloadClient];
 	}
 
 	/// <summary>

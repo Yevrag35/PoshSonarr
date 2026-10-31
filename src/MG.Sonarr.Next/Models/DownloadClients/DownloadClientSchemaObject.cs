@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Models.DownloadClients;
 /// Represents a template from <c>/downloadclient/schema</c> that a new download client is created from.
 /// </summary>
 /// <remarks>
-/// The object carries the <see cref="Meta.DOWNLOAD_CLIENT_SCHEMA"/> tag. Once it's deserialized, the properties that
+/// The object carries the <see cref="Meta.DownloadClientSchema"/> tag. Once it's deserialized, the properties that
 /// describe the client's kind, <see cref="ConfigContract"/>, <see cref="Implementation"/>,
 /// <see cref="ImplementationName"/>, <see cref="InfoLink"/>, and <see cref="Protocol"/>, are read-only in PowerShell,
 /// while <see cref="Enable"/>, <see cref="Name"/>, and <see cref="Priority"/> stay writable for the new client.
@@ -140,10 +140,10 @@ public sealed class DownloadClientSchemaObject : TagUpdateObject<DownloadClientS
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	/// <param name="existing">The object's current tag, which the method ignores.</param>
-	/// <returns>The <see cref="Meta.DOWNLOAD_CLIENT_SCHEMA"/> tag from <paramref name="resolver"/>.</returns>
+	/// <returns>The <see cref="Meta.DownloadClientSchema"/> tag from <paramref name="resolver"/>.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.DOWNLOAD_CLIENT_SCHEMA];
+		return resolver[Meta.DownloadClientSchema];
 	}
 
 	/// <summary>

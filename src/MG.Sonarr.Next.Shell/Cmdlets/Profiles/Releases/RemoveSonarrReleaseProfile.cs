@@ -8,7 +8,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases;
 
 [Cmdlet(VerbsCommon.Remove, "SonarrReleaseProfile", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true,
 	DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-[MetadataCanPipe(Tag = Meta.RELEASE_PROFILE)]
+[MetadataCanPipe(Tag = Meta.ReleaseProfile)]
 public sealed class RemoveSonarrReleaseProfile : SonarrApiCmdletBase
 {
 	MetadataTag _tag = null!;
@@ -32,7 +32,7 @@ public sealed class RemoveSonarrReleaseProfile : SonarrApiCmdletBase
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_tag = provider.GetMetadataTag(Meta.RELEASE_PROFILE);
+		_tag = provider.GetMetadataTag(Meta.ReleaseProfile);
 	}
 
 	protected override void Process(IServiceProvider provider)

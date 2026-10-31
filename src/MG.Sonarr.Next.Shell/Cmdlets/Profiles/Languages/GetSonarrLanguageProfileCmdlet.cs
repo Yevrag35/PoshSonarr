@@ -10,7 +10,7 @@ using MG.Sonarr.Next.Shell.Extensions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Languages;
 
 [Cmdlet(VerbsCommon.Get, "SonarrLanguageProfile", DefaultParameterSetName = "None")]
-[MetadataCanPipe(Tag = Meta.SERIES)]
+[MetadataCanPipe(Tag = Meta.Series)]
 [Obsolete("The LanguageProfileController and its endpoints are deprecated.")]
 public sealed class GetSonarrLanguageProfileCmdlet : SonarrMetadataCmdlet
 {
@@ -44,7 +44,7 @@ public sealed class GetSonarrLanguageProfileCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.LANGUAGE];
+		return resolver[Meta.LanguageProfile];
 	}
 
 	protected override void Begin(IServiceProvider provider)

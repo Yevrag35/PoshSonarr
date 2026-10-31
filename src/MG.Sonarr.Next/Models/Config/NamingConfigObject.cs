@@ -12,7 +12,7 @@ namespace MG.Sonarr.Next.Models.Config;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The object carries the <see cref="Meta.NAMING_CONFIG"/> tag. It keeps its ID out of PowerShell's view: the
+/// The object carries the <see cref="Meta.NamingConfig"/> tag. It keeps its ID out of PowerShell's view: the
 /// <c>Id</c> property is removed once the object is deserialized and its value kept in <see cref="Id"/>,
 /// <see cref="OnSerializing"/> adds the property back for the request body, and <see cref="Commit"/> and
 /// <see cref="Reset"/> remove it again.
@@ -61,10 +61,10 @@ public sealed class NamingConfigObject : SonarrObject,
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	/// <param name="existing">The object's current tag, which the method ignores.</param>
-	/// <returns>The <see cref="Meta.NAMING_CONFIG"/> tag from <paramref name="resolver"/>.</returns>
+	/// <returns>The <see cref="Meta.NamingConfig"/> tag from <paramref name="resolver"/>.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.NAMING_CONFIG];
+		return resolver[Meta.NamingConfig];
 	}
 
 	/// <summary>

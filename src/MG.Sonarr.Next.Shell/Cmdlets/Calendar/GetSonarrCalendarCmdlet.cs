@@ -65,7 +65,7 @@ public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 	protected override int Capacity => 3;
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.CALENDAR];
+		return resolver[Meta.Calendar];
 	}
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
@@ -97,7 +97,7 @@ public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 
 		if (_tagNames.Count > 0)
 		{
-			MetadataTag tag = provider.GetMetadataTag(Meta.TAG);
+			MetadataTag tag = provider.GetMetadataTag(Meta.Tag);
 			this.ProcessNames(_tagNames, _tagIds, tag);
 		}
 	}
@@ -145,8 +145,8 @@ public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 		_queryCol.AddIfTrue(includeSeries);
 		_queryCol.AddIfTrue(includeEpisodeImages);
 
-		_queryCol.Add(START, start, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT);
-		_queryCol.Add(END, end, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT);
+		_queryCol.Add(START, start, Constants.CalendarDateTimeFormat.Length, Constants.CalendarDateTimeFormat);
+		_queryCol.Add(END, end, Constants.CalendarDateTimeFormat.Length, Constants.CalendarDateTimeFormat);
 
 		if (_tagIds.Count > 0)
 		{

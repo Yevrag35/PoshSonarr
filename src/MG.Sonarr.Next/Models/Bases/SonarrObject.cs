@@ -230,7 +230,7 @@ public abstract class SonarrObject : PSObject,
 	/// </returns>
 	public bool TryGetId(out int id)
 	{
-		return this.TryGetProperty(Constants.ID, out id);
+		return this.TryGetProperty(Constants.Id, out id);
 	}
 
 	/// <summary>

@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.Models.Media;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The object carries the <see cref="Meta.MEDIA_MANGEMENT"/> tag. Sonarr's <c>recycleBin</c> field is the
+/// The object carries the <see cref="Meta.MediaManagement"/> tag. Sonarr's <c>recycleBin</c> field is the
 /// <c>RecycleBinPath</c> property, both ways, and a <c>Path</c> alias shows it.
 /// </para>
 /// <para>
@@ -95,10 +95,10 @@ public sealed class MediaManagementObject : SonarrObject,
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	/// <param name="existing">The object's current tag, which the method ignores.</param>
-	/// <returns>The <see cref="Meta.MEDIA_MANGEMENT"/> tag from <paramref name="resolver"/>.</returns>
+	/// <returns>The <see cref="Meta.MediaManagement"/> tag from <paramref name="resolver"/>.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.MEDIA_MANGEMENT];
+		return resolver[Meta.MediaManagement];
 	}
 	/// <summary>
 	/// Determines whether the recycle bin path is empty or ends with the server's directory separator.
@@ -152,7 +152,7 @@ public sealed class MediaManagementObject : SonarrObject,
 	public override void Reset()
 	{
 		base.Reset();
-		this.Properties.Remove(Constants.ID);
+		this.Properties.Remove(Constants.Id);
 		this.Properties.Add(_pathAlias);
 	}
 	/// <summary>

@@ -91,7 +91,7 @@ public sealed class GetSonarrManualImportCmdlet : SonarrApiCmdletBase
 	}
 	protected override void Process(IServiceProvider provider)
 	{
-		var tag = provider.GetMetadataTag(Meta.MANUAL_IMPORT);
+		var tag = provider.GetMetadataTag(Meta.ManualImport);
 
 		if (this.ParameterSetName == BY_FOLDER)
 		{

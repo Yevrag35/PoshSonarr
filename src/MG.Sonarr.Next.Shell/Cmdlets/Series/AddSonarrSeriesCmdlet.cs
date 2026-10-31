@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series;
 
 [Cmdlet(VerbsCommon.Add, "SonarrSeries", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
 	DefaultParameterSetName = "RootFolderPath")]
-[MetadataCanPipe(Tag = Meta.SERIES_ADD)]
+[MetadataCanPipe(Tag = Meta.SeriesAdd)]
 public sealed class AddSonarrSeriesCmdlet : SonarrApiCmdletBase//, IDynamicParameters
 {
 	private EditableSeriesAddOptions? _addOptions;
@@ -55,7 +55,7 @@ public sealed class AddSonarrSeriesCmdlet : SonarrApiCmdletBase//, IDynamicParam
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.SERIES];
+		this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.Series];
 	}
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
 	protected override void Begin(IServiceProvider provider)

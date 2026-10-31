@@ -67,7 +67,7 @@ public sealed class HistoryObject : IdSonarrObject<HistoryObject>,
 	/// <returns>The resolver's tag for the history endpoint.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.HISTORY];
+		return resolver[Meta.History];
 	}
 	/// <summary>
 	/// Copies the record's download, episode, and series IDs into <see cref="DownloadId"/>, <see cref="EpisodeId"/>,

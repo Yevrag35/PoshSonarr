@@ -135,7 +135,7 @@ public abstract class TagUpdateObject<TSelf> : IdSonarrObject<TSelf>,
 	protected override void OnDeserialized(bool alreadyCalled)
 	{
 		this.MustUpdateViaApi = true;
-		if (this.Properties[Constants.TAGS] is ReadOnlyTagsProperty tagsProp)
+		if (this.Properties[Constants.Tags] is ReadOnlyTagsProperty tagsProp)
 		{
 			this.Tags = tagsProp.Tags;
 		}

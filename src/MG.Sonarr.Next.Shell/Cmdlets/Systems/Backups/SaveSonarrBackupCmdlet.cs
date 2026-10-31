@@ -15,7 +15,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups;
 
 [Cmdlet(VerbsData.Save, "SonarrBackup", DefaultParameterSetName = "ByExplicitUrl", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
 [Alias("Download-SonarrBackup")]
-[MetadataCanPipe(Tag = Meta.BACKUP)]
+[MetadataCanPipe(Tag = Meta.Backup)]
 [OutputType(typeof(FileInfo))]
 public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 {

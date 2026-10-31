@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Models.Indexers;
 /// Represents an indexer that Sonarr searches for releases.
 /// </summary>
 /// <remarks>
-/// The object carries the <see cref="Meta.INDEXER"/> tag, and pipes its ID as an <see cref="ITestPipeable"/>, so the
+/// The object carries the <see cref="Meta.Indexer"/> tag, and pipes its ID as an <see cref="ITestPipeable"/>, so the
 /// indexer can be tested. <see cref="Name"/> and <see cref="Protocol"/> are copies taken while the object is
 /// deserialized and refreshed by a commit, and the other properties read their PowerShell properties.
 /// </remarks>
@@ -102,10 +102,10 @@ public sealed class IndexerObject : TagUpdateObject<IndexerObject>,
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	/// <param name="existing">The object's current tag, which the method ignores.</param>
-	/// <returns>The <see cref="Meta.INDEXER"/> tag from <paramref name="resolver"/>.</returns>
+	/// <returns>The <see cref="Meta.Indexer"/> tag from <paramref name="resolver"/>.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.INDEXER];
+		return resolver[Meta.Indexer];
 	}
 
 	/// <summary>

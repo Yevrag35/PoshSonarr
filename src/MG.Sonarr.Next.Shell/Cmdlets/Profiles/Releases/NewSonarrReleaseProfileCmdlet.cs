@@ -58,7 +58,7 @@ public sealed class NewSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.RELEASE_PROFILE];
+		return resolver[Meta.ReleaseProfile];
 	}
 
 	protected override void OnCreatingScope(IServiceProvider provider)
@@ -79,13 +79,13 @@ public sealed class NewSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 
 		if (_tagNames.Count > 0)
 		{
-			MetadataTag tag = provider.GetMetadataTag(Meta.TAG);
+			MetadataTag tag = provider.GetMetadataTag(Meta.Tag);
 			this.ProcessNames(_tagNames, _tagIds, tag);
 		}
 
 		if (this.HasParameter(this.Indexer) && IsIndexNameAndNotAny(this.Indexer, out Wildcard indexerName))
 		{
-			MetadataTag tag = provider.GetMetadataTag(Meta.INDEXER);
+			MetadataTag tag = provider.GetMetadataTag(Meta.Indexer);
 			var indexers = this.GetAll<IndexerObject>(tag.UrlBase);
 			if (indexers.Count == 0)
 			{

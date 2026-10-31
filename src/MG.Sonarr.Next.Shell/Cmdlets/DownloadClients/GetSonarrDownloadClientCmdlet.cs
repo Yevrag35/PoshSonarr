@@ -36,7 +36,7 @@ public sealed class GetSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 	}
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.DOWNLOAD_CLIENT];
+		return resolver[Meta.DownloadClient];
 	}
 
 	protected override void Begin(IServiceProvider provider)

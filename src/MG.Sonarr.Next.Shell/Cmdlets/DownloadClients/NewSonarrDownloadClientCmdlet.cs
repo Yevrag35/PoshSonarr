@@ -10,7 +10,7 @@ using MG.Sonarr.Next.Shell.Output;
 namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients;
 
 [Cmdlet(VerbsCommon.New, "SonarrDownloadClient", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
-[MetadataCanPipe(Tag = Meta.DOWNLOAD_CLIENT_SCHEMA), OutputType(typeof(IDownloadClientOutput))]
+[MetadataCanPipe(Tag = Meta.DownloadClientSchema), OutputType(typeof(IDownloadClientOutput))]
 public sealed class NewSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 {
 	public override bool CanDebugSerializeBefore => false;
@@ -32,7 +32,7 @@ public sealed class NewSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.DOWNLOAD_CLIENT];
+		return resolver[Meta.DownloadClient];
 	}
 
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in nameof()")]

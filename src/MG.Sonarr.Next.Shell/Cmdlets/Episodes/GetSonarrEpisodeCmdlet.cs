@@ -12,8 +12,8 @@ using MG.Sonarr.Next.Shell.Extensions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes;
 
 [Cmdlet(VerbsCommon.Get, "SonarrEpisode", DefaultParameterSetName = BY_EP_ID)]
-[MetadataCanPipe(Tag = Meta.CALENDAR)]
-[MetadataCanPipe(Tag = Meta.SERIES)]
+[MetadataCanPipe(Tag = Meta.Calendar)]
+[MetadataCanPipe(Tag = Meta.Series)]
 public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 {
 	const string BY_EP_ID = "ByEpisodeId";
@@ -50,7 +50,7 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.EPISODE];
+		return resolver[Meta.Episode];
 	}
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
@@ -147,7 +147,7 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 		List<EpisodeObject> list = new(series.Count);
 		foreach (int id in series.Keys)
 		{
-			_params.Add(Constants.SERIES_ID_LOWERCASE, id);
+			_params.Add(Constants.SeriesIdLowercase, id);
 			string url = this.Tag.GetUrl(_params);
 
 			var response = this.SendGetRequest<MetadataList<EpisodeObject>>(url);

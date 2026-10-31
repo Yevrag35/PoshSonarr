@@ -9,7 +9,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series;
 
 [Cmdlet(VerbsData.Update, "SonarrSeries", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
 [Alias("Set-SonarrSeries")]
-[MetadataCanPipe(Tag = Meta.SERIES)]
+[MetadataCanPipe(Tag = Meta.Series)]
 public sealed class UpdateSonarrSeriesCmdlet : SonarrApiCmdletBase
 {
 	List<SeriesObject> _list = null!;
@@ -40,7 +40,7 @@ public sealed class UpdateSonarrSeriesCmdlet : SonarrApiCmdletBase
 	}
 	protected override void End(IServiceProvider provider)
 	{
-		MetadataTag tag = provider.GetMetadataTag(Meta.SERIES);
+		MetadataTag tag = provider.GetMetadataTag(Meta.Series);
 
 		if (_list is null || _list.Count <= 0)
 		{

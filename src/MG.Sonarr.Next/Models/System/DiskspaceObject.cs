@@ -90,7 +90,7 @@ public sealed class DiskspaceObject : SonarrObject,
 	/// <returns>The resolver's tag for the disk space endpoint.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.DISK];
+		return resolver[Meta.Disk];
 	}
 
 	/// <summary>

@@ -159,10 +159,10 @@ public sealed class AddSeriesObject : SeriesObject,
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the tags.</param>
 	/// <param name="existing">The tag that the object already has, which the lookup result doesn't use.</param>
-	/// <returns>The <see cref="Meta.SERIES_ADD"/> tag from <paramref name="resolver"/>.</returns>
+	/// <returns>The <see cref="Meta.SeriesAdd"/> tag from <paramref name="resolver"/>.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.SERIES_ADD];
+		return resolver[Meta.SeriesAdd];
 	}
 
 	/// <summary>
@@ -179,18 +179,18 @@ public sealed class AddSeriesObject : SeriesObject,
 	protected override void OnDeserialized(bool alreadyCalled)
 	{
 		base.OnDeserialized(alreadyCalled);
-		this.Properties.RemoveMany(Constants.ID, "Added");
+		this.Properties.RemoveMany(Constants.Id, "Added");
 		this.Properties.Remove("LanguageProfileId");
 		this.Properties.Add(ReadOnlyNumberProperty.Create("LanguageProfileId", 1));
 
-		if (this.TryGetNonNullProperty(Constants.SERIES_TYPE, out string? seriesType))
+		if (this.TryGetNonNullProperty(Constants.SeriesType, out string? seriesType))
 		{
 			this.SeriesType = seriesType;
 		}
 
-		if (this.TryGetNonNullProperty(Constants.SEASONS, out object[]? array) && array.Length > 1)
+		if (this.TryGetNonNullProperty(Constants.Seasons, out object[]? array) && array.Length > 1)
 		{
-			this.Properties[Constants.USE_SEASON_FOLDER].Value = true;
+			this.Properties[Constants.UseSeasonFolder].Value = true;
 			this.UseSeasonFolders = true;
 		}
 	}

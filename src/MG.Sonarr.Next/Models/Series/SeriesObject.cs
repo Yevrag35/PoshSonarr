@@ -153,10 +153,10 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the tags.</param>
 	/// <param name="existing">The tag that the object already has, which the series doesn't use.</param>
-	/// <returns>The <see cref="Meta.SERIES"/> tag from <paramref name="resolver"/>.</returns>
+	/// <returns>The <see cref="Meta.Series"/> tag from <paramref name="resolver"/>.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.SERIES];
+		return resolver[Meta.Series];
 	}
 
 	/// <summary>
@@ -227,7 +227,7 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 	/// </returns>
 	internal override bool ShouldBeReadOnly(string propertyName, Type parentType)
 	{
-		if (Constants.PROPERTY_SERIES == propertyName && parentType.Equals(typeof(ManualImportObject)))
+		if (Constants.Property_Series == propertyName && parentType.Equals(typeof(ManualImportObject)))
 		{
 			return false;
 		}
@@ -245,7 +245,7 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 	/// <param name="overview">The series' overview, or <see langword="null"/>.</param>
 	private void TruncateOverview(string? overview)
 	{
-		PSPropertyInfo? existing = this.Properties[Constants.PROPERTY_SHORT_OVERVIEW];
+		PSPropertyInfo? existing = this.Properties[Constants.Property_ShortOverview];
 		if (existing is not null)
 		{
 			return;
@@ -253,12 +253,12 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 
 		if (string.IsNullOrWhiteSpace(overview) || overview.Length <= SHORT_OVERVIEW_LENGTH)
 		{
-			this.Properties.Add(new PSAliasProperty(Constants.PROPERTY_SHORT_OVERVIEW, OVERVIEW));
+			this.Properties.Add(new PSAliasProperty(Constants.Property_ShortOverview, OVERVIEW));
 			return;
 		}
 
 		ShortOverview shorted = ShortOverview.FromValue(overview, SHORT_OVERVIEW_LENGTH);
-		this.Properties.Add(new ReadOnlyStringProperty(Constants.PROPERTY_SHORT_OVERVIEW, shorted.Text));
+		this.Properties.Add(new ReadOnlyStringProperty(Constants.Property_ShortOverview, shorted.Text));
 	}
 
 	/// <summary>

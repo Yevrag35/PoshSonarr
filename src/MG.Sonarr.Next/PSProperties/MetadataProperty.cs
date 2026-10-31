@@ -45,7 +45,7 @@ public sealed class MetadataProperty : ReadOnlyProperty<MetadataTag>
 	/// </summary>
 	/// <param name="value">The metadata tag that the property holds.</param>
 	public MetadataProperty(MetadataTag value)
-		: base(MetadataResolver.META_PROPERTY_NAME)
+		: base(MetadataResolver.MetaPropertyName)
 	{
 		this.Tag = value;
 	}

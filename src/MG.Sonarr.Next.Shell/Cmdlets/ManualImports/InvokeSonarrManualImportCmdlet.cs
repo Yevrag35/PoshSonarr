@@ -8,7 +8,7 @@ using MG.Sonarr.Next.Shell.Exceptions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports;
 
 [Cmdlet(VerbsLifecycle.Invoke, "SonarrManualImport", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
-[MetadataCanPipe(Tag = Meta.MANUAL_IMPORT)]
+[MetadataCanPipe(Tag = Meta.ManualImport)]
 public class InvokeSonarrManualImportCmdlet : SonarrMetadataCmdlet
 {
 	public override bool CanDebugSerializeBefore => false;
@@ -22,7 +22,7 @@ public class InvokeSonarrManualImportCmdlet : SonarrMetadataCmdlet
 	private MetadataList<ManualImportObject> _list = null!;
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.COMMAND];
+		return resolver[Meta.Command];
 	}
 
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in nameof()")]

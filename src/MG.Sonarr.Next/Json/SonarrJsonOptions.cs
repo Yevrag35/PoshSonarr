@@ -299,8 +299,8 @@ public static class SonarrJsonDependencyInjection
 	private static string[] EnumerateIgnoreProperties()
 	{
 		return [
-			Constants.META_PROPERTY_NAME,
-			 Constants.PROPERTY_SHORT_OVERVIEW,
+			Constants.MetaPropertyName,
+			 Constants.Property_ShortOverview,
 		 ];
 	}
 

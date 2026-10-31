@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Renames;
@@ -10,10 +10,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands;
 [Cmdlet(VerbsLifecycle.Invoke, "SonarrRename", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
 	DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
 [Alias("Rename-SonarrEpisodeFile")]
-[MetadataCanPipe(Tag = Meta.CALENDAR)]
-[MetadataCanPipe(Tag = Meta.EPISODE)]
-[MetadataCanPipe(Tag = Meta.EPISODE_FILE)]
-[MetadataCanPipe(Tag = Meta.RENAMABLE)]
+[MetadataCanPipe(Tag = Meta.Calendar)]
+[MetadataCanPipe(Tag = Meta.Episode)]
+[MetadataCanPipe(Tag = Meta.EpisodeFile)]
+[MetadataCanPipe(Tag = Meta.Renamable)]
 public sealed class InvokeSonarrRenameCmdlet : SonarrCmdletBase
 {
 	List<IRenameFilePipeable> _renameables = null!;

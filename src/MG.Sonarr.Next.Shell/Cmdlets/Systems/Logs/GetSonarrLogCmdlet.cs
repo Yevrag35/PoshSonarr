@@ -90,6 +90,6 @@ public sealed class GetSonarrLogCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.LOG_ITEM];
+		return resolver[Meta.LogItem];
 	}
 }

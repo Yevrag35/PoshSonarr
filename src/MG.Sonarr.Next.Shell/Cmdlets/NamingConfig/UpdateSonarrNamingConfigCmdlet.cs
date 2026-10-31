@@ -14,7 +14,7 @@ public sealed class UpdateSonarrNamingConfigCmdlet : SonarrApiCmdletBase
 
 	protected override void Process(IServiceProvider provider)
 	{
-		var tag = provider.GetMetadataTag(Meta.NAMING_CONFIG);
+		var tag = provider.GetMetadataTag(Meta.NamingConfig);
 		string url = tag.GetUrlForId(this.InputObject.Id);
 
 		if (!this.ShouldProcess(url, "Update Naming Config"))

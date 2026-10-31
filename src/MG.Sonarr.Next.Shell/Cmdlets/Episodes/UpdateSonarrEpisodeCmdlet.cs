@@ -6,7 +6,7 @@ using MG.Sonarr.Next.Shell.Attributes;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes;
 
 [Cmdlet(VerbsData.Update, "SonarrEpisode", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Low)]
-[MetadataCanPipe(Tag = Meta.EPISODE)]
+[MetadataCanPipe(Tag = Meta.Episode)]
 public sealed class UpdateSonarrEpisodeCmdlet : SonarrApiCmdletBase
 {
 	[Parameter(Mandatory = true, ValueFromPipeline = true)]

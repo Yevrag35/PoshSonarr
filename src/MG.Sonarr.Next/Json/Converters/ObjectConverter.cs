@@ -170,7 +170,7 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 
 				if (reader.TokenType == JsonTokenType.Number
 					&&
-					Constants.ID.Equals(pn, StringComparison.OrdinalIgnoreCase))
+					Constants.Id.Equals(pn, StringComparison.OrdinalIgnoreCase))
 				{
 					//TODO: Move functionality into a read-only property key lookup operation.
 					pso.Properties.Add(new ReadOnlyNumberProperty<int>(pn, reader.GetInt32()));
@@ -316,15 +316,15 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 		Type parentType = typeof(TParent);
 		return pn switch
 		{
-			Constants.PROPERTY_DATA when parentType.Equals(typeof(HistoryObject)) => this.ReadPSObject<ReleaseObject>(ref reader, options),
-			Constants.PROPERTY_EPISODE => this.ReadPSObject<EpisodeObject>(ref reader, options),
-			Constants.PROPERTY_EPISODE_FILE => this.ReadPSObject<EpisodeFileObject>(ref reader, options),
-			Constants.PROPERTY_QUALITY when parentType.Equals(typeof(QualityRevisionObject))
+			Constants.Property_Data when parentType.Equals(typeof(HistoryObject)) => this.ReadPSObject<ReleaseObject>(ref reader, options),
+			Constants.Property_Episode => this.ReadPSObject<EpisodeObject>(ref reader, options),
+			Constants.Property_EpisodeFile => this.ReadPSObject<EpisodeFileObject>(ref reader, options),
+			Constants.Property_Quality when parentType.Equals(typeof(QualityRevisionObject))
 											||
 											parentType.Equals(typeof(QualityDefinitionObject)) => this.ReadPSObject<QualityObject>(ref reader, options),
-			Constants.PROPERTY_QUALITY when parentType.Equals(typeof(ManualImportObject)) => this.ReadPSObject<QualityRevisionObject>(ref reader, options),
-			Constants.PROPERTY_REVISION when parentType.Equals(typeof(QualityRevisionObject)) => this.ReadPSObject<RevisionObject>(ref reader, options),
-			Constants.PROPERTY_SERIES => this.ReadPSObject<SeriesObject>(ref reader, options),
+			Constants.Property_Quality when parentType.Equals(typeof(ManualImportObject)) => this.ReadPSObject<QualityRevisionObject>(ref reader, options),
+			Constants.Property_Revision when parentType.Equals(typeof(QualityRevisionObject)) => this.ReadPSObject<RevisionObject>(ref reader, options),
+			Constants.Property_Series => this.ReadPSObject<SeriesObject>(ref reader, options),
 			_ => this.ConvertToObject<PSObject>(
 								ref reader,
 								options,

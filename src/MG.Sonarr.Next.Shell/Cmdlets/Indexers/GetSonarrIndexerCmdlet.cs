@@ -24,7 +24,7 @@ public sealed class GetSonarrIndexerCmdlet : SonarrMetadataCmdlet
 	protected override int Capacity => 2;
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.INDEXER];
+		return resolver[Meta.Indexer];
 	}
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{

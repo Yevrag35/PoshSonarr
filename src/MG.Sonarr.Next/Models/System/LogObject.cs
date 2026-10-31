@@ -54,7 +54,7 @@ public sealed class LogObject : SonarrObject,
 	/// <returns>The resolver's tag for the log endpoint.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.LOG_ITEM];
+		return resolver[Meta.LogItem];
 	}
 
 	/// <summary>

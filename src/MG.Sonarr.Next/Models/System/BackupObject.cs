@@ -84,7 +84,7 @@ public sealed class BackupObject : IdSonarrObject<BackupObject>,
 	/// <returns>The resolver's tag for the backup endpoint.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.BACKUP];
+		return resolver[Meta.Backup];
 	}
 
 	/// <summary>

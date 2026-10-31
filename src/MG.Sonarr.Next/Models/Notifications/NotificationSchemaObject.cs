@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Models.Notifications;
 /// Represents a template from <c>/notification/schema</c> that a new notification connection is created from.
 /// </summary>
 /// <remarks>
-/// The object carries the <see cref="Meta.NOTIFICATION"/> tag. A new connection has no ID, so the template's <c>Id</c>
+/// The object carries the <see cref="Meta.Notification"/> tag. A new connection has no ID, so the template's <c>Id</c>
 /// property is removed once it's deserialized and again before it's serialized.
 /// </remarks>
 [SonarrObject]
@@ -47,10 +47,10 @@ public sealed class NotificationSchemaObject : TagUpdateObject<NotificationSchem
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	/// <param name="existing">The object's current tag, which the method ignores.</param>
-	/// <returns>The <see cref="Meta.NOTIFICATION"/> tag from <paramref name="resolver"/>.</returns>
+	/// <returns>The <see cref="Meta.Notification"/> tag from <paramref name="resolver"/>.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.NOTIFICATION];
+		return resolver[Meta.Notification];
 	}
 	/// <summary>
 	/// Finishes the template after it's deserialized, removing its <c>Id</c> property.

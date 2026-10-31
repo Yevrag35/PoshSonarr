@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Models.Config;
 /// Represents Sonarr's download client settings, the single object at <c>/config/downloadclient</c>.
 /// </summary>
 /// <remarks>
-/// The object carries the <see cref="Meta.DOWNLOAD_CLIENT_CONFIG"/> tag. Its <c>Id</c> property stays read-only in
+/// The object carries the <see cref="Meta.DownloadClientConfig"/> tag. Its <c>Id</c> property stays read-only in
 /// PowerShell, and <see cref="OnSerializing"/> rewrites it from <see cref="IdSonarrObject{TSelf}.Id"/> before the
 /// object is sent.
 /// </remarks>
@@ -42,10 +42,10 @@ public sealed class DownloadClientConfigObject : IdSonarrObject<DownloadClientCo
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	/// <param name="existing">The object's current tag, which the method ignores.</param>
-	/// <returns>The <see cref="Meta.DOWNLOAD_CLIENT_CONFIG"/> tag from <paramref name="resolver"/>.</returns>
+	/// <returns>The <see cref="Meta.DownloadClientConfig"/> tag from <paramref name="resolver"/>.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.DOWNLOAD_CLIENT_CONFIG];
+		return resolver[Meta.DownloadClientConfig];
 	}
 
 	/// <summary>

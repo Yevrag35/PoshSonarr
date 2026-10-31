@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs;
 
 [Cmdlet(VerbsData.Save, "SonarrLogFile", DefaultParameterSetName = "ByExplicitUrl")]
 [Alias("Download-SonarrLogFile")]
-[MetadataCanPipe(Tag = Meta.LOG_FILE)]
+[MetadataCanPipe(Tag = Meta.LogFile)]
 [OutputType(typeof(FileInfo))]
 public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
 {

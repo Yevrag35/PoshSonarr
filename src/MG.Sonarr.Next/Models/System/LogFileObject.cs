@@ -179,7 +179,7 @@ public sealed class LogFileObject : IdSonarrObject<LogFileObject>,
 	/// <returns>The resolver's tag for the log file endpoint.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.LOG_FILE];
+		return resolver[Meta.LogFile];
 	}
 
 	/// <summary>

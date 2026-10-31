@@ -221,10 +221,10 @@ public sealed class CommandObject : IdSonarrObject<CommandObject>,
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the tags.</param>
 	/// <param name="existing">The tag that the object already has, which the command doesn't use.</param>
-	/// <returns>The <see cref="Meta.COMMAND"/> tag from <paramref name="resolver"/>.</returns>
+	/// <returns>The <see cref="Meta.Command"/> tag from <paramref name="resolver"/>.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.COMMAND];
+		return resolver[Meta.Command];
 	}
 	/// <summary>
 	/// Holds the command's body back from PowerShell and copies the properties that the C# members keep.
@@ -241,7 +241,7 @@ public sealed class CommandObject : IdSonarrObject<CommandObject>,
 			this.Properties.Remove(BODY);
 		}
 
-		if (this.TryGetNonNullProperty(Constants.NAME, out string? name))
+		if (this.TryGetNonNullProperty(Constants.Name, out string? name))
 		{
 			this.Name = name;
 		}

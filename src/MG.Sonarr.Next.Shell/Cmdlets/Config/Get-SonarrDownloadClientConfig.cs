@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Config;
 using MG.Sonarr.Next.Shell.Extensions;
 
@@ -9,7 +9,7 @@ public sealed class GetSonarrDownloadClientConfig : SonarrApiCmdletBase
 {
 	protected override void Process(IServiceProvider provider)
 	{
-		MetadataTag tag = provider.GetMetadataTag(Meta.DOWNLOAD_CLIENT_CONFIG);
+		MetadataTag tag = provider.GetMetadataTag(Meta.DownloadClientConfig);
 		var response = this.SendGetRequest<DownloadClientConfigObject>(tag.UrlBase);
 		this.TryWriteObject(response);
 	}

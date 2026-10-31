@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Models.Media;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -6,7 +6,7 @@ using MG.Sonarr.Next.Shell.Extensions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.MediaManagement;
 
 [Cmdlet(VerbsData.Update, "SonarrMediaManagement", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
-[MetadataCanPipe(Tag = Meta.MEDIA_MANGEMENT)]
+[MetadataCanPipe(Tag = Meta.MediaManagement)]
 public sealed class UpdateSonarrMediaManagementCmdlet : SonarrApiCmdletBase
 {
 	[Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
@@ -19,7 +19,7 @@ public sealed class UpdateSonarrMediaManagementCmdlet : SonarrApiCmdletBase
 
 	protected override void Process(IServiceProvider provider)
 	{
-		var tag = provider.GetMetadataTag(Meta.MEDIA_MANGEMENT);
+		var tag = provider.GetMetadataTag(Meta.MediaManagement);
 		string url = tag.GetUrlForId(this.InputObject.Id);
 
 		if (!this.Force

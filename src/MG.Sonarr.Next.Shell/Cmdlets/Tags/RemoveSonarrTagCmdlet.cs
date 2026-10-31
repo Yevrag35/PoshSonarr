@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Tags;
 using MG.Sonarr.Next.Shell.Attributes;
@@ -8,7 +8,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags;
 [Cmdlet(VerbsCommon.Remove, "SonarrTag", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.High,
 	DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
 [Alias("Delete-SonarrTag")]
-[MetadataCanPipe(Tag = Meta.TAG)]
+[MetadataCanPipe(Tag = Meta.Tag)]
 public sealed class RemoveSonarrTagCmdlet : SonarrApiCmdletBase
 {
 	MetadataTag _tag = null!;
@@ -32,7 +32,7 @@ public sealed class RemoveSonarrTagCmdlet : SonarrApiCmdletBase
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_tag = provider.GetRequiredService<IMetadataResolver>()[Meta.TAG];
+		_tag = provider.GetRequiredService<IMetadataResolver>()[Meta.Tag];
 	}
 	protected override void Process(IServiceProvider provider)
 	{

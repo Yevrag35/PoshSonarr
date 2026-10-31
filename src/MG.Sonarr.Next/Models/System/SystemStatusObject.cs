@@ -55,7 +55,7 @@ public sealed class SystemStatusObject : SonarrObject,
 	/// <returns>The resolver's tag for the system status endpoint.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.STATUS];
+		return resolver[Meta.Status];
 	}
 
 	/// <summary>

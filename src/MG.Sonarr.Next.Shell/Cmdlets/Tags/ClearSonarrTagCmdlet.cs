@@ -11,12 +11,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags;
 
 [Cmdlet(VerbsCommon.Clear, "SonarrTag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
 	DefaultParameterSetName = "None")]
-[MetadataCanPipe(Tag = Meta.DELAY_PROFILE)]
-[MetadataCanPipe(Tag = Meta.DOWNLOAD_CLIENT)]
-[MetadataCanPipe(Tag = Meta.INDEXER)]
-[MetadataCanPipe(Tag = Meta.RELEASE_PROFILE)]
-[MetadataCanPipe(Tag = Meta.SERIES)]
-[MetadataCanPipe(Tag = Meta.SERIES_ADD)]
+[MetadataCanPipe(Tag = Meta.DelayProfile)]
+[MetadataCanPipe(Tag = Meta.DownloadClient)]
+[MetadataCanPipe(Tag = Meta.Indexer)]
+[MetadataCanPipe(Tag = Meta.ReleaseProfile)]
+[MetadataCanPipe(Tag = Meta.Series)]
+[MetadataCanPipe(Tag = Meta.SeriesAdd)]
 public sealed class ClearSonarrTagCmdlet : SonarrMetadataCmdlet
 {
 	static readonly string _namePropertyName = nameof(Name);
@@ -64,7 +64,7 @@ public sealed class ClearSonarrTagCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.TAG];
+		return resolver[Meta.Tag];
 	}
 
 	protected override void Begin(IServiceProvider provider)

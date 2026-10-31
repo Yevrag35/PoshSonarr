@@ -49,13 +49,13 @@ public sealed class LanguageProfileObject : IdSonarrObject<LanguageProfileObject
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	/// <param name="existing">The object's current tag, which this method ignores.</param>
-	/// <returns>The resolver's <see cref="Meta.LANGUAGE"/> tag.</returns>
+	/// <returns>The resolver's <see cref="Meta.LanguageProfile"/> tag.</returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="resolver"/> is null.</exception>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
 		ArgumentNullException.ThrowIfNull(resolver);
 
-		return resolver[Meta.LANGUAGE];
+		return resolver[Meta.LanguageProfile];
 	}
 
 	/// <summary>

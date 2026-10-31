@@ -60,10 +60,10 @@ public sealed class EpisodeFileObject : IdSonarrObject<EpisodeFileObject>,
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the tags.</param>
 	/// <param name="existing">The tag that the object already has, which the episode file doesn't use.</param>
-	/// <returns>The <see cref="Meta.EPISODE_FILE"/> tag from <paramref name="resolver"/>.</returns>
+	/// <returns>The <see cref="Meta.EpisodeFile"/> tag from <paramref name="resolver"/>.</returns>
 	protected override MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing)
 	{
-		return resolver[Meta.EPISODE_FILE];
+		return resolver[Meta.EpisodeFile];
 	}
 
 	/// <summary>

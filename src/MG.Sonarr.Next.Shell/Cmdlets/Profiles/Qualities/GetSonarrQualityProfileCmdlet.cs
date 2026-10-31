@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities;
 
 [Cmdlet(VerbsCommon.Get, "SonarrQualityProfile", DefaultParameterSetName = "ByProfileName")]
 [Alias("Get-SonarrProfile")]
-[MetadataCanPipe(Tag = Meta.SERIES)]
+[MetadataCanPipe(Tag = Meta.Series)]
 public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
 {
 	static readonly string _namePropertyName = nameof(Name);
@@ -44,7 +44,7 @@ public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.QUALITY_PROFILE];
+		return resolver[Meta.QualityProfile];
 	}
 
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]

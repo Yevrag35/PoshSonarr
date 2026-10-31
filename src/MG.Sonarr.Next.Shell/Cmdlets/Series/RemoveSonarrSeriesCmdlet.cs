@@ -8,7 +8,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series;
 
 [Cmdlet(VerbsCommon.Remove, "SonarrSeries", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
 [Alias("Delete-SonarrSeries")]
-[MetadataCanPipe(Tag = Meta.SERIES)]
+[MetadataCanPipe(Tag = Meta.Series)]
 public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
 {
 	QueryCol _col = null!;
@@ -39,7 +39,7 @@ public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.SERIES];
+		this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.Series];
 
 		_dict = this.GetPooledObject<SortedDictionary<int, string?>>();
 		_col = this.GetPooledObject<QueryCol>();

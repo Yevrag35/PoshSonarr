@@ -8,9 +8,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes;
 
 [Cmdlet(VerbsCommon.Remove, "SonarrEpisodeFile", SupportsShouldProcess = true)]
 [Alias("Delete-SonarrEpisodeFile")]
-[MetadataCanPipe(Tag = Meta.CALENDAR)]
-[MetadataCanPipe(Tag = Meta.EPISODE)]
-[MetadataCanPipe(Tag = Meta.EPISODE_FILE)]
+[MetadataCanPipe(Tag = Meta.Calendar)]
+[MetadataCanPipe(Tag = Meta.Episode)]
+[MetadataCanPipe(Tag = Meta.EpisodeFile)]
 public sealed class RemoveSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 {
 	SortedSet<int> _ids = null!;
@@ -29,7 +29,7 @@ public sealed class RemoveSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 	protected override int Capacity => 1;
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.EPISODE_FILE];
+		return resolver[Meta.EpisodeFile];
 	}
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
