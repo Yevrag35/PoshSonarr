@@ -1,5 +1,6 @@
 namespace MG.Sonarr.Next.Attributes;
 
-public abstract class AnalysisAttribute : Attribute
-{
-}
+/// <summary>
+/// Base class for attributes that are used for code analysis purposes.
+/// </summary>
+public abstract class AnalysisAttribute : Attribute;

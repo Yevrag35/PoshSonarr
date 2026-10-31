@@ -64,7 +64,7 @@ public static class ExpressionExtensions
 		MemberInfo member = memEx.Member;
 		MemberTypes enumValue = member.MemberType;
 
-		foreach (MemberTypes flag in enumValue.Enumerate())
+		foreach (MemberTypes flag in enumValue.EnumerateIntFlags())
 		{
 			switch (flag)
 			{
@@ -115,7 +115,7 @@ public static class ExpressionExtensions
 		}
 
 		MemberTypes enumValue = memEx.Member.MemberType;
-		FlagEnumerator<MemberTypes> enumerator = new(enumValue);
+		FlagEnumerator<MemberTypes, int> enumerator = new(enumValue);
 
 		while (enumerator.MoveNext())
 		{
