@@ -4,30 +4,35 @@ using System.Net;
 namespace MG.Sonarr.Next.Extensions;
 
 /// <summary>
-/// Provides an extension method that writes an <see cref="HttpStatusCode"/> as the status text that the module shows a
-/// person, such as <c>404 (Not Found)</c>.
+/// Provides an extension property that gets the status text that the module shows a person for an
+/// <see cref="HttpStatusCode"/>, such as <c>404 (Not Found)</c>.
 /// </summary>
 internal static class HttpStatusCodeExtensions
 {
 	/// <summary>
-	/// Gets the status text of a status code, which is its number followed by its standard reason phrase in parentheses.
+	/// Provides the status text of an <see cref="HttpStatusCode"/>.
 	/// </summary>
-	/// <remarks>
-	/// <para>The phrases are the ones that <see cref="HttpResponseMessage.ReasonPhrase"/> gives a response that carries
-	/// none of its own, which are also the ones that Sonarr sends. So <see cref="HttpStatusCode.BadRequest"/> is written
-	/// as <c>400 (Bad Request)</c>, not with its enum name, and a number that several enum names share, such as 302 for
-	/// <see cref="HttpStatusCode.Found"/> and <see cref="HttpStatusCode.Redirect"/>, has one text.</para>
-	/// <para>A code without a standard phrase, such as 306 or the 520 that a proxy can send, is written as its number
-	/// alone, formatted with <see cref="CultureInfo.CurrentCulture"/> as it is when the method is called. The code that
-	/// the module gives a request that got no response, 600, is written as <c>No response</c>.</para>
-	/// <para>Every other text is a string literal, so the method allocates only for a code without a standard
-	/// phrase.</para>
-	/// </remarks>
-	/// <param name="statusCode">The status code to write.</param>
-	/// <returns>The status text of <paramref name="statusCode"/>.</returns>
-	public static string ToResponseString(this HttpStatusCode statusCode)
+	/// <param name="statusCode">The status code that the property describes.</param>
+	extension(HttpStatusCode statusCode)
 	{
-		return (int)statusCode switch
+		/// <summary>
+		/// Gets the status text of <paramref name="statusCode"/>, which is its number followed by its standard reason
+		/// phrase in parentheses.
+		/// </summary>
+		/// <remarks>
+		/// <para>The phrases are the ones that <see cref="HttpResponseMessage.ReasonPhrase"/> gives a response that
+		/// carries none of its own, which are also the ones that Sonarr sends. So <see cref="HttpStatusCode.BadRequest"/>
+		/// is written as <c>400 (Bad Request)</c>, not with its enum name, and a number that several enum names share,
+		/// such as 302 for <see cref="HttpStatusCode.Found"/> and <see cref="HttpStatusCode.Redirect"/>, has one
+		/// text.</para>
+		/// <para>A code without a standard phrase, such as 306 or the 520 that a proxy can send, is written as its number
+		/// alone, formatted with <see cref="CultureInfo.CurrentCulture"/> as it is when the property is read. The code
+		/// that the module gives a request that got no response, 600, is written as <c>No response</c>.</para>
+		/// <para>Every other text is a string literal, so reading the property allocates only for a code without a
+		/// standard phrase.</para>
+		/// </remarks>
+		/// <value>The status text, such as <c>404 (Not Found)</c>.</value>
+		public string AsResponseString => (int)statusCode switch
 		{
 			100 => "100 (Continue)",
 			101 => "101 (Switching Protocols)",

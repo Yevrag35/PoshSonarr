@@ -69,7 +69,7 @@ public abstract class TimedCmdlet : PoolableCmdlet, IApiCmdlet
 		return Messenger.Format(
 			provider: CultureInfo.CurrentCulture,
 			format: Messages.Verbose_ReceivedResponse_Timed_Format,
-			elapsedTime, statusCode.ToResponseString());
+			elapsedTime, statusCode.AsResponseString);
 	}
 	public void WriteDebugPayload(string jsonPayload)
 	{

@@ -6,6 +6,7 @@
 		<RootNamespace>MG.Sonarr.Next</RootNamespace>
 		<Product>PoshSonarr Services Library .NET 10</Product>
 		<Description>The service library for the PoshSonarr PowerShell module.</Description>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

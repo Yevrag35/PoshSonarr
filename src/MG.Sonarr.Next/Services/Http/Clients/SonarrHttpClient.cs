@@ -447,7 +447,8 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	/// </summary>
 	/// <remarks>
 	/// The error's message is the <c>message</c> field of the response's JSON body, or else the status code as
-	/// <see cref="HttpStatusCodeExtensions.ToResponseString(HttpStatusCode)"/> writes it, such as <c>401 (Unauthorized)</c>.
+	/// <see cref="HttpStatusCodeExtensions.extension(HttpStatusCode).AsResponseString"/> gives it, such as
+	/// <c>401 (Unauthorized)</c>.
 	/// </remarks>
 	/// <typeparam name="T">The type of the value that the test would have returned.</typeparam>
 	/// <param name="url">The path of the test's endpoint, which the result reports when the response gives no URL.</param>
@@ -456,7 +457,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	/// <returns>A failed result with the category <see cref="ErrorCategory.ResourceUnavailable"/>.</returns>
 	private static SonarrClientResult<T> ParseMessage<T>(string url, HttpResponseMessage response, CancellationToken token)
 	{
-		string message = ReadMessage(response, token) ?? response.StatusCode.ToResponseString();
+		string message = ReadMessage(response, token) ?? response.StatusCode.AsResponseString;
 
 		var result =
 			SonarrClientResult.FromException<T>(new HttpResponseException(message, response), ErrorCategory.ResourceUnavailable, response.StatusCode, response);

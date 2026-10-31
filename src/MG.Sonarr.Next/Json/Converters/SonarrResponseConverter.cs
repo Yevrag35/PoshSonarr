@@ -95,7 +95,7 @@ public sealed class SonarrResponseConverter : ByPolicyJsonConverter<ISonarrRespo
 		Type errType = record.Exception.GetType();
 		writer.WriteString(policy, value.RequestUrl);
 		writer.WriteNumber(policy, "StatusCode"u8, (int)value.StatusCode);
-		writer.WriteString(policy, "Status"u8, value.StatusCode.ToResponseString());
+		writer.WriteString(policy, "Status"u8, value.StatusCode.AsResponseString);
 		writer.WriteString(policy, "ErrorType"u8, errType.GetName());
 		writer.WriteString(policy, record.Exception.GetBaseException().Message);
 	}
@@ -117,7 +117,7 @@ public sealed class SonarrResponseConverter : ByPolicyJsonConverter<ISonarrRespo
 
 		using SpanStringBuilder builder = new(stackalloc char[buffer_size]);
 		builder.Append(RECEIVED);
-		builder.Append(value.StatusCode.ToResponseString());
+		builder.Append(value.StatusCode.AsResponseString);
 
 		writer.WriteRawValue(builder.AsSpan(), skipInputValidation: true);
 	}

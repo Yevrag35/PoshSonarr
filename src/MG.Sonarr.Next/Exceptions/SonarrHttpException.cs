@@ -98,7 +98,7 @@ public sealed class SonarrHttpException : PoshSonarrException, IHttpRequestUri
 			return details;
 		}
 
-		string status = response.StatusCode.ToResponseString();
+		string status = response.StatusCode.AsResponseString;
 		ReadOnlySpan<char> trimmed = details.AsSpan().TrimEnd();
 
 		return trimmed.IsEmpty

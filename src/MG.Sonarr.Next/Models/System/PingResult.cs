@@ -49,7 +49,7 @@ public sealed class PingResult
 		this.Duration = TimeSpan.FromTicks(elapsedTicks);
 
 		this.Message = response.Value?.Response ?? string.Empty;
-		this.Status = response.StatusCode.ToResponseString();
+		this.Status = response.StatusCode.AsResponseString;
 		this.Error = response.Error;
 	}
 }
