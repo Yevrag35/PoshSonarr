@@ -37,6 +37,7 @@ public sealed class JsonSpanCamelCaseNamingPolicy : JsonNamingPolicy
 	/// </summary>
 	/// <param name="utf8Text">The span of UTF-8 bytes to convert.</param>
 	/// <returns>The camel case version of the span.</returns>
+	[SuppressMessage("Style", "CA1822", Justification = "This method is an instance method to match the signature of the base class.")]
 	public Span<byte> ConvertName(Span<byte> utf8Text)
 	{
 		FixCasing(utf8Text);
@@ -113,7 +114,9 @@ public sealed class JsonSpanCamelCaseNamingPolicy : JsonNamingPolicy
 			if (i > 0 && next < utf8Bytes.Length && !IsAsciiUpper(firstByte.Offset(next)))
 			{
 				// If the next byte is a space, lowercase the current byte before exiting.
-				if (firstByte.Offset(next) == (byte)' ')
+				const byte space = (byte)' ';
+
+				if (firstByte.Offset(next) == space)
 				{
 					firstByte.Offset(i) = ToAsciiLower(firstByte.Offset(i));
 				}

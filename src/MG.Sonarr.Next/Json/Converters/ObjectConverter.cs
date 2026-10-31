@@ -37,7 +37,7 @@ namespace MG.Sonarr.Next.Json.Converters;
 /// instance across threads.
 /// </para>
 /// </remarks>
-public sealed class ObjectConverter : ByPolicyJsonConverter<object>//JsonConverter<object>
+public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 {
 	/// <summary>
 	/// The longest string value, in UTF-8 bytes, whose characters are copied to the stack instead of a rented buffer.

@@ -6,7 +6,7 @@ namespace MG.Sonarr.Next.Json.Converters;
 /// <summary>
 /// Provides a write-only converter that writes a <see cref="PostCommand"/> as the body that starts a command.
 /// </summary>
-public sealed class PostCommandWriter : ByPolicyJsonConverter<PostCommand>//JsonConverter<PostCommand>
+public sealed class PostCommandWriter : ByPolicyJsonConverter<PostCommand>
 {
 	/// <summary>
 	/// Initializes a new <see cref="PostCommandWriter"/> instance that writes property names with the specified
