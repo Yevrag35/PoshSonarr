@@ -201,7 +201,7 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 
 		if (this.HasParameter(this.SortDirection))
 		{
-			_parameters.Add(PagingConstants.SortDirection, this.SortDirection, this.SortDirection.GetLength());
+			_parameters.Add(PagingConstants.SortDirection, this.SortDirection, this.SortDirection.Length);
 		}
 
 		_parameters.Add(PagingConstants.SortKey, this.SortKey);
