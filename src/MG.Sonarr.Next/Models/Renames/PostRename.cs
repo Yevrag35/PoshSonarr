@@ -44,8 +44,8 @@ public sealed class PostRename
 	/// <summary>
 	/// Gets the command's name.
 	/// </summary>
-	/// <value>Always <see cref="CommandStrings.RENAME_FILES"/>.</value>
-	public string Name { get; } = CommandStrings.RENAME_FILES;
+		/// <value>Always <see cref="CommandStrings.RenameFiles"/>.</value>
+	public string Name { get; } = CommandStrings.RenameFiles;
 	/// <summary>
 	/// Gets the ID of the series whose files are renamed.
 	/// </summary>

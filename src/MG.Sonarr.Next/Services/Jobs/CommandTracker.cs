@@ -70,8 +70,8 @@ file sealed class CommandTracker : ICommandTracker
 
 		PostCommand post = new()
 		{
-			CommandName = CommandStrings.COMMAND_RSS_SYNC,
-			Name = CommandStrings.RSS_SYNC,
+			CommandName = CommandStrings.RssSyncCommand,
+			Name = CommandStrings.RssSync,
 			Priority = priority,
 			UpdateScheduledTask = updateScheduledTask,
 		};

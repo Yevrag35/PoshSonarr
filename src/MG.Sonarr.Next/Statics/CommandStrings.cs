@@ -3,21 +3,20 @@ namespace MG.Sonarr.Next;
 /// <summary>
 /// Provides Sonarr command name constants used for command submission.
 /// </summary>
-public static class CommandStrings
+internal static class CommandStrings
 {
 	/// <summary>
 	/// The Sonarr display command name for an RSS sync command.
 	/// </summary>
-	public static readonly string COMMAND_RSS_SYNC = "Rss Sync";
+	internal const string RssSyncCommand = "Rss Sync";
 
 	/// <summary>
 	/// The Sonarr command name for file rename operations.
 	/// </summary>
-	public static readonly string RENAME_FILES = "RenameFiles";
+	internal const string RenameFiles = "RenameFiles";
 
 	/// <summary>
 	/// The Sonarr command name for RSS sync operations.
 	/// </summary>
-	public static readonly string RSS_SYNC = "RssSync";
-
+	internal const string RssSync = "RssSync";
 }
