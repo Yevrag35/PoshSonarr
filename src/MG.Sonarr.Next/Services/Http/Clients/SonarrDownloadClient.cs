@@ -8,19 +8,94 @@ using System.Net;
 
 namespace MG.Sonarr.Next.Services.Http.Clients;
 
+/// <summary>
+/// Provides methods that save a file that Sonarr serves, such as a backup or a log file, to a path.
+/// </summary>
+/// <remarks>
+/// <para>
+/// A relative download URL gets the connection's URL base in front of it, unless it starts with the base already, in
+/// any case. An absolute URL goes out unchanged.
+/// </para>
+/// <para>
+/// A response whose status isn't a success gives an error result, and nothing is written, since the body of such a
+/// response isn't the file.
+/// </para>
+/// <para>
+/// An instance takes the cmdlet of the DI scope that resolves it, so resolve it from a scope, not from the root provider.
+/// </para>
+/// </remarks>
 public interface ISonarrDownloadClient
 {
+	/// <summary>
+	/// Downloads the file at the specified URL to the specified path asynchronously.
+	/// </summary>
+	/// <remarks>
+	/// A server whose authentication needs credentials fails the download, since this overload sends none.
+	/// </remarks>
+	/// <param name="url">The download URL that Sonarr gave, relative to the server or absolute.</param>
+	/// <param name="path">The path of the file to write, which the method creates or overwrites.</param>
+	/// <param name="token">A token that cancels the download.</param>
+	/// <returns>
+	/// A task that completes with a result that holds <paramref name="path"/> once the file is written, or an error when the
+	/// download fails.
+	/// </returns>
 	Task<SonarrClientResult<string>> DownloadToPathAsync(string url, string path, CancellationToken token = default);
+	/// <summary>
+	/// Downloads the file at the specified URL to the specified path asynchronously, with the specified credentials for a
+	/// server whose authentication needs them.
+	/// </summary>
+	/// <remarks>
+	/// The credentials go out only when the server's authentication type, which the connection test stored, needs them:
+	/// in an <c>Authorization: Basic</c> header for Basic authentication, or in a login to the server's login page for
+	/// forms authentication.
+	/// </remarks>
+	/// <param name="url">The download URL that Sonarr gave, relative to the server or absolute.</param>
+	/// <param name="path">The path of the file to write, which the method creates or overwrites.</param>
+	/// <param name="credential">The credentials to authenticate with, or <see langword="null"/> to send none.</param>
+	/// <param name="token">A token that cancels the download.</param>
+	/// <returns>
+	/// A task that completes with a result that holds <paramref name="path"/> once the file is written, or an error when the
+	/// download fails.
+	/// </returns>
 	Task<SonarrClientResult<string>> DownloadToPathAsync(string url, string path, NetworkCredential? credential, CancellationToken token = default);
 }
 
+/// <summary>
+/// Provides the <see cref="ISonarrDownloadClient"/> that downloads a connection's files through its typed
+/// <see cref="HttpClient"/>.
+/// </summary>
+/// <remarks>
+/// The client's handler chain has no <see cref="PathHandler"/>, so the client puts the URL base in front of a relative
+/// URL itself.
+/// </remarks>
 internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 {
+	/// <summary>
+	/// The connection's URL base, with its leading slash and without its trailing one, or an empty string when the
+	/// connection has none.
+	/// </summary>
 	readonly string _basePath;
+	/// <summary>
+	/// The typed client that sends the download requests.
+	/// </summary>
 	readonly HttpClient _client;
+	/// <summary>
+	/// The accessor that holds the cmdlet of the scope that resolved the client.
+	/// </summary>
 	readonly ApiCmdletAccessor _cmdletAccessor;
+	/// <summary>
+	/// The factory that each request message opens its scope from.
+	/// </summary>
 	readonly IServiceScopeFactory _scopeFactory;
 
+	/// <summary>
+	/// Initializes a new <see cref="SonarrDownloadClient"/> instance with the specified typed client and the connection's
+	/// services.
+	/// </summary>
+	/// <param name="client">The typed client that sends the download requests.</param>
+	/// <param name="settings">The connection's settings, whose service URI gives the URL base.</param>
+	/// <param name="cmdletAccessor">The accessor of the resolving scope, which holds the scope's cmdlet.</param>
+	/// <param name="scopeFactory">The factory that each request message opens its scope from.</param>
 	public SonarrDownloadClient(HttpClient client, IConnectionSettings settings, ApiCmdletAccessor cmdletAccessor, IServiceScopeFactory scopeFactory)
 	{
 		_basePath = settings.ServiceUri.AbsolutePath.TrimEnd('/');
@@ -29,12 +104,14 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 		_scopeFactory = scopeFactory;
 	}
 
+	/// <inheritdoc/>
 	public async Task<SonarrClientResult<string>> DownloadToPathAsync(string url, string path, CancellationToken token = default)
 	{
 		using ApiKeyRequestMessage msg = new(HttpMethod.Get, this.AddUrlBase(url), _scopeFactory);
 
 		return await this.DownloadAsync(msg, url, path, token).ConfigureAwait(false);
 	}
+	/// <inheritdoc/>
 	public async Task<SonarrClientResult<string>> DownloadToPathAsync(string url, string path, NetworkCredential? credential, CancellationToken token = default)
 	{
 		using AuthedRequestMessage msg = new(HttpMethod.Get, this.AddUrlBase(url), credential, _scopeFactory);
@@ -88,6 +165,7 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 			&& (path.Length == baseSegments.Length || path[baseSegments.Length] == '/');
 	}
 
+	//BUG: It catches only SonarrHttpException, so a refused connection, a timeout, a cancellation, or a path that can't be written throws out of the client instead of returning an error result.
 	/// <summary>
 	/// Sends the specified download request and writes the file that the response holds to a path.
 	/// </summary>
@@ -153,6 +231,20 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 		return result;
 	}
 
+	/// <summary>
+	/// Writes the body of the specified response to a file.
+	/// </summary>
+	/// <remarks>
+	/// A body that is known to be empty writes nothing, since it holds no file. The method creates the file, or overwrites
+	/// one that exists, and holds it open without sharing while it writes.
+	/// </remarks>
+	/// <param name="response">The successful response whose body is the file.</param>
+	/// <param name="path">The path of the file to write.</param>
+	/// <param name="token">A token that cancels reading the body and writing the file.</param>
+	/// <returns>
+	/// A task that completes with <see langword="true"/> if the file was written; otherwise, <see langword="false"/>, when
+	/// the body is empty.
+	/// </returns>
 	private static async Task<bool> WriteFileAsync(HttpResponseMessage response, string path, CancellationToken token)
 	{
 		Stream stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
@@ -173,8 +265,29 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 	}
 }
 
+/// <summary>
+/// Provides the registration of the module's <see cref="ISonarrDownloadClient"/>.
+/// </summary>
 internal static class SonarrDownloadClientDependencyInjection
 {
+	/// <summary>
+	/// Registers <see cref="SonarrDownloadClient"/> as the typed <see cref="ISonarrDownloadClient"/>, with
+	/// <see cref="AuthHandler"/>.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// A request passes through <see cref="VerboseHandler"/>, <see cref="DebugSerializeHandler"/>, and
+	/// <see cref="AuthHandler"/>, in that order, before <see cref="SonarrClientHandler"/> sends it. The typed client takes
+	/// the connection's service URI as its base address and its timeout as its timeout, and sends the API key and the
+	/// module's user agent on every request.
+	/// </para>
+	/// <para>
+	/// The method registers neither <see cref="VerboseHandler"/>, <see cref="DebugSerializeHandler"/>, nor
+	/// <see cref="SonarrClientHandler"/>, so the caller registers them.
+	/// </para>
+	/// </remarks>
+	/// <param name="services">The service collection to add the registration to.</param>
+	/// <returns><paramref name="services"/>, so that calls can be chained.</returns>
 	internal static IServiceCollection AddSonarrDownloadClient(this IServiceCollection services)
 	{
 		services
