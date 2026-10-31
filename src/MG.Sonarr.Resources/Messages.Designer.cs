@@ -97,16 +97,7 @@ namespace MG.Sonarr.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Received response -&gt; {0} ({1}).
-        /// </summary>
-        public static string Verbose_ReceivedResponse_Format {
-            get {
-                return ResourceManager.GetString("Verbose_ReceivedResponse_Format", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Received response after {0} - {1} ({2}).
+        ///   Looks up a localized string similar to Received response after {0} - {1}.
         /// </summary>
         public static string Verbose_ReceivedResponse_Timed_Format {
             get {

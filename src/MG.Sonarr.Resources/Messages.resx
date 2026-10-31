@@ -123,18 +123,13 @@
   <data name="Timer_Unit_Seconds" xml:space="preserve">
     <value>s</value>
   </data>
-  <data name="Verbose_ReceivedResponse_Format" xml:space="preserve">
-    <value>Received response -&gt; {0} ({1})</value>
-    <comment>{0} - Status code integer
-{1} - Status code text</comment>
-  </data>
   <data name="Verbose_SendingRequest_Format" xml:space="preserve">
     <value>Sending {0} request -&gt; {1}</value>
     <comment>{0} - HTTP Method, {1} - Request URI</comment>
   </data>
   <data name="Verbose_ReceivedResponse_Timed_Format" xml:space="preserve">
-    <value>Received response after {0} - {1} ({2})</value>
-    <comment>{0} - Elapsed time value, {1} - Status code integer, {2} - Status code text</comment>
+    <value>Received response after {0} - {1}</value>
+    <comment>{0} - Elapsed time value, {1} - Status text, such as 404 (Not Found)</comment>
   </data>
   <data name="Debug_JSONResponse_Preamble" xml:space="preserve">
     <value>HTTP Response (size in bytes: {0}) -&gt; {1}</value>

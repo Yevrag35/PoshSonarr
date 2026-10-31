@@ -310,7 +310,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		}
 		catch (Exception e)
 		{
-			return SonarrClientResult.FromException<T>(e, ErrorCategory.ConnectionError, response?.StatusCode ?? (HttpStatusCode)599, response);
+			return SonarrClientResult.FromException<T>(e, ErrorCategory.ConnectionError, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
 		}
 		finally
 		{

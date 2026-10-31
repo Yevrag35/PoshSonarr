@@ -1,4 +1,5 @@
 using MG.Sonarr.Next.Exceptions;
+using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Strings;
@@ -57,12 +58,18 @@ public abstract class TimedCmdlet : PoolableCmdlet, IApiCmdlet
 		}
 	}
 
+	/// <summary>
+	/// Builds the verbose line that reports a response, with the time that the request took and the response's status.
+	/// </summary>
+	/// <param name="elapsedTime">The time since the timer started.</param>
+	/// <param name="statusCode">The status code of the response.</param>
+	/// <returns>The line, such as <c>Received response after 25ms - 404 (Not Found)</c>.</returns>
 	private static string GetAfterMessage(TimedValue elapsedTime, HttpStatusCode statusCode)
 	{
 		return Messenger.Format(
 			provider: CultureInfo.CurrentCulture,
 			format: Messages.Verbose_ReceivedResponse_Timed_Format,
-			elapsedTime, (int)statusCode, statusCode);
+			elapsedTime, statusCode.ToResponseString());
 	}
 	public void WriteDebugPayload(string jsonPayload)
 	{

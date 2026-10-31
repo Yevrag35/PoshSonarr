@@ -66,6 +66,24 @@ public sealed class SonarrHttpException : PoshSonarrException, IHttpRequestUri
 		this.Headers = ParseResponseHeaders(response);
 	}
 
+	/// <summary>
+	/// Builds the exception's message from the status of the response and the details of the failure.
+	/// </summary>
+	/// <remarks>
+	/// <para>The details are the messages of the server's errors, one per line, or else the innermost exception's
+	/// message, or else a general message.</para>
+	/// <para>With a response, the message is the response's status text, such as <c>400 (Bad Request)</c>, then a colon
+	/// and the details without their trailing whitespace, or the status text alone when the details are empty or only
+	/// whitespace. Without one, the message is the details.</para>
+	/// </remarks>
+	/// <param name="request">The request that failed.</param>
+	/// <param name="response">The response to the request, or <see langword="null"/> when there was none.</param>
+	/// <param name="inner">The exception that caused the failure, or <see langword="null"/>.</param>
+	/// <param name="errors">The errors that the server's response reported.</param>
+	/// <param name="requestUri">
+	/// When this method returns, the URL of <paramref name="request"/>, or <see langword="null"/> when it has none.
+	/// </param>
+	/// <returns>The exception's message.</returns>
 	private static string GetMessage(HttpRequestMessage request, HttpResponseMessage? response, Exception? inner, IErrorCollection errors, out string? requestUri)
 	{
 		requestUri = GetRequestUri(request);
@@ -75,9 +93,17 @@ public sealed class SonarrHttpException : PoshSonarrException, IHttpRequestUri
 				: inner.GetBaseException().Message
 			: errors.BuildMessage();
 
-		return response is not null
-			? $"{response.StatusCode.ToResponseString()}: {details}".TrimEnd().TrimEnd(':')
-			: details;
+		if (response is null)
+		{
+			return details;
+		}
+
+		string status = response.StatusCode.ToResponseString();
+		ReadOnlySpan<char> trimmed = details.AsSpan().TrimEnd();
+
+		return trimmed.IsEmpty
+			? status
+			: $"{status}: {trimmed}";
 	}
 	private static string? GetRequestUri(HttpRequestMessage request)
 	{

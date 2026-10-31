@@ -1,7 +1,5 @@
-using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Services.Http;
 using System.Management.Automation;
-using System.Net;
 
 namespace MG.Sonarr.Next.Models.System;
 
@@ -29,8 +27,9 @@ public sealed class PingResult
 	/// Gets the HTTP status of the ping's answer.
 	/// </summary>
 	/// <value>
-	/// The status code's number followed by its name in parentheses, such as <c>200 (OK)</c>, or only the name for a
-	/// code that's below 0 or above 999.
+	/// The status code's number followed by its standard reason phrase in parentheses, such as <c>200 (OK)</c> or
+	/// <c>404 (Not Found)</c>, the number alone for a code without a standard phrase, or <c>No response</c> when the ping
+	/// got no response.
 	/// </value>
 	public string Status { get; }
 	/// <summary>
@@ -50,34 +49,7 @@ public sealed class PingResult
 		this.Duration = TimeSpan.FromTicks(elapsedTicks);
 
 		this.Message = response.Value?.Response ?? string.Empty;
-		this.Status = GetHttpStatusString(response.StatusCode);
+		this.Status = response.StatusCode.ToResponseString();
 		this.Error = response.Error;
-	}
-
-	/// <summary>
-	/// Formats a status code as its number followed by its name in parentheses.
-	/// </summary>
-	/// <param name="code">The status code to format.</param>
-	/// <returns>
-	/// The code's number and name, such as <c>404 (NotFound)</c>, or only the name for a code that's below 0 or above
-	/// 999.
-	/// </returns>
-	private static string GetHttpStatusString(HttpStatusCode code)
-	{
-		string codeStr = code.ToString();
-		int asInt = (int)code;
-
-		if (asInt > 999 || asInt < 0)
-		{
-			return codeStr;
-		}
-
-		using SpanStringBuilder builder = new(codeStr.Length + 6);
-		builder.Append(asInt, LengthConstants.INT_MAX, format: default, Statics.DefaultProvider);
-		builder.AppendChars(' ', '(');
-		builder.Append(codeStr);
-		builder.Append(')');
-
-		return builder.ToString();
 	}
 }

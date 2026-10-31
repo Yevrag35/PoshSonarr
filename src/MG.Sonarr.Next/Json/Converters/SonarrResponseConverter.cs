@@ -53,10 +53,10 @@ public sealed class SonarrResponseConverter : ByPolicyJsonConverter<ISonarrRespo
 	/// Writes the outcome of a request.
 	/// </summary>
 	/// <remarks>
-	/// A failed request is written as an object with its request URL, numeric and named status code, exception type,
-	/// and the innermost exception's message. A successful one is written as the text
-	/// <c>Received response -&gt; &lt;code&gt; (&lt;name&gt;)</c>, and a <see langword="null"/> response as an empty
-	/// object.
+	/// A failed request is written as an object with its request URL, its numeric status code, its status text, such as
+	/// <c>404 (Not Found)</c>, its exception type, and the innermost exception's message. A successful one is written as
+	/// the text <c>Received response -&gt; </c> followed by its status text, such as
+	/// <c>Received response -&gt; 200 (OK)</c>, and a <see langword="null"/> response as an empty object.
 	/// </remarks>
 	/// <param name="writer">The writer to write the outcome to.</param>
 	/// <param name="value">The outcome to write.</param>
@@ -92,12 +92,10 @@ public sealed class SonarrResponseConverter : ByPolicyJsonConverter<ISonarrRespo
 	/// <param name="policy">The naming policy that property names are written with.</param>
 	private static void WriteAsError(Utf8JsonWriter writer, ErrorRecord record, ISonarrResponse value, WorkingNamingPolicy policy)
 	{
-		const int max_stackalloc = 128;
-
 		Type errType = record.Exception.GetType();
 		writer.WriteString(policy, value.RequestUrl);
 		writer.WriteNumber(policy, "StatusCode"u8, (int)value.StatusCode);
-		writer.WriteFormattable(policy, "Status"u8, value.StatusCode, max_stackalloc);
+		writer.WriteString(policy, "Status"u8, value.StatusCode.ToResponseString());
 		writer.WriteString(policy, "ErrorType"u8, errType.GetName());
 		writer.WriteString(policy, record.Exception.GetBaseException().Message);
 	}
@@ -119,10 +117,7 @@ public sealed class SonarrResponseConverter : ByPolicyJsonConverter<ISonarrRespo
 
 		using SpanStringBuilder builder = new(stackalloc char[buffer_size]);
 		builder.Append(RECEIVED);
-		builder.Append((int)value.StatusCode, LengthConstants.INT_MAX);
-		builder.AppendChars(' ', '(');
-		builder.Append(value.StatusCode);
-		builder.Append(')');
+		builder.Append(value.StatusCode.ToResponseString());
 
 		writer.WriteRawValue(builder.AsSpan(), skipInputValidation: true);
 	}

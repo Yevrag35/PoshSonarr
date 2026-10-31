@@ -1,120 +1,96 @@
-using MG.Sonarr.Next.Extensions.Strings;
-using System.Collections.ObjectModel;
+using MG.Sonarr.Next.Services.Http.Handlers;
 using System.Net;
 
 namespace MG.Sonarr.Next.Extensions;
 
 /// <summary>
-/// Provides extension methods that write an <see cref="HttpStatusCode"/> as response text, such as
-/// <c>400 (BadRequest)</c>.
+/// Provides an extension method that writes an <see cref="HttpStatusCode"/> as the status text that the module shows a
+/// person, such as <c>404 (Not Found)</c>.
 /// </summary>
-/// <remarks>
-/// The text for every code that <see cref="HttpStatusCode"/> names is built once, on first use, and cached.
-/// </remarks>
-public static class HttpStatusCodeExtensions
+internal static class HttpStatusCodeExtensions
 {
-	#region CACHING
 	/// <summary>
-	/// The cached response text of each named status code, keyed by its number.
-	/// </summary>
-	static readonly Lazy<ReadOnlyDictionary<int, string>> _codes = new(GetLookupCodes);
-	/// <summary>
-	/// Builds the response text of every status code that <see cref="HttpStatusCode"/> names.
+	/// Gets the status text of a status code, which is its number followed by its standard reason phrase in parentheses.
 	/// </summary>
 	/// <remarks>
-	/// A number that several names share, such as 302 for <see cref="HttpStatusCode.Found"/> and
-	/// <see cref="HttpStatusCode.Redirect"/>, gets one entry, with the name that <see cref="Enum.ToString()"/> gives
-	/// it.
-	/// </remarks>
-	/// <returns>A read-only dictionary of response text, keyed by status code number.</returns>
-	static ReadOnlyDictionary<int, string> GetLookupCodes()
-	{
-		HttpStatusCode[] codes = Enum.GetValues<HttpStatusCode>();
-		Dictionary<int, string> dict = new(codes.Length);
-
-		foreach (HttpStatusCode code in codes)
-		{
-			_ = dict.TryAdd((int)code, ToResponseStringFormat(in code));
-		}
-
-		return new ReadOnlyDictionary<int, string>(dict);
-	}
-	/// <summary>
-	/// Writes a named status code as its number, a space, and its name in parentheses.
-	/// </summary>
-	/// <remarks>
-	/// The text's length assumes a three-digit number, which every named status code has.
-	/// </remarks>
-	/// <param name="statusCode">The status code to write, which <see cref="HttpStatusCode"/> names.</param>
-	/// <returns>The response text, such as <c>400 (BadRequest)</c>.</returns>
-	static string ToResponseStringFormat(in HttpStatusCode statusCode)
-	{
-
-		string codeStr = statusCode.ToString();
-
-		return string.Create(codeStr.Length + 6, (codeStr, statusCode), (chars, state) =>
-		{
-			_ = ((int)state.statusCode).TryFormat(chars, out int written, default, Statics.DefaultProvider);
-			written += chars.Slice(written).Push(' ', '(');
-
-			written = codeStr.CopyToSlice(chars, written);
-			chars[written++] = ')';
-
-			Debug.Assert(written == chars.Length, "All characters should have been written.");
-		});
-	}
-
-	#endregion
-
-	/// <summary>
-	/// Gets the response text of a status code, which is its number followed by its name in parentheses.
-	/// </summary>
-	/// <remarks>
-	/// <para><see cref="HttpStatusCode.BadRequest"/> is written as <c>400 (BadRequest)</c>, and
-	/// <see cref="HttpStatusCode.OK"/> as <c>200 (OK)</c>.</para>
-	/// <para>A code that <see cref="HttpStatusCode"/> doesn't name, such as 520, is written as its number alone.</para>
+	/// <para>The phrases are the ones that <see cref="HttpResponseMessage.ReasonPhrase"/> gives a response that carries
+	/// none of its own, which are also the ones that Sonarr sends. So <see cref="HttpStatusCode.BadRequest"/> is written
+	/// as <c>400 (Bad Request)</c>, not with its enum name, and a number that several enum names share, such as 302 for
+	/// <see cref="HttpStatusCode.Found"/> and <see cref="HttpStatusCode.Redirect"/>, has one text.</para>
+	/// <para>A code without a standard phrase, such as 306 or the 520 that a proxy can send, is written as its number
+	/// alone, formatted with <see cref="CultureInfo.CurrentCulture"/> as it is when the method is called. The code that
+	/// the module gives a request that got no response, 600, is written as <c>No response</c>.</para>
+	/// <para>Every other text is a string literal, so the method allocates only for a code without a standard
+	/// phrase.</para>
 	/// </remarks>
 	/// <param name="statusCode">The status code to write.</param>
-	/// <returns>The response text of <paramref name="statusCode"/>.</returns>
+	/// <returns>The status text of <paramref name="statusCode"/>.</returns>
 	public static string ToResponseString(this HttpStatusCode statusCode)
 	{
-		return _codes.Value.TryGetValue((int)statusCode, out string? value)
-			? value
-			: statusCode.ToString();
-	}
-
-	/// <summary>
-	/// Tries to write the response text of a status code into a span of characters.
-	/// </summary>
-	/// <remarks>
-	/// <para>The text is the one that <see cref="ToResponseString(HttpStatusCode)"/> returns:
-	/// <see cref="HttpStatusCode.BadRequest"/> is written as <c>400 (BadRequest)</c>, and a code that
-	/// <see cref="HttpStatusCode"/> doesn't name, such as 520, as its number alone.</para>
-	/// </remarks>
-	/// <param name="statusCode">The status code to write.</param>
-	/// <param name="destination">The span to write the text into.</param>
-	/// <param name="charsWritten">
-	/// When this method returns, the number of characters written into <paramref name="destination"/>, or 0 when it
-	/// returns <see langword="false"/>.
-	/// </param>
-	/// <returns>
-	/// <see langword="true"/> if the text was written; <see langword="false"/> if <paramref name="destination"/> is
-	/// too short to hold it.
-	/// </returns>
-	public static bool TryFormatAsResponse(this HttpStatusCode statusCode, Span<char> destination, out int charsWritten)
-	{
-		if (!_codes.Value.TryGetValue((int)statusCode, out string? value))
+		return (int)statusCode switch
 		{
-			return Enum.TryFormat(statusCode, destination, out charsWritten);
-		}
-
-		charsWritten = 0;
-		bool result = value.TryCopyTo(destination);
-		if (result)
-		{
-			charsWritten += value.Length;
-		}
-
-		return result;
+			100 => "100 (Continue)",
+			101 => "101 (Switching Protocols)",
+			102 => "102 (Processing)",
+			103 => "103 (Early Hints)",
+			200 => "200 (OK)",
+			201 => "201 (Created)",
+			202 => "202 (Accepted)",
+			203 => "203 (Non-Authoritative Information)",
+			204 => "204 (No Content)",
+			205 => "205 (Reset Content)",
+			206 => "206 (Partial Content)",
+			207 => "207 (Multi-Status)",
+			208 => "208 (Already Reported)",
+			226 => "226 (IM Used)",
+			300 => "300 (Multiple Choices)",
+			301 => "301 (Moved Permanently)",
+			302 => "302 (Found)",
+			303 => "303 (See Other)",
+			304 => "304 (Not Modified)",
+			305 => "305 (Use Proxy)",
+			307 => "307 (Temporary Redirect)",
+			308 => "308 (Permanent Redirect)",
+			400 => "400 (Bad Request)",
+			401 => "401 (Unauthorized)",
+			402 => "402 (Payment Required)",
+			403 => "403 (Forbidden)",
+			404 => "404 (Not Found)",
+			405 => "405 (Method Not Allowed)",
+			406 => "406 (Not Acceptable)",
+			407 => "407 (Proxy Authentication Required)",
+			408 => "408 (Request Timeout)",
+			409 => "409 (Conflict)",
+			410 => "410 (Gone)",
+			411 => "411 (Length Required)",
+			412 => "412 (Precondition Failed)",
+			413 => "413 (Request Entity Too Large)",
+			414 => "414 (Request-Uri Too Long)",
+			415 => "415 (Unsupported Media Type)",
+			416 => "416 (Requested Range Not Satisfiable)",
+			417 => "417 (Expectation Failed)",
+			421 => "421 (Misdirected Request)",
+			422 => "422 (Unprocessable Entity)",
+			423 => "423 (Locked)",
+			424 => "424 (Failed Dependency)",
+			426 => "426 (Upgrade Required)",
+			428 => "428 (Precondition Required)",
+			429 => "429 (Too Many Requests)",
+			431 => "431 (Request Header Fields Too Large)",
+			451 => "451 (Unavailable For Legal Reasons)",
+			500 => "500 (Internal Server Error)",
+			501 => "501 (Not Implemented)",
+			502 => "502 (Bad Gateway)",
+			503 => "503 (Service Unavailable)",
+			504 => "504 (Gateway Timeout)",
+			505 => "505 (Http Version Not Supported)",
+			506 => "506 (Variant Also Negotiates)",
+			507 => "507 (Insufficient Storage)",
+			508 => "508 (Loop Detected)",
+			510 => "510 (Not Extended)",
+			511 => "511 (Network Authentication Required)",
+			(int)ErrorHandler.NoResponseCode => "No response",
+			_ => ((int)statusCode).ToString(CultureInfo.CurrentCulture),
+		};
 	}
 }

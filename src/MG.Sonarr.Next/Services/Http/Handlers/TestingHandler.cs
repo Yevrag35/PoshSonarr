@@ -114,7 +114,6 @@ public sealed class TestingHandler : DelegatingHandler
 				Message = NOT_API_MESSAGE,
 			}, options: _options),
 			RequestMessage = request,
-			ReasonPhrase = nameof(HttpStatusCode.ServiceUnavailable),
 		};
 	}
 

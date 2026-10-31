@@ -3,7 +3,7 @@ using System.ComponentModel;
 namespace MG.Sonarr.Next.Extensions;
 
 /// <summary>
-/// Provides extension methods for <see cref="ListSortDirection"/>.
+/// Provides extension blocks for <see cref="ListSortDirection"/>.
 /// </summary>
 public static class ListSortDirectionExtensions
 {
@@ -13,8 +13,8 @@ public static class ListSortDirectionExtensions
 #if DEBUG
 	static ListSortDirectionExtensions()
 	{
-		Debug.Assert(ASCENDING_LENGTH == nameof(ListSortDirection.Ascending).Length, $"{nameof(ASCENDING_LENGTH)} ({ASCENDING_LENGTH}) does not match the length of {nameof(ListSortDirection.Ascending)}");
-		Debug.Assert(DESCENDING_LENGTH == nameof(ListSortDirection.Descending).Length, $"{nameof(DESCENDING_LENGTH)} ({DESCENDING_LENGTH}) does not match the length of {nameof(ListSortDirection.Descending)}");
+		Debug.Assert(ASCENDING_LENGTH == nameof(ListSortDirection.Ascending).Length, $"{nameof(ASCENDING_LENGTH)} ({ASCENDING_LENGTH}) does not match the length of {nameof(ListSortDirection)}.{nameof(ListSortDirection.Ascending)}");
+		Debug.Assert(DESCENDING_LENGTH == nameof(ListSortDirection.Descending).Length, $"{nameof(DESCENDING_LENGTH)} ({DESCENDING_LENGTH}) does not match the length of {nameof(ListSortDirection)}.{nameof(ListSortDirection.Descending)}");
 	}
 #endif
 
