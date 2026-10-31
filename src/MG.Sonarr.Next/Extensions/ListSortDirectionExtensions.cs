@@ -7,14 +7,16 @@ namespace MG.Sonarr.Next.Extensions;
 /// </summary>
 public static class ListSortDirectionExtensions
 {
-	/// <summary>
-	/// The number of characters in the name <c>Ascending</c>.
-	/// </summary>
-	static readonly int s_aSCENDING_LENGTH = nameof(ListSortDirection.Ascending).Length;
-	/// <summary>
-	/// The number of characters in the name <c>Descending</c>.
-	/// </summary>
-	static readonly int s_dESCENDING_LENGTH = nameof(ListSortDirection.Descending).Length;
+	private const int ASCENDING_LENGTH = 9;		// Number of characters in "Ascending"
+	private const int DESCENDING_LENGTH = 10;	// Number of characters in "Descending"
+
+#if DEBUG
+	static ListSortDirectionExtensions()
+	{
+		Debug.Assert(ASCENDING_LENGTH == nameof(ListSortDirection.Ascending).Length, $"{nameof(ASCENDING_LENGTH)} ({ASCENDING_LENGTH}) does not match the length of {nameof(ListSortDirection.Ascending)}");
+		Debug.Assert(DESCENDING_LENGTH == nameof(ListSortDirection.Descending).Length, $"{nameof(DESCENDING_LENGTH)} ({DESCENDING_LENGTH}) does not match the length of {nameof(ListSortDirection.Descending)}");
+	}
+#endif
 
 	/// <summary>
 	/// Gets the number of characters in the text of a sort direction, without formatting it.
@@ -28,8 +30,8 @@ public static class ListSortDirectionExtensions
 	{
 		return direction switch
 		{
-			ListSortDirection.Ascending => s_aSCENDING_LENGTH,
-			ListSortDirection.Descending => s_dESCENDING_LENGTH,
+			ListSortDirection.Ascending => ASCENDING_LENGTH,
+			ListSortDirection.Descending => DESCENDING_LENGTH,
 			_ => ((int)direction).GetLength(),
 		};
 	}
