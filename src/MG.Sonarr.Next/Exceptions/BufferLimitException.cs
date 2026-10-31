@@ -21,6 +21,11 @@ public sealed class BufferLimitException : InvalidOperationException
 	{
 	}
 
+	/// <summary>
+	/// Gets the message template used to format the exception text.
+	/// </summary>
+	/// <param name="message">The custom message template.</param>
+	/// <returns>The custom template when provided; otherwise, the default template.</returns>
 	private static string GetMessage(string? message)
 	{
 		return !string.IsNullOrWhiteSpace(message) ? message : DEF_MSG;

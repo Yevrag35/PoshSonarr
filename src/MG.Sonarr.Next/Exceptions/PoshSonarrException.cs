@@ -1,7 +1,7 @@
 namespace MG.Sonarr.Next.Exceptions;
 
 /// <summary>
-/// An <see langword="abstract"/> base class for all <see cref="Exception"/> instances thrown by PoshSonarr libraries.
+/// Represents the base exception type for exceptions thrown by PoshSonarr libraries.
 /// </summary>
 public class PoshSonarrException : Exception
 {
@@ -30,6 +30,11 @@ public class PoshSonarrException : Exception
 	{
 	}
 
+	/// <summary>
+	/// Determines whether <c>this.</c> is longer than the provided length.
+	/// </summary>
+	/// <param name="length">The length to compare.</param>
+	/// <returns><see langword="true"/> when <c>this.</c> is longer than <paramref name="length"/>; otherwise, <see langword="false"/>.</returns>
 	private static bool ThisDotIsLonger(int length)
 	{
 		return THIS_DOT.Length > length;

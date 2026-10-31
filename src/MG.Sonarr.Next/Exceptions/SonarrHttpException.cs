@@ -5,8 +5,7 @@ using System.Net;
 namespace MG.Sonarr.Next.Exceptions;
 
 /// <summary>
-/// An exception class thrown when an <see cref="HttpClient"/> exception is thrown from a client
-/// implementation written for PoshSonarr.
+/// Represents an exception thrown when an HTTP request to Sonarr fails.
 /// </summary>
 public sealed class SonarrHttpException : PoshSonarrException, IHttpRequestUri
 {
@@ -17,44 +16,71 @@ public sealed class SonarrHttpException : PoshSonarrException, IHttpRequestUri
 	/// <summary>
 	/// The response body as extended information, if available.
 	/// </summary>
+	/// <value>The parsed error collection from the response body.</value>
 	public IErrorCollection ExtendedInfo { get; }
 	/// <summary>
 	/// The headers from the <see cref="HttpResponseMessage"/> that generated this exception.
 	/// </summary>
+	/// <value>The response headers.</value>
 	public IReadOnlyDictionary<string, string> Headers { get; }
 	/// <summary>
 	/// Indicates whether the response's status code was <see cref="HttpStatusCode.NotFound"/>.
 	/// </summary>
+	/// <value><see langword="true"/> when the status code is <see cref="HttpStatusCode.NotFound"/>; otherwise, <see langword="false"/>.</value>
 	public bool IsNotFound => HttpStatusCode.NotFound == this.StatusCode;
 	/// <summary>
 	/// Gets the status code of the response that generated the exception.
 	/// </summary>
+	/// <value>The HTTP status code, or <see langword="null"/> when unavailable.</value>
 	public HttpStatusCode? StatusCode { get; }
 	/// <summary>
 	/// The response message that generated the current exception.
 	/// </summary>
+	/// <value>The response message, or <see langword="null"/> when unavailable.</value>
 	public HttpResponseMessage? Response { get; }
 	/// <summary>
 	/// Gets the reason phrase which is typically is sent by servers together with the status code
 	/// from the response that generated the current exception.
 	/// </summary>
+	/// <value>The reason phrase, or <see langword="null"/> when unavailable.</value>
 	public string? ReasonPhrase { get; }
 	/// <summary>
 	/// The <see cref="string"/> representation of the <see cref="Uri"/> of the request message or the
 	/// original path provided that generated the current exception.
 	/// </summary>
+	/// <value>The request URI string, or <see langword="null"/> when unavailable.</value>
 	public string? RequestUri { get; }
 
+	/// <summary>
+	/// Initializes a new <see cref="SonarrHttpException"/> instance.
+	/// </summary>
+	/// <param name="request">The failed request.</param>
+	/// <param name="response">The HTTP response, or <see langword="null"/>.</param>
 	[DebuggerStepThrough]
 	public SonarrHttpException(HttpRequestMessage request, HttpResponseMessage? response)
 		: this(request, response, ErrorCollection.Empty, null)
 	{
 	}
+
+	/// <summary>
+	/// Initializes a new <see cref="SonarrHttpException"/> instance.
+	/// </summary>
+	/// <param name="request">The failed request.</param>
+	/// <param name="response">The HTTP response, or <see langword="null"/>.</param>
+	/// <param name="errors">The parsed server errors.</param>
 	[DebuggerStepThrough]
 	public SonarrHttpException(HttpRequestMessage request, HttpResponseMessage? response, IErrorCollection errors)
 		: this(request, response, errors, null)
 	{
 	}
+
+	/// <summary>
+	/// Initializes a new <see cref="SonarrHttpException"/> instance.
+	/// </summary>
+	/// <param name="request">The failed request.</param>
+	/// <param name="response">The HTTP response, or <see langword="null"/>.</param>
+	/// <param name="errors">The parsed server errors.</param>
+	/// <param name="innerException">The exception that caused the current exception.</param>
 	public SonarrHttpException(HttpRequestMessage request, HttpResponseMessage? response, IErrorCollection errors, Exception? innerException)
 		: base(GetMessage(request, response, innerException, errors, out string? reqUri), innerException)
 	{
@@ -105,10 +131,22 @@ public sealed class SonarrHttpException : PoshSonarrException, IHttpRequestUri
 			? status
 			: $"{status}: {trimmed}";
 	}
+
+	/// <summary>
+	/// Gets the request URI string from the specified request.
+	/// </summary>
+	/// <param name="request">The request to inspect.</param>
+	/// <returns>The request URI string, or <see langword="null"/> when unavailable.</returns>
 	private static string? GetRequestUri(HttpRequestMessage request)
 	{
 		return request.RequestUri?.ToString();
 	}
+
+	/// <summary>
+	/// Parses HTTP response headers into a read-only dictionary.
+	/// </summary>
+	/// <param name="response">The response that provides headers.</param>
+	/// <returns>A read-only header dictionary.</returns>
 	private static IReadOnlyDictionary<string, string> ParseResponseHeaders(HttpResponseMessage? response)
 	{
 		if (response is null)

@@ -4,17 +4,20 @@ using MG.Sonarr.Resources;
 namespace MG.Sonarr.Next.Exceptions;
 
 /// <summary>
-/// An exception thrown when a struct is empty (<see langword="default"/>) and not usable in that state.
+/// Represents an exception thrown when a struct is empty (<see langword="default"/>) and unusable.
 /// </summary>
 public sealed class EmptyStructException : PoshSonarrException
 {
 	/// <summary>
-	/// If provided, the name of the struct that is empty.
+	/// Gets the name of the empty struct instance.
 	/// </summary>
+	/// <value>The offending object name, or <see langword="null"/> when unavailable.</value>
 	public string? ObjectName { get; }
+
 	/// <summary>
-	/// If provided, the type of the struct that is empty.
+	/// Gets the type of the empty struct.
 	/// </summary>
+	/// <value>The offending struct type, or <see langword="null"/> when unavailable.</value>
 	public Type? StructType { get; }
 
 	/// <summary>
@@ -65,7 +68,7 @@ public sealed class EmptyStructException : PoshSonarrException
 	/// <param name="instanceName">
 	///     The name of the instance to include in any resulting <see cref="EmptyStructException"/>.
 	/// </param>
-	/// <exception cref="EmptyStructException"/>
+	/// <exception cref="EmptyStructException">Thrown when <paramref name="condition"/> is <see langword="true"/>.</exception>
 	public static void ThrowIf<T>([DoesNotReturnIf(true)] bool condition, T instance, string? instanceName = null) where T : struct
 	{
 		if (condition)
@@ -81,7 +84,7 @@ public sealed class EmptyStructException : PoshSonarrException
 	/// <param name="structType">
 	///     The type whose name should be included in any resulting <see cref="EmptyStructException"/>.
 	/// </param>
-	/// <exception cref="EmptyStructException"/>
+	/// <exception cref="EmptyStructException">Thrown when <paramref name="condition"/> is <see langword="true"/>.</exception>
 	public static void ThrowIf([DoesNotReturnIf(true)] bool condition, Type structType)
 	{
 		if (condition)
@@ -90,6 +93,12 @@ public sealed class EmptyStructException : PoshSonarrException
 		}
 	}
 
+	/// <summary>
+	/// Builds the exception message for the provided object name and type.
+	/// </summary>
+	/// <param name="objectName">The object name.</param>
+	/// <param name="structType">The struct type.</param>
+	/// <returns>The formatted exception message.</returns>
 	private static string GetMessage(string? objectName, Type? structType)
 	{
 		if (string.IsNullOrWhiteSpace(objectName))
