@@ -9,7 +9,12 @@ namespace MG.Sonarr.Next.Buffers;
 /// A ref struct that provides a way to build strings without allocating memory on the heap until the <see cref="string"/> is constructed.
 /// </summary>
 /// <remarks>
-/// The <see cref="SpanStringBuilder"/> utilizes stack-allocated buffers and pooled arrays to avoid or reuse heap allocations during the building process.
+/// <para>The <see cref="SpanStringBuilder"/> utilizes stack-allocated buffers and pooled arrays to avoid or reuse heap allocations during the building process.</para>
+/// <para>A span or reference into the buffer, such as the one that <see cref="AsSpan()"/>, <see cref="AppendSpan(int)"/>, or the
+/// indexer returns, is valid only until the next call that grows the buffer, and it isn't valid as that call's argument
+/// either. Growing returns a rented array to the pool before the growing call reads its argument, so a span over the builder
+/// that's passed back to one of its own appends or inserts can read an array that the pool has already cleared or rented out
+/// again. In Debug builds, such an array reads as <c>'\uDDDD'</c> characters unless <see cref="ClearOnDispose"/> is set.</para>
 /// </remarks>
 [DebuggerDisplay("{ToString(),nq}")]
 [StructLayout(LayoutKind.Auto), DebuggerStepThrough]
@@ -621,6 +626,9 @@ internal ref struct SpanStringBuilder
 	/// <summary>
 	/// Returns a span representing the current contents of the <see cref="SpanStringBuilder"/>.
 	/// </summary>
+	/// <remarks>
+	/// The span is valid only until the next call that grows the buffer, and it isn't valid as that call's argument either.
+	/// </remarks>
 	/// <returns>A <see cref="ReadOnlySpan{T}"/> representing the characters in the builder.</returns>
 	public readonly ReadOnlySpan<char> AsSpan()
 	{
@@ -632,10 +640,14 @@ internal ref struct SpanStringBuilder
 	/// Returns a read-only span of characters from the underlying buffer, starting at the specified position and spanning
 	/// the specified length.
 	/// </summary>
+	/// <remarks>
+	/// The span is valid only until the next call that grows the buffer, and it isn't valid as that call's argument either.
+	/// </remarks>
 	/// <param name="start">The zero-based starting position of the span within the buffer.</param>
 	/// <param name="length">The number of characters to include in the span.</param>
 	/// <returns>A <see cref="ReadOnlySpan{T}"/> of characters representing the specified range of the buffer.</returns>
-	/// <exception cref="ArgumentOutOfRangeException"/>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="start"/> or <paramref name="length"/> is
+	/// negative, or when the range that they give ends past <see cref="Capacity"/>.</exception>
 	public readonly ReadOnlySpan<char> AsSpan(int start, int length)
 	{
 		return _chars.Slice(start, length);
