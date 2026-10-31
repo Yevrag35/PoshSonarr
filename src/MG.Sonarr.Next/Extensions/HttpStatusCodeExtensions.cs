@@ -5,12 +5,28 @@ using System.Net;
 namespace MG.Sonarr.Next.Extensions;
 
 /// <summary>
-/// Custom extension methods for <see cref="HttpStatusCode"/> values.
+/// Provides extension methods that write an <see cref="HttpStatusCode"/> as response text, such as
+/// <c>400 (BadRequest)</c>.
 /// </summary>
+/// <remarks>
+/// The text for every code that <see cref="HttpStatusCode"/> names is built once, on first use, and cached.
+/// </remarks>
 public static class HttpStatusCodeExtensions
 {
 	#region CACHING
+	/// <summary>
+	/// The cached response text of each named status code, keyed by its number.
+	/// </summary>
 	static readonly Lazy<ReadOnlyDictionary<int, string>> _codes = new(GetLookupCodes);
+	/// <summary>
+	/// Builds the response text of every status code that <see cref="HttpStatusCode"/> names.
+	/// </summary>
+	/// <remarks>
+	/// A number that several names share, such as 302 for <see cref="HttpStatusCode.Found"/> and
+	/// <see cref="HttpStatusCode.Redirect"/>, gets one entry, with the name that <see cref="Enum.ToString()"/> gives
+	/// it.
+	/// </remarks>
+	/// <returns>A read-only dictionary of response text, keyed by status code number.</returns>
 	static ReadOnlyDictionary<int, string> GetLookupCodes()
 	{
 		HttpStatusCode[] codes = Enum.GetValues<HttpStatusCode>();
@@ -23,6 +39,14 @@ public static class HttpStatusCodeExtensions
 
 		return new ReadOnlyDictionary<int, string>(dict);
 	}
+	/// <summary>
+	/// Writes a named status code as its number, a space, and its name in parentheses.
+	/// </summary>
+	/// <remarks>
+	/// The text's length assumes a three-digit number, which every named status code has.
+	/// </remarks>
+	/// <param name="statusCode">The status code to write, which <see cref="HttpStatusCode"/> names.</param>
+	/// <returns>The response text, such as <c>400 (BadRequest)</c>.</returns>
 	static string ToResponseStringFormat(in HttpStatusCode statusCode)
 	{
 
@@ -43,19 +67,15 @@ public static class HttpStatusCodeExtensions
 	#endregion
 
 	/// <summary>
-	/// Returns the <see cref="string"/> representation of the current 
-	/// <see cref="HttpStatusCode"/> value formatted as: <code>int (string)</code>
+	/// Gets the response text of a status code, which is its number followed by its name in parentheses.
 	/// </summary>
 	/// <remarks>
-	///     An example is converting <see cref="HttpStatusCode.BadRequest"/> to:
-	///     <code>400 (BadRequest)</code>
-	///     A code that <see cref="HttpStatusCode"/> doesn't name, such as 520, is written as its number alone.
+	/// <para><see cref="HttpStatusCode.BadRequest"/> is written as <c>400 (BadRequest)</c>, and
+	/// <see cref="HttpStatusCode.OK"/> as <c>200 (OK)</c>.</para>
+	/// <para>A code that <see cref="HttpStatusCode"/> doesn't name, such as 520, is written as its number alone.</para>
 	/// </remarks>
-	/// <param name="statusCode">The status code to convert.</param>
-	/// <returns>
-	///     The <see cref="string"/> response form of the <see cref="HttpStatusCode"/> value.
-	/// </returns>
-	/// <example>200 (OK)</example>
+	/// <param name="statusCode">The status code to write.</param>
+	/// <returns>The response text of <paramref name="statusCode"/>.</returns>
 	public static string ToResponseString(this HttpStatusCode statusCode)
 	{
 		return _codes.Value.TryGetValue((int)statusCode, out string? value)
@@ -64,27 +84,22 @@ public static class HttpStatusCodeExtensions
 	}
 
 	/// <summary>
-	/// Tries to format the response <see cref="string"/> value of the current 
-	/// <see cref="HttpStatusCode"/> instance into the 
-	/// provided span of characters.
+	/// Tries to write the response text of a status code into a span of characters.
 	/// </summary>
 	/// <remarks>
-	///     An example is writing <see cref="HttpStatusCode.BadRequest"/> as:
-	///     <code>400 (BadRequest)</code>
-	///     A code that <see cref="HttpStatusCode"/> doesn't name, such as 520, is written as its number alone, as
-	///     <see cref="ToResponseString(HttpStatusCode)"/> writes it.
+	/// <para>The text is the one that <see cref="ToResponseString(HttpStatusCode)"/> returns:
+	/// <see cref="HttpStatusCode.BadRequest"/> is written as <c>400 (BadRequest)</c>, and a code that
+	/// <see cref="HttpStatusCode"/> doesn't name, such as 520, as its number alone.</para>
 	/// </remarks>
-	/// <param name="statusCode">The status code to format.</param>
-	/// <param name="destination">
-	///     The span in which to write this value formatted as a span of characters.
-	/// </param>
+	/// <param name="statusCode">The status code to write.</param>
+	/// <param name="destination">The span to write the text into.</param>
 	/// <param name="charsWritten">
-	///     When this method returns, contains the number of characters that were written in
-	///     <paramref name="destination"/>
+	/// When this method returns, the number of characters written into <paramref name="destination"/>, or 0 when it
+	/// returns <see langword="false"/>.
 	/// </param>
 	/// <returns>
-	///     <see langword="true"/> if the formatting was successful; otherwise, <see langword="false"/> when
-	///     <paramref name="destination"/> is too short.
+	/// <see langword="true"/> if the text was written; <see langword="false"/> if <paramref name="destination"/> is
+	/// too short to hold it.
 	/// </returns>
 	public static bool TryFormatAsResponse(this HttpStatusCode statusCode, Span<char> destination, out int charsWritten)
 	{

@@ -1,21 +1,19 @@
-﻿namespace MG.Sonarr.Next.Extensions;
+namespace MG.Sonarr.Next.Extensions;
 
 /// <summary>
-/// Custom extension methods for certain collection interfaces.
+/// Provides extension methods for read-only collections.
 /// </summary>
 public static class CollectionExtensions
 {
 	/// <summary>
-	/// Determines whether the current collection is <see langword="null"/> or contains 0 elements.
+	/// Determines whether a collection is null or has no elements.
 	/// </summary>
-	/// <typeparam name="T">The type of the elements.</typeparam>
-	/// <param name="collection">
-	///     The collection to check. If <see langword="false"/> is returned, this has 
-	///     been determined to be not <see langword="null"/>.
-	/// </param>
+	/// <typeparam name="T">The type of the collection's elements.</typeparam>
+	/// <param name="collection">The collection to check.</param>
 	/// <returns>
-	///     <see langword="true"/> if the collection is <see langword="null"/> or does NOT contains
-	///     at least 1 element; otherwise, <see langword="false"/>.
+	/// <see langword="true"/> if <paramref name="collection"/> is <see langword="null"/> or its count is 0; otherwise,
+	/// <see langword="false"/>, which also tells the compiler that <paramref name="collection"/> isn't
+	/// <see langword="null"/>.
 	/// </returns>
 	public static bool IsNullOrEmpty<T>([NotNullWhen(false)] this IReadOnlyCollection<T>? collection)
 	{

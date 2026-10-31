@@ -1,19 +1,20 @@
 namespace MG.Sonarr.Next.Extensions;
 
 /// <summary>
-/// Custom extension methods for <see cref="List{T}"/> and <see cref="IList{T}"/> implementations.
+/// Provides extension methods for <see cref="IList{T}"/> implementations.
 /// </summary>
 public static class ListExtensions
 {
 	/// <summary>
-	/// Adds all elements from the specified span into the current list.
+	/// Adds the elements of a span to the end of a list.
 	/// </summary>
-	/// <typeparam name="T">The type of elements in the list.</typeparam>
-	/// <param name="list">The list to copy the elements into.</param>
-	/// <param name="values">
-	///     The elements that will be added into <paramref name="list"/>.
-	/// </param>
-	/// <exception cref="ArgumentNullException"/>
+	/// <remarks>
+	/// The elements are added one at a time through <see cref="ICollection{T}.Add(T)"/>, in order.
+	/// </remarks>
+	/// <typeparam name="T">The type of the list's elements.</typeparam>
+	/// <param name="list">The list to add the elements to.</param>
+	/// <param name="values">The elements to add.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="list"/> is null.</exception>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void AddMany<T>(this IList<T> list, params ReadOnlySpan<T> values)
 	{

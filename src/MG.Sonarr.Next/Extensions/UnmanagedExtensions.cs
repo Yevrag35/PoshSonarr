@@ -2,6 +2,9 @@ using System.Numerics;
 
 namespace MG.Sonarr.Next.Extensions;
 
+/// <summary>
+/// Provides extension methods for integer values.
+/// </summary>
 public static class UnmanagedExtensions
 {
 	/// <summary>

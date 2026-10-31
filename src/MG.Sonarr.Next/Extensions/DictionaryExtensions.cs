@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 namespace MG.Sonarr.Next.Extensions;
 
 /// <summary>
-/// Custom extension methods for specific types of <see cref="Dictionary{TKey, TValue}"/>.
+/// Provides extension methods for <see cref="Dictionary{TKey, TValue}"/>.
 /// </summary>
 public static class DictionaryExtensions
 {
@@ -30,6 +30,19 @@ public static class DictionaryExtensions
 #endif
 	}
 
+	/// <summary>
+	/// Wraps a dictionary in a read-only view.
+	/// </summary>
+	/// <remarks>
+	/// The view doesn't copy the dictionary, so a later change to <paramref name="dictionary"/> shows through it.
+	/// </remarks>
+	/// <typeparam name="TKey">The type of the dictionary's keys.</typeparam>
+	/// <typeparam name="TValue">The type of the dictionary's values.</typeparam>
+	/// <param name="dictionary">The dictionary to wrap, or <see langword="null"/>.</param>
+	/// <returns>
+	/// A new <see cref="ReadOnlyDictionary{TKey, TValue}"/> over <paramref name="dictionary"/>, or
+	/// <see langword="null"/> when <paramref name="dictionary"/> is <see langword="null"/>.
+	/// </returns>
 	[return: NotNullIfNotNull(nameof(dictionary))]
 	public static ReadOnlyDictionary<TKey, TValue>? ToReadOnly<TKey, TValue>(this Dictionary<TKey, TValue>? dictionary) where TKey : notnull
 	{
