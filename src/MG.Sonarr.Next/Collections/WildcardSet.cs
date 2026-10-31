@@ -19,6 +19,7 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 	/// <summary>
 	/// Gets the number of wildcard patterns are contained in the <see cref="WildcardSet"/>.
 	/// </summary>
+	/// <value>The number of wildcard patterns in the set.</value>
 	public int Count
 	{
 		[DebuggerStepThrough]
@@ -271,6 +272,9 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 			: new();
 	}
 
+	/// <summary>
+	/// Enumerates elements of a <see cref="WildcardSet"/>.
+	/// </summary>
 	[StructLayout(LayoutKind.Auto)]
 	public struct Enumerator : IEnumerator<Wildcard>
 	{
@@ -278,6 +282,10 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 		private HashSet<Wildcard>.Enumerator _enumerator;
 		private Wildcard _current;
 
+		/// <summary>
+		/// Initializes a new <see cref="Enumerator"/> instance.
+		/// </summary>
+		/// <param name="set">The backing set to enumerate.</param>
 		internal Enumerator(HashSet<Wildcard> set)
 		{
 			_set = set;
@@ -285,14 +293,25 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 			_current = default;
 		}
 
+		/// <summary>
+		/// Gets the current wildcard.
+		/// </summary>
+		/// <value>The current wildcard element.</value>
 		public readonly Wildcard Current => _current;
 		readonly object? IEnumerator.Current => this.Current;
 
+		/// <summary>
+		/// Releases the enumerator resources.
+		/// </summary>
 		public void Dispose()
 		{
 			this = default;
 		}
 
+		/// <summary>
+		/// Advances the enumerator to the next element.
+		/// </summary>
+		/// <returns><see langword="true"/> when the enumerator advanced to the next element; otherwise, <see langword="false"/>.</returns>
 		public bool MoveNext()
 		{
 			if (_enumerator.MoveNext())
@@ -304,6 +323,9 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 			return false;
 		}
 
+		/// <summary>
+		/// Sets the enumerator to its initial position.
+		/// </summary>
 		void IEnumerator.Reset()
 		{
 			var enumerator = _enumerator;
@@ -312,6 +334,9 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 		}
 	}
 
+	/// <summary>
+	/// Provides wildcard equality and hash code semantics for set storage and alternate lookups.
+	/// </summary>
 	private sealed class WildcardEqualityComparer : IEqualityComparer<Wildcard>, IAlternateEqualityComparer<ReadOnlySpan<char>, Wildcard>,
 		IAlternateEqualityComparer<string, Wildcard>
 	{
@@ -325,10 +350,10 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 			return Wildcard.Parse(alternate);
 		}
 		/// <summary>
-		/// 
+		/// Creates a wildcard from the specified string.
 		/// </summary>
-		/// <param name="alternate"></param>
-		/// <returns></returns>
+		/// <param name="alternate">The string to create the wildcard from.</param>
+		/// <returns>A new wildcard created from the specified string.</returns>
 		public Wildcard Create(string alternate)
 		{
 			return Wildcard.Parse(alternate);
@@ -344,7 +369,12 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 		{
 			return other.Equals(alternate, StringComparison.OrdinalIgnoreCase);
 		}
-		///
+		/// <summary>
+		/// Determines whether the specified string and wildcard are equal.
+		/// </summary>
+		/// <param name="alternate">The string to compare.</param>
+		/// <param name="other">The wildcard to compare.</param>
+		/// <returns><see langword="true"/> if the specified string and wildcard are equal; otherwise, <see langword="false"/>.</returns>
 		public bool Equals(string alternate, Wildcard other)
 		{
 			return other.Equals(alternate, StringComparison.OrdinalIgnoreCase);
@@ -370,6 +400,11 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 			return string.GetHashCode(alternate, StringComparison.OrdinalIgnoreCase);
 		}
 
+		/// <summary>
+		/// Returns a hash code for the specified string.
+		/// </summary>
+		/// <param name="alternate">The string for which a hash code is to be returned.</param>
+		/// <returns>A hash code for the specified string.</returns>
 		public int GetHashCode([DisallowNull] string alternate)
 		{
 			return alternate.GetHashCode(StringComparison.OrdinalIgnoreCase);

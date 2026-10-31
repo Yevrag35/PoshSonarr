@@ -44,7 +44,7 @@ public readonly ref struct SplitEntry
 		separator = this.Separator;
 	}
 	/// <summary>
-	/// Implicitly converts a <see cref="SplitEntry"/> instance to a <see cref="ReadOnlySpan{char}"/> representing
+	/// Implicitly converts a <see cref="SplitEntry"/> instance to a <see cref="ReadOnlySpan{T}"/> representing
 	/// the entry's character data.
 	/// </summary>
 	public static implicit operator ReadOnlySpan<char>(SplitEntry entry)

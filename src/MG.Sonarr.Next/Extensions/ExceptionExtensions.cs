@@ -14,7 +14,7 @@ public static class ExceptionExtensions
 	/// <param name="exception">The exception whose type name is returned, or <see langword="null"/>.</param>
 	/// <returns>
 	/// The type's <see cref="Type.FullName"/>, or its <see cref="MemberInfo.Name"/> when it has no full name, as
-	/// <see cref="TypeExtensions.GetName(Type)"/> returns it; or <see langword="null"/> when
+	/// <see cref="MG.Sonarr.Next.Extensions.Reflection.TypeExtensions.GetName(Type)"/> returns it; or <see langword="null"/> when
 	/// <paramref name="exception"/> is <see langword="null"/>.
 	/// </returns>
 	[return: NotNullIfNotNull(nameof(exception))]

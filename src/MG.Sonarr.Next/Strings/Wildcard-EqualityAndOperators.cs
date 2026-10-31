@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Strings;
+namespace MG.Sonarr.Next.Strings;
 
 public readonly partial struct Wildcard
 {
@@ -150,10 +150,10 @@ public readonly partial struct Wildcard
 		return pattern.ToString();
 	}
 	/// <summary>
-	/// Implicitly converts a <see cref="Wildcard"/> instance to a <see cref="ReadOnlySpan{char}"/>.
+	/// Implicitly converts a <see cref="Wildcard"/> instance to a <see cref="ReadOnlySpan{T}"/> of <see cref="char"/> values.
 	/// </summary>
 	/// <param name="pattern">The <see cref="Wildcard"/> instance to convert.</param>
-	/// <returns>A <see cref="ReadOnlySpan{char}"/> that represents the specified <see cref="Wildcard"/> instance.</returns>
+	/// <returns>A <see cref="ReadOnlySpan{T}"/> of <see cref="char"/> values that represents the specified <see cref="Wildcard"/> instance.</returns>
 	[DebuggerStepThrough]
 	public static implicit operator ReadOnlySpan<char>(Wildcard pattern)
 	{

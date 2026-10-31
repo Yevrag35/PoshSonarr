@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 
 namespace MG.Sonarr.Next.Collections.Pools;
 
@@ -23,7 +23,7 @@ public interface IObjectPoolReturnable
 /// <summary>
 /// An interface exposing methods for retrieving and returning to and from a pool of objects.
 /// </summary>
-/// <typeparam name="T"></typeparam>
+/// <typeparam name="T">The pooled object type.</typeparam>
 public interface IObjectPool<T> where T : notnull
 {
 	/// <summary>
@@ -62,7 +62,13 @@ public abstract class SonarrObjectPool<T> : IObjectPoolReturnable, IObjectPool<T
 	/// <summary>
 	/// The maximum number of objects to kept in the pool at any one time.
 	/// </summary>
+	/// <value>The maximum retained pool size.</value>
 	protected abstract int MaxPoolCapacity { get; }
+
+	/// <summary>
+	/// Gets the pooled object type for non-generic return operations.
+	/// </summary>
+	/// <value>The pooled object type.</value>
 	Type IObjectPoolReturnable.ReturnsType
 	{
 		[DebuggerStepThrough]
@@ -78,21 +84,11 @@ public abstract class SonarrObjectPool<T> : IObjectPoolReturnable, IObjectPool<T
 		_bag = [];
 		_genericType = typeof(T);
 	}
-	///// <summary>
-	///// Initializes a new instance of the <see cref="SonarrObjectPool{T}"/> class that contains an initial
-	///// pool of objects copied from the specified collection.
-	///// </summary>
-	///// <param name="initialItems">
-	/////     The collection whose elements are copied into the
-	/////     new <see cref="SonarrObjectPool{T}"/>.
-	///// </param>
-	//protected SonarrObjectPool(IEnumerable<T>? initialItems)
-	//{
-	//    _bag = initialItems is null
-	//        ? []
-	//        : new(initialItems);
-	//}
 
+	/// <summary>
+	/// Retrieves an item from the pool or constructs a new one when needed.
+	/// </summary>
+	/// <returns>A pooled or newly constructed item.</returns>
 	[DebuggerStepThrough]
 	public T Get()
 	{
@@ -139,6 +135,11 @@ public abstract class SonarrObjectPool<T> : IObjectPoolReturnable, IObjectPool<T
 			this.ReturnCore(item);
 		}
 	}
+
+	/// <summary>
+	/// Attempts to return an item to the pool.
+	/// </summary>
+	/// <param name="item">The non-null item to return.</param>
 	private void ReturnCore([DisallowNull] T item)
 	{
 		int count = _bag.Count;
