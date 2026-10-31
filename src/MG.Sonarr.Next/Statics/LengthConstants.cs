@@ -114,6 +114,13 @@ public static class LengthConstants
 			throw new ArgumentException("GUID formats must be only 1 character in length.", paramName);
 		}
 	}
+
+	/// <summary>
+	/// Gets the length of a GUID based on the specified format character.
+	/// </summary>
+	/// <param name="format">The format character to evaluate.</param>
+	/// <param name="paramName">The argument name reported in thrown exceptions.</param>
+	/// <returns>The length of the GUID in the specified format.</returns>
 	/// <exception cref="FormatException">Thrown when the format character is invalid.</exception>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static int GetGuidLengthCore(char format, string? paramName)
