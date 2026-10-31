@@ -12,7 +12,7 @@ public static class ExceptionExtensions
 	/// Returns the <see cref="Exception"/> class's type name.
 	/// </summary>
 	/// <param name="exception">The exception to check.</param>
-	/// <inheritdoc cref="TypeNameExtensions.GetName(Type?)"/>
+	/// <inheritdoc cref="TypeExtensions.GetName(Type)"/>
 	[return: NotNullIfNotNull(nameof(exception))]
 	public static string? GetTypeName(this Exception? exception)
 	{

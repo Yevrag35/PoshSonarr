@@ -25,7 +25,9 @@ public static class TypeNameExtensions
 	/// </summary>
 	/// <remarks>
 	/// <para>This method uses PowerShell's type accelerator name when the type has one, such as <c>int</c> for
-	/// <see cref="int"/>, and otherwise the full type name in PowerShell's notation.</para>
+	/// <see cref="int"/>, and otherwise the full type name in PowerShell's notation. A type that has no full name, such
+	/// as a generic parameter, or that PowerShell can't name, such as a pointer, takes its own .NET name instead, such
+	/// as <c>[T]</c>.</para>
 	/// <para><paramref name="removeBrackets"/> strips only the enclosing pair, so a generic or array type name keeps its
 	/// own brackets: <c>[string[]]</c> becomes <c>string[]</c>.</para>
 	/// </remarks>
@@ -53,24 +55,33 @@ public static class TypeNameExtensions
 	/// Gets the PowerShell type name for the type that the specified cache key holds.
 	/// </summary>
 	/// <remarks>
-	/// A name without brackets loses only the enclosing pair, so a generic or array name keeps its own brackets:
-	/// <c>[string[]]</c> becomes <c>string[]</c>.
+	/// <para>A name without brackets loses only the enclosing pair, so a generic or array name keeps its own brackets:
+	/// <c>[string[]]</c> becomes <c>string[]</c>.</para>
+	/// <para>A generic parameter, an array of one, and a partly open generic type have no full name, which PowerShell
+	/// would name <c>[object]</c>, and PowerShell names no pointer, by-ref, or single-dimension array with a lower bound
+	/// other than 0. Each of those takes its own .NET name in brackets instead, such as <c>[T]</c> or
+	/// <c>[System.Int32*]</c>.</para>
 	/// </remarks>
 	/// <param name="key">The cache key that holds the type and whether its name keeps the enclosing brackets.</param>
 	/// <returns>The PowerShell type name, with or without its enclosing brackets as <paramref name="key"/> specifies.</returns>
 	private static string GetTypeName(PSTypeKey key)
 	{
-		string? name = LanguagePrimitives.ConvertTypeNameToPSTypeName(key.KeyedType.FullName);
-		Debug.Assert(
-			condition: name is not null,
-			message: $"{nameof(LanguagePrimitives)}.{nameof(LanguagePrimitives.ConvertTypeNameToPSTypeName)} returned null for a non-null type name.");
+		Type type = key.KeyedType;
+		string? name = type.FullName is string fullName
+			? LanguagePrimitives.ConvertTypeNameToPSTypeName(fullName)
+			: null;
+
+		if (string.IsNullOrEmpty(name))
+		{
+			name = $"[{type.FullName ?? type.Name}]";
+		}
 
 		if (!key.IncludeBrackets && name.EnclosedIn('[', ']'))
 		{
 			name = new(name.AsSpan().UnsafeSlice(1, name.Length - 2));
 		}
 
-		return name ?? string.Empty;
+		return name;
 	}
 
 	/// <summary>

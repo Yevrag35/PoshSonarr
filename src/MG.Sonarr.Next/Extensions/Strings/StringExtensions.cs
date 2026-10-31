@@ -15,7 +15,7 @@ public static class SplittingExtensions
 	///     <see langword="async"/> methods.
 	///     <para>
 	///         An example of utilizing this method looks like:
-	///         <code>foreach (ReadOnlySpan&lt;char&gt; section in "key : value".AsSpan().SpanSplit(" : "))</code>
+	///         <code>foreach (SplitEntry section in "key : value; key2 = value2".AsSpan().SpanSplit(" : ", " = "))</code>
 	///     </para>
 	/// </remarks>
 	/// <param name="value">The source span to split.</param>

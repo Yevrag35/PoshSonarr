@@ -49,12 +49,13 @@ public static class HttpStatusCodeExtensions
 	/// <remarks>
 	///     An example is converting <see cref="HttpStatusCode.BadRequest"/> to:
 	///     <code>400 (BadRequest)</code>
+	///     A code that <see cref="HttpStatusCode"/> doesn't name, such as 520, is written as its number alone.
 	/// </remarks>
 	/// <param name="statusCode">The status code to convert.</param>
-	/// <example>200 (OK)</example>
 	/// <returns>
-	///     The <see cref="string"/> repsonse form of the <see cref="HttpStatusCode"/> value.
+	///     The <see cref="string"/> response form of the <see cref="HttpStatusCode"/> value.
 	/// </returns>
+	/// <example>200 (OK)</example>
 	public static string ToResponseString(this HttpStatusCode statusCode)
 	{
 		return _codes.Value.TryGetValue((int)statusCode, out string? value)
@@ -67,9 +68,11 @@ public static class HttpStatusCodeExtensions
 	/// <see cref="HttpStatusCode"/> instance into the 
 	/// provided span of characters.
 	/// </summary>
-	/// /// <remarks>
-	///     An example is writting <see cref="HttpStatusCode.BadRequest"/> as:
+	/// <remarks>
+	///     An example is writing <see cref="HttpStatusCode.BadRequest"/> as:
 	///     <code>400 (BadRequest)</code>
+	///     A code that <see cref="HttpStatusCode"/> doesn't name, such as 520, is written as its number alone, as
+	///     <see cref="ToResponseString(HttpStatusCode)"/> writes it.
 	/// </remarks>
 	/// <param name="statusCode">The status code to format.</param>
 	/// <param name="destination">
@@ -80,20 +83,21 @@ public static class HttpStatusCodeExtensions
 	///     <paramref name="destination"/>
 	/// </param>
 	/// <returns>
-	///     <see langword="true"/> if the formatting was successful; otherwise,
-	///     <see langword="false"/>.
+	///     <see langword="true"/> if the formatting was successful; otherwise, <see langword="false"/> when
+	///     <paramref name="destination"/> is too short.
 	/// </returns>
 	public static bool TryFormatAsResponse(this HttpStatusCode statusCode, Span<char> destination, out int charsWritten)
 	{
-		charsWritten = 0;
-		bool result = false;
-		if (_codes.Value.TryGetValue((int)statusCode, out string? value))
+		if (!_codes.Value.TryGetValue((int)statusCode, out string? value))
 		{
-			result = value.TryCopyTo(destination);
-			if (result)
-			{
-				charsWritten += value.Length;
-			}
+			return Enum.TryFormat(statusCode, destination, out charsWritten);
+		}
+
+		charsWritten = 0;
+		bool result = value.TryCopyTo(destination);
+		if (result)
+		{
+			charsWritten += value.Length;
 		}
 
 		return result;

@@ -27,7 +27,7 @@ public sealed class DownloadClientConfigObject : IdSonarrObject<DownloadClientCo
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Because of 'nameof()'")]
 	public void OnSerializing()
 	{
-		this.UpdateProperty(this.Id, propertyName: nameof(Id));
+		this.UpdateProperty(this.Id, replaceReadOnly: true, propertyName: nameof(Id));
 	}
 
 	protected override void SetPSTypeName()

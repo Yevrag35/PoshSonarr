@@ -9,8 +9,8 @@ public static class TypeExtensions
 	/// Returns the <see cref="Type"/> class's name for display or logging purposes.
 	/// </summary>
 	/// <remarks>
-	///     Only if the input parameter is <see langword="null"/>, will the returned
-	///     <see cref="string"/> be also <see langword="null"/>.
+	///     A type that may be <see langword="null"/> goes through <see cref="GetNameOrNull(Type?)"/> or
+	///     <see cref="GetNameOr(Type?, string?)"/> instead.
 	/// </remarks>
 	/// <param name="type">The type whose name is returned.</param>
 	/// <returns>

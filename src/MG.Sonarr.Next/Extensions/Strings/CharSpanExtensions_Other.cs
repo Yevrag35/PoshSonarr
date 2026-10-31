@@ -117,14 +117,14 @@ public static partial class CharSpanExtensions
 	}
 
 	/// <summary>
-	/// Copies the contents of the specified spans into the target span.
+	/// Copies the specified characters into the start of the target span.
 	/// </summary>
-	/// <remarks>This method copies the contents of the <paramref name="value"/> spans into the <paramref
-	/// name="span"/> in the order they are provided. The caller must ensure that the target span has sufficient capacity
-	/// to hold all the elements being copied.</remarks>
-	/// <param name="span">The target <see cref="Span{T}"/> where the contents will be copied.</param>
-	/// <param name="value">One or more <see cref="ReadOnlySpan{T}"/> instances containing the data to copy.</param>
-	/// <returns>The total number of elements copied from the <paramref name="value"/> spans.</returns>
+	/// <remarks>The characters can be passed as one span or as separate characters, which the <see langword="params"/>
+	/// span collects in the order given.</remarks>
+	/// <param name="span">The target <see cref="Span{T}"/> where the characters will be copied.</param>
+	/// <param name="value">The characters to copy.</param>
+	/// <returns>The number of characters copied, which is the length of <paramref name="value"/>.</returns>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="span"/> is shorter than <paramref name="value"/>.</exception>
 	public static int Push(this Span<char> span, params ReadOnlySpan<char> value)
 	{
 		value.CopyTo(span);

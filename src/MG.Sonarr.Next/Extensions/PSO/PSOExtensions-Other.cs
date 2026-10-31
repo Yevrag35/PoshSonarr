@@ -103,52 +103,113 @@ public static partial class PSOExtensions
 		return list;
 	}
 
+	/// <summary>
+	/// Gets the value of the specified property as <typeparamref name="T"/> when the property exists and holds a value
+	/// that isn't <see langword="null"/> and reads as that type.
+	/// </summary>
+	/// <inheritdoc cref="TryGetProperty{T}(PSObject, string, out T)" path="/remarks"/>
+	/// <typeparam name="T">The type to read the value as.</typeparam>
+	/// <param name="pso">The object whose property is read.</param>
+	/// <param name="propertyName">The name of the property.</param>
+	/// <param name="value">When this method returns <see langword="true"/>, the property's value.</param>
+	/// <returns><see langword="true"/> if the property exists and holds a value that isn't <see langword="null"/> and
+	/// reads as <typeparamref name="T"/>; otherwise, <see langword="false"/>.</returns>
 	[DebuggerStepThrough]
 	public static bool TryGetNonNullProperty<T>(this PSObject? pso, string propertyName, [NotNullWhen(true)] out T? value)
 	{
 		return TryGetProperty<T>(pso, propertyName, out value) && value is not null;
 	}
 
+	/// <summary>
+	/// Gets the value of the specified property as <typeparamref name="T"/> when the property exists and its value reads
+	/// as that type.
+	/// </summary>
+	/// <remarks>
+	/// <para>A value of type <typeparamref name="T"/> reads as itself. The JSON converter reads a whole number as an
+	/// <see cref="int"/> when it fits and as a <see cref="long"/> otherwise, so an <see cref="int"/> also reads as a
+	/// <see cref="long"/>, and either one as a <see cref="double"/> or a <see cref="decimal"/>, or as the nullable form of
+	/// any of them. No other value converts, and the read throws no exception.</para>
+	/// <para>A <see langword="null"/> value reads only as a type that can hold it, so it fails for a value type that
+	/// isn't nullable.</para>
+	/// </remarks>
+	/// <typeparam name="T">The type to read the value as.</typeparam>
+	/// <param name="pso">The object whose property is read.</param>
+	/// <param name="propertyName">The name of the property.</param>
+	/// <param name="value">When this method returns <see langword="true"/>, the property's value; otherwise, the default
+	/// value of <typeparamref name="T"/>.</param>
+	/// <returns><see langword="true"/> if the property exists and its value reads as <typeparamref name="T"/>; otherwise,
+	/// <see langword="false"/>.</returns>
 	[DebuggerStepThrough]
 	public static bool TryGetProperty<T>(this PSObject? pso, string propertyName, [MaybeNull] out T value)
 	{
 		value = default;
 		PSMemberInfo? prop = pso?.Properties[propertyName];
-		return prop is not null && TrySafeCast(prop.Value, out value);
+		return prop is not null && TryRead(prop.Value, out value);
 	}
 
-	/// <exception cref="InvalidCastException"/>
-	[return: NotNullIfNotNull(nameof(obj))]
-	private static T? Cast<T>(object? obj)
+	/// <summary>
+	/// Reads a property's value as <typeparamref name="T"/>, widening the integers that the JSON converter produces.
+	/// </summary>
+	/// <typeparam name="T">The type to read the value as.</typeparam>
+	/// <param name="obj">The property's value.</param>
+	/// <param name="tVal">When this method returns <see langword="true"/>, the value as <typeparamref name="T"/>;
+	/// otherwise, the default value of <typeparamref name="T"/>.</param>
+	/// <returns><see langword="true"/> if <paramref name="obj"/> reads as <typeparamref name="T"/>; otherwise,
+	/// <see langword="false"/>.</returns>
+	private static bool TryRead<T>(object? obj, [MaybeNull] out T tVal)
 	{
-		return (T?)obj;
-	}
-	private static bool TrySafeCast<T>([NotNullWhen(true)] object? obj, [MaybeNull] out T tVal)
-	{
-		tVal = default;
-		if (obj is null)
+		switch (obj)
 		{
-			return true;
+			case T value:
+				tVal = value;
+				return true;
+
+			case null:
+				tVal = default;
+				return default(T) is null;
+
+			case int intValue:
+				return TryWiden(intValue, out tVal);
+
+			case long longValue:
+				return TryWiden(longValue, out tVal);
+
+			default:
+				tVal = default;
+				return false;
 		}
+	}
 
-		Type genType = typeof(T);
-		Type oType = obj.GetType();
-		if (oType.IsAssignableTo(genType))
+	/// <summary>
+	/// Widens an integer to <typeparamref name="T"/> when <typeparamref name="T"/> is <see cref="long"/>,
+	/// <see cref="double"/>, or <see cref="decimal"/>, or the nullable form of one.
+	/// </summary>
+	/// <typeparam name="T">The type to widen the integer to.</typeparam>
+	/// <param name="number">The integer, which is an <see cref="int"/> or a <see cref="long"/> before it's passed.</param>
+	/// <param name="tVal">When this method returns <see langword="true"/>, the widened value; otherwise, the default value
+	/// of <typeparamref name="T"/>.</param>
+	/// <returns><see langword="true"/> if <typeparamref name="T"/> is one of the wider types; otherwise,
+	/// <see langword="false"/>.</returns>
+	private static bool TryWiden<T>(long number, [MaybeNull] out T tVal)
+	{
+		if (typeof(T) == typeof(long) || typeof(T) == typeof(long?))
 		{
-			tVal = Cast<T>(obj);
-			return true;
+			tVal = (T)(object)number;
+		}
+		else if (typeof(T) == typeof(double) || typeof(T) == typeof(double?))
+		{
+			tVal = (T)(object)(double)number;
+		}
+		else if (typeof(T) == typeof(decimal) || typeof(T) == typeof(decimal?))
+		{
+			tVal = (T)(object)(decimal)number;
 		}
 		else
 		{
-			try
-			{
-				tVal = Cast<T>(obj);
-				return true;
-			}
-			catch (InvalidCastException)
-			{
-				return false;
-			}
+			tVal = default;
+			return false;
 		}
+
+		return true;
 	}
 }

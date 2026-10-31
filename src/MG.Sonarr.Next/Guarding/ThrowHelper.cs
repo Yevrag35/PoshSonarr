@@ -49,13 +49,14 @@ public static partial class ThrowHelper
 	/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is negative or greater than <paramref name="other"/>.</exception>
 	public static void ThrowIfNegativeOrGreaterThan(int value, uint other, [CallerArgumentExpression(nameof(value))] string? paramName = null)
 	{
-		Debug.Assert(other is <= int.MaxValue and not 0, "The other value should never be 0 and always than or equal to int.MaxValue.");
+		Debug.Assert(other <= int.MaxValue, "The other value should always be less than or equal to int.MaxValue.");
 		if ((uint)value > other)
 		{
+			// The exception appends the parameter's name and the actual value to the message itself.
 			throw new ArgumentOutOfRangeException(paramName, value,
 				message: string.Format(
 					CultureInfo.CurrentCulture,
-					"{0} ('{1}') must not be negative but also not greater than '{2}'. (Parameter '{0}')\r\nActual value was {1}.",
+					"{0} ('{1}') must not be negative but also not greater than '{2}'.",
 					paramName,
 					value,
 					other));
@@ -86,7 +87,7 @@ public static partial class ThrowHelper
 	/// range.</remarks>
 	/// <param name="value">The integer value to validate. Must not be negative and must not exceed <paramref name="other"/>.</param>
 	/// <param name="other">The upper limit, inclusive, that <paramref name="value"/> must not exceed. Must be less than or equal to <see
-	/// cref="int.MaxValue"/>.</param>
+	/// cref="long.MaxValue"/>.</param>
 	/// <param name="paramName">The name of the parameter being validated. This is automatically populated by the compiler if not explicitly
 	/// provided.</param>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is negative or greater than <paramref name="other"/>.</exception>
@@ -101,13 +102,14 @@ public static partial class ThrowHelper
 	/// the expected type.
 	/// </summary>
 	/// <remarks>Use this method to ensure that an object is of a specific type at runtime. If the value is <see
-	/// langword="null"/>, the method returns <see langword="null"/> without throwing an exception.</remarks>
+	/// langword="null"/>, the method returns the default value of <typeparamref name="T"/>, which is <see langword="null"/>
+	/// for a reference type, without throwing an exception.</remarks>
 	/// <typeparam name="T">The type to which the value is expected to be cast.</typeparam>
 	/// <param name="value">The object to validate and cast to type <typeparamref name="T"/>. May be <see langword="null"/>.</param>
 	/// <param name="paramName">The name of the parameter being validated. This is typically provided automatically by the compiler and is used in
 	/// exception messages.</param>
-	/// <returns>The value cast to type <typeparamref name="T"/>, or <see langword="null"/> if <paramref name="value"/> is <see
-	/// langword="null"/>.</returns>
+	/// <returns>The value cast to type <typeparamref name="T"/>, or the default value of <typeparamref name="T"/> if
+	/// <paramref name="value"/> is <see langword="null"/>.</returns>
 	/// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is not null and is not of type <typeparamref name="T"/>.</exception>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[return: NotNullIfNotNull(nameof(value))]

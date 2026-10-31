@@ -52,7 +52,9 @@ public static partial class PSOExtensions
 	/// <remarks>The property added is read-only and cannot be modified after creation. The method
 	/// selects an appropriate property type based on the value's type, supporting common types such as <see
 	/// langword="int"/>, <see langword="long"/>, <see langword="double"/>, <see langword="string"/>, and <see
-	/// cref="MetadataTag"/>. For other types, a generic note property is used.</remarks>
+	/// cref="MetadataTag"/>. For other types, and for <see langword="null"/>, a generic read-only property is used. A
+	/// <see cref="MetadataTag"/> value always becomes the object's <c>MetadataTag</c> property, whatever
+	/// <paramref name="propertyName"/> says.</remarks>
 	/// <param name="pso">The <see cref="PSObject"/> to which the property will be added.</param>
 	/// <param name="propertyName">The name of the property to add. Cannot be null or empty.</param>
 	/// <param name="value">The value to assign to the property. The property's type will be determined based on the runtime type of
@@ -83,7 +85,7 @@ public static partial class PSOExtensions
 				break;
 
 			default:
-				pso.Properties.Add(new PSNoteProperty(propertyName, value));
+				pso.Properties.Add(new ReadOnlyProperty(propertyName, value));
 				break;
 		}
 	}
@@ -201,7 +203,8 @@ public static partial class PSOExtensions
 	/// when possible.</remarks>
 	/// <param name="property">The property to convert. Must not be null.</param>
 	/// <param name="result">When this method returns <see langword="true"/>, contains the resulting <see cref="ReadOnlyStringProperty"/>
-	/// instance; otherwise, <see langword="null"/>.</param>
+	/// instance. When it returns <see langword="false"/>, contains <paramref name="property"/> itself if it's already a
+	/// <see cref="ReadOnlyStringProperty"/>, and <see langword="null"/> otherwise.</param>
 	/// <returns>true if the conversion was successful and <paramref name="result"/> contains a valid <see
 	/// cref="ReadOnlyStringProperty"/>; otherwise, false.</returns>
 	public static bool TryConvertToReadOnly([NotNullWhen(true)] this PSPropertyInfo? property, [NotNullWhen(true)] out ReadOnlyStringProperty? result)
@@ -231,19 +234,33 @@ public static partial class PSOExtensions
 		return true;
 	}
 
+	/// <summary>
+	/// Sets the specified number property to a value, adding the property when the object doesn't have it.
+	/// </summary>
+	/// <remarks>
+	/// A writable property of another kind is replaced with a number property. A read-only property makes the method
+	/// throw unless <paramref name="replaceReadOnly"/> is <see langword="true"/>, in which case it's replaced with a
+	/// read-only number property, so a property that PowerShell can't change stays that way.
+	/// </remarks>
+	/// <typeparam name="T">The numeric type of the value.</typeparam>
+	/// <param name="pso">The object whose property is set.</param>
+	/// <param name="number">The value to set.</param>
+	/// <param name="replaceReadOnly"><see langword="true"/> to replace a read-only property with a read-only one that
+	/// holds <paramref name="number"/>; otherwise, <see langword="false"/>.</param>
+	/// <param name="propertyName">The name of the property, which defaults to the calling member's name.</param>
+	/// <exception cref="ReadOnlyPropertyException">Thrown when the property is read-only and
+	/// <paramref name="replaceReadOnly"/> is false.</exception>
 	public static void UpdateProperty<T>(this PSObject pso, T number, bool replaceReadOnly = false, [CallerMemberName] string propertyName = "")
 		where T : unmanaged, INumber<T>
 	{
 		PSPropertyInfo? rawProperty = pso.Properties[propertyName];
-		if (rawProperty is null || rawProperty is not NumberNoteProperty<T> numberProp)
+		if (rawProperty is NumberNoteProperty<T> numberProp)
 		{
-			pso.Properties.Remove(propertyName);
-			pso.Properties.Add(NumberProperty.Create(propertyName, number));
-
+			numberProp.NumValue = number;
 			return;
 		}
 
-		if (!numberProp.IsSettable)
+		if (rawProperty is not null && !rawProperty.IsSettable)
 		{
 			if (!replaceReadOnly)
 			{
@@ -255,7 +272,8 @@ public static partial class PSOExtensions
 			return;
 		}
 
-		numberProp.NumValue = number;
+		pso.Properties.Remove(propertyName);
+		pso.Properties.Add(NumberProperty.Create(propertyName, number));
 	}
 
 	[DebuggerStepThrough]

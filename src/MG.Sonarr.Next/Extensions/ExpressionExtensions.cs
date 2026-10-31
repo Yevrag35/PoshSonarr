@@ -89,9 +89,10 @@ public static class ExpressionExtensions
 	/// </summary>
 	/// <param name="expression">The expression to check.</param>
 	/// <param name="setter">
-	///     When this method returns, the <see cref="FieldOrPropertyInfo"/>
-	///     of the expression's <see cref="MemberExpression.Member"/>; otherwise, the
-	///     default instance of <see cref="FieldOrPropertyInfo"/>.
+	///     When this method returns <see langword="true"/>, the <see cref="FieldOrPropertyInfo"/>
+	///     of the expression's <see cref="MemberExpression.Member"/>. When it returns <see langword="false"/>,
+	///     the <see cref="FieldOrPropertyInfo"/> of a property or field that can't be set, or
+	///     <see langword="null"/> when the body isn't a property or field.
 	/// </param>
 	/// <returns>
 	///     <see langword="true"/> if <paramref name="expression"/>'s body is a valid 

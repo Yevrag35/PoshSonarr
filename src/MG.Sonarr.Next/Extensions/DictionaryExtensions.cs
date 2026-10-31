@@ -7,23 +7,27 @@ namespace MG.Sonarr.Next.Extensions;
 /// </summary>
 public static class DictionaryExtensions
 {
-	[SuppressMessage("Style", "IDE0008:Use explicit type", Justification = "<Pending>")]
+	/// <summary>
+	/// Determines whether the dictionary contains the specified key, given as a span of characters.
+	/// </summary>
+	/// <remarks>
+	/// A dictionary whose comparer can compare a span with a <see cref="string"/>, as the default and ordinal comparers
+	/// can, looks the span up without allocating. Any other comparer gets the key as a new <see cref="string"/>.
+	/// </remarks>
+	/// <typeparam name="T">The type of the dictionary's values.</typeparam>
+	/// <param name="dictionary">The dictionary to search.</param>
+	/// <param name="key">The key to look for.</param>
+	/// <returns><see langword="true"/> if <paramref name="dictionary"/> contains <paramref name="key"/>; otherwise,
+	/// <see langword="false"/>.</returns>
 	public static bool ContainsKey<T>(this Dictionary<string, T> dictionary, ReadOnlySpan<char> key)
 	{
-		var lookup =
 #if NET9_0_OR_GREATER
-			dictionary.GetAlternateLookup<ReadOnlySpan<char>>();
+		return dictionary.TryGetAlternateLookup(out Dictionary<string, T>.AlternateLookup<ReadOnlySpan<char>> lookup)
+			? lookup.ContainsKey(key)
+			: dictionary.ContainsKey(key.ToString());
 #else
-                dictionary;
+		return dictionary.ContainsKey(key.ToString());
 #endif
-
-		var lookupKey =
-#if NET9_0_OR_GREATER
-			key;
-#else
-                key.ToString();
-#endif
-		return lookup.ContainsKey(lookupKey);
 	}
 
 	[return: NotNullIfNotNull(nameof(dictionary))]

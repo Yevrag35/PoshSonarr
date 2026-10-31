@@ -13,8 +13,12 @@ namespace MG.Sonarr.Next.Buffers;
 /// <para>A span or reference into the buffer, such as the one that <see cref="AsSpan()"/>, <see cref="AppendSpan(int)"/>, or the
 /// indexer returns, is valid only until the next call that grows the buffer, and it isn't valid as that call's argument
 /// either. Growing returns a rented array to the pool before the growing call reads its argument, so a span over the builder
-/// that's passed back to one of its own appends or inserts can read an array that the pool has already cleared or rented out
-/// again. In Debug builds, such an array reads as <c>'\uDDDD'</c> characters unless <see cref="ClearOnDispose"/> is set.</para>
+/// that's passed back to one of its own appends can read an array that the pool has already cleared or rented out again.
+/// <see cref="Insert(int, ReadOnlySpan{char})"/> doesn't take a span over the builder at all, since it moves the characters
+/// that such a span covers before it reads them.</para>
+/// <para>In Debug builds, the calls that write a span of characters assert that it doesn't point into the buffer whenever
+/// they grow the buffer, and <see cref="Insert(int, ReadOnlySpan{char})"/> asserts it on every call. A Debug build also fills
+/// an array that goes back to the pool with <c>'\uDDDD'</c> characters, unless <see cref="ClearOnDispose"/> is set.</para>
 /// </remarks>
 [DebuggerDisplay("{ToString(),nq}")]
 [StructLayout(LayoutKind.Auto), DebuggerStepThrough]
@@ -313,6 +317,7 @@ internal ref struct SpanStringBuilder
 	{
 		if (!value.IsEmpty)
 		{
+			Debug.Assert(value.Length <= _chars.Length - _position || !value.Overlaps(_chars), "A span over the builder was passed to a call that grows its buffer.");
 			this.EnsureCapacity(new pint(value.Length, true));
 			this.AppendCore(value);
 		}
@@ -560,6 +565,7 @@ internal ref struct SpanStringBuilder
 		if (!value.IsEmpty)
 		{
 			int len = value.Length + 2;
+			Debug.Assert(len <= _chars.Length - _position || !value.Overlaps(_chars), "A span over the builder was passed to a call that grows its buffer.");
 			this.EnsureCapacity(new pint(len, true));
 			var span = _chars.UnsafeSlice(_position, len);
 			_position += len;
@@ -591,6 +597,7 @@ internal ref struct SpanStringBuilder
 	public void AppendLine(scoped ReadOnlySpan<char> value)
 	{
 		int len = value.Length + s_newLineLength;
+		Debug.Assert(len <= _chars.Length - _position || !value.Overlaps(_chars), "A span over the builder was passed to a call that grows its buffer.");
 		this.EnsureCapacity(new pint(len, true));
 
 		ref char pos = ref _chars.Ref(_position);
@@ -760,13 +767,20 @@ internal ref struct SpanStringBuilder
 	/// Returns a slice of the current buffer corresponding to the specified segment position.
 	/// </summary>
 	/// <param name="position">The position record describing the start index and length of the slice.</param>
-	/// <returns>A <see cref="ReadOnlySpan{T}"/> representing the specified slice.</returns>
+	/// <returns>A <see cref="ReadOnlySpan{T}"/> representing the specified slice, or an empty span when
+	/// <paramref name="position"/> is undefined.</returns>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="position"/> ends past
+	/// <see cref="Capacity"/>.</exception>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal readonly ReadOnlySpan<char> GetSegment(SpanPosition position)
 	{
-		return position.IsDefined
-			? (ReadOnlySpan<char>)_chars.UnsafeSlice(position.Index, position.Length)
-			: [];
+		if (!position.IsDefined)
+		{
+			return [];
+		}
+
+		SpanPosition.ThrowIfOutOfRange(position, _chars.Length);
+		return _chars.UnsafeSlice(position.Index, position.Length);
 	}
 
 	/// <summary>
@@ -882,7 +896,9 @@ internal ref struct SpanStringBuilder
 	/// </summary>
 	/// <param name="index">The zero-based index where the characters will be inserted. An index equal to
 	/// <see cref="Length"/> appends them.</param>
-	/// <param name="value">The span of characters to insert.</param>
+	/// <param name="value">The span of characters to insert. It can't be a span over the builder, even when the call
+	/// doesn't grow the buffer, because the call moves the characters from <paramref name="index"/> on before it reads
+	/// <paramref name="value"/>.</param>
 	/// <exception cref="ArgumentOutOfRangeException">
 	/// Thrown when <paramref name="index"/> is less than 0 or greater than <see cref="Length"/>.
 	/// </exception>
@@ -896,6 +912,7 @@ internal ref struct SpanStringBuilder
 			return;
 		}
 
+		Debug.Assert(!value.Overlaps(_chars), "A span over the builder was passed to Insert, which moves the characters that the span covers before it reads them.");
 		this.EnsureCapacity(new pint(value.Length, true));
 		int remaining = _position - index;
 
@@ -928,6 +945,7 @@ internal ref struct SpanStringBuilder
 			int newEnd = index + value.Length;               // correct end-of-data after the write
 			int growth = newEnd - _position;                 // how much we extend past current end
 
+			Debug.Assert(growth <= _chars.Length - _position || !value.Overlaps(_chars), "A span over the builder was passed to a call that grows its buffer.");
 			if (growth > 0)
 				this.EnsureCapacity(new pint(growth, true)); // EnsureCapacity(additionalBeyondPosition)
 

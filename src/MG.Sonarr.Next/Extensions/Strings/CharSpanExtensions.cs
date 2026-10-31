@@ -37,16 +37,16 @@ public static partial class CharSpanExtensions
 	/// Copies characters from the source span to the destination span, omitting any characters that match those
 	/// specified in the <paramref name="removeChars"/> set.
 	/// </summary>
-	/// <remarks>If the destination span is not large enough to hold all non-removed characters, only
-	/// as many characters as will fit are written. The method does not throw an exception in this case; excess
-	/// characters are omitted. The operation does not allocate additional memory and is suitable for
-	/// performance-critical scenarios.</remarks>
+	/// <remarks>The operation does not allocate additional memory and is suitable for performance-critical
+	/// scenarios.</remarks>
 	/// <param name="source">The read-only span of characters to process and copy from.</param>
 	/// <param name="destination">The span of characters to which the filtered result will be written. Must be large enough to hold all
 	/// non-removed characters.</param>
 	/// <param name="removeChars">A set of characters to remove from the source span during copying. Any character in this set will be
 	/// excluded from the destination.</param>
 	/// <returns>The number of characters written to the destination span after removal of specified characters.</returns>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="destination"/> is too short to hold the characters
+	/// that aren't removed.</exception>
 	public static int RemoveAny(this ReadOnlySpan<char> source, Span<char> destination, SearchValues<char> removeChars)
 	{
 		int written = 0;
@@ -119,7 +119,7 @@ public static partial class CharSpanExtensions
 		return result;
 	}
 	/// <summary>
-	/// Determines whether the beginning of the <paramref name="readOnlySpan"/> matches the specified <paramref name="value"/> when compared ignoring case.
+	/// Determines whether the beginning of the <paramref name="readOnlySpan"/> matches the specified <paramref name="value"/> when compared ordinally.
 	/// </summary>
 	/// <param name="readOnlySpan">The source span.</param>
 	/// <param name="value">The character to compare to the beginning of the source span.</param>

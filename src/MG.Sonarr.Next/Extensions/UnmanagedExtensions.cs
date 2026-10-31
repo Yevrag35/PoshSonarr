@@ -5,40 +5,28 @@ namespace MG.Sonarr.Next.Extensions;
 public static class UnmanagedExtensions
 {
 	/// <summary>
-	/// Returns the length of how many <see cref="char"/> elements make 
-	/// up <typeparamref name="T"/> value if it were formatted as a 
-	/// <see cref="string"/> instance without actually converting it.
+	/// Returns the number of characters that the specified integer takes when it's written in decimal, without
+	/// formatting it.
 	/// </summary>
-	/// <typeparam name="T">The type of value.</typeparam>
+	/// <remarks>
+	/// The count includes a one-character minus sign for a negative value, as the invariant culture writes it.
+	/// </remarks>
+	/// <typeparam name="T">The integer type.</typeparam>
 	/// <param name="n">The value whose length will be calculated.</param>
 	/// <returns>
-	///     The number of characters <paramref name="n"/> would consist of if converted to its default
-	///     <see cref="string"/> equivalent.
+	///     The number of characters in <paramref name="n"/>'s decimal form, its minus sign included.
 	/// </returns>
 	[DebuggerStepThrough]
-	public static int GetLength<T>(this T n) where T : unmanaged, INumber<T>
+	public static int GetLength<T>(this T n) where T : unmanaged, IBinaryInteger<T>
 	{
-		if (T.IsZero(n))
-		{
-			return 1;
-		}
-
-		int length = 1;
-		// For negative numbers, add one to count for the '-' sign.
-		if (T.IsNegative(n))
+		// Division truncates toward zero for a negative value too, so the loop never needs the absolute value, which
+		// overflows for the minimum value of a signed type.
+		T ten = T.CreateTruncating(10);
+		int length = T.IsNegative(n) ? 2 : 1;
+		while ((n /= ten) != T.Zero)
 		{
 			length++;
-			n = T.Abs(n);
 		}
-
-		// Compute floor of log base 10 of the number.
-		int flooredLogBase10 = (int)Math
-			.Floor(
-				Math.Log10(
-					double.CreateChecked(n)));
-
-		// Add the number of digits in the absolute value of the number.
-		length += flooredLogBase10;
 
 		return length;
 	}

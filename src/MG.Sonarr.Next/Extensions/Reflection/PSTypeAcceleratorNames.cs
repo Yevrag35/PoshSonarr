@@ -1,4 +1,4 @@
-﻿using System.Collections.Frozen;
+using System.Collections.Frozen;
 
 namespace MG.Sonarr.Next.Extensions.Reflection;
 
@@ -121,7 +121,7 @@ public sealed class PSTypeAcceleratorNames
 			{ typeof(System.Management.Automation.PowerShell), "powershell" },
 			{ typeof(System.Management.Automation.PSAliasProperty), "psaliasproperty" },
 			{ typeof(System.Management.Automation.PSCredential), "pscredential" },
-			{ typeof(System.Management.Automation.PSCustomObject), "pscustomobject" },
+			// PowerShell's [pscustomobject] names PSObject, as [psobject] does, so PSCustomObject has no accelerator.
 			{ typeof(System.Management.Automation.PSDefaultValueAttribute), "PSDefaultValue" },
 			{ typeof(System.Management.Automation.PSListModifier), "pslistmodifier" },
 			{ typeof(System.Management.Automation.PSModuleInfo), "psmoduleinfo" },

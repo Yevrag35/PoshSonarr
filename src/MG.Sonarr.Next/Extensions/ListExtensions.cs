@@ -6,12 +6,12 @@ namespace MG.Sonarr.Next.Extensions;
 public static class ListExtensions
 {
 	/// <summary>
-	/// Adds all elements from the specified array into the current list.
+	/// Adds all elements from the specified span into the current list.
 	/// </summary>
 	/// <typeparam name="T">The type of elements in the list.</typeparam>
 	/// <param name="list">The list to copy the elements into.</param>
 	/// <param name="values">
-	///     The array of elements that will be added into <paramref name="list"/>.
+	///     The elements that will be added into <paramref name="list"/>.
 	/// </param>
 	/// <exception cref="ArgumentNullException"/>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -93,11 +93,11 @@ public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemb
 	[MemberNotNullWhen(true, nameof(_member), nameof(_memberName))]
 	public readonly bool CanGet => _canGet;
 	/// <summary>
-	/// Indicates whether this instance has an accessible getter for the member.
+	/// Indicates whether this instance has an accessible setter for the member.
 	/// </summary>
 	/// <remarks>
-	/// It can be expected that when this is <see langword="false"/>, running <see cref="SetValue(object, object)"/> 
-	/// will throw an exception.
+	/// It's <see langword="false"/> for a property without a setter, a read-only field, and a constant, none of which
+	/// <see cref="SetValue(object, object)"/> should be called for.
 	/// </remarks>
 	[MemberNotNullWhen(true, nameof(_member), nameof(_memberName))]
 	public readonly bool CanSet => _canSet;
@@ -127,7 +127,7 @@ public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemb
 		_memberName = fieldInfo.Name;
 		_either = fieldInfo;
 		_canGet = true;
-		_canSet = !fieldInfo.IsInitOnly;
+		_canSet = !fieldInfo.IsInitOnly && !fieldInfo.IsLiteral;
 		_member = fieldInfo;
 		_isStatic = fieldInfo.IsStatic;
 	}
