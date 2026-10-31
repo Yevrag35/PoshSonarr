@@ -42,11 +42,11 @@ internal sealed class MetadataResolver : IMetadataResolver
 	/// <summary>
 	/// The tags, keyed by name without regard to case.
 	/// </summary>
-	readonly Dictionary<string, MetadataTag> _dict;
+	private readonly Dictionary<string, MetadataTag> _dict;
 	/// <summary>
 	/// The names of the cmdlets that each tag's objects can be piped to, keyed by tag name.
 	/// </summary>
-	readonly Dictionary<string, ImmutableArray<string>> _pipesTo;
+	private readonly Dictionary<string, ImmutableArray<string>> _pipesTo;
 
 	/// <summary>
 	/// Gets the tag with the specified name.

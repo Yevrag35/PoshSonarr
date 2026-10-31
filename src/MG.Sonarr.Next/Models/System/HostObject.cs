@@ -164,14 +164,14 @@ public sealed class NoKeyHostObject : HostObject,
 	/// <summary>
 	/// The names of the properties that the object keeps out of PowerShell's view.
 	/// </summary>
-	static readonly ImmutableArray<string> _removeProperties =
+	private static readonly ImmutableArray<string> s_removeProperties =
 	[
 		Constants.ApiKey, Constants.Password, Constants.ProxyPassword,
 	];
 	/// <summary>
 	/// The full name of the type, which <see cref="SetPSTypeName"/> puts in place of the base's type name.
 	/// </summary>
-	static readonly string _typeName = typeof(NoKeyHostObject).GetName();
+	private static readonly string s_typeName = typeof(NoKeyHostObject).GetName();
 
 	/// <summary>
 	/// Compares this object with another through
@@ -229,7 +229,7 @@ public sealed class NoKeyHostObject : HostObject,
 	public override void Reset()
 	{
 		base.Reset();
-		this.Properties.RemoveMany(_removeProperties.AsSpan());
+		this.Properties.RemoveMany(s_removeProperties.AsSpan());
 	}
 	/// <summary>
 	/// Keeps the values of the API key and password properties and removes the properties.
@@ -240,7 +240,7 @@ public sealed class NoKeyHostObject : HostObject,
 	/// </remarks>
 	private void StoreConditionals()
 	{
-		foreach (string property in _removeProperties)
+		foreach (string property in s_removeProperties)
 		{
 			if (this.TryGetProperty(property, out string? propValue))
 			{
@@ -248,7 +248,7 @@ public sealed class NoKeyHostObject : HostObject,
 			}
 		}
 
-		this.Properties.RemoveMany(_removeProperties.AsSpan());
+		this.Properties.RemoveMany(s_removeProperties.AsSpan());
 	}
 	/// <summary>
 	/// Puts the object's own type name in place of <see cref="HostObject"/>'s.
@@ -258,6 +258,6 @@ public sealed class NoKeyHostObject : HostObject,
 		base.SetPSTypeName();
 
 		Debug.Assert(this.TypeNames.Count > 0 && this.TypeNames[0] == typeof(HostObject).GetName());
-		this.TypeNames[0] = _typeName;
+		this.TypeNames[0] = s_typeName; // overwrite the base type name with this type's name
 	}
 }

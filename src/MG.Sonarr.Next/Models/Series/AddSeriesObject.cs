@@ -36,15 +36,15 @@ public sealed class AddSeriesObject : SeriesObject,
 	/// <summary>
 	/// The number of properties that a lookup result is created with room for.
 	/// </summary>
-	const int CAPACITY = 50;
+	private const int CAPACITY = 50;
 	/// <summary>
 	/// The name of the property that holds the root folder that the series is added under.
 	/// </summary>
-	const string ROOT_FOLDER_PATH = "RootFolderPath";
+	private const string ROOT_FOLDER_PATH = "RootFolderPath";
 	/// <summary>
 	/// The PowerShell type name of <see cref="AddSeriesObject"/>.
 	/// </summary>
-	static readonly string _typeName = typeof(AddSeriesObject).GetName();
+	private static readonly string s_typeName = typeof(AddSeriesObject).GetName();
 	/// <summary>
 	/// The path that <see cref="Path"/> returns.
 	/// </summary>
@@ -144,7 +144,7 @@ public sealed class AddSeriesObject : SeriesObject,
 	/// </returns>
 	public override int CompareTo(SeriesObject? other)
 	{
-		return StringComparer.InvariantCultureIgnoreCase.Compare(this.Title, other?.Title);
+		return StringComparer.OrdinalIgnoreCase.Compare(this.Title, other?.Title);
 	}
 	/// <summary>
 	/// Gets the ID that the lookup result pipes as a series.
@@ -233,7 +233,7 @@ public sealed class AddSeriesObject : SeriesObject,
 			return this.TypeNames.Count > 0 && this.TypeNames[0] == typeof(SeriesObject).GetName();
 		});
 
-		this.TypeNames[0] = _typeName;  // Should overwrite 'SeriesObject'.
+		this.TypeNames[0] = s_typeName;  // Should overwrite 'SeriesObject'.
 	}
 	/// <summary>
 	/// Determines whether the lookup result is read-only as a property of a parent object.
