@@ -214,7 +214,8 @@ public ref partial struct RentedBuffer<T> : IDisposable
 	/// <returns>
 	/// The capacity of the buffer after resizing, which may be greater than or equal to the specified <paramref name="newMinimumCapacity"/>.
 	/// </returns>
-	/// <exception cref="ArgumentOutOfRangeException"><paramref name="newMinimumCapacity"/> is less than the current <see cref="Length"/>.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="newMinimumCapacity"/> is zero or negative, or less
+	/// than the current <see cref="Length"/>.</exception>
 	[MethodImpl(MethodImplOptions.NoInlining)]
 	public int Resize(int newMinimumCapacity)
 	{

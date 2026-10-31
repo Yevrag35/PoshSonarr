@@ -123,7 +123,9 @@ public readonly struct SpanPosition : IComparable<SpanPosition>, IEquatable<int>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static void ThrowIfOutOfRange(SpanPosition position, int length, [CallerArgumentExpression(nameof(position))] string? paramName = null)
 	{
-		if (position.End > length)
+		// Comparing as unsigned values rejects a negative index or length, and the subtraction, unlike the sum of the
+		// index and length, can't overflow once the index is known to lie within the range.
+		if ((uint)position._index > (uint)length || (uint)position._length > (uint)(length - position._index))
 		{
 			throwEx(position, length, paramName);
 		}
@@ -131,7 +133,7 @@ public readonly struct SpanPosition : IComparable<SpanPosition>, IEquatable<int>
 		[DoesNotReturn, StackTraceHidden, MethodImpl(MethodImplOptions.NoInlining)]
 		static void throwEx(SpanPosition position, int length, string? paramName)
 		{
-			throw new ArgumentOutOfRangeException(paramName, $"The span position {position} is out of range for the specified length {length}.");
+			throw new ArgumentOutOfRangeException(paramName, $"The span position {{Index={position._index}, Length={position._length}}} is out of range for the specified length {length}.");
 		}
 	}
 	/// <summary>

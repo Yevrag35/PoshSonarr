@@ -1,4 +1,3 @@
-using MG.Sonarr.Next.Guarding;
 using System.ComponentModel;
 
 namespace MG.Sonarr.Next.Buffers;
@@ -63,19 +62,29 @@ public readonly struct ArraySlice<T> : IReadOnlyCollection<T>
 	/// Gets or sets the element at the specified index within the slice.
 	/// </summary>
 	/// <param name="index">The zero-based index of the element, relative to the start of the slice.</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="index"/> is negative or not less than
+	/// <see cref="Length"/>.</exception>
 	/// <value>The element located at the specified <paramref name="index"/>.</value>
 	public T this[int index]
 	{
-		get => _array![_offset + index];
-		set => _array![_offset + index] = value;
+		get
+		{
+			ThrowIfOutsideSlice(index, _length);
+			return _array![_offset + index];
+		}
+		set
+		{
+			ThrowIfOutsideSlice(index, _length);
+			_array![_offset + index] = value;
+		}
 	}
 
 	/// <summary>
 	/// Gets the underlying array represented by this slice.
 	/// </summary>
 	/// <value>
-	/// A reference to the underlying array, or an empty array if the slice is empty
-	/// or default-initialized.
+	/// The array that backs the slice, including its elements outside the slice, or <see langword="null"/> if the slice
+	/// is default-initialized.
 	/// </value>
 	public T[]? Array => _array;
 	/// <summary>
@@ -130,26 +139,39 @@ public readonly struct ArraySlice<T> : IReadOnlyCollection<T>
 	{
 	}
 	/// <summary>
-	/// Initializes a new instance of the ArraySlice class that represents a contiguous segment of the specified array.
+	/// Initializes a new <see cref="ArraySlice{T}"/> instance over the <paramref name="length"/> elements of
+	/// <paramref name="array"/> that start at <paramref name="offset"/>.
 	/// </summary>
 	/// <param name="array">The array to create a slice from. Cannot be null.</param>
 	/// <param name="offset">The zero-based index in the array at which the slice begins. Must be greater than or equal to 0 and less than or
 	/// equal to the length of the array.</param>
 	/// <param name="length">The number of elements in the slice. Must be non-negative and not exceed the number of elements from offset to the
 	/// end of the array.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="array"/> is null.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="offset"/> is negative or greater than the length of
+	/// <paramref name="array"/>, or when <paramref name="length"/> is negative or greater than the number of elements from
+	/// <paramref name="offset"/> to the end of <paramref name="array"/>.</exception>
 	public ArraySlice(T[] array, int offset, int length)
 	{
 		ArgumentNullException.ThrowIfNull(array);
-		ThrowHelper.ThrowIfNegativeOrGreaterThan(length, (uint)array.Length - (uint)offset, nameof(length));
+
+		// Comparing as unsigned values rejects a negative argument along with one that's too large, and the subtraction
+		// can't overflow once the offset is known to lie within the array.
+		if ((uint)offset > (uint)array.Length || (uint)length > (uint)(array.Length - offset))
+		{
+			ThrowOutOfRange(offset, length, array.Length);
+		}
+
 		_array = array;
-		_offset = pint.Clamp(offset);
-		_length = pint.Clamp(length);
+		_offset = new pint(offset, true);
+		_length = new pint(length, true);
 	}
 
 	/// <summary>
 	/// Deconstructs the slice into its underlying array, length, and offset components.
 	/// </summary>
-	/// <param name="array">When this method returns, contains the underlying array, or an empty array if the slice is empty.</param>
+	/// <param name="array">When this method returns, contains the underlying array, or an empty array if the slice is
+	/// default-initialized.</param>
 	/// <param name="length">When this method returns, contains the number of elements in the slice.</param>
 	/// <param name="offset">When this method returns, contains the zero-based offset at which the slice begins.</param>
 	[DebuggerStepThrough, EditorBrowsable(EditorBrowsableState.Never)]
@@ -225,6 +247,49 @@ public readonly struct ArraySlice<T> : IReadOnlyCollection<T>
 	}
 
 	/// <summary>
+	/// Throws an <see cref="ArgumentOutOfRangeException"/> when <paramref name="index"/> doesn't lie within a slice of
+	/// <paramref name="length"/> elements.
+	/// </summary>
+	/// <param name="index">The zero-based index, relative to the start of the slice.</param>
+	/// <param name="length">The number of elements in the slice.</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="index"/> is negative or not less than
+	/// <paramref name="length"/>.</exception>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static void ThrowIfOutsideSlice(int index, int length)
+	{
+		if ((uint)index >= (uint)length)
+		{
+			ThrowIndexOutOfRange(index);
+		}
+	}
+
+	/// <summary>
+	/// Throws an <see cref="ArgumentOutOfRangeException"/> for an index that lies outside the slice.
+	/// </summary>
+	/// <param name="index">The index that lies outside the slice.</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown unconditionally.</exception>
+	[DoesNotReturn, StackTraceHidden, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+	private static void ThrowIndexOutOfRange(int index)
+	{
+		throw new ArgumentOutOfRangeException(nameof(index), index, "The index must lie within the slice.");
+	}
+
+	/// <summary>
+	/// Throws an <see cref="ArgumentOutOfRangeException"/> that names the argument that puts a slice outside its array.
+	/// </summary>
+	/// <param name="offset">The zero-based index at which the slice begins.</param>
+	/// <param name="length">The number of elements in the slice.</param>
+	/// <param name="arrayLength">The length of the array.</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown unconditionally.</exception>
+	[DoesNotReturn, StackTraceHidden, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+	private static void ThrowOutOfRange(int offset, int length, int arrayLength)
+	{
+		throw (uint)offset > (uint)arrayLength
+			? new ArgumentOutOfRangeException(nameof(offset), offset, "The offset must lie within the array.")
+			: new ArgumentOutOfRangeException(nameof(length), length, "The slice must end within the array.");
+	}
+
+	/// <summary>
 	/// Provides an enumerator for iterating over a slice of an array of type <typeparamref name="T"/>.
 	/// </summary>
 	[StructLayout(LayoutKind.Auto)]
@@ -270,8 +335,10 @@ public readonly struct ArraySlice<T> : IReadOnlyCollection<T>
 			return false;
 		}
 		/// <inheritdoc/>
-		public readonly void Reset()
+		public void Reset()
 		{
+			_current = default!;
+			_index = -1;
 		}
 		/// <inheritdoc/>
 		public readonly void Dispose()

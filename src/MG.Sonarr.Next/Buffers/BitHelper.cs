@@ -22,8 +22,9 @@ public static class BitHelper
 	/// Rounds the given <see cref="int"/> value up to the next power of 2.
 	/// </summary>
 	/// <param name="value">The value to round up.</param>
-	/// <returns>The next power of 2 greater than or equal to the specified value.</returns>
-	/// <exception cref="ArgumentOutOfRangeException"><paramref name="value"/> is negative.</exception>
+	/// <returns>The smallest power of 2 that is at least 2 and greater than or equal to <paramref name="value"/>.</returns>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="value"/> is negative or greater than
+	/// <see cref="LargestIntPowerOf2"/>.</exception>
 	public static int RoundUpToPowerOf2(int value)
 	{
 		ThrowHelper.ThrowIfNegativeOrGreaterThan(value, LargestIntPowerOf2);

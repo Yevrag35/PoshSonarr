@@ -101,7 +101,7 @@ When such a site does need the mutable ref, typically to reach `Offset`, whose r
 | `ArraySliceMarshal` (`ArraySlice<T>`) | `Create<T>(array, offset, length)`, an `ArraySlice<T>` built without the constructor's validation |
 | `ListMarshal` (`List<T>`) | see below |
 
-`PoolMarshal.GetReference` returns a null ref for a default or empty buffer instead of asserting, so check it with `Unsafe.IsNullRef` unless the buffer is known to hold elements. `Resize` only grows: it rents a new array, copies the old one into it, returns the old one to the pool, and sets the buffer's `Length` to its new capacity.
+`PoolMarshal.GetReference` returns a null ref for a default or empty buffer instead of asserting, so check it with `Unsafe.IsNullRef` unless the buffer is known to hold elements. `Resize` only grows, and it leaves the buffer's `Length` covering its whole backing array. When the array can already hold the new size, only `Length` grows, to the capacity; otherwise `Resize` rents a new array, copies the old one into it, and returns the old one to the pool. The buffer keeps its `ClearOnDispose`, which also decides whether the old array goes back cleared.
 
 `ListMarshal` reaches into `List<T>`'s private fields through `[UnsafeAccessor]`:
 

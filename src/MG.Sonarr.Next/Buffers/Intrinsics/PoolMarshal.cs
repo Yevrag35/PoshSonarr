@@ -38,33 +38,19 @@ public static class PoolMarshal
 	/// Resizes the specified <see cref="PooledBuffer{T}"/> instance to the specified new size.
 	/// </summary>
 	/// <remarks>
-	/// This method handles the resizing of the buffer, including allocating a new array if necessary and copying the existing elements to the new array.
-	/// The old array is returned to the pool if it was rented, and the new buffer will have at least the specified capacity.
+	/// <para>The method never shrinks a buffer, so one whose <see cref="PooledBuffer{T}.Length"/> already covers
+	/// <paramref name="newSize"/> doesn't change. Any other buffer ends with a <see cref="PooledBuffer{T}.Length"/> that
+	/// covers its whole backing array: the array that it has, when that array can hold <paramref name="newSize"/>
+	/// elements, and otherwise a newly rented array of at least that size, into which the old array is copied before the
+	/// old array goes back to the pool.</para>
+	/// <para>The buffer keeps its <see cref="PooledBuffer{T}.ClearOnDispose"/> setting, which also decides whether the
+	/// old array is cleared on its way back to the pool.</para>
 	/// </remarks>
 	/// <typeparam name="T">The type of elements in the buffer.</typeparam>
 	/// <param name="buffer">The buffer instance.</param>
-	/// <param name="newSize">The new size for the buffer.</param>
+	/// <param name="newSize">The number of elements that the buffer must be able to hold.</param>
 	public static void Resize<T>(ref PooledBuffer<T> buffer, int newSize)
 	{
-		if (newSize <= buffer.Capacity) return;
-
-		if (buffer.IsDefaultOrEmpty)
-		{
-			buffer = new(newSize, useEntireCapacity: true);
-			return;
-		}
-
-		bool dispose = buffer.ClearOnDispose;
-		var old = buffer.GetRawArray()!;
-
-		try
-		{
-			buffer = new(newSize, useEntireCapacity: true);
-			Array.Copy(old, buffer.GetRawArray()!, old.Length);
-		}
-		finally
-		{
-			Rent.Return(old, clearArray: dispose);
-		}
+		buffer.ResizeCore(newSize);
 	}
 }

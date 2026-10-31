@@ -317,6 +317,46 @@ public struct PooledBuffer<T> : IDisposable
 	public readonly T[]? GetRawArray() => _array;
 
 	/// <summary>
+	/// Grows a buffer whose logical length is less than <paramref name="newSize"/>, so that it holds at least that many
+	/// elements and its logical length covers its whole backing array.
+	/// </summary>
+	/// <remarks>
+	/// <para>A buffer whose <see cref="Length"/> already covers <paramref name="newSize"/> doesn't change. One whose
+	/// backing array can hold <paramref name="newSize"/> elements keeps that array, and its <see cref="Length"/> grows to
+	/// <see cref="Capacity"/>. Any other buffer rents an array of at least <paramref name="newSize"/> elements, copies
+	/// its old array into it, and returns the old array to the pool.</para>
+	/// <para>The buffer keeps its <see cref="ClearOnDispose"/> setting, which also decides whether the old array is
+	/// cleared on its way back to the pool. The old array goes back only after the new one is rented, so a rental that
+	/// throws leaves the buffer as it was.</para>
+	/// </remarks>
+	/// <param name="newSize">The number of elements that the buffer must be able to hold.</param>
+	internal void ResizeCore(int newSize)
+	{
+		if (newSize <= _length)
+		{
+			return;
+		}
+
+		T[]? oldArray = _array;
+		if (oldArray is not null && newSize <= oldArray.Length)
+		{
+			_length = oldArray.Length;
+			return;
+		}
+
+		T[] newArray = Rent.Array<T>(newSize);
+		if (oldArray is not null)
+		{
+			Array.Copy(oldArray, newArray, oldArray.Length);
+		}
+
+		_array = newArray;
+		_length = newArray.Length;
+		_flags |= RENTED_BIT;
+		Rent.Return(oldArray, this.ClearOnDispose);
+	}
+
+	/// <summary>
 	/// Determines whether a slice that starts at <paramref name="index"/> and covers <paramref name="length"/> elements
 	/// lies within the logical length of the buffer.
 	/// </summary>

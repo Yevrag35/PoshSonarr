@@ -67,8 +67,8 @@ Run it through the script beside it, never the exe:
 
 ### Local functions and lambdas
 
-- The compiler emits a local function as a method of its declaring type, so a class-wide run prepares it with no extra arguments. To target one, pass its exact compiled name, quoted for PowerShell's angle brackets and pipe, as in `SpanStringBuilder '<Grow>g__throwTooBig|71_0'`.
-- A local function declared inside a generic method has that method's type parameters, so it needs `-MethodArgs`, as `throwFormatEx` inside `SpanStringBuilder.AppendCore<T>` does.
+- The compiler emits a local function as a method of its declaring type, so a class-wide run prepares it with no extra arguments. To target one, pass its exact compiled name, quoted for PowerShell's angle brackets and pipe, as in `SpanStringBuilder '<Grow>g__throwTooBig|73_0'`.
+- A local function declared inside a generic method has that method's type parameters, so it needs `-MethodArgs`, as `rentFromLength` inside `RentedBuffer.Rent<T>` does: `RentedBuffer '<Rent>g__rentFromLength|5_0' -MethodArgs char`.
 - The numbers at the end of a compiled name follow the method's position in its type, and they change when members above it are added or moved. A saved command line goes stale that way, and so does the dump name it derives. Pass a stable `-OutFile` for any comparison across edits, and for runs of one generic type with different type arguments, which would otherwise share a dump name and rotate over each other's baseline.
 - A lambda compiles into a method of a nested display class, `<>c` or `<>c__DisplayClass*`. Target the class through its outer type, as in `'Messenger+<>c'`. The bare `'<>c'` is ambiguous, and its pattern also matches the harness's own lambdas, which compile during every run.
 
