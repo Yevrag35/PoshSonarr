@@ -1,6 +1,7 @@
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Services.Http.Handlers;
+using MG.Sonarr.Next.Services.Http.Requests;
 using System.Management.Automation;
 using System.Net;
 

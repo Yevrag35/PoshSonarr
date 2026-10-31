@@ -1,5 +1,3 @@
-using MG.Sonarr.Next.Extensions;
-
 namespace MG.Sonarr.Next.Collections;
 
 internal readonly struct JsonNameHolder

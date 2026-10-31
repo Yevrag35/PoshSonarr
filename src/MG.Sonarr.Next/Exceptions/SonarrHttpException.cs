@@ -1,5 +1,5 @@
 using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Services.Http.Requests;
 using System.Net;
 
 namespace MG.Sonarr.Next.Exceptions;

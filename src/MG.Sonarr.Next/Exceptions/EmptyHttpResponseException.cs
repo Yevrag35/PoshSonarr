@@ -1,3 +1,4 @@
+using MG.Sonarr.Next.Services.Http.Requests;
 using System.Net;
 
 namespace MG.Sonarr.Next.Exceptions;

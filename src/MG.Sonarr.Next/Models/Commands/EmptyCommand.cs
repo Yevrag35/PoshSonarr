@@ -1,5 +1,3 @@
-﻿using MG.Sonarr.Next.Extensions;
-
 namespace MG.Sonarr.Next.Models.Commands;
 
 internal readonly struct EmptyCommand : ICommand
