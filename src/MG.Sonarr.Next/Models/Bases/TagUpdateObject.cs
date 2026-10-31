@@ -4,41 +4,58 @@ using MG.Sonarr.Next.PSProperties;
 namespace MG.Sonarr.Next.Models;
 
 /// <summary>
-/// Provides a base type for Sonarr objects that support tag updates and piping to the tag endpoint.
+/// Represents a Sonarr API resource that has a numeric ID and carries tag IDs.
 /// </summary>
 /// <remarks>
-/// Derive from this class to add tag management for objects that implement tag-based updates. The generic
-/// parameter <typeparamref name="TSelf"/> must be a subtype of <see cref="IdSonarrObject{TSelf}"/> which
-/// ensures the implementation exposes an <see cref="IHasId"/>-style identifier.
+/// <para>
+/// The object can be piped as an <see cref="ITagPipeable"/> to the cmdlets that read and change tags. Its
+/// <see cref="Tags"/> is the set that the read-only <c>Tags</c> note property holds, so a change made to it in C#
+/// shows in PowerShell and in the next request body, while PowerShell can't replace the set.
+/// </para>
+/// <para>
+/// <see cref="Commit"/> and <see cref="Reset"/> are sealed. A derived model adds to them through
+/// <see cref="OnCommit"/> and <see cref="OnReset"/>, and to deserialization through an override of
+/// <see cref="OnDeserialized(bool)"/> that calls the base implementation first.
+/// </para>
 /// </remarks>
-/// <typeparam name="TSelf">The implementing type that derives from <see cref="IdSonarrObject{TSelf}"/>.</typeparam>
+/// <typeparam name="TSelf">The derived model type.</typeparam>
 public abstract class TagUpdateObject<TSelf> : IdSonarrObject<TSelf>,
 	ITagPipeable
 	where TSelf : IdSonarrObject<TSelf>
 {
+	/// <summary>
+	/// The object's tag IDs, or <see langword="null"/> until they're set or first read.
+	/// </summary>
 	private SortedSet<int>? _tags;
+	/// <summary>
+	/// The snapshot of tag IDs that <see cref="Reset"/> puts back, or <see langword="null"/> if none was taken.
+	/// </summary>
 	private int[]? _originalTags;
 	//private int _originalTagCount;
 
 	/// <summary>
-	/// Gets or sets a value indicating whether tag changes must be persisted via the Sonarr API.
+	/// Gets or sets a value that indicates whether a change to the object's tags must be saved with a request to Sonarr.
 	/// </summary>
 	/// <remarks>
-	/// When <see langword="true"/>, callers should use the Sonarr API to apply tag changes rather than relying on local operations.
-	/// The setter is <c>protected</c> to allow derived types to control when an object requires API updates.
+	/// A tag cmdlet sends the object back with a PUT after changing its tags only when this is <see langword="true"/>.
+	/// <see cref="OnDeserialized(bool)"/> sets it to <see langword="true"/>, so a model for objects that don't exist
+	/// on the server yet sets it to <see langword="false"/> after calling the base implementation.
 	/// </remarks>
-	/// <value><see langword="true"/> if updates must be saved via the API; otherwise, <see langword="false"/>.</value>
+	/// <value>
+	/// <see langword="true"/> if the object exists on the server; <see langword="false"/> if it doesn't exist there
+	/// yet, such as a lookup result or a schema, whose tags are sent with the request that creates it.
+	/// </value>
 	public virtual bool MustUpdateViaApi { get; protected set; }
 
 	/// <summary>
-	/// Gets or sets the unique set of tag identifiers associated with this object.
+	/// Gets or sets the object's tag IDs.
 	/// </summary>
 	/// <remarks>
-	/// The returned collection is a <see cref="SortedSet{T}"/> of tag IDs. The setter copies the contents
-	/// into an internal array to preserve the original tag state for later commit/reset operations.
+	/// Setting the property takes a snapshot of the set's IDs, which <see cref="Reset"/> puts back. Reading it before
+	/// it's set gives a new empty set.
 	/// </remarks>
-	/// <value>A mutable <see cref="SortedSet{Int32}"/> containing the tag IDs for this object.</value>
-	/// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="value"/> is <see langword="null"/>.</exception>
+	/// <exception cref="ArgumentNullException">Thrown when the property is set to null.</exception>
+	/// <value>The set of the object's tag IDs, in ascending order.</value>
 	public SortedSet<int> Tags
 	{
 		get => _tags ??= [];
@@ -50,38 +67,39 @@ public abstract class TagUpdateObject<TSelf> : IdSonarrObject<TSelf>,
 		}
 	}
 	/// <summary>
-	/// Gets the set of tags via the <see cref="ITagPipeable"/> interface.
+	/// Gets the object's tag IDs.
 	/// </summary>
-	/// <remarks>
-	/// This explicit interface implementation forwards to <see cref="Tags"/> and exposes the set as an <see cref="ISet{Int32}"/>
-	/// </remarks>
+	/// <value>The set that <see cref="Tags"/> returns.</value>
 	ISet<int> ITagPipeable.Tags => this.Tags;
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="TagUpdateObject{TSelf}"/> class with the specified capacity.
+	/// Initializes a new <see cref="TagUpdateObject{TSelf}"/> instance with room for the specified number of members.
 	/// </summary>
-	/// <remarks>
-	/// The <paramref name="capacity"/> is passed to the base <see cref="SonarrObject"/> ctor to size internal collections.
-	/// </remarks>
-	/// <param name="capacity">The initial capacity for internal storage.</param>
+	/// <param name="capacity">
+	/// The number of members that the object's member collection starts with room for, about the number of fields that
+	/// Sonarr sends for the resource.
+	/// </param>
 	protected TagUpdateObject(int capacity)
 		: base(capacity)
 	{
 	}
 
 	/// <summary>
-	/// Commit tag changes and run derived commit logic.
+	/// Makes the object's current tags its snapshot and brings the rest of the object back in step after a request
+	/// that sends it succeeds.
 	/// </summary>
 	/// <remarks>
-	/// This sealed override first commits tags via the <see cref="ITagPipeable.CommitTags"/> implementation
-	/// and then calls <see cref="OnCommit"/> for additional derived-type behavior.
+	/// It calls <see cref="ITagPipeable.CommitTags"/> and then <see cref="OnCommit"/>.
 	/// </remarks>
 	public sealed override void Commit()
 	{
 		((ITagPipeable)this).CommitTags();
 		this.OnCommit();
 	}
-	/// <inheritdoc/>
+	//BUG: CommitTags does nothing (its body is commented out), so a Reset after a successful Commit restores the tags from before the commit.
+	/// <summary>
+	/// Makes the object's current tags the snapshot that <see cref="Reset"/> puts back.
+	/// </summary>
 	void ITagPipeable.CommitTags()
 	{
 		if (_originalTags is not null)
@@ -92,10 +110,11 @@ public abstract class TagUpdateObject<TSelf> : IdSonarrObject<TSelf>,
 	}
 
 	/// <summary>
-	/// Called after tags have been committed to perform derived commit actions.
+	/// When overridden in a derived class, brings the object's other values back in step after a request that sends it
+	/// succeeds.
 	/// </summary>
 	/// <remarks>
-	/// Default implementation does nothing. Override to clear caches or update derived state after a successful commit.
+	/// <see cref="Commit"/> calls it after committing the tags. The base implementation does nothing.
 	/// </remarks>
 	protected virtual void OnCommit()
 	{
@@ -103,13 +122,17 @@ public abstract class TagUpdateObject<TSelf> : IdSonarrObject<TSelf>,
 	}
 
 	/// <summary>
-	/// Handle additional deserialization work specific to tag updates.
+	/// Marks the object as one that exists on the server and takes its tag IDs from its <c>Tags</c> note property.
 	/// </summary>
 	/// <remarks>
-	/// Sets <see cref="MustUpdateViaApi"/> to <see langword="true"/> and, if a <see cref="ReadOnlyTagsProperty"/>
-	/// is present in <see cref="PSObject.Properties"/>, initializes <see cref="Tags"/> from it.
+	/// It sets <see cref="MustUpdateViaApi"/> to <see langword="true"/>, and when the object has a
+	/// <see cref="ReadOnlyTagsProperty"/> named <c>Tags</c>, sets <see cref="Tags"/> to the set it holds, which takes
+	/// the snapshot. A derived model's override calls it first.
 	/// </remarks>
-	/// <param name="alreadyCalled"><see langword="true"/> if deserialization hooks have already run; otherwise <see langword="false"/>.</param>
+	/// <param name="alreadyCalled">
+	/// <see langword="true"/> if <see cref="SonarrObject.OnDeserialized()"/> has run on the object before; otherwise,
+	/// <see langword="false"/>.
+	/// </param>
 	protected override void OnDeserialized(bool alreadyCalled)
 	{
 		this.MustUpdateViaApi = true;
@@ -120,11 +143,12 @@ public abstract class TagUpdateObject<TSelf> : IdSonarrObject<TSelf>,
 	}
 
 	/// <summary>
-	/// Reset tags to their original state and run derived reset logic.
+	/// Puts the snapshot of the object's tags back and brings the rest of the object back to its state before a
+	/// request that sends it failed.
 	/// </summary>
 	/// <remarks>
-	/// If no original tag snapshot exists, the tags collection is cleared. After restoring the original values
-	/// this method calls <see cref="OnReset"/> for further derived behavior.
+	/// The set itself is kept, so the <c>Tags</c> note property shows the restored IDs. When no snapshot was taken, the
+	/// set is cleared. It then calls <see cref="OnReset"/>.
 	/// </remarks>
 	public sealed override void Reset()
 	{
@@ -141,16 +165,21 @@ public abstract class TagUpdateObject<TSelf> : IdSonarrObject<TSelf>,
 	}
 
 	/// <summary>
-	/// Called after Reset to allow derived types to restore or clear additional state.
+	/// When overridden in a derived class, brings the object's other values back to their state before a request that
+	/// sends it failed.
 	/// </summary>
 	/// <remarks>
-	/// Default implementation does nothing. Override to revert non-tag state to its original values.
+	/// <see cref="Reset"/> calls it after restoring the tags. The base implementation does nothing.
 	/// </remarks>
 	protected virtual void OnReset()
 	{
 		return;
 	}
 
+	/// <summary>
+	/// Gets the ID that the tag cmdlets act on.
+	/// </summary>
+	/// <returns>The object's <see cref="IdSonarrObject{TSelf}.Id"/>.</returns>
 	int? IPipeable<ITagPipeable>.GetId()
 	{
 		return this.Id;
