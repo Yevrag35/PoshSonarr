@@ -2,6 +2,9 @@ using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Extensions.PSO;
 
+/// <summary>
+/// Provides dynamic property add or update helpers for <see cref="PSObject"/> instances.
+/// </summary>
 public static partial class PSOExtensions
 {
 	/// <summary>
@@ -47,13 +50,13 @@ public static partial class PSOExtensions
 	}
 
 	/// <summary>
-	/// 
+	/// Gets an existing property of the specified type or adds one when missing or mismatched.
 	/// </summary>
-	/// <typeparam name="TProp"></typeparam>
-	/// <param name="pso"></param>
-	/// <param name="propertyName"></param>
-	/// <param name="propertyFactory"></param>
-	/// <returns></returns>
+	/// <typeparam name="TProp">The property type to retrieve or create.</typeparam>
+	/// <param name="pso">The object whose property is retrieved.</param>
+	/// <param name="propertyName">The property name.</param>
+	/// <param name="propertyFactory">The factory that creates the property when needed.</param>
+	/// <returns>The existing or newly created property.</returns>
 	public static TProp GetOrAdd<TProp>(this PSObject pso,
 		string propertyName,
 		Func<string, TProp> propertyFactory)
@@ -76,15 +79,15 @@ public static partial class PSOExtensions
 		return property;
 	}
 	/// <summary>
-	/// 
+	/// Gets an existing property of the specified type or adds one when missing or mismatched.
 	/// </summary>
-	/// <typeparam name="TProp"></typeparam>
-	/// <typeparam name="TState"></typeparam>
-	/// <param name="pso"></param>
-	/// <param name="propertyName"></param>
-	/// <param name="state"></param>
-	/// <param name="propertyFactory"></param>
-	/// <returns></returns>
+	/// <typeparam name="TProp">The property type to retrieve or create.</typeparam>
+	/// <typeparam name="TState">The state type passed to the property factory.</typeparam>
+	/// <param name="pso">The object whose property is retrieved.</param>
+	/// <param name="propertyName">The property name.</param>
+	/// <param name="state">The state passed to <paramref name="propertyFactory"/>.</param>
+	/// <param name="propertyFactory">The factory that creates the property when needed.</param>
+	/// <returns>The existing or newly created property.</returns>
 	public static TProp GetOrAdd<TProp, TState>(this PSObject pso,
 		string propertyName,
 		TState state,

@@ -2,8 +2,18 @@ using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Extensions.PSO;
 
+/// <summary>
+/// Provides miscellaneous property read, write, and projection helpers for <see cref="PSObject"/> instances.
+/// </summary>
 public static partial class PSOExtensions
 {
+	/// <summary>
+	/// Gets the value of the specified property as <typeparamref name="T"/>.
+	/// </summary>
+	/// <typeparam name="T">The type to read the value as.</typeparam>
+	/// <param name="pso">The object whose property is read.</param>
+	/// <param name="propertyName">The property name, which defaults to the calling member's name.</param>
+	/// <returns>The converted value when available; otherwise, the default value of <typeparamref name="T"/>.</returns>
 	[DebuggerStepThrough]
 	public static T? GetValue<T>(this PSObject pso, [CallerMemberName] string propertyName = "")
 	{
@@ -36,6 +46,14 @@ public static partial class PSOExtensions
 		};
 	}
 
+	/// <summary>
+	/// Sets the specified property to the provided value.
+	/// </summary>
+	/// <typeparam name="T">The value type.</typeparam>
+	/// <param name="pso">The object whose property is updated.</param>
+	/// <param name="value">The value to assign.</param>
+	/// <param name="propertyName">The property name, which defaults to the calling member's name.</param>
+	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="pso"/> is null.</exception>
 	[DebuggerStepThrough]
 	public static void SetValue<T>(this PSObject pso, T? value, [CallerMemberName] string propertyName = "")
 	{
@@ -51,6 +69,12 @@ public static partial class PSOExtensions
 		prop.Value = value;
 	}
 
+	/// <summary>
+	/// Converts a <see cref="PSObject"/> to a dictionary representation.
+	/// </summary>
+	/// <param name="pso">The object to convert.</param>
+	/// <param name="ignoreKeys">Property names to omit.</param>
+	/// <returns>A dictionary representation of <paramref name="pso"/>, or <see langword="null"/> when <paramref name="pso"/> is null.</returns>
 	[return: NotNullIfNotNull(nameof(pso))]
 	public static Dictionary<string, object?>? ToDictionary(this PSObject? pso, params ReadOnlySpan<string> ignoreKeys)
 	{
@@ -85,6 +109,12 @@ public static partial class PSOExtensions
 		return dic;
 	}
 
+	/// <summary>
+	/// Converts an enumerable value to a list representation for dictionary projection.
+	/// </summary>
+	/// <param name="collection">The collection to convert.</param>
+	/// <param name="ignoreKeys">Property names to omit from nested objects.</param>
+	/// <returns>A list representation of <paramref name="collection"/>.</returns>
 	private static List<object?> ProcessCollection(IEnumerable collection, ReadOnlySpan<string> ignoreKeys)
 	{
 		List<object?> list = [];
@@ -100,6 +130,7 @@ public static partial class PSOExtensions
 
 			list.Add(val);
 		}
+
 		return list;
 	}
 
