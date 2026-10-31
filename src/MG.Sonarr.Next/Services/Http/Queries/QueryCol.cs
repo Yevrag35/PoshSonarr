@@ -26,7 +26,6 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
 
 	private readonly SortedList<string, IQueryField> _fields;
 
-	//BUG: The setter always throws NotSupportedException, because SortedList's Values list is read-only, and it wouldn't update the running length if it didn't.
 	/// <summary>
 	/// Gets or sets the field at the specified index in key order.
 	/// </summary>
@@ -53,7 +52,6 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
 	/// </value>
 	public int MaxLength => _maxLength + 1 + Math.Max(0, this.Count - 1);
 
-	//BUG: Uses the default string comparer, which is case-sensitive and culture-sensitive, where QueryCol(int) compares keys ordinally and ignores case.
 	/// <summary>
 	/// Initializes a new, empty <see cref="QueryCol"/> instance with the default capacity.
 	/// </summary>
@@ -87,7 +85,6 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
 	{
 		this.Add([key, value]);
 	}
-	//BUG: Adds the length of "true" to the running length, where the field's MaxLength counts "false", so removing or replacing the field leaves MaxLength one character short.
 	/// <summary>
 	/// Adds a field that writes <c>key=true</c> when the specified value is <see langword="true"/>,
 	/// and adds nothing otherwise.
@@ -295,8 +292,6 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
 		_fields.RemoveAt(index);
 	}
 
-	//BUG: Throws IndexOutOfRangeException instead of returning false when the destination has no room for the '?' or an '&'.
-	//BUG: Passes no format provider to the fields, so numbers and dates are formatted with the current culture, such as a Buddhist-calendar year for a date under th-TH.
 	/// <summary>
 	/// Tries to write the collection as a query string, <c>?</c> followed by the fields in key order
 	/// joined by <c>&amp;</c>, into the specified span.
@@ -343,7 +338,6 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
 		return true;
 	}
 
-	//BUG: Stack-allocates MaxLength characters with no upper bound, so a collection with many or long fields can overflow the stack.
 	/// <summary>
 	/// Returns the collection formatted as a query string.
 	/// </summary>

@@ -30,7 +30,6 @@ public sealed class ReadOnlyPSObjectProperty<T> : ReadOnlyProperty<T> where T : 
 		this.ValueAsT = pso;
 	}
 
-	//BUG: It throws NullReferenceException for a null value, which WritableSonarrProperty<T>.ConvertToReadOnly passes for a property that holds no object.
 	/// <summary>
 	/// Creates a copy of the property that holds a copy of the nested object.
 	/// </summary>

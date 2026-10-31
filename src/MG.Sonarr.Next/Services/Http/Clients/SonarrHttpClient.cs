@@ -318,7 +318,6 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		}
 	}
 
-	//BUG: It has no catch for TaskCanceledException, unlike SendResultRequest, so a timeout gets ConnectionError instead of OperationTimeout and a cancellation gets ConnectionError instead of OperationStopped.
 	/// <summary>
 	/// Sends the specified request synchronously and reads its outcome as a request that returns no value.
 	/// </summary>
@@ -498,7 +497,6 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		}
 	}
 
-	//BUG: A body that fails to deserialize, which the server controls, hits Debug.Fail, so a Debug build without a debugger ends the process instead of returning false.
 	/// <summary>
 	/// Attempts to deserialize the body of the specified response as the specified type.
 	/// </summary>
@@ -601,7 +599,6 @@ public static class SonarrClientDependencyInjection
 				})
 				.ConfigurePrimaryHttpMessageHandler<SonarrClientHandler>();
 	}
-	//BUG: It registers neither VerboseHandler nor DebugSerializeHandler, which the download client's handler chain resolves, so resolving ISonarrDownloadClient from this registration throws InvalidOperationException.
 	/// <summary>
 	/// Registers an <see cref="ISonarrClient"/> for a host outside PowerShell, with the services that it depends on.
 	/// </summary>

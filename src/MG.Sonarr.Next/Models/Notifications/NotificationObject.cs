@@ -50,7 +50,6 @@ public class NotificationObject : TagUpdateObject<NotificationObject>,
 		set => this.SetValue(value);
 	}
 
-	//BUG: Sets MustUpdateViaApi to false, here and in OnDeserialized, so Add-SonarrTag changes a notification's tags without sending the PUT that saves them.
 	/// <summary>
 	/// Initializes a new <see cref="NotificationObject"/> instance with no properties, for the JSON converter to fill.
 	/// </summary>

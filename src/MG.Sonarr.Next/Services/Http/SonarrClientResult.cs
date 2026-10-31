@@ -262,7 +262,6 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 	/// </summary>
 	private static readonly SonarrErrorRecord _notFound = new(new Exception("Not found."), "NotFound", ErrorCategory.ObjectNotFound, targetObj: null, isIgnoreable: true);
 
-	//BUG: Every result shares the one static _notFound record, so PowerShell's WriteError overwrites its InvocationInfo for each cmdlet (and runspace) that writes it, every $Error entry shows the last writer, and it carries no request URL.
 	/// <summary>
 	/// Creates a failed result for a request whose resource wasn't found.
 	/// </summary>

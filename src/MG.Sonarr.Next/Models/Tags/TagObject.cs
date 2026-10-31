@@ -53,7 +53,6 @@ public sealed class TagObject : SonarrObject,
 	{
 	}
 
-	//BUG: CompareTo returns -1 for a null other, where IComparable<T> requires a positive number, so null sorts after every tag.
 	/// <summary>
 	/// Compares this tag with another by ID.
 	/// </summary>

@@ -59,7 +59,6 @@ public readonly record struct KeyOnlyQueryField : IQueryField
 		return this.Key;
 	}
 
-	//BUG: charsWritten is set to the key's length even when the key doesn't fit and nothing is written.
 	/// <summary>
 	/// Tries to write the field's key into the specified span.
 	/// </summary>

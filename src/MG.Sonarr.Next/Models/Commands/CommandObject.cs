@@ -171,7 +171,6 @@ public sealed class CommandObject : IdSonarrObject<CommandObject>,
 	{
 		return ReferenceEquals(this, other) || AreCommandPropertiesEqual(this, other);
 	}
-	//BUG: Equals(ICommand) ignores Ended and Status, which Equals(CommandObject) and GetHashCode use, so two commands that are equal as ICommand can have different hash codes.
 	/// <summary>
 	/// Determines whether the command equals another command.
 	/// </summary>

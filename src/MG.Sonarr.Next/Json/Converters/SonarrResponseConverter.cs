@@ -100,7 +100,6 @@ public sealed class SonarrResponseConverter : ByPolicyJsonConverter<ISonarrRespo
 		writer.WriteString(policy, record.Exception.GetBaseException().Message);
 	}
 
-	//BUG: The text goes out as a raw value with validation skipped, so the writer emits a bare, unquoted token that isn't valid JSON; nothing serializes an ISonarrResponse today.
 	/// <summary>
 	/// Writes the status line of a successful request as a JSON string.
 	/// </summary>

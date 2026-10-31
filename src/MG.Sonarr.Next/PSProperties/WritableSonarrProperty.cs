@@ -80,7 +80,6 @@ public sealed class WritableSonarrProperty<T> : WritableProperty<T> where T : So
 		return new WritableSonarrProperty<T>(name, tObj);
 	}
 
-	//BUG: Setting null throws SetValueException, though the property starts with no object, as a manual import's Quality and Series do, and ValueIsProper returns true for null.
 	/// <summary>
 	/// Returns a value that is being set on the property as a <typeparamref name="T"/>.
 	/// </summary>

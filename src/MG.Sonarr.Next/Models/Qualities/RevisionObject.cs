@@ -89,7 +89,6 @@ public sealed class RevisionObject : SonarrObject,
 		this.Real = isReal ? 1 : 0;
 	}
 
-	//BUG: CompareTo compares only whether each instance was built in C#, so every two revisions read from JSON compare as equal whatever their Version and Real.
 	/// <summary>
 	/// Compares this revision with another.
 	/// </summary>

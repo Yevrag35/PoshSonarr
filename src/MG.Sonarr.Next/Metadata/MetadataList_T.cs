@@ -123,7 +123,6 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 	{
 		_list.Clear();
 	}
-	//BUG: It discards the result of _list.Contains, then calls _list.IndexOf once for each element, so the check is O(n²) and repeats the same search.
 	/// <summary>
 	/// Determines whether the list holds an element that equals the specified one or sorts with it.
 	/// </summary>
@@ -243,7 +242,6 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 		}
 	}
 
-	//BUG: It throws NullReferenceException for a null element, which the indexer, Insert, and both AddRange overloads let in, though Add skips nulls.
 	/// <summary>
 	/// Tags each element of the list with its metadata tag.
 	/// </summary>

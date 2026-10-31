@@ -82,7 +82,6 @@ public sealed class NumberNoteProperty<T> : WritableProperty<T> where T : unmana
 	{
 		this.NumValue = value;
 	}
-	//BUG: A formattable value whose text doesn't parse as T, such as 1.5 for an int property or a DateTime, hits Debug.Fail, which ends the process in a Debug build.
 	/// <summary>
 	/// Converts a value that is being set on the property to a <typeparamref name="T"/>.
 	/// </summary>
@@ -120,7 +119,6 @@ public sealed class NumberNoteProperty<T> : WritableProperty<T> where T : unmana
 
 		return this.ThrowNotType<T>();
 	}
-	//BUG: It names the copy after this.Name and ignores name, which every other CopyIntoNew override uses.
 	/// <summary>
 	/// Creates a writable number property that holds the same value under the specified name.
 	/// </summary>
@@ -138,7 +136,6 @@ public sealed class NumberNoteProperty<T> : WritableProperty<T> where T : unmana
 	{
 		return new ReadOnlyNumberProperty<T>(this.Name, this.NumValue);
 	}
-	//BUG: It returns true for any IConvertible, such as a bool or a string that isn't a number, which ConvertFromObject rejects.
 	/// <summary>
 	/// Determines whether a value can be set on the property.
 	/// </summary>

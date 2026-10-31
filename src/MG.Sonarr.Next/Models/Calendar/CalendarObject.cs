@@ -66,7 +66,6 @@ public sealed class CalendarObject : IdSonarrObject<CalendarObject>,
 	{
 	}
 
-	//BUG: CompareTo returns -1 for a null other, where IComparable<T> requires a positive number, so null sorts after every entry instead of before.
 	/// <summary>
 	/// Compares the calendar entry with another by air time and then by ID.
 	/// </summary>

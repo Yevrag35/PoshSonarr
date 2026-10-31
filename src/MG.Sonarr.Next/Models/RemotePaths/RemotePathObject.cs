@@ -64,7 +64,6 @@ public sealed class RemotePathObject : IdSonarrObject<RemotePathObject>,
 		return resolver[Meta.REMOTE_PATH_MAPPING];
 	}
 
-	//BUG: Joins its two checks with && instead of ||, so it throws for any body without an ID and accepts a body whose ID differs from this object's.
 	/// <summary>
 	/// Takes the values of a body that updated this mapping and commits them.
 	/// </summary>

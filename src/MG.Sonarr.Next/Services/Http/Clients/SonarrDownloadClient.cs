@@ -165,7 +165,6 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 			&& (path.Length == baseSegments.Length || path[baseSegments.Length] == '/');
 	}
 
-	//BUG: It catches only SonarrHttpException, so a refused connection, a timeout, a cancellation, or a path that can't be written throws out of the client instead of returning an error result.
 	/// <summary>
 	/// Sends the specified download request and writes the file that the response holds to a path.
 	/// </summary>

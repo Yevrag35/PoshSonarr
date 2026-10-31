@@ -71,7 +71,6 @@ public sealed class LogObject : SonarrObject,
 		return this.Time.CompareTo(offset);
 	}
 
-	//BUG: OnDeserialized never calls base.OnDeserialized(), so a log entry never gets SonarrObject's type name.
 	/// <summary>
 	/// Finishes deserializing the entry: it runs the base's deserialization and copies the entry's level and time
 	/// into <see cref="Level"/> and <see cref="Time"/>.

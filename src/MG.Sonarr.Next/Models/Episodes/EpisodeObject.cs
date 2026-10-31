@@ -108,7 +108,6 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 	{
 	}
 
-	//BUG: CompareTo throws ArgumentException when one episode's Series is a title and the other's is a series ID, since a string and a boxed int can't compare.
 	/// <summary>
 	/// Compares the episode with another by series, then season number, episode number, and absolute episode number.
 	/// </summary>
@@ -217,7 +216,6 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 		}
 	}
 
-	//BUG: Nothing removes the AirDate property that OnSerializing adds, so it stays visible after the request and serializing the episode again throws because the property already exists.
 	/// <summary>
 	/// Adds the <c>AirDate</c> property back to the object before it's serialized.
 	/// </summary>
@@ -255,7 +253,6 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 		this.TypeNames.Insert(0, _typeName);
 	}
 
-	//BUG: GetId returns the episode's Id instead of EpisodeFileId, so [ValidateIds] lets an episode without a file through to Get-SonarrEpisodeFile and Remove-SonarrEpisodeFile, which read EpisodeFileId.
 	/// <summary>
 	/// Gets the ID that the episode pipes as an episode file.
 	/// </summary>

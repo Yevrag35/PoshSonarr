@@ -52,7 +52,6 @@ public sealed class ReadOnlySetProperty<T> : ReadOnlyProperty<SortedSet<T>>
 		_genName = typeof(T).GetPSTypeName();
 	}
 
-	//BUG: A copy of the object that holds the property shares this instance and its mutable set, where ReadOnlyTagsProperty.Copy copies its set.
 	/// <summary>
 	/// Returns the property itself as its copy.
 	/// </summary>

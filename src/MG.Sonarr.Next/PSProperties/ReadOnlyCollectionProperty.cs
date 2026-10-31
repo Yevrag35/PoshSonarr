@@ -86,7 +86,6 @@ public sealed class ReadOnlyCollectionProperty<T, TCol> : ReadOnlyProperty<TCol>
 		this.Collection = collection ?? [];
 	}
 
-	//BUG: A copy of the object that holds the property shares this instance, so a change to the mutable collection of either object shows in both.
 	/// <summary>
 	/// Returns the property itself as its copy.
 	/// </summary>

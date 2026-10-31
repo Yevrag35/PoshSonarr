@@ -102,7 +102,6 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	/// </summary>
 	public static readonly MetadataTag Empty = new();
 
-	//BUG: It returns -1 for a null other, which puts null after every tag, where the IComparable<T> convention puts it first and returns 1.
 	/// <summary>
 	/// Compares the tag with another by their <see cref="Value"/>, ignoring case.
 	/// </summary>
@@ -157,7 +156,6 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	{
 		return obj is MetadataTag tag && this.Equals(tag);
 	}
-	//BUG: It hashes UrlBase and Value case-sensitively, while Equals ignores their case, so two equal tags can hash differently.
 	/// <summary>
 	/// Gets a hash code for the tag.
 	/// </summary>
@@ -176,7 +174,6 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	{
 		return parameters.GetUrl(this.UrlBase);
 	}
-	//BUG: It stack-allocates parameter.MaxLength + 1 characters with no cap, and a caller of QueryCol.Add can set any MaxLength, so a long field can overflow the stack.
 	/// <summary>
 	/// Builds the URL of a request to the tag's endpoint with a query string of one field.
 	/// </summary>
@@ -224,7 +221,6 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 		return string.Concat(this.UrlBase, ['/'], id);
 	}
 
-	//BUG: When the ID doesn't fit in 40 characters, the fallback hits Debug.Fail and then copies the same text into the same too-short span, which throws.
 	/// <summary>
 	/// Builds the URL of a request for the item with the specified ID at the tag's endpoint.
 	/// </summary>

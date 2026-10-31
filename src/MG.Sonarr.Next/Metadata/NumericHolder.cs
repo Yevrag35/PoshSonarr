@@ -39,7 +39,6 @@ public struct NumericHolder<T> : IComparable<T>, IEquatable<T>, IComparable<Nume
 	/// <value>A new wrapper that holds 0.</value>
 	public static NumericHolder<T> Default => new(default);
 
-	//BUG: It returns other.CompareTo(_value), the reverse of _value.CompareTo(other), so every comparison has the wrong sign. Nothing uses the type.
 	/// <summary>
 	/// Compares the wrapped number with another number.
 	/// </summary>

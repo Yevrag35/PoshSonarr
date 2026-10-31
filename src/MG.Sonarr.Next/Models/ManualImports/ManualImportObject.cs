@@ -184,7 +184,6 @@ public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
 		this.Properties.Add(new ReadOnlyStringProperty(name, nameProp?.Value as string));
 	}
 
-	//BUG: PowerShell can't index a SortedSet, so $this.Episodes[0] is the whole set, and a file of two episodes gets a SeasonNumber of @(n, n) instead of n.
 	/// <summary>
 	/// Adds each property that an import needs and Sonarr left out, and keeps the episode set in
 	/// <see cref="Episodes"/>.

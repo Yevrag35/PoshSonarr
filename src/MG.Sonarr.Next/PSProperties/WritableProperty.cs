@@ -92,7 +92,6 @@ public abstract class WritableProperty : PSPropertyInfo
 		throw new SetValueException(
 			$"The property '{this.Name}' only can be set with values of type '{this.TypeNameOfValue}'.");
 	}
-	//BUG: A SortedSet<int> becomes a ReadOnlyTagsProperty, which is always named Tags, so the property loses name when it's anything else.
 	/// <summary>
 	/// Creates the note property that holds a deserialized value, of the kind that suits the value's type.
 	/// </summary>

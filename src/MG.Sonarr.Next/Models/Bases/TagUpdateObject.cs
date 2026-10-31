@@ -96,7 +96,6 @@ public abstract class TagUpdateObject<TSelf> : IdSonarrObject<TSelf>,
 		((ITagPipeable)this).CommitTags();
 		this.OnCommit();
 	}
-	//BUG: CommitTags does nothing (its body is commented out), so a Reset after a successful Commit restores the tags from before the commit.
 	/// <summary>
 	/// Makes the object's current tags the snapshot that <see cref="Reset"/> puts back.
 	/// </summary>

@@ -124,7 +124,6 @@ internal sealed class SonarrResponseReader : IResponseReader
 		return new(record);
 	}
 
-	//BUG: A body that starts with '{' or '[' but doesn't deserialize, which the server controls, hits Debug.Fail, so a Debug build without a debugger ends the process instead of returning an empty collection.
 	/// <summary>
 	/// Reads the server's errors from the body of an error response.
 	/// </summary>
@@ -197,7 +196,6 @@ internal sealed class SonarrResponseReader : IResponseReader
 		}
 	}
 
-	//BUG: It returns true with a null result whenever msg isn't call.Response, which its [NotNullWhen(true)] says can't happen, so the caller returns a null result.
 	/// <summary>
 	/// Determines whether an exchange can't be read, and creates the failed result for it when it can't.
 	/// </summary>
@@ -223,7 +221,6 @@ internal sealed class SonarrResponseReader : IResponseReader
 
 		return !ReferenceEquals(call.Response, msg);
 	}
-	//BUG: It returns true with a null result whenever msg isn't call.Response, which its [NotNullWhen(true)] says can't happen, so the caller returns a null result.
 	/// <summary>
 	/// Determines whether an exchange for a request that returns a value can't be read, and creates the failed result for
 	/// it when it can't.

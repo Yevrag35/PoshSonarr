@@ -116,7 +116,6 @@ internal sealed partial class SonarrHttpClient
 
 		return response;
 	}
-	//BUG: The send sits outside the try, so a refused connection, a timeout, or a cancellation throws out of the method instead of returning an error result.
 	/// <inheritdoc/>
 	public async Task<SonarrClientResult> SendPingAsync(CancellationToken token = default)
 	{
@@ -164,7 +163,6 @@ internal sealed partial class SonarrHttpClient
 
 		return await this.SendResultRequestAsync<T>(request, path, token).ConfigureAwait(false);
 	}
-	//BUG: It serializes the body by its declared type T, where every other method uses body.GetType(), so a body held as a base type, such as an AddSeriesObject passed as a SeriesObject, goes out through the base type's converter.
 	/// <inheritdoc/>
 	public async Task<SonarrClientResult> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
 	{
@@ -200,7 +198,6 @@ internal sealed partial class SonarrHttpClient
 		return await this.SendNoResultRequestAsync(request, path, token).ConfigureAwait(false);
 	}
 
-	//BUG: It has no catch for TaskCanceledException, unlike SendResultRequestAsync, so a timeout gets ConnectionError instead of OperationTimeout and a cancellation gets ConnectionError instead of OperationStopped.
 	/// <summary>
 	/// Sends the specified request asynchronously and reads its outcome as a request that returns no value.
 	/// </summary>

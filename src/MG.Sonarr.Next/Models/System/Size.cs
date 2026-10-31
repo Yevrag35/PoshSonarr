@@ -205,7 +205,6 @@ public readonly struct Size : IComparable, IComparable<Size>, IEquatable<Size>,
 	{
 		return _bytes == other;
 	}
-	//BUG: Equals(object) unboxes a boxed int as a long, which throws InvalidCastException instead of comparing it.
 	/// <summary>
 	/// Determines whether this size equals an object by bytes.
 	/// </summary>

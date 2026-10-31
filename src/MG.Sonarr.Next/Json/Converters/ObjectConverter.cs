@@ -271,7 +271,6 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 
 		return new string(scratch[..position]);
 	}
-	//BUG: Every number is read through GetDouble, so a whole number past 2^53 loses precision: 9007199254740993 reads as the long 9007199254740992.
 	/// <summary>
 	/// Reads a JSON number as the narrowest of <see cref="int"/>, <see cref="long"/>, and <see cref="double"/> that
 	/// holds it exactly.

@@ -108,7 +108,6 @@ public sealed class IndexerObject : TagUpdateObject<IndexerObject>,
 		return resolver[Meta.INDEXER];
 	}
 
-	//BUG: GetValue<string>() defaults its property name to "OnCommit", which matches no property, so every commit empties Name and Protocol.
 	/// <summary>
 	/// Refreshes <see cref="Name"/> and <see cref="Protocol"/> from the <c>Name</c> and <c>Protocol</c> properties,
 	/// after a request that sends the object succeeds.

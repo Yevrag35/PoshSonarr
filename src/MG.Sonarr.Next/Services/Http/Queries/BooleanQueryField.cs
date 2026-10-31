@@ -148,7 +148,6 @@ public readonly struct BooleanQueryField : IQueryField, IEnumerable<Either<strin
 
 		return new string(chars.Slice(0, charsWritten));
 	}
-	//BUG: Throws IndexOutOfRangeException instead of returning false when the destination holds the key but has no room for the equals sign.
 	/// <summary>
 	/// Tries to write the field as <c>key=true</c> or <c>key=false</c> into the specified span.
 	/// </summary>

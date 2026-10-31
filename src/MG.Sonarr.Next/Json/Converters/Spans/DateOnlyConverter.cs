@@ -1,6 +1,5 @@
 namespace MG.Sonarr.Next.Json.Converters.Spans;
 
-//BUG: TimeOnly.TryParse rejects DateTimeStyles.AssumeUniversal and always returns false, so every value falls through to the DateTimeOffset parse.
 /// <summary>
 /// Provides a span converter that reads a property's value as a <see cref="TimeOnly"/>, such as a series'
 /// <c>AirTime</c>.
@@ -34,7 +33,6 @@ public sealed class TimeOnlyConverter : SpanConverter<TimeOnly>
 	}
 }
 
-//BUG: DateOnly.TryParse rejects DateTimeStyles.AssumeUniversal and always returns false, so every value falls through to the DateTimeOffset parse.
 /// <summary>
 /// Provides a span converter that reads a property's value as a <see cref="DateOnly"/>, such as an episode's
 /// <c>AirDate</c> or a series' <c>FirstAired</c>.

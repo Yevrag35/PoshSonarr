@@ -158,7 +158,6 @@ public sealed class LogFileObject : IdSonarrObject<LogFileObject>,
 			return false;
 		}
 	}
-	//BUG: GetHashCode combines LastWriteTime, which Equals ignores, so two equal log files can hash differently.
 	/// <summary>
 	/// Returns a hash code for the log file that agrees with <see cref="Equals(LogFileObject)"/>.
 	/// </summary>

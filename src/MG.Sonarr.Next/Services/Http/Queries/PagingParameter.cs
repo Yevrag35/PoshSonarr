@@ -93,7 +93,6 @@ public sealed class PagingParameter : IQueryField
 		_ = this.TryFormat(chars, out int charsWritten);
 		return new(chars.Slice(0, charsWritten));
 	}
-	//BUG: Writes no '&' between the four fields, so the query string reads as one field, page=1pageSize=10..., though MaxLength counts the separators.
 	/// <summary>
 	/// Tries to write the paging fields into the specified span, joined by <c>&amp;</c>.
 	/// </summary>

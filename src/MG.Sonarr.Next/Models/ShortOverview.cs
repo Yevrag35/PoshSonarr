@@ -43,7 +43,6 @@ public readonly struct ShortOverview
 		_isNotEmpty = !string.IsNullOrWhiteSpace(text);
 	}
 
-	//BUG: howLong isn't validated, so 0 throws IndexOutOfRangeException where a negative value or one past the text's length throws ArgumentOutOfRangeException.
 	/// <summary>
 	/// Creates a <see cref="ShortOverview"/> from text, cut after the word that the specified length ends in.
 	/// </summary>
@@ -66,7 +65,6 @@ public readonly struct ShortOverview
 		return new ShortOverview(shorted);
 	}
 
-	//BUG: When no white space follows the cut, the whole text is copied and still gets three periods, so text that wasn't shortened reads as if it were.
 	/// <summary>
 	/// Cuts text after the word that the specified length ends in and ends it with three periods.
 	/// </summary>

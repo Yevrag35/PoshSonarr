@@ -89,7 +89,6 @@ public readonly struct FormattableQueryField : IQueryField
 		_value = new(obj, maxLength + key.Length + 1);
 	}
 
-	//BUG: Throws instead of returning false when the destination is too short for the key, the equals sign, or a string value.
 	/// <summary>
 	/// Tries to write the field as <c>key=value</c> into the specified span.
 	/// </summary>
@@ -127,7 +126,6 @@ public readonly struct FormattableQueryField : IQueryField
 		return false;
 	}
 
-	//BUG: Stack-allocates MaxLength characters with no upper bound, so a long string value can overflow the stack.
 	/// <summary>
 	/// Returns the field formatted as <c>key=value</c>.
 	/// </summary>
@@ -316,7 +314,6 @@ public readonly struct FormattableQueryField : IQueryField
 
 			return this.Value.TryFormat(destination, out charsWritten, format, formatProvider);
 		}
-		//BUG: Formats with the format given rather than Format, so it disagrees with TryFormat when Format is set.
 		/// <summary>
 		/// Returns the value formatted with the specified format.
 		/// </summary>
