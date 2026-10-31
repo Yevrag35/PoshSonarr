@@ -7,8 +7,8 @@ namespace MG.Sonarr.Next.Extensions;
 /// </summary>
 public static class ListSortDirectionExtensions
 {
-	private const int ASCENDING_LENGTH = 9;		// Number of characters in "Ascending"
-	private const int DESCENDING_LENGTH = 10;	// Number of characters in "Descending"
+	private const int ASCENDING_LENGTH = 9;     // Number of characters in "Ascending"
+	private const int DESCENDING_LENGTH = 10;   // Number of characters in "Descending"
 
 #if DEBUG
 	static ListSortDirectionExtensions()
@@ -19,20 +19,30 @@ public static class ListSortDirectionExtensions
 #endif
 
 	/// <summary>
-	/// Gets the number of characters in the text of a sort direction, without formatting it.
+	/// Extensions for <see cref="ListSortDirection"/> values.
 	/// </summary>
-	/// <param name="direction">The direction to measure.</param>
-	/// <returns>
-	/// The length of the direction's name, or, for a value that <see cref="ListSortDirection"/> doesn't name, the
-	/// length of its number in decimal, which is what <see cref="Enum.ToString()"/> writes for it.
-	/// </returns>
-	public static int GetLength(this ListSortDirection direction)
+	/// <param name="direction">The direction to extend.</param>
+	extension(ListSortDirection direction)
 	{
-		return direction switch
+		/// <summary>
+		/// Gets the number of characters in the text of a sort direction, without formatting it.
+		/// </summary>
+		/// <param name="direction">The direction to measure.</param>
+		/// <returns>
+		/// The length of the direction's name, or, for a value that <see cref="ListSortDirection"/> doesn't name, the
+		/// length of its number in decimal, which is what <see cref="Enum.ToString()"/> writes for it.
+		/// </returns>
+		public int Length
 		{
-			ListSortDirection.Ascending => ASCENDING_LENGTH,
-			ListSortDirection.Descending => DESCENDING_LENGTH,
-			_ => ((int)direction).GetLength(),
-		};
+			get
+			{
+				return direction switch
+				{
+					ListSortDirection.Ascending => ASCENDING_LENGTH,
+					ListSortDirection.Descending => DESCENDING_LENGTH,
+					_ => ((int)direction).GetLength(),
+				};
+			}
+		}
 	}
 }
