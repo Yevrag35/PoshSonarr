@@ -39,7 +39,7 @@ public sealed class ReadOnlyTagsProperty : ReadOnlyProperty<SortedSet<int>>
 	/// <returns>A new <see cref="ReadOnlyTagsProperty"/> that holds a new set with the same tag IDs.</returns>
 	public override PSMemberInfo Copy()
 	{
-		return new ReadOnlyTagsProperty([.. this.Tags]);
+		return new ReadOnlyTagsProperty(new(this.Tags, this.Tags.Comparer));
 	}
 
 	/// <summary>

@@ -43,7 +43,7 @@ public class ReadOnlyProperty : PSPropertyInfo
 	/// Gets the full name of the property's value type.
 	/// </summary>
 	/// <value>The full name of the value's runtime type, or <c>System.Object</c> when the value is null.</value>
-	public override string TypeNameOfValue => this.Value?.GetType().GetName() ?? DEFAULT_TYPE;
+	public override string TypeNameOfValue => field ??= this.Value?.GetType().GetName() ?? DEFAULT_TYPE;
 	/// <summary>
 	/// Gets the property's value.
 	/// </summary>
@@ -99,11 +99,12 @@ public class ReadOnlyProperty : PSPropertyInfo
 	/// <returns>A new <see cref="ReadOnlyProperty"/> with the same name and the value or its clone.</returns>
 	public override PSMemberInfo Copy()
 	{
-		object? addValue = _value;
-		if (_value is ICloneable clonable)
+		object? addValue = _value switch
 		{
-			addValue = clonable.Clone();
-		}
+			ICloneable clonable => clonable.Clone(),
+			PSObject pso => pso.Copy(),
+			_ => _value
+		};
 
 		return new ReadOnlyProperty(this.Name, addValue);
 	}
@@ -133,12 +134,12 @@ public abstract class ReadOnlyProperty<T> : ReadOnlyProperty
 	/// Gets the PowerShell name of the value's type, which <see cref="ToString"/> shows.
 	/// </summary>
 	/// <value>The PowerShell name of <typeparamref name="T"/> without its enclosing brackets, such as <c>int</c>.</value>
-	protected virtual string PSTypeName => typeof(T).GetPSTypeName(removeBrackets: true);
+	protected virtual string PSTypeName => field ??= typeof(T).GetPSTypeName(removeBrackets: true);
 	/// <summary>
 	/// Gets the full name of the property's value type.
 	/// </summary>
 	/// <value>The full name of <typeparamref name="T"/>.</value>
-	public override string TypeNameOfValue => typeof(T).GetName();
+	public override string TypeNameOfValue => field ??= typeof(T).GetName();
 
 	/// <summary>
 	/// Gets the property's value.
@@ -193,18 +194,6 @@ public abstract class ReadOnlyProperty<T> : ReadOnlyProperty
 	}
 
 	/// <summary>
-	/// Throws an exception that says the property takes only values of its own type.
-	/// </summary>
-	/// <returns>This method never returns.</returns>
-	/// <exception cref="SetValueException">Thrown always.</exception>
-	[DoesNotReturn]
-	protected T ThrowNotType()
-	{
-		throw new SetValueException(
-			$"The property '{this.Name}' only can be set with values of type '{this.TypeNameOfValue}'.");
-	}
-
-	/// <summary>
 	/// The largest buffer, in characters, that <see cref="ToString"/> allocates on the stack instead of renting a pooled
 	/// array.
 	/// </summary>
@@ -221,14 +210,9 @@ public abstract class ReadOnlyProperty<T> : ReadOnlyProperty
 	{
 		ReadOnlySpan<char> typeName = this.PSTypeName;
 		ReadOnlySpan<char> name = this.Name;
-		if (this.MaxValueCharacterLength <= 0 || this.ValueAsT is not ISpanFormattable spanFormattable)
-		{
-			return ToStringNoSpan(typeName, this.ValueAsT, name);
-		}
-		else
-		{
-			return ToStringWithSpan(typeName, name, spanFormattable, this.MaxValueCharacterLength);
-		}
+		return this.MaxValueCharacterLength > 0 && this.ValueAsT is ISpanFormattable spanFormattable
+			? ToStringWithSpan(typeName, name, spanFormattable, this.MaxValueCharacterLength)
+			: ToStringNoSpan(typeName, this.ValueAsT, name);
 	}
 
 	/// <summary>
@@ -244,7 +228,6 @@ public abstract class ReadOnlyProperty<T> : ReadOnlyProperty
 	private static string ToStringNoSpan(ReadOnlySpan<char> typeName, T? valueAsT, ReadOnlySpan<char> name)
 	{
 		ReadOnlySpan<char> valueStr = valueAsT?.ToString();
-		valueStr = valueStr.Trim();
 
 		int length = READ_ONLY.Length + typeName.Length + valueStr.Length + name.Length + 2; // Magic number 2 comes from: 1 space and an equals sign.
 		using SpanStringBuilder builder = SpanStringBuilder.Create(

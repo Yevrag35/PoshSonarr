@@ -25,7 +25,7 @@ public sealed class ReadOnlySetProperty<T> : ReadOnlyProperty<SortedSet<T>>
 	/// <summary>
 	/// The PowerShell name of <typeparamref name="T"/>, in brackets.
 	/// </summary>
-	private readonly string _genName;
+	private string _genName;
 
 	/// <summary>
 	/// Gets the set that the property holds.
@@ -49,7 +49,6 @@ public sealed class ReadOnlySetProperty<T> : ReadOnlyProperty<SortedSet<T>>
 		: base(propertyName)
 	{
 		this.SetValues = set;
-		_genName = typeof(T).GetPSTypeName();
 	}
 
 	/// <summary>
@@ -70,12 +69,10 @@ public sealed class ReadOnlySetProperty<T> : ReadOnlyProperty<SortedSet<T>>
 	/// </returns>
 	public override string ToString()
 	{
-		if (this.SetValues.Count <= 0)
-		{
-			return string.Format(CultureInfo.CurrentCulture, AS_EMPTY, _genName, this.Name);
-		}
-
-		return string.Format(CultureInfo.CurrentCulture, AS_VALUES, _genName, this.Name, string.Join(',', this.SetValues));
+		_genName ??= typeof(T).GetPSTypeName();
+		return this.SetValues.Count > 0
+			? string.Format(CultureInfo.CurrentCulture, AS_VALUES, _genName, this.Name, string.Join(',', this.SetValues))
+			: string.Format(CultureInfo.CurrentCulture, AS_EMPTY, _genName, this.Name);
 	}
 }
 
