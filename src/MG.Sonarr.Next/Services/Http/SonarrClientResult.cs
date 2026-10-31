@@ -9,13 +9,18 @@ using AllowsNull = System.Diagnostics.CodeAnalysis.AllowNullAttribute;
 namespace MG.Sonarr.Next.Services.Http;
 
 /// <summary>
-/// Represents the result of a Sonarr API client operation, including HTTP status, error information, and request
-/// details.
+/// Represents the outcome of a request that a Sonarr API client sent: its status code, its URL, and the error when it
+/// failed.
 /// </summary>
-/// <remarks>This class provides a unified way to access the outcome of Sonarr API requests, including
-/// both successful and error responses. Use the properties to inspect the HTTP status code, determine if an error
-/// occurred, and retrieve error details when available. For generic results containing a value, use the derived
-/// <see cref="SonarrClientResult{T}"/>.</remarks>
+/// <remarks>
+/// <para>
+/// A client returns a failure as an instance whose <see cref="IsError"/> is <see langword="true"/> and whose
+/// <see cref="Error"/> describes it, rather than throwing.
+/// </para>
+/// <para>
+/// A request that returns data gives a <see cref="SonarrClientResult{T}"/>, which adds the deserialized value.
+/// </para>
+/// </remarks>
 [DebuggerDisplay(@"\{StatusCode = {StatusCode}, IsError = {IsError}\}")]
 public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 {
@@ -27,11 +32,23 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 	public virtual SonarrErrorRecord? Error { get; }
 
 	/// <summary>
-	/// Gets a value indicating whether the item can be safely ignored during processing.
+	/// Gets a value that indicates whether the result's status code is one that a caller can pass over without reporting.
 	/// </summary>
+	/// <remarks>
+	/// Setting <see cref="StatusCode"/> sets this property as well.
+	/// </remarks>
+	/// <value>
+	/// <see langword="true"/> if <see cref="StatusCode"/> is below 400 or is 404; otherwise, <see langword="false"/>.
+	/// </value>
 	public bool IsIgnoreable { get; private set; }
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Gets or sets the URL that the request was sent to.
+	/// </summary>
+	/// <remarks>
+	/// Setting the property to <see langword="null"/> stores an empty string.
+	/// </remarks>
+	/// <value>The request's URL as a string, or an empty string when it isn't known.</value>
 	[AllowsNull]
 	[field: MaybeNull]
 	public string RequestUrl
@@ -40,7 +57,13 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 		set => field = value ?? string.Empty;
 	}
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Gets the HTTP status code of the response.
+	/// </summary>
+	/// <remarks>
+	/// Initializing the property also sets <see cref="IsIgnoreable"/>.
+	/// </remarks>
+	/// <value>The status code that the server returned, or a code above 599 when no response was received.</value>
 	public required HttpStatusCode StatusCode
 	{
 		get;
@@ -56,16 +79,21 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 	string? IHttpRequestUri.RequestUri => this.RequestUrl;
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="SonarrClientResult"/> class.
+	/// Initializes a new <see cref="SonarrClientResult"/> instance with no error, for a derived class that sets
+	/// <see cref="StatusCode"/> itself.
 	/// </summary>
 	protected SonarrClientResult()
 	{
 	}
 	/// <summary>
-	/// Initializes a new instance of the <see cref="SonarrClientResult"/> class using the specified HTTP response message.
+	/// Initializes a new <see cref="SonarrClientResult"/> instance that represents a successful response, with the status
+	/// code and URL of the specified response.
 	/// </summary>
-	/// <param name="response">The HTTP response message received from the Sonarr API. Cannot be null.</param>
-	/// <exception cref="ArgumentNullException"><paramref name="response"/> is null.</exception>
+	/// <param name="response">The response that the server returned. This value must not be <see langword="null"/>.</param>
+	/// <param name="requestUri">
+	/// The URL to store when <paramref name="response"/> doesn't carry its request's URI, or <see langword="null"/>.
+	/// </param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="response"/> is null.</exception>
 	[SetsRequiredMembers]
 	public SonarrClientResult(HttpResponseMessage response, string? requestUri = null)
 	{
@@ -74,11 +102,15 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 		this.RequestUrl = response.RequestMessage?.RequestUri?.ToString() ?? requestUri;
 	}
 	/// <summary>
-	/// Initializes a new instance of the <see cref="SonarrClientResult"/> class that represents an error response from the Sonarr
-	/// API.
+	/// Initializes a new <see cref="SonarrClientResult"/> instance that represents a failure, with the specified error
+	/// record.
 	/// </summary>
-	/// <param name="error">The error record containing details about the API error.</param>
-	/// <exception cref="ArgumentNullException"><paramref name="error"/> is null.</exception>
+	/// <remarks>
+	/// The result takes its URL and status code from <paramref name="error"/>, and a status code of 600 when the record
+	/// has none.
+	/// </remarks>
+	/// <param name="error">The record that describes the failure. This value must not be <see langword="null"/>.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="error"/> is null.</exception>
 	[SetsRequiredMembers]
 	public SonarrClientResult(SonarrErrorRecord error)
 	{
@@ -90,15 +122,18 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 	}
 
 	/// <summary>
-	/// Creates a new instance of <see cref="SonarrClientResult{T}"/> with the specified value, HTTP status code,
-	/// and optional request URL path.
+	/// Creates a successful result that holds the specified value and status code.
 	/// </summary>
-	/// <typeparam name="T">The type of the value to be encapsulated in the result.</typeparam>
-	/// <param name="value">The value to be included in the result. Cannot be null.</param>
-	/// <param name="code">The HTTP status code to associate with the result.</param>
-	/// <param name="uriPath">The relative URL path of the request, or <see langword="null"/> if not applicable.</param>
-	/// <returns>A <see cref="SonarrClientResult{T}"/> containing the specified value, status code, and request URL path.</returns>
-	/// <inheritdoc cref="SonarrClientResult{T}.SonarrClientResult(T)" path="/exception"/>
+	/// <remarks>
+	/// When <paramref name="value"/> is an <see cref="IHttpRequestUri"/> with a URI, the result takes its URL from it
+	/// rather than from <paramref name="uriPath"/>.
+	/// </remarks>
+	/// <typeparam name="T">The type of the value.</typeparam>
+	/// <param name="value">The value that the request returned. This value must not be <see langword="null"/>.</param>
+	/// <param name="code">The HTTP status code of the response.</param>
+	/// <param name="uriPath">The URL that the request was sent to, or <see langword="null"/> when it isn't known.</param>
+	/// <returns>A result that holds <paramref name="value"/> and <paramref name="code"/>.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
 	public static SonarrClientResult<T> Create<T>([DisallowNull] T value, HttpStatusCode code, string? uriPath = null)
 	{
 		string? requestUri = value is IHttpRequestUri hasReqUri
@@ -112,16 +147,18 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 		};
 	}
 	/// <summary>
-	/// Creates a new <see cref="SonarrClientResult{T}"/> instance containing the specified value and HTTP response
-	/// information.
+	/// Creates a successful result that holds the specified value, with the status code and URL of the specified response.
 	/// </summary>
-	/// <remarks>If <paramref name="response"/> does not contain a request URI, <paramref
-	/// name="uriPath"/> is used to populate the request URL in the result.</remarks>
-	/// <typeparam name="T">The type of the value to be encapsulated in the result.</typeparam>
-	/// <param name="value">The value to be included in the result. Cannot be null.</param>
-	/// <param name="response">The HTTP response message associated with the result. Used to set status and request URL information.</param>
-	/// <param name="uriPath">An optional URI path to use as the request URL if not available from <paramref name="response"/>.</param>
-	/// <returns>A <see cref="SonarrClientResult{T}"/> containing the provided value and details from the HTTP response.</returns>
+	/// <remarks>
+	/// The result takes its URL from <paramref name="value"/> when it's an <see cref="IHttpRequestUri"/> with a URI, then
+	/// from the request of <paramref name="response"/>, and last from <paramref name="uriPath"/>.
+	/// </remarks>
+	/// <typeparam name="T">The type of the value.</typeparam>
+	/// <param name="value">The value that the request returned. This value must not be <see langword="null"/>.</param>
+	/// <param name="response">The response that the value was read from. This value must not be <see langword="null"/>.</param>
+	/// <param name="uriPath">The URL to use when neither <paramref name="value"/> nor <paramref name="response"/> gives one.</param>
+	/// <returns>A result that holds <paramref name="value"/> and the status code of <paramref name="response"/>.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
 	public static SonarrClientResult<T> Create<T>(T value, HttpResponseMessage response, string? uriPath = null)
 	{
 		string? requestUri = value is IHttpRequestUri hasReqUri
@@ -135,17 +172,17 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 		};
 	}
 	/// <summary>
-	/// Creates a new <see cref="SonarrClientResult"/> instance representing an error condition based on the
-	/// specified exception and error details.
+	/// Creates a failed result from the specified exception, error category, and status code.
 	/// </summary>
-	/// <remarks>Use this method to convert exceptions and related HTTP response data into a
-	/// standardized error result for client operations.</remarks>
-	/// <param name="exception">The exception that caused the error. Cannot be null.</param>
-	/// <param name="errorCategory">The category that classifies the type of error encountered.</param>
-	/// <param name="statusCode">The HTTP status code associated with the error response.</param>
-	/// <param name="response">The HTTP response message related to the error, if available; otherwise, <see langword="null"/>.</param>
-	/// <returns>A <see cref="SonarrClientResult"/> containing error information derived from the provided exception and
-	/// details.</returns>
+	/// <remarks>
+	/// The result's error record takes the exception's type name as its error ID, and its URL from the exception when it's
+	/// an <see cref="IHttpRequestUri"/> with a URI, or else from the request of <paramref name="response"/>.
+	/// </remarks>
+	/// <param name="exception">The exception that made the request fail. This value must not be <see langword="null"/>.</param>
+	/// <param name="errorCategory">The category of the error.</param>
+	/// <param name="statusCode">The status code of the result.</param>
+	/// <param name="response">The response that the server returned, or <see langword="null"/> when there was none.</param>
+	/// <returns>A result whose <see cref="IsError"/> is <see langword="true"/>.</returns>
 	public static SonarrClientResult FromException(Exception exception, ErrorCategory errorCategory, HttpStatusCode statusCode, HttpResponseMessage? response = null)
 	{
 		string name = exception.GetTypeName();
@@ -161,18 +198,27 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 		};
 	}
 	/// <summary>
-	/// Creates a new <see cref="SonarrClientResult{T}"/> representing a failed operation due to the specified
-	/// exception.
+	/// Creates a failed result for a request that would have returned a value, from the specified exception, error
+	/// category, and status code.
 	/// </summary>
-	/// <remarks>If the exception is a <see cref="SonarrHttpException"/>, additional details from the
-	/// HTTP context are included in the result. Use this method to standardize error handling for client
-	/// operations.</remarks>
-	/// <typeparam name="T">The type of the result value associated with the client operation.</typeparam>
-	/// <param name="exception">The exception that caused the operation to fail.</param>
-	/// <param name="errorCategory">The category that classifies the error for diagnostic or handling purposes.</param>
-	/// <param name="statusCode">The HTTP status code associated with the failed operation.</param>
-	/// <param name="response">The HTTP response message related to the failed request, if available; otherwise, <see langword="null"/>.</param>
-	/// <returns>A <see cref="SonarrClientResult{T}"/> containing error information derived from the provided exception.</returns>
+	/// <remarks>
+	/// <para>
+	/// A <see cref="SonarrHttpException"/> goes to
+	/// <see cref="FromException{T}(SonarrHttpException, ErrorCategory, HttpStatusCode, HttpResponseMessage?)"/>, whose
+	/// error record carries the details of the HTTP exchange.
+	/// </para>
+	/// <para>
+	/// For any other exception, the result's error record takes the exception's type name as its error ID, and its URL
+	/// from the exception when it's an <see cref="IHttpRequestUri"/> with a URI, or else from the request of
+	/// <paramref name="response"/>.
+	/// </para>
+	/// </remarks>
+	/// <typeparam name="T">The type of the value that the request would have returned.</typeparam>
+	/// <param name="exception">The exception that made the request fail. This value must not be <see langword="null"/>.</param>
+	/// <param name="errorCategory">The category of the error.</param>
+	/// <param name="statusCode">The status code of the result.</param>
+	/// <param name="response">The response that the server returned, or <see langword="null"/> when there was none.</param>
+	/// <returns>A result whose <see cref="IsError"/> is <see langword="true"/>.</returns>
 	public static SonarrClientResult<T> FromException<T>(Exception exception, ErrorCategory errorCategory, HttpStatusCode statusCode, HttpResponseMessage? response = null)
 	{
 		if (exception is SonarrHttpException reqEx)
@@ -191,14 +237,18 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 		};
 	}
 	/// <summary>
-	/// Creates a new result representing a failed operation due to a Sonarr HTTP exception.
+	/// Creates a failed result for a request that would have returned a value, from the specified Sonarr HTTP exception.
 	/// </summary>
-	/// <typeparam name="T">The type of the value that would have been returned if the operation had succeeded.</typeparam>
-	/// <param name="exception">The Sonarr HTTP exception that caused the operation to fail.</param>
-	/// <param name="errorCategory">The category that classifies the type of error encountered.</param>
-	/// <param name="statusCode">The HTTP status code associated with the failed request.</param>
-	/// <param name="response">The HTTP response message returned by the server, if available; otherwise, <see langword="null"/>.</param>
-	/// <returns>A <see cref="SonarrClientResult{T}"/> containing error information about the failed operation.</returns>
+	/// <remarks>
+	/// The result's error record holds the exception's status code, its reason phrase, its headers, and a message that
+	/// names the request's URL.
+	/// </remarks>
+	/// <typeparam name="T">The type of the value that the request would have returned.</typeparam>
+	/// <param name="exception">The exception that made the request fail. This value must not be <see langword="null"/>.</param>
+	/// <param name="errorCategory">The category of the error.</param>
+	/// <param name="statusCode">The status code of the result.</param>
+	/// <param name="response">The response that the server returned, or <see langword="null"/> when there was none.</param>
+	/// <returns>A result whose <see cref="IsError"/> is <see langword="true"/>.</returns>
 	public static SonarrClientResult<T> FromException<T>(SonarrHttpException exception, ErrorCategory errorCategory, HttpStatusCode statusCode, HttpResponseMessage? response = null)
 	{
 		SonarrErrorRecord error = new(exception, response, exception.RequestUri);
@@ -206,17 +256,21 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 		return new SonarrClientResult<T>(error);
 	}
 
+	/// <summary>
+	/// The error record of every result that <see cref="NotFound{T}"/> creates.
+	/// </summary>
 	private static readonly SonarrErrorRecord _notFound = new(new Exception("Not found."), "NotFound", ErrorCategory.ObjectNotFound, targetObj: null, isIgnoreable: true);
 
+	//BUG: Every result shares the one static _notFound record, so PowerShell's WriteError overwrites its InvocationInfo for each cmdlet (and runspace) that writes it, every $Error entry shows the last writer, and it carries no request URL.
 	/// <summary>
-	/// Creates a result indicating that the requested resource was not found.
+	/// Creates a failed result for a request whose resource wasn't found.
 	/// </summary>
-	/// <remarks>Use this method to return a standardized 'Not Found' result when a requested resource
-	/// does not exist. The returned result can be ignored by consumers if appropriate.</remarks>
-	/// <typeparam name="T">The type of the value associated with the result.</typeparam>
-	/// <returns>A <see cref="SonarrClientResult{T}"/> representing a 'Not Found' response. The result has <see cref="IsIgnoreable"/> 
-	/// set to <see langword="true"/> and <see cref="StatusCode"/> set to <see
-	/// cref="System.Net.HttpStatusCode.NotFound"/>.</returns>
+	/// <typeparam name="T">The type of the value that the request would have returned.</typeparam>
+	/// <returns>
+	/// A result whose <see cref="IsError"/> and <see cref="IsIgnoreable"/> are <see langword="true"/>, whose
+	/// <see cref="StatusCode"/> is <see cref="HttpStatusCode.NotFound"/>, and whose error record has the category
+	/// <see cref="ErrorCategory.ObjectNotFound"/>.
+	/// </returns>
 	[SuppressMessage("Style", "IDE0022")]
 	public static SonarrClientResult<T> NotFound<T>() => new(_notFound)
 	{
@@ -225,42 +279,72 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 	};
 }
 
+/// <summary>
+/// Represents the outcome of a request that a Sonarr API client sent, with the value that a successful request returned.
+/// </summary>
+/// <typeparam name="T">The type of the value that the request returns.</typeparam>
 [DebuggerDisplay(@"\{StatusCode = {StatusCode}, IsError = {IsError}, Value = {Value}\}")]
 public sealed class SonarrClientResult<T> : SonarrClientResult
 {
 	/// <inheritdoc/>
 	public override SonarrErrorRecord? Error => base.Error;
 
-	/// <inheritdoc/>
+	/// <summary>
+	/// Gets a value that indicates whether the request failed.
+	/// </summary>
+	/// <value>
+	/// <see langword="true"/> if the request failed and <see cref="Error"/> describes why; otherwise,
+	/// <see langword="false"/>, and <see cref="Value"/> holds the value that the request returned.
+	/// </value>
 	[MemberNotNullWhen(true, nameof(Error)), MemberNotNullWhen(false, nameof(Value))]
 	public override bool IsError => base.IsError;
 
 	/// <summary>
-	/// Gets the parsed value from the HTTP response, or <see langword="null"/> if <see cref="IsError"/> is <see langword="true"/>.
+	/// Gets the value that the request returned.
 	/// </summary>
+	/// <value>
+	/// The deserialized value, or the default of <typeparamref name="T"/> when <see cref="IsError"/> is
+	/// <see langword="true"/>.
+	/// </value>
 	public T? Value { get; }
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="SonarrClientResult{T}"/> class with the specified value.
+	/// Initializes a new <see cref="SonarrClientResult{T}"/> instance that represents a success, with the specified value.
 	/// </summary>
-	/// <param name="value">The result value to be encapsulated by the client result.</param>
-	/// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
+	/// <param name="value">The value that the request returned. This value must not be <see langword="null"/>.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
 	public SonarrClientResult(T value) : base()
 	{
 		ArgumentNullException.ThrowIfNull(value);
 		this.Value = value;
 	}
 	/// <summary>
-	/// Initializes a new instance of the <see cref="SonarrClientResult{T}"/> class with the specified error information.
+	/// Initializes a new <see cref="SonarrClientResult{T}"/> instance that represents a failure, with the specified error
+	/// record.
 	/// </summary>
-	/// <param name="error">The error record that describes the failure encountered by the client.</param>
-	/// <inheritdoc path="/exception"/>
+	/// <remarks>
+	/// The result takes its URL and status code from <paramref name="error"/>, and a status code of 600 when the record
+	/// has none.
+	/// </remarks>
+	/// <param name="error">The record that describes the failure. This value must not be <see langword="null"/>.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="error"/> is null.</exception>
 	[SetsRequiredMembers]
 	public SonarrClientResult(SonarrErrorRecord error) : base(error)
 	{
 		this.Value = default;
 	}
 
+	/// <summary>
+	/// Determines whether <see cref="Value"/> can take a metadata tag.
+	/// </summary>
+	/// <param name="taggable">
+	/// When this method returns, <see cref="Value"/> as an <see cref="IJsonMetadataTaggable"/>, or
+	/// <see langword="null"/> when it isn't one.
+	/// </param>
+	/// <returns>
+	/// <see langword="true"/> if <see cref="Value"/> is an <see cref="IJsonMetadataTaggable"/>; otherwise,
+	/// <see langword="false"/>.
+	/// </returns>
 	public bool IsDataTaggable([NotNullWhen(true)] out IJsonMetadataTaggable? taggable)
 	{
 		if (this.Value is IJsonMetadataTaggable jsonMetadataTaggable)
@@ -273,6 +357,16 @@ public sealed class SonarrClientResult<T> : SonarrClientResult
 		return false;
 	}
 
+	/// <summary>
+	/// Determines whether <see cref="Value"/> can be sorted.
+	/// </summary>
+	/// <param name="sortable">
+	/// When this method returns, <see cref="Value"/> as an <see cref="ISortable"/>, or <see langword="null"/> when it
+	/// isn't one.
+	/// </param>
+	/// <returns>
+	/// <see langword="true"/> if <see cref="Value"/> is an <see cref="ISortable"/>; otherwise, <see langword="false"/>.
+	/// </returns>
 	public bool IsDataSortable([NotNullWhen(true)] out ISortable? sortable)
 	{
 		if (this.Value is ISortable sort)
