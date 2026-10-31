@@ -16,7 +16,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// <para>The handler reads <see cref="IConnectionSettings.AuthType"/> once, when its chain is built. For
 /// <see cref="SonarrAuthType.None"/> and <see cref="SonarrAuthType.External"/>, it passes every request through
 /// unchanged. For <see cref="SonarrAuthType.Basic"/> and <see cref="SonarrAuthType.Forms"/>, it takes the credentials
-/// from the request, which <see cref="ISonarrDownloadClient"/> sends when a download is given a
+/// from the request, which <see cref="Clients.ISonarrDownloadClient"/> sends when a download is given a
 /// <see cref="NetworkCredential"/>, and fails the request with a <see cref="SonarrHttpException"/> when there are
 /// none.</para>
 /// <para>For Basic authentication, the handler adds an <c>Authorization: Basic</c> header. For forms authentication, it
@@ -167,17 +167,19 @@ public sealed class AuthHandler : DelegatingHandler
 		NetworkCredential creds = request.Credentials;
 		string userName = creds.UserName;
 		string password = creds.Password;
-		int length = Encoding.UTF8.GetByteCount(userName) + 1 + Encoding.UTF8.GetByteCount(password);
+		int length = Encoding.UTF8.GetMaxByteCount(userName.Length) + 1 + Encoding.UTF8.GetMaxByteCount(password.Length);
 
+		ReadOnlySpan<byte> colon = ":"u8;
 		using RentedBuffer<byte> buffer = RentedBuffer.Rent<byte>(length <= MAX_STACKALLOC ? stackalloc byte[length] : length);
 		Span<byte> utf8Bytes = buffer.Span;
 		try
 		{
 			int written = Encoding.UTF8.GetBytes(userName, utf8Bytes);
-			utf8Bytes[written++] = (byte)':';
-			written += Encoding.UTF8.GetBytes(password, utf8Bytes[written..]);
+			colon.UnsafeCopy(utf8Bytes.UnsafeSlice(written));
+			written += colon.Length;
+			written += Encoding.UTF8.GetBytes(password, utf8Bytes.UnsafeSlice(written));
 
-			string base64Auth = Convert.ToBase64String(utf8Bytes[..written]);
+			string base64Auth = Convert.ToBase64String(utf8Bytes.UnsafeSlice(0, written));
 			request.Headers.Authorization = new AuthenticationHeaderValue(BASIC, base64Auth);
 		}
 		finally

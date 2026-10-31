@@ -129,27 +129,7 @@ public sealed class DebugSerializeHandler : DelegatingHandler
 	/// <summary>
 	/// Represents a response body read for the debug output, with its length in bytes.
 	/// </summary>
-	[StructLayout(LayoutKind.Auto)]
-	private readonly struct StringResponse
-	{
-		/// <summary>
-		/// The body's length in bytes.
-		/// </summary>
-		public readonly long ContentLength;
-		/// <summary>
-		/// The body, decoded as UTF-8.
-		/// </summary>
-		public readonly string JsonString;
-
-		/// <summary>
-		/// Initializes a new <see cref="StringResponse"/> instance with the specified body length and text.
-		/// </summary>
-		/// <param name="contentLength">The body's length in bytes.</param>
-		/// <param name="jsonString">The body, decoded as UTF-8.</param>
-		public StringResponse(long contentLength, string jsonString)
-		{
-			ContentLength = contentLength;
-			JsonString = jsonString;
-		}
-	}
+	/// <param name="ContentLength">The body's length in bytes.</param>
+	/// <param name="JsonString">The body, decoded as UTF-8.</param>
+	private readonly record struct StringResponse(long ContentLength, string JsonString);
 }
