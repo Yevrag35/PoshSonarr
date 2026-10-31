@@ -212,8 +212,8 @@ public abstract class WritableProperty : PSPropertyInfo
 	/// <exception cref="InvalidOperationException">Thrown when the property can't be created.</exception>
 	private static WritableProperty CreateSonarrObjectProperty(string propertyName, SonarrObject pso)
 	{
-		object[] ctorArgs = new object[] { propertyName, pso };
-		Type[] typeParams = new Type[] { pso.GetType() };
+		object[] ctorArgs = [propertyName, pso];
+		Type[] typeParams = [pso.GetType()];
 
 		Type constructedClassType = _sonarrPropertyType.MakeGenericType(typeParams);
 		return (WritableProperty?)Activator.CreateInstance(constructedClassType, ctorArgs)
