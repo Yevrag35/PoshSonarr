@@ -203,9 +203,9 @@ internal static class ListMarshal
 	/// <item><description><c>new List&lt;T&gt;(values.Length)</c> followed by a loop of <see cref="List{T}.Add(T)"/>
 	/// allocates once, but pays a capacity check and a modification-version bump per element and never lowers to a bulk
 	/// copy.</description></item>
-	/// <item><description><see cref="CollectionExtensions.AddRange{T}(List{T}, ReadOnlySpan{T})"/> allocates once and
-	/// does copy in bulk, but re-checks capacity the caller has already sized correctly and bumps the modification
-	/// version.</description></item>
+	/// <item><description><see cref="M:System.Collections.Generic.CollectionExtensions.AddRange``1(System.Collections.Generic.List{``0},System.ReadOnlySpan{``0})"/>
+	/// allocates once and does copy in bulk, but re-checks capacity the caller has already sized correctly and bumps
+	/// the modification version.</description></item>
 	/// <item><description><see cref="CollectionsMarshal.SetCount{T}(List{T}, int)"/> paired with
 	/// <see cref="CollectionsMarshal.AsSpan{T}(List{T})"/> comes closest, but still runs a capacity branch, bumps the
 	/// modification version, and performs a length-checked copy.</description></item>

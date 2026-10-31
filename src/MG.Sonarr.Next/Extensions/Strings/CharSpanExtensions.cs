@@ -106,6 +106,33 @@ public static partial class CharSpanExtensions
 		return result;
 	}
 
+	/// <summary>
+	/// Attempts to format a value into a <see cref="Span{T}"/> of characters, starting at the given position, and
+	/// advances the position by the number of characters written.
+	/// </summary>
+	/// <remarks>
+	///     When formatting fails, <paramref name="position"/> is left unchanged, though
+	///     <paramref name="destination"/> may hold partially written characters past it.
+	/// </remarks>
+	/// <typeparam name="T">The type of the value to format.</typeparam>
+	/// <param name="value">The value to format.</param>
+	/// <param name="destination">The span that receives the formatted characters.</param>
+	/// <param name="position">
+	///     The index in <paramref name="destination"/> at which to start writing, advanced by the number of
+	///     characters written if formatting succeeds.
+	/// </param>
+	/// <param name="format">The format to use, or an empty span for the type's default format.</param>
+	/// <param name="provider">
+	///     The culture-specific formatting information, or <see langword="null"/> for the current culture.
+	/// </param>
+	/// <returns>
+	///     <see langword="true"/> if <paramref name="value"/> was formatted into the remaining space of
+	///     <paramref name="destination"/>; otherwise, <see langword="false"/>.
+	/// </returns>
+	/// <exception cref="ArgumentOutOfRangeException">
+	///     Thrown when <paramref name="position"/> is negative or greater than the length of
+	///     <paramref name="destination"/>.
+	/// </exception>
 	public static bool TryCopyToSlice<T>(this T value, Span<char> destination, ref int position, ReadOnlySpan<char> format = default, IFormatProvider? provider = null)
 		where T : ISpanFormattable
 	{

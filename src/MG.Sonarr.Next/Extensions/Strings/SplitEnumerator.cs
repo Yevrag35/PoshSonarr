@@ -78,7 +78,14 @@ public ref struct DoubleSplitEnumerator
 	/// </summary>
 	public readonly SplitEntry Current => _current;
 
-	public DoubleSplitEnumerator(ReadOnlySpan<char> str, ReadOnlySpan<char> splitBy1, ReadOnlySpan<char> splitBy2)
+	/// <summary>
+	/// Initializes a new <see cref="DoubleSplitEnumerator"/> instance that splits the specified span of characters by
+	/// the two specified delimiters.
+	/// </summary>
+	/// <param name="str">The span of characters to split.</param>
+	/// <param name="splitBy1">The delimiter that is searched for first.</param>
+	/// <param name="splitBy2">The delimiter that is searched for when <paramref name="splitBy1"/> isn't found.</param>
+	public DoubleSplitEnumerator(ReadOnlySpan<char> str,ReadOnlySpan<char> splitBy1, ReadOnlySpan<char> splitBy2)
 	{
 		_str = str;
 		_splitBy1 = splitBy1;

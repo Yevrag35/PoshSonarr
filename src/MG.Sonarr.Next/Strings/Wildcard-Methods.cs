@@ -332,6 +332,13 @@ public readonly partial struct Wildcard
 
 	#endregion
 
+	/// <summary>
+	/// Provides an enumerator over the <see cref="char"/> elements of a <see cref="Wildcard"/> instance's pattern.
+	/// </summary>
+	/// <remarks>
+	///     The enumerator reads the pattern's characters in place, without copying them, and is returned by
+	///     <see cref="GetEnumerator"/> for use in a <see langword="foreach"/> loop.
+	/// </remarks>
 	[StructLayout(LayoutKind.Auto)]
 	public ref struct Enumerator
 	{
@@ -340,6 +347,13 @@ public readonly partial struct Wildcard
 		private char _current;
 		private readonly ref char _start;
 
+		/// <summary>
+		/// Gets the character at the enumerator's current position.
+		/// </summary>
+		/// <value>
+		///     The current character, or the default <see cref="char"/> before the first call to
+		///     <see cref="MoveNext"/>.
+		/// </value>
 		public readonly char Current => _current;
 
 		internal Enumerator(Wildcard wildcard)
@@ -350,6 +364,13 @@ public readonly partial struct Wildcard
 			_current = default;
 		}
 
+		/// <summary>
+		/// Advances the enumerator to the next character of the pattern.
+		/// </summary>
+		/// <returns>
+		///     <see langword="true"/> if the enumerator advanced to the next character; otherwise,
+		///     <see langword="false"/> if it has passed the end of the pattern.
+		/// </returns>
 		public bool MoveNext()
 		{
 			int newIndex = _index + 1;

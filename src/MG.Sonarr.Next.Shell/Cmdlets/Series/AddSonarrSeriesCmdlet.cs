@@ -5,7 +5,6 @@ using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Internal;
-using MG.Sonarr.Next.Shell.Models.Series;
 using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series;

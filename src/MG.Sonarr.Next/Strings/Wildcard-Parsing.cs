@@ -60,6 +60,34 @@ public readonly partial struct Wildcard
 		return !result.IsEmpty;
 	}
 
+	/// <summary>
+	/// Creates a <see cref="Wildcard"/> pattern of the specified match type from a span of characters.
+	/// </summary>
+	/// <remarks>
+	///     <para>
+	///         For <see cref="WildcardMatchType.Like"/>, <see cref="WildcardMatchType.StartsWith"/>,
+	///         <see cref="WildcardMatchType.EndsWith"/>, and <see cref="WildcardMatchType.Exact"/>, leading and
+	///         trailing <c>*</c> characters are trimmed from <paramref name="value"/>, and <c>*</c> is added where
+	///         the match type needs one.
+	///     </para>
+	///     <para>
+	///         <see cref="WildcardMatchType.None"/> parses <paramref name="value"/> as
+	///         <see cref="Parse(ReadOnlySpan{char})"/> does, and returns <see cref="Empty"/> when it's empty. Any
+	///         other match type returns <see cref="Empty"/>.
+	///     </para>
+	/// </remarks>
+	/// <param name="matchType">The kind of match that the pattern performs.</param>
+	/// <param name="value">The characters that the pattern is built from.</param>
+	/// <returns>
+	///     A <see cref="Wildcard"/> instance that matches <paramref name="value"/> as <paramref name="matchType"/>
+	///     specifies, <see cref="All"/> for <see cref="WildcardMatchType.All"/>, or <see cref="Empty"/>.
+	/// </returns>
+	/// <exception cref="ArgumentException">
+	///     Thrown when <paramref name="matchType"/> is <see cref="WildcardMatchType.Exact"/> and
+	///     <paramref name="value"/> contains wildcard characters other than leading or trailing <c>*</c>
+	///     characters, or when <paramref name="matchType"/> is <see cref="WildcardMatchType.All"/> and
+	///     <paramref name="value"/> is anything but a single <c>*</c>.
+	/// </exception>
 	public static Wildcard ParseAs(WildcardMatchType matchType, params ReadOnlySpan<char> value)
 	{
 		int length = value.Length + 2;
