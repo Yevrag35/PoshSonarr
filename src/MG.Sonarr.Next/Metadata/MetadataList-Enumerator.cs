@@ -2,48 +2,75 @@ namespace MG.Sonarr.Next.Metadata;
 
 public sealed partial class MetadataList<T>
 {
-	/// <inheritdoc/>
+	/// <summary>
+	/// Returns an enumerator over the list's elements.
+	/// </summary>
+	/// <returns>An enumerator over the elements, in order.</returns>
 	[DebuggerStepThrough]
 	IEnumerator<T> IEnumerable<T>.GetEnumerator()
 	{
 		return _list.GetEnumerator();
 	}
-	/// <inheritdoc/>
+	/// <summary>
+	/// Returns an enumerator over the list's elements.
+	/// </summary>
+	/// <returns>A boxed <see cref="Enumerator"/> over the elements, in order.</returns>
 	[DebuggerStepThrough]
 	IEnumerator IEnumerable.GetEnumerator()
 	{
 		return this.GetEnumerator();
 	}
 	/// <summary>
-	/// Returns an enumerator that iterates through the collection.
+	/// Returns an enumerator over the list's elements.
 	/// </summary>
-	/// <returns>An <see cref="Enumerator"/> that can be used to iterate through the collection.</returns>
+	/// <returns>An <see cref="Enumerator"/> over the elements, in order.</returns>
 	public Enumerator GetEnumerator()
 	{
 		return new Enumerator(this);
 	}
 
 	/// <summary>
-	/// An ernumerator for the elements of a <see cref="MetadataList{T}"/> collection.
+	/// Provides an enumerator over the elements of a <see cref="MetadataList{T}"/>.
 	/// </summary>
+	/// <remarks>
+	/// Unlike the enumerator of <see cref="List{T}"/>, it doesn't detect a change to the list during enumeration: it
+	/// reads each element from the list's current contents and stops at its current count.
+	/// </remarks>
 	[StructLayout(LayoutKind.Auto)]
 	public struct Enumerator : IEnumerator<T>
 	{
+		/// <summary>
+		/// The list being enumerated.
+		/// </summary>
 		private MetadataList<T> _list;
+		/// <summary>
+		/// The index of <see cref="Current"/>: -1 before the first element, and the list's count after the last.
+		/// </summary>
 		private int _index;
+		/// <summary>
+		/// The element at <see cref="_index"/>.
+		/// </summary>
 		private T _current;
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Gets the element at the enumerator's position.
+		/// </summary>
+		/// <value>
+		/// The current element, or <see langword="default"/> before the first call to <see cref="MoveNext"/>.
+		/// </value>
 		public readonly T Current => _current;
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Gets the element at the enumerator's position.
+		/// </summary>
+		/// <value>The current element, boxed when it's a value type.</value>
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		readonly object? IEnumerator.Current => this.Current;
 
 		/// <summary>
-		/// Initializes a new instance of the Enumerator class for the specified MetadataList.
+		/// Initializes a new <see cref="Enumerator"/> instance, positioned before the first element of the specified list.
 		/// </summary>
-		/// <param name="list">The MetadataList to enumerate over.</param>
+		/// <param name="list">The list to enumerate.</param>
 		internal Enumerator(MetadataList<T> list)
 		{
 			_list = list;
@@ -51,7 +78,12 @@ public sealed partial class MetadataList<T>
 			_current = default!;
 		}
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Advances the enumerator to the next element.
+		/// </summary>
+		/// <returns>
+		/// <see langword="true"/> if the enumerator moved to an element; <see langword="false"/> if it passed the last.
+		/// </returns>
 		public bool MoveNext()
 		{
 			int index = _index + 1;
@@ -66,13 +98,17 @@ public sealed partial class MetadataList<T>
 			return false;
 		}
 
-		/// <inheritdoc/>
+		/// <summary>
+		/// Clears the enumerator, which can't be used afterward.
+		/// </summary>
 		[DebuggerStepThrough]
 		void IDisposable.Dispose()
 		{
 			this = default;
 		}
-		/// <inheritdoc/>
+		/// <summary>
+		/// Moves the enumerator back to before the first element.
+		/// </summary>
 		[DebuggerStepThrough]
 		void IEnumerator.Reset()
 		{
