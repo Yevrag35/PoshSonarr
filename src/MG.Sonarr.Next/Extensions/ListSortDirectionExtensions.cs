@@ -27,7 +27,6 @@ public static class ListSortDirectionExtensions
 		/// <summary>
 		/// Gets the number of characters in the text of a sort direction, without formatting it.
 		/// </summary>
-		/// <param name="direction">The direction to measure.</param>
 		/// <returns>
 		/// The length of the direction's name, or, for a value that <see cref="ListSortDirection"/> doesn't name, the
 		/// length of its number in decimal, which is what <see cref="Enum.ToString()"/> writes for it.
