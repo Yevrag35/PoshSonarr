@@ -3,7 +3,7 @@ using System.ComponentModel;
 namespace MG.Sonarr.Next.Strings;
 
 /// <summary>
-/// A read-only <see cref="string"/> that can be used for checking case-insensitive equality and pattern matching based on traditional wildcard characters.
+/// Represents a read-only wildcard pattern used for case-insensitive equality and wildcard matching.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
 [DebuggerDisplay("{GetDebuggerString(),nq}")]
@@ -37,7 +37,7 @@ public readonly partial struct Wildcard :
 	/// object.
 	/// </summary>
 	/// <param name="index">The position in the current string.</param>
-	/// <returns>The char object at the specified index.</returns>
+	/// <value>The character at the specified index.</value>
 	/// <exception cref="ArgumentOutOfRangeException"/>
 	public char this[int index] => _pattern.AsSpan()[index];
 
@@ -50,10 +50,10 @@ public readonly partial struct Wildcard :
 	///     <see cref="IsMatch(string?)"/> method executions, only strict <see cref="char"/> equality will
 	///     be checked.
 	/// </remarks>
-	/// <returns>
-	///     <see langword="true"/> if the string contains at least 1 wildcard character; otherwise,
-	///     <see langword="false"/>.
-	/// </returns>
+	/// <value>
+	/// <see langword="true"/> if the string contains at least one wildcard character; otherwise,
+	/// <see langword="false"/>.
+	/// </value>
 	[MemberNotNullWhen(true, nameof(_pattern))]
 	public readonly bool ContainsWildcards
 	{
@@ -65,15 +65,18 @@ public readonly partial struct Wildcard :
 	/// <remarks>
 	/// An empty <see cref="Wildcard"/> instance will never match any input.
 	/// </remarks>
+	/// <value><see langword="true"/> when the instance is empty; otherwise, <see langword="false"/>.</value>
 	[MemberNotNullWhen(false, nameof(_pattern))]
 	public readonly bool IsEmpty => _state.Length == 0;
 	/// <summary>
 	/// Gets the number of characters in the current <see cref="Wildcard"/> pattern.
 	/// </summary>
+	/// <value>The number of characters in the wildcard pattern.</value>
 	public readonly int Length => _state.Length;
 	/// <summary>
 	/// Gets the match type that this <see cref="Wildcard"/> instance will follow when comparing its pattern against input.
 	/// </summary>
+	/// <value>The pattern match type.</value>
 	public readonly WildcardMatchType MatchType => _state.Type;
 
 	/// <summary>
@@ -85,7 +88,7 @@ public readonly partial struct Wildcard :
 	/// will be treated as "empty" and will only match other empty spans or <see cref="string"/> instances.
 	/// Functionality equivalent to <see cref="Empty"/>.
 	/// </remarks>
-	/// <param name="pattern">The string to use as the wildcard pattern.</param>
+	/// <param name="patternString">The string to use as the wildcard pattern.</param>
 	//[DebuggerStepThrough]
 	public Wildcard(string? patternString)
 	{
@@ -112,11 +115,22 @@ public readonly partial struct Wildcard :
 		_pattern = ConstructPattern(pattern, matchType, ref length);
 		_state = new(length: length, type: matchType);
 	}
+
+	/// <summary>
+	/// Initializes a new <see cref="Wildcard"/> instance with the specified pattern and match type.
+	/// </summary>
+	/// <param name="pattern">The pattern text.</param>
+	/// <param name="matchType">The match type to assign to the instance.</param>
 	private Wildcard(ReadOnlySpan<char> pattern, WildcardMatchType matchType)
 	{
 		_pattern = pattern.ToString();
 		_state = new(length: _pattern.Length, type: matchType);
 	}
+
+	/// <summary>
+	/// Initializes a new <see cref="Wildcard"/> instance as either the all-matching value or the empty value.
+	/// </summary>
+	/// <param name="isAll"><see langword="true"/> to create the all-matching value; otherwise, <see langword="false"/>.</param>
 	private Wildcard(bool isAll)
 	{
 		if (isAll)
@@ -141,6 +155,10 @@ public readonly partial struct Wildcard :
 	private readonly string? _pattern;
 	private readonly State _state;
 
+	/// <summary>
+	/// Gets the size, in bytes, of the internal state representation.
+	/// </summary>
+	/// <returns>The size of <c>State</c> in bytes.</returns>
 	public static int GetSize()
 	{
 		return System.Runtime.CompilerServices.Unsafe.SizeOf<State>();
@@ -148,6 +166,10 @@ public readonly partial struct Wildcard :
 
 	#endregion
 
+	/// <summary>
+	/// Gets a debugger display string for the current instance.
+	/// </summary>
+	/// <returns>A formatted debugger display string.</returns>
 	[DebuggerStepThrough]
 	[ExcludeFromCodeCoverage]
 	[EditorBrowsable(EditorBrowsableState.Never)]

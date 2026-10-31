@@ -8,12 +8,15 @@ namespace MG.Sonarr.Next.Reflection;
 public interface IMemberInfo
 {
 	/// <summary>
-	/// Indicates whether the member represented by this instance is static.
+	/// Gets a value that indicates whether the member represented by this instance is static.
 	/// </summary>
+	/// <value><see langword="true"/> when the member is static; otherwise, <see langword="false"/>.</value>
 	bool IsStatic { get; }
+
 	/// <summary>
-	/// The name of the member.
+	/// Gets the name of the member.
 	/// </summary>
+	/// <value>The member name.</value>
 	string MemberName { get; }
 }
 
@@ -23,12 +26,12 @@ public interface IMemberInfo
 public interface IMemberGetter : IMemberInfo
 {
 	/// <summary>
-	/// Indicates whether this implementation is able to get the value of the member.
+	/// Gets a value that indicates whether this implementation can get the value of the member.
 	/// </summary>
 	/// <remarks>
-	/// It can be expected that when this is <see langword="false"/>, running <see cref="GetValue(object)"/> 
-	/// will throw an exception.
+	/// When this value is <see langword="false"/>, calling <see cref="GetValue(object)"/> can throw.
 	/// </remarks>
+	/// <value><see langword="true"/> when value reads are supported; otherwise, <see langword="false"/>.</value>
 	bool CanGet { get; }
 
 	/// <summary>
@@ -46,12 +49,12 @@ public interface IMemberGetter : IMemberInfo
 public interface IMemberSetter : IMemberInfo
 {
 	/// <summary>
-	/// Indicates whether this implementation is able to set the value of the member.
+	/// Gets a value that indicates whether this implementation can set the value of the member.
 	/// </summary>
 	/// <remarks>
-	/// It can be expected that when this is <see langword="false"/>, running <see cref="SetValue(object, object)"/> 
-	/// will throw an exception.
+	/// When this value is <see langword="false"/>, calling <see cref="SetValue(object, object)"/> can throw.
 	/// </remarks>
+	/// <value><see langword="true"/> when value writes are supported; otherwise, <see langword="false"/>.</value>
 	bool CanSet { get; }
 
 	/// <summary>
@@ -84,35 +87,43 @@ public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemb
 	private readonly string? _memberName;
 
 	/// <summary>
-	/// Indicates whether this instance has an accessible getter for the member.
+	/// Gets a value that indicates whether this instance has an accessible getter for the member.
 	/// </summary>
 	/// <remarks>
-	/// It can be expected that when this is <see langword="false"/>, running <see cref="GetValue(object)"/> 
-	/// will throw an exception.
+	/// When this value is <see langword="false"/>, calling <see cref="GetValue(object)"/> can throw.
 	/// </remarks>
+	/// <value><see langword="true"/> when value reads are supported; otherwise, <see langword="false"/>.</value>
 	[MemberNotNullWhen(true, nameof(_member), nameof(_memberName))]
 	public readonly bool CanGet => _canGet;
+
 	/// <summary>
-	/// Indicates whether this instance has an accessible setter for the member.
+	/// Gets a value that indicates whether this instance has an accessible setter for the member.
 	/// </summary>
 	/// <remarks>
 	/// It's <see langword="false"/> for a property without a setter, a read-only field, and a constant, none of which
 	/// <see cref="SetValue(object, object)"/> should be called for.
 	/// </remarks>
+	/// <value><see langword="true"/> when value writes are supported; otherwise, <see langword="false"/>.</value>
 	[MemberNotNullWhen(true, nameof(_member), nameof(_memberName))]
 	public readonly bool CanSet => _canSet;
+
 	/// <summary>
-	/// Indicates whether this instance is empty or default-initialized.
+	/// Gets a value that indicates whether this instance is empty or default-initialized.
 	/// </summary>
+	/// <value><see langword="true"/> when this instance is empty; otherwise, <see langword="false"/>.</value>
 	[MemberNotNullWhen(false, nameof(_memberName), nameof(_member))]
 	public readonly bool IsEmpty => _either.IsDefaultOrEmpty;
+
 	/// <summary>
-	/// The name of the field or property represented by this instance.
+	/// Gets the name of the field or property represented by this instance.
 	/// </summary>
+	/// <value>The field or property name, or an empty string when this instance is empty.</value>
 	public readonly string MemberName => _memberName ?? string.Empty;
+
 	/// <summary>
-	/// Indicates whether the member represented by this instance is static.
+	/// Gets a value that indicates whether the member represented by this instance is static.
 	/// </summary>
+	/// <value><see langword="true"/> when the member is static; otherwise, <see langword="false"/>.</value>
 	[MemberNotNullWhen(true, nameof(_member), nameof(_memberName))]
 	public readonly bool IsStatic => _isStatic;
 
@@ -120,7 +131,7 @@ public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemb
 	/// Initializes a new instance of <see cref="FieldOrPropertyInfo"/> with the specified backing <see cref="FieldInfo"/>.
 	/// </summary>
 	/// <param name="fieldInfo">The field to use.</param>
-	/// <exception cref="ArgumentNullException"/>
+	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="fieldInfo"/> is null.</exception>
 	public FieldOrPropertyInfo(FieldInfo fieldInfo)
 	{
 		ArgumentNullException.ThrowIfNull(fieldInfo);
@@ -135,7 +146,7 @@ public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemb
 	/// Initializes a new instance of <see cref="FieldOrPropertyInfo"/> with the specified backing <see cref="PropertyInfo"/>.
 	/// </summary>
 	/// <param name="propertyInfo">The property to use.</param>
-	/// <exception cref="ArgumentNullException"/>
+	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="propertyInfo"/> is null.</exception>
 	public FieldOrPropertyInfo(PropertyInfo propertyInfo)
 	{
 		ArgumentNullException.ThrowIfNull(propertyInfo);
@@ -147,12 +158,27 @@ public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemb
 		_isStatic = propertyInfo.GetMethod?.IsStatic ?? propertyInfo.SetMethod?.IsStatic ?? false;
 	}
 
+	/// <summary>
+	/// Gets the value of the represented member from the specified instance.
+	/// </summary>
+	/// <param name="instance">The instance to read from, or null for static members.</param>
+	/// <returns>The member value from <paramref name="instance"/>.</returns>
+	/// <inheritdoc cref="FieldInfo.GetValue(object)" path="/exception"/>
+	/// <inheritdoc cref="PropertyInfo.GetValue(object)" path="/exception"/>
 	public readonly object? GetValue(object? instance)
 	{
 		return _either.MatchObj(instance,
 			f1: static (pi, instance) => pi.GetValue(instance),
 			f2: static (fi, instance) => fi.GetValue(instance));
 	}
+
+	/// <summary>
+	/// Sets the value of the represented member on the specified instance.
+	/// </summary>
+	/// <param name="instance">The instance to write to, or null for static members.</param>
+	/// <param name="value">The value to assign.</param>
+	/// <inheritdoc cref="PropertyInfo.SetValue(object, object)" path="/exception"/>
+	/// <inheritdoc cref="FieldInfo.SetValue(object, object)" path="/exception"/>
 	public readonly void SetValue(object? instance, object? value)
 	{
 		_either.MatchObj(
@@ -161,10 +187,21 @@ public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemb
 			instance, value);
 	}
 
+	/// <summary>
+	/// Implicitly converts a <see cref="FieldInfo"/> value to a <see cref="FieldOrPropertyInfo"/> instance.
+	/// </summary>
+	/// <param name="fieldInfo">The field metadata to wrap.</param>
+	/// <returns>A wrapper for <paramref name="fieldInfo"/>.</returns>
 	public static implicit operator FieldOrPropertyInfo(FieldInfo fieldInfo)
 	{
 		return new(fieldInfo);
 	}
+
+	/// <summary>
+	/// Implicitly converts a <see cref="PropertyInfo"/> value to a <see cref="FieldOrPropertyInfo"/> instance.
+	/// </summary>
+	/// <param name="propertyInfo">The property metadata to wrap.</param>
+	/// <returns>A wrapper for <paramref name="propertyInfo"/>.</returns>
 	public static implicit operator FieldOrPropertyInfo(PropertyInfo propertyInfo)
 	{
 		return new(propertyInfo);

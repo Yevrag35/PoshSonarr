@@ -2,6 +2,12 @@ using System.ComponentModel;
 
 namespace MG.Sonarr.Next.Unions;
 
+/// <summary>
+/// Represents an action that receives a value and a parameter span.
+/// </summary>
+/// <typeparam name="T">The value type.</typeparam>
+/// <param name="item">The value argument.</param>
+/// <param name="parameters">The parameter span.</param>
 public delegate void RefAction<T>(T item, ReadOnlySpan<object?> parameters);
 
 /// <summary>
@@ -22,32 +28,38 @@ public readonly partial struct Either<T1, T2>
 	/// <summary>
 	/// Gets the value of the first type if present.
 	/// </summary>
+	/// <value>The first value.</value>
 	public readonly T1? AsT1 => _first;
 
 	/// <summary>
 	/// Gets the value of the second type if present.
 	/// </summary>
+	/// <value>The second value.</value>
 	public readonly T2? AsT2 => _second;
 
 	/// <summary>
 	/// Gets the index indicating the current type.
 	/// </summary>
+	/// <value>The discriminator index.</value>
 	public uint Index => _index;
 
 	/// <summary>
 	/// Gets a value indicating whether the instance is default or empty.
 	/// </summary>
+	/// <value><see langword="true"/> when the instance is default-initialized; otherwise, <see langword="false"/>.</value>
 	public readonly bool IsDefaultOrEmpty => !_isNotDefault;
 
 	/// <summary>
 	/// Gets a value indicating whether the instance is of the first type.
 	/// </summary>
+	/// <value><see langword="true"/> when the instance stores a <typeparamref name="T1"/> value; otherwise, <see langword="false"/>.</value>
 	[MemberNotNullWhen(true, nameof(_first), nameof(AsT1))]
 	public readonly bool IsT1 => _index == 1;
 
 	/// <summary>
 	/// Gets a value indicating whether the instance is of the second type.
 	/// </summary>
+	/// <value><see langword="true"/> when the instance stores a <typeparamref name="T2"/> value; otherwise, <see langword="false"/>.</value>
 	[MemberNotNullWhen(true, nameof(_second), nameof(AsT2))]
 	public readonly bool IsT2 => _index == 2;
 
@@ -89,14 +101,32 @@ public readonly partial struct Either<T1, T2>
 		_index = 2;
 	}
 
+	/// <summary>
+	/// Determines whether this instance and another instance store the same union arm.
+	/// </summary>
+	/// <param name="other">The instance to compare.</param>
+	/// <returns><see langword="true"/> when both instances store the same arm; otherwise, <see langword="false"/>.</returns>
 	public readonly bool IsSameType(in Either<T1, T2> other)
 	{
 		return this.IsSameType(in other, ignoreDefaultOrEmpty: false);
 	}
+
+	/// <summary>
+	/// Determines whether this instance and another instance store the same union arm.
+	/// </summary>
+	/// <param name="other">The instance to compare.</param>
+	/// <param name="ignoreDefaultOrEmpty">A value that indicates whether default instances are treated as matching by index.</param>
+	/// <returns><see langword="true"/> when both instances satisfy the same-type comparison; otherwise, <see langword="false"/>.</returns>
 	public readonly bool IsSameType(in Either<T1, T2> other, bool ignoreDefaultOrEmpty)
 	{
 		return (other._index > 0u || ignoreDefaultOrEmpty) && _index == other._index;
 	}
+
+	/// <summary>
+	/// Determines whether this instance and another instance store different union arms.
+	/// </summary>
+	/// <param name="other">The instance to compare.</param>
+	/// <returns><see langword="true"/> when the instances store different arms; otherwise, <see langword="false"/>.</returns>
 	public readonly bool IsNotSameType(in Either<T1, T2> other)
 	{
 		return _index != other._index;
@@ -193,7 +223,7 @@ public readonly partial struct Either<T1, T2>
 	/// <param name="f1">The function to execute if the instance is of the first type.</param>
 	/// <param name="f2">The function to execute if the instance is of the second type.</param>
 	/// <returns>The result of the executed function.</returns>
-	/// <exception cref="EmptyStructException"></exception>
+	/// <exception cref="EmptyStructException">Thrown when the instance is default-initialized.</exception>
 	public readonly TOutput Match<TOutput>(
 		Func<T1, TOutput> f1,
 		Func<T2, TOutput> f2)
@@ -217,7 +247,7 @@ public readonly partial struct Either<T1, T2>
 	/// <param name="f1">The function to execute if the instance is of the first type.</param>
 	/// <param name="f2">The function to execute if the instance is of the second type.</param>
 	/// <returns>The result of the executed function.</returns>
-	/// <exception cref="EmptyStructException"></exception>
+	/// <exception cref="EmptyStructException">Thrown when the instance is default-initialized.</exception>
 	public readonly TOutput Match<TOutput, TState>(
 		TState state,
 		Func<T1, TState, TOutput> f1,
@@ -234,6 +264,15 @@ public readonly partial struct Either<T1, T2>
 		};
 	}
 
+	/// <summary>
+	/// Matches the current instance to one of the provided function pointers based on its type and returns the result.
+	/// </summary>
+	/// <typeparam name="TOutput">The output type.</typeparam>
+	/// <typeparam name="TState">The state type.</typeparam>
+	/// <param name="state">The state to pass to the function pointer.</param>
+	/// <param name="f1">The function pointer to execute if the instance is of the first type.</param>
+	/// <param name="f2">The function pointer to execute if the instance is of the second type.</param>
+	/// <returns>The result of the executed function pointer.</returns>
 	public unsafe TOutput Match<TOutput, TState>(
 		TState state,
 		delegate*<T1, TState, TOutput> f1,
@@ -344,7 +383,18 @@ public readonly partial struct Either<T1, T2>
 		return this.IsT2;
 	}
 
+	/// <summary>
+	/// Creates a new <see cref="Either{T1, T2}"/> instance from a first-type value.
+	/// </summary>
+	/// <param name="value">The first-type value to wrap.</param>
+	/// <returns>An either instance that stores a <typeparamref name="T1"/> value.</returns>
 	public static Either<T1, T2> FromT1(T1 value) => new(value);
+
+	/// <summary>
+	/// Creates a new <see cref="Either{T1, T2}"/> instance from a second-type value.
+	/// </summary>
+	/// <param name="value">The second-type value to wrap.</param>
+	/// <returns>An either instance that stores a <typeparamref name="T2"/> value.</returns>
 	public static Either<T1, T2> FromT2(T2 value) => new(value);
 
 #if DEBUG
