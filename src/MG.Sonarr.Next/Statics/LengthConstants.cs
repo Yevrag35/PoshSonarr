@@ -1,6 +1,4 @@
-#pragma warning disable format, IDE0130 // Namespace does not match folder structure
 namespace MG.Sonarr.Next;
-#pragma warning restore format, IDE0130
 
 /// <summary>
 /// Provides constant values for various length constraints.
