@@ -233,24 +233,15 @@ public static partial class CharSpanExtensions
 		return index != -1;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static bool EnclosedInCore(ReadOnlySpan<char> readOnlySpan, char opening, char closing)
 	{
-		if (readOnlySpan.Length < 2)
-		{
-			return false;
-		}
-
-		return opening == readOnlySpan[0] && closing == readOnlySpan[^1];
+		return readOnlySpan.Length >= 2 && opening == readOnlySpan[0] && closing == readOnlySpan[^1];
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static bool FirstCharEquals(ReadOnlySpan<char> span, char value)
 	{
-		bool result = false;
-		if (!span.IsEmpty)
-		{
-			result = span[0] == value;
-		}
-
-		return result;
+		return !span.IsEmpty && span[0] == value;
 	}
 }

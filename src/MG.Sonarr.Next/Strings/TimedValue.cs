@@ -9,7 +9,7 @@ namespace MG.Sonarr.Next.Strings;
 [DebuggerDisplay("{Elapsed}")]
 public readonly struct TimedValue : IFormattable
 {
-	private const double _exclusiveMaxMillisecondThreshold = 50_000;
+	private const double EXCLUSIVE_MAX_MILLISECOND_THRESHOLD = 50_000;
 
 	/// <summary>
 	/// Gets the <see cref="TimeSpan"/> value of the current instance.
@@ -21,7 +21,7 @@ public readonly struct TimedValue : IFormattable
 	/// Gets a value indicating whether the formatted string output of <see cref="Elapsed"/> will be in seconds.
 	/// </summary>
 	/// <value><see langword="true"/> when output uses seconds; otherwise, <see langword="false"/>.</value>
-	public readonly bool WillUseSeconds => this.Elapsed.TotalMilliseconds >= _exclusiveMaxMillisecondThreshold;
+	public bool WillUseSeconds => this.Elapsed.TotalMilliseconds >= EXCLUSIVE_MAX_MILLISECOND_THRESHOLD;
 
 	/// <summary>
 	/// Initializes a new <see cref="TimedValue"/> instance with a zero elapsed duration.
@@ -36,6 +36,7 @@ public readonly struct TimedValue : IFormattable
 	/// Initializes a new <see cref="TimedValue"/> instance with the specified elapsed duration.
 	/// </summary>
 	/// <param name="elapsed">The elapsed duration.</param>
+	[DebuggerStepThrough]
 	public TimedValue(TimeSpan elapsed)
 	{
 		this.Elapsed = elapsed;
@@ -46,7 +47,7 @@ public readonly struct TimedValue : IFormattable
 	/// </summary>
 	/// <returns>The rounded elapsed value in milliseconds or seconds, based on <see cref="WillUseSeconds"/>.</returns>
 	[DebuggerStepThrough]
-	public readonly double GetRoundedValue() => this.GetRoundedValue(decimalPlaces: 2);
+	public double GetRoundedValue() => this.GetRoundedValue(decimalPlaces: 2);
 
 	/// <summary>
 	/// Gets the rounded elapsed value using the specified number of decimal places.
@@ -57,7 +58,7 @@ public readonly struct TimedValue : IFormattable
 	/// Thrown when <paramref name="decimalPlaces"/> is less than 0 or greater than 15, as
 	/// <see cref="Math.Round(double, int, MidpointRounding)"/> throws.
 	/// </exception>
-	public readonly double GetRoundedValue(int decimalPlaces)
+	public double GetRoundedValue(int decimalPlaces)
 	{
 		double value = this.WillUseSeconds ? this.Elapsed.TotalSeconds : this.Elapsed.TotalMilliseconds;
 		return Math.Round(value, decimalPlaces, MidpointRounding.AwayFromZero);
@@ -67,7 +68,7 @@ public readonly struct TimedValue : IFormattable
 	/// Returns the string representation of this instance using the current culture.
 	/// </summary>
 	/// <returns>The formatted elapsed value with its unit suffix.</returns>
-	public override readonly string ToString()
+	public override string ToString()
 	{
 		return this.ToString(format: null, provider: CultureInfo.CurrentCulture);
 	}
@@ -82,7 +83,7 @@ public readonly struct TimedValue : IFormattable
 	/// <param name="format">The format string. This value is currently ignored.</param>
 	/// <param name="provider">The format provider used for numeric formatting.</param>
 	/// <returns>The formatted elapsed value with its unit suffix.</returns>
-	public readonly string ToString(string? format, IFormatProvider? provider)
+	public string ToString(string? format, IFormatProvider? provider)
 	{
 		double value = this.GetRoundedValue();
 		string unit = !this.WillUseSeconds ? Messages.Timer_Unit_Milliseconds : Messages.Timer_Unit_Seconds;

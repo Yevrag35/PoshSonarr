@@ -7,7 +7,7 @@ namespace MG.Sonarr.Next.Strings;
 /// </summary>
 public static class Messenger
 {
-	private static readonly Lazy<ConcurrentDictionary<string, CompositeFormat>> _formats = new(() =>
+	private static readonly Lazy<ConcurrentDictionary<string, CompositeFormat>> s_formats = new(() =>
 	{
 		return new(Environment.ProcessorCount, 3, StringComparer.Ordinal);
 	});
@@ -47,6 +47,6 @@ public static class Messenger
 	/// <returns>The cached parsed composite format.</returns>
 	private static CompositeFormat GetCompositeFormat(string format)
 	{
-		return _formats.Value.GetOrAdd(format, CompositeFormat.Parse);
+		return s_formats.Value.GetOrAdd(format, CompositeFormat.Parse);
 	}
 }
