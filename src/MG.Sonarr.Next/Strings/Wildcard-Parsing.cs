@@ -4,7 +4,7 @@ namespace MG.Sonarr.Next.Strings;
 
 public readonly partial struct Wildcard
 {
-	#region SPAN PARSING
+	// SPAN PARSING
 	/// <summary>
 	/// Parses the provided read-only span of characters into a <see cref="Wildcard"/> pattern.
 	/// </summary>
@@ -121,7 +121,7 @@ public readonly partial struct Wildcard
 		}
 
 		value = value.Trim('*');
-		if (matchType != WildcardMatchType.Like && value.ContainsAny(_wildcardChars))
+		if (matchType != WildcardMatchType.Like && value.ContainsAny(s_wildcardChars))
 		{
 			throw new ArgumentException(matchType switch
 			{
@@ -156,7 +156,7 @@ public readonly partial struct Wildcard
 		return new(builder.AsSpan(), matchType);
 	}
 
-	#region I_SPAN_PARSABLE IMPLEMENTATIONS
+	// ISPANPARSABLE IMPLEMENTATIONS
 	/// <inheritdoc/>
 	[DebuggerStepThrough]
 	static Wildcard ISpanParsable<Wildcard>.Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
@@ -182,12 +182,7 @@ public readonly partial struct Wildcard
 		return TryParse(s.AsSpan(), out result);
 	}
 
-	#endregion
-
-	#endregion
-
-	#region UTF8 PARSING
-
+	//UTF-8 PARSING
 	/// <summary>Parses a span of UTF-8 characters into a <see cref="Wildcard"/> object.</summary>
 	/// <remarks>
 	/// The bytes decode as <see cref="Encoding.UTF8"/> decodes them, so a byte sequence that isn't valid UTF-8 becomes
@@ -239,7 +234,7 @@ public readonly partial struct Wildcard
 		return !result.IsEmpty;
 	}
 
-	#region I_UTF8_SPAN_PARSABLE IMPLEMENTATIONS
+	// IUTF8_SPAN_PARSABLE IMPLEMENTATIONS
 	/// <summary>Parses a span of UTF-8 characters into a <see cref="Wildcard"/> object.</summary>
 	/// <param name="utf8Text">The span of UTF-8 characters to parse.</param>
 	/// <param name="provider">An object that provides culture-specific formatting information about <paramref name="utf8Text" />.</param>
@@ -265,8 +260,4 @@ public readonly partial struct Wildcard
 	{
 		return TryParse(utf8Text, out result);
 	}
-
-	#endregion
-
-	#endregion
 }

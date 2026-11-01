@@ -63,7 +63,7 @@ public readonly partial struct Wildcard
 		return ((IEnumerable<char>)this).GetEnumerator();
 	}
 
-	#region MATCHING
+	// MATCHING
 
 	/// <summary>
 	/// Determines if the input <see cref="string"/> object matches the current 
@@ -169,9 +169,7 @@ public readonly partial struct Wildcard
 		};
 	}
 
-	#endregion
-
-	#region PRIVATE METHODS
+	// PRIVATE METHODS
 
 	/// <summary>
 	/// Determines whether a literal character of the pattern equals a character of the input under the specified
@@ -286,34 +284,38 @@ public readonly partial struct Wildcard
 
 		return resulting_pattern;
 	}
+	private static WildcardMatchType DeterminePattern(string? pattern)
+	{
+		return pattern is null ? WildcardMatchType.None : DeterminePattern(pattern.AsSpan());
+	}
 	private static WildcardMatchType DeterminePattern(ReadOnlySpan<char> pattern)
 	{
-		if (pattern.IsEmpty)
-		{
-			return WildcardMatchType.None;
-		}
+		return pattern.IsEmpty ? WildcardMatchType.None : determineFromNonEmpty(pattern);
 
-		if (TryAsSingleCharacterPattern(pattern, out WildcardMatchType matchType))
+		static WildcardMatchType determineFromNonEmpty(ReadOnlySpan<char> pattern)
 		{
+			if (TryAsSingleCharacterPattern(pattern, out WildcardMatchType matchType))
+			{
+				return matchType;
+			}
+
+			if (!pattern.ContainsAny(s_wildcardChars))
+			{
+				return WildcardMatchType.Exact;
+			}
+
+			matchType = WildcardMatchType.Like;
+			if ('*' == pattern[^1] && !pattern.TrimEnd('*').ContainsAny(s_wildcardChars))
+			{
+				matchType = WildcardMatchType.StartsWith;
+			}
+			else if ('*' == pattern[0] && !pattern.TrimStart('*').ContainsAny(s_wildcardChars))
+			{
+				matchType = WildcardMatchType.EndsWith;
+			}
+
 			return matchType;
 		}
-
-		if (!pattern.ContainsAny(_wildcardChars))
-		{
-			return WildcardMatchType.Exact;
-		}
-
-		matchType = WildcardMatchType.Like;
-		if ('*' == pattern[^1] && !pattern.TrimEnd('*').ContainsAny(_wildcardChars))
-		{
-			matchType = WildcardMatchType.StartsWith;
-		}
-		else if ('*' == pattern[0] && !pattern.TrimStart('*').ContainsAny(_wildcardChars))
-		{
-			matchType = WildcardMatchType.EndsWith;
-		}
-
-		return matchType;
 	}
 	/// <summary>
 	/// Determines whether the input matches a pattern that holds a <c>?</c> or a <c>*</c> between its other characters.
@@ -409,9 +411,8 @@ public readonly partial struct Wildcard
 	/// </summary>
 	/// <param name="paramName">The name of the parameter that holds the value.</param>
 	/// <exception cref="ArgumentException">Thrown on every call.</exception>
-	[DoesNotReturn]
-	[MethodImpl(MethodImplOptions.NoInlining)]
-	private static void ThrowComparisonNotSupported(string paramName)
+	[DoesNotReturn, StackTraceHidden]
+	private static void ThrowComparisonNotSupported(string? paramName)
 	{
 		throw new ArgumentException("The string comparison type passed in is currently not supported.", paramName);
 	}
@@ -433,7 +434,7 @@ public readonly partial struct Wildcard
 		return false;
 	}
 
-	#endregion
+	// ENUMERATOR
 
 	/// <summary>
 	/// Provides an enumerator over the <see cref="char"/> elements of a <see cref="Wildcard"/> instance's pattern.

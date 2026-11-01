@@ -92,7 +92,7 @@ public readonly partial struct Wildcard
 				? stackalloc char[length]
 				: length))
 		{
-			int written = pattern.RemoveAny(buffer.Span, _wildcardChars);
+			int written = pattern.RemoveAny(buffer.Span, s_wildcardChars);
 			return written > 0
 				? new(buffer[..written], WildcardMatchType.Exact)
 				: Empty;

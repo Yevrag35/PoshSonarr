@@ -28,7 +28,7 @@ namespace MG.Sonarr.Next.Strings;
 ///     </para>
 /// </remarks>
 [DebuggerDisplay("{GetDebuggerString(),nq}")]
-public readonly partial struct Wildcard :
+public readonly partial struct Wildcard : // 16 bytes
 	IEnumerable<char>,
 	IEquatable<string>, IEquatable<Wildcard>,
 	ISpanFormattable, ISpanParsable<Wildcard>,
@@ -41,6 +41,18 @@ public readonly partial struct Wildcard :
 	// Main Methods -> ./Wildcard-Methods.cs
 	// Parsing methods -> ./Wildcard-Parsing.cs
 	// --------------------------------
+
+	// -- PRIVATE FIELDS
+
+	private const StringComparison DEFAULT_COMPARISON = StringComparison.OrdinalIgnoreCase;
+	private const int MAX_STACKALLOC = 256;
+	private const string ALL_STRING = "*";
+	private static readonly SearchValues<char> s_wildcardChars = SearchValues.Create(['*', '?']);
+
+	private readonly string? _pattern; // 8 bytes
+	private readonly State _state;     // 8 bytes
+
+	// --
 
 	/// <summary>
 	/// A <see langword="static"/>, read-only instance of <see cref="Wildcard"/> representing a pattern
@@ -63,7 +75,8 @@ public readonly partial struct Wildcard :
 	/// <see cref="string"/>'s indexer throws.
 	/// </exception>
 	/// <value>The character at the specified index.</value>
-	public char this[int index] => _pattern.AsSpan()[index];
+	/// <exception cref="NullReferenceException">The underlying pattern is <see langword="null"/>.</exception>
+	public char this[int index] => _pattern![index];
 
 	/// <summary>
 	/// Indicates whether the <see cref="Wildcard"/> contains any wildcard characters ('?' or '*') in
@@ -79,8 +92,9 @@ public readonly partial struct Wildcard :
 	/// <see langword="false"/>.
 	/// </value>
 	[MemberNotNullWhen(true, nameof(_pattern))]
-	public readonly bool ContainsWildcards
+	public bool ContainsWildcards
 	{
+		[DebuggerStepThrough]
 		get => !this.IsEmpty && _state.Type != WildcardMatchType.Exact;
 	}
 	/// <summary>
@@ -91,17 +105,17 @@ public readonly partial struct Wildcard :
 	/// </remarks>
 	/// <value><see langword="true"/> when the instance is empty; otherwise, <see langword="false"/>.</value>
 	[MemberNotNullWhen(false, nameof(_pattern))]
-	public readonly bool IsEmpty => _state.Length == 0;
+	public bool IsEmpty => _state.Length == 0;
 	/// <summary>
 	/// Gets the number of characters in the current <see cref="Wildcard"/> pattern.
 	/// </summary>
 	/// <value>The number of characters in the wildcard pattern.</value>
-	public readonly int Length => _state.Length;
+	public int Length => _state.Length;
 	/// <summary>
 	/// Gets the match type that this <see cref="Wildcard"/> instance will follow when comparing its pattern against input.
 	/// </summary>
 	/// <value>The pattern match type.</value>
-	public readonly WildcardMatchType MatchType => _state.Type;
+	public WildcardMatchType MatchType => _state.Type;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Wildcard"/> struct using the 
@@ -113,10 +127,16 @@ public readonly partial struct Wildcard :
 	/// instances, and <see cref="Wildcard"/> instances. Functionality equivalent to <see cref="Empty"/>.
 	/// </remarks>
 	/// <param name="patternString">The string to use as the wildcard pattern.</param>
-	//[DebuggerStepThrough]
 	public Wildcard(string? patternString)
 	{
-		WildcardMatchType matchType = DeterminePattern(patternString.AsSpan());
+		if (string.IsNullOrEmpty(patternString))
+		{
+			this = Empty;
+			return;
+		}
+
+		WildcardMatchType matchType = DeterminePattern(patternString); // The containing null or empty check will be elided because of the check above.
+		Debug.Assert(matchType != WildcardMatchType.None, "DeterminePattern should not return None for a non-empty string.");
 		int length = 0;
 		_pattern = ConstructPattern(patternString, matchType, ref length);
 		_state = new(length: length, type: matchType);
@@ -131,7 +151,6 @@ public readonly partial struct Wildcard :
 	/// instances, and <see cref="Wildcard"/> instances. Functionality equivalent to <see cref="Empty"/>.
 	/// </remarks>
 	/// <param name="pattern">The read-only character span to use as the wildcard pattern.</param>
-	//[DebuggerStepThrough]
 	public Wildcard(ReadOnlySpan<char> pattern)
 	{
 		WildcardMatchType matchType = DeterminePattern(pattern);
@@ -155,6 +174,7 @@ public readonly partial struct Wildcard :
 	/// Initializes a new <see cref="Wildcard"/> instance as either the all-matching value or the empty value.
 	/// </summary>
 	/// <param name="isAll"><see langword="true"/> to create the all-matching value; otherwise, <see langword="false"/>.</param>
+	[DebuggerStepThrough]
 	private Wildcard(bool isAll)
 	{
 		if (isAll)
@@ -169,34 +189,12 @@ public readonly partial struct Wildcard :
 		}
 	}
 
-	#region PRIVATE FIELDS
-
-	const StringComparison DEFAULT_COMPARISON = StringComparison.OrdinalIgnoreCase;
-	const int MAX_STACKALLOC = 256;
-	private const string ALL_STRING = "*";
-	static readonly SearchValues<char> _wildcardChars = SearchValues.Create(['*', '?']);
-
-	private readonly string? _pattern;
-	private readonly State _state;
-
-	/// <summary>
-	/// Gets the size, in bytes, of the internal state representation.
-	/// </summary>
-	/// <returns>The size of <c>State</c> in bytes.</returns>
-	public static int GetSize()
-	{
-		return System.Runtime.CompilerServices.Unsafe.SizeOf<State>();
-	}
-
-	#endregion
-
 	/// <summary>
 	/// Gets a debugger display string for the current instance.
 	/// </summary>
 	/// <returns>A formatted debugger display string.</returns>
-	[DebuggerStepThrough]
 	[ExcludeFromCodeCoverage]
-	[EditorBrowsable(EditorBrowsableState.Never)]
+	[DebuggerStepThrough, EditorBrowsable(EditorBrowsableState.Never)]
 	private string GetDebuggerString()
 	{
 		if (this.IsEmpty)
