@@ -1,6 +1,8 @@
 using MG.Sonarr.Next.Metadata;
 
+#pragma warning disable format, IDE0130 // Namespace does not match folder structure
 namespace MG.Sonarr.Next;
+#pragma warning restore format, IDE0130
 
 /// <summary>
 /// Provides shared constant values for Sonarr property names and API routes.
