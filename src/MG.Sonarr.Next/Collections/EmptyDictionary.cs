@@ -80,6 +80,10 @@ internal static class EmptyNameDictionary
 			}
 		}
 
+		// The cref to EmptyNameDictionary{T}() in the doc comment below is a build-time check on the private
+		// constructor that [UnsafeAccessor] binds to only at run time. Neither one depends on the constructor's
+		// accessibility, and both fail only when EmptyNameDictionary<T> has no parameterless constructor.
+		// src/MG.Sonarr.Next/Collections/.editorconfig makes CS1574 an error in this file, so that fails the build.
 		/// <summary>
 		/// Calls the private constructor: <see cref="EmptyNameDictionary{T}()"/>.
 		/// </summary>
@@ -104,10 +108,13 @@ internal static class EmptyNameDictionary
 /// <c>[]</c> return.
 /// </remarks>
 /// <typeparam name="T">The type of elements in the dictionary and set.</typeparam>
-[DebuggerStepThrough]
+[DebuggerStepThrough, DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicConstructors)]
 [CollectionBuilder(typeof(EmptyNameDictionary), nameof(EmptyNameDictionary.Create))]
 internal sealed class EmptyNameDictionary<T> : IEquatable<EmptyNameDictionary<T>>, IReadOnlyDictionary<string, T>, IReadOnlySet<T>
 {
+	// EmptyNameDictionary.EmptyInstance<T>.CreateInstance calls this constructor through [UnsafeAccessor]. Its
+	// accessibility doesn't matter to that call, but its parameters do: giving it a parameter fails the build with
+	// CS1574 (see src/MG.Sonarr.Next/Collections/.editorconfig). It stays private so that no other instance can exist.
 	/// <summary>
 	/// Initializes a new <see cref="EmptyNameDictionary{T}"/> instance.
 	/// </summary>

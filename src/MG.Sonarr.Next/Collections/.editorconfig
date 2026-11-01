@@ -1,2 +1,14 @@
+# Makes an unresolved cref (CS1574) a build error in EmptyDictionary.cs.
+#
+# EmptyNameDictionary.EmptyInstance<T>.CreateInstance calls the private parameterless constructor of
+# EmptyNameDictionary<T> through [UnsafeAccessor], which binds only at run time. The
+# <see cref="EmptyNameDictionary{T}()"/> in its doc comment is the build-time check on that binding. Both ignore
+# the constructor's accessibility, and both bind to the compiler's implicit constructor when the class declares
+# none. Both fail only when the class has no parameterless constructor, as when that constructor gains a
+# parameter. As a warning, that would still let the build ship a module whose Empty<T>() and [] throw from a
+# failed type initializer.
+#
+# The compiler checks crefs only because MG.Sonarr.Next generates a documentation file. This file leaves out
+# root = true, so the repository's root .editorconfig still applies to this folder.
 [EmptyDictionary.cs]
 dotnet_diagnostic.CS1574.severity = error
