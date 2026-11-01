@@ -42,6 +42,12 @@ public readonly partial struct Wildcard : // 16 bytes
 	// Parsing methods -> ./Wildcard-Parsing.cs
 	// --------------------------------
 
+	// STATE RECORD
+	/// <summary>
+	/// Represents the internal state of a <see cref="Wildcard"/> instance, including its length and match type.
+	/// </summary>
+	private readonly record struct State(int Length, WildcardMatchType Type);
+
 	// -- PRIVATE FIELDS
 
 	private const StringComparison DEFAULT_COMPARISON = StringComparison.OrdinalIgnoreCase;
@@ -139,7 +145,7 @@ public readonly partial struct Wildcard : // 16 bytes
 		Debug.Assert(matchType != WildcardMatchType.None, "DeterminePattern should not return None for a non-empty string.");
 		int length = 0;
 		_pattern = ConstructPattern(patternString, matchType, ref length);
-		_state = new(length: length, type: matchType);
+		_state = new(length, matchType);
 	}
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Wildcard"/> struct using the 
@@ -156,7 +162,7 @@ public readonly partial struct Wildcard : // 16 bytes
 		WildcardMatchType matchType = DeterminePattern(pattern);
 		int length = 0;
 		_pattern = ConstructPattern(pattern, matchType, ref length);
-		_state = new(length: length, type: matchType);
+		_state = new(length, matchType);
 	}
 
 	/// <summary>
@@ -167,7 +173,7 @@ public readonly partial struct Wildcard : // 16 bytes
 	private Wildcard(ReadOnlySpan<char> pattern, WildcardMatchType matchType)
 	{
 		_pattern = pattern.ToString();
-		_state = new(length: _pattern.Length, type: matchType);
+		_state = new(_pattern.Length, matchType);
 	}
 
 	/// <summary>
@@ -179,7 +185,7 @@ public readonly partial struct Wildcard : // 16 bytes
 	{
 		if (isAll)
 		{
-			_state = new(length: 1, type: WildcardMatchType.All);
+			_state = new(Length: 1, Type: WildcardMatchType.All);
 			_pattern = ALL_STRING;
 		}
 		else
@@ -211,35 +217,4 @@ public readonly partial struct Wildcard : // 16 bytes
 			return $@"{{ MatchType = {this.MatchType}, Value = {_pattern} }}";
 		}
 	}
-}
-
-/// <summary>
-/// Defines the type of matching a <see cref="Wildcard"/> instance will use when comparing the pattern and input.
-/// </summary>
-public enum WildcardMatchType
-{
-	/// <summary>
-	/// Indicates that the pattern is empty and that no input will ever match.
-	/// </summary>
-	None = 0,
-	/// <summary>
-	/// Indicates that the input must contain all or portions of the pattern.
-	/// </summary>
-	Like = 1,
-	/// <summary>
-	/// Indicates that the input must start with the pattern.
-	/// </summary>
-	StartsWith = 2,
-	/// <summary>
-	/// Indicates that the input must end with the pattern.
-	/// </summary>
-	EndsWith = 3,
-	/// <summary>
-	/// Indicates that the input must match the pattern exactly.
-	/// </summary>
-	Exact = 4,
-	/// <summary>
-	/// Indicates that the pattern is a singular <c>*</c> character and will match any input, including empty input.
-	/// </summary>
-	All = 10,
 }

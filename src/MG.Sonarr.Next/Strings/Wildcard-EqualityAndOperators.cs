@@ -2,7 +2,7 @@ namespace MG.Sonarr.Next.Strings;
 
 public readonly partial struct Wildcard
 {
-	#region EQUALITY
+	// EQUALITY
 	/// <summary>
 	/// Determines whether the current <see cref="Wildcard"/> instance is equal to the specified span of characters,
 	/// using a case-insensitive comparison.
@@ -130,9 +130,7 @@ public readonly partial struct Wildcard
 		return HashCode.Combine(value1: false, StringComparer.OrdinalIgnoreCase.GetHashCode(_pattern), _state.Type, _state.Length);
 	}
 
-	#endregion
-
-	#region OPERATORS
+	// OPERATORS
 
 	/// <summary>
 	/// Implicitly converts a <see cref="string"/> to a <see cref="Wildcard"/> instance.
@@ -232,6 +230,4 @@ public readonly partial struct Wildcard
 	{
 		return !(x == y);
 	}
-
-	#endregion
 }
