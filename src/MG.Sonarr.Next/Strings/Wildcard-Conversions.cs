@@ -68,7 +68,7 @@ public readonly partial struct Wildcard
 	/// equaling <see cref="WildcardMatchType.Exact"/>.
 	/// <para>
 	/// If the current instance is empty or <see cref="WildcardMatchType.All"/>, or its pattern holds nothing but
-	/// wildcard characters, such as <c>**</c> or <c>?</c>, returns an empty instance, which never matches.
+	/// wildcard characters, such as <c>*</c> or <c>?</c>, returns an empty instance, which never matches.
 	/// If the current instance is already an exact pattern, returns the current instance unchanged.
 	/// </para>
 	/// </returns>

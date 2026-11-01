@@ -1,4 +1,5 @@
 using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Resources;
 
 namespace MG.Sonarr.Next.Extensions.Strings;
 
@@ -37,44 +38,64 @@ public static partial class CharSpanExtensions
 	/// Copies characters from the source span to the destination span, omitting any characters that match those
 	/// specified in the <paramref name="removeChars"/> set.
 	/// </summary>
-	/// <remarks>The operation does not allocate additional memory and is suitable for performance-critical
-	/// scenarios.</remarks>
+	/// <remarks>
+	/// <para>The operation does not allocate additional memory and is suitable for performance-critical
+	/// scenarios.</para>
+	/// <para><paramref name="destination"/> must be at least as long as <paramref name="source"/>, however many
+	/// characters are removed, so that its length is checked once, before anything is copied, rather than on
+	/// every copy.</para>
+	/// </remarks>
 	/// <param name="source">The read-only span of characters to process and copy from.</param>
-	/// <param name="destination">The span of characters to which the filtered result will be written. Must be large enough to hold all
-	/// non-removed characters.</param>
+	/// <param name="destination">The span that receives the characters that aren't removed. It must be at least as
+	/// long as <paramref name="source"/>.</param>
 	/// <param name="removeChars">A set of characters to remove from the source span during copying. Any character in this set will be
 	/// excluded from the destination.</param>
 	/// <returns>The number of characters written to the destination span after removal of specified characters.</returns>
-	/// <exception cref="ArgumentException">Thrown when <paramref name="destination"/> is too short to hold the characters
-	/// that aren't removed.</exception>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="destination"/> is shorter than
+	/// <paramref name="source"/>.</exception>
 	public static int RemoveAny(this ReadOnlySpan<char> source, Span<char> destination, SearchValues<char> removeChars)
 	{
+		if (destination.Length < source.Length)
+		{
+			throwTooShort(source.Length, destination.Length);
+		}
+
 		int written = 0;
 		ReadOnlySpan<char> slice = source;
 
+		// written + slice.Length starts at source.Length and drops by one with each removed character,
+		// so with the check above, every copy below lands inside destination.
 		while (!slice.IsEmpty)
 		{
 			int index = slice.IndexOfAny(removeChars);
 			if (index == -1)
 			{
 				// No more matches, copy the remaining portion and exit.
-				written = slice.CopyToSlice(destination, written);
+				slice.UnsafeCopy(destination.UnsafeSlice(written));
+				written += slice.Length;
 				break;
 			}
 
-			if (index == 0)
+			// IndexOfAny returned an index in [0, slice.Length), so both slices are in range, and
+			// a match at the slice's last character leaves it empty.
+			if (index != 0)
 			{
-				slice = slice[1..];
-				continue;
+				slice.UnsafeSlice(0, index).UnsafeCopy(destination.UnsafeSlice(written));
+				written += index;
 			}
 
-			written = slice[..index].CopyToSlice(destination, written);
-			slice = index < slice.Length - 1
-				? slice[(index + 1)..]
-				: [];
+			slice = slice.UnsafeSlice(index + 1);
 		}
 
 		return written;
+
+		[DoesNotReturn] // Adding 'NoInlining' causes the JIT to not remember this is a non-returning method. Without it, it still doesn't inline.
+		static void throwTooShort(int sourceLength, int destinationLength)
+		{
+			throw new ArgumentException(
+				string.Format(CultureInfo.CurrentCulture, ExMessages.Buffer_TooSmall, sourceLength, destinationLength),
+				nameof(destination));
+		}
 	}
 
 	/// <summary>

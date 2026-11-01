@@ -27,7 +27,6 @@ namespace MG.Sonarr.Next.Strings;
 ///         <see cref="System.Management.Automation.WildcardPattern"/> matches.
 ///     </para>
 /// </remarks>
-[StructLayout(LayoutKind.Sequential)]
 [DebuggerDisplay("{GetDebuggerString(),nq}")]
 public readonly partial struct Wildcard :
 	IEnumerable<char>,
