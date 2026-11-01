@@ -2,8 +2,6 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.PSProperties;
 using MG.Sonarr.Next.Reflection;
-using System.Management.Automation;
-using System.Numerics;
 
 namespace MG.Sonarr.Next.Extensions.PSO;
 

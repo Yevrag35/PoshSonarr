@@ -3,10 +3,6 @@ using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.Errors;
 using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Unions;
-using Microsoft.Extensions.DependencyInjection;
-using System.Management.Automation;
-using System.Net;
-using System.Net.Http.Json;
 
 namespace MG.Sonarr.Next.Services.Http;
 

@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Services.Http.Handlers;
-using System.Net;
 
 namespace MG.Sonarr.Next.Extensions;
 

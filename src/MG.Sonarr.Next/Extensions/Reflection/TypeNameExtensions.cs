@@ -1,6 +1,4 @@
 using MG.Sonarr.Next.Extensions.Strings;
-using System.Collections.Concurrent;
-using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Extensions.Reflection;
 

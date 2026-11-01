@@ -2,9 +2,6 @@ using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Services.Http.Requests;
-using Microsoft.Extensions.DependencyInjection;
-using System.Management.Automation;
-using System.Net;
 
 namespace MG.Sonarr.Next.Services.Http.Clients;
 

@@ -1,5 +1,3 @@
-using System.Collections.Concurrent;
-
 namespace MG.Sonarr.Next.Collections.Pools;
 
 /// <summary>

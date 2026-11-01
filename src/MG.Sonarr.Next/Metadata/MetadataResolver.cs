@@ -1,6 +1,3 @@
-using System.Collections.Frozen;
-using System.Collections.Immutable;
-
 namespace MG.Sonarr.Next.Metadata;
 
 /// <summary>

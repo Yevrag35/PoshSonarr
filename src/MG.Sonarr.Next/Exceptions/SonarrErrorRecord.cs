@@ -1,8 +1,6 @@
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Services.Http.Requests;
-using System.Management.Automation;
-using System.Net;
 
 namespace MG.Sonarr.Next.Exceptions;
 

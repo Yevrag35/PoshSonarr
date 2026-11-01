@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Services.Http;
-using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Models.System;
 

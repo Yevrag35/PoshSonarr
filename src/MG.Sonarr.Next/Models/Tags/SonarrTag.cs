@@ -1,6 +1,5 @@
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
-using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Tags;
 

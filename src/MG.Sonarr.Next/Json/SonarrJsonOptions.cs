@@ -11,11 +11,7 @@ using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Models.Fields;
 using MG.Sonarr.Next.Models.ManualImports;
 using MG.Sonarr.Next.Reflection;
-using MG.Sonarr.Resources;
-using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Immutable;
 using System.Text.Encodings.Web;
-using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
 namespace MG.Sonarr.Next.Json;

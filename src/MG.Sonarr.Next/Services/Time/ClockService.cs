@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Services.Time.Mock;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Services.Time;
 

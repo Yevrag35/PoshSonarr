@@ -1,5 +1,3 @@
-using System.Net.Http.Headers;
-
 namespace MG.Sonarr.Next.Services.Http.Extensions;
 
 internal static class HttpContentHeaderExtensions

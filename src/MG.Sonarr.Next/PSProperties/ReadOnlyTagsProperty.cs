@@ -1,6 +1,3 @@
-using MG.Sonarr.Next.Buffers;
-using System.Management.Automation;
-
 namespace MG.Sonarr.Next.PSProperties;
 
 /// <summary>

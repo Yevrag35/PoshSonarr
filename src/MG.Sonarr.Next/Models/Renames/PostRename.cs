@@ -1,6 +1,5 @@
 using MG.Sonarr.Next.Json.Converters;
 using MG.Sonarr.Next.Metadata;
-using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Models.Renames;
 

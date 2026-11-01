@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Json.Naming;
-using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Json.Converters;
 

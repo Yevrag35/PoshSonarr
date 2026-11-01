@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Extensions.Strings;
-using MG.Sonarr.Resources;
 
 namespace MG.Sonarr.Next.Extensions.Strings;
 

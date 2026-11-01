@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Models.Errors;
-using System.Text.Json.Serialization;
 
 namespace MG.Sonarr.Next.Collections;
 

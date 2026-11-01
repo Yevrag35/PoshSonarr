@@ -1,5 +1,4 @@
-﻿using MG.Sonarr.Next.Extensions.Reflection;
-using MG.Sonarr.Resources;
+using MG.Sonarr.Next.Extensions.Reflection;
 
 namespace MG.Sonarr.Next.Guarding;
 

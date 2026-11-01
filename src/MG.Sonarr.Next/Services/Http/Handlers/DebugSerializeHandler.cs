@@ -1,7 +1,6 @@
 using MG.Sonarr.Next.Services.Http.Extensions;
 using MG.Sonarr.Next.Services.Http.IO;
 using MG.Sonarr.Next.Strings;
-using MG.Sonarr.Resources;
 
 namespace MG.Sonarr.Next.Services.Http.Handlers;
 

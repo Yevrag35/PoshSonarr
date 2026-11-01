@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Guarding;
-using System.Numerics;
 
 namespace MG.Sonarr.Next.Buffers;
 

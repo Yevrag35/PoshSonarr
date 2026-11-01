@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Services.Auth;
-using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 

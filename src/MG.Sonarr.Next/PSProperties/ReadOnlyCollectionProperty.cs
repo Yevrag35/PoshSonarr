@@ -1,6 +1,3 @@
-using System.Collections.Immutable;
-using System.Management.Automation;
-
 namespace MG.Sonarr.Next.PSProperties;
 
 /// <summary>

@@ -1,5 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-
 namespace MG.Sonarr.Next.Collections.Pools;
 
 /// <summary>

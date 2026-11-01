@@ -1,8 +1,6 @@
-using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json.Naming;
 using MG.Sonarr.Next.Services.Http;
-using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Json.Converters;
 

@@ -2,7 +2,6 @@ using MG.Sonarr.Next.Models.Commands;
 using MG.Sonarr.Next.Models.Renames;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Services.Jobs;
 

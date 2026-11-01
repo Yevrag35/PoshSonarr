@@ -1,6 +1,5 @@
 using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Metadata;
-using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties;
 

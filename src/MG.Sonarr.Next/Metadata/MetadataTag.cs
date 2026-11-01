@@ -1,7 +1,5 @@
-using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Services.Http.Queries;
-using System.Collections.Immutable;
 
 namespace MG.Sonarr.Next.Metadata;
 

@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace MG.Sonarr.Next.Models.RemotePaths;
 
 /// <summary>

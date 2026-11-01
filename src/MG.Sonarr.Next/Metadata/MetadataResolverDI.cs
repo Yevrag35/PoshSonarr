@@ -1,7 +1,4 @@
 using MG.Sonarr.Next.Attributes;
-using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Immutable;
-using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Metadata;
 

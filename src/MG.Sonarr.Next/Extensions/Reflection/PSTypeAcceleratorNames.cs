@@ -1,5 +1,3 @@
-using System.Collections.Frozen;
-
 namespace MG.Sonarr.Next.Extensions.Reflection;
 
 /// <summary>

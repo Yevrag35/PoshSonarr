@@ -1,4 +1,3 @@
-using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Json.Converters.Spans;
@@ -12,7 +11,6 @@ using MG.Sonarr.Next.Models.Qualities;
 using MG.Sonarr.Next.Models.Releases;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.PSProperties;
-using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Json.Converters;
 

@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-
 namespace MG.Sonarr.Next.Json.Attributes;
 
 /// <summary>

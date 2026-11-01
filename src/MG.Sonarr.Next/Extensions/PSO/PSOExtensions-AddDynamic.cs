@@ -1,5 +1,3 @@
-using System.Management.Automation;
-
 namespace MG.Sonarr.Next.Extensions.PSO;
 
 /// <summary>

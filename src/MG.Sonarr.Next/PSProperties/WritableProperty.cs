@@ -1,10 +1,7 @@
-using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Fields;
-using System.Collections.Immutable;
-using System.Management.Automation;
 
 namespace MG.Sonarr.Next.PSProperties;
 

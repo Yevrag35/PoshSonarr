@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Models.Commands;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Services.Jobs;
 

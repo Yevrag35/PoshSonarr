@@ -1,5 +1,3 @@
-using System.Numerics;
-
 namespace MG.Sonarr.Next.Metadata;
 
 /// <summary>

@@ -7,7 +7,6 @@ using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Models.Qualities;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.PSProperties;
-using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Models.ManualImports;
 

@@ -1,6 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using System.Net;
-
 namespace MG.Sonarr.Next.Services.Http.Requests;
 
 /// <summary>

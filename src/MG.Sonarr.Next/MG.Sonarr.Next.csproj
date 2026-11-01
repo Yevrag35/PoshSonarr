@@ -44,19 +44,33 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Using Include="MG.Sonarr.Next.Buffers" />
 		<Using Include="MG.Sonarr.Next.Exceptions" />
 		<Using Include="MG.Sonarr.Next.Extensions" />
 		<Using Include="MG.Sonarr.Next.Numbers.PInt32" Alias="pint" />
+		<Using Include="MG.Sonarr.Resources" />
+		<Using Include="Microsoft.Extensions.DependencyInjection" />
 		<Using Include="System.Buffers" />
 		<Using Include="System.Collections" />
+		<Using Include="System.Collections.Concurrent" />
+		<Using Include="System.Collections.Frozen" />
+		<Using Include="System.Collections.Immutable" />
 		<Using Include="System.Diagnostics" />
 		<Using Include="System.Diagnostics.CodeAnalysis" />
 		<Using Include="System.IO" />
+		<Using Include="System.Management.Automation" />
+		<Using Include="System.Net" />
+		<Using Include="System.Net.Http" />
+		<Using Include="System.Net.Http.Headers" />
+		<Using Include="System.Net.Http.Json" />
+		<Using Include="System.Numerics" />
 		<Using Include="System.Reflection" />
 		<Using Include="System.Runtime.CompilerServices" />
 		<Using Include="System.Runtime.InteropServices" />
 		<Using Include="System.Text" />
 		<Using Include="System.Text.Json" />
+		<Using Include="System.Text.Json.Nodes" />
+		<Using Include="System.Text.Json.Serialization" />
 	</ItemGroup>
 
 	<ItemGroup>

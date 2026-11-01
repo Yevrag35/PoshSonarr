@@ -1,7 +1,6 @@
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Services.Testing;
 

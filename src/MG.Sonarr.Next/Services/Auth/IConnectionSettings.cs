@@ -1,5 +1,3 @@
-using System.Net;
-
 namespace MG.Sonarr.Next.Services.Auth;
 
 /// <summary>

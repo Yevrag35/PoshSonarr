@@ -1,6 +1,3 @@
-using MG.Sonarr.Next.Buffers;
-using MG.Sonarr.Resources;
-
 namespace MG.Sonarr.Next.Strings;
 
 /// <summary>

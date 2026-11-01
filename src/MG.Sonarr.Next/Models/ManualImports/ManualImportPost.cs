@@ -2,7 +2,6 @@ using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Models.Qualities;
-using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Models.ManualImports;
 

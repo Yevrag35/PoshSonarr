@@ -1,7 +1,6 @@
 using MG.Sonarr.Next.Guarding;
 using MG.Sonarr.Next.Unions;
 using System.ComponentModel;
-using System.Numerics;
 
 namespace MG.Sonarr.Next.Buffers;
 

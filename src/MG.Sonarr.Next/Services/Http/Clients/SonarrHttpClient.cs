@@ -6,13 +6,7 @@ using MG.Sonarr.Next.Models.Errors;
 using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Services.Http.Requests;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerShell.Commands;
-using System.Management.Automation;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text.Json.Nodes;
 
 namespace MG.Sonarr.Next.Services.Http.Clients;
 
