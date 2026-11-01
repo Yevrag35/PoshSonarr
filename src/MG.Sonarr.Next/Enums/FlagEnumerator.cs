@@ -71,13 +71,18 @@ public ref struct FlagEnumerator<TEnum, TUnderlying>
 			}
 		};
 		[StackTraceHidden, MethodImpl(MethodImplOptions.NoInlining)]
-		static void throwMismatchedSizes()
+		static string makeNotSupportedMessage()
 		{
 			int enumSize = Unsafe.SizeOf<TEnum>();
 			int underlyingSize = Unsafe.SizeOf<TUnderlying>();
 
+			return $"The enumeration type '{typeof(TEnum).FullName}' does not have the same size as the underlying type '{typeof(TUnderlying).FullName}' (Expected: '{enumSize}', Got: '{underlyingSize}')";
+		};
+		[DoesNotReturn, StackTraceHidden]
+		static void throwMismatchedSizes()
+		{
 			throw new NotSupportedException(
-				message: $"The enumeration type '{typeof(TEnum).FullName}' does not have the same size as the underlying type '{typeof(TUnderlying).FullName}' (Expected: '{enumSize}', Got: '{underlyingSize}')");
+				message: makeNotSupportedMessage());
 		};
 	}
 

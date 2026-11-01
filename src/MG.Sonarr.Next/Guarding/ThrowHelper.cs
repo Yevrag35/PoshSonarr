@@ -125,7 +125,7 @@ public static partial class ThrowHelper
 			_ => Unsafe.As<object, T>(ref value),
 		};
 
-		[DoesNotReturn, StackTraceHidden, MethodImpl(MethodImplOptions.NoInlining)]
+		[DoesNotReturn, StackTraceHidden]
 		static T? throwMsg(string? paramName, object value)
 		{
 			throw new ArgumentException(

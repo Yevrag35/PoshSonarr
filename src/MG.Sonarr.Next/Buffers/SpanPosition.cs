@@ -130,7 +130,7 @@ public readonly struct SpanPosition : IComparable<SpanPosition>, IEquatable<int>
 			throwEx(position, length, paramName);
 		}
 
-		[DoesNotReturn, StackTraceHidden, MethodImpl(MethodImplOptions.NoInlining)]
+		[DoesNotReturn, StackTraceHidden]
 		static void throwEx(SpanPosition position, int length, string? paramName)
 		{
 			throw new ArgumentOutOfRangeException(paramName, $"The span position {{Index={position._index}, Length={position._length}}} is out of range for the specified length {length}.");
@@ -150,7 +150,7 @@ public readonly struct SpanPosition : IComparable<SpanPosition>, IEquatable<int>
 			throwInvalid(position, paramName);
 		}
 
-		[DoesNotReturn, StackTraceHidden, MethodImpl(MethodImplOptions.NoInlining)]
+		[DoesNotReturn, StackTraceHidden]
 		static void throwInvalid(SpanPosition position, string? paramName)
 		{
 			throw new ArgumentException(
