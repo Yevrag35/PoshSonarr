@@ -10,8 +10,9 @@ namespace MG.Sonarr.Next.Metadata;
 /// to.
 /// </summary>
 /// <remarks>
-/// <para>Instances are immutable. Get them from an <see cref="IMetadataResolver"/>, which creates one for each
-/// endpoint when a connection is made.</para>
+/// <para>Instances are immutable. Get them from an <see cref="IMetadataResolver"/>, which holds one for each
+/// endpoint. The module creates them the first time it builds a connection, and every later connection shares
+/// them.</para>
 /// <para>The tag also builds the URLs of requests to its endpoint, from its <see cref="UrlBase"/>.</para>
 /// </remarks>
 [DebuggerDisplay(@"\{{Value}, {UrlBase}\}")]

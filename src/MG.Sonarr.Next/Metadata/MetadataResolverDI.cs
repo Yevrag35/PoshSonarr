@@ -11,25 +11,61 @@ namespace MG.Sonarr.Next.Metadata;
 public static class MetadataResolverDI
 {
 	/// <summary>
+	/// The resolver that <see cref="CreateResolver(Assembly)"/> created for each cmdlet assembly, which every connection
+	/// registers.
+	/// </summary>
+	/// <remarks>
+	/// The table holds each assembly weakly, so it keeps none loaded, and it's thread-safe. When two threads look up a
+	/// new assembly at once, each can create a resolver, but the table keeps one and returns it to both.
+	/// </remarks>
+	private static readonly ConditionalWeakTable<Assembly, MetadataResolver> _resolvers = new();
+
+	/// <summary>
 	/// Registers an <see cref="IMetadataResolver"/> singleton that holds a tag for each endpoint, with the cmdlets that
 	/// each tag's objects can be piped to.
 	/// </summary>
 	/// <remarks>
-	/// Each tag's name comes from <see cref="Meta"/>, its path from <see cref="Constants"/>, and its cmdlets from the
-	/// <see cref="MetadataCanPipeAttribute"/> attributes on the cmdlet classes in <paramref name="cmdletAssembly"/>.
+	/// <para>Each tag's name comes from <see cref="Meta"/>, its path from <see cref="Constants"/>, and its cmdlets from
+	/// the <see cref="MetadataCanPipeAttribute"/> attributes on the cmdlet classes in
+	/// <paramref name="cmdletAssembly"/>.</para>
+	/// <para>The first call for an assembly creates the resolver, and every later call for it registers that same
+	/// instance, so every connection in the process shares one resolver. The resolver can't change once it's created,
+	/// so any number of threads can read it at once.</para>
 	/// </remarks>
 	/// <param name="services">The service collection to add the resolver to.</param>
 	/// <param name="cmdletAssembly">The assembly whose cmdlet classes are searched for pipe targets.</param>
 	/// <returns><paramref name="services"/>, so that calls can be chained.</returns>
+	/// <exception cref="ArgumentNullException">
+	/// Thrown when <paramref name="services"/> or <paramref name="cmdletAssembly"/> is null.
+	/// </exception>
 	/// <exception cref="ArgumentException">
 	/// Thrown when a cmdlet class with a <see cref="MetadataCanPipeAttribute"/> has no <see cref="CmdletAttribute"/>
 	/// that gives its verb and noun.
 	/// </exception>
 	public static IServiceCollection AddMetadata(this IServiceCollection services, Assembly cmdletAssembly)
 	{
+		ArgumentNullException.ThrowIfNull(services);
+		ArgumentNullException.ThrowIfNull(cmdletAssembly);
+
+		MetadataResolver resolver = _resolvers.GetValue(cmdletAssembly, CreateResolver);
+		return services.AddSingleton<IMetadataResolver>(resolver);
+	}
+
+	/// <summary>
+	/// Creates the resolver that holds a tag for each endpoint, with the cmdlets in an assembly that each tag's objects
+	/// can be piped to.
+	/// </summary>
+	/// <param name="cmdletAssembly">The assembly whose cmdlet classes are searched for pipe targets.</param>
+	/// <returns>The frozen resolver of every endpoint's tag.</returns>
+	/// <exception cref="ArgumentException">
+	/// Thrown when a cmdlet class with a <see cref="MetadataCanPipeAttribute"/> has no <see cref="CmdletAttribute"/>
+	/// that gives its verb and noun.
+	/// </exception>
+	private static MetadataResolver CreateResolver(Assembly cmdletAssembly)
+	{
 		int initialCapacity = 35;
 		var pipes = FindPipeableCmdlets(cmdletAssembly);
-		MetadataResolver dict = new(initialCapacity, pipes)
+		MetadataResolver.Builder builder = new(initialCapacity, pipes)
 		{
 			{ Meta.Backup, Constants.Backup, true },
 			{ Meta.Calendar, Constants.Calendar, false },
@@ -68,8 +104,8 @@ public static class MetadataResolverDI
 			{ Meta.Tag, Constants.Tag, true },
 		};
 
-		Debug.Assert(dict.Count <= initialCapacity);
-		return services.AddSingleton<IMetadataResolver>(dict);
+		Debug.Assert(builder.Count <= initialCapacity);
+		return builder.Freeze();
 	}
 
 	/// <summary>
