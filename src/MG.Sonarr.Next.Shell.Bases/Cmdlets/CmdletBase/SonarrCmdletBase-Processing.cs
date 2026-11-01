@@ -20,8 +20,8 @@ public abstract partial class SonarrCmdletBase
 		}
 
 		this.DebugPreference = this.GetActionPreferenceFromSwitch(
-			parameterName: PSConstants.DEBUG,
-			variableName: PSConstants.DEBUG_PREFERENCE);
+			parameterName: PSConstants.Debug,
+			variableName: PSConstants.DebugPreference);
 	}
 	[DebuggerStepThrough]
 	private void StoreVerbosePreference(bool wantsCapture)
@@ -32,8 +32,8 @@ public abstract partial class SonarrCmdletBase
 		}
 
 		this.VerbosePreference = this.GetActionPreferenceFromSwitch(
-			parameterName: PSConstants.VERBOSE,
-			variableName: PSConstants.VERBOSE_PREFERENCE);
+			parameterName: PSConstants.Verbose,
+			variableName: PSConstants.VerbosePreference);
 	}
 
 	#endregion
@@ -78,8 +78,8 @@ public abstract partial class SonarrCmdletBase
 			this.StoreVerbosePreference(this.CaptureVerbosePreference);
 			this.StoreDebugPreference(this.CaptureDebugPreference);
 			this.ErrorPreference = this.GetActionPreferenceFromParam(
-				parameterName: PSConstants.ERROR_ACTION,
-				variableName: PSConstants.ERROR_ACTION_PREFERENCE,
+				parameterName: PSConstants.ErrorAction,
+				variableName: PSConstants.ErrorActionPreference,
 				defaultIfNotPresent: ActionPreference.Continue);
 		}
 		catch (Exception e)

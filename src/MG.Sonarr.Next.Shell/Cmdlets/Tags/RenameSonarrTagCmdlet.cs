@@ -8,7 +8,7 @@ using MG.Sonarr.Next.Shell.Components;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags;
 
 [Cmdlet(VerbsCommon.Rename, "SonarrTag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
-	DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	DefaultParameterSetName = PSConstants.PSetExplicitId)]
 [MetadataCanPipe(Tag = Meta.Tag)]
 public sealed class RenameSonarrTagCmdlet : SonarrApiCmdletBase
 {
@@ -16,12 +16,12 @@ public sealed class RenameSonarrTagCmdlet : SonarrApiCmdletBase
 	MetadataTag _tag = null!;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int Id { get; set; }
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
 	[ValidateId(ValidateRangeKind.Positive)]
 	public TagObject? InputObject
 	{
@@ -37,8 +37,8 @@ public sealed class RenameSonarrTagCmdlet : SonarrApiCmdletBase
 	}
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipelineByPropertyName = true)]
-	[Parameter(Mandatory = true, Position = 1, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetPipeline, ValueFromPipelineByPropertyName = true)]
+	[Parameter(Mandatory = true, Position = 1, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateNotNullOrEmpty]
 	public string NewName { get; set; } = string.Empty;
 

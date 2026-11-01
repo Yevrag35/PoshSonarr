@@ -1,4 +1,6 @@
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace MG.Sonarr.Next;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Provides Sonarr command name constants used for command submission.

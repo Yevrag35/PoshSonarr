@@ -8,7 +8,7 @@ using MG.Sonarr.Next.Shell.Attributes;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Commands;
 
 [Cmdlet(VerbsLifecycle.Invoke, "SonarrRename", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
-	DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	DefaultParameterSetName = PSConstants.PSetExplicitId)]
 [Alias("Rename-SonarrEpisodeFile")]
 [MetadataCanPipe(Tag = Meta.Calendar)]
 [MetadataCanPipe(Tag = Meta.Episode)]
@@ -18,22 +18,22 @@ public sealed class InvokeSonarrRenameCmdlet : SonarrCmdletBase
 {
 	List<IRenameFilePipeable> _renameables = null!;
 
-	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
 	[ValidateIds(ValidateRangeKind.Positive, typeof(IRenameFilePipeable))]
 	[ValidateNotNull]
 	public IRenameFilePipeable[] InputObject { get; set; } = [];
 
-	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int SeriesId { get; set; }
 
-	[Parameter(Mandatory = true, Position = 1, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, Position = 1, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int[] EpisodeFileId { get; set; } = [];
 
 	protected override void Process(IServiceProvider provider)
 	{
-		if (PSConstants.PSET_PIPELINE == this.ParameterSetName)
+		if (PSConstants.PSetPipeline == this.ParameterSetName)
 		{
 			_renameables ??= new(this.InputObject.Length);
 			_renameables.AddRange(this.InputObject);

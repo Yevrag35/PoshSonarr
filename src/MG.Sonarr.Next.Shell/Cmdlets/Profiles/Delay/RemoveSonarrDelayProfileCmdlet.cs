@@ -14,11 +14,11 @@ public sealed class RemoveSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 	SortedSet<int> _ids = null!;
 	protected override int Capacity => 1;
 
-	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(2, int.MaxValue)]
 	public int[] Id { get; set; } = [];
 
-	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
 	[ValidateIds(ValidateRangeKind.Positive)]
 	public DelayProfileObject[] InputObject { get; set; } = [];
 

@@ -17,7 +17,7 @@ public sealed class GetSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 	WildcardSet _wcNames = null!;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int[] Id { get; set; } = [];
 

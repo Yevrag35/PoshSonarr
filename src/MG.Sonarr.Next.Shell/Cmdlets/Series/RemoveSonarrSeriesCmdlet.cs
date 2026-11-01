@@ -20,13 +20,13 @@ public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
 	public SwitchParameter DeleteFiles { get; set; }
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	[DistinctValues(typeof(int))]
 	public int[] Id { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE, DontShow = true)]
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline, DontShow = true)]
 	[ValidateNotNull]
 	[ValidateIds(ValidateRangeKind.Positive)]
 	public SeriesObject[] InputObject { get; set; } = [];

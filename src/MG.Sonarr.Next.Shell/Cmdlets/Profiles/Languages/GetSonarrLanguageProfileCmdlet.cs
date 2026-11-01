@@ -18,12 +18,12 @@ public sealed class GetSonarrLanguageProfileCmdlet : SonarrMetadataCmdlet
 	WildcardSet _wcNames = null!;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID, Position = 0)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetExplicitId, Position = 0)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int[] Id { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE, DontShow = true)]
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline, DontShow = true)]
 	[ValidateIds(ValidateRangeKind.Positive, typeof(ILanguageProfilePipeable))]
 	public ILanguageProfilePipeable[] InputObject { get; set; } = [];
 

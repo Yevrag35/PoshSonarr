@@ -9,7 +9,7 @@ using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags;
 
-[Cmdlet(VerbsCommon.Get, "SonarrTag", DefaultParameterSetName = "ByName")]
+[Cmdlet(VerbsCommon.Get, "SonarrTag", DefaultParameterSetName = PSConstants.PSetByName)]
 [MetadataCanPipe(Tag = Meta.DelayProfile)]
 [MetadataCanPipe(Tag = Meta.DownloadClient)]
 [MetadataCanPipe(Tag = Meta.Indexer)]
@@ -18,20 +18,18 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags;
 [MetadataCanPipe(Tag = Meta.SeriesAdd)]
 public sealed class GetSonarrTagCmdlet : SonarrMetadataCmdlet
 {
-	const string BY_PIPELINE = "ByPipelineInput";
-
 	SortedSet<int> _ids = null!;
 	WildcardSet _wcNames = null!;
 
-	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_PIPELINE)]
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
 	[ValidateIds(ValidateRangeKind.Positive, typeof(ITagPipeable))]
 	public ITagPipeable[] InputObject { get; set; } = [];
 
-	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int[] Id { get; set; } = [];
 
-	[Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByName")]
+	[Parameter(Mandatory = false, Position = 0, ParameterSetName = PSConstants.PSetByName)]
 	[SupportsWildcards]
 	[ValidateIds(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.Ignore)]
 	public Either<string, int>[] Name { get; set; } = [];
@@ -76,7 +74,7 @@ public sealed class GetSonarrTagCmdlet : SonarrMetadataCmdlet
 
 		IList<TagObject> tags = _ids.Count > 0 && _wcNames.Count == 0
 			? this.GetById<TagObject>(_ids)
-			: this.ParameterSetName == BY_PIPELINE || this.HasParameter(this.Name)
+			: this.ParameterSetName == PSConstants.PSetPipeline || this.HasParameter(this.Name)
 				? this.GetAllAndFilter<TagObject>(_ids, _wcNames)
 				: this.GetAll<TagObject>();
 

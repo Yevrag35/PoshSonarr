@@ -25,12 +25,12 @@ public sealed class ClearSonarrTagCmdlet : SonarrMetadataCmdlet
 	Dictionary<string, ITagPipeable> _updates = null!;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
 	[ValidateIds(ValidateRangeKind.Positive, typeof(ITagPipeable))]
 	public ITagPipeable[] InputObject { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetExplicitId)]
 	public int[] Id { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]

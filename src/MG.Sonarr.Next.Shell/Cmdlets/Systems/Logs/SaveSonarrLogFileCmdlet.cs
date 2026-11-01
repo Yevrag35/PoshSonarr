@@ -30,7 +30,7 @@ public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
 	public SwitchParameter Force { get; set; }
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetPipeline, ValueFromPipeline = true)]
 	public LogFileObject InputObject
 	{
 		get => null!;

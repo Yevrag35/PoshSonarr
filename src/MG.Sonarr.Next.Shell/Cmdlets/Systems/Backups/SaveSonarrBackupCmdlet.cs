@@ -34,7 +34,7 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 	public SwitchParameter Force { get; set; }
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetPipeline, ValueFromPipeline = true)]
 	public BackupObject InputObject
 	{
 		get => null!;

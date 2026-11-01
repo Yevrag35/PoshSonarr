@@ -7,18 +7,18 @@ using MG.Sonarr.Next.Shell.Extensions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases;
 
 [Cmdlet(VerbsCommon.Remove, "SonarrReleaseProfile", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true,
-	DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	DefaultParameterSetName = PSConstants.PSetExplicitId)]
 [MetadataCanPipe(Tag = Meta.ReleaseProfile)]
 public sealed class RemoveSonarrReleaseProfile : SonarrApiCmdletBase
 {
 	MetadataTag _tag = null!;
 
-	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int Id { get; set; }
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetPipeline, ValueFromPipeline = true)]
 	[ValidateId(ValidateRangeKind.Positive)]
 	public ReleaseProfileObject InputObject
 	{

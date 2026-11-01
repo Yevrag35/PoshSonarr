@@ -15,7 +15,7 @@ public sealed class GetSonarrIndexerCmdlet : SonarrMetadataCmdlet
 	SortedSet<int> _ids = null!;
 	WildcardSet _wcNames = null!;
 
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetExplicitId)]
 	public int[] Id { get; set; } = [];
 
 	[Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByIndexerNameOrId")]

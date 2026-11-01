@@ -181,8 +181,8 @@ public sealed class ConnectSonarrInstanceCmdlet : ConnectCmdlet, IApiCmdlet
 
 	private void StorePreferences()
 	{
-		_verbosePreference = this.GetActionPreferenceFromSwitch(PSConstants.VERBOSE, PSConstants.VERBOSE_PREFERENCE);
-		_debugPreference = this.GetActionPreferenceFromSwitch(PSConstants.DEBUG, PSConstants.DEBUG_PREFERENCE);
+		_verbosePreference = this.GetActionPreferenceFromSwitch(PSConstants.Verbose, PSConstants.VerbosePreference);
+		_debugPreference = this.GetActionPreferenceFromSwitch(PSConstants.Debug, PSConstants.DebugPreference);
 	}
 	public void WriteDebugPayload(string jsonPayload)
 	{

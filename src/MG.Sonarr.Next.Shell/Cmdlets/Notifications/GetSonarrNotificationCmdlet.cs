@@ -12,7 +12,7 @@ public sealed class GetSonarrNotificationCmdlet : SonarrMetadataCmdlet
 	SortedSet<int> _ids = null!;
 	WildcardSet _wcNames = null!;
 
-	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSetExplicitId)]
 	public int[] Id { get; set; } = Array.Empty<int>();
 
 	[Parameter(Position = 0)]

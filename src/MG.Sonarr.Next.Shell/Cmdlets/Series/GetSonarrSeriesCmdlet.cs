@@ -32,12 +32,12 @@ public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
 	public Either<string, int>[] Name { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int[] Id { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, DontShow = true,
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetPipeline, DontShow = true,
 		ValueFromPipeline = true)]
 	[ValidateIds(ValidateRangeKind.Positive, typeof(ISeriesPipeable))]
 	public ISeriesPipeable[] InputObject { get; set; } = [];

@@ -19,12 +19,12 @@ public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
 	WildcardSet _wcNames = null!;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetPipeline, ValueFromPipeline = true)]
 	[ValidateIds(ValidateRangeKind.Positive, typeof(IQualityProfilePipeable))]
 	public IQualityProfilePipeable[] InputObject { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int[] Id { get; set; } = [];
 

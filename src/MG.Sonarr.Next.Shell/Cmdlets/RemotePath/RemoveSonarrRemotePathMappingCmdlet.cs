@@ -6,17 +6,17 @@ using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.RemotePath;
 
-[Cmdlet(VerbsCommon.Remove, "SonarrRemotePathMapping", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.High, DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+[Cmdlet(VerbsCommon.Remove, "SonarrRemotePathMapping", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.High, DefaultParameterSetName = PSConstants.PSetExplicitId)]
 [MetadataCanPipe(Tag = Meta.RemotePathMapping)]
 public sealed class RemoveSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 {
 	SortedSet<int> _ids = null!;
 
-	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int[] Id { get; set; } = Array.Empty<int>();
 
-	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
 	[ValidateIds(ValidateRangeKind.Positive)]
 	public RemotePathObject[] InputObject { get; set; } = Array.Empty<RemotePathObject>();
 
@@ -40,7 +40,7 @@ public sealed class RemoveSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	}
 	protected override void Process(IServiceProvider provider)
 	{
-		if (PSConstants.PSET_PIPELINE == this.ParameterSetName)
+		if (PSConstants.PSetPipeline == this.ParameterSetName)
 		{
 			_ids.UnionWith(this.InputObject.Select(x => x.Id));
 		}
