@@ -37,44 +37,64 @@ public static partial class CharSpanExtensions
 	/// Copies characters from the source span to the destination span, omitting any characters that match those
 	/// specified in the <paramref name="removeChars"/> set.
 	/// </summary>
-	/// <remarks>If the destination span is not large enough to hold all non-removed characters, only
-	/// as many characters as will fit are written. The method does not throw an exception in this case; excess
-	/// characters are omitted. The operation does not allocate additional memory and is suitable for
-	/// performance-critical scenarios.</remarks>
+	/// <remarks>
+	/// <para>The operation does not allocate additional memory and is suitable for performance-critical
+	/// scenarios.</para>
+	/// <para><paramref name="destination"/> must be at least as long as <paramref name="source"/>, however many
+	/// characters are removed, so that its length is checked once, before anything is copied, rather than on
+	/// every copy.</para>
+	/// </remarks>
 	/// <param name="source">The read-only span of characters to process and copy from.</param>
-	/// <param name="destination">The span of characters to which the filtered result will be written. Must be large enough to hold all
-	/// non-removed characters.</param>
+	/// <param name="destination">The span that receives the characters that aren't removed. It must be at least as
+	/// long as <paramref name="source"/>.</param>
 	/// <param name="removeChars">A set of characters to remove from the source span during copying. Any character in this set will be
 	/// excluded from the destination.</param>
 	/// <returns>The number of characters written to the destination span after removal of specified characters.</returns>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="destination"/> is shorter than
+	/// <paramref name="source"/>.</exception>
 	public static int RemoveAny(this ReadOnlySpan<char> source, Span<char> destination, SearchValues<char> removeChars)
 	{
+		if (destination.Length < source.Length)
+		{
+			throwTooShort(source.Length, destination.Length);
+		}
+
 		int written = 0;
 		ReadOnlySpan<char> slice = source;
 
+		// written + slice.Length starts at source.Length and drops by one with each removed character,
+		// so with the check above, every copy below lands inside destination.
 		while (!slice.IsEmpty)
 		{
 			int index = slice.IndexOfAny(removeChars);
 			if (index == -1)
 			{
 				// No more matches, copy the remaining portion and exit.
-				written = slice.CopyToSlice(destination, written);
+				slice.UnsafeCopy(destination.UnsafeSlice(written));
+				written += slice.Length;
 				break;
 			}
 
-			if (index == 0)
+			// IndexOfAny returned an index in [0, slice.Length), so both slices are in range, and
+			// a match at the slice's last character leaves it empty.
+			if (index != 0)
 			{
-				slice = slice[1..];
-				continue;
+				slice.UnsafeSlice(0, index).UnsafeCopy(destination.UnsafeSlice(written));
+				written += index;
 			}
 
-			written = slice[..index].CopyToSlice(destination, written);
-			slice = index < slice.Length - 1
-				? slice[(index + 1)..]
-				: [];
+			slice = slice.UnsafeSlice(index + 1);
 		}
 
 		return written;
+
+		[DoesNotReturn] // Adding 'NoInlining' causes the JIT to not remember this is a non-returning method. Without it, it still doesn't inline.
+		static void throwTooShort(int sourceLength, int destinationLength)
+		{
+			throw new ArgumentException(
+				string.Format(CultureInfo.CurrentCulture, ExMessages.Buffer_TooSmall, sourceLength, destinationLength),
+				nameof(destination));
+		}
 	}
 
 	/// <summary>
@@ -106,6 +126,33 @@ public static partial class CharSpanExtensions
 		return result;
 	}
 
+	/// <summary>
+	/// Attempts to format a value into a <see cref="Span{T}"/> of characters, starting at the given position, and
+	/// advances the position by the number of characters written.
+	/// </summary>
+	/// <remarks>
+	///     When formatting fails, <paramref name="position"/> is left unchanged, though
+	///     <paramref name="destination"/> may hold partially written characters past it.
+	/// </remarks>
+	/// <typeparam name="T">The type of the value to format.</typeparam>
+	/// <param name="value">The value to format.</param>
+	/// <param name="destination">The span that receives the formatted characters.</param>
+	/// <param name="position">
+	///     The index in <paramref name="destination"/> at which to start writing, advanced by the number of
+	///     characters written if formatting succeeds.
+	/// </param>
+	/// <param name="format">The format to use, or an empty span for the type's default format.</param>
+	/// <param name="provider">
+	///     The culture-specific formatting information, or <see langword="null"/> for the current culture.
+	/// </param>
+	/// <returns>
+	///     <see langword="true"/> if <paramref name="value"/> was formatted into the remaining space of
+	///     <paramref name="destination"/>; otherwise, <see langword="false"/>.
+	/// </returns>
+	/// <exception cref="ArgumentOutOfRangeException">
+	///     Thrown when <paramref name="position"/> is negative or greater than the length of
+	///     <paramref name="destination"/>.
+	/// </exception>
 	public static bool TryCopyToSlice<T>(this T value, Span<char> destination, ref int position, ReadOnlySpan<char> format = default, IFormatProvider? provider = null)
 		where T : ISpanFormattable
 	{
@@ -119,7 +166,7 @@ public static partial class CharSpanExtensions
 		return result;
 	}
 	/// <summary>
-	/// Determines whether the beginning of the <paramref name="readOnlySpan"/> matches the specified <paramref name="value"/> when compared ignoring case.
+	/// Determines whether the beginning of the <paramref name="readOnlySpan"/> matches the specified <paramref name="value"/> when compared ordinally.
 	/// </summary>
 	/// <param name="readOnlySpan">The source span.</param>
 	/// <param name="value">The character to compare to the beginning of the source span.</param>
@@ -185,24 +232,15 @@ public static partial class CharSpanExtensions
 		return index != -1;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static bool EnclosedInCore(ReadOnlySpan<char> readOnlySpan, char opening, char closing)
 	{
-		if (readOnlySpan.Length < 2)
-		{
-			return false;
-		}
-
-		return opening == readOnlySpan[0] && closing == readOnlySpan[^1];
+		return readOnlySpan.Length >= 2 && opening == readOnlySpan[0] && closing == readOnlySpan[^1];
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static bool FirstCharEquals(ReadOnlySpan<char> span, char value)
 	{
-		bool result = false;
-		if (!span.IsEmpty)
-		{
-			result = span[0] == value;
-		}
-
-		return result;
+		return !span.IsEmpty && span[0] == value;
 	}
 }

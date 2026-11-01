@@ -1,12 +1,21 @@
 namespace MG.Sonarr.Next.Collections;
 
+/// <summary>
+/// Provides the one <see cref="EmptyNameDictionary{T}"/> instance for each element type.
+/// </summary>
 internal static class EmptyNameDictionary
 {
 	/// <summary>
-	/// Gets an empty read-only dictionary and set.
+	/// Gets the empty read-only dictionary and set for <typeparamref name="T"/>.
 	/// </summary>
+	/// <remarks>
+	/// The <see cref="CollectionBuilderAttribute"/> on <see cref="EmptyNameDictionary{T}"/> names this method, so the
+	/// collection expression <c>[]</c> calls it.
+	/// </remarks>
 	/// <typeparam name="T">The type of elements in the dictionary and set.</typeparam>
-	/// <returns>An empty read-only dictionary and set.</returns>
+	/// <param name="values">The collection expression's elements, which must be empty.</param>
+	/// <returns>The one <see cref="EmptyNameDictionary{T}"/> instance for <typeparamref name="T"/>.</returns>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="values"/> isn't empty.</exception>
 	internal static EmptyNameDictionary<T> Create<T>(params ReadOnlySpan<KeyValuePair<string, T>> values)
 	{
 		if (!values.IsEmpty)
@@ -14,24 +23,105 @@ internal static class EmptyNameDictionary
 			throw new ArgumentException("The collection must be empty.", nameof(values));
 		}
 
-		return new();
+		return EmptyInstance<T>.Instance;
 	}
 
+	/// <summary>
+	/// Gets the empty read-only dictionary and set for <typeparamref name="T"/>.
+	/// </summary>
+	/// <typeparam name="T">The type of elements in the dictionary and set.</typeparam>
+	/// <returns>The one <see cref="EmptyNameDictionary{T}"/> instance for <typeparamref name="T"/>.</returns>
 	internal static EmptyNameDictionary<T> Empty<T>()
 	{
-		return new();
+		return EmptyInstance<T>.Instance;
+	}
+
+	/// <summary>
+	/// Provides the one <see cref="EmptyNameDictionary{T}"/> instance for <typeparamref name="T"/>.
+	/// </summary>
+	/// <remarks>
+	/// The constructor of <see cref="EmptyNameDictionary{T}"/> is private, so that no other instance can exist, and
+	/// <see cref="CreateInstance"/> reaches it through <see cref="UnsafeAccessorAttribute"/>. Each
+	/// <typeparamref name="T"/> gets its own copy of <see cref="Instance"/>.
+	/// </remarks>
+	/// <typeparam name="T">The type of elements in the dictionary and set.</typeparam>
+	private static class EmptyInstance<T>
+	{
+		/// <summary>
+		/// The one instance for <typeparamref name="T"/>.
+		/// </summary>
+		internal static readonly EmptyNameDictionary<T> Instance = CreateInstanceCore();
+
+		/// <summary>
+		/// Creates the one instance for <typeparamref name="T"/>, and wraps a failure in an exception that names
+		/// <typeparamref name="T"/>.
+		/// </summary>
+		/// <remarks>
+		/// It runs in the class's type initializer, so a failure reaches callers as a
+		/// <see cref="TypeInitializationException"/> that holds the <see cref="InvalidOperationException"/>, and every
+		/// later read of <see cref="Instance"/> for the same <typeparamref name="T"/> throws again.
+		/// </remarks>
+		/// <returns>The new <see cref="EmptyNameDictionary{T}"/> instance.</returns>
+		/// <exception cref="InvalidOperationException">Thrown when the private constructor can't be called.</exception>
+		private static EmptyNameDictionary<T> CreateInstanceCore()
+		{
+			try
+			{
+				return CreateInstance();
+			}
+			catch (Exception e)
+			{
+				throw createInvalidException(e);
+			}
+
+			[DebuggerStepThrough] static InvalidOperationException createInvalidException(Exception e)
+			{
+				return new InvalidOperationException($"Failed to create the empty read-only dictionary and set for {typeof(T).FullName}.", e);
+			}
+		}
+
+		// The cref to EmptyNameDictionary{T}() in the doc comment below is a build-time check on the private
+		// constructor that [UnsafeAccessor] binds to only at run time. Neither one depends on the constructor's
+		// accessibility, and both fail only when EmptyNameDictionary<T> has no parameterless constructor.
+		// src/MG.Sonarr.Next/Collections/.editorconfig makes CS1574 an error in this file, so that fails the build.
+		/// <summary>
+		/// Calls the private constructor: <see cref="EmptyNameDictionary{T}()"/>.
+		/// </summary>
+		/// <remarks>
+		/// The runtime supplies the body, which <see cref="UnsafeAccessorAttribute"/> binds to the constructor that takes no
+		/// parameters.
+		/// </remarks>
+		/// <returns>A new <see cref="EmptyNameDictionary{T}"/> instance.</returns>
+		/// <exception cref="MissingMethodException">
+		/// Thrown when <see cref="EmptyNameDictionary{T}"/> has no constructor that takes no parameters.
+		/// </exception>
+		[UnsafeAccessor(UnsafeAccessorKind.Constructor)]
+		private static extern EmptyNameDictionary<T> CreateInstance();
 	}
 }
 
 /// <summary>
 /// Represents an empty read-only dictionary and set.
 /// </summary>
+/// <remarks>
+/// Each element type has one instance, which <see cref="EmptyNameDictionary.Empty{T}"/> and the collection expression
+/// <c>[]</c> return.
+/// </remarks>
 /// <typeparam name="T">The type of elements in the dictionary and set.</typeparam>
-[DebuggerStepThrough]
-[StructLayout(LayoutKind.Auto)]
+[DebuggerStepThrough, DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.NonPublicConstructors)]
 [CollectionBuilder(typeof(EmptyNameDictionary), nameof(EmptyNameDictionary.Create))]
-internal readonly struct EmptyNameDictionary<T> : IEquatable<EmptyNameDictionary<T>>, IReadOnlyDictionary<string, T>, IReadOnlySet<T>
+internal sealed class EmptyNameDictionary<T> : IEquatable<EmptyNameDictionary<T>>, IReadOnlyDictionary<string, T>, IReadOnlySet<T>
 {
+	// EmptyNameDictionary.EmptyInstance<T>.CreateInstance calls this constructor through [UnsafeAccessor]. Its
+	// accessibility doesn't matter to that call, but its parameters do: giving it a parameter fails the build with
+	// CS1574 (see src/MG.Sonarr.Next/Collections/.editorconfig). It stays private so that no other instance can exist.
+	/// <summary>
+	/// Initializes a new <see cref="EmptyNameDictionary{T}"/> instance.
+	/// </summary>
+	private EmptyNameDictionary()
+	{
+	}
+
 	/// <inheritdoc/>
 	T IReadOnlyDictionary<string, T>.this[string key] => throw new KeyNotFoundException("This is a read-only, empty collection.");
 
@@ -74,10 +164,13 @@ internal readonly struct EmptyNameDictionary<T> : IEquatable<EmptyNameDictionary
 	/// Indicates whether the current object is equal to another object of the same type.
 	/// </summary>
 	/// <param name="other">An object to compare with this object.</param>
-	/// <returns><see langword="true"/> because all instances of <see cref="EmptyNameDictionary{T}"/> are equal.</returns>
-	public bool Equals(EmptyNameDictionary<T> other)
+	/// <returns>
+	/// <see langword="true"/> if <paramref name="other"/> isn't <see langword="null"/>, since it's then this same
+	/// instance; otherwise, <see langword="false"/>.
+	/// </returns>
+	public bool Equals(EmptyNameDictionary<T>? other)
 	{
-		return true;
+		return ReferenceEquals(this, other);
 	}
 
 	/// <inheritdoc/>

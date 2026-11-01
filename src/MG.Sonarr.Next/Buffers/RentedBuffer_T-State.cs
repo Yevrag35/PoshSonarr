@@ -7,7 +7,7 @@ file static class RentedBufferConstants
 	internal const byte ClearBit = 0x2;
 }
 
-public ref partial struct RentedBuffer<T>
+ref partial struct RentedBuffer<T>
 {
 	/// <summary>
 	/// Represents the state of a rented buffer, including flags for its rental status and whether it should be cleared on

@@ -15,7 +15,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups;
 
 [Cmdlet(VerbsData.Save, "SonarrBackup", DefaultParameterSetName = "ByExplicitUrl", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
 [Alias("Download-SonarrBackup")]
-[MetadataCanPipe(Tag = Meta.BACKUP)]
+[MetadataCanPipe(Tag = Meta.Backup)]
 [OutputType(typeof(FileInfo))]
 public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 {
@@ -34,7 +34,7 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 	public SwitchParameter Force { get; set; }
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetPipeline, ValueFromPipeline = true)]
 	public BackupObject InputObject
 	{
 		get => null!;

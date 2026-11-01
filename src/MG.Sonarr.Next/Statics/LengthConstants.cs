@@ -3,45 +3,45 @@ namespace MG.Sonarr.Next;
 /// <summary>
 /// Provides constant values for various length constraints.
 /// </summary>
-public static class LengthConstants
+internal static class LengthConstants
 {
 	/// <summary>
 	/// Maximum length for a byte value.
 	/// </summary>
-	public const int BYTE_MAX = 3;
+	internal const int BYTE_MAX = 3;
 
 	/// <summary>
 	/// Maximum length for an integer value.
 	/// </summary>
-	public const int INT_MAX = 11;
+	internal const int INT_MAX = 11;
 
 	/// <summary>
 	/// Maximum length for a long value.
 	/// </summary>
-	public const int LONG_MAX = 20;
+	internal const int LONG_MAX = 20;
 
 	/// <summary>
 	/// Maximum length for an unsigned integer value.
 	/// </summary>
-	public const int UINT_MAX = INT_MAX - 1;
+	internal const int UINT_MAX = INT_MAX - 1;
 
 	/// <summary>
 	/// Maximum length for an unsigned long value.
 	/// </summary>
 	/// <value><c>20</c></value>
-	public const int ULONG_MAX = LONG_MAX;
+	internal const int ULONG_MAX = LONG_MAX;
 
 	/// <summary>
 	/// Represents the maximum number of characters for floating-point values.
 	/// </summary>
 	// Worst case is a 9-significant-digit value in exponential form with a sign, e.g. "-1.00000055E+20" (15).
 	// float.MinValue ("-3.4028235E+38") is only 14 chars because it carries 8 significant digits, not 9.
-	public const int FLOAT_MAX = 15;
+	internal const int FLOAT_MAX = 15;
 
 	/// <summary>
 	/// Maximum length for a double value.
 	/// </summary>
-	public const int DOUBLE_MAX = 24;    // double.MinValue.ToString().Length
+	internal const int DOUBLE_MAX = 24;    // double.MinValue.ToString().Length
 
 	/// <summary>
 	/// Maximum length for a decimal value.
@@ -49,32 +49,32 @@ public static class LengthConstants
 	// Worst case is a full-precision value carrying a decimal point with a sign, e.g.
 	// "-7.9228162514264337593543950335" (31). decimal.MinValue ("-79228162514264337593543950335")
 	// is only 30 chars because it has no fractional part.
-	public const int DECIMAL_MAX = 31;
+	internal const int DECIMAL_MAX = 31;
 
 	/// <summary>
 	/// Maximum length for a 128-bit integer value.
 	/// </summary>
-	public const int INT128_MAX = 40;
+	internal const int INT128_MAX = 40;
 
 	/// <summary>
 	/// Length of a GUID in 'B' or 'P' format.
 	/// </summary>
-	public const int GUID_FORM_B_OR_P = 38;
+	internal const int GUID_FORM_B_OR_P = 38;
 
 	/// <summary>
 	/// Length of a GUID in 'N' format.
 	/// </summary>
-	public const int GUID_FORM_N = 32;
+	internal const int GUID_FORM_N = 32;
 
 	/// <summary>
 	/// Length of a GUID in 'D' format.
 	/// </summary>
-	public const int GUID_FORM_D = 36;
+	internal const int GUID_FORM_D = 36;
 
 	/// <summary>
 	/// Length of a GUID in 'X' format.
 	/// </summary>
-	public const int GUID_FORM_X = 68;
+	internal const int GUID_FORM_X = 68;
 
 	/// <summary>
 	/// Gets the length of a GUID based on the specified format character.
@@ -83,7 +83,7 @@ public static class LengthConstants
 	/// <param name="paramName">The argument name reported in thrown exceptions. Automatically supplied from the caller's <paramref name="format"/> expression.</param>
 	/// <returns>The length of the GUID in the specified format.</returns>
 	/// <inheritdoc cref="GetGuidLengthCore(char, string?)" path="/exception"/>
-	public static int GetGuidLength(char format, [CallerArgumentExpression(nameof(format))] string? paramName = null)
+	internal static int GetGuidLength(char format, [CallerArgumentExpression(nameof(format))] string? paramName = null)
 	{
 		return GetGuidLengthCore(format, paramName);
 	}
@@ -99,7 +99,7 @@ public static class LengthConstants
 	/// <exception cref="ArgumentException">Thrown when the format is not a single character.</exception>
 	/// <inheritdoc cref="GetGuidLengthCore(char, string?)" path="/exception"/>
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	public static int GetGuidLength(ReadOnlySpan<char> format, [CallerArgumentExpression(nameof(format))] string? paramName = null)
+	internal static int GetGuidLength(ReadOnlySpan<char> format, [CallerArgumentExpression(nameof(format))] string? paramName = null)
 	{
 		return format.Length switch
 		{
@@ -108,12 +108,19 @@ public static class LengthConstants
 			_ => throwEx(format, paramName),
 		};
 
-		[DoesNotReturn, StackTraceHidden, MethodImpl(MethodImplOptions.NoInlining)]
+		[DoesNotReturn, StackTraceHidden]
 		static int throwEx(ReadOnlySpan<char> format, string? paramName)
 		{
-			throw new ArgumentException("GUID formats must be only 1 character in length.", paramName);
+			throw new ArgumentException($"Invalid format: {format} - GUID formats must be only 1 character in length.", paramName);
 		}
 	}
+
+	/// <summary>
+	/// Gets the length of a GUID based on the specified format character.
+	/// </summary>
+	/// <param name="format">The format character to evaluate.</param>
+	/// <param name="paramName">The argument name reported in thrown exceptions.</param>
+	/// <returns>The length of the GUID in the specified format.</returns>
 	/// <exception cref="FormatException">Thrown when the format character is invalid.</exception>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static int GetGuidLengthCore(char format, string? paramName)
@@ -127,7 +134,7 @@ public static class LengthConstants
 			_ => throwFormatEx(format, paramName),
 		};
 
-		[DoesNotReturn, StackTraceHidden, MethodImpl(MethodImplOptions.NoInlining)]
+		[DoesNotReturn, StackTraceHidden]
 		static int throwFormatEx(char format, string? paramName)
 		{
 			paramName = paramName is not null ? $"{paramName}: " : null;

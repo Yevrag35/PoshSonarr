@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs;
 
 [Cmdlet(VerbsData.Save, "SonarrLogFile", DefaultParameterSetName = "ByExplicitUrl")]
 [Alias("Download-SonarrLogFile")]
-[MetadataCanPipe(Tag = Meta.LOG_FILE)]
+[MetadataCanPipe(Tag = Meta.LogFile)]
 [OutputType(typeof(FileInfo))]
 public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
 {
@@ -30,7 +30,7 @@ public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
 	public SwitchParameter Force { get; set; }
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetPipeline, ValueFromPipeline = true)]
 	public LogFileObject InputObject
 	{
 		get => null!;

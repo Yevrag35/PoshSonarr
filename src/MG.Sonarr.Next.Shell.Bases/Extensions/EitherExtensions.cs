@@ -19,24 +19,24 @@ public static class EitherExtensions
 		{
 			switch (item.Index)
 			{
-				case 1u when !explicitlyCalledForString && int.TryParse(item.AsT1, out int number):
+				case 1 when !explicitlyCalledForString && int.TryParse(item.AsT1, out int number):
 					numbers.Add(number);
 					break;
 
-				case 1u:
+				case 1:
 					strings.Add(item.AsT1);
 					break;
 
-				case 2u when explicitlyCalledForString:
+				case 2 when explicitlyCalledForString:
 					AddSpan(strings, item.AsT2);
 					break;
 
-				case 2u:
+				case 2:
 					numbers.Add(item.AsT2);
 					break;
 
 				default:
-					goto case 2u;
+					goto case 2;
 			}
 		}
 	}

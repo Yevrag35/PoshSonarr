@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Json;
+using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.Tags;
 using System.Text.Json;
 
@@ -23,7 +23,7 @@ public sealed class NewSonarrTagCmdlet : SonarrApiCmdletBase
 
 		if (this.ShouldProcess(json, "Creating Tag"))
 		{
-			var oneOf = this.SendPostRequest<SonarrTag, TagObject>(Constants.TAG, tag);
+			var oneOf = this.SendPostRequest<SonarrTag, TagObject>(Constants.Tag, tag);
 			if (oneOf.TryGetT1(out TagObject? to, out var error))
 			{
 				this.WriteObject(to);

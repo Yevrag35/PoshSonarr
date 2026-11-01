@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Tags;
 using MG.Sonarr.Next.Shell.Attributes;
@@ -6,19 +6,19 @@ using MG.Sonarr.Next.Shell.Attributes;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Tags;
 
 [Cmdlet(VerbsCommon.Remove, "SonarrTag", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.High,
-	DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	DefaultParameterSetName = PSConstants.PSetExplicitId)]
 [Alias("Delete-SonarrTag")]
-[MetadataCanPipe(Tag = Meta.TAG)]
+[MetadataCanPipe(Tag = Meta.Tag)]
 public sealed class RemoveSonarrTagCmdlet : SonarrApiCmdletBase
 {
 	MetadataTag _tag = null!;
 
-	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int Id { get; set; }
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
 	[ValidateId(ValidateRangeKind.Positive)]
 	public TagObject? InputObject
 	{
@@ -32,7 +32,7 @@ public sealed class RemoveSonarrTagCmdlet : SonarrApiCmdletBase
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_tag = provider.GetRequiredService<IMetadataResolver>()[Meta.TAG];
+		_tag = provider.GetRequiredService<IMetadataResolver>()[Meta.Tag];
 	}
 	protected override void Process(IServiceProvider provider)
 	{

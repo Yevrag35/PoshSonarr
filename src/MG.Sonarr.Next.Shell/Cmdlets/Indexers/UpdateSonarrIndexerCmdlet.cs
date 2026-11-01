@@ -7,7 +7,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers;
 
 [Cmdlet(VerbsData.Update, "SonarrIndexer", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
 [Alias("Set-SonarrIndexer")]
-[MetadataCanPipe(Tag = Meta.INDEXER)]
+[MetadataCanPipe(Tag = Meta.Indexer)]
 public sealed class UpdateSonarrIndexerCmdlet : SonarrApiCmdletBase
 {
 	public override bool CanDebugSerializeBefore => false;

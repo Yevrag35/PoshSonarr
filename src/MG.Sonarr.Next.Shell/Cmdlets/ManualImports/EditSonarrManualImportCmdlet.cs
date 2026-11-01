@@ -12,7 +12,7 @@ using MG.Sonarr.Next.Unions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports;
 
 [Cmdlet(VerbsData.Edit, "SonarrManualImport")]
-[MetadataCanPipe(Tag = Meta.MANUAL_IMPORT)]
+[MetadataCanPipe(Tag = Meta.ManualImport)]
 public sealed class EditSonarrManualImportCmdlet : SonarrApiCmdletBase
 {
 	Either<int, SeriesObject> _series;
@@ -64,17 +64,17 @@ public sealed class EditSonarrManualImportCmdlet : SonarrApiCmdletBase
 		var edit = provider.GetRequiredService<ManualImportEdit>();
 		if (this.HasParameter(Episode))
 		{
-			edit.Episode = this.GetObject(_episode, provider.GetMetadataTag(Meta.EPISODE));
+			edit.Episode = this.GetObject(_episode, provider.GetMetadataTag(Meta.Episode));
 		}
 
 		if (this.HasParameter(Quality))
 		{
-			edit.Quality = this.GetQualityRevision(_quality, provider.GetMetadataTag(Meta.QUALITY));
+			edit.Quality = this.GetQualityRevision(_quality, provider.GetMetadataTag(Meta.Quality));
 		}
 
 		if (this.HasParameter(Series))
 		{
-			edit.Series = this.GetObject(_series, provider.GetMetadataTag(Meta.SERIES));
+			edit.Series = this.GetObject(_series, provider.GetMetadataTag(Meta.Series));
 		}
 	}
 

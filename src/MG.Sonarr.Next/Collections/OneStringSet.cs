@@ -4,25 +4,51 @@ namespace MG.Sonarr.Next.Collections;
 /// Represents a read-only set containing zero or one string value, providing efficient set operations for
 /// single-item scenarios.
 /// </summary>
-/// <remarks>This struct is optimized for cases where a set contains at most one string. All set
+/// <remarks>This class is optimized for cases where a set contains at most one string. All set
 /// operations are performed using ordinal, case-insensitive string comparison.</remarks>
-internal readonly struct OneStringSet : IReadOnlySet<string>
+internal sealed class OneStringSet : IReadOnlySet<string>
 {
-	const int COUNT = 1;
+	/// <summary>
+	/// An empty <see cref="OneStringSet"/> instance.
+	/// </summary>
+	internal static readonly OneStringSet Empty = new();
 
-	readonly string? _value;
+	private readonly string _value;
 
-	[MemberNotNullWhen(false, nameof(Value), nameof(_value))]
-	public bool IsEmpty => string.IsNullOrEmpty(_value);
-	public string Value => _value ?? string.Empty;
+	/// <summary>
+	/// Gets the number of values in this set.
+	/// </summary>
+	/// <value>The number of values in the set. Either <c>0</c> or <c>1</c>.</value>
+	public int Count => this.IsEmpty ? 0 : 1;
+	/// <summary>
+	/// Gets a value that indicates whether this set is empty.
+	/// </summary>
+	/// <value><see langword="true"/> when this set has no value; otherwise, <see langword="false"/>.</value>
+	public bool IsEmpty => _value is "";
 
-	int IReadOnlyCollection<string>.Count => this.IsEmpty ? 0 : COUNT;
+	/// <summary>
+	/// Gets the single value in this set.
+	/// </summary>
+	/// <value>The set value, or an empty string when this set is empty.</value>
+	public string Value => _value;
 
+	private OneStringSet()
+	{
+		_value = string.Empty;
+	}
+	/// <summary>
+	/// Initializes a new <see cref="OneStringSet"/> instance with the specified value.
+	/// </summary>
+	/// <param name="value">The set value.</param>
 	internal OneStringSet(string value)
 	{
 		_value = value;
 	}
 
+	/// <summary>
+	/// Returns an enumerator that iterates through the set.
+	/// </summary>
+	/// <returns>An enumerator for the set contents.</returns>
 	public IEnumerator<string> GetEnumerator()
 	{
 		if (!this.IsEmpty)
@@ -35,6 +61,12 @@ internal readonly struct OneStringSet : IReadOnlySet<string>
 		return this.GetEnumerator();
 	}
 
+	/// <summary>
+	/// Creates a <see cref="OneStringSet"/> from the first value in the specified collection.
+	/// </summary>
+	/// <param name="collection">The source collection.</param>
+	/// <returns>A set containing the first value in <paramref name="collection"/>, or an empty set when the collection has no values.</returns>
+	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="collection"/> is null.</exception>
 	internal static OneStringSet FromEnumerable(IEnumerable<string> collection)
 	{
 		ArgumentNullException.ThrowIfNull(collection);
@@ -44,13 +76,25 @@ internal readonly struct OneStringSet : IReadOnlySet<string>
 			return new OneStringSet(str);
 		}
 
-		return default;
+		return Empty;
 	}
 
-	bool IReadOnlySet<string>.Contains(string item)
+	/// <summary>
+	/// Determines whether this set contains the specified value.
+	/// </summary>
+	/// <param name="item">The value to locate.</param>
+	/// <returns><see langword="true"/> when the value is present; otherwise, <see langword="false"/>.</returns>
+	public bool Contains(string item)
 	{
 		return !this.IsEmpty && _value.Equals(item, StringComparison.OrdinalIgnoreCase);
 	}
+
+	/// <summary>
+	/// Determines whether this set is a proper subset of the specified collection.
+	/// </summary>
+	/// <param name="other">The collection to compare against.</param>
+	/// <returns><see langword="true"/> when this set is a proper subset of <paramref name="other"/>; otherwise, <see langword="false"/>.</returns>
+	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
 	bool IReadOnlySet<string>.IsProperSubsetOf(IEnumerable<string> other)
 	{
 		ArgumentNullException.ThrowIfNull(other);
@@ -81,6 +125,12 @@ internal readonly struct OneStringSet : IReadOnlySet<string>
 
 		return false;
 	}
+	/// <summary>
+	/// Determines whether this set is a proper superset of the specified collection.
+	/// </summary>
+	/// <param name="other">The collection to compare against.</param>
+	/// <returns><see langword="true"/> when this set is a proper superset of <paramref name="other"/>; otherwise, <see langword="false"/>.</returns>
+	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
 	bool IReadOnlySet<string>.IsProperSupersetOf(IEnumerable<string> other)
 	{
 		ArgumentNullException.ThrowIfNull(other);
@@ -91,6 +141,12 @@ internal readonly struct OneStringSet : IReadOnlySet<string>
 
 		return !other.Any();
 	}
+	/// <summary>
+	/// Determines whether this set is a subset of the specified collection.
+	/// </summary>
+	/// <param name="other">The collection to compare against.</param>
+	/// <returns><see langword="true"/> when this set is a subset of <paramref name="other"/>; otherwise, <see langword="false"/>.</returns>
+	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
 	bool IReadOnlySet<string>.IsSubsetOf(IEnumerable<string> other)
 	{
 		ArgumentNullException.ThrowIfNull(other);
@@ -109,6 +165,12 @@ internal readonly struct OneStringSet : IReadOnlySet<string>
 
 		return false;
 	}
+	/// <summary>
+	/// Determines whether this set is a superset of the specified collection.
+	/// </summary>
+	/// <param name="other">The collection to compare against.</param>
+	/// <returns><see langword="true"/> when this set is a superset of <paramref name="other"/>; otherwise, <see langword="false"/>.</returns>
+	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
 	bool IReadOnlySet<string>.IsSupersetOf(IEnumerable<string> other)
 	{
 		ArgumentNullException.ThrowIfNull(other);
@@ -127,6 +189,12 @@ internal readonly struct OneStringSet : IReadOnlySet<string>
 
 		return true;
 	}
+	/// <summary>
+	/// Determines whether this set overlaps with the specified collection.
+	/// </summary>
+	/// <param name="other">The collection to compare against.</param>
+	/// <returns><see langword="true"/> when this set and <paramref name="other"/> share at least one value; otherwise, <see langword="false"/>.</returns>
+	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
 	bool IReadOnlySet<string>.Overlaps(IEnumerable<string> other)
 	{
 		ArgumentNullException.ThrowIfNull(other);
@@ -145,6 +213,12 @@ internal readonly struct OneStringSet : IReadOnlySet<string>
 
 		return false;
 	}
+	/// <summary>
+	/// Determines whether this set and the specified collection contain the same values.
+	/// </summary>
+	/// <param name="other">The collection to compare against.</param>
+	/// <returns><see langword="true"/> when this set and <paramref name="other"/> are equal; otherwise, <see langword="false"/>.</returns>
+	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
 	bool IReadOnlySet<string>.SetEquals(IEnumerable<string> other)
 	{
 		ArgumentNullException.ThrowIfNull(other);

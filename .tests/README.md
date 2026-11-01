@@ -43,7 +43,7 @@ Every test file's top-level `BeforeAll` dot-sources `setup.ps1`. It imports the 
 | Name | What it is |
 |---|---|
 | `$SandboxSettings` | The sandbox's `BaseUrl`, `ApiKey`, `Version`, and `InstanceName`, as `Get-SandboxSettings` reads them from `sandbox/sonarr/compose.yaml`. |
-| `$Fixtures` | The fixtures' facts: the three shows' TVDB IDs, titles, and episode counts, the seeded shows' tags, the baseline's tag and root folder, the search term that finds all three shows, the 9 episodes that wanted/missing lists, the 3 episodes that the calendar lists from 2099-01-01 to 2099-01-31, and a TVDB ID that the mock doesn't have. |
+| `$Fixtures` | The fixtures' facts: the four shows' TVDB IDs, titles, and episode counts, the seeded shows' tags, the baseline's tag and root folder, the search term that finds all four shows, the 9 episodes that wanted/missing lists, the 3 episodes that the calendar lists from 2099-01-01 to 2099-01-31, and a TVDB ID that the mock doesn't have. |
 | `New-TestName` | Returns `pester-` and 8 random hex digits, a name for whatever a test creates. |
 | `Invoke-TestProcess` | Runs a script in a new PowerShell process that has imported the module, with no connection, and returns the lines that it writes, its errors included. |
 | `Invoke-SandboxApi` | Sends one raw request to the sandbox's API, for setup, cleanup, and checks that don't go through the module. |
@@ -89,7 +89,7 @@ A `Describe` block names the cmdlet that it tests, and each `It` says what the c
 - Find the fixtures by TVDB ID, title, or label. Sonarr gives each add of a series, tag, or profile a new database ID, so no test holds an ID as a literal; a test that needs one reads it from the API.
 - Take counts that the fixtures set from `$Fixtures`, and counts that Sonarr sets, such as its number of quality definitions, from the API, so that a Sonarr upgrade doesn't break them.
 - `$Fixtures` is the suite's own copy of the fixtures' facts, and `sandbox/sonarr/test.ps1` keeps another. A change to the mock's shows updates both.
-- The files run one after another in one process, so the tests that add Sandbox Lookup Show, the only show a test can add, never overlap.
+- The files run one after another in one process, so the tests that add Sandbox Lookup Show or Sandbox Wild*Card Show, the two shows a test can add, never overlap. Sandbox Wild*Card Show is for tests of wildcard matching: its title holds a `*`, so a name such as `'Sandbox Wild*Show'` finds it only when the `*` in the name is a wildcard wherever it stands. Sonarr turns that `*` into a `-` in the show's folder, `/tv/Sandbox Wild-Card Show`.
 
 ### What a test creates or changes
 

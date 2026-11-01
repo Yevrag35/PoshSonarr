@@ -4,7 +4,7 @@ namespace MG.Sonarr.Next.Buffers;
 /// Represents a bounded region of a given span with an index and a length. This structure defines the starting index and the length of a segment within a span.
 /// </summary>
 [DebuggerStepThrough, StructLayout(LayoutKind.Sequential), DebuggerDisplay(@"\{Index={Index}, Length={Length}\}")]
-public readonly struct SpanPosition : IComparable<SpanPosition>, IEquatable<int>, IEquatable<SpanPosition>
+internal readonly struct SpanPosition : IComparable<SpanPosition>, IEquatable<int>, IEquatable<SpanPosition>
 {
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	private readonly int _index, _length;
@@ -123,15 +123,17 @@ public readonly struct SpanPosition : IComparable<SpanPosition>, IEquatable<int>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static void ThrowIfOutOfRange(SpanPosition position, int length, [CallerArgumentExpression(nameof(position))] string? paramName = null)
 	{
-		if (position.End > length)
+		// Comparing as unsigned values rejects a negative index or length, and the subtraction, unlike the sum of the
+		// index and length, can't overflow once the index is known to lie within the range.
+		if ((uint)position._index > (uint)length || (uint)position._length > (uint)(length - position._index))
 		{
 			throwEx(position, length, paramName);
 		}
 
-		[DoesNotReturn, StackTraceHidden, MethodImpl(MethodImplOptions.NoInlining)]
+		[DoesNotReturn, StackTraceHidden]
 		static void throwEx(SpanPosition position, int length, string? paramName)
 		{
-			throw new ArgumentOutOfRangeException(paramName, $"The span position {position} is out of range for the specified length {length}.");
+			throw new ArgumentOutOfRangeException(paramName, $"The span position {{Index={position._index}, Length={position._length}}} is out of range for the specified length {length}.");
 		}
 	}
 	/// <summary>
@@ -148,7 +150,7 @@ public readonly struct SpanPosition : IComparable<SpanPosition>, IEquatable<int>
 			throwInvalid(position, paramName);
 		}
 
-		[DoesNotReturn, StackTraceHidden, MethodImpl(MethodImplOptions.NoInlining)]
+		[DoesNotReturn, StackTraceHidden]
 		static void throwInvalid(SpanPosition position, string? paramName)
 		{
 			throw new ArgumentException(

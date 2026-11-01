@@ -1,5 +1,4 @@
-﻿using MG.Sonarr.Next.Metadata;
-using System.Management.Automation;
+using MG.Sonarr.Next.Metadata;
 
 namespace MG.Sonarr.Next.Attributes;
 

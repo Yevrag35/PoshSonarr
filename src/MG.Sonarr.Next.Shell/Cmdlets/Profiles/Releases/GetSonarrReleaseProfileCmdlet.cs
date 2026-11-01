@@ -17,7 +17,7 @@ public sealed class GetSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 	WildcardSet _wcNames = null!;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int[] Id { get; set; } = [];
 
@@ -38,7 +38,7 @@ public sealed class GetSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.RELEASE_PROFILE];
+		return resolver[Meta.ReleaseProfile];
 	}
 
 	protected override void Begin(IServiceProvider provider)
@@ -74,7 +74,7 @@ public sealed class GetSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 		for (int i = response.Value.Count - 1; i >= 0; i--)
 		{
 			var profile = response.Value[i];
-			if (!profile.TryGetNonNullProperty(Constants.NAME, out string? name)
+			if (!profile.TryGetNonNullProperty(Constants.Name, out string? name)
 				||
 				!names.IsAnyMatch(name))
 			{

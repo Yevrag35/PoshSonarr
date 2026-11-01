@@ -9,10 +9,10 @@ using MG.Sonarr.Next.Shell.Extensions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Commands;
 
 [Cmdlet(VerbsDiagnostic.Test, "SonarrRename")]
-[MetadataCanPipe(Tag = Meta.CALENDAR)]
-[MetadataCanPipe(Tag = Meta.EPISODE)]
-[MetadataCanPipe(Tag = Meta.EPISODE_FILE)]
-[MetadataCanPipe(Tag = Meta.SERIES)]
+[MetadataCanPipe(Tag = Meta.Calendar)]
+[MetadataCanPipe(Tag = Meta.Episode)]
+[MetadataCanPipe(Tag = Meta.EpisodeFile)]
+[MetadataCanPipe(Tag = Meta.Series)]
 public sealed class TestSonarrRenameCmdlet : SonarrApiCmdletBase
 {
 	QueryCol _params = null!;
@@ -66,13 +66,13 @@ public sealed class TestSonarrRenameCmdlet : SonarrApiCmdletBase
 	{
 		const int max_stackalloc = 256;
 
-		int length = Constants.RENAME.Length + parameters.MaxLength + 1;
+		int length = Constants.Rename.Length + parameters.MaxLength + 1;
 		using var builder = SpanStringBuilder.Create(
 			length <= max_stackalloc
 				? stackalloc char[length]
 				: length);
 
-		builder.Append(Constants.RENAME);
+		builder.Append(Constants.Rename);
 		builder.Append(parameters, parameters.MaxLength);
 
 		return builder.ToString();

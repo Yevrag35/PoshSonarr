@@ -1,7 +1,6 @@
 using MG.Sonarr.Next.Guarding;
 using MG.Sonarr.Next.Unions;
 using System.ComponentModel;
-using System.Numerics;
 
 namespace MG.Sonarr.Next.Buffers;
 
@@ -9,7 +8,16 @@ namespace MG.Sonarr.Next.Buffers;
 /// A ref struct that provides a way to build strings without allocating memory on the heap until the <see cref="string"/> is constructed.
 /// </summary>
 /// <remarks>
-/// The <see cref="SpanStringBuilder"/> utilizes stack-allocated buffers and pooled arrays to avoid or reuse heap allocations during the building process.
+/// <para>The <see cref="SpanStringBuilder"/> utilizes stack-allocated buffers and pooled arrays to avoid or reuse heap allocations during the building process.</para>
+/// <para>A span or reference into the buffer, such as the one that <see cref="AsSpan()"/>, <see cref="AppendSpan(int)"/>, or the
+/// indexer returns, is valid only until the next call that grows the buffer, and it isn't valid as that call's argument
+/// either. Growing returns a rented array to the pool before the growing call reads its argument, so a span over the builder
+/// that's passed back to one of its own appends can read an array that the pool has already cleared or rented out again.
+/// <see cref="Insert(int, ReadOnlySpan{char})"/> doesn't take a span over the builder at all, since it moves the characters
+/// that such a span covers before it reads them.</para>
+/// <para>In Debug builds, the calls that write a span of characters assert that it doesn't point into the buffer whenever
+/// they grow the buffer, and <see cref="Insert(int, ReadOnlySpan{char})"/> asserts it on every call. A Debug build also fills
+/// an array that goes back to the pool with <c>'\uDDDD'</c> characters, unless <see cref="ClearOnDispose"/> is set.</para>
 /// </remarks>
 [DebuggerDisplay("{ToString(),nq}")]
 [StructLayout(LayoutKind.Auto), DebuggerStepThrough]
@@ -96,7 +104,8 @@ internal ref struct SpanStringBuilder
 	[DebuggerBrowsable(DebuggerBrowsableState.Never), EditorBrowsable(EditorBrowsableState.Never)]
 	public readonly bool IsDefault => _chars.IsEmpty;
 	/// <summary>
-	/// Indicates whether this <see cref="SpanStringBuilder"/> instance is default-initialized.
+	/// Indicates whether this <see cref="SpanStringBuilder"/> instance is default-initialized or wraps a buffer of no
+	/// characters.
 	/// </summary>
 	public readonly bool IsDefaultOrEmpty => _chars.IsEmpty;
 	/// <summary>
@@ -307,6 +316,7 @@ internal ref struct SpanStringBuilder
 	{
 		if (!value.IsEmpty)
 		{
+			Debug.Assert(value.Length <= _chars.Length - _position || !value.Overlaps(_chars), "A span over the builder was passed to a call that grows its buffer.");
 			this.EnsureCapacity(new pint(value.Length, true));
 			this.AppendCore(value);
 		}
@@ -409,6 +419,7 @@ internal ref struct SpanStringBuilder
 	/// <param name="length">The number of characters to be written.</param>
 	/// <param name="state">The state passed to the <paramref name="spanAction"/>.</param>
 	/// <param name="spanAction">The action that writes to the span.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="spanAction"/> is null.</exception>
 	/// <inheritdoc cref="EnsureCapacity(int)" path="/exception"/>
 	public
 #if !NET11_0_OR_GREATER
@@ -416,9 +427,10 @@ internal ref struct SpanStringBuilder
 #endif
 		void Append<T>(int length, scoped T state, delegate*<Span<char>, T, void> spanAction) where T : allows ref struct
 	{
-		this.EnsureCapacity(length);
 		unsafe
 		{
+			ArgumentNullException.ThrowIfNull(spanAction);
+			this.EnsureCapacity(length);
 			spanAction(_chars.UnsafeSlice(_position, length), state);
 		}
 
@@ -535,7 +547,7 @@ internal ref struct SpanStringBuilder
 	/// </summary>
 	/// <remarks>This method allows appending multiple spans of characters in a single call.  The operation is
 	/// performed efficiently using inlining to minimize overhead.</remarks>
-	/// <param name="values">An array of <see cref="ReadOnlySpan{T}"/> of characters to append. Each span in the array is appended in order.</param>
+	/// <param name="values">The characters to append, in order.</param>
 	/// <inheritdoc cref="EnsureCapacity(pint)" path="/exception"/>
 	public void AppendChars(params ReadOnlySpan<char> values)
 	{
@@ -552,6 +564,7 @@ internal ref struct SpanStringBuilder
 		if (!value.IsEmpty)
 		{
 			int len = value.Length + 2;
+			Debug.Assert(len <= _chars.Length - _position || !value.Overlaps(_chars), "A span over the builder was passed to a call that grows its buffer.");
 			this.EnsureCapacity(new pint(len, true));
 			var span = _chars.UnsafeSlice(_position, len);
 			_position += len;
@@ -583,6 +596,7 @@ internal ref struct SpanStringBuilder
 	public void AppendLine(scoped ReadOnlySpan<char> value)
 	{
 		int len = value.Length + s_newLineLength;
+		Debug.Assert(len <= _chars.Length - _position || !value.Overlaps(_chars), "A span over the builder was passed to a call that grows its buffer.");
 		this.EnsureCapacity(new pint(len, true));
 
 		ref char pos = ref _chars.Ref(_position);
@@ -618,6 +632,9 @@ internal ref struct SpanStringBuilder
 	/// <summary>
 	/// Returns a span representing the current contents of the <see cref="SpanStringBuilder"/>.
 	/// </summary>
+	/// <remarks>
+	/// The span is valid only until the next call that grows the buffer, and it isn't valid as that call's argument either.
+	/// </remarks>
 	/// <returns>A <see cref="ReadOnlySpan{T}"/> representing the characters in the builder.</returns>
 	public readonly ReadOnlySpan<char> AsSpan()
 	{
@@ -629,10 +646,14 @@ internal ref struct SpanStringBuilder
 	/// Returns a read-only span of characters from the underlying buffer, starting at the specified position and spanning
 	/// the specified length.
 	/// </summary>
+	/// <remarks>
+	/// The span is valid only until the next call that grows the buffer, and it isn't valid as that call's argument either.
+	/// </remarks>
 	/// <param name="start">The zero-based starting position of the span within the buffer.</param>
 	/// <param name="length">The number of characters to include in the span.</param>
 	/// <returns>A <see cref="ReadOnlySpan{T}"/> of characters representing the specified range of the buffer.</returns>
-	/// <exception cref="ArgumentOutOfRangeException"/>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="start"/> or <paramref name="length"/> is
+	/// negative, or when the range that they give ends past <see cref="Capacity"/>.</exception>
 	public readonly ReadOnlySpan<char> AsSpan(int start, int length)
 	{
 		return _chars.Slice(start, length);
@@ -745,72 +766,85 @@ internal ref struct SpanStringBuilder
 	/// Returns a slice of the current buffer corresponding to the specified segment position.
 	/// </summary>
 	/// <param name="position">The position record describing the start index and length of the slice.</param>
-	/// <returns>A <see cref="ReadOnlySpan{T}"/> representing the specified slice.</returns>
+	/// <returns>A <see cref="ReadOnlySpan{T}"/> representing the specified slice, or an empty span when
+	/// <paramref name="position"/> is undefined.</returns>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="position"/> ends past
+	/// <see cref="Capacity"/>.</exception>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal readonly ReadOnlySpan<char> GetSegment(SpanPosition position)
 	{
-		return position.IsDefined
-			? (ReadOnlySpan<char>)_chars.UnsafeSlice(position.Index, position.Length)
-			: [];
+		if (!position.IsDefined)
+		{
+			return [];
+		}
+
+		SpanPosition.ThrowIfOutOfRange(position, _chars.Length);
+		return _chars.UnsafeSlice(position.Index, position.Length);
 	}
 
 	/// <summary>
-	/// Finds the index of the specified character within the current buffer.
+	/// Finds the index of the specified character within the appended characters.
 	/// </summary>
 	/// <param name="value">The character to locate.</param>
 	/// <returns>The zero-based index of the first occurrence of the character, or -1 if not found.</returns>
-	[Obsolete("Searches the whole underlying buffer rather than the appended characters, so it can match stale characters past Length. Use AsSpan().IndexOf until this is fixed.")]
 	[DebuggerStepThrough]
 	public readonly int IndexOf(char value)
 	{
-		return _chars.IndexOf(value);
+		return this.GetSpanUpToPosition().IndexOf(value);
 	}
 	/// <summary>
-	/// Finds the index of the specified character within the current buffer, starting from the specified index.
+	/// Finds the index of the specified character within the appended characters, starting from the specified index.
 	/// </summary>
 	/// <param name="value">The character to locate.</param>
 	/// <param name="startIndex">The zero-based index at which to begin the search.</param>
 	/// <returns>
-	/// The zero-based index of the first occurrence of the character, or -1 if the character is not found.
+	/// The zero-based index, counted from the start of the builder, of the first occurrence of the character at or after
+	/// <paramref name="startIndex"/>, or -1 if the character is not found.
 	/// </returns>
 	/// <exception cref="ArgumentOutOfRangeException">
-	/// Thrown if <paramref name="startIndex"/> is less than 0 or greater than or equal to the length of the span.
+	/// Thrown when <paramref name="startIndex"/> is less than 0 or greater than <see cref="Length"/>.
 	/// </exception>
-	[Obsolete("Searches the underlying buffer past Length and returns an index relative to startIndex rather than to the builder. Use AsSpan().IndexOf until this is fixed.")]
 	[DebuggerStepThrough]
 	public readonly int IndexOf(char value, int startIndex)
 	{
-		return _chars.Slice(startIndex).IndexOf(value);
+		ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)startIndex, (uint)_position, nameof(startIndex));
+		int index = _chars.UnsafeSlice(startIndex, _position - startIndex).IndexOf(value);
+		return index < 0 ? index : index + startIndex;
 	}
 	/// <summary>
-	/// Finds the index of the specified character within the current buffer, starting from the specified index and searching up to the specified count of characters.
+	/// Finds the index of the specified character within the appended characters, starting from the specified index and searching up to the specified count of characters.
 	/// </summary>
 	/// <param name="value">The character to locate.</param>
 	/// <param name="startIndex">The zero-based index at which to begin the search.</param>
 	/// <param name="count">The maximum number of characters to examine during the search.</param>
 	/// <returns>
-	/// The zero-based index of the first occurrence of the character, or -1 if the character is not found within the specified range.
+	/// The zero-based index, counted from the start of the builder, of the first occurrence of the character within the
+	/// specified range, or -1 if the character is not found there.
 	/// </returns>
 	/// <exception cref="ArgumentOutOfRangeException">
-	/// Thrown if <paramref name="startIndex"/> is less than 0 or greater than or equal to the length of the span, or if <paramref name="count"/> is less than 0 or exceeds the number of characters from <paramref name="startIndex"/> to the end of the buffer.
+	/// Thrown when <paramref name="startIndex"/> is less than 0 or greater than <see cref="Length"/>, or when <paramref name="count"/> is less than 0 or exceeds the number of characters from <paramref name="startIndex"/> to <see cref="Length"/>.
 	/// </exception>
-	[Obsolete("Searches the underlying buffer past Length and returns an index relative to startIndex rather than to the builder. Use AsSpan().IndexOf until this is fixed.")]
 	[DebuggerStepThrough]
 	public readonly int IndexOf(char value, int startIndex, int count)
 	{
-		return _chars.Slice(startIndex, count).IndexOf(value);
+		// Comparing as unsigned values rejects a negative argument along with one that's too large, and the subtraction
+		// can't overflow once startIndex is known to lie within the appended characters.
+		ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)startIndex, (uint)_position, nameof(startIndex));
+		ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count, (uint)(_position - startIndex), nameof(count));
+		int index = _chars.UnsafeSlice(startIndex, count).IndexOf(value);
+		return index < 0 ? index : index + startIndex;
 	}
 
 	/// <summary>
 	/// Inserts a single character at the specified index in the buffer, shifting subsequent characters to the right.
 	/// </summary>
-	/// <param name="index">The zero-based index where the character will be inserted.</param>
+	/// <param name="index">The zero-based index where the character will be inserted. An index equal to <see cref="Length"/>
+	/// appends the character.</param>
 	/// <param name="c">The character to insert.</param>
 	/// <exception cref="ArgumentOutOfRangeException">
-	/// Thrown if <paramref name="index"/> is less than 0 or greater than the current length of the buffer.
+	/// Thrown when <paramref name="index"/> is less than 0 or greater than <see cref="Length"/>.
 	/// </exception>
-	/// <inheritdoc cref="EnsureCapacity(int)" path="/exception"/>
-	[Obsolete("Does not validate index; an index outside 0 through Length slices the buffer with a negative start or length.")]
+	/// <inheritdoc cref="EnsureCapacity(pint)" path="/exception"/>
 	[DebuggerStepThrough]
 	public void Insert(int index, char c)
 	{
@@ -819,14 +853,25 @@ internal ref struct SpanStringBuilder
 	/// <summary>
 	/// Inserts a character at the specified index in the buffer, shifting subsequent characters to the right.
 	/// </summary>
-	/// <param name="index">The zero-based index where the character will be inserted.</param>
+	/// <param name="index">The zero-based index where the characters will be inserted. An index equal to
+	/// <see cref="Length"/> appends them.</param>
 	/// <param name="c">The character to insert.</param>
 	/// <param name="count">The number of times to insert the character.</param>
-	/// <inheritdoc cref="EnsureCapacity(int)" path="/exception"/>
-	[Obsolete("Does not validate index; an index outside 0 through Length slices the buffer with a negative start or length.")]
+	/// <exception cref="ArgumentOutOfRangeException">
+	/// Thrown when <paramref name="index"/> is less than 0 or greater than <see cref="Length"/>, or when
+	/// <paramref name="count"/> is negative.
+	/// </exception>
+	/// <inheritdoc cref="EnsureCapacity(pint)" path="/exception"/>
 	public void Insert(int index, char c, int count)
 	{
-		this.EnsureCapacity(count);
+		ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)index, (uint)_position, nameof(index));
+		ArgumentOutOfRangeException.ThrowIfNegative(count);
+		if (count == 0)
+		{
+			return;
+		}
+
+		this.EnsureCapacity(new pint(count, true));
 		int remaining = _position - index;
 
 		var sliceToCopy = _chars.UnsafeSlice(index, remaining);
@@ -848,18 +893,25 @@ internal ref struct SpanStringBuilder
 	/// <summary>
 	/// Inserts a span of characters at the specified index in the buffer, shifting subsequent characters to the right.
 	/// </summary>
-	/// <param name="index">The zero-based index where the characters will be inserted.</param>
-	/// <param name="value">The span of characters to insert.</param>
+	/// <param name="index">The zero-based index where the characters will be inserted. An index equal to
+	/// <see cref="Length"/> appends them.</param>
+	/// <param name="value">The span of characters to insert. It can't be a span over the builder, even when the call
+	/// doesn't grow the buffer, because the call moves the characters from <paramref name="index"/> on before it reads
+	/// <paramref name="value"/>.</param>
+	/// <exception cref="ArgumentOutOfRangeException">
+	/// Thrown when <paramref name="index"/> is less than 0 or greater than <see cref="Length"/>.
+	/// </exception>
 	/// <inheritdoc cref="EnsureCapacity(pint)" path="/exception"/>
 	public void Insert(int index, scoped ReadOnlySpan<char> value)
 	{
-		ThrowHelper.ThrowIfNegativeOrGreaterThanOrEqualTo(index, unchecked((uint)_position));
+		ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)index, (uint)_position, nameof(index));
 
 		if (value.IsEmpty)
 		{
 			return;
 		}
 
+		Debug.Assert(!value.Overlaps(_chars), "A span over the builder was passed to Insert, which moves the characters that the span covers before it reads them.");
 		this.EnsureCapacity(new pint(value.Length, true));
 		int remaining = _position - index;
 
@@ -883,16 +935,16 @@ internal ref struct SpanStringBuilder
 	/// <param name="value">The characters to write.</param>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="index"/> is negative or greater than the current <see cref="Length"/>.</exception>
 	/// <inheritdoc cref="EnsureCapacity(pint)" path="/exception"/>
-	[Obsolete("Rejects an index equal to Length, which its documentation says appends at the end. Use OverlapAppendSpan until this is fixed.")]
 	public void OverlapAppend(int index, scoped ReadOnlySpan<char> value)
 	{
-		ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((uint)index, (uint)_position, nameof(index));
+		ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)index, (uint)_position, nameof(index));
 
 		if (!value.IsEmpty)
 		{
 			int newEnd = index + value.Length;               // correct end-of-data after the write
 			int growth = newEnd - _position;                 // how much we extend past current end
 
+			Debug.Assert(growth <= _chars.Length - _position || !value.Overlaps(_chars), "A span over the builder was passed to a call that grows its buffer.");
 			if (growth > 0)
 				this.EnsureCapacity(new pint(growth, true)); // EnsureCapacity(additionalBeyondPosition)
 
@@ -939,18 +991,18 @@ internal ref struct SpanStringBuilder
 	/// </exception>
 	public void Remove(int startIndex, int length)
 	{
-		// Fast no-op
-		if ((uint)length == 0)
-			return;
-
 		int pos = _position;
 		// Bounds check without risk of addition overflow:
 		//  - startIndex must be in [0, pos]
 		//  - length must be in [0, pos - startIndex]
 		if ((uint)startIndex > (uint)pos || (uint)length > (uint)(pos - startIndex))
 		{
-			throwArgumentOutOfRangeException(startIndex, length, pos);
+			throwArgumentOutOfRangeException(startIndex, pos);
 		}
+
+		// Fast no-op, once the range is known to be valid
+		if (length == 0)
+			return;
 
 		// Move tail left over the removed segment (CopyTo handles overlap)
 		// Only the "used" slice matters; no need to touch unused capacity past _position.
@@ -959,8 +1011,8 @@ internal ref struct SpanStringBuilder
 
 		_position = pos - length;
 
-		[DoesNotReturn, StackTraceHidden, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
-		static void throwArgumentOutOfRangeException(int startIndex, int length, int pos)
+		[DoesNotReturn, StackTraceHidden, DebuggerStepThrough]
+		static void throwArgumentOutOfRangeException(int startIndex, int pos)
 		{
 			throw new ArgumentOutOfRangeException(
 				paramName: (uint)startIndex > (uint)pos ? nameof(startIndex) : nameof(length));
@@ -1132,7 +1184,7 @@ internal ref struct SpanStringBuilder
 
 		Rent.Return(oldArray, _clearOnDispose);
 
-		[DoesNotReturn, StackTraceHidden, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+		[DoesNotReturn, StackTraceHidden, DebuggerStepThrough]
 		static void throwTooBig(int requestedLength, int previousLength)
 		{
 			throw new BufferLimitException((long)MaxCapacity, previousLength, requestedLength);

@@ -6,7 +6,7 @@ namespace MG.Sonarr.Next.Buffers;
 /// <typeparam name="TResult">The return type of the pointer.</typeparam>
 [StructLayout(LayoutKind.Auto), DebuggerStepThrough, DebuggerDisplay("{ToString(),nq}")]
 [SuppressMessage("Design", "MA0131", Justification = "Analyzer doesn't recognize that pointers have their own overload for ThrowIfNull.")]
-public readonly struct FnPtr<TResult> where TResult : allows ref struct
+internal readonly struct FnPtr<TResult> where TResult : allows ref struct
 {
 	private readonly
 #if !NET11_0_OR_GREATER
@@ -125,7 +125,7 @@ public readonly struct FnPtr<TResult> where TResult : allows ref struct
 /// <typeparam name="TResult">The return type of the pointer.</typeparam>
 [StructLayout(LayoutKind.Auto), DebuggerStepThrough, DebuggerDisplay("{ToString(),nq}")]
 [SuppressMessage("Design", "MA0131", Justification = "Analyzer doesn't recognize that pointers have their own overload for ThrowIfNull.")]
-public readonly struct FnPtr<T, TResult> where T : allows ref struct where TResult : allows ref struct
+internal readonly struct FnPtr<T, TResult> where T : allows ref struct where TResult : allows ref struct
 {
 	private readonly
 #if !NET11_0_OR_GREATER
@@ -257,7 +257,7 @@ public readonly struct FnPtr<T, TResult> where T : allows ref struct where TResu
 /// <typeparam name="TResult">The return type of the pointer.</typeparam>
 [StructLayout(LayoutKind.Auto), DebuggerStepThrough, DebuggerDisplay("{ToString(),nq}")]
 [SuppressMessage("Design", "MA0131", Justification = "Analyzer doesn't recognize that pointers have their own overload for ThrowIfNull.")]
-public readonly struct FnPtr<T1, T2, TResult>
+internal readonly struct FnPtr<T1, T2, TResult>
 	where T1 : allows ref struct
 	where T2 : allows ref struct
 	where TResult : allows ref struct
@@ -366,7 +366,7 @@ public readonly struct FnPtr<T1, T2, TResult>
 /// <typeparam name="TResult">The return type of the pointer.</typeparam>
 [StructLayout(LayoutKind.Auto), DebuggerStepThrough, DebuggerDisplay("{ToString(),nq}")]
 [SuppressMessage("Design", "MA0131", Justification = "Analyzer doesn't recognize that pointers have their own overload for ThrowIfNull.")]
-public readonly struct FnPtr<T1, T2, T3, TResult>
+internal readonly struct FnPtr<T1, T2, T3, TResult>
 	where T1 : allows ref struct
 	where T2 : allows ref struct
 	where T3 : allows ref struct
@@ -478,7 +478,7 @@ public readonly struct FnPtr<T1, T2, T3, TResult>
 /// <typeparam name="TResult">The return type of the pointer.</typeparam>
 [StructLayout(LayoutKind.Auto), DebuggerStepThrough, DebuggerDisplay("{ToString(),nq}")]
 [SuppressMessage("Design", "MA0131", Justification = "Analyzer doesn't recognize that pointers have their own overload for ThrowIfNull.")]
-public readonly struct FnPtr<T1, T2, T3, T4, TResult>
+internal readonly struct FnPtr<T1, T2, T3, T4, TResult>
 	where T1 : allows ref struct
 	where T2 : allows ref struct
 	where T3 : allows ref struct

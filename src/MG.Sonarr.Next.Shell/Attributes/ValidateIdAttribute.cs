@@ -293,7 +293,7 @@ file static class IdValidationHelper
 		s_fallbackNull = _ => null;
 		s_fromPso = pso =>
 		{
-			PSPropertyInfo? ppi = ((PSObject)pso).Properties[Constants.ID];
+			PSPropertyInfo? ppi = ((PSObject)pso).Properties[Constants.Id];
 			return ppi?.Value as int?;
 		};
 		s_getIds = new(

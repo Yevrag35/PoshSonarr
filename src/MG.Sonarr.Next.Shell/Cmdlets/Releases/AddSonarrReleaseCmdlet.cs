@@ -5,7 +5,7 @@ using MG.Sonarr.Next.Models.Releases;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Releases;
 
 [Cmdlet(VerbsCommon.Add, "SonarrRelease", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Low)]
-[MetadataCanPipe(Tag = Meta.RELEASE)]
+[MetadataCanPipe(Tag = Meta.Release)]
 public sealed class AddSonarrReleaseCmdlet : SonarrApiCmdletBase
 {
 	MetadataTag Tag { get; set; } = null!;
@@ -16,7 +16,7 @@ public sealed class AddSonarrReleaseCmdlet : SonarrApiCmdletBase
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.RELEASE];
+		this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.Release];
 	}
 	protected override void Process(IServiceProvider provider)
 	{
@@ -34,14 +34,13 @@ public sealed class AddSonarrReleaseCmdlet : SonarrApiCmdletBase
 	private void SendRelease(PostRelease post)
 	{
 		var response = this.SendPostRequest<PostRelease, PSObject>(this.Tag.UrlBase, post);
-
-		if (response.IsT1)
+		if (response.TryGetT1(out var result, out var error))
 		{
-			this.WriteError(response.AsT2);
+			this.WriteObject(result);
 		}
 		else
 		{
-			this.WriteObject(response.AsT1);
+			this.WriteError(error);
 		}
 	}
 	private static PostRelease ToPostRelease(ReleaseObject release)

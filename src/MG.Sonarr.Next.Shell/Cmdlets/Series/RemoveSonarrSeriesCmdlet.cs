@@ -8,7 +8,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series;
 
 [Cmdlet(VerbsCommon.Remove, "SonarrSeries", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
 [Alias("Delete-SonarrSeries")]
-[MetadataCanPipe(Tag = Meta.SERIES)]
+[MetadataCanPipe(Tag = Meta.Series)]
 public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
 {
 	QueryCol _col = null!;
@@ -20,13 +20,13 @@ public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
 	public SwitchParameter DeleteFiles { get; set; }
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	[DistinctValues(typeof(int))]
 	public int[] Id { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE, DontShow = true)]
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline, DontShow = true)]
 	[ValidateNotNull]
 	[ValidateIds(ValidateRangeKind.Positive)]
 	public SeriesObject[] InputObject { get; set; } = [];
@@ -39,7 +39,7 @@ public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.SERIES];
+		this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.Series];
 
 		_dict = this.GetPooledObject<SortedDictionary<int, string?>>();
 		_col = this.GetPooledObject<QueryCol>();

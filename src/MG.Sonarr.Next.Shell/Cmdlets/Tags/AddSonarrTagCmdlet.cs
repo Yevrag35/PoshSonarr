@@ -11,12 +11,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags;
 
 [Cmdlet(VerbsCommon.Add, "SonarrTag", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true,
 	DefaultParameterSetName = "None")]
-[MetadataCanPipe(Tag = Meta.DELAY_PROFILE)]
-[MetadataCanPipe(Tag = Meta.DOWNLOAD_CLIENT)]
-[MetadataCanPipe(Tag = Meta.INDEXER)]
-[MetadataCanPipe(Tag = Meta.RELEASE_PROFILE)]
-[MetadataCanPipe(Tag = Meta.SERIES)]
-[MetadataCanPipe(Tag = Meta.SERIES_ADD)]
+[MetadataCanPipe(Tag = Meta.DelayProfile)]
+[MetadataCanPipe(Tag = Meta.DownloadClient)]
+[MetadataCanPipe(Tag = Meta.Indexer)]
+[MetadataCanPipe(Tag = Meta.ReleaseProfile)]
+[MetadataCanPipe(Tag = Meta.Series)]
+[MetadataCanPipe(Tag = Meta.SeriesAdd)]
 public sealed class AddSonarrTagCmdlet : SonarrMetadataCmdlet
 {
 	static readonly string _namePropertyName = nameof(Name);
@@ -25,12 +25,12 @@ public sealed class AddSonarrTagCmdlet : SonarrMetadataCmdlet
 	Dictionary<string, ITagPipeable> _updates = null!;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
 	[ValidateIds(ValidateRangeKind.Positive, typeof(ITagPipeable))]
 	public ITagPipeable[] InputObject { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetExplicitId)]
 	public int[] Id { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -58,7 +58,7 @@ public sealed class AddSonarrTagCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.TAG];
+		return resolver[Meta.Tag];
 	}
 
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]

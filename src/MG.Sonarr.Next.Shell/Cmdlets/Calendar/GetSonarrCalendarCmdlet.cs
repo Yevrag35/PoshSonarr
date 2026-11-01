@@ -65,7 +65,7 @@ public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 	protected override int Capacity => 3;
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.CALENDAR];
+		return resolver[Meta.Calendar];
 	}
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
@@ -97,7 +97,7 @@ public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 
 		if (_tagNames.Count > 0)
 		{
-			MetadataTag tag = provider.GetMetadataTag(Meta.TAG);
+			MetadataTag tag = provider.GetMetadataTag(Meta.Tag);
 			this.ProcessNames(_tagNames, _tagIds, tag);
 		}
 	}
@@ -105,6 +105,13 @@ public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming")]
 	protected override void Process(IServiceProvider provider)
 	{
+		// Sonarr returns the entries whose series has any of the tags sent, and every entry when none is sent.
+		// When no name matched a tag, an empty name included, and no ID was given, the filter matches nothing.
+		if (_tagNames.Count > 0 && _tagIds.Count == 0)
+		{
+			return;
+		}
+
 		this.GetParameters(this.StartDate, this.EndDate.Value, this.IncludeUnmonitored, this.IncludeEpisodeFile, this.IncludeEpisodeImages, this.IncludeSeries);
 		string url = this.Tag.GetUrl(_queryCol);
 
@@ -145,8 +152,8 @@ public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 		_queryCol.AddIfTrue(includeSeries);
 		_queryCol.AddIfTrue(includeEpisodeImages);
 
-		_queryCol.Add(START, start, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT);
-		_queryCol.Add(END, end, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT);
+		_queryCol.Add(START, start, Constants.CalendarDateTimeFormat.Length, Constants.CalendarDateTimeFormat);
+		_queryCol.Add(END, end, Constants.CalendarDateTimeFormat.Length, Constants.CalendarDateTimeFormat);
 
 		if (_tagIds.Count > 0)
 		{
@@ -175,7 +182,8 @@ public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 
 		if (tagIds.Count == prevCount)
 		{
-			this.WriteWarning($"No tags were found matching the specified names - {string.Join(", ", names)}");
+			// Quoted, so that an empty or white-space name shows in the list.
+			this.WriteWarning($"No tags were found matching the specified names - '{string.Join("', '", names)}'");
 		}
 	}
 }

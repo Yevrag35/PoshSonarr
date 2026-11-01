@@ -15,7 +15,7 @@ using System.ComponentModel;
 namespace MG.Sonarr.Next.Shell.Cmdlets.History;
 
 [Cmdlet(VerbsCommon.Get, "SonarrHistory", DefaultParameterSetName = BY_PAGING)]
-[MetadataCanPipe(Tag = Meta.SERIES)]
+[MetadataCanPipe(Tag = Meta.Series)]
 public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 {
 	const string BY_PAGING = "ByPaging";
@@ -95,7 +95,7 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.HISTORY];
+		return resolver[Meta.History];
 	}
 
 	protected override void OnCreatingScope(IServiceProvider provider)
@@ -201,7 +201,7 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 
 		if (this.HasParameter(this.SortDirection))
 		{
-			_parameters.Add(PagingConstants.SortDirection, this.SortDirection, this.SortDirection.GetLength());
+			_parameters.Add(PagingConstants.SortDirection, this.SortDirection, this.SortDirection.Length);
 		}
 
 		_parameters.Add(PagingConstants.SortKey, this.SortKey);
@@ -213,7 +213,7 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 
 	private void SendSeriesQuery(IServiceProvider provider, QueryCol parameters, SortedSet<int> ids)
 	{
-		var tag = provider.GetMetadataTag(Meta.SERIES_HISTORY);
+		var tag = provider.GetMetadataTag(Meta.SeriesHistory);
 
 		if (ids.Count == 0)
 		{
@@ -238,8 +238,8 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 
 	private void SendSinceQuery(IServiceProvider provider, QueryCol parameters, DateTime date)
 	{
-		var tag = provider.GetMetadataTag(Meta.HISTORY_SINCE);
-		parameters.Add(nameof(date), date, Constants.CALENDAR_DT_FORMAT.Length, Constants.CALENDAR_DT_FORMAT);
+		var tag = provider.GetMetadataTag(Meta.HistorySince);
+		parameters.Add(nameof(date), date, Constants.CalendarDateTimeFormat.Length, Constants.CalendarDateTimeFormat);
 
 		string url = tag.GetUrl(parameters);
 		var response = this.SendGetRequest<MetadataList<HistoryObject>>(url);

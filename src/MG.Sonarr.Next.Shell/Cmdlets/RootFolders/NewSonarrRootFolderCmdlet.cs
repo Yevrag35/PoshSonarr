@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Shell.Exceptions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders;
@@ -15,7 +15,7 @@ public sealed class NewSonarrRootFolderCmdlet : SonarrApiCmdletBase
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.ROOT_FOLDER];
+		this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.RootFolder];
 	}
 	protected override void Process(IServiceProvider provider)
 	{

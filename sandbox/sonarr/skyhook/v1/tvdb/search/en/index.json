@@ -89,5 +89,32 @@
 			{ "tvdbId": 9100301, "seasonNumber": 1, "episodeNumber": 1, "title": "Pilot", "airDate": "2019-05-06", "airDateUtc": "2019-05-06T20:00:00Z", "runtime": 30, "overview": "" },
 			{ "tvdbId": 9100302, "seasonNumber": 1, "episodeNumber": 2, "title": "The Finale", "airDate": "2019-05-13", "airDateUtc": "2019-05-13T20:00:00Z", "runtime": 30, "overview": "" }
 		]
+	},
+	{
+		"tvdbId": 9000004,
+		"malIds": [],
+		"aniListIds": [],
+		"title": "Sandbox Wild*Card Show",
+		"overview": "A made-up show that the sandbox's mock metadata service serves.",
+		"slug": "sandbox-wild-card-show",
+		"firstAired": "2018-09-03",
+		"lastAired": "2018-09-10",
+		"status": "ended",
+		"runtime": 30,
+		"timeOfDay": { "hours": 20, "minutes": 0 },
+		"network": "Sandbox Network",
+		"originalLanguage": "eng",
+		"genres": ["Drama"],
+		"contentRating": "TV-PG",
+		"rating": { "count": 0, "value": 0 },
+		"actors": [],
+		"images": [],
+		"seasons": [
+			{ "seasonNumber": 1, "images": [] }
+		],
+		"episodes": [
+			{ "tvdbId": 9100401, "seasonNumber": 1, "episodeNumber": 1, "title": "Pilot", "airDate": "2018-09-03", "airDateUtc": "2018-09-03T20:00:00Z", "runtime": 30, "overview": "" },
+			{ "tvdbId": 9100402, "seasonNumber": 1, "episodeNumber": 2, "title": "The Finale", "airDate": "2018-09-10", "airDateUtc": "2018-09-10T20:00:00Z", "runtime": 30, "overview": "" }
+		]
 	}
 ]

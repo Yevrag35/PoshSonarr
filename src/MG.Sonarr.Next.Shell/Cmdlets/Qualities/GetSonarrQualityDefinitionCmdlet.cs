@@ -37,7 +37,7 @@ public sealed class GetSonarrQualityDefinitionCmdlet : SonarrMetadataCmdlet
 	}
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.QUALITY_DEFINITION];
+		return resolver[Meta.QualityDefinition];
 	}
 
 	protected override void Begin(IServiceProvider provider)

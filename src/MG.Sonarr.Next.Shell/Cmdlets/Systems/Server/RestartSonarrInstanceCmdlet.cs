@@ -18,7 +18,7 @@ public sealed class RestartSonarrInstanceCmdlet : SonarrApiCmdletBase
 			return;
 		}
 
-		var response = this.SendPostRequest<PSObject>(Constants.RESTART);
+		var response = this.SendPostRequest<PSObject>(Constants.Restart);
 		_ = this.TryWriteObject(response);
 	}
 

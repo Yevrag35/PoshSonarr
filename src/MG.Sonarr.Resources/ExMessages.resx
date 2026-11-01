@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -151,7 +151,7 @@
     <value>The value is not of the expected type. Expected: '{0}', Received: '{1}'</value>
   </data>
   <data name="Reflection_ExpectedTypeOrDerivative" xml:space="preserve">
-    <value>The value is not the exact or a derivative of the expected type. Expected: '{0]', Received: '{1}'</value>
+    <value>The value is not the exact or a derivative of the expected type. Expected: '{0}', Received: '{1}'</value>
   </data>
   <data name="Startup_Exception_DefaultMessage" xml:space="preserve">
     <value>An exception occured during the PoshSonarr module initialization.</value>

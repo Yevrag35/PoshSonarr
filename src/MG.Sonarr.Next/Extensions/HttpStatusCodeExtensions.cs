@@ -1,101 +1,100 @@
-using MG.Sonarr.Next.Extensions.Strings;
-using System.Collections.ObjectModel;
-using System.Net;
+using MG.Sonarr.Next.Services.Http.Handlers;
 
 namespace MG.Sonarr.Next.Extensions;
 
 /// <summary>
-/// Custom extension methods for <see cref="HttpStatusCode"/> values.
+/// Provides an extension property that gets the status text that the module shows a person for an
+/// <see cref="HttpStatusCode"/>, such as <c>404 (Not Found)</c>.
 /// </summary>
-public static class HttpStatusCodeExtensions
+internal static class HttpStatusCodeExtensions
 {
-	#region CACHING
-	static readonly Lazy<ReadOnlyDictionary<int, string>> _codes = new(GetLookupCodes);
-	static ReadOnlyDictionary<int, string> GetLookupCodes()
-	{
-		HttpStatusCode[] codes = Enum.GetValues<HttpStatusCode>();
-		Dictionary<int, string> dict = new(codes.Length);
-
-		foreach (HttpStatusCode code in codes)
-		{
-			_ = dict.TryAdd((int)code, ToResponseStringFormat(in code));
-		}
-
-		return new ReadOnlyDictionary<int, string>(dict);
-	}
-	static string ToResponseStringFormat(in HttpStatusCode statusCode)
-	{
-
-		string codeStr = statusCode.ToString();
-
-		return string.Create(codeStr.Length + 6, (codeStr, statusCode), (chars, state) =>
-		{
-			_ = ((int)state.statusCode).TryFormat(chars, out int written, default, Statics.DefaultProvider);
-			written += chars.Slice(written).Push(' ', '(');
-
-			written = codeStr.CopyToSlice(chars, written);
-			chars[written++] = ')';
-
-			Debug.Assert(written == chars.Length, "All characters should have been written.");
-		});
-	}
-
-	#endregion
-
 	/// <summary>
-	/// Returns the <see cref="string"/> representation of the current 
-	/// <see cref="HttpStatusCode"/> value formatted as: <code>int (string)</code>
+	/// Provides the status text of an <see cref="HttpStatusCode"/>.
 	/// </summary>
-	/// <remarks>
-	///     An example is converting <see cref="HttpStatusCode.BadRequest"/> to:
-	///     <code>400 (BadRequest)</code>
-	/// </remarks>
-	/// <param name="statusCode">The status code to convert.</param>
-	/// <example>200 (OK)</example>
-	/// <returns>
-	///     The <see cref="string"/> repsonse form of the <see cref="HttpStatusCode"/> value.
-	/// </returns>
-	public static string ToResponseString(this HttpStatusCode statusCode)
+	/// <param name="statusCode">The status code that the property describes.</param>
+	extension(HttpStatusCode statusCode)
 	{
-		return _codes.Value.TryGetValue((int)statusCode, out string? value)
-			? value
-			: statusCode.ToString();
-	}
-
-	/// <summary>
-	/// Tries to format the response <see cref="string"/> value of the current 
-	/// <see cref="HttpStatusCode"/> instance into the 
-	/// provided span of characters.
-	/// </summary>
-	/// /// <remarks>
-	///     An example is writting <see cref="HttpStatusCode.BadRequest"/> as:
-	///     <code>400 (BadRequest)</code>
-	/// </remarks>
-	/// <param name="statusCode">The status code to format.</param>
-	/// <param name="destination">
-	///     The span in which to write this value formatted as a span of characters.
-	/// </param>
-	/// <param name="charsWritten">
-	///     When this method returns, contains the number of characters that were written in
-	///     <paramref name="destination"/>
-	/// </param>
-	/// <returns>
-	///     <see langword="true"/> if the formatting was successful; otherwise,
-	///     <see langword="false"/>.
-	/// </returns>
-	public static bool TryFormatAsResponse(this HttpStatusCode statusCode, Span<char> destination, out int charsWritten)
-	{
-		charsWritten = 0;
-		bool result = false;
-		if (_codes.Value.TryGetValue((int)statusCode, out string? value))
+		/// <summary>
+		/// Gets the status text of <paramref name="statusCode"/>, which is its number followed by its standard reason
+		/// phrase in parentheses.
+		/// </summary>
+		/// <remarks>
+		/// <para>The phrases are the ones that <see cref="HttpResponseMessage.ReasonPhrase"/> gives a response that
+		/// carries none of its own, which are also the ones that Sonarr sends. So <see cref="HttpStatusCode.BadRequest"/>
+		/// is written as <c>400 (Bad Request)</c>, not with its enum name, and a number that several enum names share,
+		/// such as 302 for <see cref="HttpStatusCode.Found"/> and <see cref="HttpStatusCode.Redirect"/>, has one
+		/// text.</para>
+		/// <para>A code without a standard phrase, such as 306 or the 520 that a proxy can send, is written as its number
+		/// alone, formatted with <see cref="CultureInfo.CurrentCulture"/> as it is when the property is read. The code
+		/// that the module gives a request that got no response, 600, is written as <c>No response</c>.</para>
+		/// <para>Every other text is a string literal, so reading the property allocates only for a code without a
+		/// standard phrase.</para>
+		/// </remarks>
+		/// <value>The status text, such as <c>404 (Not Found)</c>.</value>
+		public string AsResponseString => (int)statusCode switch
 		{
-			result = value.TryCopyTo(destination);
-			if (result)
-			{
-				charsWritten += value.Length;
-			}
-		}
-
-		return result;
+			100 => "100 (Continue)",
+			101 => "101 (Switching Protocols)",
+			102 => "102 (Processing)",
+			103 => "103 (Early Hints)",
+			200 => "200 (OK)",
+			201 => "201 (Created)",
+			202 => "202 (Accepted)",
+			203 => "203 (Non-Authoritative Information)",
+			204 => "204 (No Content)",
+			205 => "205 (Reset Content)",
+			206 => "206 (Partial Content)",
+			207 => "207 (Multi-Status)",
+			208 => "208 (Already Reported)",
+			226 => "226 (IM Used)",
+			300 => "300 (Multiple Choices)",
+			301 => "301 (Moved Permanently)",
+			302 => "302 (Found)",
+			303 => "303 (See Other)",
+			304 => "304 (Not Modified)",
+			305 => "305 (Use Proxy)",
+			307 => "307 (Temporary Redirect)",
+			308 => "308 (Permanent Redirect)",
+			400 => "400 (Bad Request)",
+			401 => "401 (Unauthorized)",
+			402 => "402 (Payment Required)",
+			403 => "403 (Forbidden)",
+			404 => "404 (Not Found)",
+			405 => "405 (Method Not Allowed)",
+			406 => "406 (Not Acceptable)",
+			407 => "407 (Proxy Authentication Required)",
+			408 => "408 (Request Timeout)",
+			409 => "409 (Conflict)",
+			410 => "410 (Gone)",
+			411 => "411 (Length Required)",
+			412 => "412 (Precondition Failed)",
+			413 => "413 (Request Entity Too Large)",
+			414 => "414 (Request-Uri Too Long)",
+			415 => "415 (Unsupported Media Type)",
+			416 => "416 (Requested Range Not Satisfiable)",
+			417 => "417 (Expectation Failed)",
+			421 => "421 (Misdirected Request)",
+			422 => "422 (Unprocessable Entity)",
+			423 => "423 (Locked)",
+			424 => "424 (Failed Dependency)",
+			426 => "426 (Upgrade Required)",
+			428 => "428 (Precondition Required)",
+			429 => "429 (Too Many Requests)",
+			431 => "431 (Request Header Fields Too Large)",
+			451 => "451 (Unavailable For Legal Reasons)",
+			500 => "500 (Internal Server Error)",
+			501 => "501 (Not Implemented)",
+			502 => "502 (Bad Gateway)",
+			503 => "503 (Service Unavailable)",
+			504 => "504 (Gateway Timeout)",
+			505 => "505 (Http Version Not Supported)",
+			506 => "506 (Variant Also Negotiates)",
+			507 => "507 (Insufficient Storage)",
+			508 => "508 (Loop Detected)",
+			510 => "510 (Not Extended)",
+			511 => "511 (Network Authentication Required)",
+			(int)ErrorHandler.NoResponseCode => "No response",
+			_ => ((int)statusCode).ToString(CultureInfo.CurrentCulture),
+		};
 	}
 }

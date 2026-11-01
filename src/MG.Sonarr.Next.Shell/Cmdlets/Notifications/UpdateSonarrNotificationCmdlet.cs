@@ -6,7 +6,7 @@ using MG.Sonarr.Next.Shell.Extensions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications;
 
 [Cmdlet(VerbsData.Update, "SonarrNotification", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
-[MetadataCanPipe(Tag = Meta.NOTIFICATION)]
+[MetadataCanPipe(Tag = Meta.Notification)]
 public sealed class UpdateSonarrNotificationCmdlet : SonarrApiCmdletBase
 {
 	[Parameter(Mandatory = true, ValueFromPipeline = true, Position = 0)]
@@ -28,7 +28,7 @@ public sealed class UpdateSonarrNotificationCmdlet : SonarrApiCmdletBase
 	protected override void End(IServiceProvider provider)
 	{
 		var dict = provider.GetRequiredService<Dictionary<int, NotificationObject>>();
-		var tag = provider.GetMetadataTag(Meta.NOTIFICATION);
+		var tag = provider.GetMetadataTag(Meta.Notification);
 		bool yesToAll = false;
 		bool noToAll = false;
 

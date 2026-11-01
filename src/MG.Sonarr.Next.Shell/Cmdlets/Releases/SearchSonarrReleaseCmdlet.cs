@@ -8,8 +8,8 @@ using MG.Sonarr.Next.Shell.Extensions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Releases;
 
 [Cmdlet(VerbsCommon.Search, "SonarrRelease", DefaultParameterSetName = ByEpisodeId)]
-[MetadataCanPipe(Tag = Meta.EPISODE)]
-[MetadataCanPipe(Tag = Meta.SERIES)]
+[MetadataCanPipe(Tag = Meta.Episode)]
+[MetadataCanPipe(Tag = Meta.Series)]
 public sealed class SearchSonarrReleaseCmdlet : SonarrApiCmdletBase
 {
 	private const string ByEpisodeId = "ByEpisodeId";
@@ -58,7 +58,7 @@ public sealed class SearchSonarrReleaseCmdlet : SonarrApiCmdletBase
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.RELEASE];
+		this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.Release];
 		_queryParams = this.GetPooledObject<QueryCol>();
 		this.SetReturnables(_queryParams);
 	}
@@ -88,12 +88,12 @@ public sealed class SearchSonarrReleaseCmdlet : SonarrApiCmdletBase
 	{
 		if (this.ParameterSetNameIsLike(_byEpisodeWildcard))
 		{
-			_queryParams.Add(Constants.EPISODE_ID, this.EpisodeId);
+			_queryParams.Add(Constants.EpisodeId, this.EpisodeId);
 		}
 		else
 		{
-			_queryParams.Add(Constants.SERIES_ID_LOWERCASE, this.SeriesId);
-			_queryParams.Add(Constants.SEASON_NUMBER, this.SeasonNumber);
+			_queryParams.Add(Constants.SeriesIdLowercase, this.SeriesId);
+			_queryParams.Add(Constants.SeasonNumber, this.SeasonNumber);
 		}
 
 		return this.Tag.GetUrl(_queryParams);

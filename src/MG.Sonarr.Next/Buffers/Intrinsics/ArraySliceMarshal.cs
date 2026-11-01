@@ -7,7 +7,7 @@ namespace MG.Sonarr.Next.Buffers.Intrinsics;
 /// <remarks>
 /// This is useful for scenarios where performance is critical and the caller can guarantee the validity of the parameters.
 /// </remarks>
-public static class ArraySliceMarshal
+internal static class ArraySliceMarshal
 {
 	/// <summary>
 	/// Creates an ArraySlice from the specified array, offset, and length.

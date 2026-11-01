@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -14,7 +14,7 @@ public sealed class GetSonarrHostConfigCmdlet : SonarrApiCmdletBase
 
 	protected override void Process(IServiceProvider provider)
 	{
-		MetadataTag tag = provider.GetMetadataTag(Meta.HOST);
+		MetadataTag tag = provider.GetMetadataTag(Meta.HostConfig);
 		this.WriteHostObject(tag, this.IncludeSensitiveInfo.ToBool());
 	}
 

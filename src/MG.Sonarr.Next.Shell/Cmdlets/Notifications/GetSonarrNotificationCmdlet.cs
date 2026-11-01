@@ -12,7 +12,7 @@ public sealed class GetSonarrNotificationCmdlet : SonarrMetadataCmdlet
 	SortedSet<int> _ids = null!;
 	WildcardSet _wcNames = null!;
 
-	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSetExplicitId)]
 	public int[] Id { get; set; } = Array.Empty<int>();
 
 	[Parameter(Position = 0)]
@@ -21,7 +21,7 @@ public sealed class GetSonarrNotificationCmdlet : SonarrMetadataCmdlet
 	protected override int Capacity => 2;
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.NOTIFICATION];
+		return resolver[Meta.Notification];
 	}
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{

@@ -1,4 +1,3 @@
-using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Extensions.Strings;
 
 namespace MG.Sonarr.Next.Strings;
@@ -10,10 +9,13 @@ public readonly partial struct Wildcard
 	/// Converts the current <see cref="Wildcard"/> instance into a pattern where input can contain the value.
 	/// </summary>
 	/// <returns>
-	/// A new <see cref="Wildcard"/> instance with a <see cref="MatchType"/> equaling <see cref="WildcardMatchType.Like"/>.
+	/// A new <see cref="Wildcard"/> instance with a <see cref="MatchType"/> equaling <see cref="WildcardMatchType.Like"/>,
+	/// whose pattern starts and ends with <c>*</c>.
 	/// <para>
 	/// If the current instance is empty, then returns an empty instance. If the current instance has
-	/// the match type <see cref="WildcardMatchType.All"/> or is already a "like" pattern, then returns the current instance.
+	/// the match type <see cref="WildcardMatchType.All"/>, or is already a "like" pattern that starts and ends with
+	/// <c>*</c>, then returns the current instance. A "like" pattern that doesn't, such as <c>a?c</c>, gains a
+	/// <c>*</c> at each end that lacks one.
 	/// </para>
 	/// </returns>
 	public Wildcard ToContainsLike()
@@ -64,7 +66,8 @@ public readonly partial struct Wildcard
 	/// A new <see cref="Wildcard"/> instance with all wildcard characters removed and a <see cref="MatchType"/>
 	/// equaling <see cref="WildcardMatchType.Exact"/>.
 	/// <para>
-	/// If the current instance is empty or <see cref="WildcardMatchType.All"/>, returns an empty instance.
+	/// If the current instance is empty or <see cref="WildcardMatchType.All"/>, or its pattern holds nothing but
+	/// wildcard characters, such as <c>*</c> or <c>?</c>, returns an empty instance, which never matches.
 	/// If the current instance is already an exact pattern, returns the current instance unchanged.
 	/// </para>
 	/// </returns>
@@ -88,8 +91,10 @@ public readonly partial struct Wildcard
 				? stackalloc char[length]
 				: length))
 		{
-			int written = pattern.RemoveAny(buffer.Span, _wildcardChars);
-			return new(buffer[..written], WildcardMatchType.Exact);
+			int written = pattern.RemoveAny(buffer.Span, s_wildcardChars);
+			return written > 0
+				? new(buffer[..written], WildcardMatchType.Exact)
+				: Empty;
 		}
 	}
 }

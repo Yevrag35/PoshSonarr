@@ -128,8 +128,8 @@ internal static class SpanUnsafeExtensions
 		/// Returns a <see cref="Span{T}"/> that begins at <paramref name="start"/> and extends to the
 		/// end of <paramref name="span"/>, without performing runtime bounds checks.
 		/// </summary>
-		/// <param name="start">The zero-based index at which the slice begins. Must satisfy <c>0 &lt;= start &lt;= source.Length</c>.</param>
-		/// <returns>A <see cref="Span{T}"/> equivalent to <c>source[start..]</c>.</returns>
+		/// <param name="start">The zero-based index at which the slice begins. Must satisfy <c>0 &lt;= start &lt;= span.Length</c>.</param>
+		/// <returns>A <see cref="Span{T}"/> equivalent to <c>span[start..]</c>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public Span<T> UnsafeSlice(int start)
 		{
@@ -141,8 +141,8 @@ internal static class SpanUnsafeExtensions
 		/// <paramref name="length"/> elements, without performing runtime bounds checks.
 		/// </summary>
 		/// <param name="start">The zero-based index at which the slice begins.</param>
-		/// <param name="length">The number of elements in the slice. Must satisfy <c>start + length &lt;= source.Length</c>.</param>
-		/// <returns>A <see cref="Span{T}"/> equivalent to <c>source[start..(start + length)]</c>.</returns>
+		/// <param name="length">The number of elements in the slice. Must satisfy <c>start + length &lt;= span.Length</c>.</param>
+		/// <returns>A <see cref="Span{T}"/> equivalent to <c>span[start..(start + length)]</c>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public Span<T> UnsafeSlice(int start, int length)
 		{

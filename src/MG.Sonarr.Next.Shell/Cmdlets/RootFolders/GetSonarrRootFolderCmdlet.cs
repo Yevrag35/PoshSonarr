@@ -25,7 +25,7 @@ public sealed class GetSonarrRootFolderCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.ROOT_FOLDER];
+		return resolver[Meta.RootFolder];
 	}
 
 	protected override void Begin(IServiceProvider provider)

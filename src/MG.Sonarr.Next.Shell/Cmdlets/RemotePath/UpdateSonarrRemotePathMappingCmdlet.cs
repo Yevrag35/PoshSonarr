@@ -7,7 +7,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RemotePath;
 
 [Cmdlet(VerbsData.Update, "SonarrRemotePathMapping", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
 [Alias("Update-SonarrRemoteMapping", "Set-SonarrRemotePathMapping", "Set-SonarrRemoteMapping")]
-[MetadataCanPipe(Tag = Meta.REMOTE_PATH_MAPPING)]
+[MetadataCanPipe(Tag = Meta.RemotePathMapping)]
 public sealed class UpdateSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 {
 	RemotePathBody? _body;
@@ -49,7 +49,7 @@ public sealed class UpdateSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.REMOTE_PATH_MAPPING];
+		return resolver[Meta.RemotePathMapping];
 	}
 
 	protected override void Process(IServiceProvider provider)

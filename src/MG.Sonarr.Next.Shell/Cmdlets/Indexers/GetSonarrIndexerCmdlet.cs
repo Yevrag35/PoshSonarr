@@ -15,7 +15,7 @@ public sealed class GetSonarrIndexerCmdlet : SonarrMetadataCmdlet
 	SortedSet<int> _ids = null!;
 	WildcardSet _wcNames = null!;
 
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetExplicitId)]
 	public int[] Id { get; set; } = [];
 
 	[Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByIndexerNameOrId")]
@@ -24,7 +24,7 @@ public sealed class GetSonarrIndexerCmdlet : SonarrMetadataCmdlet
 	protected override int Capacity => 2;
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.INDEXER];
+		return resolver[Meta.Indexer];
 	}
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{

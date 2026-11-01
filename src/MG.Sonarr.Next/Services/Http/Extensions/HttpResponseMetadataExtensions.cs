@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Services.Http.Extensions;
+namespace MG.Sonarr.Next.Services.Http.Extensions;
 
 /// <summary>
 /// Provides extension methods for working with metadata in <see cref="HttpResponseMessage"/> instances.
@@ -66,9 +66,8 @@ internal static class HttpResponseMetadataExtensions
 	/// <inheritdoc cref="ArgumentNullException.ThrowIfNull(object, string)" path="/exception"><paramref name="key"/> is null.</inheritdoc>
 	internal static bool TryAddMetadata(this HttpResponseMessage response, string key, object? value)
 	{
-		ArgumentNullException.ThrowIfNull(key);
-
-		return response.RequestMessage?.Options.TryAdd(key, value) ?? false;
+		return response.RequestMessage?.Options is IDictionary<string, object?> options
+			&& options.TryAdd(key, value);
 	}
 	/// <summary>
 	/// Attempts to retrieve a metadata value of the specified type from the <see cref="HttpResponseMessage"/>.
@@ -83,9 +82,6 @@ internal static class HttpResponseMetadataExtensions
 	/// <inheritdoc cref="ArgumentNullException.ThrowIfNull(object, string)" path="/exception"><paramref name="key"/> or <paramref name="response"/> is null.</inheritdoc>
 	internal static bool TryGetMetadataValue<T>(this HttpResponseMessage response, string key, [NotNullWhen(true)] out T? value)
 	{
-		ArgumentNullException.ThrowIfNull(response);
-		ArgumentNullException.ThrowIfNull(key);
-
 		value = default;
 		return
 			response.RequestMessage?.Options is HttpRequestOptions options

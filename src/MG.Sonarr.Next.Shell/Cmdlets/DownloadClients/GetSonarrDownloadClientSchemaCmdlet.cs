@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.DownloadClients;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
@@ -20,7 +20,7 @@ public sealed class GetSonarrDownloadClientSchemaCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.DOWNLOAD_CLIENT_SCHEMA];
+		return resolver[Meta.DownloadClientSchema];
 	}
 
 	protected override void OnCreatingScope(IServiceProvider provider)
@@ -33,7 +33,7 @@ public sealed class GetSonarrDownloadClientSchemaCmdlet : SonarrMetadataCmdlet
 	protected override void Process(IServiceProvider provider)
 	{
 		base.Process(provider);
-		_wcNames.UnionWith(this.Name.Where(x => !string.IsNullOrWhiteSpace(x)));
+		_wcNames.UnionWith(this.Name);
 		var all = this.SendGetRequest<MetadataList<DownloadClientSchemaObject>>(this.Tag.UrlBase);
 
 		if (all.IsError)

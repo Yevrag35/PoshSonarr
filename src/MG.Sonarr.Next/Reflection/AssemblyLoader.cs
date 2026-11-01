@@ -1,13 +1,20 @@
 namespace MG.Sonarr.Next.Reflection;
 
 /// <summary>
-/// A utility class for loading assemblies of the current <see cref="AppDomain"/>.
+/// Provides the assemblies that an <see cref="AppDomain"/> has already loaded.
 /// </summary>
+/// <remarks>
+/// The class loads no assembly itself.
+/// </remarks>
 public static class AssemblyLoader
 {
 	/// <summary>
 	/// Gets all loaded assemblies in the specified <see cref="AppDomain"/>.
 	/// </summary>
+	/// <remarks>
+	/// Debug builds sort the assemblies by their full names, so that a debugging session sees them in the same order each
+	/// time. Release builds return them in the order that <see cref="AppDomain.GetAssemblies"/> gives.
+	/// </remarks>
 	/// <param name="appDomain">The <see cref="AppDomain"/> to get loaded assemblies from.</param>
 	/// <returns>An array of assemblies loaded in the specified application domain.</returns>
 	public static Assembly[] GetAppDomainAssemblies(AppDomain appDomain)

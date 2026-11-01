@@ -8,8 +8,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series;
 [Cmdlet(VerbsCommon.Search, "SonarrSeries", DefaultParameterSetName = "BySeriesName")]
 public sealed class SearchSonarrSeriesCmdlet : SonarrApiCmdletBase
 {
-	static readonly string SEARCH_STR_QUERY = Constants.SERIES + "/lookup?term={0}";
-	static readonly string SEARCH_ID_QUERY = Constants.SERIES + "/lookup?term=tvdb:{0}";
+	static readonly string SEARCH_STR_QUERY = Constants.Series + "/lookup?term={0}";
+	static readonly string SEARCH_ID_QUERY = Constants.Series + "/lookup?term=tvdb:{0}";
 	Wildcard _wildcardStr;
 	MetadataTag _tag = null!;
 
@@ -30,7 +30,7 @@ public sealed class SearchSonarrSeriesCmdlet : SonarrApiCmdletBase
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_tag = provider.GetRequiredService<IMetadataResolver>()[Meta.SERIES_ADD];
+		_tag = provider.GetRequiredService<IMetadataResolver>()[Meta.SeriesAdd];
 	}
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
 	protected override void Process(IServiceProvider provider)

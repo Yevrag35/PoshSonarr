@@ -44,7 +44,7 @@ public readonly ref struct SplitEntry
 		separator = this.Separator;
 	}
 	/// <summary>
-	/// Implicitly converts a <see cref="SplitEntry"/> instance to a <see cref="ReadOnlySpan{char}"/> representing
+	/// Implicitly converts a <see cref="SplitEntry"/> instance to a <see cref="ReadOnlySpan{T}"/> representing
 	/// the entry's character data.
 	/// </summary>
 	public static implicit operator ReadOnlySpan<char>(SplitEntry entry)
@@ -56,11 +56,14 @@ public readonly ref struct SplitEntry
 /// <summary>
 /// Enumerates substrings of a character span that are separated by either of two specified delimiters.
 /// </summary>
-/// <remarks>This enumerator splits the input span using the first delimiter if found; otherwise, it uses
+/// <remarks><para>This enumerator splits the input span using the first delimiter if found; otherwise, it uses
 /// the second delimiter. If neither delimiter is present, the remaining span is returned as a single entry. The
-/// enumeration yields each substring along with the delimiter that separated it, if any. This type is a ref struct
+/// enumeration yields each substring along with the delimiter that follows it, if any. This type is a ref struct
 /// and can only be used on the stack. It is typically used in a foreach loop or by manually advancing with
-/// MoveNext().</remarks>
+/// MoveNext().</para>
+/// <para>An empty delimiter never matches. Unlike <see cref="string.Split(string[], StringSplitOptions)"/>, the
+/// enumeration yields no empty entry after a delimiter that ends the input, and none for an empty input, since such
+/// an entry would carry neither characters nor a delimiter.</para></remarks>
 [DebuggerStepThrough]
 [StructLayout(LayoutKind.Auto)]
 public ref struct DoubleSplitEnumerator
@@ -71,11 +74,18 @@ public ref struct DoubleSplitEnumerator
 	private SplitEntry _current;
 
 	/// <summary>
-	/// Gets the current <see cref="SplitEntry"/> in the enumeration, which includes the substring and its preceding separator.
+	/// Gets the current <see cref="SplitEntry"/> in the enumeration, which includes the substring and the separator that follows it.
 	/// </summary>
 	public readonly SplitEntry Current => _current;
 
-	public DoubleSplitEnumerator(ReadOnlySpan<char> str, ReadOnlySpan<char> splitBy1, ReadOnlySpan<char> splitBy2)
+	/// <summary>
+	/// Initializes a new <see cref="DoubleSplitEnumerator"/> instance that splits the specified span of characters by
+	/// the two specified delimiters.
+	/// </summary>
+	/// <param name="str">The span of characters to split.</param>
+	/// <param name="splitBy1">The delimiter that is searched for first.</param>
+	/// <param name="splitBy2">The delimiter that is searched for when <paramref name="splitBy1"/> isn't found.</param>
+	public DoubleSplitEnumerator(ReadOnlySpan<char> str,ReadOnlySpan<char> splitBy1, ReadOnlySpan<char> splitBy2)
 	{
 		_str = str;
 		_splitBy1 = splitBy1;
@@ -103,7 +113,9 @@ public ref struct DoubleSplitEnumerator
 			return false;
 		}
 
-		int index = span.IndexOf(_splitBy1);
+		// IndexOf finds an empty delimiter at 0, which would yield empty entries without advancing, so an empty
+		// delimiter is never searched for.
+		int index = _splitBy1.IsEmpty ? -1 : span.IndexOf(_splitBy1);
 		if (index > -1)
 		{
 			_current = new SplitEntry(span.Slice(0, index), span.Slice(index, _splitBy1.Length));
@@ -112,7 +124,7 @@ public ref struct DoubleSplitEnumerator
 			return true;
 		}
 
-		index = span.IndexOf(_splitBy2);
+		index = _splitBy2.IsEmpty ? -1 : span.IndexOf(_splitBy2);
 		if (index > -1)
 		{
 			_current = new SplitEntry(span.Slice(0, index), span.Slice(index, _splitBy2.Length));

@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Models.Notifications;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -6,12 +6,12 @@ using MG.Sonarr.Next.Shell.Extensions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications;
 
 [Cmdlet(VerbsCommon.Remove, "SonarrNotification", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true,
-	DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-[MetadataCanPipe(Tag = Meta.NOTIFICATION)]
+	DefaultParameterSetName = PSConstants.PSetExplicitId)]
+[MetadataCanPipe(Tag = Meta.Notification)]
 public sealed class RemoveSonarrNotificationCmdlet : SonarrApiCmdletBase
 {
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
 	[ValidateId(ValidateRangeKind.Positive)]
 	public NotificationObject InputObject
 	{
@@ -19,7 +19,7 @@ public sealed class RemoveSonarrNotificationCmdlet : SonarrApiCmdletBase
 		set => this.Id = value?.Id ?? 0;
 	}
 
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int Id { get; set; }
 
@@ -28,7 +28,7 @@ public sealed class RemoveSonarrNotificationCmdlet : SonarrApiCmdletBase
 
 	protected override void Process(IServiceProvider provider)
 	{
-		var tag = provider.GetMetadataTag(Meta.NOTIFICATION);
+		var tag = provider.GetMetadataTag(Meta.Notification);
 
 		if (this.Id <= 0)
 		{

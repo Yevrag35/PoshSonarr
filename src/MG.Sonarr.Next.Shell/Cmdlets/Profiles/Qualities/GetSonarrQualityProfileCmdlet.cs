@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Qualities;
 
 [Cmdlet(VerbsCommon.Get, "SonarrQualityProfile", DefaultParameterSetName = "ByProfileName")]
 [Alias("Get-SonarrProfile")]
-[MetadataCanPipe(Tag = Meta.SERIES)]
+[MetadataCanPipe(Tag = Meta.Series)]
 public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
 {
 	static readonly string _namePropertyName = nameof(Name);
@@ -19,12 +19,12 @@ public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
 	WildcardSet _wcNames = null!;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_PIPELINE, ValueFromPipeline = true)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetPipeline, ValueFromPipeline = true)]
 	[ValidateIds(ValidateRangeKind.Positive, typeof(IQualityProfilePipeable))]
 	public IQualityProfilePipeable[] InputObject { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int[] Id { get; set; } = [];
 
@@ -44,7 +44,7 @@ public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.QUALITY_PROFILE];
+		return resolver[Meta.QualityProfile];
 	}
 
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]

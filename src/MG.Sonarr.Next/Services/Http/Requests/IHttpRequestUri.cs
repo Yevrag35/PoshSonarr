@@ -1,4 +1,4 @@
-namespace MG.Sonarr.Next.Exceptions;
+namespace MG.Sonarr.Next.Services.Http.Requests;
 
 /// <summary>
 /// Represents an object that has defined a request URI for already processed HTTP request.

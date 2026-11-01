@@ -8,17 +8,17 @@ using MG.Sonarr.Next.Shell.Exceptions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delay;
 
 [Cmdlet(VerbsCommon.Remove, "SonarrDelayProfile", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true)]
-[MetadataCanPipe(Tag = Meta.DELAY_PROFILE)]
+[MetadataCanPipe(Tag = Meta.DelayProfile)]
 public sealed class RemoveSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 {
 	SortedSet<int> _ids = null!;
 	protected override int Capacity => 1;
 
-	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(2, int.MaxValue)]
 	public int[] Id { get; set; } = [];
 
-	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
 	[ValidateIds(ValidateRangeKind.Positive)]
 	public DelayProfileObject[] InputObject { get; set; } = [];
 
@@ -27,7 +27,7 @@ public sealed class RemoveSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.DELAY_PROFILE];
+		return resolver[Meta.DelayProfile];
 	}
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{

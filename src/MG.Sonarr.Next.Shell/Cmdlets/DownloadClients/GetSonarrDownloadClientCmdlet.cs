@@ -19,7 +19,7 @@ public sealed class GetSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 	WildcardSet _wcNames = null!;
 	protected override int Capacity => CAPACITY;
 
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetExplicitId)]
 	public int[] Id { get; set; } = [];
 
 	[Parameter(Position = 0, ParameterSetName = "ByNameOrId")]
@@ -36,7 +36,7 @@ public sealed class GetSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 	}
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.DOWNLOAD_CLIENT];
+		return resolver[Meta.DownloadClient];
 	}
 
 	protected override void Begin(IServiceProvider provider)

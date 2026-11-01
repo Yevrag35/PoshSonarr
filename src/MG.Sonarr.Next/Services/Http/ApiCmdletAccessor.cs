@@ -19,7 +19,7 @@ internal sealed class ApiCmdletAccessor
 	/// <summary>
 	/// The key of the request option that holds the cmdlet that sent the request.
 	/// </summary>
-	static readonly HttpRequestOptionsKey<IApiCmdlet> _cmdletKey = new(nameof(IApiCmdlet));
+	static readonly HttpRequestOptionsKey<IApiCmdlet> s_cmdletKey = new(nameof(IApiCmdlet));
 
 	/// <summary>
 	/// Gets or sets the cmdlet that the scope belongs to.
@@ -38,9 +38,9 @@ internal sealed class ApiCmdletAccessor
 	/// <param name="request">The request that a client of the scope is about to send.</param>
 	public void AttachTo(HttpRequestMessage request)
 	{
-		if (this.Cmdlet is IApiCmdlet cmdlet)
+		if (this.Cmdlet is { } cmdlet)
 		{
-			request.Options.Set(_cmdletKey, cmdlet);
+			request.Options.Set(s_cmdletKey, cmdlet);
 		}
 	}
 
@@ -57,6 +57,6 @@ internal sealed class ApiCmdletAccessor
 	/// </returns>
 	public static bool TryGetCmdlet(HttpRequestMessage request, [NotNullWhen(true)] out IApiCmdlet? cmdlet)
 	{
-		return request.Options.TryGetValue(_cmdletKey, out cmdlet);
+		return request.Options.TryGetValue(s_cmdletKey, out cmdlet);
 	}
 }

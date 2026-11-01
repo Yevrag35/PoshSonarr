@@ -17,14 +17,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Remove="Pools\PagingPool.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Include="Pools\PagingPool.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\MG.Sonarr.Next\MG.Sonarr.Next.csproj" />
 	</ItemGroup>
 

@@ -21,6 +21,14 @@ internal static class MemoryStreamExtensions
 		_ = stream.Seek(0, SeekOrigin.Begin);
 	}
 
+	/// <summary>
+	/// Asynchronously copies the contents of the specified <see cref="ArrayPoolMemoryStream"/> to a new 
+	/// <see cref="MemoryStream"/>.
+	/// </summary>
+	/// <param name="stream">The <see cref="ArrayPoolMemoryStream"/> to copy.</param>
+	/// <param name="cancellationToken">A token that cancels the operation.</param>
+	/// <returns>A task that represents the asynchronous copy operation. The task result contains the new <see cref="MemoryStream"/>.</returns>
+	/// <exception cref="InvalidOperationException">Thrown when the stream is not seekable.</exception>
 	internal static async Task<MemoryStream> ToMemoryStreamAsync(this ArrayPoolMemoryStream stream, CancellationToken cancellationToken)
 	{
 		if (!stream.CanSeek)
@@ -45,7 +53,7 @@ internal static class MemoryStreamExtensions
 	/// <exception cref="ObjectDisposedException">Thrown when <paramref name="stream"/> has been disposed.</exception>
 	internal static ReadOnlySpan<byte> AsJsonSpan(this ArrayPoolMemoryStream stream)
 	{
-		ReadOnlySpan<byte> json = stream.AsMemory().Span;
+		ReadOnlySpan<byte> json = stream.AsSpan();
 		if (json.StartsWith(Encoding.UTF8.Preamble))
 		{
 			json = json[Encoding.UTF8.Preamble.Length..];

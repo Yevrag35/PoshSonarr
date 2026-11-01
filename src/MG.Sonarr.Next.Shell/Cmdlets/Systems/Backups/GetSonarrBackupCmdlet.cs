@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -12,7 +12,7 @@ public sealed class GetSonarrBackupCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.BACKUP];
+		return resolver[Meta.Backup];
 	}
 
 	protected override void Process(IServiceProvider provider)

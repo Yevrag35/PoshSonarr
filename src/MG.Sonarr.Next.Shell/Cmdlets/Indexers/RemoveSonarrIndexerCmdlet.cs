@@ -7,17 +7,17 @@ using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers;
 
 [Cmdlet(VerbsCommon.Remove, "SonarrIndexer", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true,
-	DefaultParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
-[MetadataCanPipe(Tag = Meta.INDEXER)]
+	DefaultParameterSetName = PSConstants.PSetExplicitId)]
+[MetadataCanPipe(Tag = Meta.Indexer)]
 public sealed class RemoveSonarrIndexerCmdlet : SonarrMetadataCmdlet
 {
 	SortedSet<int> _ids = null!;
 
-	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSET_EXPLICIT_ID)]
+	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int[] Id { get; set; } = [];
 
-	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE)]
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
 	[ValidateIds(ValidateRangeKind.Positive)]
 	public IndexerObject[] InputObject { get; set; } = [];
 
@@ -27,7 +27,7 @@ public sealed class RemoveSonarrIndexerCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.INDEXER];
+		return resolver[Meta.Indexer];
 	}
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{

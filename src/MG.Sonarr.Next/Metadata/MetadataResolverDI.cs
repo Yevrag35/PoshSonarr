@@ -1,59 +1,124 @@
 using MG.Sonarr.Next.Attributes;
-using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Immutable;
-using System.Management.Automation;
 
 namespace MG.Sonarr.Next.Metadata;
 
+/// <summary>
+/// Provides the extension method that registers the metadata tags of every Sonarr API endpoint that the module uses.
+/// </summary>
 public static class MetadataResolverDI
 {
+	/// <summary>
+	/// The resolver that <see cref="CreateResolver(Assembly)"/> created for each cmdlet assembly, which every connection
+	/// registers.
+	/// </summary>
+	/// <remarks>
+	/// The table holds each assembly weakly, so it keeps none loaded, and it's thread-safe. When two threads look up a
+	/// new assembly at once, each can create a resolver, but the table keeps one and returns it to both.
+	/// </remarks>
+	private static readonly ConditionalWeakTable<Assembly, MetadataResolver> _resolvers = new();
+
+	/// <summary>
+	/// Registers an <see cref="IMetadataResolver"/> singleton that holds a tag for each endpoint, with the cmdlets that
+	/// each tag's objects can be piped to.
+	/// </summary>
+	/// <remarks>
+	/// <para>Each tag's name comes from <see cref="Meta"/>, its path from <see cref="Constants"/>, and its cmdlets from
+	/// the <see cref="MetadataCanPipeAttribute"/> attributes on the cmdlet classes in
+	/// <paramref name="cmdletAssembly"/>.</para>
+	/// <para>The first call for an assembly creates the resolver, and every later call for it registers that same
+	/// instance, so every connection in the process shares one resolver. The resolver can't change once it's created,
+	/// so any number of threads can read it at once.</para>
+	/// </remarks>
+	/// <param name="services">The service collection to add the resolver to.</param>
+	/// <param name="cmdletAssembly">The assembly whose cmdlet classes are searched for pipe targets.</param>
+	/// <returns><paramref name="services"/>, so that calls can be chained.</returns>
+	/// <exception cref="ArgumentNullException">
+	/// Thrown when <paramref name="services"/> or <paramref name="cmdletAssembly"/> is null.
+	/// </exception>
+	/// <exception cref="ArgumentException">
+	/// Thrown when a cmdlet class with a <see cref="MetadataCanPipeAttribute"/> has no <see cref="CmdletAttribute"/>
+	/// that gives its verb and noun.
+	/// </exception>
 	public static IServiceCollection AddMetadata(this IServiceCollection services, Assembly cmdletAssembly)
+	{
+		ArgumentNullException.ThrowIfNull(services);
+		ArgumentNullException.ThrowIfNull(cmdletAssembly);
+
+		MetadataResolver resolver = _resolvers.GetValue(cmdletAssembly, CreateResolver);
+		return services.AddSingleton<IMetadataResolver>(resolver);
+	}
+
+	/// <summary>
+	/// Creates the resolver that holds a tag for each endpoint, with the cmdlets in an assembly that each tag's objects
+	/// can be piped to.
+	/// </summary>
+	/// <param name="cmdletAssembly">The assembly whose cmdlet classes are searched for pipe targets.</param>
+	/// <returns>The frozen resolver of every endpoint's tag.</returns>
+	/// <exception cref="ArgumentException">
+	/// Thrown when a cmdlet class with a <see cref="MetadataCanPipeAttribute"/> has no <see cref="CmdletAttribute"/>
+	/// that gives its verb and noun.
+	/// </exception>
+	private static MetadataResolver CreateResolver(Assembly cmdletAssembly)
 	{
 		int initialCapacity = 35;
 		var pipes = FindPipeableCmdlets(cmdletAssembly);
-		MetadataResolver dict = new(initialCapacity, pipes)
+		MetadataResolver.Builder builder = new(initialCapacity, pipes)
 		{
-			{ Meta.BACKUP, Constants.BACKUP, true },
-			{ Meta.CALENDAR, Constants.CALENDAR, false },
-			{ Meta.COMMAND, Constants.COMMAND, true },
-			{ Meta.DELAY_PROFILE, Constants.DELAY_PROFILE, true },
-			{ Meta.DISK, Constants.DISKSPACE, false },
-			{ Meta.DOWNLOAD_CLIENT, Constants.DOWNLOAD_CLIENT, true },
-			{ Meta.DOWNLOAD_CLIENT_CONFIG, Constants.DOWNLOAD_CLIENT_CONFIG, true },
-			{ Meta.DOWNLOAD_CLIENT_SCHEMA, Constants.DOWNLOAD_CLIENT_SCHEMA, false },
-			{ Meta.EPISODE, Constants.EPISODE, true },
-			{ Meta.EPISODE_FILE, Constants.EPISODEFILE, true },
-			{ Meta.HISTORY, Constants.HISTORY, false },
-			{ Meta.HISTORY_SINCE, Constants.HISTORY_SINCE, false },
-			{ Meta.HOST, Constants.HOST, true },
-			{ Meta.INDEXER, Constants.INDEXER, true },
-			{ Meta.LANGUAGE, Constants.LANGUAGE_PROFILE, true },
-			{ Meta.LOG_ITEM, Constants.LOG, false },
-			{ Meta.LOG_FILE, Constants.LOGFILE, false },
-			{ Meta.MANUAL_IMPORT, Constants.MANUAL_IMPORT, false },
-			{ Meta.MEDIA_MANGEMENT, Constants.MEDIA_MANAGEMENT, true },
-			{ Meta.NAMING_CONFIG, Constants.NAMING_CONFIG, true },
-			{ Meta.NOTIFICATION, Constants.NOTIFICATION, true },
-			{ Meta.QUALITY, Constants.QUALITY_DEFINITIONS, false },
-			{ Meta.QUALITY_DEFINITION, Constants.QUALITY_DEFINITIONS, true },
-			{ Meta.QUALITY_PROFILE, Constants.PROFILE, true },
-			{ Meta.RELEASE, Constants.RELEASE, false },
-			{ Meta.RELEASE_PROFILE, Constants.RELEASE_PROFILE, true },
-			{ Meta.REMOTE_PATH_MAPPING, Constants.REMOTE_PATH, true },
-			{ Meta.RENAMABLE, Constants.RENAME, false },
-			{ Meta.REVISION, Constants.QUALITY_DEFINITIONS, false },
-			{ Meta.ROOT_FOLDER, Constants.ROOTFOLDER, true },
-			{ Meta.SERIES, Constants.SERIES, true },
-			{ Meta.SERIES_ADD, Constants.SERIES_LOOKUP, false },
-			{ Meta.SERIES_HISTORY, Constants.HISTORY_BY_SERIES, false },
-			{ Meta.STATUS, Constants.STATUS, false },
-			{ Meta.TAG, Constants.TAG, true },
+			{ Meta.Backup, Constants.Backup, true },
+			{ Meta.Calendar, Constants.Calendar, false },
+			{ Meta.Command, Constants.Command, true },
+			{ Meta.DelayProfile, Constants.DelayProfile, true },
+			{ Meta.Disk, Constants.DiskSpace, false },
+			{ Meta.DownloadClient, Constants.DownloadClient, true },
+			{ Meta.DownloadClientConfig, Constants.DownloadClientConfig, true },
+			{ Meta.DownloadClientSchema, Constants.DownloadClientSchema, false },
+			{ Meta.Episode, Constants.Episode, true },
+			{ Meta.EpisodeFile, Constants.EpisodeFile, true },
+			{ Meta.History, Constants.History, false },
+			{ Meta.HistorySince, Constants.HistorySince, false },
+			{ Meta.HostConfig, Constants.Host, true },
+			{ Meta.Indexer, Constants.Indexer, true },
+			{ Meta.LanguageProfile, Constants.LanguageProfile, true },
+			{ Meta.LogItem, Constants.Log, false },
+			{ Meta.LogFile, Constants.LogFile, false },
+			{ Meta.ManualImport, Constants.ManualImport, false },
+			{ Meta.MediaManagement, Constants.MediaManagement, true },
+			{ Meta.NamingConfig, Constants.NamingConfig, true },
+			{ Meta.Notification, Constants.Notification, true },
+			{ Meta.Quality, Constants.QualityDefinitions, false },
+			{ Meta.QualityDefinition, Constants.QualityDefinitions, true },
+			{ Meta.QualityProfile, Constants.QualityProfile, true },
+			{ Meta.Release, Constants.Release, false },
+			{ Meta.ReleaseProfile, Constants.ReleaseProfile, true },
+			{ Meta.RemotePathMapping, Constants.RemotePath, true },
+			{ Meta.Renamable, Constants.Rename, false },
+			{ Meta.QualityRevision, Constants.QualityDefinitions, false },
+			{ Meta.RootFolder, Constants.RootFolder, true },
+			{ Meta.Series, Constants.Series, true },
+			{ Meta.SeriesAdd, Constants.SeriesLookup, false },
+			{ Meta.SeriesHistory, Constants.HistoryBySeries, false },
+			{ Meta.Status, Constants.Status, false },
+			{ Meta.Tag, Constants.Tag, true },
 		};
 
-		Debug.Assert(dict.Count <= initialCapacity);
-		return services.AddSingleton<IMetadataResolver>(dict);
+		Debug.Assert(builder.Count <= initialCapacity);
+		return builder.Freeze();
 	}
 
+	/// <summary>
+	/// Finds the cmdlets that each tag's objects can be piped to, from the attributes of an assembly's cmdlet classes.
+	/// </summary>
+	/// <remarks>
+	/// A cmdlet counts when it's a public, non-abstract class with its own <see cref="CmdletAttribute"/> and at least
+	/// one <see cref="MetadataCanPipeAttribute"/>. Its name is formed as <c>Verb-Noun</c>.
+	/// </remarks>
+	/// <param name="cmdletAssembly">The assembly to search.</param>
+	/// <returns>
+	/// The cmdlet names for each tag, in ordinal order, keyed by tag name without regard to case.
+	/// </returns>
+	/// <exception cref="ArgumentException">
+	/// Thrown when a cmdlet class has no <see cref="CmdletAttribute"/> that gives its verb and noun.
+	/// </exception>
 	internal static Dictionary<string, ImmutableArray<string>> FindPipeableCmdlets(Assembly cmdletAssembly)
 	{
 		IEnumerable<Type> cmdletTypes = cmdletAssembly.GetExportedTypes()
@@ -76,12 +141,34 @@ public static class MetadataResolverDI
 				comparer: StringComparer.OrdinalIgnoreCase);
 	}
 
+	/// <summary>
+	/// Gets a cmdlet's name from its <see cref="CmdletAttribute"/> and counts its
+	/// <see cref="MetadataCanPipeAttribute"/> attributes.
+	/// </summary>
+	/// <param name="cmdletType">The cmdlet class.</param>
+	/// <param name="howManyMetaAtts">
+	/// When this method returns, the number of <see cref="MetadataCanPipeAttribute"/> attributes on
+	/// <paramref name="cmdletType"/>.
+	/// </param>
+	/// <returns>The cmdlet's name, as <c>Verb-Noun</c>.</returns>
+	/// <exception cref="ArgumentException">
+	/// Thrown when <paramref name="cmdletType"/> has no <see cref="CmdletAttribute"/> that gives its verb and noun.
+	/// </exception>
 	private static string GetCmdletNameFromAttribute(Type cmdletType, out int howManyMetaAtts)
 	{
 		TwoStrings verbAndNoun = GetVerbAndNoun(cmdletType, out howManyMetaAtts);
 		return string.Concat(verbAndNoun.First, ['-'], verbAndNoun.Second);
 	}
 
+	/// <summary>
+	/// Pairs each tag that a cmdlet's <see cref="MetadataCanPipeAttribute"/> attributes name with the cmdlet's name.
+	/// </summary>
+	/// <param name="cmdletType">The cmdlet class.</param>
+	/// <param name="cmdletName">The cmdlet's name.</param>
+	/// <param name="howManyMetaApps">The number of <see cref="MetadataCanPipeAttribute"/> attributes on
+	/// <paramref name="cmdletType"/>.</param>
+	/// <returns>An array of pairs, each with a tag name first and the cmdlet's name second.</returns>
+	/// <exception cref="InvalidOperationException">Thrown when an attribute's tag isn't a string.</exception>
 	private static TwoStrings[] GetTagAndCmdletNamePair(Type cmdletType, string cmdletName, int howManyMetaApps)
 	{
 		Debug.Assert(howManyMetaApps > 0, "Should have at least one MetadataCanPipeAttribute.");
@@ -104,21 +191,32 @@ public static class MetadataResolverDI
 		return array;
 	}
 
+	/// <summary>
+	/// Gets the tag name that a <see cref="MetadataCanPipeAttribute"/> sets, from its first named argument.
+	/// </summary>
+	/// <param name="constructorArgs">The attribute's named arguments, whose first is its <c>Tag</c>.</param>
+	/// <returns>The tag's name.</returns>
+	/// <exception cref="InvalidOperationException">Thrown when the first named argument's value is null.</exception>
+	/// <exception cref="InvalidCastException">Thrown when the first named argument's value isn't a string.</exception>
 	private static string GetMetadataTag(IList<CustomAttributeNamedArgument> constructorArgs)
 	{
 		return (string?)constructorArgs[0].TypedValue.Value ?? throw new InvalidOperationException("Expected a string tag.");
 	}
 
 	/// <summary>
-	/// Extracts the verb and noun components from the CmdletAttribute applied to the specified cmdlet type.
+	/// Gets the verb and noun from a cmdlet's <see cref="CmdletAttribute"/> and counts its
+	/// <see cref="MetadataCanPipeAttribute"/> attributes.
 	/// </summary>
-	/// <param name="cmdletType">The type representing the cmdlet from which to retrieve the verb and noun. Must have a CmdletAttribute with
-	/// a constructor that accepts two string arguments.</param>
-	/// <returns>
-	/// A struct instance containing the verb and noun specified in the CmdletAttribute of the given cmdlet type.
-	/// </returns>
+	/// <param name="cmdletType">The cmdlet class, which has a <see cref="CmdletAttribute"/> whose first two constructor
+	/// arguments are strings.</param>
+	/// <param name="howManyPipeAtts">
+	/// When this method returns, the number of <see cref="MetadataCanPipeAttribute"/> attributes on
+	/// <paramref name="cmdletType"/>.
+	/// </param>
+	/// <returns>A pair with the verb first and the noun second.</returns>
 	/// <exception cref="ArgumentException">
-	/// <paramref name="cmdletType"/> does not have a <see cref="CmdletAttribute"/> with a constructor that accepts two string arguments.
+	/// Thrown when <paramref name="cmdletType"/> has no <see cref="CmdletAttribute"/> whose first two constructor
+	/// arguments are strings.
 	/// </exception>
 	private static TwoStrings GetVerbAndNoun(Type cmdletType, out int howManyPipeAtts)
 	{
@@ -146,6 +244,17 @@ public static class MetadataResolverDI
 			: throw new ArgumentException($"{cmdletType} does not have the right CmdletAttribute constructor signature.", nameof(cmdletType));
 	}
 
+	/// <summary>
+	/// Reads the verb and noun from a <see cref="CmdletAttribute"/>'s constructor arguments.
+	/// </summary>
+	/// <param name="constructorArgs">The attribute's constructor arguments.</param>
+	/// <param name="verb">When this method returns <see langword="true"/>, the cmdlet's verb; otherwise,
+	/// <see langword="null"/>.</param>
+	/// <param name="noun">When this method returns <see langword="true"/>, the cmdlet's noun; otherwise,
+	/// <see langword="null"/>.</param>
+	/// <returns>
+	/// <see langword="true"/> if the first two arguments are strings; otherwise, <see langword="false"/>.
+	/// </returns>
 	private static bool TryGetVerbAndNoun(
 		IList<CustomAttributeTypedArgument> constructorArgs,
 		[NotNullWhen(true)] out string? verb,
@@ -165,11 +274,25 @@ public static class MetadataResolverDI
 		return true;
 	}
 
+	/// <summary>
+	/// Represents a pair of strings, such as a verb and a noun, or a tag name and a cmdlet name.
+	/// </summary>
 	[StructLayout(LayoutKind.Auto)]
 	private readonly struct TwoStrings
 	{
+		/// <summary>
+		/// The first string of the pair, never null.
+		/// </summary>
 		public readonly string First;
+		/// <summary>
+		/// The second string of the pair, never null.
+		/// </summary>
 		public readonly string Second;
+		/// <summary>
+		/// Initializes a new <see cref="TwoStrings"/> instance with the specified strings.
+		/// </summary>
+		/// <param name="first">The first string, or <see langword="null"/> for an empty string.</param>
+		/// <param name="second">The second string, or <see langword="null"/> for an empty string.</param>
 		internal TwoStrings(string first, string second)
 		{
 			First = first ?? string.Empty;

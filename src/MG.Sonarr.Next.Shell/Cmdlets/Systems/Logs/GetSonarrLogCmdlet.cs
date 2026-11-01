@@ -62,7 +62,7 @@ public sealed class GetSonarrLogCmdlet : SonarrMetadataCmdlet
 		}
 
 		_parameters.Add(PagingConstants.SortKey, this.SortKey);
-		_parameters.Add(PagingConstants.SortDirection, this.SortDirection, this.SortDirection.GetLength());
+		_parameters.Add(PagingConstants.SortDirection, this.SortDirection, this.SortDirection.Length);
 	}
 
 	protected override void Process(IServiceProvider provider)
@@ -90,6 +90,6 @@ public sealed class GetSonarrLogCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.LOG_ITEM];
+		return resolver[Meta.LogItem];
 	}
 }

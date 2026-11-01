@@ -7,7 +7,7 @@ using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delay;
 
 [Cmdlet(VerbsData.Update, "SonarrDelayProfile", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
-[MetadataCanPipe(Tag = Meta.DELAY_PROFILE)]
+[MetadataCanPipe(Tag = Meta.DelayProfile)]
 public sealed class UpdateSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 {
 	[Parameter(Mandatory = true, Position = 0, ValueFromPipeline = true)]
@@ -16,7 +16,7 @@ public sealed class UpdateSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.DELAY_PROFILE];
+		return resolver[Meta.DelayProfile];
 	}
 
 	protected override void Process(IServiceProvider provider)

@@ -10,7 +10,7 @@ using MG.Sonarr.Next.Shell.Extensions;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Languages;
 
 [Cmdlet(VerbsCommon.Get, "SonarrLanguageProfile", DefaultParameterSetName = "None")]
-[MetadataCanPipe(Tag = Meta.SERIES)]
+[MetadataCanPipe(Tag = Meta.Series)]
 [Obsolete("The LanguageProfileController and its endpoints are deprecated.")]
 public sealed class GetSonarrLanguageProfileCmdlet : SonarrMetadataCmdlet
 {
@@ -18,12 +18,12 @@ public sealed class GetSonarrLanguageProfileCmdlet : SonarrMetadataCmdlet
 	WildcardSet _wcNames = null!;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSET_EXPLICIT_ID, Position = 0)]
+	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetExplicitId, Position = 0)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int[] Id { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSET_PIPELINE, DontShow = true)]
+	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline, DontShow = true)]
 	[ValidateIds(ValidateRangeKind.Positive, typeof(ILanguageProfilePipeable))]
 	public ILanguageProfilePipeable[] InputObject { get; set; } = [];
 
@@ -44,7 +44,7 @@ public sealed class GetSonarrLanguageProfileCmdlet : SonarrMetadataCmdlet
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
-		return resolver[Meta.LANGUAGE];
+		return resolver[Meta.LanguageProfile];
 	}
 
 	protected override void Begin(IServiceProvider provider)

@@ -52,7 +52,7 @@ public readonly partial struct Wildcard
 		return !this.IsEmpty ? _pattern : string.Empty;
 	}
 
-	#region INTERFACE IMPLEMENTATIONS
+	// INTERFACE IMPLEMENTATIONS
 	/// <inheritdoc/>
 	[DebuggerStepThrough]
 	readonly bool ISpanFormattable.TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
@@ -71,6 +71,4 @@ public readonly partial struct Wildcard
 	{
 		return this.ToString();
 	}
-
-	#endregion
 }
