@@ -69,7 +69,7 @@ public readonly struct PInt32 : IComparable<PInt32>, IEquatable<PInt32>
 		return new(Math.Clamp(n, MinValue, MaxValue), _: true);
 	}
 	/// <summary>
-	/// Clamps an <see cref="int"/> value to the valid range of <see cref="PInt32"/>.
+	/// Clamps a <see cref="uint"/> value to the valid range of <see cref="PInt32"/>.
 	/// </summary>
 	/// <param name="n">The value to clamp.</param>
 	/// <returns>A <see cref="PInt32"/> representing the clamped value.</returns>
@@ -107,6 +107,11 @@ public readonly struct PInt32 : IComparable<PInt32>, IEquatable<PInt32>
 	/// <summary>
 	/// Determines whether this instance and a specified object represent the same value.
 	/// </summary>
+	/// <remarks>
+	/// A boxed <see cref="PInt32"/>, <see cref="int"/>, <see cref="uint"/>, <see cref="byte"/>, <see cref="sbyte"/>,
+	/// <see cref="ushort"/>, <see cref="short"/>, <see cref="long"/>, <see cref="ulong"/>, <see cref="float"/>,
+	/// <see cref="double"/>, or <see cref="decimal"/> compares by its exact value, and any other object is never equal.
+	/// </remarks>
 	/// <param name="obj">The object to compare with this instance.</param>
 	/// <returns><see langword="true"/> when <paramref name="obj"/> represents the same value; otherwise, <see langword="false"/>.</returns>
 	public override bool Equals([NotNullWhen(true)] object? obj)
@@ -121,7 +126,7 @@ public readonly struct PInt32 : IComparable<PInt32>, IEquatable<PInt32>
 			ushort us => _value == us,
 			short s => _value == s,
 			long l => _value == l,
-			float f => _value == f,
+			float f => _value == (double)f,
 			decimal d => _value == d,
 			double d => _value == d,
 			ulong ul => (ulong)_value == ul,
@@ -139,9 +144,9 @@ public readonly struct PInt32 : IComparable<PInt32>, IEquatable<PInt32>
 	}
 
 	/// <summary>
-	/// Returns a reference to the underlying value, which can be read in a volatile context.
+	/// Reads the underlying value with <see cref="Volatile.Read(ref readonly int)"/>.
 	/// </summary>
-	/// <returns>A reference to the underlying value.</returns>
+	/// <returns>The underlying value.</returns>
 	public int VolatileRead()
 	{
 		return Volatile.Read(in _value);

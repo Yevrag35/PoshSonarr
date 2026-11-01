@@ -71,6 +71,13 @@ public readonly partial struct Wildcard
 	/// <summary>
 	/// Determines whether the current <see cref="Wildcard"/> instance is equal to another <see cref="Wildcard"/> instance.
 	/// </summary>
+	/// <remarks>
+	/// Two instances are equal when both are empty, or when they have the same <see cref="MatchType"/> and their
+	/// patterns are equal under <paramref name="comparisonType"/>, as
+	/// <see cref="Equals(ReadOnlySpan{char}, StringComparison)"/> compares a pattern with text. A culture-sensitive
+	/// comparison can find patterns of different lengths equal, such as <c>e</c> followed by U+0301, the combining
+	/// acute accent, and U+00E9, the same letter precomposed.
+	/// </remarks>
 	/// <param name="other">The other <see cref="Wildcard"/> instance to compare with.</param>
 	/// <param name="comparisonType">
 	/// The string comparison rules to use when comparing the two <see cref="Wildcard"/> instances.
@@ -85,7 +92,7 @@ public readonly partial struct Wildcard
 			return other.IsEmpty;
 		}
 
-		return _state.Equals(other._state)
+		return _state.Type == other._state.Type
 			&& _pattern.AsSpan().Equals(other._pattern, comparisonType);
 	}
 	/// <summary>

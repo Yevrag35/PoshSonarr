@@ -5,6 +5,28 @@ namespace MG.Sonarr.Next.Strings;
 /// <summary>
 /// Represents a read-only wildcard pattern used for case-insensitive equality and wildcard matching.
 /// </summary>
+/// <remarks>
+///     <para>
+///         <c>*</c> and <c>?</c> are the only wildcard characters. Unlike
+///         <see cref="System.Management.Automation.WildcardPattern"/>, which reads <c>[abc]</c> as a set of characters
+///         and a backtick as an escape, and throws for a <c>[</c> that nothing closes, a pattern matches
+///         <c>[</c>, <c>]</c>, and the backtick as themselves, so a name that holds them needs no escaping.
+///     </para>
+///     <para>
+///         <see cref="IsMatch(string?)"/> and <see cref="IsMatch(ReadOnlySpan{char})"/> compare with
+///         <see cref="StringComparison.OrdinalIgnoreCase"/>, the same in every culture, where
+///         <see cref="System.Management.Automation.WildcardPattern"/> with
+///         <see cref="System.Management.Automation.WildcardOptions.IgnoreCase"/> folds case with the current culture. So
+///         <c>i</c> matches <c>I</c> under tr-TR too, and the Kelvin sign, U+212A, matches neither <c>K</c> nor
+///         <c>k</c>. A surrogate pair in the text folds as one character, as
+///         <see cref="StringComparison.OrdinalIgnoreCase"/> folds it, where the matcher of
+///         <see cref="System.Management.Automation.WildcardPattern"/> folds each half on its own.
+///     </para>
+///     <para>
+///         An empty pattern, such as <see cref="Empty"/>, matches nothing, not even empty text, which an empty
+///         <see cref="System.Management.Automation.WildcardPattern"/> matches.
+///     </para>
+/// </remarks>
 [StructLayout(LayoutKind.Sequential)]
 [DebuggerDisplay("{GetDebuggerString(),nq}")]
 public readonly partial struct Wildcard :
@@ -37,8 +59,11 @@ public readonly partial struct Wildcard :
 	/// object.
 	/// </summary>
 	/// <param name="index">The position in the current string.</param>
+	/// <exception cref="IndexOutOfRangeException">
+	/// Thrown when <paramref name="index"/> is less than zero or not less than <see cref="Length"/>, as
+	/// <see cref="string"/>'s indexer throws.
+	/// </exception>
 	/// <value>The character at the specified index.</value>
-	/// <exception cref="ArgumentOutOfRangeException"/>
 	public char this[int index] => _pattern.AsSpan()[index];
 
 	/// <summary>
@@ -46,9 +71,9 @@ public readonly partial struct Wildcard :
 	/// the string.
 	/// </summary>
 	/// <remarks>
-	///     If <see langword="false"/>, during the <see cref="IsMatch(ReadOnlySpan{char})"/> and
-	///     <see cref="IsMatch(string?)"/> method executions, only strict <see cref="char"/> equality will
-	///     be checked.
+	///     If <see langword="false"/>, the <see cref="IsMatch(ReadOnlySpan{char})"/> and
+	///     <see cref="IsMatch(string?)"/> methods compare the whole input with the pattern, as
+	///     <see cref="Equals(ReadOnlySpan{char})"/> does.
 	/// </remarks>
 	/// <value>
 	/// <see langword="true"/> if the string contains at least one wildcard character; otherwise,
@@ -85,8 +110,8 @@ public readonly partial struct Wildcard :
 	/// </summary>
 	/// <remarks>
 	/// If <paramref name="patternString"/> is <see langword="null"/> or an empty string, the constructed <see cref="Wildcard"/> instance
-	/// will be treated as "empty" and will only match other empty spans or <see cref="string"/> instances.
-	/// Functionality equivalent to <see cref="Empty"/>.
+	/// will be treated as "empty": it never matches any input, and it equals only other empty spans, <see cref="string"/>
+	/// instances, and <see cref="Wildcard"/> instances. Functionality equivalent to <see cref="Empty"/>.
 	/// </remarks>
 	/// <param name="patternString">The string to use as the wildcard pattern.</param>
 	//[DebuggerStepThrough]
@@ -103,8 +128,8 @@ public readonly partial struct Wildcard :
 	/// </summary>
 	/// <remarks>
 	/// If <paramref name="pattern"/> is an empty <see cref="ReadOnlySpan{T}"/>, the constructed <see cref="Wildcard"/> instance
-	/// will be treated as "empty" and will only match other empty spans or <see cref="string"/> instances.
-	/// Functionality equivalent to <see cref="Empty"/>.
+	/// will be treated as "empty": it never matches any input, and it equals only other empty spans, <see cref="string"/>
+	/// instances, and <see cref="Wildcard"/> instances. Functionality equivalent to <see cref="Empty"/>.
 	/// </remarks>
 	/// <param name="pattern">The read-only character span to use as the wildcard pattern.</param>
 	//[DebuggerStepThrough]

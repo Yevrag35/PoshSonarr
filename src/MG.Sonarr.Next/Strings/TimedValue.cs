@@ -53,6 +53,10 @@ public readonly struct TimedValue : IFormattable
 	/// </summary>
 	/// <param name="decimalPlaces">The number of fractional digits in the rounded result.</param>
 	/// <returns>The rounded elapsed value in milliseconds or seconds, based on <see cref="WillUseSeconds"/>.</returns>
+	/// <exception cref="ArgumentOutOfRangeException">
+	/// Thrown when <paramref name="decimalPlaces"/> is less than 0 or greater than 15, as
+	/// <see cref="Math.Round(double, int, MidpointRounding)"/> throws.
+	/// </exception>
 	public readonly double GetRoundedValue(int decimalPlaces)
 	{
 		double value = this.WillUseSeconds ? this.Elapsed.TotalSeconds : this.Elapsed.TotalMilliseconds;
@@ -71,6 +75,10 @@ public readonly struct TimedValue : IFormattable
 	/// <summary>
 	/// Returns the string representation of this instance using the specified format provider.
 	/// </summary>
+	/// <remarks>
+	/// The value formats into a stack buffer of <see cref="LengthConstants.DOUBLE_MAX"/> characters, and into a new
+	/// string when <paramref name="provider"/>'s signs or separators make it longer, so no provider loses the number.
+	/// </remarks>
 	/// <param name="format">The format string. This value is currently ignored.</param>
 	/// <param name="provider">The format provider used for numeric formatting.</param>
 	/// <returns>The formatted elapsed value with its unit suffix.</returns>
@@ -80,9 +88,9 @@ public readonly struct TimedValue : IFormattable
 		string unit = !this.WillUseSeconds ? Messages.Timer_Unit_Milliseconds : Messages.Timer_Unit_Seconds;
 
 		Span<char> buffer = stackalloc char[LengthConstants.DOUBLE_MAX];
-		_ = value.TryFormat(buffer, out int written, provider: provider);
-
-		return string.Concat(buffer.Slice(0, written), unit);
+		return value.TryFormat(buffer, out int written, provider: provider)
+			? string.Concat(buffer.Slice(0, written), unit)
+			: string.Concat(value.ToString(provider), unit);
 	}
 
 	/// <summary>

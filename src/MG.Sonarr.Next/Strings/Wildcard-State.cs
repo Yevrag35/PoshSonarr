@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Strings;
+namespace MG.Sonarr.Next.Strings;
 
 public readonly partial struct Wildcard
 {
@@ -15,11 +15,6 @@ public readonly partial struct Wildcard
 		{
 			_length = length;
 			_type = type;
-		}
-
-		public bool Equals(State other)
-		{
-			return _length == other._length && this.Type == other.Type;
 		}
 	}
 }
