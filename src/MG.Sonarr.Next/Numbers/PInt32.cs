@@ -143,15 +143,6 @@ public readonly struct PInt32 : IComparable<PInt32>, IEquatable<PInt32>
 		return _value.GetHashCode();
 	}
 
-	/// <summary>
-	/// Reads the underlying value with <see cref="Volatile.Read(ref readonly int)"/>.
-	/// </summary>
-	/// <returns>The underlying value.</returns>
-	public int VolatileRead()
-	{
-		return Volatile.Read(in _value);
-	}
-
 	// Operators
 
 	/// <summary>

@@ -70,12 +70,12 @@ public readonly struct ArraySlice<T> : IReadOnlyCollection<T>
 		get
 		{
 			ThrowIfOutsideSlice(index, _length);
-			return _array![_offset + index];
+			return _array!.Ref(index + _offset);
 		}
 		set
 		{
 			ThrowIfOutsideSlice(index, _length);
-			_array![_offset + index] = value;
+			_array!.Ref(index + _offset) = value;
 		}
 	}
 
