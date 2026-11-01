@@ -26,7 +26,8 @@ $settings = $null
 $showFixtures = Join-Path $PSScriptRoot 'skyhook/v1/tvdb/shows/en'
 
 # The mock's shows that seeding adds, by TVDB ID, and whether each gets the sandbox-baseline tag. The
-# third show, 9000003, stays on the mock alone, for tests to look up, add, and delete.
+# other two stay on the mock alone, for tests to look up, add, and delete: 9000003, and 9000004, whose
+# title holds a * for tests of wildcard matching.
 $seededShows = @(
 	[pscustomobject]@{ TvdbId = 9000001; Tagged = $true }
 	[pscustomobject]@{ TvdbId = 9000002; Tagged = $false }

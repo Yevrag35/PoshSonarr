@@ -23,17 +23,18 @@ $SandboxSettings = Get-SandboxSettings
 # The fixtures' facts, which the mock metadata service's shows and their fixed air dates make the same on every run.
 # sandbox/sonarr/test.ps1 keeps its own copy of them, so a change to the fixtures updates both.
 $Fixtures = @{
-	Tag           = 'sandbox-baseline'
-	RootFolder    = '/tv'
-	SeededSeries  = @(
+	Tag            = 'sandbox-baseline'
+	RootFolder     = '/tv'
+	SeededSeries   = @(
 		@{ TvdbId = 9000001; Title = 'Sandbox Ended Show'; EpisodeCount = 6; Tags = @('sandbox-baseline') }
 		@{ TvdbId = 9000002; Title = 'Sandbox Continuing Show'; EpisodeCount = 6; Tags = @() }
 	)
-	LookupSeries  = @{ TvdbId = 9000003; Title = 'Sandbox Lookup Show'; EpisodeCount = 2 }
-	SearchTerm    = 'sandbox'
-	MissingCount  = 9
-	Calendar      = @{ Start = '2099-01-01'; End = '2099-01-31'; EpisodeCount = 3 }
-	UnknownTvdbId = 9009999
+	LookupSeries   = @{ TvdbId = 9000003; Title = 'Sandbox Lookup Show'; EpisodeCount = 2 }
+	WildcardSeries = @{ TvdbId = 9000004; Title = 'Sandbox Wild*Card Show'; EpisodeCount = 2 }
+	SearchTerm     = 'sandbox'
+	MissingCount   = 9
+	Calendar       = @{ Start = '2099-01-01'; End = '2099-01-31'; EpisodeCount = 3 }
+	UnknownTvdbId  = 9009999
 }
 
 # Tests rely on the baseline that reset.ps1 restores, so a file stops before its tests when the sandbox has drifted from

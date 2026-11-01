@@ -214,9 +214,11 @@ Invoke-CheckGroup 'Mock lookup' {
 
 	$found = (Invoke-SandboxApi 'series/lookup?term=tvdb:9000003' -ExpectStatus 200).Body
 	Write-CheckResult 'tvdb:9000003 finds Sandbox Lookup Show alone' ($found.Count -eq 1 -and $found[0].title -eq 'Sandbox Lookup Show') "$($found.Count) shows: $($found.title -join ', ')"
+	$found = (Invoke-SandboxApi 'series/lookup?term=tvdb:9000004' -ExpectStatus 200).Body
+	Write-CheckResult 'tvdb:9000004 finds Sandbox Wild*Card Show alone' ($found.Count -eq 1 -and $found[0].title -ceq 'Sandbox Wild*Card Show') "$($found.Count) shows: $($found.title -join ', ')"
 	$found = (Invoke-SandboxApi 'series/lookup?term=sandbox' -ExpectStatus 200).Body
 	$ids = @($found.tvdbId | Sort-Object)
-	Write-CheckResult 'sandbox finds all three shows' (($ids -join ',') -eq '9000001,9000002,9000003') "TVDB IDs $($ids -join ', ')"
+	Write-CheckResult 'sandbox finds all four shows' (($ids -join ',') -eq '9000001,9000002,9000003,9000004') "TVDB IDs $($ids -join ', ')"
 	$hostConfig = (Invoke-SandboxApi config/host -ExpectStatus 200).Body
 	Write-CheckResult 'certificateValidation is disabledForLocalAddresses' ($hostConfig.certificateValidation -eq 'disabledForLocalAddresses') $hostConfig.certificateValidation
 }
