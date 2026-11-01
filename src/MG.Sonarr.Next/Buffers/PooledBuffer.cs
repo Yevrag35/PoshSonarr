@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.Buffers;
 /// <typeparam name="T">The type of elements in the buffer.</typeparam>
 [StructLayout(LayoutKind.Auto)]
 [DebuggerDisplay("IsRented = {IsRented}, Length = {_length}, Capacity = {Capacity}")]
-public struct PooledBuffer<T> : IDisposable
+internal struct PooledBuffer<T> : IDisposable
 {
 	private const byte RENTED_BIT = 0x1;
 	private const byte CLEAR_ON_DISPOSE_BIT = 0x2;

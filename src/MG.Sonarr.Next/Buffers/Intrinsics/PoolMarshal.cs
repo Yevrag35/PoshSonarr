@@ -4,7 +4,7 @@ namespace MG.Sonarr.Next.Buffers.Intrinsics;
 /// Provides low-level operations for working with <see cref="PooledBuffer{T}"/> instances, including reference retrieval and resizing.
 /// </summary>
 [DebuggerStepThrough]
-public static class PoolMarshal
+internal static class PoolMarshal
 {
 	/// <summary>
 	/// Creates a new <see cref="PooledBuffer{T}"/> instance with the specified minimum size and an option to use the entire capacity of the underlying array.

@@ -9,7 +9,7 @@ namespace MG.Sonarr.Next.Buffers;
 /// method and implicit conversions to simplify call sites while keeping the underlying call via an unmanaged-like pointer.
 /// </remarks>
 [DebuggerStepThrough, SuppressMessage("Design", "MA0131", Justification = "Analyzer doesn't recognize that pointers have their own overload for ThrowIfNull.")]
-public static class FnPtr
+internal static class FnPtr
 {
 	/// <summary>
 	/// Creates a <see cref="FnPtr{TResult}"/> wrapper for the provided parameterless managed function pointer.

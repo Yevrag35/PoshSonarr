@@ -6,7 +6,7 @@ namespace MG.Sonarr.Next.Buffers;
 /// <typeparam name="T">The type of elements in the buffer.</typeparam>
 [StructLayout(LayoutKind.Auto), DebuggerDisplay(@"\{{_span}\} IsRented = {_state.IsRented}, Length = {_length}")]
 [CollectionBuilder(typeof(RentedBuffer), nameof(RentedBuffer.Create)), DebuggerStepThrough]
-public ref partial struct RentedBuffer<T> : IDisposable
+internal ref partial struct RentedBuffer<T> : IDisposable
 {
 	private T[]? _array;
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]

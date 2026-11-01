@@ -4,7 +4,7 @@ namespace MG.Sonarr.Next.Buffers;
 /// Represents a bounded region of a given span with an index and a length. This structure defines the starting index and the length of a segment within a span.
 /// </summary>
 [DebuggerStepThrough, StructLayout(LayoutKind.Sequential), DebuggerDisplay(@"\{Index={Index}, Length={Length}\}")]
-public readonly struct SpanPosition : IComparable<SpanPosition>, IEquatable<int>, IEquatable<SpanPosition>
+internal readonly struct SpanPosition : IComparable<SpanPosition>, IEquatable<int>, IEquatable<SpanPosition>
 {
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	private readonly int _index, _length;

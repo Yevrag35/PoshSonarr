@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.Services.Http.IO;
 /// an array or an <see cref="ArraySlice{T}"/>.</para>
 /// </remarks>
 [DebuggerDisplay(@"\{Length = {Length}, Position = {Position}, Capacity = {Capacity}\}"), DebuggerStepThrough]
-public sealed class ArrayPoolMemoryStream : Stream
+internal sealed class ArrayPoolMemoryStream : Stream
 {
 	private const int DEFAULT_INITIAL_CAPACITY = 8192;
 	//private const int RETIRED_FLAG = 1 << 30;
