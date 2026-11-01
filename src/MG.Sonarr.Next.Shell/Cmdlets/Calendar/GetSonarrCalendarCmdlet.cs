@@ -105,6 +105,13 @@ public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming")]
 	protected override void Process(IServiceProvider provider)
 	{
+		// Sonarr returns the entries whose series has any of the tags sent, and every entry when none is sent.
+		// When no name matched a tag, an empty name included, and no ID was given, the filter matches nothing.
+		if (_tagNames.Count > 0 && _tagIds.Count == 0)
+		{
+			return;
+		}
+
 		this.GetParameters(this.StartDate, this.EndDate.Value, this.IncludeUnmonitored, this.IncludeEpisodeFile, this.IncludeEpisodeImages, this.IncludeSeries);
 		string url = this.Tag.GetUrl(_queryCol);
 
@@ -175,7 +182,8 @@ public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 
 		if (tagIds.Count == prevCount)
 		{
-			this.WriteWarning($"No tags were found matching the specified names - {string.Join(", ", names)}");
+			// Quoted, so that an empty or white-space name shows in the list.
+			this.WriteWarning($"No tags were found matching the specified names - '{string.Join("', '", names)}'");
 		}
 	}
 }

@@ -266,6 +266,11 @@ public readonly partial struct Either<T1, T2>
 	/// <summary>
 	/// Matches the current instance to one of the provided function pointers based on its type and returns the result.
 	/// </summary>
+	/// <remarks>
+	/// When the instance is default-initialized, the <see cref="EmptyStructException.StructType"/> of the exception
+	/// is the generic type definition, <c>Either&lt;,&gt;</c>, and not the constructed type that the other overloads
+	/// report.
+	/// </remarks>
 	/// <typeparam name="TOutput">The output type.</typeparam>
 	/// <typeparam name="TState">The state type.</typeparam>
 	/// <param name="state">The state to pass to the function pointer.</param>
@@ -283,26 +288,22 @@ public readonly partial struct Either<T1, T2>
 		// A call through a null pointer ends the process with an access violation that no catch sees.
 		if (f1 == null || f2 == null)
 		{
-			throwNull(f1 == null ? nameof(f1) : nameof(f2));
+			EitherThrowHelper.ThrowArgumentNull(f1 == null ? nameof(f1) : nameof(f2));
 		}
 
-		return _index switch
+		// The throw helpers aren't generic and name no constructed type, so shared code never looks up the type
+		// arguments. A lookup would keep the generic context alive, at the cost of a stack store on every call.
+		switch (_index)
 		{
-			1 => f1(_first!, state),
-			2 => f2(_second!, state),
-			_ => throwEmpty(),
-		};
+			case 1:
+				return f1(_first!, state);
 
-		[DoesNotReturn, StackTraceHidden]
-		static void throwNull(string paramName)
-		{
-			throw new ArgumentNullException(paramName);
-		}
+			case 2:
+				return f2(_second!, state);
 
-		[DoesNotReturn, StackTraceHidden]
-		static TOutput throwEmpty()
-		{
-			throw new EmptyStructException(nameof(Either<,>), typeof(Either<T1, T2>), innerException: null);
+			default:
+				EitherThrowHelper.ThrowEmpty();
+				return default!;
 		}
 	}
 
@@ -441,4 +442,36 @@ public readonly partial struct Either<T1, T2>
 	/// </summary>
 	/// <param name="second">The value of the second type.</param>
 	public static implicit operator Either<T1, T2>(T2 second) => new(second);
+}
+
+/// <summary>
+/// Provides the throw helpers of <see cref="Either{T1, T2}"/> that its shared generic code calls without a lookup of
+/// its type arguments.
+/// </summary>
+file static class EitherThrowHelper
+{
+	/// <summary>
+	/// Throws an <see cref="ArgumentNullException"/> for the specified parameter.
+	/// </summary>
+	/// <param name="paramName">The name of the null parameter.</param>
+	/// <exception cref="ArgumentNullException">Thrown when this method is called.</exception>
+	[DoesNotReturn, StackTraceHidden]
+	internal static void ThrowArgumentNull(string paramName)
+	{
+		throw new ArgumentNullException(paramName);
+	}
+
+	/// <summary>
+	/// Throws an <see cref="EmptyStructException"/> for a default-initialized <see cref="Either{T1, T2}"/>.
+	/// </summary>
+	/// <remarks>
+	/// The exception names the generic type definition, because naming a constructed type would take the type
+	/// arguments that the caller's shared code would have to look up.
+	/// </remarks>
+	/// <exception cref="EmptyStructException">Thrown when this method is called.</exception>
+	[DoesNotReturn, StackTraceHidden]
+	internal static void ThrowEmpty()
+	{
+		throw new EmptyStructException(nameof(Either<,>), typeof(Either<,>), innerException: null);
+	}
 }
