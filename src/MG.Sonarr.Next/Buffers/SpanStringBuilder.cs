@@ -998,7 +998,7 @@ internal ref struct SpanStringBuilder
 		//  - length must be in [0, pos - startIndex]
 		if ((uint)startIndex > (uint)pos || (uint)length > (uint)(pos - startIndex))
 		{
-			throwArgumentOutOfRangeException(startIndex, length, pos);
+			throwArgumentOutOfRangeException(startIndex, pos);
 		}
 
 		// Fast no-op, once the range is known to be valid
@@ -1012,8 +1012,8 @@ internal ref struct SpanStringBuilder
 
 		_position = pos - length;
 
-		[DoesNotReturn, StackTraceHidden, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
-		static void throwArgumentOutOfRangeException(int startIndex, int length, int pos)
+		[DoesNotReturn, StackTraceHidden, DebuggerStepThrough]
+		static void throwArgumentOutOfRangeException(int startIndex, int pos)
 		{
 			throw new ArgumentOutOfRangeException(
 				paramName: (uint)startIndex > (uint)pos ? nameof(startIndex) : nameof(length));
@@ -1185,7 +1185,7 @@ internal ref struct SpanStringBuilder
 
 		Rent.Return(oldArray, _clearOnDispose);
 
-		[DoesNotReturn, StackTraceHidden, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+		[DoesNotReturn, StackTraceHidden, DebuggerStepThrough]
 		static void throwTooBig(int requestedLength, int previousLength)
 		{
 			throw new BufferLimitException((long)MaxCapacity, previousLength, requestedLength);

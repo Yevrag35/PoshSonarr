@@ -268,7 +268,7 @@ public readonly struct ArraySlice<T> : IReadOnlyCollection<T>
 	/// </summary>
 	/// <param name="index">The index that lies outside the slice.</param>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown unconditionally.</exception>
-	[DoesNotReturn, StackTraceHidden, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+	[DoesNotReturn, StackTraceHidden, DebuggerStepThrough]
 	private static void ThrowIndexOutOfRange(int index)
 	{
 		throw new ArgumentOutOfRangeException(nameof(index), index, "The index must lie within the slice.");
@@ -281,7 +281,7 @@ public readonly struct ArraySlice<T> : IReadOnlyCollection<T>
 	/// <param name="length">The number of elements in the slice.</param>
 	/// <param name="arrayLength">The length of the array.</param>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown unconditionally.</exception>
-	[DoesNotReturn, StackTraceHidden, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+	[DoesNotReturn, StackTraceHidden, DebuggerStepThrough]
 	private static void ThrowOutOfRange(int offset, int length, int arrayLength)
 	{
 		throw (uint)offset > (uint)arrayLength
