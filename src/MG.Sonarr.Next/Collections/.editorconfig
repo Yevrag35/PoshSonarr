@@ -1,0 +1,2 @@
+[EmptyDictionary.cs]
+dotnet_diagnostic.CS1574.severity = error

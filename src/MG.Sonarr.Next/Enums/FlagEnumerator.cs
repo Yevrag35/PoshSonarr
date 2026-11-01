@@ -70,7 +70,7 @@ public ref struct FlagEnumerator<TEnum, TUnderlying>
 				throw new NotSupportedException($"The enumeration type '{typeof(TEnum).FullName}' does not have '{typeof(TUnderlying).FullName}' as its underlying type.");
 			}
 		};
-		[StackTraceHidden, MethodImpl(MethodImplOptions.NoInlining)]
+		[MethodImpl(MethodImplOptions.NoInlining)]
 		static string makeNotSupportedMessage()
 		{
 			int enumSize = Unsafe.SizeOf<TEnum>();

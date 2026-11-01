@@ -17,7 +17,7 @@ namespace MG.Sonarr.Next.Collections;
 /// </remarks>
 internal readonly struct JsonNameHolder
 {
-	private static readonly EmptyNameDictionary<string> _empty = [];
+	private static readonly EmptyNameDictionary<string> s_empty = [];
 
 	readonly IReadOnlyDictionary<string, string> _deserialization;
 	readonly IReadOnlyDictionary<string, string> _serialization;
@@ -26,13 +26,13 @@ internal readonly struct JsonNameHolder
 	/// Gets the name map used during deserialization.
 	/// </summary>
 	/// <value>A read-only dictionary keyed by incoming names.</value>
-	public IReadOnlyDictionary<string, string> DeserializationNames => _deserialization ?? _empty;
+	public IReadOnlyDictionary<string, string> DeserializationNames => _deserialization ?? s_empty;
 
 	/// <summary>
 	/// Gets the name map used during serialization.
 	/// </summary>
 	/// <value>A read-only dictionary keyed by outgoing names.</value>
-	public IReadOnlyDictionary<string, string> SerializationNames => _serialization ?? _empty;
+	public IReadOnlyDictionary<string, string> SerializationNames => _serialization ?? s_empty;
 
 	/// <summary>
 	/// Initializes a new <see cref="JsonNameHolder"/> instance with the specified name maps.
@@ -41,8 +41,8 @@ internal readonly struct JsonNameHolder
 	/// <param name="deserialization">The deserialization name map.</param>
 	internal JsonNameHolder(IReadOnlyDictionary<string, string>? serialization, IReadOnlyDictionary<string, string>? deserialization)
 	{
-		_deserialization = deserialization ?? _empty;
-		_serialization = serialization ?? _empty;
+		_deserialization = deserialization ?? s_empty;
+		_serialization = serialization ?? s_empty;
 	}
 
 	/// <summary>
@@ -68,7 +68,12 @@ internal readonly struct JsonNameHolder
 	/// </summary>
 	/// <param name="values">The deserialization name pairs.</param>
 	/// <returns>A holder containing deserialization and reversed serialization name maps.</returns>
-	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="values"/> is null.</exception>
+	/// <exception cref="System.ArgumentNullException">
+	/// Thrown when <paramref name="values"/> is null, or when one of its names is null.
+	/// </exception>
+	/// <exception cref="System.ArgumentException">
+	/// Thrown when two pairs have the same deserialization name or the same serialization name, or when a name is empty.
+	/// </exception>
 	internal static JsonNameHolder FromDeserializationNamePairs(IEnumerable<KeyValuePair<string, string>> values)
 	{
 		ArgumentNullException.ThrowIfNull(values);
@@ -88,6 +93,9 @@ internal readonly struct JsonNameHolder
 			Dictionary<string, string> ser = new(count, StringComparer.OrdinalIgnoreCase);
 			foreach (KeyValuePair<string, string> kvp in values)
 			{
+				ArgumentException.ThrowIfNullOrEmpty(kvp.Key, nameof(values));
+				ArgumentException.ThrowIfNullOrEmpty(kvp.Value, nameof(values));
+
 				des.Add(kvp.Key, kvp.Value);
 				ser.Add(kvp.Value, kvp.Key);
 			}
@@ -99,15 +107,19 @@ internal readonly struct JsonNameHolder
 	/// <summary>
 	/// Creates a <see cref="JsonNameHolder"/> from a read-only dictionary.
 	/// </summary>
+	/// <remarks>
+	/// <see cref="ReverseDictionary"/> reverses a <see cref="Dictionary{TKey, TValue}"/> even when it holds one entry, so
+	/// that the reverse takes its comparer. A <see cref="OneStringDictionary"/> always ignores case.
+	/// </remarks>
 	/// <param name="dict">The dictionary containing deserialization mappings.</param>
 	/// <returns>A holder configured for the dictionary size and contents.</returns>
 	private static JsonNameHolder FromSingleDictionary(IReadOnlyDictionary<string, string> dict)
 	{
 		return dict.Count switch
 		{
-			0 => new(_empty, _empty),
-			1 => new(ReverseSingle(dict), dict),
-			>= 2 => new(ReverseDictionary(dict), dict),
+			0 => new(s_empty, s_empty),
+			1 when dict is not Dictionary<string, string> => new(ReverseSingle(dict), dict),
+			>= 1 => new(ReverseDictionary(dict), dict),
 			_ => throw new UnreachableException("How could you have a negative count???"),
 		};
 	}
@@ -126,10 +138,20 @@ internal readonly struct JsonNameHolder
 	/// <summary>
 	/// Reverses a dictionary by swapping keys and values.
 	/// </summary>
+	/// <remarks>
+	/// The reverse of a <see cref="Dictionary{TKey, TValue}"/> takes its comparer, and the reverse of any other
+	/// dictionary compares names with <see cref="StringComparer.OrdinalIgnoreCase"/>.
+	/// </remarks>
 	/// <param name="forwardDict">The dictionary to reverse.</param>
-	/// <returns>A read-only dictionary whose keys and values are swapped from <paramref name="forwardDict"/>.</returns>
-	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="forwardDict"/> is null.</exception>
-	private static IReadOnlyDictionary<string, string> ReverseDictionary(IReadOnlyDictionary<string, string> forwardDict)
+	/// <returns>A dictionary whose keys and values are swapped from <paramref name="forwardDict"/>.</returns>
+	/// <exception cref="System.ArgumentNullException">
+	/// Thrown when <paramref name="forwardDict"/> is null, or when one of its keys or values is null.
+	/// </exception>
+	/// <exception cref="System.ArgumentException">
+	/// Thrown when two entries in <paramref name="forwardDict"/> have the same value, or when one of its keys or values
+	/// is empty.
+	/// </exception>
+	private static Dictionary<string, string> ReverseDictionary(IReadOnlyDictionary<string, string> forwardDict)
 	{
 		ArgumentNullException.ThrowIfNull(forwardDict);
 
@@ -140,9 +162,12 @@ internal readonly struct JsonNameHolder
 		Dictionary<string, string> reversed = new(forwardDict.Count, comparer);
 		foreach (var kvp in forwardDict)
 		{
+			ArgumentException.ThrowIfNullOrEmpty(kvp.Key, nameof(forwardDict));
+			ArgumentException.ThrowIfNullOrEmpty(kvp.Value, nameof(forwardDict));
+
 			reversed.Add(kvp.Value, kvp.Key);
 		}
 
-		return reversed.ToReadOnly();
+		return reversed;
 	}
 }
