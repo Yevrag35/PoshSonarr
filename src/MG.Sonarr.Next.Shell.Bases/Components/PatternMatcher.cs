@@ -38,15 +38,15 @@ public readonly ref struct PatternMatcher
 
 		while (i < input.Length)
 		{
-			if (j < _pattern.Length && (_pattern[j] == QUESTION || AreCharactersEqual(_pattern[j], input[i])))
-			{
-				++i;
-				++j;
-			}
-			else if (j < _pattern.Length && _pattern[j] == STAR)
+			if (j < _pattern.Length && _pattern[j] == STAR)
 			{
 				starIndex = j;
 				iIndex = i;
+				++j;
+			}
+			else if (j < _pattern.Length && (_pattern[j] == QUESTION || AreCharactersEqual(_pattern[j], input[i])))
+			{
+				++i;
 				++j;
 			}
 			else if (starIndex == -1)
