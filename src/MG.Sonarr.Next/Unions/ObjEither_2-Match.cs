@@ -36,6 +36,7 @@ partial struct ObjEither<T1, T2>
 	/// <param name="f1">The function pointer wrapper to invoke when the stored value is a <typeparamref name="T1"/>.</param>
 	/// <param name="f2">The function pointer wrapper to invoke when the stored value is a <typeparamref name="T2"/>.</param>
 	/// <returns>The value returned by the invoked function, or <see langword="default"/> when this instance is <see langword="default"/>.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="f1"/> or <paramref name="f2"/> wraps a null function pointer.</exception>
 	public TOutput Match<TOutput>(
 		FnPtr<T1, TOutput> f1,
 		FnPtr<T2, TOutput> f2)
@@ -88,16 +89,14 @@ partial struct ObjEither<T1, T2>
 	/// <param name="f1">The function pointer wrapper to invoke when the stored value is a <typeparamref name="T1"/>.</param>
 	/// <param name="f2">The function pointer wrapper to invoke when the stored value is a <typeparamref name="T2"/>.</param>
 	/// <returns>The value returned by the invoked function, or <see langword="default"/> when this instance is <see langword="default"/>.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="f1"/> or <paramref name="f2"/> wraps a null function pointer.</exception>
 	public TOutput Match<TState, TOutput>(
 		TState state,
 		FnPtr<TState, T1, TOutput> f1,
 		FnPtr<TState, T2, TOutput> f2) where TState : allows ref struct
 	{
-		if (!f1.IsValid || !f2.IsValid)
-		{
-			Debug.Fail("One or both function pointer wrappers are invalid. Ensure that the function pointers are not null.");
-            return default!;
-		}
+		FnPtr.ThrowIfNull(f1);
+		FnPtr.ThrowIfNull(f2);
 
 		return _index switch
 		{

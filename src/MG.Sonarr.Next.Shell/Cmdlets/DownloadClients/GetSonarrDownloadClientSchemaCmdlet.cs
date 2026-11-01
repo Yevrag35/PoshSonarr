@@ -33,7 +33,7 @@ public sealed class GetSonarrDownloadClientSchemaCmdlet : SonarrMetadataCmdlet
 	protected override void Process(IServiceProvider provider)
 	{
 		base.Process(provider);
-		_wcNames.UnionWith(this.Name.Where(x => !string.IsNullOrWhiteSpace(x)));
+		_wcNames.UnionWith(this.Name);
 		var all = this.SendGetRequest<MetadataList<DownloadClientSchemaObject>>(this.Tag.UrlBase);
 
 		if (all.IsError)

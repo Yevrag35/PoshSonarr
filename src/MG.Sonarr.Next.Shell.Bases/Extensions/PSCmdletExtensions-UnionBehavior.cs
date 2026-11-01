@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Collections.Pools;
+using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Unions;
 
@@ -105,11 +105,11 @@ public static partial class PSCmdletExtensions
 	{
 		switch (outcome.Index)
 		{
-			case 1u:
+			case 1:
 				onSuccess(cmdlet, state, outcome.AsT1!);
 				break;
 
-			case 2u:
+			case 2:
 				onFailure(cmdlet, state, outcome.AsT2!);
 				break;
 

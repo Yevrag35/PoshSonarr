@@ -45,8 +45,10 @@ internal static class ListMarshal
 	/// <para>The converted elements are written straight into the list's backing array, so no intermediate buffer is
 	/// allocated and the list is resized at most once no matter how many elements <paramref name="values"/> holds.</para>
 	/// <para>The element count and modification version are published only after every element has been converted, so a
-	/// <paramref name="conversion"/> that throws part-way leaves <paramref name="list"/> exactly as it was found, apart
-	/// from any capacity the append reserved. <paramref name="conversion"/> must not mutate <paramref name="list"/>: the
+	/// <paramref name="conversion"/> that throws part-way leaves the count, the elements, and the version of
+	/// <paramref name="list"/> as they were found. What it leaves behind is any capacity the append reserved, with the
+	/// elements converted before the throw still in the backing array past the count, where a list of references keeps
+	/// them reachable until a later append overwrites them. <paramref name="conversion"/> must not mutate <paramref name="list"/>: the
 	/// destination is captured before the first call, and an append or a capacity change made from inside the conversion
 	/// abandons that array while the loop is still writing to it.</para>
 	/// <para>
@@ -391,7 +393,14 @@ internal static class ListMarshal
 	/// Sets the count of the specified list to the provided size. This method directly modifies the internal size field of the list, which can lead to undefined behavior if not used carefully.
 	/// </summary>
 	/// <remarks>
-	/// The new size must be less than or equal to the length of the backing array.
+	/// <para>
+	/// The new size must be from 0 to the length of the backing array, which a Debug build asserts and a Release build
+	/// doesn't check.
+	/// </para>
+	/// <para>
+	/// Unlike <see cref="CollectionsMarshal.SetCount{T}(List{T}, int)"/>, it leaves the list's modification version
+	/// alone, and a smaller size leaves the elements past it in the backing array.
+	/// </para>
 	/// </remarks>
 	/// <typeparam name="T">The type of elements in the list.</typeparam>
 	/// <param name="list">The list whose count is to be set.</param>
@@ -399,7 +408,7 @@ internal static class ListMarshal
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void SetCount<T>(List<T> list, int size)
 	{
-		Debug.Assert(size <= View<T>.Items(list).Length, "The size being set should be less than or equal to the array length.");
+		Debug.Assert((uint)size <= (uint)View<T>.Items(list).Length, "The size being set should be from 0 to the array length.");
 		View<T>.Size(list) = size;
 	}
 

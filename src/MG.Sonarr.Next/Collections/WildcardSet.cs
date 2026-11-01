@@ -6,6 +6,20 @@ namespace MG.Sonarr.Next.Collections;
 /// <summary>
 /// Represents a set of wildcard patterns.
 /// </summary>
+/// <remarks>
+///     <para>
+///         Two patterns are the same item when their text is equal under
+///         <see cref="StringComparison.OrdinalIgnoreCase"/>, whichever overload adds or looks them up, so
+///         <see cref="Add(Wildcard)"/>, <see cref="Add(string)"/>, <see cref="Add(ReadOnlySpan{char})"/>, and
+///         <see cref="Add(int)"/> keep one item for <c>abc</c>, <c>ABC</c>, or <c>5</c> and <c>"5"</c>.
+///     </para>
+///     <para>
+///         Empty text is a name that matches nothing: every member that adds it adds <see cref="Wildcard.Empty"/>, which
+///         <see cref="IsAnyMatch(ReadOnlySpan{char})"/> never matches, so a set of empty names isn't empty and matches no
+///         input. Only a <see langword="null"/> string adds nothing. Text of white space alone is an exact pattern,
+///         which matches only the same white space.
+///     </para>
+/// </remarks>
 [DebuggerDisplay("Count = {Count}")]
 [CollectionBuilder(typeof(WildcardSet), nameof(Create))]
 public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
@@ -17,7 +31,7 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 	private readonly HashSet<Wildcard> _set;
 
 	/// <summary>
-	/// Gets the number of wildcard patterns are contained in the <see cref="WildcardSet"/>.
+	/// Gets the number of wildcard patterns in the <see cref="WildcardSet"/>.
 	/// </summary>
 	/// <value>The number of wildcard patterns in the set.</value>
 	public int Count
@@ -78,12 +92,17 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 	/// <summary>
 	/// Adds a wildcard pattern to the set.
 	/// </summary>
+	/// <remarks>
+	/// Empty text adds <see cref="Wildcard.Empty"/>, which matches nothing.
+	/// </remarks>
 	/// <param name="value">The wildcard pattern to add.</param>
-	/// <returns><see langword="true"/> if the wildcard pattern was added; otherwise, <see langword="false"/>.</returns>
+	/// <returns>
+	/// <see langword="true"/> if the wildcard pattern was added; otherwise, <see langword="false"/>, when
+	/// <paramref name="value"/> is <see langword="null"/> or the set already holds it.
+	/// </returns>
 	public bool Add([NotNullWhen(true)] string? value)
 	{
-		Wildcard wildcard = Wildcard.Parse(value);
-		return !wildcard.IsEmpty && _set.Add(wildcard);
+		return value is not null && _set.Add(Wildcard.Parse(value));
 	}
 
 	/// <summary>
@@ -104,15 +123,17 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 	/// <summary>
 	/// Adds a read-only span of characters as a wildcard pattern to the set.
 	/// </summary>
+	/// <remarks>
+	/// White space alone is an exact pattern, and empty text adds <see cref="Wildcard.Empty"/>, as
+	/// <see cref="Add(string)"/> does.
+	/// </remarks>
 	/// <param name="value">The read-only span of characters to add.</param>
-	/// <returns><see langword="true"/> if the span was added; otherwise, <see langword="false"/>.</returns>
+	/// <returns>
+	/// <see langword="true"/> if the span was added; otherwise, <see langword="false"/>, when the set already holds its
+	/// pattern.
+	/// </returns>
 	public bool Add(ReadOnlySpan<char> value)
 	{
-		if (value.IsWhiteSpace())
-		{
-			return false;
-		}
-
 		return _alternate.Add(value);
 	}
 
@@ -203,8 +224,10 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 	/// the specified collection, or both.
 	/// </summary>
 	/// <param name="other">The collection to compare to the current <see cref="WildcardSet"/> object.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
 	public void UnionWith(IEnumerable<Wildcard> other)
 	{
+		ArgumentNullException.ThrowIfNull(other);
 		if (other is WildcardSet wcSet)
 		{
 			_set.UnionWith(wcSet._set);
@@ -219,15 +242,18 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 	/// Modifies the current <see cref="WildcardSet"/> object to contain only the elements that are present in itself,
 	/// the specified collection, or both.
 	/// </summary>
+	/// <remarks>
+	/// Each string is added as <see cref="Add(string)"/> adds it, so a <see langword="null"/> one is skipped and an empty
+	/// one adds <see cref="Wildcard.Empty"/>.
+	/// </remarks>
 	/// <param name="other">The collection of string patterns to compare to the current <see cref="WildcardSet"/> object.</param>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
 	public void UnionWith(IEnumerable<string> other)
 	{
+		ArgumentNullException.ThrowIfNull(other);
 		foreach (string s in other)
 		{
-			if (s is null)
-				continue;
-
-			_ = _set.Add(s);
+			_ = this.Add(s);
 		}
 	}
 
@@ -278,7 +304,6 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 	[StructLayout(LayoutKind.Auto)]
 	public struct Enumerator : IEnumerator<Wildcard>
 	{
-		private HashSet<Wildcard> _set;
 		private HashSet<Wildcard>.Enumerator _enumerator;
 		private Wildcard _current;
 
@@ -288,7 +313,6 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 		/// <param name="set">The backing set to enumerate.</param>
 		internal Enumerator(HashSet<Wildcard> set)
 		{
-			_set = set;
 			_enumerator = set.GetEnumerator();
 			_current = default;
 		}
@@ -324,13 +348,25 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 		}
 
 		/// <summary>
-		/// Sets the enumerator to its initial position.
+		/// Sets the enumerator to its initial position, before the first wildcard, and clears <see cref="Current"/>.
 		/// </summary>
+		/// <exception cref="InvalidOperationException">
+		/// Thrown when the set changed after the enumerator was created, as <see cref="HashSet{T}"/>'s enumerator throws.
+		/// </exception>
 		void IEnumerator.Reset()
 		{
-			var enumerator = _enumerator;
-			((IEnumerator)enumerator).Reset();
-			_enumerator = enumerator;
+			ResetInPlace(ref _enumerator);
+			_current = default;
+		}
+
+		/// <summary>
+		/// Resets the specified enumerator where it's stored, with a constrained call that doesn't box a copy.
+		/// </summary>
+		/// <typeparam name="TEnumerator">The enumerator's type.</typeparam>
+		/// <param name="enumerator">The enumerator to reset.</param>
+		private static void ResetInPlace<TEnumerator>(ref TEnumerator enumerator) where TEnumerator : struct, IEnumerator
+		{
+			enumerator.Reset();
 		}
 	}
 
@@ -410,13 +446,19 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 			return alternate.GetHashCode(StringComparison.OrdinalIgnoreCase);
 		}
 		/// <summary>
-		/// Returns a hash code for the specified wildcard.
+		/// Returns a hash code for the specified wildcard's pattern, ignoring case.
 		/// </summary>
+		/// <remarks>
+		/// A pattern hashes as its text does in <see cref="GetHashCode(ReadOnlySpan{char})"/> and
+		/// <see cref="GetHashCode(string)"/>, so text that equals a wildcard has the wildcard's hash code, as
+		/// <see cref="IAlternateEqualityComparer{TAlternate, T}"/> requires. Two wildcards that
+		/// <see cref="Equals(Wildcard, Wildcard)"/> finds equal have text that's equal ignoring case, so they hash alike too.
+		/// </remarks>
 		/// <param name="obj">The wildcard for which a hash code is to be returned.</param>
 		/// <returns>A hash code for the specified wildcard.</returns>
 		public int GetHashCode(Wildcard obj)
 		{
-			return obj.GetHashCode();
+			return string.GetHashCode(obj.AsSpan(), StringComparison.OrdinalIgnoreCase);
 		}
 	}
 }

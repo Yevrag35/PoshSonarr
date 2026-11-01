@@ -3,6 +3,18 @@ namespace MG.Sonarr.Next.Collections;
 /// <summary>
 /// Represents paired name maps used for serialization and deserialization.
 /// </summary>
+/// <remarks>
+/// <para>
+/// The serialization map is the reverse of the deserialization map, whatever shape the pairs come in.
+/// </para>
+/// <para>
+/// A map built from pairs compares names with <see cref="StringComparer.OrdinalIgnoreCase"/>, as
+/// <see cref="OneStringDictionary"/> does, since the names are JSON property names and not linguistic text. A
+/// dictionary passed to <see cref="FromDeserializationNamePairs(IEnumerable{KeyValuePair{string, string}})"/> is the
+/// deserialization map as it is, and its reverse takes the dictionary's comparer when it's a
+/// <see cref="Dictionary{TKey, TValue}"/>.
+/// </para>
+/// </remarks>
 internal readonly struct JsonNameHolder
 {
 	private static readonly EmptyNameDictionary<string> _empty = [];
@@ -72,8 +84,8 @@ internal readonly struct JsonNameHolder
 		}
 		else
 		{
-			Dictionary<string, string> des = new(count, StringComparer.InvariantCultureIgnoreCase);
-			Dictionary<string, string> ser = new(count, StringComparer.InvariantCultureIgnoreCase);
+			Dictionary<string, string> des = new(count, StringComparer.OrdinalIgnoreCase);
+			Dictionary<string, string> ser = new(count, StringComparer.OrdinalIgnoreCase);
 			foreach (KeyValuePair<string, string> kvp in values)
 			{
 				des.Add(kvp.Key, kvp.Value);
@@ -94,10 +106,21 @@ internal readonly struct JsonNameHolder
 		return dict.Count switch
 		{
 			0 => new(_empty, _empty),
-			1 => new(OneStringDictionary.FromEnumerable(dict), dict),
+			1 => new(ReverseSingle(dict), dict),
 			>= 2 => new(ReverseDictionary(dict), dict),
 			_ => throw new UnreachableException("How could you have a negative count???"),
 		};
+	}
+
+	/// <summary>
+	/// Reverses a dictionary that holds one entry by swapping its key and value.
+	/// </summary>
+	/// <param name="forwardDict">The dictionary to reverse.</param>
+	/// <returns>A dictionary whose one key is the value of <paramref name="forwardDict"/>'s entry, and whose value is its key.</returns>
+	private static OneStringDictionary ReverseSingle(IReadOnlyDictionary<string, string> forwardDict)
+	{
+		OneStringDictionary forward = OneStringDictionary.FromEnumerable(forwardDict);
+		return new(forward.Value, forward.Key);
 	}
 
 	/// <summary>
@@ -112,7 +135,7 @@ internal readonly struct JsonNameHolder
 
 		IEqualityComparer<string> comparer = forwardDict is Dictionary<string, string> realDict
 			? realDict.Comparer
-			: StringComparer.InvariantCultureIgnoreCase;
+			: StringComparer.OrdinalIgnoreCase;
 
 		Dictionary<string, string> reversed = new(forwardDict.Count, comparer);
 		foreach (var kvp in forwardDict)

@@ -21,11 +21,14 @@ public interface IErrorCollection : IReadOnlyList<SonarrServerError>
 internal sealed class EmptyReadOnlyErrorCollection : IErrorCollection
 {
 	/// <summary>
-	/// Gets the error at the specified index.
+	/// Gets the error at the specified index, which an empty collection has none at.
 	/// </summary>
 	/// <param name="index">The zero-based index.</param>
+	/// <exception cref="ArgumentOutOfRangeException">
+	/// Thrown for every <paramref name="index"/>, as <see cref="List{T}"/>'s indexer throws for an index outside the list.
+	/// </exception>
 	/// <value>The error at <paramref name="index"/>.</value>
-	public SonarrServerError this[int index] => null!;
+	public SonarrServerError this[int index] => throw new ArgumentOutOfRangeException(nameof(index), index, message: null);
 
 	/// <summary>
 	/// Gets the number of errors in the collection.

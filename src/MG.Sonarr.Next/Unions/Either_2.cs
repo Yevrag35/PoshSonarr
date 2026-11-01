@@ -23,7 +23,7 @@ public readonly partial struct Either<T1, T2>
 	private readonly T1? _first;
 	private readonly T2? _second;
 
-	private readonly uint _index;
+	private readonly byte _index;
 
 	/// <summary>
 	/// Gets the value of the first type if present.
@@ -41,7 +41,7 @@ public readonly partial struct Either<T1, T2>
 	/// Gets the index indicating the current type.
 	/// </summary>
 	/// <value>The discriminator index.</value>
-	public uint Index => _index;
+	public byte Index => _index;
 
 	/// <summary>
 	/// Gets a value indicating whether the instance is default or empty.
@@ -69,7 +69,7 @@ public readonly partial struct Either<T1, T2>
 	/// <param name="first">The value of the first type.</param>
 	/// <param name="second">The value of the second type.</param>
 	/// <param name="index">The index indicating the current type.</param>
-	internal Either(T1? first, T2? second, uint index)
+	internal Either(T1? first, T2? second, byte index)
 	{
 		_isNotDefault = true;
 		_first = first;
@@ -119,7 +119,7 @@ public readonly partial struct Either<T1, T2>
 	/// <returns><see langword="true"/> when both instances satisfy the same-type comparison; otherwise, <see langword="false"/>.</returns>
 	public readonly bool IsSameType(in Either<T1, T2> other, bool ignoreDefaultOrEmpty)
 	{
-		return (other._index > 0u || ignoreDefaultOrEmpty) && _index == other._index;
+		return (other._index > 0 || ignoreDefaultOrEmpty) && _index == other._index;
 	}
 
 	/// <summary>
@@ -143,14 +143,14 @@ public readonly partial struct Either<T1, T2>
 	{
 		switch (_index)
 		{
-			case 0u:
+			case 0:
 				goto default;
 
-			case 1u:
+			case 1:
 				f1(_first!);
 				break;
 
-			case 2u:
+			case 2:
 				f2(_second!);
 				break;
 
@@ -169,7 +169,7 @@ public readonly partial struct Either<T1, T2>
 	/// <param name="f1">The action to execute if the instance is of the first type.</param>
 	/// <param name="f2">The action to execute if the instance is of the second type.</param>
 	/// <returns>The result of the executed function.</returns>
-	/// <exception cref="EmptyStructException"></exception>
+	/// <exception cref="EmptyStructException">Thrown when the instance holds neither type, as a default-initialized one doesn't.</exception>
 	public readonly object? MatchObj(
 		object? state,
 		Func<T1, object?, object?> f1,
@@ -177,10 +177,9 @@ public readonly partial struct Either<T1, T2>
 	{
 		return _index switch
 		{
-			0u => throw new EmptyStructException(nameof(Either<,>), this.GetType(), innerException: null),
-			1u => f1(_first!, state),
-			2u => f2(_second!, state),
-			_ => null,
+			1 =>f1(_first!, state),
+			2 =>f2(_second!, state),
+			0 or _ =>throw new EmptyStructException(nameof(Either<,>), this.GetType(), innerException: null),
 		};
 	}
 	/// <summary>
@@ -201,14 +200,14 @@ public readonly partial struct Either<T1, T2>
 	{
 		switch (_index)
 		{
-			case 0u:
+			case 0:
 				goto default;
 
-			case 1u:
+			case 1:
 				f1(_first!, state);
 				break;
 
-			case 2u:
+			case 2:
 				f2(_second!, state);
 				break;
 
@@ -233,9 +232,9 @@ public readonly partial struct Either<T1, T2>
 	{
 		return _index switch
 		{
-			1u => f1(_first!),
-			2u => f2(_second!),
-			0u or _ => throw new EmptyStructException(nameof(Either<,>), this.GetType(), innerException: null),
+			1 =>f1(_first!),
+			2 =>f2(_second!),
+			0 or _ =>throw new EmptyStructException(nameof(Either<,>), this.GetType(), innerException: null),
 		};
 	}
 	/// <summary>
@@ -258,9 +257,9 @@ public readonly partial struct Either<T1, T2>
 	{
 		return _index switch
 		{
-			1u => f1(_first!, state),
-			2u => f2(_second!, state),
-			0u or _ => throw new EmptyStructException(nameof(Either<,>), this.GetType(), innerException: null),
+			1 =>f1(_first!, state),
+			2 =>f2(_second!, state),
+			0 or _ =>throw new EmptyStructException(nameof(Either<,>), this.GetType(), innerException: null),
 		};
 	}
 
@@ -273,18 +272,38 @@ public readonly partial struct Either<T1, T2>
 	/// <param name="f1">The function pointer to execute if the instance is of the first type.</param>
 	/// <param name="f2">The function pointer to execute if the instance is of the second type.</param>
 	/// <returns>The result of the executed function pointer.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="f1"/> or <paramref name="f2"/> is null.</exception>
+	/// <exception cref="EmptyStructException">Thrown when the instance is default-initialized.</exception>
 	public unsafe TOutput Match<TOutput, TState>(
 		TState state,
 		delegate*<T1, TState, TOutput> f1,
 		delegate*<T2, TState, TOutput> f2)
 		where TState : allows ref struct
 	{
+		// A call through a null pointer ends the process with an access violation that no catch sees.
+		if (f1 == null || f2 == null)
+		{
+			throwNull(f1 == null ? nameof(f1) : nameof(f2));
+		}
+
 		return _index switch
 		{
 			1 => f1(_first!, state),
 			2 => f2(_second!, state),
-			_ => default!,
+			_ => throwEmpty(),
 		};
+
+		[DoesNotReturn, StackTraceHidden]
+		static void throwNull(string paramName)
+		{
+			throw new ArgumentNullException(paramName);
+		}
+
+		[DoesNotReturn, StackTraceHidden]
+		static TOutput throwEmpty()
+		{
+			throw new EmptyStructException(nameof(Either<,>), typeof(Either<T1, T2>), innerException: null);
+		}
 	}
 
 	/// <summary>
@@ -305,14 +324,14 @@ public readonly partial struct Either<T1, T2>
 	{
 		switch (_index)
 		{
-			case 0u:
+			case 0:
 				goto default;
 
-			case 1u:
+			case 1:
 				f1(_first!, state);
 				break;
 
-			case 2u:
+			case 2:
 				f2(_second!, state);
 				break;
 
@@ -338,14 +357,14 @@ public readonly partial struct Either<T1, T2>
 	{
 		switch (_index)
 		{
-			case 0u:
+			case 0:
 				goto default;
 
-			case 1u:
+			case 1:
 				f1(_first!, state);
 				break;
 
-			case 2u:
+			case 2:
 				f2(_second!, state);
 				break;
 
@@ -404,9 +423,9 @@ public readonly partial struct Either<T1, T2>
 	{
 		return _index switch
 		{
-			1u => $"T1: {_first}",
-			2u => $"T2: {_second}",
-			0u or _ => "Invalid",
+			1 =>$"T1: {_first}",
+			2 =>$"T2: {_second}",
+			0 or _ =>"Invalid",
 		};
 	}
 #endif

@@ -85,10 +85,16 @@ public readonly ref struct RefEither<T1, T2> where T1 : allows ref struct where 
 	/// <summary>
 	/// Matches the current instance to one of the provided functions based on its type and returns the result.
 	/// </summary>
+	/// <remarks>
+	/// A default-initialized instance runs neither function and returns <see langword="default"/>, as
+	/// <see cref="ObjEither{T1, T2}"/>'s <c>Match</c> does, where <see cref="Either{T1, T2}"/>'s throws.
+	/// </remarks>
 	/// <typeparam name="TOutput">The output type.</typeparam>
 	/// <param name="f1">The function to execute if the instance is of the first type.</param>
 	/// <param name="f2">The function to execute if the instance is of the second type.</param>
-	/// <returns>The result of the executed function.</returns>
+	/// <returns>
+	/// The result of the executed function, or <see langword="default"/> for a default-initialized instance.
+	/// </returns>
 	public TOutput Match<TOutput>(
 		Func<T1, TOutput> f1,
 		Func<T2, TOutput> f2) where TOutput : allows ref struct
@@ -105,8 +111,8 @@ public readonly ref struct RefEither<T1, T2> where T1 : allows ref struct where 
 	/// Tries to get the value of the first type.
 	/// </summary>
 	/// <param name="t1">The value of the first type if present.</param>
-	/// <param name="t2">The value of the second type if present.</param>
-	/// <returns><see langword="true"/> if the instance is of the first type, otherwise <see langword="false"/>.</returns>
+	/// <param name="t2">The value of the second type if present, or <see langword="default"/> for a default-initialized instance.</param>
+	/// <returns><see langword="true"/> if the instance is of the first type, otherwise <see langword="false"/>, as for a default-initialized instance.</returns>
 	public bool TryGetT1([NotNullWhen(true)] out T1? t1, [NotNullWhen(false)] out T2? t2)
 	{
 		t1 = _first;
@@ -117,8 +123,8 @@ public readonly ref struct RefEither<T1, T2> where T1 : allows ref struct where 
 	/// Tries to get the value of the second type.
 	/// </summary>
 	/// <param name="t2">The value of the second type if present.</param>
-	/// <param name="t1">The value of the first type if present.</param>
-	/// <returns><see langword="true"/> if the instance is of the second type, otherwise <see langword="false"/>.</returns>
+	/// <param name="t1">The value of the first type if present, or <see langword="default"/> for a default-initialized instance.</param>
+	/// <returns><see langword="true"/> if the instance is of the second type, otherwise <see langword="false"/>, as for a default-initialized instance.</returns>
 	public bool TryGetT2([NotNullWhen(true)] out T2? t2, [NotNullWhen(false)] out T1? t1)
 	{
 		t1 = _first;

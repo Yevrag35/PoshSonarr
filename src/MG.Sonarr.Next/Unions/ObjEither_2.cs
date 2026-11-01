@@ -5,10 +5,15 @@ namespace MG.Sonarr.Next.Unions;
 /// <summary>
 /// Represents a discriminated union that holds a reference to either an object of type <typeparamref name="T1"/> or an object of type <typeparamref name="T2"/>.
 /// </summary>
-/// <remarks>Use <see cref="ObjEither{T1, T2}"/> to encapsulate a value that may be one of two distinct reference types,
+/// <remarks>
+/// <para>Use <see cref="ObjEither{T1, T2}"/> to encapsulate a value that may be one of two distinct reference types,
 /// enabling type-safe access and pattern matching. The struct provides properties and methods to determine which type
 /// is currently held and to retrieve the value accordingly. Implicit conversion operators allow for convenient
-/// construction from either type.</remarks>
+/// construction from either type.</para>
+/// <para>An instance that holds a type holds a non-null value of it: the constructors and the implicit conversions
+/// throw <see cref="ArgumentNullException"/> for <see langword="null"/>. Only the <see langword="default"/> instance
+/// holds no value, and it holds neither type.</para>
+/// </remarks>
 /// <typeparam name="T1">The first reference type that can be stored in the union.</typeparam>
 /// <typeparam name="T2">The second reference type that can be stored in the union.</typeparam>
 [Union, StructLayout(LayoutKind.Auto), DebuggerDisplay(@"\{Index = {_index}, Value = {_value}\}"), DebuggerStepThrough]
@@ -16,20 +21,19 @@ public readonly partial struct ObjEither<T1, T2> : IUnion where T1 : class where
 {
 	private readonly object? _value;
 	private readonly byte _index;
-	private readonly bool _hasValue;
 
 	/// <summary>
 	/// Get a value that indicates whether the union currently holds a <typeparamref name="T1"/> value.
 	/// </summary>
 	/// <value><see langword="true"/> if the value is of type <typeparamref name="T1"/>; otherwise, <see langword="false"/>.</value>
-	[MemberNotNullWhen(true, nameof(AsT1), nameof(_value), nameof(Value)), MemberNotNullWhen(false, nameof(AsT2))]
+	[MemberNotNullWhen(true, nameof(AsT1), nameof(_value), nameof(Value))]
 	public bool IsT1 => _index == 1;
 
 	/// <summary>
 	/// Get a value that indicates whether the union currently holds a <typeparamref name="T2"/> value.
 	/// </summary>
 	/// <value><see langword="true"/> if the value is of type <typeparamref name="T2"/>; otherwise, <see langword="false"/>.</value>
-	[MemberNotNullWhen(true, nameof(AsT2), nameof(Value), nameof(_value)), MemberNotNullWhen(false, nameof(AsT1))]
+	[MemberNotNullWhen(true, nameof(AsT2), nameof(Value), nameof(_value))]
 	public bool IsT2 => _index == 2;
 
 	/// <summary>
@@ -75,10 +79,12 @@ public readonly partial struct ObjEither<T1, T2> : IUnion where T1 : class where
 	public T2? AsT2 => _value as T2;
 
 	/// <summary>
-	/// Indicates whether this instance holds a non-null value.
+	/// Gets a value that indicates whether this instance holds a value, which only the <see langword="default"/>
+	/// instance doesn't.
 	/// </summary>
+	/// <value><see langword="true"/> if this instance holds a value; otherwise, <see langword="false"/>.</value>
 	[MemberNotNullWhen(true, nameof(Value), nameof(_value))]
-	public bool HasValue => _hasValue && _index != 0;
+	public bool HasValue => _index != 0;
 	/// <summary>
 	/// Gets the underlying value stored in the union, which can be either of type <typeparamref name="T1"/> or <typeparamref name="T2"/>.
 	/// </summary>
@@ -89,22 +95,24 @@ public readonly partial struct ObjEither<T1, T2> : IUnion where T1 : class where
 	/// Initializes a new <see cref="ObjEither{T1, T2}"/> instance that holds a <typeparamref name="T1"/> value.
 	/// </summary>
 	/// <param name="value">The value to store.</param>
-	public ObjEither(T1? value)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+	public ObjEither(T1 value)
 	{
+		ArgumentNullException.ThrowIfNull(value);
 		_value = value;
 		_index = 1;
-		_hasValue = value is not null;
 	}
 
 	/// <summary>
 	/// Initializes a new <see cref="ObjEither{T1, T2}"/> instance that holds a <typeparamref name="T2"/> value.
 	/// </summary>
 	/// <param name="value">The value to store.</param>
-	public ObjEither(T2? value)
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+	public ObjEither(T2 value)
 	{
+		ArgumentNullException.ThrowIfNull(value);
 		_value = value;
 		_index = 2;
-		_hasValue = value is not null;
 	}
 
 	/// <summary>
@@ -169,12 +177,14 @@ public readonly partial struct ObjEither<T1, T2> : IUnion where T1 : class where
 	/// </summary>
 	/// <param name="value">The value to store.</param>
 	/// <returns>A union holding <paramref name="value"/> as a <typeparamref name="T1"/> value.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
 	public static implicit operator ObjEither<T1, T2>(T1 value) => new(value);
 	/// <summary>
 	/// Create a union instance from a <typeparamref name="T2"/> value.
 	/// </summary>
 	/// <param name="value">The value to store.</param>
 	/// <returns>A union holding <paramref name="value"/> as a <typeparamref name="T2"/> value.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
 	public static implicit operator ObjEither<T1, T2>(T2 value) => new(value);
 }
 

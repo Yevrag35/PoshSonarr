@@ -3,6 +3,11 @@ namespace MG.Sonarr.Next.Collections;
 /// <summary>
 /// Represents a case-insensitive sorted set of string keys and associated values.
 /// </summary>
+/// <remarks>
+/// Keys compare and sort with <see cref="StringComparer.OrdinalIgnoreCase"/>, as <see cref="StringSet"/>'s strings do,
+/// so keys that differ only in case are one key, and keys that differ in any other way, such as in a soft hyphen or
+/// in a precomposed letter against a letter and a combining mark, are two.
+/// </remarks>
 /// <typeparam name="T">The value type.</typeparam>
 [DebuggerDisplay("Count = {Count}")]
 public sealed class StringKeyValueSet<T> : SortedSet<KeyValuePair<string, T>>
@@ -10,7 +15,11 @@ public sealed class StringKeyValueSet<T> : SortedSet<KeyValuePair<string, T>>
 	/// <summary>
 	/// Gets or sets the value associated with the specified key.
 	/// </summary>
+	/// <remarks>
+	/// Setting a <see langword="null"/> value changes nothing, since the set holds no <see langword="null"/> value.
+	/// </remarks>
 	/// <param name="key">The key to locate or assign.</param>
+	/// <exception cref="ArgumentException">Thrown when a value is set for a key that is null or empty.</exception>
 	/// <value>The matching value, or the default value when the key is not present.</value>
 	public T? this[string key]
 	{
@@ -19,6 +28,7 @@ public sealed class StringKeyValueSet<T> : SortedSet<KeyValuePair<string, T>>
 			: default;
 		set
 		{
+			ArgumentException.ThrowIfNullOrEmpty(key);
 			if (value is null)
 			{
 				return;
@@ -34,7 +44,7 @@ public sealed class StringKeyValueSet<T> : SortedSet<KeyValuePair<string, T>>
 	/// Initializes a new <see cref="StringKeyValueSet{T}"/> instance.
 	/// </summary>
 	public StringKeyValueSet()
-		: base(KeyValueSetComparers.GetOrCreate<T>())
+		: base(KeyValueComparer<T>.Instance)
 	{
 	}
 
@@ -43,7 +53,7 @@ public sealed class StringKeyValueSet<T> : SortedSet<KeyValuePair<string, T>>
 	/// </summary>
 	/// <param name="values">The key/value pairs to add to the set.</param>
 	public StringKeyValueSet(IEnumerable<KeyValuePair<string, T>> values)
-		: base(values, KeyValueSetComparers.GetOrCreate<T>())
+		: base(values, KeyValueComparer<T>.Instance)
 	{
 	}
 
@@ -127,78 +137,39 @@ public sealed class StringKeyValueSet<T> : SortedSet<KeyValuePair<string, T>>
 }
 
 /// <summary>
-/// Provides cached key/value comparers for <see cref="StringKeyValueSet{T}"/>.
+/// Represents the key comparer that every <see cref="StringKeyValueSet{T}"/> of one value type shares.
 /// </summary>
-file static class KeyValueSetComparers
+/// <remarks>
+/// The runtime creates <see cref="Instance"/> once for each <typeparamref name="T"/>, safely from any number of threads,
+/// as the module's runspaces share it.
+/// </remarks>
+/// <typeparam name="T">The value type.</typeparam>
+file sealed class KeyValueComparer<T> : IComparer<KeyValuePair<string, T>>
 {
 	/// <summary>
-	/// Gets a cached comparer for the specified value type.
+	/// The comparer for <typeparamref name="T"/>.
 	/// </summary>
-	/// <typeparam name="T">The value type.</typeparam>
-	/// <returns>A comparer that performs case-insensitive key comparisons.</returns>
-	internal static IComparer<KeyValuePair<string, T>> GetOrCreate<T>()
-	{
-		KeyValueComparer<T> comparer;
-		if (!_comparers.IsValueCreated || !_comparers.Value.TryGetValue(typeof(T), out KeyValueComparer? comp))
-		{
-			comparer = new();
-			_comparers.Value.TryAdd(comparer.ComparesType, comparer);
-		}
-		else
-		{
-			comparer = (KeyValueComparer<T>)comp;
-		}
-
-		return comparer;
-	}
-
-	static readonly Lazy<Dictionary<Type, KeyValueComparer>> _comparers = new(() => new(1));
+	internal static readonly KeyValueComparer<T> Instance = new();
 
 	/// <summary>
-	/// Represents a key comparer for a specific key/value pair type.
+	/// Initializes a new <see cref="KeyValueComparer{T}"/> instance.
 	/// </summary>
-	/// <typeparam name="T">The value type.</typeparam>
-	private sealed class KeyValueComparer<T> : KeyValueComparer, IComparer<KeyValuePair<string, T>>
+	private KeyValueComparer()
 	{
-		/// <summary>
-		/// Gets the value type this comparer handles.
-		/// </summary>
-		/// <value>The value type for this comparer.</value>
-		internal override Type ComparesType { get; }
-
-		/// <summary>
-		/// Initializes a new <see cref="KeyValueComparer{T}"/> instance.
-		/// </summary>
-		internal KeyValueComparer()
-		{
-			this.ComparesType = typeof(T);
-		}
-
-		/// <summary>
-		/// Compares two key/value pairs by using case-insensitive comparison on their keys.
-		/// </summary>
-		/// <param name="x">The first pair to compare.</param>
-		/// <param name="y">The second pair to compare.</param>
-		/// <returns>
-		/// A value less than zero when <paramref name="x"/> sorts before <paramref name="y"/>;
-		/// zero when they are equal; otherwise, a value greater than zero.
-		/// </returns>
-		public int Compare(KeyValuePair<string, T> x, KeyValuePair<string, T> y)
-		{
-			return StringComparer.InvariantCultureIgnoreCase.Compare(x.Key, y.Key);
-		}
 	}
 
 	/// <summary>
-	/// Represents a non-generic base comparer descriptor.
+	/// Compares two key/value pairs by their keys, with <see cref="StringComparer.OrdinalIgnoreCase"/>.
 	/// </summary>
-	private abstract class KeyValueComparer
+	/// <param name="x">The first pair to compare.</param>
+	/// <param name="y">The second pair to compare.</param>
+	/// <returns>
+	/// A value less than zero when <paramref name="x"/> sorts before <paramref name="y"/>;
+	/// zero when they are equal; otherwise, a value greater than zero.
+	/// </returns>
+	public int Compare(KeyValuePair<string, T> x, KeyValuePair<string, T> y)
 	{
-		/// <summary>
-		/// Gets the value type this comparer handles.
-		/// </summary>
-		/// <value>The comparer value type.</value>
-		internal abstract Type ComparesType { get; }
+		return StringComparer.OrdinalIgnoreCase.Compare(x.Key, y.Key);
 	}
 }
 
