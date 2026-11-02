@@ -15,12 +15,10 @@ public sealed class GetSonarrRootFolderCmdlet : SonarrMetadataCmdlet
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int[] Id { get; set; } = [];
 
-	protected override int Capacity => 1;
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_ids = this.GetPooledObject<SortedSet<int>>();
-		this.SetReturnables(_ids);
+		_ids = [];
 	}
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
@@ -40,16 +38,5 @@ public sealed class GetSonarrRootFolderCmdlet : SonarrMetadataCmdlet
 			: this.GetAll<RootFolderObject>();
 
 		this.WriteCollection(folders);
-	}
-
-	bool _disposed;
-	protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
-	{
-		base.Dispose(disposing, factory);
-		if (disposing && !_disposed)
-		{
-			_ids = null!;
-			_disposed = true;
-		}
 	}
 }

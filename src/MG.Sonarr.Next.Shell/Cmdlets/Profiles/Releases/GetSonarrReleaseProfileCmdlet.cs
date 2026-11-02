@@ -26,14 +26,11 @@ public sealed class GetSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 	[SupportsWildcards]
 	public Either<string, int>[] Name { get; set; } = [];
 
-	protected override int Capacity => 2;
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_ids = this.GetPooledObject<SortedSet<int>>();
-		_wcNames = this.GetPooledObject<WildcardSet>();
-
-		this.SetReturnables(_ids, _wcNames);
+		_ids = [];
+		_wcNames = new();
 	}
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)

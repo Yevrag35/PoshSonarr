@@ -37,15 +37,12 @@ public sealed class AddSonarrTagCmdlet : SonarrMetadataCmdlet
 	[Parameter(Position = 0)]
 	public Either<string, int>[] Name { get; set; } = [];
 
-	protected override int Capacity => 3;
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_ids = this.GetPooledObject<SortedSet<int>>();
-		_wcNames = this.GetPooledObject<WildcardSet>();
-		_updates = this.GetPooledObject<Dictionary<string, ITagPipeable>>();
-
-		this.SetReturnables(_ids, _wcNames, _updates);
+		_ids = [];
+		_wcNames = new();
+		_updates = new(5, StringComparer.OrdinalIgnoreCase);
 	}
 
 	private void AddUrlsFromMetadata(ITagPipeable[] pipeables)
@@ -144,18 +141,5 @@ public sealed class AddSonarrTagCmdlet : SonarrMetadataCmdlet
 			kvp.Value.CommitTags();
 			return true;
 		}
-	}
-
-	bool _disposed;
-	protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
-	{
-		if (disposing && !_disposed)
-		{
-			_ids = null!;
-			_wcNames = null!;
-			_disposed = true;
-		}
-
-		base.Dispose(disposing, factory);
 	}
 }

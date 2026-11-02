@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Services.Http.Queries;
@@ -14,13 +13,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes;
 [MetadataCanPipe(Tag = Meta.Episode)]
 public sealed class GetSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 {
-	bool _disposed;
-	const int CAPACITY = 3;
 	SortedSet<int> _ids = null!;
 	SortedSet<int> _seriesIds = null!;
 	QueryCol _params = null!;
-
-	protected override int Capacity => CAPACITY;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByEpisodeFileInput")]
@@ -49,12 +44,9 @@ public sealed class GetSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		var pool = provider.GetRequiredService<IObjectPool<SortedSet<int>>>();
-		_ids = pool.Get();
-		_seriesIds = pool.Get();
-		_params = this.GetPooledObject<QueryCol>();
-
-		this.SetReturnables(_ids, _seriesIds, _params);
+		_ids = [];
+		_seriesIds = [];
+		_params = new(10);
 	}
 
 	private bool HasNoParameters()
@@ -153,25 +145,5 @@ public sealed class GetSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 	{
 		return setName.StartsWith(
 			['b', 'y', 's', 'e', 'r', 'i', 'e', 's'], StringComparison.OrdinalIgnoreCase);
-	}
-
-	protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
-	{
-		if (disposing && !_disposed)
-		{
-			if (factory is not null)
-			{
-				using var scope = factory.CreateScope();
-				var pool = scope.ServiceProvider.GetService<IObjectPool<SortedSet<int>>>();
-				pool?.Return(_ids);
-				pool?.Return(_seriesIds);
-			}
-
-			_ids = null!;
-			_seriesIds = null!;
-			_disposed = true;
-		}
-
-		base.Dispose(disposing, factory);
 	}
 }

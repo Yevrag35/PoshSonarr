@@ -20,12 +20,10 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 	const string BY_EP_INPUT = "ByEpisodeInput";
 	const string BY_SERIES_ID = "BySeriesId";
 	const string BY_SERIES_INPUT = "BySeriesInput";
-	const int CAPACITY = 3;
 
 	SortedSet<int> _epIds = null!;
 	QueryCol _params = null!;
 	Dictionary<int, IEpisodeBySeriesPipeable> _seriesIds = null!;
-	protected override int Capacity => CAPACITY;
 
 	[Parameter(Mandatory = true, ParameterSetName = BY_EP_ID)]
 	[ValidateRange(ValidateRangeKind.Positive)]
@@ -55,11 +53,9 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_epIds = this.GetPooledObject<SortedSet<int>>();
-		_seriesIds = this.GetPooledObject<Dictionary<int, IEpisodeBySeriesPipeable>>();
-		_params = this.GetPooledObject<QueryCol>();
-
-		this.SetReturnables(_epIds, _seriesIds, _params);
+		_epIds = [];
+		_seriesIds = [];
+		_params = new(10);
 	}
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
 	protected override void Begin(IServiceProvider provider)

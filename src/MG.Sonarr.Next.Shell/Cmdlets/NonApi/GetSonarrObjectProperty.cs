@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Extensions.Reflection;
-using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Components;
 using MG.Sonarr.Next.Shell.Extensions;
 
@@ -7,11 +6,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.NonApi;
 
 [Cmdlet(VerbsCommon.Get, "SonarrObjectProperty")]
 [Alias("Get-SonarrObjectProperties", "Get-SonarrProperties")]
-public sealed class GetSonarrObjectProperty : PoolableCmdlet
+public sealed class GetSonarrObjectProperty : SonarrCmdletBase
 {
 	SortedSet<SonarrProperty> _set = null!;
-
-	protected override int Capacity => 1;
 
 	[Parameter(Position = 0, ValueFromPipeline = true)]
 	public PSObject[] InputObject { get; set; } = Array.Empty<PSObject>();
@@ -21,8 +18,7 @@ public sealed class GetSonarrObjectProperty : PoolableCmdlet
 
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
-		_set = this.GetPooledObject<SortedSet<SonarrProperty>>();
-		this.GetReturnables()[0] = _set;
+		_set = [];
 	}
 
 	protected override void Process(IServiceProvider provider)

@@ -35,12 +35,9 @@ public sealed class TestSonarrRenameCmdlet : SonarrApiCmdletBase
 	[ValidateRange(ValidateRangeKind.NonNegative)]
 	public int SeasonNumber { get; set; }
 
-	protected override int Capacity => 1;
-
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
-		_params = this.GetPooledObject<QueryCol>();
-		this.SetReturnables(_params);
+		_params = new(10);
 	}
 
 	protected override void Begin(IServiceProvider provider)

@@ -22,7 +22,6 @@ public sealed class GetSonarrCommandCmdlet : SonarrMetadataCmdlet
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int[] Id { get; set; } = [];
 
-	protected override int Capacity => 1;
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
 		return resolver[Meta.Command];
@@ -30,8 +29,7 @@ public sealed class GetSonarrCommandCmdlet : SonarrMetadataCmdlet
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_ids = this.GetPooledObject<SortedSet<int>>();
-		this.SetReturnables(_ids);
+		_ids = [];
 	}
 
 	protected override void Begin(IServiceProvider provider)

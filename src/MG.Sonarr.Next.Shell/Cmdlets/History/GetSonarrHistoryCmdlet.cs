@@ -23,13 +23,9 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 	const string BY_SERIES_PIPE = "BySeriesPipelineInput";
 	const string SINCE_DATE = "SinceDate";
 
-	const int CAPACITY = 2;
-
 	int _eventType = -1;
 	SortedSet<int> _ids = null!;
 	QueryCol _parameters = null!;
-
-	protected override int Capacity => CAPACITY;
 
 	#region BY_PAGING PARAMETER SET
 
@@ -101,10 +97,8 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_ids = this.GetPooledObject<SortedSet<int>>();
-		_parameters = this.GetPooledObject<QueryCol>();
-
-		this.SetReturnables(_ids, _parameters);
+		_ids = [];
+		_parameters = new(10);
 	}
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
 	protected override void Begin(IServiceProvider provider)

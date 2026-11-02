@@ -25,6 +25,7 @@ namespace MG.Sonarr.Next.Models.Media;
 [SonarrObject]
 public sealed class MediaManagementObject : SonarrObject,
 	IComparable<MediaManagementObject>,
+	IHasId,
 	IJsonOnSerializing,
 	ISerializableNames<MediaManagementObject>
 {

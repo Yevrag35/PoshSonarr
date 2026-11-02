@@ -52,7 +52,7 @@ Every test file's top-level `BeforeAll` dot-sources `setup.ps1`. It imports the 
 
 ## Writing a test
 
-Each file covers one area and is named after its cmdlets' nouns, such as `Tags.Tests.ps1`. It stands alone: it starts with these `#Requires` lines and this `BeforeAll`, so it imports, checks, and connects for itself.
+Each file covers one area and is named after its cmdlets' nouns, such as `Tags.Tests.ps1`. `Binding.Tests.ps1` is named instead for what it checks across cmdlets: that each one takes the models that other cmdlets return, piped or by name. A file stands alone: it starts with these `#Requires` lines and this `BeforeAll`, so it imports, checks, and connects for itself.
 
 ```powershell
 #Requires -Version 7.6
@@ -97,6 +97,7 @@ A `Describe` block names the cmdlet that it tests, and each `It` says what the c
 - Confirm what Sonarr stored through `Invoke-SandboxApi` too, so a bug in a `Get-*` cmdlet can't hide one in the cmdlet under test.
 - The naming settings, the media management settings, and the host config are single objects that every later test sees. A test reads the current object, changes one field, checks the change, and puts the original back in `AfterAll` through `Invoke-SandboxApi`. The host config test changes only `backupRetention`, by one, within the range of 1 to 90 that Sonarr enforces. The sandbox authenticates with `External`, so a host config update needs no username or password.
 - Never change the host config's API key, port, bind address, URL base, or authentication, which could lock the suite out; its instance name or update settings, which the readiness check and the sandbox's update lock rely on; or `certificateValidation`, which lets Sonarr accept the mock metadata service's certificate.
+- A test that runs a cmdlet with `-WhatIf`, to check what it would act on without changing anything, reads the target from the What if line, which `ShouldProcess` writes to the host. No redirection captures that line, not even `*>&1`, while a transcript records it, so the test runs the cmdlet under `Start-Transcript`, as `Get-WhatIfTarget` in `Binding.Tests.ps1` does.
 - Create indexers, download clients, and notifications disabled. Sonarr runs a provider's connection test when it saves an enabled one, and skips the test and the settings validation for a disabled one, so a disabled provider needs no mock service. `New-SonarrDownloadClient` creates a disabled client unless `-Enabled` is passed. Create indexers and notifications with `Invoke-SandboxApi`, from the schema that `GET indexer/schema` or `GET notification/schema` returns.
 
 ### Failures

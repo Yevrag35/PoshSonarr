@@ -20,10 +20,7 @@ public sealed class GetSonarrManualImportCmdlet : SonarrApiCmdletBase
 	const string BY_SERIES_PIPE = "BySeriesPipelineInput";
 	const string FILTER_EXISTING = "filterExistingFiles";
 	const string FOLDER = "folder";
-	const int CAPACITY = 1;
 	QueryCol _parameters = null!;
-
-	protected override int Capacity => CAPACITY;
 
 	[Parameter(
 		Mandatory = true,
@@ -62,8 +59,7 @@ public sealed class GetSonarrManualImportCmdlet : SonarrApiCmdletBase
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_parameters = this.GetPooledObject<QueryCol>();
-		this.SetReturnables(_parameters);
+		_parameters = new(10);
 	}
 	protected override void Begin(IServiceProvider provider)
 	{

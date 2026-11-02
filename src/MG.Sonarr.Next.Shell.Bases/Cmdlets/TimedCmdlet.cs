@@ -11,11 +11,11 @@ using System.Text.Json;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Bases;
 
 /// <summary>
-/// An <see langword="abstract"/>, <see cref="PoolableCmdlet"/> that implements 
-/// <see cref="IApiCmdlet"/> and provides methods for timing the execution of Sonarr API requests.
+/// Represents a <see cref="SonarrCmdletBase"/> that implements <see cref="IApiCmdlet"/> and times the Sonarr API
+/// requests that it sends.
 /// </summary>
 //[DebuggerStepThrough]
-public abstract class TimedCmdlet : PoolableCmdlet, IApiCmdlet
+public abstract class TimedCmdlet : SonarrCmdletBase, IApiCmdlet
 {
 	private long _timestamp;
 
@@ -25,7 +25,6 @@ public abstract class TimedCmdlet : PoolableCmdlet, IApiCmdlet
 	/// Implementation in the base class always returns <see langword="true"/>.
 	/// </remarks>
 	protected sealed override bool CaptureVerbosePreference => true;
-	private protected sealed override int InternalCapacity => 0;
 	public virtual bool CanDebugSerializeBefore => this.DebugPreference != ActionPreference.SilentlyContinue;
 	public virtual bool CanDebugSerializeAfter => this.DebugPreference != ActionPreference.SilentlyContinue;
 	public bool CanWriteVerbose => !(this.VerbosePreference is ActionPreference.SilentlyContinue or ActionPreference.Ignore);

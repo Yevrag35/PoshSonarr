@@ -11,7 +11,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients;
 public sealed class RemoveSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 {
 	SortedSet<int> _ids = null!;
-	protected override int Capacity => 1;
 
 	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
@@ -31,8 +30,7 @@ public sealed class RemoveSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_ids = this.GetPooledObject<SortedSet<int>>();
-		this.GetReturnables()[0] = _ids;
+		_ids = [];
 	}
 
 	protected override void Begin(IServiceProvider provider)

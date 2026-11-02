@@ -53,9 +53,6 @@ public sealed class NewSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 	[ValidateIds(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.Ignore)]
 	public Either<string, int>[] Tags { get; set; } = [];
 
-	protected override int Capacity => 2;
-
-
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
 		return resolver[Meta.ReleaseProfile];
@@ -64,9 +61,8 @@ public sealed class NewSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_tagIds = this.GetPooledObject<SortedSet<int>>();
-		_tagNames = this.GetPooledObject<WildcardSet>();
-		this.SetReturnables(_tagIds, _tagNames);
+		_tagIds = [];
+		_tagNames = new();
 	}
 
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in nameof()")]

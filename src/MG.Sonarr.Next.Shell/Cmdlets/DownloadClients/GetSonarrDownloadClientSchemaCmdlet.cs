@@ -11,8 +11,6 @@ public sealed class GetSonarrDownloadClientSchemaCmdlet : SonarrMetadataCmdlet
 {
 	private WildcardSet _wcNames = null!;
 
-	protected override int Capacity => 1;
-
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = false, Position = 0)]
 	[SupportsWildcards]
@@ -26,8 +24,7 @@ public sealed class GetSonarrDownloadClientSchemaCmdlet : SonarrMetadataCmdlet
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_wcNames = this.GetPooledObject<WildcardSet>();
-		this.SetReturnables(_wcNames);
+		_wcNames = new();
 	}
 
 	protected override void Process(IServiceProvider provider)

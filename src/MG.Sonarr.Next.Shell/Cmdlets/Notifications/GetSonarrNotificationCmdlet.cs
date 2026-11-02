@@ -18,7 +18,6 @@ public sealed class GetSonarrNotificationCmdlet : SonarrMetadataCmdlet
 	[Parameter(Position = 0)]
 	public string[] Name { get; set; } = Array.Empty<string>();
 
-	protected override int Capacity => 2;
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
 		return resolver[Meta.Notification];
@@ -26,10 +25,8 @@ public sealed class GetSonarrNotificationCmdlet : SonarrMetadataCmdlet
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_ids = this.GetPooledObject<SortedSet<int>>();
-		_wcNames = this.GetPooledObject<WildcardSet>();
-
-		this.SetReturnables(_ids, _wcNames);
+		_ids = [];
+		_wcNames = new();
 	}
 
 	protected override void Begin(IServiceProvider provider)

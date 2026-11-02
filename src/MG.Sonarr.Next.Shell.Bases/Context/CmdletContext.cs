@@ -1,18 +1,14 @@
-using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Json.Naming;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
-using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Services.Testing;
 using MG.Sonarr.Next.Services.Time;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Exceptions;
-using MG.Sonarr.Next.Shell.Pools;
 using System.Reflection;
 using System.Text.Json;
 
@@ -142,8 +138,6 @@ file static class SonarrContext
 			.AddCommandTracker()
 			.AddTestingService();
 
-		AddObjectPools(services);
-
 		ServiceProviderOptions providerOptions = new()
 		{
 #if !RELEASE
@@ -156,62 +150,5 @@ file static class SonarrContext
 		};
 
 		return services.BuildServiceProvider(providerOptions);
-	}
-
-	private static void AddObjectPools(IServiceCollection services)
-	{
-		services.AddObjectPoolReturner()
-				.AddGenericObjectPool<QueryCol>(builder =>
-				{
-					builder.SetConstructor(() => new QueryCol(10))
-						   .SetDeconstructor(col =>
-						   {
-							   col.Clear();
-							   return true;
-						   });
-				})
-				.AddGenericObjectPool<SortedDictionary<int, string?>>(builder =>
-				{
-					builder.SetConstructor(() => [])
-						   .SetDeconstructor(col =>
-						   {
-							   col.Clear();
-							   return true;
-						   });
-				})
-				.AddGenericObjectPool<Dictionary<string, ITagPipeable>>(builder =>
-				{
-					builder.SetConstructor(() => new(5, StringComparer.OrdinalIgnoreCase))
-						   .SetDeconstructor(dict =>
-						   {
-							   dict.Clear();
-							   return true;
-						   });
-				});
-
-
-		AddPool<SortedSet<int>, SortedIntSetPool>(services);
-		AddQuickPool<WildcardSet, GenericResettableObjectPool<WildcardSet>>(services);
-		services.AddTransient<WildcardSet>();
-
-	}
-
-	private static void AddQuickPool<T, TPool>(IServiceCollection services)
-		where TPool : class, IObjectPoolReturnable, IQuickPool<T>
-		where T : notnull, IResettable
-	{
-		services.AddSingleton<TPool>()
-				.AddSingleton<IObjectPool<T>>(x => x.GetRequiredService<TPool>())
-				.AddSingleton<IQuickPool<T>>(x => x.GetRequiredService<TPool>())
-				.AddSingleton<IObjectPoolReturnable>(x => x.GetRequiredService<TPool>());
-	}
-	private static void AddPool<T, TPool>(IServiceCollection services)
-		where TPool : class, IObjectPoolReturnable, IObjectPool<T>, new()
-		where T : notnull
-	{
-		TPool pool = new TPool();
-		services.AddSingleton<TPool>(pool)
-				.AddSingleton<IObjectPool<T>>(x => x.GetRequiredService<TPool>())
-				.AddSingleton<IObjectPoolReturnable>(x => x.GetRequiredService<TPool>());
 	}
 }

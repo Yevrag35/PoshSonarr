@@ -8,8 +8,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs;
 [Cmdlet(VerbsCommon.Get, "SonarrLogFile")]
 public sealed class GetSonarrLogFileCmdlet : SonarrMetadataCmdlet
 {
-	protected override int Capacity => 0;
-
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
 		return resolver[Meta.LogFile];

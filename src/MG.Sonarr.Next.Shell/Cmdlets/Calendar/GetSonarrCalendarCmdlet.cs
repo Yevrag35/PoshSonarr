@@ -62,7 +62,6 @@ public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 	private QueryCol _queryCol = null!;
 	private SortedSet<int> _tagIds = null!;
 	private WildcardSet _tagNames = null!;
-	protected override int Capacity => 3;
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
 		return resolver[Meta.Calendar];
@@ -70,11 +69,9 @@ public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_queryCol = this.GetPooledObject<QueryCol>();
-		_tagIds = this.GetPooledObject<SortedSet<int>>();
-		_tagNames = this.GetPooledObject<WildcardSet>();
-
-		this.SetReturnables(_queryCol, _tagIds, _tagNames);
+		_queryCol = new(10);
+		_tagIds = [];
+		_tagNames = new();
 	}
 
 	protected override void Begin(IServiceProvider provider)

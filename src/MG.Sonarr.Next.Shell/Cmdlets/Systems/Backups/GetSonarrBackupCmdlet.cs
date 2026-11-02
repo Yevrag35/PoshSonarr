@@ -8,8 +8,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups;
 [Cmdlet(VerbsCommon.Get, "SonarrBackup")]
 public sealed class GetSonarrBackupCmdlet : SonarrMetadataCmdlet
 {
-	protected override int Capacity => 0;
-
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
 		return resolver[Meta.Backup];

@@ -1,4 +1,4 @@
-﻿namespace MG.Sonarr.Next.Collections.Pools;
+namespace MG.Sonarr.Next.Models;
 
 /// <summary>
 /// An interface for objects that can be reset to their initial state.
