@@ -50,7 +50,7 @@ file sealed class CommandTracker : ICommandTracker
 	/// <inheritdoc cref="ICommandTracker.SendRename(PostRename, CancellationToken)"/>
 	public SonarrClientResult<CommandObject> SendRename(PostRename rename, CancellationToken token = default)
 	{
-		var response = _client.SendPost<PostRename, CommandObject>(Constants.Command, rename, token);
+		var response = _client.SendPost<CommandObject>(Constants.Command, rename, token);
 		if (!response.IsError)
 		{
 			_history.Add(response.Value);
@@ -75,7 +75,7 @@ file sealed class CommandTracker : ICommandTracker
 			UpdateScheduledTask = updateScheduledTask,
 		};
 
-		var response = _client.SendPost<PostCommand, CommandObject>(Constants.Command, post, token);
+		var response = _client.SendPost<CommandObject>(Constants.Command, post, token);
 
 		if (!response.IsError)
 		{

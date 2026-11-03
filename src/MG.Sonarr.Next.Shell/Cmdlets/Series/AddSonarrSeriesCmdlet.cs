@@ -85,7 +85,7 @@ public sealed class AddSonarrSeriesCmdlet : SonarrApiCmdletBase//, IDynamicParam
 
 			if (this.ShouldProcess(pso.Title, "Adding Series"))
 			{
-				Either<SeriesObject, SonarrErrorRecord> response = this.SendPostRequest<AddSeriesObject, SeriesObject>(this.Tag.UrlBase, pso);
+				Either<SeriesObject, SonarrErrorRecord> response = this.SendPostRequest<SeriesObject>(this.Tag.UrlBase, pso);
 
 				this.WriteOutcome(pso, response);
 			}

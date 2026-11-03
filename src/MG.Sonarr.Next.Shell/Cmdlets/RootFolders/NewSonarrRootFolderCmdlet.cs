@@ -38,10 +38,10 @@ public sealed class NewSonarrRootFolderCmdlet : SonarrApiCmdletBase
 
 		return path;
 	}
-	private void RegisterFolder<T>(string path, Func<string, T> toBody) where T : notnull
+	private void RegisterFolder(string path, Func<string, object> toBody)
 	{
-		T obj = toBody(path);
-		var response = this.SendPostRequest<T, PSObject>(this.Tag.UrlBase, obj);
+		object obj = toBody(path);
+		var response = this.SendPostRequest<PSObject>(this.Tag.UrlBase, obj);
 		if (response.TryGetT1(out var pso, out var error))
 		{
 			this.WriteObject(pso);

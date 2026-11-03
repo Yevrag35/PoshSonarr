@@ -55,12 +55,11 @@ public partial interface ISonarrClient
 	/// <summary>
 	/// Sends a POST request with the specified body to the specified endpoint asynchronously.
 	/// </summary>
-	/// <typeparam name="T">The type of the body.</typeparam>
 	/// <param name="path">The endpoint's path, relative to the API.</param>
-	/// <param name="body">The object to send as the request's JSON body.</param>
+	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>A task that completes with the result of the request.</returns>
-	Task<SonarrClientResult> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull;
+	Task<SonarrClientResult> SendPostAsync(string path, object body, CancellationToken token = default);
 	/// <summary>
 	/// Sends a POST request with the specified body to the specified endpoint asynchronously and deserializes the
 	/// response's body.
@@ -68,22 +67,20 @@ public partial interface ISonarrClient
 	/// <remarks>
 	/// A value that is an <see cref="IJsonMetadataTaggable"/> gets its metadata tag.
 	/// </remarks>
-	/// <typeparam name="TBody">The type of the body.</typeparam>
 	/// <typeparam name="TOutput">The type to deserialize the response's body as.</typeparam>
 	/// <param name="path">The endpoint's path, relative to the API.</param>
-	/// <param name="body">The object to send as the request's JSON body.</param>
+	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>A task that completes with the result of the request, which holds the deserialized value on success.</returns>
-	Task<SonarrClientResult<TOutput>> SendPostAsync<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull;
+	Task<SonarrClientResult<TOutput>> SendPostAsync<TOutput>(string path, object body, CancellationToken token = default);
 	/// <summary>
 	/// Sends a PUT request with the specified body to the specified endpoint asynchronously.
 	/// </summary>
-	/// <typeparam name="T">The type of the body.</typeparam>
 	/// <param name="path">The endpoint's path, relative to the API.</param>
-	/// <param name="body">The object to send as the request's JSON body.</param>
+	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>A task that completes with the result of the request.</returns>
-	Task<SonarrClientResult> SendPutAsync<T>(string path, T body, CancellationToken token = default) where T : notnull;
+	Task<SonarrClientResult> SendPutAsync(string path, object body, CancellationToken token = default);
 }
 
 internal sealed partial class SonarrHttpClient
@@ -161,18 +158,15 @@ internal sealed partial class SonarrHttpClient
 		return await this.SendResultRequestAsync<T>(request, path, token).ConfigureAwait(false);
 	}
 	/// <inheritdoc/>
-	public async Task<SonarrClientResult> SendPostAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
+	public async Task<SonarrClientResult> SendPostAsync(string path, object body, CancellationToken token = default)
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
-		string json = JsonSerializer.Serialize(body, _options.ForSerializing);
-
-		//request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
-		request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+		request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);
 
 		return await this.SendNoResultRequestAsync(request, path, token).ConfigureAwait(false);
 	}
 	/// <inheritdoc/>
-	public async Task<SonarrClientResult<TOutput>> SendPostAsync<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull
+	public async Task<SonarrClientResult<TOutput>> SendPostAsync<TOutput>(string path, object body, CancellationToken token = default)
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
 
@@ -187,7 +181,7 @@ internal sealed partial class SonarrHttpClient
 		return response;
 	}
 	/// <inheritdoc/>
-	public async Task<SonarrClientResult> SendPutAsync<T>(string path, T body, CancellationToken token = default) where T : notnull
+	public async Task<SonarrClientResult> SendPutAsync(string path, object body, CancellationToken token = default)
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Put, path, _scopeFactory);
 		request.Content = JsonContent.Create(body, body.GetType(), options: _options.ForSerializing);

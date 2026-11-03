@@ -92,9 +92,9 @@ public sealed class NewSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 		}
 	}
 
-	private void CreateProfile<T>(T body) where T : notnull
+	private void CreateProfile(object body)
 	{
-		var response = this.SendPostRequest<T, DelayProfileObject>(this.Tag.UrlBase, body);
+		var response = this.SendPostRequest<DelayProfileObject>(this.Tag.UrlBase, body);
 		this.WriteOutcome(response);
 	}
 

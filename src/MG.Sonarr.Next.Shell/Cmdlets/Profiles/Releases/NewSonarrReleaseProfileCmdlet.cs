@@ -126,9 +126,9 @@ public sealed class NewSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 		}
 	}
 
-	private void CreateProfile<T>(T body) where T : notnull
+	private void CreateProfile(object body)
 	{
-		Either<ReleaseProfileObject, SonarrErrorRecord> response = this.SendPostRequest<T, ReleaseProfileObject>(this.Tag.UrlBase, body);
+		Either<ReleaseProfileObject, SonarrErrorRecord> response = this.SendPostRequest<ReleaseProfileObject>(this.Tag.UrlBase, body);
 
 		this.WriteOutcome(response);
 	}

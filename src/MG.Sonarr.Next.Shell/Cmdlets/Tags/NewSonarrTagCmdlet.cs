@@ -23,7 +23,7 @@ public sealed class NewSonarrTagCmdlet : SonarrApiCmdletBase
 
 		if (this.ShouldProcess(json, "Creating Tag"))
 		{
-			var oneOf = this.SendPostRequest<SonarrTag, TagObject>(Constants.Tag, tag);
+			var oneOf = this.SendPostRequest<TagObject>(Constants.Tag, tag);
 			if (oneOf.TryGetT1(out TagObject? to, out var error))
 			{
 				this.WriteObject(to);
