@@ -4,7 +4,7 @@ namespace MG.Sonarr.Next.Guarding;
 /// A <see langword="static"/> class that provides methods for throwing exceptions with messages that are formatted.
 /// </summary>
 [DebuggerStepThrough]
-public static partial class ThrowHelper
+internal static partial class ThrowHelper
 {
 	/// <summary>
 	/// Throws an <see cref="ArgumentException"/> with a message that indicates that the buffer is too small with the 
@@ -23,7 +23,7 @@ public static partial class ThrowHelper
 	/// </param>
 	/// <exception cref="ArgumentException">The buffer is too small for the operation to be performed.</exception>
 	[DoesNotReturn]
-	public static void BufferTooSmall(int requiredMinimum, int actualValue, [CallerArgumentExpression(nameof(actualValue))] string? parameterName = null, IFormatProvider? provider = null)
+	internal static void BufferTooSmall(int requiredMinimum, int actualValue, [CallerArgumentExpression(nameof(actualValue))] string? parameterName = null, IFormatProvider? provider = null)
 	{
 		const string msg = "The buffer is too small to be used as a copy destination. Expected minimum length: {0}, Received length: {1}";
 		Debug.Assert(requiredMinimum > actualValue);
@@ -47,7 +47,7 @@ public static partial class ThrowHelper
 	/// <param name="paramName">The name of the parameter being validated. This is automatically populated by the compiler if not explicitly
 	/// provided.</param>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is negative or greater than <paramref name="other"/>.</exception>
-	public static void ThrowIfNegativeOrGreaterThan(int value, uint other, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+	internal static void ThrowIfNegativeOrGreaterThan(int value, uint other, [CallerArgumentExpression(nameof(value))] string? paramName = null)
 	{
 		Debug.Assert(other <= int.MaxValue, "The other value should always be less than or equal to int.MaxValue.");
 		if ((uint)value > other)
@@ -75,7 +75,7 @@ public static partial class ThrowHelper
 	/// cref="CallerArgumentExpressionAttribute"/>.</param>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is negative or greater than or equal to <paramref name="other"/>.</exception>
 	[StackTraceHidden, MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void ThrowIfNegativeOrGreaterThanOrEqualTo(int value, uint other, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+	internal static void ThrowIfNegativeOrGreaterThanOrEqualTo(int value, uint other, [CallerArgumentExpression(nameof(value))] string? paramName = null)
 	{
 		ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(unchecked((uint)value), other, paramName);
 	}
@@ -92,7 +92,7 @@ public static partial class ThrowHelper
 	/// provided.</param>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is negative or greater than <paramref name="other"/>.</exception>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void ThrowIfNegativeOrGreaterThan(long value, ulong other, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+	internal static void ThrowIfNegativeOrGreaterThan(long value, ulong other, [CallerArgumentExpression(nameof(value))] string? paramName = null)
 	{
 		ArgumentOutOfRangeException.ThrowIfGreaterThan(unchecked((ulong)value), other, paramName);
 	}
@@ -113,7 +113,7 @@ public static partial class ThrowHelper
 	/// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is not null and is not of type <typeparamref name="T"/>.</exception>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	[return: NotNullIfNotNull(nameof(value))]
-	public static T? ThrowIfNot<T>(object? value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+	internal static T? ThrowIfNot<T>(object? value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
 	{
 		const string msg = "Value of parameter '{0}' is of type '{1}' but must be of type '{2}'.";
 
