@@ -6,39 +6,42 @@ namespace MG.Sonarr.Next.Extensions.PSO;
 public static class PSMemberInfoCollectionExtensions
 {
 	/// <summary>
-	/// Removes all members that satisfy the specified predicate.
+	/// Provides extension methods that remove members from a <see cref="PSMemberInfoCollection{T}"/>.
 	/// </summary>
 	/// <typeparam name="T">The member type.</typeparam>
 	/// <param name="collection">The member collection to modify.</param>
-	/// <param name="predicate">The predicate used to select members to remove.</param>
-	public static void RemoveAll<T>(this PSMemberInfoCollection<T> collection, Func<T, bool> predicate)
-		where T : PSMemberInfo
+	extension<T>(PSMemberInfoCollection<T> collection) where T : PSMemberInfo
 	{
-		foreach (T item in collection)
+		/// <summary>
+		/// Removes all members that satisfy the specified predicate.
+		/// </summary>
+		/// <param name="predicate">The predicate used to select members to remove.</param>
+		public void RemoveAll(Func<T, bool> predicate)
 		{
-			if (predicate(item))
+			foreach (T item in collection)
 			{
-				collection.Remove(item.Name);
+				if (predicate(item))
+				{
+					collection.Remove(item.Name);
+				}
 			}
 		}
-	}
 
-	/// <summary>
-	/// Removes multiple members by name.
-	/// </summary>
-	/// <typeparam name="T">The member type.</typeparam>
-	/// <param name="collection">The member collection to modify.</param>
-	/// <param name="propertyNames">The member names to remove.</param>
-	public static void RemoveMany<T>(this PSMemberInfoCollection<T> collection, params ReadOnlySpan<string> propertyNames) where T : PSMemberInfo
-	{
-		if (propertyNames.IsEmpty)
+		/// <summary>
+		/// Removes multiple members by name.
+		/// </summary>
+		/// <param name="propertyNames">The member names to remove.</param>
+		public void RemoveMany(params ReadOnlySpan<string> propertyNames)
 		{
-			return;
-		}
+			if (propertyNames.IsEmpty)
+			{
+				return;
+			}
 
-		foreach (string name in propertyNames)
-		{
-			collection.Remove(name);
+			foreach (string name in propertyNames)
+			{
+				collection.Remove(name);
+			}
 		}
 	}
 }

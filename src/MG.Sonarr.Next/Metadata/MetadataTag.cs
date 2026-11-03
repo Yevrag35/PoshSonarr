@@ -249,12 +249,12 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 
 		span[position++] = '/';
 
-		if (!id.TryCopyToSlice(span, ref position))
+		if (!id.TryCopyToSlice(span, ref position, provider: CultureInfo.InvariantCulture))
 		{
 			Debug.Fail($"Unable to format '{id}' into the BaseUrl.");
 			position = this.UrlBase.Length + 1;
 
-			position = id.ToString(format: null, formatProvider: null)
+			position = id.ToString(format: null, formatProvider: CultureInfo.InvariantCulture)
 						 .CopyToSlice(span, position);
 		}
 

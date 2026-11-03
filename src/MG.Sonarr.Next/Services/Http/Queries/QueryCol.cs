@@ -319,7 +319,7 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
 		destination[charsWritten++] = '?';
 
 		IQueryField field = _fields.GetValueAtIndex(0);
-		if (!field.TryCopyToSlice(destination, ref charsWritten))
+		if (!field.TryCopyToSlice(destination, ref charsWritten, provider: CultureInfo.InvariantCulture))
 		{
 			return false;
 		}
@@ -328,7 +328,7 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
 		{
 			destination[charsWritten++] = '&';
 			field = _fields.GetValueAtIndex(i);
-			if (!field.TryCopyToSlice(destination, ref charsWritten))
+			if (!field.TryCopyToSlice(destination, ref charsWritten, provider: CultureInfo.InvariantCulture))
 			{
 				return false;
 			}
