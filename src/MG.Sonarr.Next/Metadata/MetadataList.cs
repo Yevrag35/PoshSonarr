@@ -14,7 +14,7 @@ public static class MetadataList
 	/// <param name="values">The values to put in the list, in order.</param>
 	/// <returns>A new <see cref="MetadataList{T}"/> that holds <paramref name="values"/>.</returns>
 	[DebuggerStepThrough]
-	public static MetadataList<T> Create<T>(params ReadOnlySpan<T> values) where T : IComparable<T>, IJsonMetadataTaggable
+	public static MetadataList<T> Create<T>(params ReadOnlySpan<T> values) where T : class, IComparable<T>, IJsonMetadataTaggable
 	{
 		return new(values);
 	}
