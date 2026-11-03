@@ -24,6 +24,10 @@ public interface ISonarrJsonOptions
 	/// <summary>
 	/// Gets options used for debug-friendly JSON output.
 	/// </summary>
+	/// <remarks>
+	/// They match <see cref="ForSerializing"/> in everything but indentation, so an object written with them reads as the
+	/// body that a request sends.
+	/// </remarks>
 	/// <value>The serializer options for debugging output.</value>
 	JsonSerializerOptions ForDebugging { get; }
 
@@ -77,6 +81,7 @@ internal sealed class SonarrJsonOptions : ISonarrJsonOptions
 		this.ForDebugging = new(this.ForDeserializing)
 		{
 			Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+			DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
 			PropertyNameCaseInsensitive = true,
 			WriteIndented = true,
 		};

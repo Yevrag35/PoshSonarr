@@ -115,11 +115,9 @@ public readonly ref struct JsonNamingPolicyOverride
 
 			if (Encoding.UTF8.GetMaxByteCount(name.Length) > buffer.Length)
 			{
-				Debug.Fail("An allocation happened AND the destination was too small anyway.");
 				return Encoding.UTF8.GetBytes(name);
 			}
 
-			Debug.Fail("An allocation happened here ^");
 			written = Encoding.UTF8.GetBytes(name, buffer);
 			return buffer[..written];
 		}
@@ -215,7 +213,6 @@ public readonly ref struct JsonNamingPolicyOverride
 			}
 
 			propertyNameSpan = Policy.ConvertName(new(propertyNameSpan));
-			Debug.Fail("An allocation happened here ^");
 		}
 
 		writer.WritePropertyName(propertyNameSpan);
@@ -256,7 +253,6 @@ public readonly ref struct JsonNamingPolicyOverride
 		{
 			int written = Encoding.UTF8.GetChars(propertyName, chars.Span);
 			writer.WritePropertyName(Policy.ConvertName(new string(chars[..written])));
-			Debug.Fail("An allocation happened here ^");
 		}
 	}
 

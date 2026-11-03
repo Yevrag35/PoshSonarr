@@ -114,11 +114,9 @@ public sealed class WorkingNamingPolicy : JsonNamingPolicy
 
 			if (Encoding.UTF8.GetMaxByteCount(name.Length) > buffer.Length)
 			{
-				Debug.Fail("An allocation happened AND the destination was too small anyway.");
 				return Encoding.UTF8.GetBytes(name);
 			}
 
-			Debug.Fail("An allocation happened here ^");
 			written = Encoding.UTF8.GetBytes(name, buffer);
 			return buffer[..written];
 		}
@@ -213,7 +211,6 @@ public sealed class WorkingNamingPolicy : JsonNamingPolicy
 			}
 
 			propertyNameSpan = this.Policy.ConvertName(propertyNameSpan.ToString());
-			Debug.Fail("An allocation happened here ^");
 		}
 
 		writer.WritePropertyName(propertyNameSpan);
@@ -259,8 +256,6 @@ public sealed class WorkingNamingPolicy : JsonNamingPolicy
 			{
 				int written = Encoding.UTF8.GetChars(propertyName, chars.Span);
 				writer.WritePropertyName(policy.ConvertName(new string(chars[..written])));
-
-				Debug.Fail("An allocation happened here ^");
 			}
 		}
 	}

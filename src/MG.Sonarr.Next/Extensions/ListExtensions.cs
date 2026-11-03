@@ -18,8 +18,6 @@ public static class ListExtensions
 		/// <remarks>
 		/// The elements are added one at a time through <see cref="ICollection{T}.Add(T)"/>, in order.
 		/// </remarks>
-		/// <typeparam name="T">The type of the list's elements.</typeparam>
-		/// <param name="list">The list to add the elements to.</param>
 		/// <param name="values">The elements to add.</param>
 		public void AddMany(params ReadOnlySpan<T> values)
 		{

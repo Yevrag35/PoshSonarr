@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.Indexers;
 using MG.Sonarr.Next.Shell.Attributes;
 
@@ -19,13 +18,11 @@ public sealed class UpdateSonarrIndexerCmdlet : SonarrApiCmdletBase
 
 	protected override void Process(IServiceProvider provider)
 	{
-		this.SerializeIfDebug(
-			value: this.InputObject,
-			options: provider.GetRequiredService<ISonarrJsonOptions>().ForDeserializing);
-
 		string path = this.InputObject.MetadataTag.GetUrlForId(this.InputObject.Id);
 		if (this.ShouldProcess(path, "Update Indexer"))
 		{
+			this.SerializeIfDebug(this.InputObject);
+
 			var response = this.SendPutRequest(path, this.InputObject);
 			if (response.IsError)
 			{
