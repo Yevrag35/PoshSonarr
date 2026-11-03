@@ -17,8 +17,8 @@ namespace MG.Sonarr.Next.Metadata;
 public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatable<MetadataTag>
 {
 	/// <summary>
-	/// The largest buffer, in characters, that <see cref="GetUrlForId{T}(T, QueryCol)"/> allocates on the stack instead
-	/// of renting a pooled array.
+	/// The largest buffer, in characters, that <see cref="GetUrlForId{T}(T, QueryCol)"/> and <see cref="ToString"/>
+	/// allocate on the stack instead of renting a pooled array.
 	/// </summary>
 	private const int MAX_STACKALLOC = 256;
 
@@ -111,12 +111,9 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	/// </returns>
 	public int CompareTo(MetadataTag? other)
 	{
-		if (this.IsNullOrReferenceEquals(other, out bool isEqual))
-		{
-			return isEqual ? 0 : -1;
-		}
-
-		return string.Compare(this.Value, other.Value, StringComparison.OrdinalIgnoreCase);
+		return this.RefEqualsOrNull(other, out bool isEqual)
+			? isEqual ? 0 : -1
+			: string.Compare(this.Value, other.Value, StringComparison.Ordinal);
 	}
 
 	/// <summary>
@@ -130,18 +127,9 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	/// <returns>
 	/// <see langword="true"/> if <paramref name="other"/> equals this tag; otherwise, <see langword="false"/>.
 	/// </returns>
-	public bool Equals(MetadataTag? other)
+	public bool Equals([NotNullWhen(true)] MetadataTag? other)
 	{
-		if (!this.IsNullOrReferenceEquals(other, out bool isEqual))
-		{
-			isEqual = this.SupportsId == other.SupportsId
-					  &&
-					  this.UrlBase.Equals(other.UrlBase, StringComparison.OrdinalIgnoreCase)
-					  &&
-					  this.Value.Equals(other.Value, StringComparison.OrdinalIgnoreCase);
-		}
-
-		return isEqual;
+		return other is not null && this.EqualsCore(other);
 	}
 	/// <summary>
 	/// Determines whether the tag equals an object.
@@ -151,17 +139,40 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	/// <see langword="true"/> if <paramref name="obj"/> is a <see cref="MetadataTag"/> that equals this tag;
 	/// otherwise, <see langword="false"/>.
 	/// </returns>
-	public override bool Equals(object? obj)
+	public override bool Equals([NotNullWhen(true)] object? obj)
 	{
-		return obj is MetadataTag tag && this.Equals(tag);
+		return obj is MetadataTag tag && this.EqualsCore(tag);
 	}
+
+	/// <summary>
+	/// Determines whether the tag equals another, without checking for null or reference equality.
+	/// </summary>
+	/// <param name="other">The tag to compare with.</param>
+	/// <returns>
+	/// <see langword="true"/> if <paramref name="other"/> equals this tag; otherwise, <see langword="false"/>.
+	/// </returns>
+	private bool EqualsCore(MetadataTag other)
+	{
+		return ReferenceEquals(this, other)
+			   ||
+			   (this.SupportsId == other.SupportsId
+			   &&
+			   this.Value.Equals(other.Value, StringComparison.Ordinal)
+			   &&
+			   this.UrlBase.Equals(other.UrlBase, StringComparison.Ordinal));
+	}
+
 	/// <summary>
 	/// Gets a hash code for the tag.
 	/// </summary>
 	/// <returns>A hash code of <see cref="UrlBase"/>, <see cref="Value"/>, and <see cref="SupportsId"/>.</returns>
 	public override int GetHashCode()
 	{
-		return HashCode.Combine(this.UrlBase, this.Value, this.SupportsId);
+		HashCode hc = new();
+		hc.Add(this.SupportsId);
+		hc.Add(this.UrlBase, StringComparer.Ordinal);
+		hc.Add(this.Value, StringComparer.Ordinal);
+		return hc.ToHashCode();
 	}
 
 	/// <summary>
@@ -285,35 +296,6 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	}
 
 	/// <summary>
-	/// Determines whether another tag is null or this same instance, which settles a comparison without reading its
-	/// values.
-	/// </summary>
-	/// <param name="other">The tag to check.</param>
-	/// <param name="isEqual">
-	/// When this method returns <see langword="true"/>, whether <paramref name="other"/> is this instance; otherwise,
-	/// <see langword="false"/>.
-	/// </param>
-	/// <returns>
-	/// <see langword="true"/> if <paramref name="other"/> is <see langword="null"/> or this instance; otherwise,
-	/// <see langword="false"/>.
-	/// </returns>
-	private bool IsNullOrReferenceEquals([NotNullWhen(false)] MetadataTag? other, out bool isEqual)
-	{
-		if (other is null)
-		{
-			isEqual = false;
-			return true;
-		}
-		else if (ReferenceEquals(this, other))
-		{
-			isEqual = true;
-			return true;
-		}
-
-		isEqual = false;
-		return false;
-	}
-	/// <summary>
 	/// Throws when the tag's endpoint doesn't take an ID in its path.
 	/// </summary>
 	/// <exception cref="InvalidOperationException">Thrown when <see cref="SupportsId"/> is false.</exception>
@@ -338,50 +320,51 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in nameof()")]
 	public override string ToString()
 	{
-		if (_toString is not null)
-			return _toString;
+		return _toString ?? buildAndCache(this);
 
-		// {Value = <value>; CanPipeTo = {<comma[space]-separated list}} <-- Format
-		int length = this.Value.Length + nameof(Value).Length + nameof(CanPipeTo).Length;
-		foreach (string piped in this.CanPipeTo.AsSpan())
+		// The local function caches the text itself, which leaves the call in tail position, so this method needs no
+		// stack frame and the cached read is all it runs.
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static string buildAndCache(MetadataTag tag)
 		{
-			length += piped.Length;
-		}
+			// {Value = <value>, CanPipeTo = {<comma[space]-separated list>}} <-- Format
+			const string VALUE_START = "{" + nameof(Value) + " = ";
+			const string PIPES_START = ", " + nameof(CanPipeTo) + " = {";
+			const string SEPARATOR = ", ";
+			const string END = "}}";
 
-		length += 12 + (2 * (this.CanPipeTo.Length - 1)); // 12 = the miscellaneous characters
+			ReadOnlySpan<string> pipesTo = tag.CanPipeTo.AsSpan();
+			int length = VALUE_START.Length + tag.Value.Length + PIPES_START.Length + END.Length
+				+ (SEPARATOR.Length * Math.Max(pipesTo.Length - 1, 0));
 
-		return _toString = string.Create(length, this, static (chars, state) =>
-		{
-			int position = 0;
-			ReadOnlySpan<char> sep = [' ', '=', ' '];
-			ReadOnlySpan<char> comma = [',', ' '];
-
-			chars[position++] = '{';
-
-			position = nameof(state.Value).CopyToSlice(chars, position);
-			position = sep.CopyToSlice(chars, position);
-			position = state.Value.CopyToSlice(chars, position);
-			position = comma.CopyToSlice(chars, position);
-
-			position = nameof(state.CanPipeTo).CopyToSlice(chars, position);
-			position = sep.CopyToSlice(chars, position);
-			chars[position++] = '{';
-
-			int count = 0;
-			foreach (string s in state.CanPipeTo)
+			foreach (string piped in pipesTo)
 			{
-				position = s.CopyToSlice(chars, position);
-				if (count < state.CanPipeTo.Length - 1)
-				{
-					position = comma.CopyToSlice(chars, position);
-				}
-
-				count++;
+				length += piped.Length;
 			}
 
-			chars[position++] = '}';
-			chars[position++] = '}';
-		});
+			using var builder = SpanStringBuilder.Create(
+				length <= MAX_STACKALLOC
+					? stackalloc char[length]
+					: length);
+
+			builder.Append(VALUE_START);
+			builder.Append(tag.Value);
+			builder.Append(PIPES_START);
+
+			for (int i = 0; i < pipesTo.Length; i++)
+			{
+				if (i > 0)
+				{
+					builder.Append(SEPARATOR);
+				}
+
+				builder.Append(pipesTo[i]);
+			}
+
+			builder.Append(END);
+
+			return tag._toString = builder.ToString();
+		}
 	}
 
 	/// <summary>
