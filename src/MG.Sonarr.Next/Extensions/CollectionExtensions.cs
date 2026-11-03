@@ -8,6 +8,29 @@ namespace MG.Sonarr.Next.Extensions;
 public static class CollectionExtensions
 {
 	/// <summary>
+	/// Provides extension members for <see cref="ICollection{T}"/> instances.
+	/// </summary>
+	/// <typeparam name="T">The element type in the collection.</typeparam>
+	/// <param name="collection">The collection to add to.</param>
+	extension<T>(ICollection<T> collection)
+	{
+		/// <summary>
+		/// Adds the elements of a span to <paramref name="collection"/>.
+		/// </summary>
+		/// <remarks>
+		/// The elements are added one at a time through <see cref="ICollection{T}.Add(T)"/>, in order, so the
+		/// collection's implementation decides where each one goes and whether it keeps a duplicate.
+		/// </remarks>
+		/// <param name="values">The elements to add.</param>
+		public void AddMany(params ReadOnlySpan<T> values)
+		{
+			foreach (T value in values)
+			{
+				collection.Add(value);
+			}
+		}
+	}
+	/// <summary>
 	/// Provides extension members for <see cref="IReadOnlyCollection{T}"/> instances.
 	/// </summary>
 	/// <typeparam name="T">The element type in the collection.</typeparam>
