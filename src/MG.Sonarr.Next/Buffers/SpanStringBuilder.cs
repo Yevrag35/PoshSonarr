@@ -357,8 +357,7 @@ internal ref struct SpanStringBuilder
 
 			if (written > 0)
 			{
-				this.EnsureCapacity(unchecked((uint)written));
-				this.AppendCore(temp.UnsafeSlice(0, written));
+				this.Append(temp.UnsafeSlice(0, written));
 			}
 
 			return;

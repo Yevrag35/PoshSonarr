@@ -63,7 +63,7 @@ public sealed class GetSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 			this.StopCmdlet(response.Error);
 			return [];
 		}
-		else if (names.IsNullOrEmpty())
+		else if (names.IsNullOrEmpty)
 		{
 			return response.Value;
 		}

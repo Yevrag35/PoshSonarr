@@ -78,15 +78,12 @@ public static class ExceptionExtensions
 	[return: NotNullIfNotNull(nameof(exception))]
 	public static ErrorRecord? ToRecord(this Exception? exception, ErrorCategory category, object? targetObj)
 	{
-		if (exception is null)
-		{
-			return null;
-		}
-
-		return new ErrorRecord(
-			exception: exception,
-			errorId: exception.GetTypeName(),
-			errorCategory: category,
-			targetObject: targetObj);
+		return exception is null
+			? null
+			: new ErrorRecord(
+				exception: exception,
+				errorId: exception.GetTypeName(),
+				errorCategory: category,
+				targetObject: targetObj);
 	}
 }

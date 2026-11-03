@@ -1,4 +1,5 @@
 using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Collections.Intrinsics;
 using MG.Sonarr.Next.Json;
 
 namespace MG.Sonarr.Next.Metadata;
@@ -71,13 +72,7 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 	/// <param name="items">The elements to copy into the list, or <see langword="null"/> for an empty list.</param>
 	public MetadataList(IEnumerable<T>? items)
 	{
-		if (items is null)
-		{
-			_list = [];
-			return;
-		}
-
-		_list = [.. items];
+		_list = items is not null ? new(items) : [];
 	}
 	/// <summary>
 	/// Initializes a new <see cref="MetadataList{T}"/> instance that holds copies of the specified values.
@@ -221,12 +216,11 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 	/// The function that receives each element, <paramref name="arg1"/>, and <paramref name="arg2"/>, and returns
 	/// <see langword="true"/> to remove the element.
 	/// </param>
-	/// <exception cref="ArgumentException">Thrown when <paramref name="predicate"/> holds a null function pointer.</exception>
 	internal void RemoveAll<TArg1, TArg2>(TArg1 arg1, TArg2 arg2, FnPtr<T, TArg1, TArg2, bool> predicate)
 		where TArg1 : allows ref struct
 		where TArg2 : allows ref struct
 	{
-		FnPtr.ThrowIfNull(predicate);
+		if (!predicate.IsValid) return;
 
 		int listCount = _list.Count;
 		if (listCount == 0)
@@ -247,7 +241,7 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 	/// <param name="resolver">The resolver that the elements get their tags from.</param>
 	public void SetTag(IMetadataResolver resolver)
 	{
-		foreach (T item in CollectionsMarshal.AsSpan(_list))
+		foreach (T item in ListMarshal.AsSpan(_list))
 		{
 			item.SetTag(resolver);
 		}
@@ -263,34 +257,4 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 	{
 		_list.Sort();
 	}
-
-	/// <summary>
-	/// Finds the first element that matches a predicate, which receives a state argument.
-	/// </summary>
-	/// <typeparam name="TState">The type of the predicate's state argument.</typeparam>
-	/// <param name="state">The state to pass to the predicate with each element.</param>
-	/// <param name="predicate">
-	/// The function that receives each element and <paramref name="state"/>, and returns <see langword="true"/> for a
-	/// match.
-	/// </param>
-	/// <param name="result">
-	/// When this method returns <see langword="true"/>, the first matching element; otherwise,
-	/// <see langword="default"/>.
-	/// </param>
-	/// <returns><see langword="true"/> if an element matched; otherwise, <see langword="false"/>.</returns>
-	internal bool TryFind<TState>(TState state, FnPtr<T, TState, bool> predicate, [NotNullWhen(true)] out T? result)
-	{
-		foreach (T item in CollectionsMarshal.AsSpan(_list))
-		{
-			if (predicate.Invoke(item, state))
-			{
-				result = item;
-				return true;
-			}
-		}
-
-		result = default;
-		return false;
-	}
 }
-

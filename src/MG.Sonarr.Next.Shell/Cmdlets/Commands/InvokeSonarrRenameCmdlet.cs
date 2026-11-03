@@ -44,7 +44,7 @@ public sealed class InvokeSonarrRenameCmdlet : SonarrCmdletBase
 	{
 		var client = provider.GetRequiredService<ICommandTracker>();
 
-		if (!_renameables.IsNullOrEmpty())
+		if (!_renameables.IsNullOrEmpty)
 		{
 			this.SendRenamesFromPipeline(client);
 		}
