@@ -378,7 +378,7 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	/// </returns>
 	public static bool operator ==(MetadataTag? x, MetadataTag? y)
 	{
-		return x.IsEqualTo<MetadataTag>(y);
+		return x is null ? y is null : x.Equals(y);
 	}
 	/// <summary>
 	/// Determines whether two tags aren't equal.
