@@ -19,7 +19,13 @@ namespace MG.Sonarr.Next.Models;
 /// </para>
 /// </remarks>
 /// <typeparam name="TSelf">The derived model type.</typeparam>
-public abstract class TagUpdateObject<TSelf> : IdSonarrObject<TSelf>,
+public
+#if !NET11_0_OR_GREATER
+	abstract
+#else
+	closed
+#endif
+	class TagUpdateObject<TSelf> : IdSonarrObject<TSelf>,
 	ITagPipeable
 	where TSelf : IdSonarrObject<TSelf>
 {
@@ -79,7 +85,7 @@ public abstract class TagUpdateObject<TSelf> : IdSonarrObject<TSelf>,
 	/// The number of members that the object's member collection starts with room for, about the number of fields that
 	/// Sonarr sends for the resource.
 	/// </param>
-	protected TagUpdateObject([ConstantExpected] int capacity)
+	private protected TagUpdateObject([ConstantExpected] int capacity)
 		: base(capacity)
 	{
 	}

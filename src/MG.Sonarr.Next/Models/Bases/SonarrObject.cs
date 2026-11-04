@@ -71,7 +71,7 @@ public abstract class SonarrObject : PSObject,
 	/// The number of members that the object's member collection starts with room for, about the number of fields that
 	/// Sonarr sends for the resource.
 	/// </param>
-	protected SonarrObject([ConstantExpected] int capacity)
+	private protected SonarrObject([ConstantExpected] int capacity)
 		: base(capacity)
 	{
 	}

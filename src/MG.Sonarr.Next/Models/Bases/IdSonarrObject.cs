@@ -8,7 +8,13 @@ namespace MG.Sonarr.Next.Models;
 /// <see cref="Id"/>. Objects sort by ID unless a derived model overrides <see cref="CompareTo(TSelf)"/>.
 /// </remarks>
 /// <typeparam name="TSelf">The derived model type.</typeparam>
-public abstract class IdSonarrObject<TSelf> : SonarrObject,
+public
+#if !NET11_0_OR_GREATER
+	abstract
+#else
+	closed
+#endif
+	class IdSonarrObject<TSelf> : SonarrObject,
 	IComparable<TSelf>,
 	IHasId
 	where TSelf : IdSonarrObject<TSelf>
@@ -27,7 +33,7 @@ public abstract class IdSonarrObject<TSelf> : SonarrObject,
 	/// The number of members that the object's member collection starts with room for, about the number of fields that
 	/// Sonarr sends for the resource.
 	/// </param>
-	protected IdSonarrObject([ConstantExpected] int capacity)
+	private protected IdSonarrObject([ConstantExpected] int capacity)
 		: base(capacity)
 	{
 	}
