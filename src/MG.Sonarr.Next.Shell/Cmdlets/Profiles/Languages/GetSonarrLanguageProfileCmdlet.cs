@@ -24,7 +24,7 @@ public sealed class GetSonarrLanguageProfileCmdlet : SonarrMetadataCmdlet
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline, DontShow = true)]
-	[ValidateIds(ValidateRangeKind.Positive, typeof(ILanguageProfilePipeable))]
+	[ValidateIds<ILanguageProfilePipeable>(ValidateRangeKind.Positive)]
 	public ILanguageProfilePipeable[] InputObject { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]

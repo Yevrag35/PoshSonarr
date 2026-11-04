@@ -26,7 +26,7 @@ public sealed class AddSonarrTagCmdlet : SonarrMetadataCmdlet
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
-	[ValidateIds(ValidateRangeKind.Positive, typeof(ITagPipeable))]
+	[ValidateIds<ITagPipeable>(ValidateRangeKind.Positive)]
 	public ITagPipeable[] InputObject { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]

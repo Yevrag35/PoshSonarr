@@ -17,7 +17,7 @@ public sealed class TestSonarrResourceCmdlet : TimedCmdlet
 
 	[Parameter(Mandatory = true, ValueFromPipeline = true)]
 	[ValidateNotNull]
-	[ValidateIds(ValidateRangeKind.Positive, typeof(ITestPipeable))]
+	[ValidateIds<ITestPipeable>(ValidateRangeKind.Positive)]
 	public ITestPipeable[] InputObject { get; set; } = [];
 
 	protected override void OnCreatingScope(IServiceProvider provider)

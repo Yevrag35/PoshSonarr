@@ -20,7 +20,7 @@ public sealed class RemoveSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 	public int[] Id { get; set; } = [];
 
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput")]
-	[ValidateIds(ValidateRangeKind.NonNegative, typeof(IEpisodeFilePipeable))]
+	[ValidateIds<IEpisodeFilePipeable>(ValidateRangeKind.NonNegative)]
 	public IEpisodeFilePipeable[] InputObject { get; set; } = [];
 
 	[Parameter]

@@ -20,7 +20,7 @@ public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetPipeline, ValueFromPipeline = true)]
-	[ValidateIds(ValidateRangeKind.Positive, typeof(IQualityProfilePipeable))]
+	[ValidateIds<IQualityProfilePipeable>(ValidateRangeKind.Positive)]
 	public IQualityProfilePipeable[] InputObject { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]

@@ -16,8 +16,6 @@ namespace MG.Sonarr.Next.Shell.Attributes;
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 public sealed class ValidateIdAttribute : ValidateArgumentsAttribute
 {
-	readonly bool _isValidatableType;
-	readonly Type _parameterType;
 	readonly IdValidator _predicate;
 
 	/// <summary>
@@ -49,46 +47,57 @@ public sealed class ValidateIdAttribute : ValidateArgumentsAttribute
 	public ValidateIdAttribute(ValidateRangeKind kind)
 	{
 		this.Kind = kind;
-		_parameterType = typeof(object);
-		_isValidatableType = false;
-		_predicate = IdValidationHelper.GetIdValidator(kind);
-	}
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="ValidateIdAttribute"/> class. 
-	/// This constructor uses a predefined <see cref="ValidateRangeKind"/> and uses the default <see langword="null"/>
-	/// behavior, <see cref="InputNullBehavior.EnforceNotNull"/>.
-	/// </summary>
-	/// <param name="kind">The predefined range to validate an ID against.</param>
-	public ValidateIdAttribute(ValidateRangeKind kind, Type parameterType)
-	{
-		ArgumentNullException.ThrowIfNull(parameterType);
-		this.Kind = kind;
-		_parameterType = parameterType;
-		_isValidatableType = IdValidationHelper.TryGetMethodInfo(parameterType);
 		_predicate = IdValidationHelper.GetIdValidator(kind);
 	}
 
 	protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
 	{
-		if (!_isValidatableType || arguments is null)
-		{
-			IdValidationHelper.DoValidation(argument: arguments, this.NullBehavior, _predicate);
-			return;
-		}
+		IdValidationHelper.DoValidation(argument: arguments, this.NullBehavior, _predicate);
+	}
+}
 
-		int? possible;
-		try
-		{
-			possible = IdValidationHelper.ExecuteMethod(_parameterType, arguments);
-		}
-		catch (Exception e)
-		{
-			throw new ValidationMetadataException(
-				$"Unable to validate argument as '{_parameterType.GetName()}'.", e);
-		}
+/// <summary>
+/// A validation attribute that checks the ID that a parameter's argument gives as a <typeparamref name="T"/> against a
+/// <see cref="ValidateRangeKind"/>.
+/// </summary>
+/// <remarks>
+/// The ID is the one that the argument's <see cref="IPipeable{T}.GetId"/> returns for <typeparamref name="T"/>, so an
+/// object that implements several pipeable interfaces gives the ID that the parameter's interface exposes. A
+/// <see langword="null"/> argument gives no ID, and <see cref="NullBehavior"/> decides what happens to it and to a
+/// <see langword="null"/> ID. An argument that isn't a <typeparamref name="T"/> fails validation.
+/// </remarks>
+/// <typeparam name="T">The pipeable interface that the parameter's type names.</typeparam>
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
+public sealed class ValidateIdAttribute<T> : ValidateArgumentsAttribute where T : IPipeable<T>
+{
+	readonly IdValidator _predicate;
 
-		IdValidationHelper.DoValidation(possible, this.NullBehavior, _predicate);
+	/// <summary>
+	/// Gets the range that the ID must be in to pass validation.
+	/// </summary>
+	/// <value>The range that the ID is checked against.</value>
+	public ValidateRangeKind Kind { get; }
+	/// <summary>
+	/// Gets what happens when the argument is <see langword="null"/> or gives a <see langword="null"/> ID.
+	/// </summary>
+	/// <value>
+	/// The behavior for a missing ID. The default, <see cref="InputNullBehavior.EnforceNotNull"/>, fails validation.
+	/// </value>
+	public InputNullBehavior NullBehavior { get; init; }
+
+	/// <summary>
+	/// Initializes a new <see cref="ValidateIdAttribute{T}"/> instance that checks the argument's ID against a range.
+	/// </summary>
+	/// <param name="kind">The predefined range to validate the ID against.</param>
+	public ValidateIdAttribute(ValidateRangeKind kind)
+	{
+		this.Kind = kind;
+		_predicate = IdValidationHelper.GetIdValidator(kind);
+	}
+
+	protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
+	{
+		IdValidationHelper.DoValidation(IdValidationHelper.GetIdFromPipeable<T>(arguments), this.NullBehavior, _predicate);
 	}
 }
 /// <summary>
@@ -100,8 +109,6 @@ public sealed class ValidateIdAttribute : ValidateArgumentsAttribute
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 public sealed class ValidateIdsAttribute : ValidateEnumeratedArgumentsAttribute
 {
-	readonly bool _isValidatableType;
-	readonly Type _parameterType;
 	private readonly IdValidator _predicate;
 	/// <summary>
 	/// The range the "Id" value must be in to pass validation.
@@ -132,45 +139,57 @@ public sealed class ValidateIdsAttribute : ValidateEnumeratedArgumentsAttribute
 	public ValidateIdsAttribute(ValidateRangeKind kind)
 	{
 		this.Kind = kind;
-		_parameterType = typeof(object);
-		_isValidatableType = false;
-		_predicate = IdValidationHelper.GetIdValidator(kind);
-	}
-	/// <summary>
-	/// Initializes a new instance of the <see cref="ValidateIdsAttribute"/> class. 
-	/// This constructor uses a predefined <see cref="ValidateRangeKind"/> and the specfied
-	/// <see cref="InputNullBehavior"/>.
-	/// </summary>
-	/// <param name="kind">The predefined range to validate the element's ID against.</param>
-	public ValidateIdsAttribute(ValidateRangeKind kind, Type parameterType)
-	{
-		ArgumentNullException.ThrowIfNull(parameterType);
-		this.Kind = kind;
-		_parameterType = parameterType;
-		_isValidatableType = IdValidationHelper.TryGetMethodInfo(parameterType);
 		_predicate = IdValidationHelper.GetIdValidator(kind);
 	}
 
 	protected override void ValidateElement(object element)
 	{
-		if (!_isValidatableType || element is null)
-		{
-			IdValidationHelper.DoValidation(argument: element, this.NullBehavior, _predicate);
-			return;
-		}
+		IdValidationHelper.DoValidation(argument: element, this.NullBehavior, _predicate);
+	}
+}
 
-		int? possible;
-		try
-		{
-			possible = IdValidationHelper.ExecuteMethod(_parameterType, element);
-		}
-		catch (Exception e)
-		{
-			throw new ValidationMetadataException(
-				$"Unable to validate argument as '{_parameterType.GetName()}'.", e);
-		}
+/// <summary>
+/// A validation attribute that checks the ID that each element of a parameter's argument gives as a
+/// <typeparamref name="T"/> against a <see cref="ValidateRangeKind"/>.
+/// </summary>
+/// <remarks>
+/// The ID is the one that the element's <see cref="IPipeable{T}.GetId"/> returns for <typeparamref name="T"/>, so an
+/// object that implements several pipeable interfaces gives the ID that the parameter's interface exposes. A
+/// <see langword="null"/> element gives no ID, and <see cref="NullBehavior"/> decides what happens to it and to a
+/// <see langword="null"/> ID. An element that isn't a <typeparamref name="T"/> fails validation.
+/// </remarks>
+/// <typeparam name="T">The pipeable interface that the parameter's element type names.</typeparam>
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
+public sealed class ValidateIdsAttribute<T> : ValidateEnumeratedArgumentsAttribute where T : IPipeable<T>
+{
+	readonly IdValidator _predicate;
 
-		IdValidationHelper.DoValidation(possibleId: possible, this.NullBehavior, _predicate);
+	/// <summary>
+	/// Gets the range that each element's ID must be in to pass validation.
+	/// </summary>
+	/// <value>The range that the IDs are checked against.</value>
+	public ValidateRangeKind Kind { get; }
+	/// <summary>
+	/// Gets what happens when an element is <see langword="null"/> or gives a <see langword="null"/> ID.
+	/// </summary>
+	/// <value>
+	/// The behavior for a missing ID. The default, <see cref="InputNullBehavior.EnforceNotNull"/>, fails validation.
+	/// </value>
+	public InputNullBehavior NullBehavior { get; init; }
+
+	/// <summary>
+	/// Initializes a new <see cref="ValidateIdsAttribute{T}"/> instance that checks each element's ID against a range.
+	/// </summary>
+	/// <param name="kind">The predefined range to validate each element's ID against.</param>
+	public ValidateIdsAttribute(ValidateRangeKind kind)
+	{
+		this.Kind = kind;
+		_predicate = IdValidationHelper.GetIdValidator(kind);
+	}
+
+	protected override void ValidateElement(object element)
+	{
+		IdValidationHelper.DoValidation(IdValidationHelper.GetIdFromPipeable<T>(element), this.NullBehavior, _predicate);
 	}
 }
 
@@ -267,11 +286,25 @@ file static class IdValidationHelper
 	{
 		DoValidation(GetId(argument), nullBehavior, predicate);
 	}
-	internal static int? ExecuteMethod(Type parameterType, object element)
+	/// <summary>
+	/// Gets the ID that an argument, or one element of it, gives as a <typeparamref name="T"/>.
+	/// </summary>
+	/// <typeparam name="T">The pipeable interface that the ID is read through.</typeparam>
+	/// <param name="element">The argument or element, which can be <see langword="null"/>.</param>
+	/// <returns>
+	/// The ID that <paramref name="element"/>'s <see cref="IPipeable{T}.GetId"/> returns, or <see langword="null"/> when
+	/// <paramref name="element"/> is <see langword="null"/>.
+	/// </returns>
+	/// <exception cref="ValidationMetadataException">Thrown when <paramref name="element"/> isn't a
+	/// <typeparamref name="T"/>.</exception>
+	internal static int? GetIdFromPipeable<T>(object? element) where T : IPipeable<T>
 	{
-		ArgumentNullException.ThrowIfNull(element);
-
-		return s_getIds[parameterType](element);
+		return element switch
+		{
+			null => null,
+			T pipeable => pipeable.GetId(),
+			_ => ThrowNotPipeable<T>(),
+		};
 	}
 	internal static unsafe IdValidator GetIdValidator(ValidateRangeKind kind)
 	{
@@ -325,22 +358,17 @@ file static class IdValidationHelper
 	{
 		throw new ValidationMetadataException($"{nameof(argument)}'s ID value MUST be null.");
 	}
+	/// <exception cref="ValidationMetadataException"></exception>
+	[DoesNotReturn]
+	private static int? ThrowNotPipeable<T>()
+	{
+		throw new ValidationMetadataException($"Unable to validate argument as '{typeof(T).GetName()}'.");
+	}
 
 	// Delegate caching
 	static IdValidationHelper()
 	{
-		GetIdDelegate fromEither = GetIdFromEither;
-
 		s_fallbackNull = _ => null;
-		s_fromPso = pso => GetIdFromPSObject((PSObject)pso);
-		s_getIds = new(
-		[
-			new(typeof(PSObject), s_fromPso),
-			new(typeof(Either<int, string>), fromEither),
-			new(typeof(Either<string, int>), fromEither),
-		]);
-		s_method = typeof(IdValidationHelper).GetMethod(nameof(GetIdFromPipeable), BindingFlags.Static | BindingFlags.NonPublic)
-			?? throw new MethodException("Unable to find 'GetIdFromObject' method...??!?");
 		s_idOrObjectMethod = typeof(IdValidationHelper).GetMethod(nameof(GetIdFromIdOrObject), BindingFlags.Static | BindingFlags.NonPublic)
 			?? throw new MethodException($"Unable to find the '{nameof(GetIdFromIdOrObject)}' method.");
 		s_fromIdOrObject = new();
@@ -454,60 +482,9 @@ file static class IdValidationHelper
 	/// the arguments that it doesn't otherwise read.
 	/// </summary>
 	private static readonly ConcurrentDictionary<Type, GetIdDelegate> s_fromIdOrObject;
-	private static readonly GetIdDelegate s_fromPso;
-	private static readonly ConcurrentDictionary<Type, GetIdDelegate> s_getIds;
 	/// <summary>
 	/// The generic definition of <see cref="GetIdFromIdOrObject{T}(object)"/>.
 	/// </summary>
 	private static readonly MethodInfo s_idOrObjectMethod;
-	private static readonly MethodInfo s_method;
-	internal static bool TryGetMethodInfo(Type parameterType)
-	{
-		return s_getIds.GetOrAdd(parameterType, CreateDelegate) != s_fallbackNull;
-	}
-
-	private static GetIdDelegate CreateDelegate(Type parameterType)
-	{
-		if (!TryGetMatchingPipeableInterface(parameterType))
-		{
-			return typeof(PSObject).IsAssignableFrom(parameterType) ? s_fromPso : s_fallbackNull;
-		}
-
-		MethodInfo genMeth = s_method.MakeGenericMethod(parameterType);
-		return genMeth.CreateDelegate<GetIdDelegate>();
-	}
-	
-	private static int? GetIdFromPipeable<T>(object element) where T : IPipeable<T>
-	{
-		return ((T)element).GetId();
-	}
-	private static bool TryGetMatchingPipeableInterface(Type parameterType)
-	{
-		Type[] interfaces = parameterType.GetInterfaces();
-		if (interfaces.Length == 0)
-		{
-			return false;
-		}
-
-		foreach (Type @interface in interfaces.OrderByDescending(x => x.Name))
-		{
-			if (InterfaceGenericsEqual(@interface, parameterType))
-			{
-				if (@interface.Name.StartsWith(nameof(IPipeable<>), StringComparison.Ordinal))
-				{
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	private static bool InterfaceGenericsEqual(Type interfaceType, Type parameterType)
-	{
-		return interfaceType.GenericTypeArguments.Length > 0
-			   &&
-			   parameterType.Equals(interfaceType.GenericTypeArguments[0]);
-	}
 }
 

@@ -80,7 +80,7 @@ A model derived from another declares the interface again for itself, as in `Add
 
 ### Pipeable interfaces
 
-Cmdlets take pipeline input through the interfaces in `src/MG.Sonarr.Next/Metadata/IPipeables.cs`, not through model classes. Each `I…Pipeable` extends `IPipeable<I…Pipeable>` and exposes the ID that a parameter of its type acts on, and a model's `IPipeable<I…Pipeable>.GetId()` returns that same ID, because `[ValidateIds(ValidateRangeKind.Positive, typeof(I…Pipeable))]` checks it before the cmdlet sees the object, and by default turns away a `null`. A model that implements several returns a different ID from each, so it implements `GetId()` explicitly for each interface.
+Cmdlets take pipeline input through the interfaces in `src/MG.Sonarr.Next/Metadata/IPipeables.cs`, not through model classes. Each `I…Pipeable` extends `IPipeable<I…Pipeable>` and exposes the ID that a parameter of its type acts on, and a model's `IPipeable<I…Pipeable>.GetId()` returns that same ID, because `[ValidateIds<I…Pipeable>(ValidateRangeKind.Positive)]`, or `[ValidateId<I…Pipeable>]` on a parameter that takes one object, checks it before the cmdlet sees the object, and by default turns away a `null`. A model that implements several returns a different ID from each, so it implements `GetId()` explicitly for each interface.
 
 | Interface | Exposes | Implemented by |
 | --- | --- | --- |

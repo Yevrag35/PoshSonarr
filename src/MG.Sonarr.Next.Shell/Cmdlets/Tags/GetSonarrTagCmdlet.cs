@@ -22,7 +22,7 @@ public sealed class GetSonarrTagCmdlet : SonarrMetadataCmdlet
 	WildcardSet _wcNames = null!;
 
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
-	[ValidateIds(ValidateRangeKind.Positive, typeof(ITagPipeable))]
+	[ValidateIds<ITagPipeable>(ValidateRangeKind.Positive)]
 	public ITagPipeable[] InputObject { get; set; } = [];
 
 	[Parameter(Mandatory = true, Position = 0, ParameterSetName = PSConstants.PSetExplicitId)]

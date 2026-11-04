@@ -28,7 +28,7 @@ public sealed class SearchSonarrReleaseCmdlet : SonarrApiCmdletBase
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = ByEpisodeInput)]
-	[ValidateId(ValidateRangeKind.Positive, typeof(IReleasePipeableByEpisode))]
+	[ValidateId<IReleasePipeableByEpisode>(ValidateRangeKind.Positive)]
 	public IReleasePipeableByEpisode Episode
 	{
 		get => null!;
@@ -41,7 +41,7 @@ public sealed class SearchSonarrReleaseCmdlet : SonarrApiCmdletBase
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BySeriesInput)]
-	[ValidateId(ValidateRangeKind.Positive, typeof(IReleasePipeableBySeries))]
+	[ValidateId<IReleasePipeableBySeries>(ValidateRangeKind.Positive)]
 	public IReleasePipeableBySeries Series
 	{
 		get => null!;

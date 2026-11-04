@@ -34,11 +34,11 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 	public int[] SeriesId { get; set; } = [];
 
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_EP_INPUT)]
-	[ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodePipeable))]
+	[ValidateIds<IEpisodePipeable>(ValidateRangeKind.Positive)]
 	public IEpisodePipeable[] EpisodeInput { get; set; } = [];
 
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_SERIES_INPUT)]
-	[ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodeBySeriesPipeable))]
+	[ValidateIds<IEpisodeBySeriesPipeable>(ValidateRangeKind.Positive)]
 	public IEpisodeBySeriesPipeable[] SeriesInput { get; set; } = [];
 
 	[Parameter(Mandatory = false, Position = 1, ParameterSetName = BY_SERIES_ID)]

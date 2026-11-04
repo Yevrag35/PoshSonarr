@@ -82,6 +82,15 @@ Measured 2026-10-23 on PowerShell 7.6.8 for named arguments, and on 2026-10-25 o
 - For pipeline input, it receives each pipeline object as itself, not the one-element array that an array parameter then gets.
 - On a parameter that isn't mandatory, PowerShell calls it for `$null` too.
 
+## Generic validation attributes
+
+Measured 2026-11-03 on PowerShell 7.6.9 with throwaway `Add-Type` code: a `PSObject` subclass built on `PSObject(int)` that implements two interfaces shaped like `IPipeable<T>`'s, whose explicit `GetId()` implementations return different IDs, and two cmdlets whose interface-array pipeline parameters carried a `ValidateEnumeratedArgumentsAttribute` subclass generic over that interface, `where T : IPipeable<T>`, which logged the ID it read through `((T)element).GetId()`.
+
+- PowerShell 7's `Add-Type` compiles a generic attribute, which needs C# 11.
+- `(Get-Command <cmdlet>).Parameters['<name>'].Attributes` lists the closed type, as in ``ValidateIdsAttribute`1[ISeriesP]``, and the binder runs it for pipeline input and for named arguments, as it runs a non-generic one.
+- The same model piped to each cmdlet gave each cmdlet's attribute the ID of that cmdlet's interface.
+- A `ValidationMetadataException` from it fails the binding with `ParameterArgumentValidationError` and a `ParameterBindingValidationException`, one pipeline object at a time: of two models piped together, the first was processed and the second refused.
+
 ## Enumerating a value the way the pipeline does
 
 Measured 2026-10-25 on PowerShell 7.6.8, comparing what `ForEach-Object` received with what `LanguagePrimitives.GetEnumerator` and `GetEnumerable` gave and what `IsObjectEnumerable` said.
@@ -116,6 +125,7 @@ Measured 2026-10-24 on PowerShell 7.6.8 with throwaway `Add-Type` cmdlets that h
 - A pipeline parameter typed as a pipeable interface, such as `ISeriesPipeable[]`, takes exactly the objects that implement it, so a hashtable, a projection, or a deserialized copy fails with `InputObjectNotBound`, one object at a time.
 - A parameter typed as a model class takes more than that model when the class has a public parameterless constructor, as the module's models have: the binder turns any hashtable, any `[pscustomobject]`, and a model of another class into a new model that holds only note properties. Such a model's C# state, such as its C# `Id`, keeps its default, and it has none of the module's type names, so a check through the model's C# members sees those defaults, while one through its note properties sees the values the caller supplied.
 - An ID validation attribute gets the model itself, or each element of an array, and passes an element whose ID is in range. It also gets `null`, from the pipeline and by name, before the binder's own null check, and each `null` element of a named list, so its null behavior decides what happens to those.
+- A pipeable parameter's ID check names the parameter's interface as its type argument, as `[ValidateIds<ISeriesPipeable>(ValidateRangeKind.Positive)]` does, since the binder runs a generic validation attribute like any other. The attribute reads the ID through a direct call to `IPipeable<T>.GetId()`, and its `where T : IPipeable<T>` makes the compiler refuse a type argument that isn't a pipeable interface. Nothing checks that the type argument matches the parameter's element type, so an element that isn't a `T` fails validation at run time.
 - A model given by position goes to the parameter at that position, such as an explicit-ID set's `-Id`, and fails to convert. Help, examples, and tests pass a model through the pipeline or by name.
 - To `Either<string, int>`, only an `[int]` argument binds as a number. A `[long]`, a `[double]`, or a string of digits binds as text, through the `string` operator, so `[long] 607` reaches the cmdlet as the name `'607'`.
 - A struct parameter that takes a model, such as `Either<int, SeriesObject>`, needs a transformation attribute that builds the struct from the model, as `IdOrObjectTransformAttribute<T>` does, because the binder never calls the struct's operator from a model's class. Without one, a model fails to bind, or one without note properties binds as an empty struct. A validation attribute on that parameter reads the ID or the model out of the struct it receives.

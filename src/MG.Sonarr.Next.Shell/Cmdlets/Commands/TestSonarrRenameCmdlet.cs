@@ -18,7 +18,7 @@ public sealed class TestSonarrRenameCmdlet : SonarrApiCmdletBase
 	QueryCol _params = null!;
 
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "BySeriesInput")]
-	[ValidateId(ValidateRangeKind.Positive, typeof(ISeriesPipeable))]
+	[ValidateId<ISeriesPipeable>(ValidateRangeKind.Positive)]
 	public ISeriesPipeable InputObject
 	{
 		get => null!;
