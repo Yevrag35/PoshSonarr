@@ -1,8 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
-		<Nullable>enable</Nullable>
 		<Product>PoshSonarr .NET 10</Product>
 		<Description>The binary library of the PoshSonarr PowerShell module.</Description>
 	</PropertyGroup>

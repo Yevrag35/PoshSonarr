@@ -1,8 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
-		<Nullable>enable</Nullable>
 		<RootNamespace>MG.Sonarr.Next</RootNamespace>
 		<Product>PoshSonarr Services Library .NET 10</Product>
 		<Description>The service library for the PoshSonarr PowerShell module.</Description>
