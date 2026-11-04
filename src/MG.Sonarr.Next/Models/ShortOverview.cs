@@ -10,10 +10,7 @@ public readonly struct ShortOverview
 	/// before it rents an array instead.
 	/// </summary>
 	const int MAX_SPAN_LENGTH = 1_000;
-	/// <summary>
-	/// A value that indicates whether <see cref="_text"/> holds anything but white space.
-	/// </summary>
-	readonly bool _isNotEmpty;
+
 	/// <summary>
 	/// The shortened text, or <see langword="null"/> for a default instance.
 	/// </summary>
@@ -26,7 +23,8 @@ public readonly struct ShortOverview
 	/// <see langword="true"/> if the text is empty or consists only of white space, or the instance is the default
 	/// one; otherwise, <see langword="false"/>.
 	/// </value>
-	public bool IsEmpty => !_isNotEmpty;
+	[MemberNotNullWhen(false, nameof(_text))]
+	public bool IsEmpty => string.IsNullOrEmpty(_text);
 	/// <summary>
 	/// Gets the shortened text.
 	/// </summary>
@@ -37,10 +35,9 @@ public readonly struct ShortOverview
 	/// Initializes a new <see cref="ShortOverview"/> instance that holds the specified shortened text.
 	/// </summary>
 	/// <param name="text">The text, already shortened.</param>
-	private ShortOverview(string text)
+	private ShortOverview(string? text)
 	{
-		_text = text;
-		_isNotEmpty = !string.IsNullOrWhiteSpace(text);
+		_text = text ?? string.Empty;
 	}
 
 	/// <summary>
