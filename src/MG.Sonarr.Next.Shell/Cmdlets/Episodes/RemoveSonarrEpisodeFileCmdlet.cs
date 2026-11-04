@@ -20,7 +20,7 @@ public sealed class RemoveSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 	public int[] Id { get; set; } = [];
 
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput")]
-	[ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodeFilePipeable))]
+	[ValidateIds(ValidateRangeKind.NonNegative, typeof(IEpisodeFilePipeable))]
 	public IEpisodeFilePipeable[] InputObject { get; set; } = [];
 
 	[Parameter]
@@ -45,9 +45,7 @@ public sealed class RemoveSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 	{
 		if (this.HasParameter(InputObject) && this.InputObject.Length > 0)
 		{
-			_ids.UnionWith(
-				this.InputObject.Select(x => x.EpisodeFileId)
-								.Where(x => x > 0));
+			EpisodeFileInput.AddFileIds(this, this.InputObject, _ids);
 		}
 	}
 	protected override void End(IServiceProvider provider)

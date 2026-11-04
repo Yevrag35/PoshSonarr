@@ -258,7 +258,7 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 	/// <returns>The <see cref="EpisodeFileId"/>.</returns>
 	int? IPipeable<IEpisodeFilePipeable>.GetId()
 	{
-		return this.Id;
+		return this.EpisodeFileId;
 	}
 	/// <summary>
 	/// Gets the ID that the episode pipes as an episode to search releases for.

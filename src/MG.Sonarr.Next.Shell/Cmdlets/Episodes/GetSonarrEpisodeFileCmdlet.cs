@@ -19,7 +19,7 @@ public sealed class GetSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByEpisodeFileInput")]
-	[ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodeFilePipeable))]
+	[ValidateIds(ValidateRangeKind.NonNegative, typeof(IEpisodeFilePipeable))]
 	public IEpisodeFilePipeable[] InputObject { get; set; } = Array.Empty<IEpisodeFilePipeable>();
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -65,10 +65,7 @@ public sealed class GetSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 	{
 		if (this.HasParameter(this.InputObject))
 		{
-			_ids.UnionWith(
-				this.InputObject
-					.Where(x => x.EpisodeFileId > 0)
-						.Select(x => x.EpisodeFileId));
+			EpisodeFileInput.AddFileIds(this, this.InputObject, _ids);
 		}
 		else if (this.HasParameter(this.SeriesInput))
 		{
