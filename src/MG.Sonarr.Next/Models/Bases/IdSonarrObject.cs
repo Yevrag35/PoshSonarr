@@ -27,7 +27,7 @@ public abstract class IdSonarrObject<TSelf> : SonarrObject,
 	/// The number of members that the object's member collection starts with room for, about the number of fields that
 	/// Sonarr sends for the resource.
 	/// </param>
-	protected IdSonarrObject(int capacity)
+	protected IdSonarrObject([ConstantExpected] int capacity)
 		: base(capacity)
 	{
 	}

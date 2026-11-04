@@ -79,7 +79,7 @@ public abstract class TagUpdateObject<TSelf> : IdSonarrObject<TSelf>,
 	/// The number of members that the object's member collection starts with room for, about the number of fields that
 	/// Sonarr sends for the resource.
 	/// </param>
-	protected TagUpdateObject(int capacity)
+	protected TagUpdateObject([ConstantExpected] int capacity)
 		: base(capacity)
 	{
 	}

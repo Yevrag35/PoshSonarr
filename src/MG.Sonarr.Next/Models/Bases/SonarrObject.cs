@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Extensions.PSO;
-using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.PSProperties;
@@ -11,15 +10,8 @@ namespace MG.Sonarr.Next.Models;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The JSON converter creates a derived model as an empty custom object and adds a note property for each field of
-/// the resource, so the object shows every field that Sonarr sends. PowerShell reads those note properties, not the
-/// model's C# members, which exist only where C# code needs a value.
-/// </para>
-/// <para>
-/// After it reads an object, the converter calls <see cref="OnDeserialized()"/>, and the HTTP client calls
-/// <see cref="SetTag(IMetadataResolver)"/>, which adds the <see cref="MetadataTag"/> that names the object's
-/// endpoint. A cmdlet calls <see cref="Commit"/> after a request that sends the object succeeds and
-/// <see cref="Reset"/> after one fails.
+/// The object holds the resource's fields as note properties, which PowerShell sees in place of the object's C#
+/// members.
 /// </para>
 /// <para>
 /// Instances aren't thread-safe.
@@ -31,50 +23,44 @@ public abstract class SonarrObject : PSObject,
 	IResettable
 {
 	/// <summary>
-	/// A value that indicates whether <see cref="SetPSTypeName()"/> has run.
+	/// A value that indicates whether <see cref="OnDeserialized()"/> has run on the object and added its type names.
 	/// </summary>
-	bool _addedType;
+	private bool _addedType;
 	/// <summary>
-	/// The full type name of <see cref="SonarrObject"/>, which <see cref="SetPSTypeName()"/> inserts.
+	/// The full name of <see cref="SonarrObject"/>, which <see cref="SetPSTypeName()"/> inserts.
 	/// </summary>
-	static readonly string _typeName = typeof(SonarrObject).GetName();
+	private const string TYPE_NAME = "MG.Sonarr.Next.Models.SonarrObject";
 
 	/// <summary>
-	/// Gets the value of the property with the specified name.
+	/// Gets the value of the object's property with the specified name.
 	/// </summary>
 	/// <remarks>
-	/// The lookup goes through <see cref="PSObject.Properties"/>, so it finds note properties as well as the
-	/// adapted members of the object.
+	/// The indexer reads the properties that PowerShell sees, not the object's C# members.
 	/// </remarks>
-	/// <param name="propertyName">The name of the property, which PowerShell matches without regard to case.</param>
-	/// <value>The value of the property, or <see langword="null"/> if the object has no such property.</value>
+	/// <param name="propertyName">The name of the property, matched without regard to case.</param>
 	/// <exception cref="ArgumentException">Thrown when <paramref name="propertyName"/> is null or empty.</exception>
-	public object? this[string propertyName]
-	{
-		get => this.Properties[propertyName]?.Value;
-	}
+	/// <value>The value of the property, or <see langword="null"/> if the object has no such property.</value>
+	public object? this[string propertyName] => this.Properties[propertyName]?.Value;
 
 	/// <summary>
-	/// Gets a value that indicates whether <see cref="SetTag(IMetadataResolver)"/> leaves the object untagged.
+	/// When overridden in a derived class, gets a value that indicates whether
+	/// <see cref="SetTag(IMetadataResolver)"/> leaves the object untagged.
 	/// </summary>
 	/// <remarks>
-	/// A derived model overrides it to return <see langword="true"/> when its objects stand for no endpoint, and such
-	/// an object gets no <c>MetadataTag</c> property at all.
+	/// The base implementation returns <see langword="false"/>.
 	/// </remarks>
 	/// <value>
-	/// <see langword="true"/> if the object gets no metadata tag; otherwise, <see langword="false"/>. The default is
+	/// <see langword="true"/> if the object gets no <c>MetadataTag</c> note property; otherwise,
 	/// <see langword="false"/>.
 	/// </value>
 	protected virtual bool DisregardMetadataTag { get; }
 
 	/// <summary>
-	/// Gets the metadata tag that names the object's endpoint and the cmdlets it can be piped to.
+	/// Gets the object's metadata tag, which names its endpoint and the cmdlets that it can be piped to.
 	/// </summary>
-	/// <remarks>
-	/// The value comes from the object's <c>MetadataTag</c> note property, a <see cref="MetadataProperty"/>.
-	/// </remarks>
 	/// <value>
-	/// The object's metadata tag, or <see cref="MetadataTag.Empty"/> if the object hasn't been tagged.
+	/// The tag in the object's <c>MetadataTag</c> note property, or <see cref="MetadataTag.Empty"/> if the object hasn't
+	/// been tagged.
 	/// </value>
 	public MetadataTag MetadataTag => this.GetValue<MetadataTag>() ?? MetadataTag.Empty;
 
@@ -85,7 +71,7 @@ public abstract class SonarrObject : PSObject,
 	/// The number of members that the object's member collection starts with room for, about the number of fields that
 	/// Sonarr sends for the resource.
 	/// </param>
-	protected SonarrObject(int capacity)
+	protected SonarrObject([ConstantExpected] int capacity)
 		: base(capacity)
 	{
 	}
@@ -94,8 +80,8 @@ public abstract class SonarrObject : PSObject,
 	/// When overridden in a derived class, brings the object back in step after a request that sends it succeeds.
 	/// </summary>
 	/// <remarks>
-	/// A derived model takes out what it put back for the request body and updates the values that it keeps copies
-	/// of. The base implementation does nothing.
+	/// An override takes out what the model added to the object for the request body and updates the values that it
+	/// keeps copies of. The base implementation does nothing.
 	/// </remarks>
 	public virtual void Commit()
 	{
@@ -105,27 +91,27 @@ public abstract class SonarrObject : PSObject,
 	/// <summary>
 	/// When implemented in a derived class, gets the metadata tag for the object.
 	/// </summary>
-	/// <remarks>
-	/// A model returns the resolver's tag for its endpoint, or <paramref name="existing"/> when it stands for no
-	/// endpoint.
-	/// </remarks>
-	/// <param name="resolver">The resolver that holds the tags that the connection registered.</param>
-	/// <param name="existing">The tag to return when the object stands for no endpoint.</param>
-	/// <returns>The metadata tag for the object.</returns>
+	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
+	/// <param name="existing">
+	/// The tag to return when the object stands for no endpoint. <see cref="SetTag(IMetadataResolver)"/> passes
+	/// <see cref="MetadataTag.Empty"/>.
+	/// </param>
+	/// <returns>
+	/// The resolver's tag for the object's endpoint, or <paramref name="existing"/> if the object stands for no endpoint.
+	/// </returns>
 	protected abstract MetadataTag GetTag(IMetadataResolver resolver, MetadataTag existing);
 
 	/// <summary>
-	/// Determines whether the object, read as a nested property of another object, is read-only.
+	/// When overridden in a derived class, determines whether a parent object holds the object in a read-only
+	/// property.
 	/// </summary>
 	/// <remarks>
-	/// A derived model overrides it to return <see langword="false"/> for a parent whose request body takes a value
-	/// that the user sets, and the converter then makes the property writable.
+	/// The base implementation returns <see langword="true"/>.
 	/// </remarks>
 	/// <param name="propertyName">The name of the parent's property that holds the object.</param>
 	/// <param name="parentType">The type of the parent object.</param>
 	/// <returns>
-	/// <see langword="true"/> if the property that holds the object is read-only; otherwise, <see langword="false"/>.
-	/// The base implementation always returns <see langword="true"/>.
+	/// <see langword="true"/> if the parent's property is read-only; <see langword="false"/> if it's writable.
 	/// </returns>
 	internal virtual bool ShouldBeReadOnly(string propertyName, Type parentType)
 	{
@@ -133,11 +119,11 @@ public abstract class SonarrObject : PSObject,
 	}
 
 	/// <summary>
-	/// Finishes setting up the object after the JSON converter has added its properties.
+	/// Finishes setting up the object after deserialization.
 	/// </summary>
 	/// <remarks>
-	/// It calls <see cref="OnDeserialized(bool)"/>, and then, the first time only, <see cref="SetPSTypeName()"/>. A
-	/// derived class that overrides it calls the base implementation.
+	/// It calls <see cref="OnDeserialized(bool)"/> and then, the first time it runs on the object,
+	/// <see cref="SetPSTypeName()"/>. An override calls the base implementation.
 	/// </remarks>
 	public virtual void OnDeserialized()
 	{
@@ -152,12 +138,11 @@ public abstract class SonarrObject : PSObject,
 	}
 
 	/// <summary>
-	/// When overridden in a derived class, finishes setting up the object after the JSON converter has added its
-	/// properties.
+	/// When overridden in a derived class, finishes setting up the object after deserialization.
 	/// </summary>
 	/// <remarks>
-	/// A derived model copies the values that its C# properties keep, removes or replaces the properties that
-	/// PowerShell shouldn't show or change, and adds computed properties. The base implementation does nothing.
+	/// An override copies the values that the model's C# properties keep and adds, removes, or replaces the object's
+	/// properties. The base implementation does nothing.
 	/// </remarks>
 	/// <param name="alreadyCalled">
 	/// <see langword="true"/> if <see cref="OnDeserialized()"/> has run on the object before; otherwise,
@@ -172,7 +157,8 @@ public abstract class SonarrObject : PSObject,
 	/// When overridden in a derived class, brings the object back to its state before a request that sends it failed.
 	/// </summary>
 	/// <remarks>
-	/// A derived model takes out what it put back for the request body. The base implementation does nothing.
+	/// An override takes out what the model added to the object for the request body. The base implementation does
+	/// nothing.
 	/// </remarks>
 	public virtual void Reset()
 	{
@@ -180,14 +166,14 @@ public abstract class SonarrObject : PSObject,
 	}
 
 	/// <summary>
-	/// Adds or replaces the object's metadata tag.
+	/// Sets the object's metadata tag from the specified resolver.
 	/// </summary>
 	/// <remarks>
-	/// It gets the tag from <see cref="GetTag(IMetadataResolver, MetadataTag)"/>, passing
-	/// <see cref="MetadataTag.Empty"/> as the existing tag, and puts it in a read-only <c>MetadataTag</c> property.
-	/// When <see cref="DisregardMetadataTag"/> is <see langword="true"/>, it does nothing.
+	/// The method puts the tag that <see cref="GetTag(IMetadataResolver, MetadataTag)"/> returns in a read-only
+	/// <c>MetadataTag</c> note property, replacing any that the object has, and does nothing when
+	/// <see cref="DisregardMetadataTag"/> is <see langword="true"/>.
 	/// </remarks>
-	/// <param name="resolver">The resolver that holds the tags that the connection registered.</param>
+	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="resolver"/> is null.</exception>
 	public void SetTag(IMetadataResolver resolver)
 	{
@@ -202,28 +188,26 @@ public abstract class SonarrObject : PSObject,
 	}
 
 	/// <summary>
-	/// Adds the object's type names to <see cref="PSObject.TypeNames"/>, which the format and type files select it by.
+	/// Inserts the full name of <see cref="SonarrObject"/> at the start of <see cref="PSObject.TypeNames"/>.
 	/// </summary>
 	/// <remarks>
-	/// The base implementation inserts the full name of <see cref="SonarrObject"/> at index 0. A derived model calls
-	/// the base implementation and then inserts its own full type name at index 0, or replaces index 0 when it derives
-	/// from another model.
+	/// An override calls the base implementation and then inserts the model's own full name at index 0, or replaces the
+	/// name at index 0 when the model derives from another model.
 	/// </remarks>
 	protected virtual void SetPSTypeName()
 	{
-		this.TypeNames.Insert(0, _typeName);
+		this.TypeNames.Insert(0, TYPE_NAME);
 	}
 
 	/// <summary>
 	/// Gets the object's numeric ID from its <c>Id</c> property.
 	/// </summary>
 	/// <param name="id">
-	/// When this method returns, the value of the <c>Id</c> property as an <see cref="int"/> if the object has one;
-	/// otherwise, 0.
+	/// When this method returns <see langword="true"/>, the value of the <c>Id</c> property; otherwise, 0.
 	/// </param>
 	/// <returns>
-	/// <see langword="true"/> if the object has an <c>Id</c> property whose value converts to an <see cref="int"/>;
-	/// otherwise, <see langword="false"/>.
+	/// <see langword="true"/> if the object has an <c>Id</c> property that holds an <see cref="int"/>; otherwise,
+	/// <see langword="false"/>.
 	/// </returns>
 	public bool TryGetId(out int id)
 	{
@@ -231,7 +215,7 @@ public abstract class SonarrObject : PSObject,
 	}
 
 	/// <summary>
-	/// Resets the object through <see cref="Reset"/>.
+	/// Resets the object with <see cref="Reset"/>.
 	/// </summary>
 	/// <returns>Always <see langword="true"/>.</returns>
 	bool IResettable.TryReset()
