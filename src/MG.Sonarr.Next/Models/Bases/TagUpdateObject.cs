@@ -37,7 +37,6 @@ public
 	/// The snapshot of tag IDs that <see cref="Reset"/> puts back, or <see langword="null"/> if none was taken.
 	/// </summary>
 	private int[]? _originalTags;
-	//private int _originalTagCount;
 
 	/// <summary>
 	/// Gets or sets a value that indicates whether a change to the object's tags must be saved with a request to Sonarr.
@@ -62,12 +61,13 @@ public
 	/// </remarks>
 	/// <exception cref="ArgumentNullException">Thrown when the property is set to null.</exception>
 	/// <value>The set of the object's tag IDs, in ascending order.</value>
+	[SuppressMessage("Style", "IDE0009", Justification = "Used in 'nameof()'")]
 	public SortedSet<int> Tags
 	{
 		get => _tags ??= [];
 		set
 		{
-			ArgumentNullException.ThrowIfNull(value, nameof(this.Tags));
+			ArgumentNullException.ThrowIfNull(value, nameof(Tags));
 			_tags = value;
 			_originalTags = [.. value];
 		}
@@ -107,11 +107,7 @@ public
 	/// </summary>
 	void ITagPipeable.CommitTags()
 	{
-		if (_originalTags is not null)
-		{
-			//_originalTags.Clear();
-			//_originalTags.AddRange(this.Tags);
-		}
+		_originalTags = [.. this.Tags];
 	}
 
 	/// <summary>

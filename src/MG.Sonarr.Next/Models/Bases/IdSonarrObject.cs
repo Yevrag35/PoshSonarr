@@ -48,7 +48,7 @@ public
 	/// </returns>
 	public virtual int CompareTo(TSelf? other)
 	{
-		return Comparer<int?>.Default.Compare(this.Id, other?.Id);
+		return other is null ? 1 : this.Id.CompareTo(other.Id);
 	}
 	/// <summary>
 	/// Copies the object's <c>Id</c> property into <see cref="Id"/> and finishes setting up the object.
