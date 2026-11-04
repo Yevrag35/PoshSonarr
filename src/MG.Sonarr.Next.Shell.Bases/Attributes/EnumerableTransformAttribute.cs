@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 
 namespace MG.Sonarr.Next.Shell.Attributes;
 

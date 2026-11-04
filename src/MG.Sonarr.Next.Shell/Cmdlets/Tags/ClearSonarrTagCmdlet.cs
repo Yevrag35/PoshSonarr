@@ -127,7 +127,7 @@ public sealed class ClearSonarrTagCmdlet : SonarrMetadataCmdlet
 				}
 				else
 				{
-					kvp.Value.CommitTags();
+					kvp.Value.Commit();
 				}
 			}
 		}

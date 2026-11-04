@@ -185,14 +185,17 @@ public interface ITagPipeable : IHasId, IJsonSonarrMetadata,
 	ISet<int> Tags { get; }
 
 	/// <summary>
-	/// Makes the object's current tags the ones that <see cref="Reset"/> restores.
+	/// Makes the object's current tags the ones that <see cref="Reset"/> restores, and brings the rest of the object
+	/// back in step after a request that sends it succeeds.
 	/// </summary>
 	/// <remarks>
-	/// A cmdlet calls this after a request that saves the object's changed tags succeeds.
+	/// A cmdlet calls this after a request that saves the object's changed tags succeeds. Serializing the object for
+	/// the request can add properties to it, which this takes out again.
 	/// </remarks>
-	void CommitTags();
+	void Commit();
 	/// <summary>
-	/// Restores the tags that the object had when its tags were last committed.
+	/// Restores the tags that the object had when its tags were last committed, and brings the rest of the object back
+	/// to its state before a request that sends it failed.
 	/// </summary>
 	/// <remarks>
 	/// A cmdlet calls this after a request that saves the object's changed tags fails.

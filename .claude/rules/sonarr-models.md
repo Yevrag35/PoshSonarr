@@ -49,7 +49,8 @@ The base for a resource with a numeric ID. It adds `int Id`, with a private sett
 The base for a resource that carries tag IDs. It implements `ITagPipeable`, the input of `Add-SonarrTag`, `Clear-SonarrTag`, and `Get-SonarrTag`.
 
 - `Tags` is a `SortedSet<int>`. `OnDeserialized(bool)` takes the set that the read-only `Tags` note property, a `ReadOnlyTagsProperty`, holds, so a change made to `Tags` in C# shows in PowerShell and in the next request body, while PowerShell can't replace the set. Setting `Tags` also takes a snapshot of its IDs.
-- `Commit()` and `Reset()` are `sealed`. `Commit()` calls `CommitTags()`, which makes the current tags the snapshot, and then `OnCommit()`. `Reset()` puts the snapshot back into `Tags` and then calls `OnReset()`. A derived model overrides `OnCommit()` and `OnReset()`.
+- `Commit()` and `Reset()` are `sealed`. `Commit()` makes the current tags the snapshot and then calls `OnCommit()`. `Reset()` puts the snapshot back into `Tags` and then calls `OnReset()`. A derived model overrides `OnCommit()` and `OnReset()`.
+- `ITagPipeable` declares `Commit()` and `Reset()`, which these implement, so `Add-SonarrTag` and `Clear-SonarrTag` run the whole commit after a PUT that succeeds and the whole reset after one that fails. The PUT runs the model's `OnSerializing()`, so a model's `OnCommit()` takes out what it put in, as an `Update-*` cmdlet's commit does.
 - `MustUpdateViaApi` tells a tag cmdlet whether to PUT the object after changing its tags: `true` for an object that exists on the server, and `false` for one that doesn't exist yet, such as a lookup result or a schema, whose tags go out with its own POST. `OnDeserialized(bool)` sets it to `true`, so a model for objects that don't exist on the server sets it to `false` after calling the base.
 - A derived model's `OnDeserialized(bool)` calls `base.OnDeserialized(alreadyCalled)` first, and `IPipeable<ITagPipeable>.GetId()` returns `Id`.
 

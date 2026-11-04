@@ -64,7 +64,11 @@ public
 	[SuppressMessage("Style", "IDE0009", Justification = "Used in 'nameof()'")]
 	public SortedSet<int> Tags
 	{
-		get => _tags ??= [];
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get
+		{
+			return _tags ?? this.EnsureTags();
+		}
 		set
 		{
 			ArgumentNullException.ThrowIfNull(value, nameof(Tags));
@@ -95,19 +99,32 @@ public
 	/// that sends it succeeds.
 	/// </summary>
 	/// <remarks>
-	/// It calls <see cref="ITagPipeable.CommitTags"/> and then <see cref="OnCommit"/>.
+	/// It takes the snapshot of <see cref="Tags"/> that <see cref="Reset"/> puts back, and then calls
+	/// <see cref="OnCommit"/>, which takes out what serializing the object for the request put in. It implements
+	/// <see cref="ITagPipeable.Commit"/>, so the tag cmdlets run all of it after a PUT that saves the object's tags.
 	/// </remarks>
 	public sealed override void Commit()
 	{
-		((ITagPipeable)this).CommitTags();
+		this.CommitTags();
 		this.OnCommit();
 	}
 	/// <summary>
 	/// Makes the object's current tags the snapshot that <see cref="Reset"/> puts back.
 	/// </summary>
-	void ITagPipeable.CommitTags()
+	/// <remarks>
+	/// The snapshot's array is reused when it has the same length as the set, and replaced otherwise.
+	/// </remarks>
+	private void CommitTags()
 	{
-		_originalTags = [.. this.Tags];
+		SortedSet<int> tags = this.Tags;
+		int[]? snapshot = _originalTags;
+		if (snapshot is null || snapshot.Length != tags.Count)
+		{
+			snapshot = tags.Count == 0 ? [] : new int[tags.Count];
+			_originalTags = snapshot;
+		}
+
+		tags.CopyTo(snapshot);
 	}
 
 	/// <summary>
@@ -184,5 +201,16 @@ public
 	int? IPipeable<ITagPipeable>.GetId()
 	{
 		return this.Id;
+	}
+
+	/// <summary>
+	/// Ensures that the object's <see cref="Tags"/> is a set and returns it.
+	/// </summary>
+	/// <returns>The object's <see cref="Tags"/> as a <see cref="SortedSet{T}"/> of <see cref="int"/> values.</returns>
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	private SortedSet<int> EnsureTags()
+	{
+		SortedSet<int> tags = [];
+		return _tags = tags;
 	}
 }
