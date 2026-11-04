@@ -88,8 +88,7 @@ public sealed class NewSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 				return;
 			}
 
-			IndexerObject? indexer = indexers.Find(x => indexerName.IsMatch(x.Name));
-			if (indexer is not null)
+			if (indexers.TryFind(indexerName, static (x, name) => name.IsMatch(x.Name), out var indexer))
 			{
 				this.WriteVerbose($"Found indexer from name -> {indexer.Name} ({indexer.Id})");
 				this.Indexer = indexer.Id;

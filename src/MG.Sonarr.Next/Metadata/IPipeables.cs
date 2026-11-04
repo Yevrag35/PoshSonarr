@@ -24,31 +24,12 @@ public interface IPipeable<T> : IJsonSonarrMetadata
 	int? GetId();
 }
 
-///// <summary>
-///// Defines a contract for types that provide a validatable identifier and support pipeable operations.
-///// </summary>
-///// <typeparam name="TPipeable">The type that implements both <see cref="IValidatableId{TPipeable}"/> and <see cref="IPipeable{TPipeable}"/>,
-///// representing a pipeable entity with a validatable identifier.</typeparam>
-//public interface IValidatableId<TPipeable> where TPipeable : IValidatableId<TPipeable>, IPipeable
-//{
-//	/// <summary>
-//	/// Retrieves the identifier of the specified pipeable object for validation purposes.
-//	/// </summary>
-//	/// <param name="pipeable">The pipeable object from which to obtain the identifier. Cannot be null.</param>
-//	/// <returns>The identifier of the pipeable object if available; otherwise, null.</returns>
-//	static virtual int? GetValidatableId(TPipeable pipeable)
-//	{
-//		return pipeable.GetId();
-//	}
-//}
-
 /// <summary>
 /// Represents a series that can be piped to a cmdlet that gets the series' episodes from the <c>/episode</c>
 /// endpoint.
 /// </summary>
 public interface IEpisodeBySeriesPipeable : IJsonSonarrMetadata,
 	IPipeable<IEpisodeBySeriesPipeable>
-	//IValidatableId<IEpisodeBySeriesPipeable>
 {
 	/// <summary>
 	/// Gets the ID of the series.
@@ -79,7 +60,6 @@ public interface IEpisodePipeable : IJsonSonarrMetadata,
 /// </summary>
 public interface IEpisodeFilePipeable : IJsonSonarrMetadata,
 	IPipeable<IEpisodeFilePipeable>
-	//IValidatableId<IEpisodeFilePipeable>
 {
 	/// <summary>
 	/// Gets the ID of the episode file.
@@ -93,7 +73,6 @@ public interface IEpisodeFilePipeable : IJsonSonarrMetadata,
 /// </summary>
 public interface IEpisodeFileBySeriesPipeable : IJsonSonarrMetadata,
 	IPipeable<IEpisodeFileBySeriesPipeable>
-	//IValidatableId<IEpisodeFileBySeriesPipeable>
 {
 	/// <summary>
 	/// Gets the ID of the series.
@@ -107,7 +86,6 @@ public interface IEpisodeFileBySeriesPipeable : IJsonSonarrMetadata,
 /// </summary>
 public interface ILanguageProfilePipeable : IJsonMetadataTaggable,
 	IPipeable<ILanguageProfilePipeable>
-	//IValidatableId<ILanguageProfilePipeable>
 {
 	/// <summary>
 	/// Gets the ID of the language profile.
@@ -121,7 +99,6 @@ public interface ILanguageProfilePipeable : IJsonMetadataTaggable,
 /// </summary>
 public interface IQualityProfilePipeable : IJsonMetadataTaggable,
 	IPipeable<IQualityProfilePipeable>
-	//IValidatableId<IQualityProfilePipeable>
 {
 	/// <summary>
 	/// Gets the ID of the quality profile.
@@ -134,7 +111,6 @@ public interface IQualityProfilePipeable : IJsonMetadataTaggable,
 /// </summary>
 public interface IReleasePipeableByEpisode : IJsonMetadataTaggable,
 	IPipeable<IReleasePipeableByEpisode>
-	//IValidatableId<IReleasePipeableByEpisode>
 {
 	/// <summary>
 	/// Gets the ID of the episode.
@@ -147,7 +123,6 @@ public interface IReleasePipeableByEpisode : IJsonMetadataTaggable,
 /// </summary>
 public interface IReleasePipeableBySeries : IJsonMetadataTaggable,
 	IPipeable<IReleasePipeableBySeries>
-	//IValidatableId<IReleasePipeableBySeries>
 {
 	/// <summary>
 	/// Gets the ID of the series.
@@ -164,7 +139,6 @@ public interface IReleasePipeableBySeries : IJsonMetadataTaggable,
 /// </remarks>
 public interface IRenameFilePipeable : IJsonMetadataTaggable,
 	IPipeable<IRenameFilePipeable>
-	//IValidatableId<IRenameFilePipeable>
 {
 	/// <summary>
 	/// Gets the ID of the episode file.
@@ -182,7 +156,6 @@ public interface IRenameFilePipeable : IJsonMetadataTaggable,
 /// </summary>
 public interface ISeriesPipeable : IJsonSonarrMetadata,
 	IPipeable<ISeriesPipeable>
-	//IValidatableId<ISeriesPipeable>
 {
 	/// <summary>
 	/// Gets the ID of the series.
@@ -195,7 +168,6 @@ public interface ISeriesPipeable : IJsonSonarrMetadata,
 /// </summary>
 public interface ITagPipeable : IHasId, IJsonSonarrMetadata,
 	IPipeable<ITagPipeable>
-	//IValidatableId<ITagPipeable>
 {
 	/// <summary>
 	/// Gets a value that indicates whether a change to the object's tags must be saved with a request to Sonarr.
@@ -233,7 +205,6 @@ public interface ITagPipeable : IHasId, IJsonSonarrMetadata,
 /// </summary>
 public interface ITestPipeable : IJsonSonarrMetadata,
 	IPipeable<ITestPipeable>
-	//IValidatableId<ITestPipeable>
 {
 	/// <summary>
 	/// Gets the ID of the provider.

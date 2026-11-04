@@ -72,15 +72,16 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 	/// <param name="items">The elements to copy into the list, or <see langword="null"/> for an empty list.</param>
 	public MetadataList(IEnumerable<T>? items)
 	{
-		_list = items is not null ? new(items) : [];
+		_list = items is not null ? new(items.Where(x => x is not null)) : [];
 	}
 	/// <summary>
 	/// Initializes a new <see cref="MetadataList{T}"/> instance that holds copies of the specified values.
 	/// </summary>
 	/// <param name="values">The values to copy into the list. A later change to the span doesn't affect the list.</param>
 	internal MetadataList(params ReadOnlySpan<T> values)
+		: this(values.Length)
 	{
-		_list = [.. values];
+		this.AddRange(values);
 	}
 
 	/// <summary>
@@ -108,6 +109,35 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 	}
 
 	/// <summary>
+	/// Adds the elements of a span to the end of the list.
+	/// </summary>
+	/// <remarks>
+	/// The elements are copied straight into the list's backing array, growing it first when they don't fit.
+	/// </remarks>
+	/// <param name="values">The elements to add.</param>
+	public void AddRange(params ReadOnlySpan<T> values)
+	{
+		foreach (T value in values)
+		{
+			this.Add(value);
+		}
+	}
+
+	/// <summary>
+	/// Returns a read-only span over the list's elements.
+	/// </summary>
+	/// <remarks>
+	/// The span views the list's backing array. A change to the list's contents shows in the span, but an addition
+	/// that grows the list moves its elements to a new array, which the span doesn't follow, so get a new span after
+	/// changing the list.
+	/// </remarks>
+	/// <returns>A span over the list's <see cref="Count"/> elements, or an empty span for an empty list.</returns>
+	public ReadOnlySpan<T> AsSpan()
+	{
+		return ListMarshal.AsReadOnlySpan(_list);
+	}
+
+	/// <summary>
 	/// Removes every element from the list.
 	/// </summary>
 	/// <remarks>
@@ -127,14 +157,7 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 	/// </returns>
 	public bool Contains(T item)
 	{
-		_list.Contains(item);
-		foreach (T value in this.AsSpan())
-		{
-			if (_list.IndexOf(item) != -1 || value.CompareTo(item) == 0)
-				return true;
-		}
-
-		return false;
+		return item is not null && _list.Contains(item);
 	}
 	/// <summary>
 	/// Copies the list's elements to an array, starting at the specified index of the array.
@@ -149,17 +172,6 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 	public void CopyTo(T[] array, int index)
 	{
 		_list.CopyTo(array, index);
-	}
-	/// <summary>
-	/// Finds the first element that matches a predicate.
-	/// </summary>
-	/// <param name="predicate">The predicate that an element must match.</param>
-	/// <returns>The first matching element, or <see langword="default"/> when none matches.</returns>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="predicate"/> is null.</exception>
-	public T? Find(Predicate<T> predicate)
-	{
-		ArgumentNullException.ThrowIfNull(predicate);
-		return _list.Find(predicate);
 	}
 
 	/// <summary>
@@ -241,7 +253,7 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 	/// <param name="resolver">The resolver that the elements get their tags from.</param>
 	public void SetTag(IMetadataResolver resolver)
 	{
-		foreach (T item in ListMarshal.AsSpan(_list))
+		foreach (T item in ListMarshal.AsReadOnlySpan(_list))
 		{
 			item.SetTag(resolver);
 		}
@@ -256,5 +268,28 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 	public void Sort()
 	{
 		_list.Sort();
+	}
+
+	/// <summary>
+	/// Attempts to find the first element that matches a predicate, which receives an extra argument.
+	/// </summary>
+	/// <typeparam name="TState">The type of the extra argument passed to the predicate.</typeparam>
+	/// <param name="state">The extra argument to pass to the predicate.</param>
+	/// <param name="predicate">The function that receives each element and the extra argument, and returns <see langword="true"/> to indicate a match.</param>
+	/// <param name="result">When this method returns, contains the first element that matches the predicate, if found; otherwise, the default value for the type of the element.</param>
+	/// <returns><see langword="true"/> if an element that matches the predicate is found; otherwise, <see langword="false"/>.</returns>
+	public bool TryFind<TState>(TState state, Func<T, TState, bool> predicate, [NotNullWhen(true)] out T? result)
+	{
+		foreach (T item in ListMarshal.AsReadOnlySpan(_list))
+		{
+			if (predicate(item, state))
+			{
+				result = item;
+				return true;
+			}
+		}
+
+		result = default;
+		return false;
 	}
 }
