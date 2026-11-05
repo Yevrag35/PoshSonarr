@@ -49,11 +49,11 @@ public abstract class TimedCmdlet : SonarrCmdletBase, IApiCmdlet
 
 	public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options)
 	{
-		if (this.Host?.UI is not null)
+		if (this.Host?.UI is { } ui)
 		{
 			TimeSpan elapsed = this.StopTimer();
 			string msg = GetAfterMessage(elapsed, response.StatusCode);
-			this.Host.UI.WriteVerboseLine(msg);
+			ui.WriteVerboseLine(msg);
 		}
 	}
 
@@ -72,17 +72,17 @@ public abstract class TimedCmdlet : SonarrCmdletBase, IApiCmdlet
 	}
 	public void WriteDebugPayload(string jsonPayload)
 	{
-		if (this.Host?.UI is not null)
+		if (this.Host?.UI is { } ui)
 		{
-			this.Host.UI.WriteDebugLine(jsonPayload);
+			ui.WriteDebugLine(jsonPayload);
 		}
 	}
 	public void WriteVerboseBefore(IHttpRequestDetails request)
 	{
-		if (this.Host?.UI is not null)
+		if (this.Host?.UI is { } ui)
 		{
 			string msg = GenerateBeforeMessage(request);
-			this.Host.UI.WriteVerboseLine(msg);
+			ui.WriteVerboseLine(msg);
 		}
 	}
 	private static string GenerateBeforeMessage(IHttpRequestDetails request)
@@ -91,7 +91,6 @@ public abstract class TimedCmdlet : SonarrCmdletBase, IApiCmdlet
 	}
 
 	[DebuggerStepThrough]
-	[StructLayout(LayoutKind.Auto)]
 	private readonly struct TimedResponse : ISonarrTimedResponse
 	{
 		readonly ISonarrResponse? _response;
