@@ -24,7 +24,7 @@ public sealed class GetSonarrLogFileCmdlet : SonarrMetadataCmdlet
 			return;
 		}
 
-		logs.AddRange(updateLogs.Value.AsSpan());
+		logs.AddRange(updateLogs.Value);
 		logs.Sort();
 		this.WriteCollection(logs);
 	}

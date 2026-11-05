@@ -58,8 +58,7 @@ public sealed class GetSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 		if (all.Count > 0 && (names.Count > 0 || ids.Count > 0))
 		{
 			FnPtr<DownloadClientObject, WildcardSet, SortedSet<int>, bool> removePtr;
-			unsafe
-			{ removePtr = new(&removeIf); }
+			unsafe { removePtr = new(&removeIf); }
 
 			all.RemoveAll(names, ids, removePtr);
 		}

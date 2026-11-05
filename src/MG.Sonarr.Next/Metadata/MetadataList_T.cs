@@ -72,7 +72,19 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 	/// <param name="items">The elements to copy into the list, or <see langword="null"/> for an empty list.</param>
 	public MetadataList(IEnumerable<T>? items)
 	{
-		_list = items is not null ? new(items.Where(x => x is not null)) : [];
+		if (items is MetadataList<T> list)
+		{
+			_list = new(list._list.Capacity);
+			this.AddRange(list);
+			return;
+		}
+
+		_list = createList(items);
+
+		static List<T> createList(IEnumerable<T>? items)
+		{
+			return items is not null ? new(items.Where(x => x is not null)) : [];
+		}
 	}
 	/// <summary>
 	/// Initializes a new <see cref="MetadataList{T}"/> instance that holds copies of the specified values.
@@ -96,6 +108,17 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 		}
 	}
 
+	/// <summary>
+	/// Adds the elements of another <see cref="MetadataList{T}"/> to the end of this list.
+	/// </summary>
+	/// <param name="list">The list whose elements should be added.</param>
+	public void AddRange(MetadataList<T> list)
+	{
+		// We can use the fact that the other list is a MetadataList trusting that
+		// all of its elements are non-null, so we can use the span overload to avoid the null check in Add.
+
+		ListMarshal.AddRange(_list, ListMarshal.AsReadOnlySpan(list._list));
+	}
 	/// <summary>
 	/// Adds the elements of a collection to the end of the list.
 	/// </summary>
