@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<Product>PoshSonarr .NET 10</Product>
 		<Description>The binary library of the PoshSonarr PowerShell module.</Description>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

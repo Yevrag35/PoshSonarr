@@ -154,7 +154,6 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	/// in step afterward. The error is written whether or not it's ignorable, and <c>-ErrorAction</c> decides what
 	/// happens to it.
 	/// </remarks>
-	/// <typeparam name="T">The type of <see cref="SonarrObject"/> to process.</typeparam>
 	/// <param name="sonarrObj">
 	/// The <see cref="SonarrObject"/> whose properties can be
 	/// either committed or reset.
@@ -168,7 +167,7 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	/// <see langword="true"/> if <paramref name="sonarrObj"/> had its properties committed, indicating
 	/// a successful operation; otherwise, <see langword="false"/> indicating an error occurred.
 	/// </returns>
-	protected bool TryCommitFromResponse<T>(T sonarrObj, SonarrClientResult response) where T : SonarrObject
+	protected bool TryCommitFromResponse(SonarrObject sonarrObj, SonarrClientResult response)
 	{
 		if (response.IsError)
 		{

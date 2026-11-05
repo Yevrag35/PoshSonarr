@@ -5,12 +5,9 @@ using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets;
 
-/// <provider>
-///     <param name="provider">The scoped service provider for use by derived cmdlets.</param>
-/// </provider>
-public abstract partial class SonarrCmdletBase
+partial class SonarrCmdletBase
 {
-	#region PRE-PROCESSING
+	// PRE-PROCESSING
 	/// <summary>
 	/// Stores the cmdlet's Debug preference in <see cref="DebugPreference"/>, from its <c>-Debug</c> switch or, when
 	/// that isn't bound, from <c>$DebugPreference</c>, when the cmdlet wants it captured.
@@ -53,8 +50,6 @@ public abstract partial class SonarrCmdletBase
 			parameterName: PSConstants.Verbose,
 			variableName: PSConstants.VerbosePreference);
 	}
-
-	#endregion
 
 	/// <inheritdoc cref="Cmdlet.BeginProcessing" path="/*[not(self::summary) and not(self::remarks)]"/>
 	/// <summary>

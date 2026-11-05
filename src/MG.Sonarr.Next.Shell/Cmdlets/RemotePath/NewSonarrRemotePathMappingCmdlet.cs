@@ -6,6 +6,27 @@ using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.RemotePath;
 
+/// <summary>
+/// Represents the <c>New-SonarrRemotePathMapping</c> cmdlet, which creates a remote path mapping in Sonarr.
+/// </summary>
+/// <remarks>
+/// <para>
+/// A mapping tells Sonarr that a path that the download client on <c>-HostName</c> reports, <c>-RemotePath</c>, is
+/// the path <c>-LocalPath</c> where Sonarr runs. The cmdlet posts the mapping, and writes the new mapping that Sonarr
+/// returns to the pipeline as a <see cref="RemotePathObject"/>.
+/// </para>
+/// <para>
+/// When <c>-HostName</c> is <c>localhost</c> or <c>.</c>, the cmdlet sends this computer's name in its place, and the
+/// path of the item that <c>-LocalPath</c> names, resolved from the current location.
+/// </para>
+/// <para>
+/// The cmdlet confirms the mapping before it creates it, and its confirm impact is Low, so it prompts only under
+/// <c>-Confirm</c> or a <c>$ConfirmPreference</c> of Low.
+/// </para>
+/// <para>
+/// The cmdlet's aliases are <c>New-SonarrRemotePath</c> and <c>New-SonarrRemoteMapping</c>.
+/// </para>
+/// </remarks>
 [Cmdlet(VerbsCommon.New, "SonarrRemotePathMapping", ConfirmImpact = ConfirmImpact.Low, SupportsShouldProcess = true)]
 [Alias("New-SonarrRemotePath", "New-SonarrRemoteMapping")]
 public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
@@ -14,26 +35,79 @@ public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	const string LOCALHOST = "localhost";
 	const string DOT_HOST = ".";
 
+	/// <summary>
+	/// Gets a value that indicates whether the cmdlet captures its debug preference before processing begins.
+	/// </summary>
+	/// <remarks>
+	/// The cmdlet writes its request body through <see cref="SonarrCmdletBase.SerializeIfDebug"/>, which writes only
+	/// when the captured preference that <c>-Debug</c> or <c>$DebugPreference</c> gives allows it.
+	/// </remarks>
+	/// <value>Always <see langword="true"/>.</value>
 	protected override bool CaptureDebugPreference => true;
+	/// <summary>
+	/// Gets a value that indicates whether the request's JSON body is written to the debug stream before the request is
+	/// sent.
+	/// </summary>
+	/// <remarks>
+	/// The cmdlet writes the body to the debug stream itself, through <see cref="SonarrCmdletBase.SerializeIfDebug"/>,
+	/// so the property returns <see langword="false"/> and the body appears once.
+	/// </remarks>
+	/// <value>Always <see langword="false"/>.</value>
 	public override bool CanDebugSerializeBefore => false;
 
+	/// <summary>
+	/// Gets or sets the host of the download client that the mapping applies to.
+	/// </summary>
+	/// <remarks>
+	/// <c>localhost</c>, in any case, and <c>.</c> stand for this computer: the cmdlet replaces either with the
+	/// computer's name, followed by a <c>.</c> and the <c>USERDNSDOMAIN</c> environment variable in lowercase when
+	/// that variable is set.
+	/// </remarks>
+	/// <value>The host's name, which can't be empty.</value>
 	[Parameter(Mandatory = true)]
 	[ValidateNotNullOrEmpty]
 	public string HostName { get; set; } = string.Empty;
 
+	/// <summary>
+	/// Gets or sets the path that the download client reports.
+	/// </summary>
+	/// <value>The download client's path, which can't be empty.</value>
 	[Parameter(Mandatory = true)]
 	[ValidateNotNullOrEmpty]
 	public string RemotePath { get; set; } = string.Empty;
 
+	/// <summary>
+	/// Gets or sets the path that Sonarr uses in place of the remote path.
+	/// </summary>
+	/// <remarks>
+	/// The path can't be empty, and it has to be a local path, not a UNC path, once a relative path is resolved from
+	/// the current location. It doesn't have to exist. When <c>-HostName</c> stands for this computer, the cmdlet sends
+	/// the path of the item that it names instead.
+	/// </remarks>
+	/// <value>The local path.</value>
 	[Parameter(Mandatory = true)]
 	[ValidateIsLocalPath(AllowRelative = true, MustExist = false)]
 	public string LocalPath { get; set; } = string.Empty;
 
+	/// <summary>
+	/// Gets the metadata tag of the remote path mapping endpoint.
+	/// </summary>
+	/// <param name="resolver">The resolver of the cmdlet's scope.</param>
+	/// <returns>The remote path mapping's metadata tag.</returns>
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
 		return resolver[Meta.RemotePathMapping];
 	}
 
+	/// <summary>
+	/// Replaces <c>-HostName</c> with this computer's name, and <c>-LocalPath</c> with the path of the item that it
+	/// names, when <c>-HostName</c> is <c>localhost</c> or <c>.</c>.
+	/// </summary>
+	/// <remarks>
+	/// Resolving the path expands wildcards and takes the first item's path, and when no item exists at the path, the
+	/// cmdlet ends with the error.
+	/// </remarks>
+	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	protected override void Begin(IServiceProvider provider)
 	{
 		if (LOCALHOST.Equals(this.HostName, StringComparison.OrdinalIgnoreCase) || DOT_HOST.Equals(this.HostName, StringComparison.Ordinal))
@@ -42,6 +116,15 @@ public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 			this.HostName = GetLocalHostName(Environment.MachineName);
 		}
 	}
+	/// <summary>
+	/// Builds the body of the new remote path mapping and posts it to Sonarr once the action is confirmed.
+	/// </summary>
+	/// <remarks>
+	/// The body's JSON goes to the debug stream before the cmdlet confirms the request. The body is a
+	/// <see cref="RemotePathBody"/>, which serializing leaves unchanged, so writing it first changes nothing, under
+	/// <c>-WhatIf</c> either.
+	/// </remarks>
+	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	protected override void Process(IServiceProvider provider)
 	{
 		RemotePathBody newMap = new()
@@ -60,6 +143,15 @@ public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 		this.SendNewRequest(newMap, this.Tag);
 	}
 
+	/// <summary>
+	/// Gets the specified computer name, followed by a <c>.</c> and the value of the <c>USERDNSDOMAIN</c> environment
+	/// variable in lowercase, or the name alone when the variable isn't set or is only white space.
+	/// </summary>
+	/// <remarks>
+	/// The domain is lowercased with the invariant culture, into the new string's own buffer.
+	/// </remarks>
+	/// <param name="localHostName">The computer's name, from <see cref="Environment.MachineName"/>.</param>
+	/// <returns>The computer's name, with its DNS domain when there is one.</returns>
 	private static string GetLocalHostName(string localHostName)
 	{
 		string? domain = Environment.GetEnvironmentVariable(USERDNSDOMAIN);
@@ -80,6 +172,15 @@ public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 			state.domain.AsSpan().ToLower(domain, CultureInfo.InvariantCulture);
 		});
 	}
+	/// <summary>
+	/// Posts the specified body to the endpoint of the specified tag, and writes the new remote path mapping that
+	/// Sonarr returns to the pipeline.
+	/// </summary>
+	/// <remarks>
+	/// When the request fails, the method writes its error, whatever the error is.
+	/// </remarks>
+	/// <param name="body">The new mapping's body.</param>
+	/// <param name="tag">The metadata tag of the remote path mapping endpoint.</param>
 	private void SendNewRequest(RemotePathBody body, MetadataTag tag)
 	{
 		var oneOf = this.SendPostRequest<RemotePathObject>(tag.UrlBase, body);

@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets;
 
-public abstract partial class SonarrCmdletBase
+partial class SonarrCmdletBase
 {
 	/// <summary>
 	/// Writes the JSON of the specified object to the debug stream when the cmdlet's <see cref="DebugPreference"/>
