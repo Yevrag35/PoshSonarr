@@ -88,15 +88,19 @@ internal sealed class MetadataResolver : IMetadataResolver
 	/// Returns an enumerator over the registered tags.
 	/// </summary>
 	/// <returns>An enumerator over the tags, in no particular order.</returns>
-	public IEnumerator<MetadataTag> GetEnumerator()
+	public Enumerator GetEnumerator()
 	{
-		return ((IEnumerable<MetadataTag>)_dict.Values).GetEnumerator();
+		return new(this);
 	}
 
-	/// <summary>
-	/// Returns an enumerator over the registered tags.
-	/// </summary>
-	/// <returns>An enumerator over the tags, in no particular order.</returns>
+	/// <inheritdoc/>
+	[DebuggerStepThrough]
+	IEnumerator<MetadataTag> IEnumerable<MetadataTag>.GetEnumerator()
+	{
+		return this.GetEnumerator();
+	}
+	/// <inheritdoc/>
+	[DebuggerStepThrough]
 	IEnumerator IEnumerable.GetEnumerator()
 	{
 		return this.GetEnumerator();
@@ -205,6 +209,73 @@ internal sealed class MetadataResolver : IMetadataResolver
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return this.GetEnumerator();
+		}
+	}
+
+	/// <summary>
+	/// Enumerates the tags in a <see cref="MetadataResolver"/>.
+	/// </summary>
+	public struct Enumerator : IEnumerator<MetadataTag>
+	{
+		private readonly MetadataTag[] _array;
+		private MetadataTag _current;
+		private readonly int _count;
+		private int _index;
+
+		/// <summary>
+		/// Gets the tag at the enumerator's current position.
+		/// </summary>
+		public readonly MetadataTag Current => _current;
+
+		/// <inheritdoc/>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		readonly object IEnumerator.Current
+		{
+			[DebuggerStepThrough]
+			get => this.Current;
+		}
+
+		/// <summary>
+		/// Initializes a new <see cref="Enumerator"/> instance that enumerates the tags in the specified resolver.
+		/// </summary>
+		/// <param name="resolver">The resolver whose tags to enumerate.</param>
+		internal Enumerator(MetadataResolver resolver)
+		{
+			_array = ImmutableCollectionsMarshal.AsArray(resolver._dict.Values)!;
+			_current = MetadataTag.Empty;
+			_index = -1;
+			_count = resolver._dict.Count;
+		}
+
+		/// <summary>
+		/// Advances the enumerator to the next tag in the resolver.
+		/// </summary>
+		/// <returns><see langword="true"/> if the enumerator was successfully advanced to the next tag; <see langword="false"/> if the enumerator has passed the end of the collection.</returns>
+		public bool MoveNext()
+		{
+			int next = _index + 1;
+			if ((uint)next < (uint)_count)
+			{
+				_current = _array.Ref(next);
+				_index = next;
+				return true;
+			}
+
+			_current = default!;
+			_index = _count;
+			return false;
+		}
+
+		/// <inheritdoc/>
+		[DebuggerStepThrough]
+		readonly void IDisposable.Dispose()
+		{
+		}
+		/// <inheritdoc/>
+		[DebuggerStepThrough]
+		readonly void IEnumerator.Reset()
+		{
+			throw new NotSupportedException();
 		}
 	}
 }
