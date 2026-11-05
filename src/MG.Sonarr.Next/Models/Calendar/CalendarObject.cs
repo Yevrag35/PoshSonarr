@@ -79,7 +79,7 @@ public sealed class CalendarObject : IdSonarrObject<CalendarObject>,
 	{
 		if (other is null)
 		{
-			return -1;
+			return 1;
 		}
 
 		int compare = this.AirDateUtc.CompareTo(other.AirDateUtc);

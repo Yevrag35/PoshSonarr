@@ -60,15 +60,14 @@ public sealed class LogObject : SonarrObject,
 	/// <summary>
 	/// Compares this log entry with another by time.
 	/// </summary>
-	/// <param name="other">The log entry to compare with, or <see langword="null"/>, which compares as an entry whose time is <see langword="default"/>.</param>
+	/// <param name="other">The log entry to compare with, or <see langword="null"/>.</param>
 	/// <returns>
 	/// A negative number if this entry sorts before <paramref name="other"/>, 0 if they sort together, or a positive
-	/// number if it sorts after.
+	/// number if it sorts after <paramref name="other"/> or <paramref name="other"/> is <see langword="null"/>.
 	/// </returns>
 	public int CompareTo(LogObject? other)
 	{
-		DateTimeOffset offset = other?.Time ?? default;
-		return this.Time.CompareTo(offset);
+		return other is null ? 1 : this.Time.CompareTo(other.Time);
 	}
 
 	/// <summary>

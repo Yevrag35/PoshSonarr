@@ -65,7 +65,7 @@ public sealed class TagObject : SonarrObject,
 	{
 		if (other is null)
 		{
-			return -1;
+			return 1;
 		}
 
 		return this.Id.CompareTo(other.Id);

@@ -102,17 +102,17 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	public static readonly MetadataTag Empty = new();
 
 	/// <summary>
-	/// Compares the tag with another by their <see cref="Value"/>, ignoring case.
+	/// Compares the tag with another by an ordinal comparison of their <see cref="Value"/>.
 	/// </summary>
 	/// <param name="other">The tag to compare with.</param>
 	/// <returns>
 	/// A negative number if this tag sorts before <paramref name="other"/>, 0 if they sort together, and a positive
-	/// number if this tag sorts after it.
+	/// number if this tag sorts after it or <paramref name="other"/> is <see langword="null"/>.
 	/// </returns>
 	public int CompareTo(MetadataTag? other)
 	{
 		return this.RefEqualsOrNull(other, out bool isEqual)
-			? isEqual ? 0 : -1
+			? isEqual ? 0 : 1
 			: string.Compare(this.Value, other.Value, StringComparison.Ordinal);
 	}
 
@@ -121,7 +121,7 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	/// </summary>
 	/// <remarks>
 	/// Two tags are equal when their <see cref="SupportsId"/> values match and their <see cref="UrlBase"/> and
-	/// <see cref="Value"/> match, ignoring case. <see cref="CanPipeTo"/> isn't compared.
+	/// <see cref="Value"/> match ordinally, case included. <see cref="CanPipeTo"/> isn't compared.
 	/// </remarks>
 	/// <param name="other">The tag to compare with.</param>
 	/// <returns>

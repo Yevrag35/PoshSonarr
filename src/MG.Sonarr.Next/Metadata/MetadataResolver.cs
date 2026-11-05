@@ -9,14 +9,14 @@ public interface IMetadataResolver : IReadOnlyCollection<MetadataTag>
 	/// <summary>
 	/// Gets the tag with the specified name.
 	/// </summary>
-	/// <param name="key">The tag's name, such as <c>#series</c>, compared without regard to case.</param>
+	/// <param name="key">The tag's name, such as <c>#series</c>, compared ordinally, so its case must match.</param>
 	/// <returns>The tag with the name, or <see cref="MetadataTag.Empty"/> when there's none.</returns>
 	MetadataTag this[string key] { get; }
 
 	/// <summary>
 	/// Determines whether a tag with the specified name is registered.
 	/// </summary>
-	/// <param name="key">The tag's name, compared without regard to case.</param>
+	/// <param name="key">The tag's name, compared ordinally, so its case must match.</param>
 	/// <returns>
 	/// <see langword="true"/> if a tag named <paramref name="key"/> is registered; otherwise, <see langword="false"/>.
 	/// </returns>
@@ -24,7 +24,7 @@ public interface IMetadataResolver : IReadOnlyCollection<MetadataTag>
 }
 
 /// <summary>
-/// Provides the frozen dictionary of metadata tags, keyed by name without regard to case, that a connection registers.
+/// Provides the frozen dictionary of metadata tags that a connection registers, keyed by name with an ordinal comparer.
 /// </summary>
 /// <remarks>
 /// <para>A <see cref="Builder"/> gathers the tags, and its <see cref="Builder.Freeze"/> method creates the resolver,
@@ -34,6 +34,9 @@ public interface IMetadataResolver : IReadOnlyCollection<MetadataTag>
 /// <para>The tags sit in a <see cref="FrozenDictionary{TKey, TValue}"/>, which costs more to create than a
 /// <see cref="Dictionary{TKey, TValue}"/> and less to read. The resolver is created once, while the indexer runs for
 /// each object that the module reads from a response.</para>
+/// <para>Names compare ordinally, as <see cref="MetadataTag"/> compares its own <see cref="MetadataTag.Value"/>. Every
+/// name that registers or looks up a tag is a <see cref="Meta"/> constant, so none needs to match in another
+/// case.</para>
 /// </remarks>
 [DebuggerDisplay("Count = {Count}")]
 internal sealed class MetadataResolver : IMetadataResolver
@@ -47,14 +50,14 @@ internal sealed class MetadataResolver : IMetadataResolver
 	/// </summary>
 	internal const char MetaPrefix = '#';
 	/// <summary>
-	/// The tags, keyed by name without regard to case.
+	/// The tags, keyed by name with an ordinal comparer.
 	/// </summary>
 	private readonly FrozenDictionary<string, MetadataTag> _dict;
 
 	/// <summary>
 	/// Gets the tag with the specified name.
 	/// </summary>
-	/// <param name="key">The tag's name, compared without regard to case.</param>
+	/// <param name="key">The tag's name, compared ordinally, so its case must match.</param>
 	/// <returns>The tag with the name, or <see cref="MetadataTag.Empty"/> when there's none or
 	/// <paramref name="key"/> is null.</returns>
 	public MetadataTag this[string key] => key is not null && _dict.TryGetValue(key, out MetadataTag? tag)
@@ -70,7 +73,7 @@ internal sealed class MetadataResolver : IMetadataResolver
 	/// <summary>
 	/// Initializes a new <see cref="MetadataResolver"/> instance that looks tags up in the specified frozen dictionary.
 	/// </summary>
-	/// <param name="dict">The tags, keyed by name without regard to case.</param>
+	/// <param name="dict">The tags, keyed by name with an ordinal comparer.</param>
 	private MetadataResolver(FrozenDictionary<string, MetadataTag> dict)
 	{
 		_dict = dict;
@@ -111,7 +114,7 @@ internal sealed class MetadataResolver : IMetadataResolver
 	internal sealed class Builder : IEnumerable<MetadataTag>
 	{
 		/// <summary>
-		/// The tags registered so far, keyed by name without regard to case.
+		/// The tags registered so far, keyed by name with an ordinal comparer.
 		/// </summary>
 		private readonly Dictionary<string, MetadataTag> _dict;
 		/// <summary>
@@ -132,7 +135,7 @@ internal sealed class MetadataResolver : IMetadataResolver
 		/// <param name="pipesTo">The names of the cmdlets that each tag's objects can be piped to, keyed by tag name.</param>
 		public Builder(int capacity, Dictionary<string, ImmutableArray<string>> pipesTo)
 		{
-			_dict = new(capacity, StringComparer.OrdinalIgnoreCase);
+			_dict = new(capacity, StringComparer.Ordinal);
 			_pipesTo = pipesTo;
 		}
 
@@ -140,7 +143,7 @@ internal sealed class MetadataResolver : IMetadataResolver
 		/// Registers a tag for an endpoint.
 		/// </summary>
 		/// <remarks>
-		/// Each name is registered once, compared without regard to case. A collection initializer discards what
+		/// Each name is registered once, compared ordinally. A collection initializer discards what
 		/// <c>Add</c> returns, so a second tag with a name that's registered already fails an assertion in a Debug
 		/// build, and a Release build keeps the first tag.
 		/// </remarks>
@@ -171,8 +174,9 @@ internal sealed class MetadataResolver : IMetadataResolver
 		{
 			// The comparer must be passed: ToFrozenDictionary uses the default comparer otherwise, not the source's.
 			// Passing the source's own comparer lets it read _dict as it is, without copying it into a new Dictionary
-			// first.
-			return new(_dict.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase));
+			// first. _dict.Comparer returns StringComparer.Ordinal itself, not the wrapper that Dictionary keeps inside,
+			// so the frozen dictionary still recognizes it and picks one of its implementations for string keys.
+			return new(_dict.ToFrozenDictionary(_dict.Comparer));
 		}
 		/// <summary>
 		/// Returns an enumerator over the tags registered so far.
