@@ -1,6 +1,7 @@
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Exceptions.Shell;
+using MG.Sonarr.Next.Extensions.Services;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Indexers;

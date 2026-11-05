@@ -1,6 +1,6 @@
+using MG.Sonarr.Next.Extensions.Services;
 using MG.Sonarr.Next.Models.Config;
 using MG.Sonarr.Next.Shell.Attributes;
-using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.NamingConfig;
 

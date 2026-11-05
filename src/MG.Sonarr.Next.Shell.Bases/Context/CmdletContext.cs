@@ -9,7 +9,6 @@ using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Services.Testing;
 using MG.Sonarr.Next.Services.Time;
 using MG.Sonarr.Next.Shell.Attributes;
-using MG.Sonarr.Next.Shell.Exceptions;
 using System.Reflection;
 using System.Text.Json;
 

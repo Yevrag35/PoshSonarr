@@ -1,4 +1,5 @@
 using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.Services;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Models.ManualImports;
