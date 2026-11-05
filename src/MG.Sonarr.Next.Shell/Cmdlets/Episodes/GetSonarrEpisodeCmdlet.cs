@@ -94,8 +94,8 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 	/// <remarks>
 	/// <para>
 	/// Each identifier is a season and an episode, such as <c>S01E02</c>, a season and a range of episodes, such as
-	/// <c>S01E02-05</c>, or an absolute episode number, such as <c>12</c>. The cmdlet writes the episodes that match
-	/// any of them.
+	/// <c>S01E02-05</c>, a whole season, such as <c>S01</c>, or <c>S00</c> for the specials, or an absolute episode
+	/// number or range, such as <c>12</c> or <c>E12-15</c>. The cmdlet writes the episodes that match any of them.
 	/// </para>
 	/// <para>
 	/// The parameter goes with <c>-SeriesId</c>, at position 1, and with piped series, at position 0. When an
@@ -273,6 +273,7 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 		{
 			_params.Add(Constants.SeriesIdLowercase, id);
 			string url = this.Tag.GetUrl(_params);
+			_params.Clear();
 
 			var response = this.SendGetRequest<MetadataList<EpisodeObject>>(url);
 			if (response.IsError)
@@ -290,8 +291,6 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 
 				list.Add(obj);
 			}
-
-			_params.Clear();
 		}
 
 		return list;

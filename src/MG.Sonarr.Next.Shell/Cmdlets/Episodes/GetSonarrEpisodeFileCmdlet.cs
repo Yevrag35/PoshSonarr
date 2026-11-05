@@ -222,6 +222,8 @@ public sealed class GetSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 		{
 			_params.Add(Constants.SeriesIdLowercase, id);
 			string url = this.Tag.GetUrl(_params);
+			_params.Clear();
+
 			var response = this.SendGetRequest<MetadataList<EpisodeFileObject>>(url);
 			if (response.IsError)
 			{
@@ -230,8 +232,6 @@ public sealed class GetSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 			}
 
 			list.AddRange(response.Value);
-
-			_params.Clear();
 		}
 
 		return list;

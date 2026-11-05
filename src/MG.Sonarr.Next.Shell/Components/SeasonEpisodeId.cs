@@ -10,8 +10,8 @@ namespace MG.Sonarr.Next.Shell.Components;
 /// <remarks>
 /// <para>
 /// Text such as <c>S01E02</c> names an episode of a season, <c>S01E02-05</c> a range of them, and <c>S01</c> the whole
-/// season. <c>E25</c> or a whole number such as <c>25</c> names an episode by its absolute number, and <c>E25-28</c> a
-/// range of them. The letters ignore case.
+/// season. Season 0 holds the specials, so <c>S00</c> names all of them. <c>E25</c> or a whole number such as
+/// <c>25</c> names an episode by its absolute number, and <c>E25-28</c> a range of them. The letters ignore case.
 /// </para>
 /// <para>
 /// PowerShell converts a string to the identifier through the <see cref="string"/> operator, and an <see cref="int"/>
@@ -47,8 +47,9 @@ public readonly struct SeasonEpisodeId : IEpisodeIdentifier
 	/// Gets a value that indicates whether the identifier names no episodes.
 	/// </summary>
 	/// <value>
-	/// <see langword="true"/> for the <see langword="default"/> identifier, which text that doesn't parse gives, and for
-	/// one that names no season or episode number greater than 0; otherwise, <see langword="false"/>.
+	/// <see langword="true"/> for the <see langword="default"/> identifier, which text that doesn't parse gives, for one
+	/// whose season is less than 0, and for an absolute one whose first episode number isn't greater than 0; otherwise,
+	/// <see langword="false"/>.
 	/// </value>
 	public bool IsEmpty => !_isNotEmpty;
 	/// <summary>
@@ -75,9 +76,13 @@ public readonly struct SeasonEpisodeId : IEpisodeIdentifier
 	/// Initializes a new <see cref="SeasonEpisodeId"/> instance for a season and one episode number.
 	/// </summary>
 	/// <param name="season">
-	/// The season number, which matters only when <paramref name="isAbsolute"/> is <see langword="false"/>.
+	/// The season number, which matters only when <paramref name="isAbsolute"/> is <see langword="false"/>, and names no
+	/// episodes when it's less than 0.
 	/// </param>
-	/// <param name="episode">The episode number, or a number less than 1 for every episode.</param>
+	/// <param name="episode">
+	/// The episode number. A number less than 1 names every episode of the season, or no episode when
+	/// <paramref name="isAbsolute"/> is <see langword="true"/>.
+	/// </param>
 	/// <param name="isAbsolute">
 	/// <see langword="true"/> if <paramref name="episode"/> is an absolute episode number; otherwise,
 	/// <see langword="false"/>.
@@ -86,16 +91,20 @@ public readonly struct SeasonEpisodeId : IEpisodeIdentifier
 	{
 		_season = season;
 		_isAbsolute = isAbsolute;
-		_isNotEmpty = season > 0 || episode > 0;
+		_isNotEmpty = isAbsolute ? episode > 0 : season >= 0;
 		_range = new(episode, episode);
 	}
 	/// <summary>
 	/// Initializes a new <see cref="SeasonEpisodeId"/> instance for a season and a range of episode numbers.
 	/// </summary>
 	/// <param name="season">
-	/// The season number, which matters only when <paramref name="isAbsolute"/> is <see langword="false"/>.
+	/// The season number, which matters only when <paramref name="isAbsolute"/> is <see langword="false"/>, and names no
+	/// episodes when it's less than 0.
 	/// </param>
-	/// <param name="epRange">The range of episode numbers.</param>
+	/// <param name="epRange">
+	/// The range of episode numbers. A range whose first number is 0 names every episode of the season, or no episode
+	/// when <paramref name="isAbsolute"/> is <see langword="true"/>.
+	/// </param>
 	/// <param name="isAbsolute">
 	/// <see langword="true"/> if <paramref name="epRange"/> holds absolute episode numbers; otherwise,
 	/// <see langword="false"/>.
@@ -104,7 +113,7 @@ public readonly struct SeasonEpisodeId : IEpisodeIdentifier
 	{
 		_season = season;
 		_isAbsolute = isAbsolute;
-		_isNotEmpty = season > 0;
+		_isNotEmpty = isAbsolute ? epRange.Start > 0 : season >= 0;
 		_range = epRange;
 	}
 
@@ -126,9 +135,10 @@ public readonly struct SeasonEpisodeId : IEpisodeIdentifier
 	/// </summary>
 	/// <remarks>
 	/// The text after <c>E</c> is the first episode number, and the number after a <c>-</c> there is the last. The text
-	/// before <c>E</c> is <c>S</c> and the season number, or nothing for an absolute episode number. Text without an
-	/// <c>E</c> is <c>S</c> and the season number, for the whole season, or a whole number, for an absolute episode
-	/// number. The letters ignore case, and the numbers are read in the invariant culture.
+	/// before <c>E</c> is <c>S</c> and the season number, or nothing for an absolute episode number, and a number
+	/// without the <c>S</c>, as in <c>10E05</c>, doesn't parse. Text without an <c>E</c> is <c>S</c> and the season
+	/// number, for the whole season, or a whole number, for an absolute episode number. The letters ignore case, and the
+	/// numbers are read in the invariant culture.
 	/// </remarks>
 	/// <param name="value">The text, such as <c>S01E02</c>, <c>S01E02-05</c>, <c>S01</c>, <c>E25</c>, or <c>25</c>.</param>
 	/// <param name="result">
@@ -151,8 +161,9 @@ public readonly struct SeasonEpisodeId : IEpisodeIdentifier
 		int endEp = -1;
 		int episode = -1;
 		int index = value.IndexOf([e], StringComparison.InvariantCultureIgnoreCase);
+		bool hasEpisodePart = index > -1;
 
-		if (index > -1)
+		if (hasEpisodePart)
 		{
 			var epSlice = value.Slice(index + 1);
 			int dashIndex = epSlice.IndexOf('-');
@@ -198,12 +209,9 @@ public readonly struct SeasonEpisodeId : IEpisodeIdentifier
 				return true;
 			}
 		}
-		else if (int.TryParse(value, CultureInfo.InvariantCulture, out int absolute))
+		else if (!hasEpisodePart && int.TryParse(value, CultureInfo.InvariantCulture, out int absolute))
 		{
-			result = endEp > -1
-				? new(season, new EpisodeRange(absolute, endEp), true)
-				: new(season, absolute, true);
-
+			result = new(season, absolute, true);
 			return true;
 		}
 
@@ -216,7 +224,7 @@ public readonly struct SeasonEpisodeId : IEpisodeIdentifier
 	/// <remarks>
 	/// An identifier is copied as it is, an <see cref="int"/>, or a <see cref="long"/> in the range of an
 	/// <see cref="int"/>, becomes an absolute episode number, and a string is parsed as
-	/// <see cref="TryParse(ReadOnlySpan{Char}, out SeasonEpisodeId)"/> parses it. Any other element,
+	/// <see cref="TryParse(ReadOnlySpan{char}, out SeasonEpisodeId)"/> parses it. Any other element,
 	/// <see langword="null"/> included, becomes the <see langword="default"/> identifier.
 	/// </remarks>
 	/// <param name="array">The objects to convert.</param>
@@ -229,7 +237,7 @@ public readonly struct SeasonEpisodeId : IEpisodeIdentifier
 		ArgumentNullException.ThrowIfNull(array);
 		if (array.Length <= 0)
 		{
-			return Array.Empty<SeasonEpisodeId>();
+			return [];
 		}
 
 		SeasonEpisodeId[] copyTo = new SeasonEpisodeId[array.Length];

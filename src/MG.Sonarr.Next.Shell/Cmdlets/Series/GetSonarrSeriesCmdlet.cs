@@ -134,6 +134,10 @@ public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
 	/// names, it writes every series.
 	/// </para>
 	/// <para>
+	/// The IDs and names serve only the record that gave them, so each piped object writes its own series and none
+	/// that an earlier object gave.
+	/// </para>
+	/// <para>
 	/// When the request for every series fails, the cmdlet stops with its error.
 	/// </para>
 	/// </remarks>
@@ -154,11 +158,13 @@ public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
 		{
 			hadIds = true;
 			this.WriteSeriesById(_ids);
+			_ids.Clear();
 		}
 
 		if (_wcNames.Count > 0)
 		{
 			var response = this.GetSeriesByName(_wcNames);
+			_wcNames.Clear();
 			if (response.IsError)
 			{
 				this.StopCmdlet(response.Error);
