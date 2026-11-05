@@ -23,10 +23,21 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	}
 
 	/// <summary>
+	/// Gets the token that a request sends with: the specified one when it can be canceled, and
+	/// <see cref="SonarrCmdletBase.StoppingToken"/> otherwise, so that stopping the pipeline ends the request.
+	/// </summary>
+	/// <param name="token">The token that the caller passed, or <see langword="default"/>.</param>
+	/// <returns>The token to send the request with.</returns>
+	private CancellationToken GetRequestToken(CancellationToken token)
+	{
+		return token.CanBeCanceled ? token : this.StoppingToken;
+	}
+
+	/// <summary>
 	/// Sends a DELETE Http request to the specified Sonarr API endpoint.
 	/// </summary>
 	/// <param name="path">The relative URL path of the API endpoint.</param>
-	/// <param name="token"></param>
+	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
 	/// <returns>
 	///     A response object indicating the status code and any errors that may have occurred.
 	/// </returns>
@@ -34,7 +45,7 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	{
 		this.StartTimer();
 
-		return _client.SendDeleteAsync(path, token).GetAwaiter().GetResult();
+		return _client.SendDeleteAsync(path, this.GetRequestToken(token)).GetAwaiter().GetResult();
 	}
 
 	/// <summary>
@@ -42,14 +53,14 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	/// </summary>
 	/// <typeparam name="T">The type of object the response's content will be deserialized as.</typeparam>
 	/// <param name="path">The relative URL path of the API endpoint.</param>
-	/// <param name="token"></param>
+	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
 	/// <returns>
 	///     A response object indicating the status code and any errors that may have occurred.
 	/// </returns>
 	protected SonarrClientResult<T> SendGetRequest<T>(string path, CancellationToken token = default)
 	{
 		this.StartTimer();
-		return _client.SendGetAsync<T>(path, token).GetAwaiter().GetResult();
+		return _client.SendGetAsync<T>(path, this.GetRequestToken(token)).GetAwaiter().GetResult();
 	}
 
 	/// <summary>
@@ -58,24 +69,24 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	/// </summary>
 	/// <typeparam name="T">The type of object to deserialize the response's content to.</typeparam>
 	/// <param name="path"></param>
-	/// <param name="token"></param>
+	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
 	/// <returns></returns>
 	protected SonarrClientResult<T> SendPostRequest<T>(string path, CancellationToken token = default)
 	{
 		this.StartTimer();
-		return _client.SendPostAsync<T>(path, token).GetAwaiter().GetResult();
+		return _client.SendPostAsync<T>(path, this.GetRequestToken(token)).GetAwaiter().GetResult();
 	}
 	/// <summary>
 	/// Sends a POST request with the specified body to the specified Sonarr API endpoint.
 	/// </summary>
 	/// <param name="path">The endpoint's path, relative to the API.</param>
 	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
-	/// <param name="token">A token that cancels the request.</param>
+	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
 	/// <returns>The result of the request.</returns>
 	protected SonarrClientResult SendPostRequest(string path, object body, CancellationToken token = default)
 	{
 		this.StartTimer();
-		return _client.SendPostAsync(path, body, token).GetAwaiter().GetResult();
+		return _client.SendPostAsync(path, body, this.GetRequestToken(token)).GetAwaiter().GetResult();
 	}
 	/// <summary>
 	/// Sends a POST request with the specified body to the specified Sonarr API endpoint and deserializes the response's
@@ -84,12 +95,12 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	/// <typeparam name="TOutput">The type to deserialize the response's body as.</typeparam>
 	/// <param name="path">The endpoint's path, relative to the API.</param>
 	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
-	/// <param name="token">A token that cancels the request.</param>
+	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
 	/// <returns>The deserialized value on success; otherwise, the error record that describes the failure.</returns>
 	protected Either<TOutput, SonarrErrorRecord> SendPostRequest<TOutput>(string path, object body, CancellationToken token = default)
 	{
 		this.StartTimer();
-		SonarrClientResult<TOutput> response = _client.SendPostAsync<TOutput>(path, body, token).GetAwaiter().GetResult();
+		SonarrClientResult<TOutput> response = _client.SendPostAsync<TOutput>(path, body, this.GetRequestToken(token)).GetAwaiter().GetResult();
 		return !response.IsError
 			? response.Value
 			: response.Error;
@@ -99,12 +110,12 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	/// </summary>
 	/// <param name="path">The endpoint's path, relative to the API.</param>
 	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
-	/// <param name="token">A token that cancels the request.</param>
+	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
 	/// <returns>The result of the request.</returns>
 	protected SonarrClientResult SendPutRequest(string path, object body, CancellationToken token = default)
 	{
 		this.StartTimer();
-		return _client.SendPutAsync(path, body, token).GetAwaiter().GetResult();
+		return _client.SendPutAsync(path, body, this.GetRequestToken(token)).GetAwaiter().GetResult();
 	}
 
 	/// <summary>

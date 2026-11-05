@@ -1,4 +1,3 @@
-using MG.Sonarr.Next.Extensions.Strings;
 using System.ComponentModel;
 
 namespace MG.Sonarr.Next.Services.Http.Queries;
@@ -9,9 +8,9 @@ namespace MG.Sonarr.Next.Services.Http.Queries;
 /// </summary>
 /// <remarks>
 /// <para>
-///     The instance is mutable and isn't thread-safe. Its numbers are formatted with the module's
-///     default format provider, whatever the caller passes, and the sort key is written as given,
-///     with no URL escaping.
+///     The instance is mutable and isn't thread-safe. Its numbers are formatted with the invariant
+///     culture, whatever the caller passes, and the sort key is written as given, with no URL
+///     escaping.
 /// </para>
 /// <para>
 ///     A new instance asks for the first page of 10 items, sorted in descending order, with an
@@ -28,6 +27,10 @@ public sealed class PagingParameter : IQueryField
 
 	const int DEFAULT_PAGE_NO = 1;
 	const int DEFAULT_PAGE_SIZE = 10;
+	/// <summary>
+	/// The largest number of characters that formatting the fields as a string stack-allocates.
+	/// </summary>
+	const int MAX_STACKALLOC = 256;
 	static readonly int STARTING_LENGTH = GetStartingLength();
 
 	private string _sortKey = string.Empty;
@@ -83,19 +86,30 @@ public sealed class PagingParameter : IQueryField
 	/// <summary>
 	/// Returns the paging fields formatted as a query string fragment.
 	/// </summary>
+	/// <remarks>
+	/// The text is built in a stack buffer when <see cref="MaxLength"/> is 256 characters or fewer,
+	/// and in a pooled buffer otherwise.
+	/// </remarks>
 	/// <param name="format">Ignored; the fields have one format.</param>
-	/// <param name="formatProvider">Ignored; the numbers are formatted with the module's default format provider.</param>
+	/// <param name="formatProvider">Ignored; the numbers are formatted with the invariant culture.</param>
 	/// <returns>The formatted fields, or as many of them as fit in <see cref="MaxLength"/> characters.</returns>
 	[DebuggerStepThrough]
 	string IFormattable.ToString(string? format, IFormatProvider? formatProvider)
 	{
-		Span<char> chars = stackalloc char[this.MaxLength];
-		_ = this.TryFormat(chars, out int charsWritten);
-		return new(chars.Slice(0, charsWritten));
+		int length = this.MaxLength;
+		using RentedBuffer<char> buffer = RentedBuffer.Rent<char>(length <= MAX_STACKALLOC ? stackalloc char[length] : length);
+		_ = this.TryFormat(buffer.Span, out int charsWritten);
+
+		return new(buffer.Span.Slice(0, charsWritten));
 	}
 	/// <summary>
 	/// Tries to write the paging fields into the specified span, joined by <c>&amp;</c>.
 	/// </summary>
+	/// <remarks>
+	/// Each field is written whole or not at all, with the <c>&amp;</c> before it, and the method
+	/// checks for room before it writes anything, so a destination that's too short makes it return
+	/// <see langword="false"/> rather than throw.
+	/// </remarks>
 	/// <param name="destination">The span to write the fields into.</param>
 	/// <param name="charsWritten">
 	///     When this method returns, the number of characters written to
@@ -108,46 +122,45 @@ public sealed class PagingParameter : IQueryField
 	public bool TryFormat(Span<char> destination, out int charsWritten)
 	{
 		charsWritten = 0;
-		return TryWriteSection(destination, ref charsWritten, PAGE, this.Page)
-			&& TryWriteSection(destination, ref charsWritten, PAGE_SIZE, this.PageSize)
-			&& TryWriteSection(destination, ref charsWritten, SORT_DIRECTION, this.SortDirection)
-			&& TryWriteSection(destination, ref charsWritten, SORT_KEY, this.SortKey);
+		return TryWriteField(destination, ref charsWritten, PAGE, this.Page, first: true)
+			&& TryWriteField(destination, ref charsWritten, PAGE_SIZE, this.PageSize, first: false)
+			&& TryWriteField(destination, ref charsWritten, SORT_DIRECTION, this.SortDirection)
+			&& TryWriteField(destination, ref charsWritten, SORT_KEY, this.SortKey);
 	}
 	/// <summary>
 	/// Tries to write a field with a number as its value, as <c>name=value</c>, at the specified
 	/// position of the specified span.
 	/// </summary>
 	/// <param name="destination">The span to write the field into.</param>
-	/// <param name="charsWritten">The position to write at, which advances past each part of the field that fits.</param>
+	/// <param name="charsWritten">The position to write at, which advances past the field when the whole field fits.</param>
 	/// <param name="name">The field's name.</param>
 	/// <param name="value">The field's value, formatted with the invariant culture.</param>
+	/// <param name="first">
+	///     <see langword="true"/> for the first field, which has no <c>&amp;</c> before it; otherwise,
+	///     <see langword="false"/>.
+	/// </param>
 	/// <returns>
 	///     <see langword="true"/> if the whole field fits in <paramref name="destination"/>; otherwise,
 	///     <see langword="false"/>.
 	/// </returns>
-	private static bool TryWriteSection(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> name, int value)
+	private static bool TryWriteField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> name, int value, bool first)
 	{
-		if (!name.TryCopyToSlice(destination, ref charsWritten))
+		Span<char> rest = destination.Slice(charsWritten);
+		if (!TryWriteName(rest, name, first, out int position)
+			|| !value.TryFormat(rest.Slice(position), out int written, default, CultureInfo.InvariantCulture))
 		{
 			return false;
 		}
 
-		try
-		{
-			destination[charsWritten++] = '=';
-			return value.TryCopyToSlice(destination, ref charsWritten, provider: CultureInfo.InvariantCulture);
-		}
-		catch (IndexOutOfRangeException)
-		{
-			return false;
-		}
+		charsWritten += position + written;
+		return true;
 	}
 	/// <summary>
-	/// Tries to write a field with a sort direction as its value, as <c>name=value</c>, at the
+	/// Tries to write a field with a sort direction as its value, as <c>&amp;name=value</c>, at the
 	/// specified position of the specified span.
 	/// </summary>
 	/// <param name="destination">The span to write the field into.</param>
-	/// <param name="charsWritten">The position to write at, which advances past each part of the field that fits.</param>
+	/// <param name="charsWritten">The position to write at, which advances past the field when the whole field fits.</param>
 	/// <param name="name">The field's name.</param>
 	/// <param name="direction">
 	///     The field's value, written by name, or as its number when it isn't a defined
@@ -157,64 +170,85 @@ public sealed class PagingParameter : IQueryField
 	///     <see langword="true"/> if the whole field fits in <paramref name="destination"/>; otherwise,
 	///     <see langword="false"/>.
 	/// </returns>
-	private static bool TryWriteSection(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> name, ListSortDirection direction)
+	private static bool TryWriteField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> name, ListSortDirection direction)
 	{
-		if (!name.TryCopyToSlice(destination, ref charsWritten))
+		return direction switch
 		{
-			return false;
-		}
-
-		try
-		{
-			destination[charsWritten++] = '=';
-			return direction switch
-			{
-				ListSortDirection.Ascending => nameof(ListSortDirection.Ascending).AsSpan().TryCopyToSlice(destination, ref charsWritten),
-				ListSortDirection.Descending => nameof(ListSortDirection.Descending).AsSpan().TryCopyToSlice(destination, ref charsWritten),
-				_ => ((int)direction).TryCopyToSlice(destination, ref charsWritten, provider: CultureInfo.InvariantCulture),
-			};
-		}
-		catch (IndexOutOfRangeException)
-		{
-			return false;
-		}
+			ListSortDirection.Ascending => TryWriteField(destination, ref charsWritten, name, nameof(ListSortDirection.Ascending)),
+			ListSortDirection.Descending => TryWriteField(destination, ref charsWritten, name, nameof(ListSortDirection.Descending)),
+			_ => TryWriteField(destination, ref charsWritten, name, (int)direction, first: false),
+		};
 	}
 	/// <summary>
-	/// Tries to write a field with text as its value, as <c>name=value</c>, at the specified
+	/// Tries to write a field with text as its value, as <c>&amp;name=value</c>, at the specified
 	/// position of the specified span.
 	/// </summary>
 	/// <param name="destination">The span to write the field into.</param>
-	/// <param name="charsWritten">The position to write at, which advances past each part of the field that fits.</param>
+	/// <param name="charsWritten">The position to write at, which advances past the field when the whole field fits.</param>
 	/// <param name="name">The field's name.</param>
 	/// <param name="value">The field's value, written as given.</param>
 	/// <returns>
 	///     <see langword="true"/> if the whole field fits in <paramref name="destination"/>; otherwise,
 	///     <see langword="false"/>.
 	/// </returns>
-	private static bool TryWriteSection(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> name, ReadOnlySpan<char> value)
+	private static bool TryWriteField(Span<char> destination, ref int charsWritten, ReadOnlySpan<char> name, ReadOnlySpan<char> value)
 	{
-		if (!name.TryCopyToSlice(destination, ref charsWritten))
+		Span<char> rest = destination.Slice(charsWritten);
+		if (!TryWriteName(rest, name, first: false, out int position) || !value.TryCopyTo(rest.Slice(position)))
 		{
 			return false;
 		}
 
-		try
+		charsWritten += position + value.Length;
+		return true;
+	}
+	/// <summary>
+	/// Tries to write a field's name and equals sign, after an <c>&amp;</c> unless the field is the
+	/// first, at the start of the specified span.
+	/// </summary>
+	/// <param name="destination">The span to write into.</param>
+	/// <param name="name">The field's name.</param>
+	/// <param name="first">
+	///     <see langword="true"/> for the first field, which has no <c>&amp;</c> before it; otherwise,
+	///     <see langword="false"/>.
+	/// </param>
+	/// <param name="position">
+	///     When this method returns, the number of characters written, where the field's value
+	///     starts, or 0 when they don't fit.
+	/// </param>
+	/// <returns>
+	///     <see langword="true"/> if the separator, the name, and the equals sign fit in
+	///     <paramref name="destination"/>; otherwise, <see langword="false"/>.
+	/// </returns>
+	private static bool TryWriteName(Span<char> destination, ReadOnlySpan<char> name, bool first, out int position)
+	{
+		int start = first ? 0 : 1;
+		if (destination.Length <= start + name.Length)
 		{
-			destination[charsWritten++] = '=';
-			return value.TryCopyToSlice(destination, ref charsWritten);
-		}
-		catch (IndexOutOfRangeException)
-		{
+			position = 0;
 			return false;
 		}
+
+		if (!first)
+		{
+			destination[0] = '&';
+		}
+
+		name.CopyTo(destination.Slice(start));
+		position = start + name.Length;
+		destination[position++] = '=';
+		return true;
 	}
 	/// <summary>
 	/// Tries to write the paging fields into the specified span, joined by <c>&amp;</c>.
 	/// </summary>
 	/// <param name="destination">The span to write the fields into.</param>
-	/// <param name="charsWritten">When this method returns, the number of characters written to <paramref name="destination"/>.</param>
+	/// <param name="charsWritten">
+	///     When this method returns, the number of characters written to
+	///     <paramref name="destination"/>, which counts the fields that fit before one didn't.
+	/// </param>
 	/// <param name="format">Ignored; the fields have one format.</param>
-	/// <param name="provider">Ignored; the numbers are formatted with the module's default format provider.</param>
+	/// <param name="provider">Ignored; the numbers are formatted with the invariant culture.</param>
 	/// <returns>
 	///     <see langword="true"/> if all four fields fit in <paramref name="destination"/>; otherwise,
 	///     <see langword="false"/>.

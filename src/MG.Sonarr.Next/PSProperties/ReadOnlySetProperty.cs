@@ -51,12 +51,43 @@ public sealed class ReadOnlySetProperty<T> : ReadOnlyProperty<SortedSet<T>>
 	}
 
 	/// <summary>
-	/// Returns the property itself as its copy.
+	/// Creates a copy of the property that holds a copy of its set.
 	/// </summary>
-	/// <returns>The current instance.</returns>
+	/// <remarks>
+	/// The copy's set holds the same elements in a new set of the same runtime type: a <see cref="SortedSet{T}"/> with
+	/// the same comparer, or an instance of a derived set, made through its public parameterless constructor, which
+	/// sets its comparer. A change to either set doesn't show in the other.
+	/// </remarks>
+	/// <returns>A new <see cref="ReadOnlySetProperty{T}"/> with the same name that holds a copy of the set.</returns>
+	/// <exception cref="MissingMethodException">
+	/// Thrown when the set's runtime type derives from <see cref="SortedSet{T}"/> and has no public parameterless
+	/// constructor.
+	/// </exception>
 	public override PSMemberInfo Copy()
 	{
-		return this;
+		return new ReadOnlySetProperty<T>(this.Name, CopySet(this.SetValues));
+	}
+
+	/// <summary>
+	/// Creates a set of the same runtime type that holds the same elements.
+	/// </summary>
+	/// <param name="set">The set to copy.</param>
+	/// <returns>A new set that holds the elements of <paramref name="set"/>.</returns>
+	/// <exception cref="MissingMethodException">
+	/// Thrown when the runtime type of <paramref name="set"/> derives from <see cref="SortedSet{T}"/> and has no public
+	/// parameterless constructor.
+	/// </exception>
+	private static SortedSet<T> CopySet(SortedSet<T> set)
+	{
+		Type setType = set.GetType();
+		if (setType == typeof(SortedSet<T>))
+		{
+			return new SortedSet<T>(set, set.Comparer);
+		}
+
+		var copy = (SortedSet<T>)Activator.CreateInstance(setType)!;
+		copy.UnionWith(set);
+		return copy;
 	}
 
 	/// <summary>

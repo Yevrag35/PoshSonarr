@@ -1,3 +1,4 @@
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
@@ -13,6 +14,7 @@ namespace MG.Sonarr.Next.Models.Qualities;
 /// <see cref="Create(bool, bool)"/> or <see cref="Default"/>. Its <c>IsRepack</c>, <c>Real</c>, and
 /// <c>Version</c> properties are read-only in PowerShell.
 /// </remarks>
+[SonarrObject]
 public sealed class RevisionObject : SonarrObject,
 	IComparable<RevisionObject>,
 	ISerializableNames<RevisionObject>
@@ -25,10 +27,6 @@ public sealed class RevisionObject : SonarrObject,
 	/// The type's full name, which <see cref="SetPSTypeName"/> puts first in the PowerShell type names.
 	/// </summary>
 	static readonly string _typeName = typeof(RevisionObject).GetName();
-	/// <summary>
-	/// Whether a constructor set the instance's properties, rather than the JSON converter.
-	/// </summary>
-	readonly bool _wasCtored;
 
 	/// <summary>
 	/// Gets a value that indicates whether the release is a repack.
@@ -83,14 +81,13 @@ public sealed class RevisionObject : SonarrObject,
 	private RevisionObject(bool isProper, bool isReal)
 		: this()
 	{
-		_wasCtored = true;
 		this.IsRepack = false;
 		this.Version = isProper ? 2 : 1;
 		this.Real = isReal ? 1 : 0;
 	}
 
 	/// <summary>
-	/// Compares this revision with another.
+	/// Compares this revision with another by <see cref="Real"/> and then by <see cref="Version"/>.
 	/// </summary>
 	/// <param name="other">The revision to compare with, or <see langword="null"/>.</param>
 	/// <returns>
@@ -100,7 +97,26 @@ public sealed class RevisionObject : SonarrObject,
 	/// </returns>
 	public int CompareTo(RevisionObject? other)
 	{
-		return _wasCtored.CompareTo(other?._wasCtored);
+		if (other is null)
+		{
+			return 1;
+		}
+
+		int compare = this.Real.CompareTo(other.Real);
+		return compare != 0 ? compare : this.Version.CompareTo(other.Version);
+	}
+	/// <summary>
+	/// Makes the revision's <c>IsRepack</c>, <c>Real</c>, and <c>Version</c> properties read-only after it's
+	/// deserialized, as the ones that <see cref="Create(bool, bool)"/> and <see cref="Default"/> make are.
+	/// </summary>
+	/// <param name="alreadyCalled"><see langword="true"/> if the object was deserialized before; otherwise,
+	/// <see langword="false"/>.</param>
+	protected override void OnDeserialized(bool alreadyCalled)
+	{
+		base.OnDeserialized(alreadyCalled);
+		this.ReplaceWithReadOnlyStructProperty<bool>(nameof(this.IsRepack));
+		this.ReplaceWithReadOnlyNumberProperty<int>(nameof(this.Real));
+		this.ReplaceWithReadOnlyNumberProperty<int>(nameof(this.Version));
 	}
 	/// <summary>
 	/// Gets the quality revision tag from a resolver.

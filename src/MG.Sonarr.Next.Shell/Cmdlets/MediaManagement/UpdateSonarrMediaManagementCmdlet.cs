@@ -1,7 +1,8 @@
 using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.Services;
 using MG.Sonarr.Next.Models.Media;
+using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Shell.Attributes;
-using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.MediaManagement;
 
@@ -22,16 +23,23 @@ public sealed class UpdateSonarrMediaManagementCmdlet : SonarrApiCmdletBase
 		var tag = provider.GetMetadataTag(Meta.MediaManagement);
 		string url = tag.GetUrlForId(this.InputObject.Id);
 
-		if (!this.Force
-			&&
-			!this.ShouldProcess(url, "Update Media Management Settings"))
+		if (!this.ShouldProcessWithForce(url, "Update Media Management Settings", this.Force))
 		{
 			return;
 		}
 
-		if (!this.InputObject.IsRecycleBinPathProper(out string rbPath))
+		string rbPath = this.InputObject.RecycleBinPath;
+		if (!string.IsNullOrWhiteSpace(rbPath))
 		{
-			this.InputObject.RecycleBinPath = rbPath + '\\';
+			if (!this.TryGetDirectorySeparator(provider, out char separator))
+			{
+				return;
+			}
+
+			if (!this.InputObject.IsRecycleBinPathProper(separator, out rbPath))
+			{
+				this.InputObject.RecycleBinPath = rbPath + separator;
+			}
 		}
 
 		var response = this.SendPutRequest(url, this.InputObject);
@@ -45,5 +53,20 @@ public sealed class UpdateSonarrMediaManagementCmdlet : SonarrApiCmdletBase
 		{
 			this.InputObject.Commit();
 		}
+	}
+
+	private bool TryGetDirectorySeparator(IServiceProvider provider, out char separator)
+	{
+		var tag = provider.GetMetadataTag(Meta.Status);
+		var result = this.SendGetRequest<SystemStatusObject>(tag.UrlBase);
+		if (result.IsError)
+		{
+			separator = default;
+			this.WriteError(result.Error);
+			return false;
+		}
+
+		separator = result.Value.DirectorySeparator;
+		return true;
 	}
 }

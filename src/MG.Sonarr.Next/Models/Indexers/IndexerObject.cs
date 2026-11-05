@@ -113,8 +113,8 @@ public sealed class IndexerObject : TagUpdateObject<IndexerObject>,
 	/// </summary>
 	protected override void OnCommit()
 	{
-		this.Name = this.GetValue<string>() ?? string.Empty;
-		this.Protocol = this.GetValue<string>() ?? string.Empty;
+		this.Name = this.GetValue<string>(nameof(this.Name)) ?? string.Empty;
+		this.Protocol = this.GetValue<string>(nameof(this.Protocol)) ?? string.Empty;
 		base.OnCommit();
 	}
 	/// <summary>

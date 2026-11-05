@@ -1,3 +1,4 @@
+using MG.Sonarr.Next.Exceptions.Shell;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Json.Naming;
 using MG.Sonarr.Next.Metadata;
@@ -8,7 +9,6 @@ using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Services.Testing;
 using MG.Sonarr.Next.Services.Time;
 using MG.Sonarr.Next.Shell.Attributes;
-using MG.Sonarr.Next.Shell.Exceptions;
 using System.Reflection;
 using System.Text.Json;
 
@@ -20,6 +20,7 @@ public static class CmdletContextExtensions
     internal static class CmdletContextExtensions
 #endif
 {
+	/// <exception cref="ContextNotSetException">There's no connection.</exception>
 	internal static IServiceScope CreateScope<T>(this T cmdlet) where T : PSCmdlet, IIsRunning<T>, IScopeCmdlet<T>
 	{
 		//if (!T.IsRunningCommand(cmdlet))
@@ -27,12 +28,13 @@ public static class CmdletContextExtensions
 		//    throw new InvalidOperationException("Don't execute me weird.");
 		//}
 
-		return SonarrContext.GetProvider().CreateScope().WithCmdlet(cmdlet);
+		return SonarrContext.CreateScope().WithCmdlet(cmdlet);
 	}
 
+	/// <exception cref="ContextNotSetException">There's no connection.</exception>
 	internal static IServiceScope CreateScope(this ScopedTransformationAttribute attribute)
 	{
-		return SonarrContext.GetProvider().CreateScope();
+		return SonarrContext.CreateScope();
 	}
 
 #if DEBUG
@@ -58,6 +60,19 @@ public static class CmdletContextExtensions
 	internal static void UnsetContext<T>(this T _) where T : IDisconnectContextCmdlet, IScopeCmdlet<T>
 	{
 		SonarrContext.Deinitialize();
+	}
+	/// <summary>
+	/// Removes the connection that the specified scope belongs to, when it's still the module's connection.
+	/// </summary>
+	/// <remarks>
+	/// A connection that another runspace made since the scope's was made stays the module's connection.
+	/// </remarks>
+	/// <param name="_">The cmdlet that made the connection.</param>
+	/// <param name="connectScope">The scope that <see cref="SetContext{T}(T, Assembly, Action{IServiceCollection})"/>
+	/// returned for the connection.</param>
+	internal static void UnsetContext<T>(this T _, IServiceScope connectScope) where T : IDisconnectContextCmdlet, IScopeCmdlet<T>
+	{
+		SonarrContext.Deinitialize(connectScope);
 	}
 	internal static ServiceProvider BuildTestContext<T>(this T _, IConnectionSettings settings, Assembly cmdletAssembly, Action<IServiceCollection> addAdditionalServices)
 		where T : PSCmdlet, ITestContextCmdlet
@@ -86,19 +101,50 @@ public static class CmdletContextExtensions
 	}
 }
 
+/// <summary>
+/// Holds the module's connection, which every runspace in the process shares.
+/// </summary>
+/// <remarks>
+/// A connection is replaced only once its successor is built, so a cmdlet that starts while another runspace connects
+/// gets either connection. Each scope holds a lease on the connection it came from, and a connection that has been
+/// replaced or removed disposes its provider once its last scope ends, so a cmdlet that is running when another
+/// runspace connects or disconnects finishes on the connection it started with.
+/// </remarks>
 file static class SonarrContext
 {
-	static ServiceProvider _provider = null!;
+	static Connection? _connection;
 
-	/// <exception cref="ContextNotSetException"/>
+	/// <summary>
+	/// Gets the provider of the module's connection, without a lease on it.
+	/// </summary>
+	/// <exception cref="ContextNotSetException">There's no connection.</exception>
 	internal static IServiceProvider GetProvider()
 	{
-		return _provider ?? ThrowNotSet();
+		return Volatile.Read(ref _connection)?.Provider ?? ThrowNotSet<IServiceProvider>();
+	}
+
+	/// <summary>
+	/// Creates a scope on the module's connection, which keeps the connection's provider alive until the scope is
+	/// disposed.
+	/// </summary>
+	/// <exception cref="ContextNotSetException">There's no connection.</exception>
+	internal static IServiceScope CreateScope()
+	{
+		// A connection that can't take a lease has already left the field, so the next read sees its successor or none.
+		while (Volatile.Read(ref _connection) is { } connection)
+		{
+			if (connection.TryCreateScope(out IServiceScope? scope))
+			{
+				return scope;
+			}
+		}
+
+		return ThrowNotSet<IServiceScope>();
 	}
 
 	/// <exception cref="ContextNotSetException"></exception>
 	[DoesNotReturn]
-	private static IServiceProvider ThrowNotSet()
+	private static T ThrowNotSet<T>()
 	{
 		throw new ContextNotSetException(new CmdletScopeNotReadyException());
 	}
@@ -106,17 +152,43 @@ file static class SonarrContext
 	// Disconnecting without a connection does nothing.
 	internal static void Deinitialize()
 	{
-		_provider?.Dispose();
-		_provider = null!;
+		Interlocked.Exchange(ref _connection, null)?.Release();
+	}
+
+	// Removes the connection that the scope came from, unless another connection has replaced it already.
+	internal static void Deinitialize(IServiceScope connectScope)
+	{
+		if (connectScope is ConnectionScope { Connection: { } connection }
+			&& ReferenceEquals(Interlocked.CompareExchange(ref _connection, null, connection), connection))
+		{
+			connection.Release();
+		}
 	}
 
 	internal static IServiceScope Initialize(IConnectionSettings settings, Assembly cmdletAssembly, Dictionary<string, object?> boundParameters, Action<IServiceCollection> configureServices)
 	{
-		// A new connection replaces the current one, so its test and the cmdlets after it use the settings it was given.
-		Deinitialize();
+		// A new connection replaces the current one, so its test and the cmdlets after it use the settings it was given,
+		// and a connection that fails to build leaves none.
+		ServiceProvider provider;
+		try
+		{
+			provider = Build(settings, cmdletAssembly, configureServices);
+		}
+		catch
+		{
+			Deinitialize();
+			throw;
+		}
 
-		_provider = Build(settings, cmdletAssembly, configureServices);
-		return _provider.CreateScope();
+		Connection connection = new(provider);
+		if (!connection.TryCreateScope(out IServiceScope? scope))
+		{
+			Debug.Fail("A new connection always takes a lease.");
+			throw new InvalidOperationException("The new connection was disposed before it was used.");
+		}
+
+		Interlocked.Exchange(ref _connection, connection)?.Release();
+		return scope;
 	}
 
 	// Builds the services of a connection with the specified settings. Initialize makes them the module's connection,
@@ -150,5 +222,105 @@ file static class SonarrContext
 		};
 
 		return services.BuildServiceProvider(providerOptions);
+	}
+}
+
+/// <summary>
+/// A connection's provider, with a count of the references that keep it alive: one for the module while the
+/// connection is the module's, and one for each scope created on it.
+/// </summary>
+file sealed class Connection
+{
+	private readonly ServiceProvider _provider;
+	private int _references = 1;
+
+	internal ServiceProvider Provider => _provider;
+
+	internal Connection(ServiceProvider provider)
+	{
+		_provider = provider;
+	}
+
+	/// <summary>
+	/// Creates a scope on the connection's provider, with a lease that the scope releases when it's disposed.
+	/// </summary>
+	/// <param name="scope">When this method returns <see langword="true"/>, the new scope.</param>
+	/// <returns>
+	/// <see langword="true"/> if the connection is still alive; otherwise, <see langword="false"/>, when its last
+	/// reference has been released and its provider disposed.
+	/// </returns>
+	internal bool TryCreateScope([NotNullWhen(true)] out IServiceScope? scope)
+	{
+		int count = Volatile.Read(ref _references);
+		while (count > 0)
+		{
+			int seen = Interlocked.CompareExchange(ref _references, count + 1, count);
+			if (seen == count)
+			{
+				try
+				{
+					scope = new ConnectionScope(this, _provider.CreateScope());
+					return true;
+				}
+				catch
+				{
+					this.Release();
+					throw;
+				}
+			}
+
+			count = seen;
+		}
+
+		scope = null;
+		return false;
+	}
+
+	/// <summary>
+	/// Releases one reference, and disposes the provider when it was the last one.
+	/// </summary>
+	internal void Release()
+	{
+		if (Interlocked.Decrement(ref _references) == 0)
+		{
+			_provider.Dispose();
+		}
+	}
+}
+
+/// <summary>
+/// A scope that holds a lease on the connection it was created on, and releases it once the scope is disposed.
+/// </summary>
+file sealed class ConnectionScope : IServiceScope
+{
+	private readonly IServiceScope _scope;
+	private Connection? _connection;
+
+	/// <summary>
+	/// Gets the connection that the scope was created on, or <see langword="null"/> once the scope is disposed.
+	/// </summary>
+	internal Connection? Connection => Volatile.Read(ref _connection);
+
+	public IServiceProvider ServiceProvider => _scope.ServiceProvider;
+
+	internal ConnectionScope(Connection connection, IServiceScope scope)
+	{
+		_connection = connection;
+		_scope = scope;
+	}
+
+	public void Dispose()
+	{
+		if (Interlocked.Exchange(ref _connection, null) is { } connection)
+		{
+			try
+			{
+				_scope.Dispose();
+			}
+			finally
+			{
+				connection.Release();
+			}
+		}
 	}
 }

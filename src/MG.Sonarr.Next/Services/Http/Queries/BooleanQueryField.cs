@@ -1,4 +1,3 @@
-using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Services.Http.Queries;
@@ -24,6 +23,10 @@ namespace MG.Sonarr.Next.Services.Http.Queries;
 public readonly struct BooleanQueryField : IQueryField, IEnumerable<Either<string, bool>>
 {
 	private const string TRUE = "true", FALSE = "false";
+	/// <summary>
+	/// The largest number of characters that formatting the field as a string stack-allocates.
+	/// </summary>
+	private const int MAX_STACKALLOC = 256;
 
 	private readonly string? _key;
 	private readonly bool _value;
@@ -135,24 +138,34 @@ public readonly struct BooleanQueryField : IQueryField, IEnumerable<Either<strin
 	/// <summary>
 	/// Returns the field formatted as <c>key=true</c> or <c>key=false</c>.
 	/// </summary>
+	/// <remarks>
+	/// The text is built in a stack buffer when <see cref="MaxLength"/> is 256 characters or fewer,
+	/// and in a pooled buffer otherwise.
+	/// </remarks>
 	/// <param name="format">Ignored; the field has one format.</param>
 	/// <param name="formatProvider">Ignored; the value is always written in lowercase English.</param>
 	/// <returns>The formatted field, or an empty string for a default instance.</returns>
 	string IFormattable.ToString(string? format, IFormatProvider? formatProvider)
 	{
-		Span<char> chars = stackalloc char[this.MaxLength];
-		if (!this.TryFormat(chars, out int charsWritten))
-		{
-			return string.Empty;
-		}
+		int length = this.MaxLength;
+		using RentedBuffer<char> buffer = RentedBuffer.Rent<char>(length <= MAX_STACKALLOC ? stackalloc char[length] : length);
 
-		return new string(chars.Slice(0, charsWritten));
+		return this.TryFormat(buffer.Span, out int charsWritten)
+			? new string(buffer.Span.Slice(0, charsWritten))
+			: string.Empty;
 	}
 	/// <summary>
 	/// Tries to write the field as <c>key=true</c> or <c>key=false</c> into the specified span.
 	/// </summary>
+	/// <remarks>
+	/// The method checks for room before it writes anything, so a destination that's too short makes
+	/// it return <see langword="false"/> rather than throw.
+	/// </remarks>
 	/// <param name="destination">The span to write the field into.</param>
-	/// <param name="charsWritten">When this method returns, the number of characters written to <paramref name="destination"/>.</param>
+	/// <param name="charsWritten">
+	///     When this method returns, the number of characters written to <paramref name="destination"/>,
+	///     or 0 when the method returns <see langword="false"/>.
+	/// </param>
 	/// <returns>
 	///     <see langword="true"/> if the whole field fits in <paramref name="destination"/>; otherwise,
 	///     or for a default instance, <see langword="false"/>.
@@ -165,21 +178,29 @@ public readonly struct BooleanQueryField : IQueryField, IEnumerable<Either<strin
 			return false;
 		}
 
-		if (!_key.AsSpan().TryCopyToSlice(destination, ref charsWritten))
+		string value = _value ? TRUE : FALSE;
+		int keyLength = _key.Length;
+		int length = keyLength + 1 + value.Length;
+		if (destination.Length < length)
 		{
 			return false;
 		}
 
-		destination[charsWritten++] = '=';
+		_key.CopyTo(destination);
+		destination[keyLength] = '=';
+		value.CopyTo(destination.Slice(keyLength + 1));
 
-		string value = _value ? TRUE : FALSE;
-		return value.AsSpan().TryCopyToSlice(destination, ref charsWritten);
+		charsWritten = length;
+		return true;
 	}
 	/// <summary>
 	/// Tries to write the field as <c>key=true</c> or <c>key=false</c> into the specified span.
 	/// </summary>
 	/// <param name="destination">The span to write the field into.</param>
-	/// <param name="charsWritten">When this method returns, the number of characters written to <paramref name="destination"/>.</param>
+	/// <param name="charsWritten">
+	///     When this method returns, the number of characters written to <paramref name="destination"/>,
+	///     or 0 when the method returns <see langword="false"/>.
+	/// </param>
 	/// <param name="format">Ignored; the field has one format.</param>
 	/// <param name="provider">Ignored; the value is always written in lowercase English.</param>
 	/// <returns>

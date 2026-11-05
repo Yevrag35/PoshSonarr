@@ -1,5 +1,7 @@
 using MG.Sonarr.Next.Buffers;
 using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Pwsh;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.DownloadClients;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;

@@ -42,9 +42,7 @@ public sealed class RemoveSonarrTagCmdlet : SonarrApiCmdletBase
 		}
 
 		string url = _tag.GetUrlForId(this.Id);
-		if (!this.Force
-			&&
-			!this.ShouldProcess(url, "Delete Tag"))
+		if (!this.ShouldProcessWithForce(url, "Delete Tag", this.Force))
 		{
 			return;
 		}

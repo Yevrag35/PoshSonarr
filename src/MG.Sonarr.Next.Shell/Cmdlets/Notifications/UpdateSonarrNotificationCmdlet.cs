@@ -1,7 +1,7 @@
 using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.Services;
 using MG.Sonarr.Next.Models.Notifications;
 using MG.Sonarr.Next.Shell.Attributes;
-using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications;
 
@@ -16,26 +16,32 @@ public sealed class UpdateSonarrNotificationCmdlet : SonarrApiCmdletBase
 	[Parameter]
 	public SwitchParameter Force { get; set; }
 
+	Dictionary<int, NotificationObject> _dict = null!;
+
+	protected override void OnCreatingScope(IServiceProvider provider)
+	{
+		base.OnCreatingScope(provider);
+		_dict = [];
+	}
+
 	protected override void Process(IServiceProvider provider)
 	{
-		var dict = provider.GetRequiredService<Dictionary<int, NotificationObject>>();
 		foreach (var obj in this.InputObject)
 		{
-			_ = dict.TryAdd(obj.Id, obj);
+			_ = _dict.TryAdd(obj.Id, obj);
 		}
 	}
 
 	protected override void End(IServiceProvider provider)
 	{
-		var dict = provider.GetRequiredService<Dictionary<int, NotificationObject>>();
 		var tag = provider.GetMetadataTag(Meta.Notification);
 		bool yesToAll = false;
 		bool noToAll = false;
 
-		foreach (var notification in dict.Values.OrderBy(x => x.Id))
+		foreach (var notification in _dict.Values.OrderBy(x => x.Id))
 		{
 			string url = tag.GetUrlForId(notification.Id);
-			if (!this.ShouldProcess(url, "Update Notification"))
+			if (!this.ShouldProcessWithForce(url, "Update Notification", this.Force))
 			{
 				continue;
 			}

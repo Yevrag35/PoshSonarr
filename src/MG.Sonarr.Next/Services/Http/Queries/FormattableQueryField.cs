@@ -1,5 +1,3 @@
-using MG.Sonarr.Next.Extensions.Strings;
-
 namespace MG.Sonarr.Next.Services.Http.Queries;
 
 /// <summary>
@@ -24,6 +22,11 @@ namespace MG.Sonarr.Next.Services.Http.Queries;
 [StructLayout(LayoutKind.Auto)]
 public readonly struct FormattableQueryField : IQueryField
 {
+	/// <summary>
+	/// The largest number of characters that <see cref="ToString(string, IFormatProvider)"/> stack-allocates.
+	/// </summary>
+	private const int MAX_STACKALLOC = 256;
+
 	private readonly string? _key;
 	private readonly State _value;
 
@@ -79,11 +82,14 @@ public readonly struct FormattableQueryField : IQueryField
 	///     <see langword="null"/>, empty, or white space to use the format given when the field is
 	///     formatted.
 	/// </param>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> is null.</exception>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> or <paramref name="value"/> is null.</exception>
 	/// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is empty or consists only of white-space characters.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="maxLength"/> is negative.</exception>
 	public FormattableQueryField(string key, ISpanFormattable value, int maxLength, string? format = null)
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(key);
+		ArgumentNullException.ThrowIfNull(value);
+		ArgumentOutOfRangeException.ThrowIfNegative(maxLength);
 		_key = key;
 		FormattableObject obj = new(value, format);
 		_value = new(obj, maxLength + key.Length + 1);
@@ -92,8 +98,16 @@ public readonly struct FormattableQueryField : IQueryField
 	/// <summary>
 	/// Tries to write the field as <c>key=value</c> into the specified span.
 	/// </summary>
+	/// <remarks>
+	/// The method checks for room before it writes the key, the equals sign, and the value, so a
+	/// destination that's too short, or a formattable value whose own <c>TryFormat</c> fails, makes it
+	/// return <see langword="false"/> rather than throw or write <c>key=</c> alone.
+	/// </remarks>
 	/// <param name="destination">The span to write the field into.</param>
-	/// <param name="charsWritten">When this method returns, the number of characters written to <paramref name="destination"/>.</param>
+	/// <param name="charsWritten">
+	///     When this method returns, the number of characters written to <paramref name="destination"/>,
+	///     or 0 when the method returns <see langword="false"/>.
+	/// </param>
 	/// <param name="format">
 	///     The format for a formattable value, which the format given to the constructor replaces
 	///     when that one isn't <see langword="null"/>, empty, or white space. A string value ignores it.
@@ -108,27 +122,37 @@ public readonly struct FormattableQueryField : IQueryField
 	/// </returns>
 	public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 	{
+		charsWritten = 0;
 		if (this.IsDefaultOrEmpty)
 		{
-			charsWritten = 0;
 			return false;
 		}
 
-		_key.AsSpan().CopyTo(destination, out charsWritten);
-		destination[charsWritten++] = '=';
-
-		if (_value.TryWrite(destination.Slice(charsWritten), out int written, format, provider))
+		int keyLength = _key.Length;
+		if (destination.Length <= keyLength)
 		{
-			charsWritten += written;
-			return true;
+			return false;
 		}
 
-		return false;
+		_key.CopyTo(destination);
+		destination[keyLength] = '=';
+
+		if (!_value.TryWrite(destination.Slice(keyLength + 1), out int written, format, provider))
+		{
+			return false;
+		}
+
+		charsWritten = keyLength + 1 + written;
+		return true;
 	}
 
 	/// <summary>
 	/// Returns the field formatted as <c>key=value</c>.
 	/// </summary>
+	/// <remarks>
+	/// The text is built in a stack buffer when <see cref="MaxLength"/> is 256 characters or fewer,
+	/// and in a pooled buffer otherwise.
+	/// </remarks>
 	/// <param name="format">
 	///     The format for a formattable value, which the format given to the constructor replaces
 	///     when that one isn't <see langword="null"/>, empty, or white space. A string value ignores it.
@@ -140,15 +164,12 @@ public readonly struct FormattableQueryField : IQueryField
 	/// <returns>The formatted field, or an empty string for a default instance or a field that can't be formatted.</returns>
 	public string ToString(string? format, IFormatProvider? formatProvider)
 	{
-		Span<char> chars = stackalloc char[_value.MaxLength];
-		if (this.TryFormat(chars, out int charsWritten, format.AsSpan(), formatProvider))
-		{
-			return new string(chars.Slice(0, charsWritten));
-		}
-		else
-		{
-			return string.Empty;
-		}
+		int length = _value.MaxLength;
+		using RentedBuffer<char> buffer = RentedBuffer.Rent<char>(length <= MAX_STACKALLOC ? stackalloc char[length] : length);
+
+		return this.TryFormat(buffer.Span, out int charsWritten, format.AsSpan(), formatProvider)
+			? new string(buffer.Span.Slice(0, charsWritten))
+			: string.Empty;
 	}
 
 	/// <summary>
@@ -230,14 +251,17 @@ public readonly struct FormattableQueryField : IQueryField
 		/// </summary>
 		/// <param name="value">The string to copy.</param>
 		/// <param name="destination">The span to copy the string into.</param>
-		/// <returns>The length of <paramref name="value"/>.</returns>
-		/// <exception cref="ArgumentException">Thrown when <paramref name="destination"/> is shorter than <paramref name="value"/>.</exception>
+		/// <returns>
+		///     The length of <paramref name="value"/>, or -1 when <paramref name="destination"/> is
+		///     shorter than <paramref name="value"/>.
+		/// </returns>
 		private static int WriteString(
 			string value,
 			Span<char> destination)
 		{
-			value.CopyTo(destination);
-			return value.Length;
+			return value.AsSpan().TryCopyTo(destination)
+				? value.Length
+				: -1;
 		}
 		/// <summary>
 		/// Formats the specified value into the specified span.
@@ -256,8 +280,9 @@ public readonly struct FormattableQueryField : IQueryField
 			ReadOnlySpan<char> format,
 			IFormatProvider? formatProvider)
 		{
-			_ = formattable.TryFormat(destination, out int written, format, formatProvider);
-			return written;
+			return formattable.TryFormat(destination, out int written, format, formatProvider)
+				? written
+				: -1;
 		}
 	}
 
@@ -315,14 +340,14 @@ public readonly struct FormattableQueryField : IQueryField
 			return this.Value.TryFormat(destination, out charsWritten, format, formatProvider);
 		}
 		/// <summary>
-		/// Returns the value formatted with the specified format.
+		/// Returns the value formatted with its fixed format, or else with the specified format.
 		/// </summary>
 		/// <param name="format">The format to use when <see cref="Format"/> is <see langword="null"/>, empty, or white space.</param>
 		/// <param name="formatProvider">The culture-specific formatting information, or <see langword="null"/> for the current culture's.</param>
 		/// <returns>The formatted value.</returns>
 		public string ToString(string? format, IFormatProvider? formatProvider)
 		{
-			return this.Value.ToString(format, formatProvider);
+			return this.Value.ToString(string.IsNullOrWhiteSpace(this.Format) ? format : this.Format, formatProvider);
 		}
 	}
 }

@@ -215,16 +215,13 @@ public readonly struct Size : IComparable, IComparable<Size>, IEquatable<Size>,
 	/// </returns>
 	public override bool Equals([NotNullWhen(true)] object? obj)
 	{
-		if (obj is Size size)
+		return obj switch
 		{
-			return this.Equals(size);
-		}
-		else if (obj is long || obj is int)
-		{
-			return this.Equals((long)obj);
-		}
-
-		return false;
+			Size size => this.Equals(size),
+			long longBytes => this.Equals(longBytes),
+			int intBytes => this.Equals(intBytes),
+			_ => false,
+		};
 	}
 	/// <summary>
 	/// Returns a hash code for the size.

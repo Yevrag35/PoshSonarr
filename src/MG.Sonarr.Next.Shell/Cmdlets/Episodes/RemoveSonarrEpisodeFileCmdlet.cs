@@ -58,7 +58,7 @@ public sealed class RemoveSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 		foreach (int id in _ids)
 		{
 			string url = this.Tag.GetUrlForId(id);
-			if (this.ShouldProcess(url, "Deleting Episode File")
+			if (this.ShouldProcessWithForce(url, "Deleting Episode File", force)
 				&&
 				(force
 				||

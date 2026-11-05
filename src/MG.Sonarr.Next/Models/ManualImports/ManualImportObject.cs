@@ -17,8 +17,8 @@ namespace MG.Sonarr.Next.Models.ManualImports;
 /// <para>
 /// The object carries the <see cref="Meta.ManualImport"/> tag. Once it's deserialized, <see cref="Name"/> is
 /// read-only in PowerShell, and the object has every property that an import needs, added when Sonarr leaves it out:
-/// an <c>Episodes</c> set, a writable <c>Quality</c> and <c>Series</c>, a <c>ReleaseGroup</c>, and a
-/// <c>SeasonNumber</c> script property.
+/// a read-only <c>Episodes</c> set, which <see cref="Episodes"/> holds whether Sonarr sent it or not, a writable
+/// <c>Quality</c> and <c>Series</c>, a <c>ReleaseGroup</c>, and a <c>SeasonNumber</c> script property.
 /// </para>
 /// <para>
 /// The object isn't posted itself. <see cref="ManualImportPostMapper.ToManualImportFiles"/> turns a list of them into
@@ -119,7 +119,7 @@ public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
 	}
 
 	/// <summary>
-	/// Compares the file with another by their <see cref="Name"/>, ignoring case.
+	/// Compares the file with another by their <see cref="Name"/>, ordinally, ignoring case.
 	/// </summary>
 	/// <param name="other">The file to compare with, or <see langword="null"/>.</param>
 	/// <returns>
@@ -128,7 +128,7 @@ public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
 	/// </returns>
 	public override int CompareTo(ManualImportObject? other)
 	{
-		return StringComparer.InvariantCultureIgnoreCase.Compare(this.Name, other?.Name);
+		return StringComparer.OrdinalIgnoreCase.Compare(this.Name, other?.Name);
 	}
 
 	/// <summary>
@@ -178,9 +178,15 @@ public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
 	private void StoreAndReplaceName()
 	{
 		string name = nameof(this.Name);
-		PSPropertyInfo? nameProp = this.Properties[name];
-		this.Properties.Remove(name);
-		this.Properties.Add(new ReadOnlyStringProperty(name, nameProp?.Value as string));
+		if (this.Properties[name] is null)
+		{
+			this.Properties.Add(new ReadOnlyStringProperty(name, value: null));
+			return;
+		}
+
+		// Name is on the always-string list, so the property holds the text that Sonarr sent, such as 01, which the
+		// read-only property keeps.
+		this.ReplaceWithReadOnlyStringProperty(name);
 	}
 
 	/// <summary>
@@ -188,18 +194,15 @@ public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
 	/// <see cref="Episodes"/>.
 	/// </summary>
 	/// <remarks>
-	/// The properties added are an empty, read-only <c>Episodes</c> set, a writable <c>Quality</c> and
-	/// <c>Series</c> with no value, an empty <c>ReleaseGroup</c>, and a <c>SeasonNumber</c> script property that
-	/// gives the season of the first episode, or nothing when the file has none.
+	/// The <c>Episodes</c> set is read-only, whether Sonarr sent it or it's added empty. The other properties added are a
+	/// writable <c>Quality</c> and <c>Series</c> with no value, an empty <c>ReleaseGroup</c>, and a
+	/// <c>SeasonNumber</c> script property that
+	/// gives the season of the first episode in the set's order, through the set's own <c>Min</c>, since PowerShell
+	/// can't index a sorted set, or nothing when the file has none.
 	/// </remarks>
 	private void AddMissingProperties()
 	{
-		var setProp = CreateIfMissing(this.Properties, EPISODES, static (name) =>
-		{
-			return new ReadOnlyCollectionProperty<EpisodeObject, SortedSet<EpisodeObject>>(EPISODES, []);
-		});
-
-		this.Episodes = (SortedSet<EpisodeObject>)setProp.Value;
+		this.Episodes = this.StoreEpisodes();
 
 		CreateIfMissing(this.Properties, QUALITY, (name) =>
 		{
@@ -210,10 +213,33 @@ public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
 		CreateIfMissing(this.Properties, SEASON_NUMBER, static (name) =>
 		{
 			return new PSScriptProperty(name,
-				ScriptBlock.Create("if (0 -lt $this.Episodes.Count) { $this.Episodes[0].SeasonNumber }"));
+				ScriptBlock.Create("if (0 -lt $this.Episodes.Count) { $this.Episodes.Min.SeasonNumber }"));
 		});
 	}
 
+	/// <summary>
+	/// Puts the file's episodes in a read-only <c>Episodes</c> property and returns the set that it holds.
+	/// </summary>
+	/// <remarks>
+	/// The set that Sonarr sent is kept, and a file that Sonarr sent no set for gets an empty one. The property is
+	/// read-only either way, so PowerShell can't replace the set that <see cref="Episodes"/> holds and that the import
+	/// posts, and episodes are added to it through <see cref="Episodes"/>.
+	/// </remarks>
+	/// <returns>The set that the <c>Episodes</c> property holds.</returns>
+	private SortedSet<EpisodeObject> StoreEpisodes()
+	{
+		PSPropertyInfo? sent = this.Properties[EPISODES];
+		if (sent is not ReadOnlyCollectionProperty<EpisodeObject, SortedSet<EpisodeObject>>)
+		{
+			SortedSet<EpisodeObject> episodes = sent?.Value as SortedSet<EpisodeObject> ?? [];
+			this.Properties.Remove(EPISODES);
+			this.Properties.Add(new ReadOnlyCollectionProperty<EpisodeObject, SortedSet<EpisodeObject>>(EPISODES, episodes));
+		}
+
+		// Adding a property stores a copy of it, which holds a copy of the set, so the set is read from the property
+		// that the object holds.
+		return (SortedSet<EpisodeObject>)this.Properties[EPISODES]!.Value!;
+	}
 	/// <summary>
 	/// Gets the member with the specified name from a collection, adding one when the collection has none.
 	/// </summary>
@@ -222,15 +248,19 @@ public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
 	/// <param name="propertyName">The name of the member.</param>
 	/// <param name="createOnMissing">The function that creates the member from <paramref name="propertyName"/> when
 	/// the collection has none by that name.</param>
-	/// <returns>The member that the collection already held, or the one that <paramref name="createOnMissing"/>
-	/// created and the method added.</returns>
+	/// <remarks>
+	/// <see cref="PSMemberInfoCollection{T}.Add(T)"/> stores a copy of the member that it's given, so the method
+	/// returns the copy that the collection holds, not the member that <paramref name="createOnMissing"/> created.
+	/// </remarks>
+	/// <returns>The member that the collection already held, or the copy that it holds of the one that
+	/// <paramref name="createOnMissing"/> created and the method added.</returns>
 	private static T CreateIfMissing<T>(PSMemberInfoCollection<T> collection, string propertyName, Func<string, T> createOnMissing) where T : PSMemberInfo
 	{
 		T? prop = collection[propertyName];
 		if (prop is null)
 		{
-			prop = createOnMissing(propertyName);
-			collection.Add(prop);
+			collection.Add(createOnMissing(propertyName));
+			prop = collection[propertyName]!;
 		}
 
 		return prop;

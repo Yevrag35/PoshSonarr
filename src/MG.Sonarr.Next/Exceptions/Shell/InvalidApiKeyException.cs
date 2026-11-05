@@ -1,6 +1,4 @@
-﻿using MG.Sonarr.Next.Exceptions;
-
-namespace MG.Sonarr.Next.Shell.Exceptions;
+namespace MG.Sonarr.Next.Exceptions.Shell;
 
 /// <summary>
 /// An exception thrown when a blank, <see langword="null"/>, or invalid API key is supplied during 

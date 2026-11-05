@@ -1,8 +1,8 @@
 using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.Services;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Shell.Attributes;
-using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases;
 
@@ -39,9 +39,7 @@ public sealed class RemoveSonarrReleaseProfile : SonarrApiCmdletBase
 	{
 		string url = _tag.GetUrlForId(this.Id);
 
-		if (!this.Force
-			&&
-			!this.ShouldProcess(url, "Deleting Release Profile"))
+		if (!this.ShouldProcessWithForce(url, "Deleting Release Profile", this.Force))
 		{
 			return;
 		}

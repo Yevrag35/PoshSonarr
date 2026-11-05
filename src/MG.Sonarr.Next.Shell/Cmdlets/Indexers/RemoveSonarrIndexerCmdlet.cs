@@ -63,9 +63,7 @@ public sealed class RemoveSonarrIndexerCmdlet : SonarrMetadataCmdlet
 	private void DeleteIndexer(int id)
 	{
 		string url = this.Tag.GetUrlForId(id);
-		if (!this.Force
-			&&
-			!this.ShouldProcess(url, "Deleting Indexer"))
+		if (!this.ShouldProcessWithForce(url, "Deleting Indexer", this.Force))
 		{
 			return;
 		}

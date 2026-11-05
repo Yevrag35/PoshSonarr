@@ -174,8 +174,16 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 	/// Creates a failed result from the specified exception, error category, and status code.
 	/// </summary>
 	/// <remarks>
-	/// The result's error record takes the exception's type name as its error ID, and its URL from the exception when it's
-	/// an <see cref="IHttpRequestUri"/> with a URI, or else from the request of <paramref name="response"/>.
+	/// <para>
+	/// A <see cref="SonarrHttpException"/> goes to
+	/// <see cref="FromException(SonarrHttpException, ErrorCategory, HttpStatusCode, HttpResponseMessage?)"/>, whose error
+	/// record carries the details of the HTTP exchange.
+	/// </para>
+	/// <para>
+	/// For any other exception, the result's error record takes the exception's type name as its error ID, and its URL,
+	/// which is also the record's target and the result's <see cref="RequestUrl"/>, from the exception when it's an
+	/// <see cref="IHttpRequestUri"/> with a URI, or else from the request of <paramref name="response"/>.
+	/// </para>
 	/// </remarks>
 	/// <param name="exception">The exception that made the request fail. This value must not be <see langword="null"/>.</param>
 	/// <param name="errorCategory">The category of the error.</param>
@@ -184,13 +192,32 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 	/// <returns>A result whose <see cref="IsError"/> is <see langword="true"/>.</returns>
 	public static SonarrClientResult FromException(Exception exception, ErrorCategory errorCategory, HttpStatusCode statusCode, HttpResponseMessage? response = null)
 	{
-		string name = exception.GetTypeName();
+		if (exception is SonarrHttpException reqEx)
+			return FromException(reqEx, errorCategory, statusCode, response);
 
-		string? requestUri = exception is IHttpRequestUri hasReqUri
-			? hasReqUri.RequestUri ?? response?.RequestMessage?.RequestUri?.ToString()
-			: response?.RequestMessage?.RequestUri?.ToString();
+		SonarrErrorRecord error = CreateRecord(exception, errorCategory, response);
+		return new SonarrClientResult(error)
+		{
+			StatusCode = statusCode,
+		};
+	}
+	/// <summary>
+	/// Creates a failed result from the specified Sonarr HTTP exception, error category, and status code.
+	/// </summary>
+	/// <remarks>
+	/// The result's error record holds the exception's status code, its reason phrase, its headers, and a message that
+	/// names the request's URL, with <paramref name="errorCategory"/> as its category. Its target is the request's URL, and
+	/// the record is ignorable when the exception's status code is 404.
+	/// </remarks>
+	/// <param name="exception">The exception that made the request fail. This value must not be <see langword="null"/>.</param>
+	/// <param name="errorCategory">The category of the error.</param>
+	/// <param name="statusCode">The status code of the result.</param>
+	/// <param name="response">The response that the server returned, or <see langword="null"/> when there was none.</param>
+	/// <returns>A result whose <see cref="IsError"/> is <see langword="true"/>.</returns>
+	public static SonarrClientResult FromException(SonarrHttpException exception, ErrorCategory errorCategory, HttpStatusCode statusCode, HttpResponseMessage? response = null)
+	{
+		SonarrErrorRecord error = new(exception, response, errorCategory, exception.RequestUri);
 
-		SonarrErrorRecord error = new(exception, name, errorCategory, requestUri);
 		return new SonarrClientResult(error)
 		{
 			StatusCode = statusCode,
@@ -207,9 +234,9 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 	/// error record carries the details of the HTTP exchange.
 	/// </para>
 	/// <para>
-	/// For any other exception, the result's error record takes the exception's type name as its error ID, and its URL
-	/// from the exception when it's an <see cref="IHttpRequestUri"/> with a URI, or else from the request of
-	/// <paramref name="response"/>.
+	/// For any other exception, the result's error record takes the exception's type name as its error ID, and its URL,
+	/// which is also the record's target and the result's <see cref="RequestUrl"/>, from the exception when it's an
+	/// <see cref="IHttpRequestUri"/> with a URI, or else from the request of <paramref name="response"/>.
 	/// </para>
 	/// </remarks>
 	/// <typeparam name="T">The type of the value that the request would have returned.</typeparam>
@@ -223,24 +250,20 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 		if (exception is SonarrHttpException reqEx)
 			return FromException<T>(reqEx, errorCategory, statusCode, response);
 
-		string name = exception.GetTypeName();
-
-		string? requestUri = exception is IHttpRequestUri hasReqUri
-			? hasReqUri.RequestUri ?? response?.RequestMessage?.RequestUri?.ToString()
-			: response?.RequestMessage?.RequestUri?.ToString();
-
-		SonarrErrorRecord error = new(exception, name, errorCategory, requestUri);
+		SonarrErrorRecord error = CreateRecord(exception, errorCategory, response);
 		return new SonarrClientResult<T>(error)
 		{
 			StatusCode = statusCode,
 		};
 	}
 	/// <summary>
-	/// Creates a failed result for a request that would have returned a value, from the specified Sonarr HTTP exception.
+	/// Creates a failed result for a request that would have returned a value, from the specified Sonarr HTTP exception,
+	/// error category, and status code.
 	/// </summary>
 	/// <remarks>
 	/// The result's error record holds the exception's status code, its reason phrase, its headers, and a message that
-	/// names the request's URL.
+	/// names the request's URL, with <paramref name="errorCategory"/> as its category. Its target is the request's URL, and
+	/// the record is ignorable when the exception's status code is 404.
 	/// </remarks>
 	/// <typeparam name="T">The type of the value that the request would have returned.</typeparam>
 	/// <param name="exception">The exception that made the request fail. This value must not be <see langword="null"/>.</param>
@@ -250,31 +273,63 @@ public class SonarrClientResult : ISonarrResponse, IHttpRequestUri
 	/// <returns>A result whose <see cref="IsError"/> is <see langword="true"/>.</returns>
 	public static SonarrClientResult<T> FromException<T>(SonarrHttpException exception, ErrorCategory errorCategory, HttpStatusCode statusCode, HttpResponseMessage? response = null)
 	{
-		SonarrErrorRecord error = new(exception, response, exception.RequestUri);
+		SonarrErrorRecord error = new(exception, response, errorCategory, exception.RequestUri);
 
-		return new SonarrClientResult<T>(error);
+		return new SonarrClientResult<T>(error)
+		{
+			StatusCode = statusCode,
+		};
 	}
 
 	/// <summary>
-	/// The error record of every result that <see cref="NotFound{T}"/> creates.
+	/// Creates the error record of a failed result from an exception that isn't a <see cref="SonarrHttpException"/>.
 	/// </summary>
-	private static readonly SonarrErrorRecord _notFound = new(new Exception("Not found."), "NotFound", ErrorCategory.ObjectNotFound, targetObj: null, isIgnoreable: true);
+	/// <param name="exception">The exception that made the request fail.</param>
+	/// <param name="errorCategory">The category of the error.</param>
+	/// <param name="response">The response that the server returned, or <see langword="null"/> when there was none.</param>
+	/// <returns>
+	/// A record whose error ID is the exception's type name, and whose target and URL are the exception's URL when it's an
+	/// <see cref="IHttpRequestUri"/> with a URI, or else the URL of the request of <paramref name="response"/>.
+	/// </returns>
+	private static SonarrErrorRecord CreateRecord(Exception exception, ErrorCategory errorCategory, HttpResponseMessage? response)
+	{
+		string? requestUri = exception is IHttpRequestUri hasReqUri
+			? hasReqUri.RequestUri ?? response?.RequestMessage?.RequestUri?.ToString()
+			: response?.RequestMessage?.RequestUri?.ToString();
+
+		return new SonarrErrorRecord(exception, exception.GetTypeName(), errorCategory, requestUri)
+		{
+			RequestUri = requestUri,
+		};
+	}
 
 	/// <summary>
 	/// Creates a failed result for a request whose resource wasn't found.
 	/// </summary>
+	/// <remarks>
+	/// Each call creates a new error record, so that PowerShell, which records where a record was written in the record
+	/// itself, keeps each 404 apart.
+	/// </remarks>
 	/// <typeparam name="T">The type of the value that the request would have returned.</typeparam>
+	/// <param name="requestUrl">The URL that the request was sent to, or <see langword="null"/> when it isn't known.</param>
+	/// <param name="targetObj">The object that the request acted on, which the error record names as its target, or <see langword="null"/>.</param>
 	/// <returns>
 	/// A result whose <see cref="IsError"/> and <see cref="IsIgnoreable"/> are <see langword="true"/>, whose
-	/// <see cref="StatusCode"/> is <see cref="HttpStatusCode.NotFound"/>, and whose error record has the category
-	/// <see cref="ErrorCategory.ObjectNotFound"/>.
+	/// <see cref="StatusCode"/> is <see cref="HttpStatusCode.NotFound"/>, whose <see cref="RequestUrl"/> is
+	/// <paramref name="requestUrl"/>, and whose error record has the category <see cref="ErrorCategory.ObjectNotFound"/>.
 	/// </returns>
-	[SuppressMessage("Style", "IDE0022")]
-	public static SonarrClientResult<T> NotFound<T>() => new(_notFound)
+	public static SonarrClientResult<T> NotFound<T>(string? requestUrl, object? targetObj)
 	{
-		IsIgnoreable = true,
-		StatusCode = HttpStatusCode.NotFound,
-	};
+		SonarrErrorRecord error = new(new Exception("Not found."), "NotFound", ErrorCategory.ObjectNotFound, targetObj, isIgnoreable: true)
+		{
+			RequestUri = requestUrl,
+		};
+
+		return new(error)
+		{
+			StatusCode = HttpStatusCode.NotFound,
+		};
+	}
 }
 
 /// <summary>

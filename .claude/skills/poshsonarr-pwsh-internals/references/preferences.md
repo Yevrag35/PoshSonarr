@@ -24,6 +24,14 @@ Measured 2026-11-01 on PowerShell 7.6.9 with the module's Debug build against th
 - **The What if line** that `ShouldProcess` shows under `-WhatIf` goes to the host: `*>&1` doesn't capture it, while a transcript records it and a parent process reads it from the child's stdout.
 - **A child process** sends a verbose or warning record's display, without redirection inside it, straight to the console too, so the parent gets those lines only when the child redirects them into its output, as with `*>&1`.
 
+## What if mode, `-Confirm`, and `-Force`
+
+Measured 2026-11-05 on PowerShell 7.6.9 with the module's Debug build against the sandbox, through `Remove-SonarrTag` and `Remove-SonarrSeries`, whose confirm impact is High, each case in a new `pwsh -NonInteractive` process that read the What if line from a transcript, with a build whose `-Force` skipped `ShouldProcess` and one whose `-Force` asks it in What if mode.
+
+- **What if mode reaches a binary cmdlet from four places:** the `-WhatIf` switch, a global `$WhatIfPreference` of `$true`, a `$WhatIfPreference = $true` in the function that calls the cmdlet, and a `'<cmdlet>:WhatIf' = $true` entry in `$PSDefaultParameterValues`. The switch and the default are in `MyInvocation.BoundParameters` as a `SwitchParameter`, and reading `$WhatIfPreference` through `SessionState` sees the function's local value, as `ShouldProcess` does. In each case, `ShouldProcess` showed the What if line and returned `false`. `-WhatIf:$false` overrode a global `$WhatIfPreference` of `$true`.
+- **Code that skips `ShouldProcess` skips What if mode too.** With the build whose `-Force` returned before asking `ShouldProcess`, `-Force` deleted the tag under each of the four, with no What if line.
+- **A prompt fails under `-NonInteractive`.** At the default `$ConfirmPreference`, and under `-Confirm`, a High-impact cmdlet's `ShouldProcess` threw `PSInvalidOperationException` ("PowerShell is in NonInteractive mode. Read and Prompt functionality is not available."), which the cmdlet wrote as its error, and the action didn't run. `-Confirm:$false` ran it without prompting.
+
 ## What it means for PoshSonarr
 
 - To follow the caller's preference when the common parameter isn't bound, as the base cmdlet's preference capture does, convert the variable's value to `ActionPreference` rather than test its type: a script or a function that sets the preference stores the string that its author wrote, and `LanguagePrimitives` converts it as it converts any enum name.
@@ -31,3 +39,6 @@ Measured 2026-11-01 on PowerShell 7.6.9 with the module's Debug build against th
 - Reading a preference through `SessionState` sees the scope that the engine applies, behind a script module too, so once the value is converted, the cmdlet's own reading agrees with the engine.
 - Verbose and debug output that a user can redirect, capture, or transcribe goes through the cmdlet's `WriteVerbose` and `WriteDebug`, which PowerShell lets only the pipeline thread call. A line written with `Host.UI.WriteVerboseLine` or `WriteDebugLine` reaches only the console, so neither a user's `4>&1` or `Start-Transcript` nor a test can read it.
 - A test reads the target of a `-WhatIf` call from a transcript, which records the What if line that no redirection captures.
+- `-Force` skips only the confirmation prompt, and What if mode always wins: a cmdlet with `-Force` calls `SonarrCmdletBase.ShouldProcessWithForce` instead of skipping `ShouldProcess`, so in What if mode, from any of the four places, it shows the What if line and does nothing, and an explicit `-Confirm` still prompts.
+- Code that decides What if mode for itself takes `-WhatIf` from `BoundParameters` when it's bound, `-WhatIf:$false` included, and only otherwise reads `$WhatIfPreference` through `SessionState`.
+- A test of whether a call would prompt runs it under `-NonInteractive` and checks for the `PSInvalidOperationException` that the prompt throws, and that the action didn't run.

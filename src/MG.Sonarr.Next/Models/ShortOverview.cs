@@ -1,7 +1,8 @@
 namespace MG.Sonarr.Next.Models;
 
 /// <summary>
-/// Represents text that's cut short after a word and ended with three periods, such as a series' short overview.
+/// Represents text that's cut short after a word and ended with three periods that mark what's left out, such as a
+/// series' short overview.
 /// </summary>
 public readonly struct ShortOverview
 {
@@ -45,7 +46,9 @@ public readonly struct ShortOverview
 	/// </summary>
 	/// <remarks>
 	/// The text keeps its first <paramref name="howLong"/> characters and the rest of the word that they end in, with
-	/// white space trimmed from both ends, and then ends with three periods.
+	/// white space trimmed from both ends. It ends with three periods when that leaves some of the text out, and the
+	/// periods mark what's left out, so text whose last word the cut lands in, and text that only white space follows,
+	/// comes back whole and without them.
 	/// </remarks>
 	/// <param name="text">The text to shorten.</param>
 	/// <param name="howLong">
@@ -66,11 +69,13 @@ public readonly struct ShortOverview
 	}
 
 	/// <summary>
-	/// Cuts text after the word that the specified length ends in and ends it with three periods.
+	/// Cuts text after the word that the specified length ends in, and ends it with three periods when the cut leaves
+	/// some of the text out.
 	/// </summary>
 	/// <remarks>
 	/// <para>The word runs to the first white space at or after the last kept character, and the periods take that white
-	/// space's place. When no white space follows, the text is kept to its end.</para>
+	/// space's place. When no white space follows, the text is kept to its end, and when only white space follows, the
+	/// cut leaves nothing out, so in both cases no periods are added.</para>
 	/// <para>The kept text is trimmed of white space at both ends, so the periods never follow white space.</para>
 	/// <para>The kept text is copied once, straight into the new string, with no buffer in between.</para>
 	/// </remarks>
@@ -79,7 +84,10 @@ public readonly struct ShortOverview
 	/// The number of characters to keep before looking for the end of a word, from 1 through the length of
 	/// <paramref name="text"/>.
 	/// </param>
-	/// <returns>The kept text, with white space trimmed from both ends, followed by three periods.</returns>
+	/// <returns>
+	/// The kept text, with white space trimmed from both ends, followed by three periods when some of the text was left
+	/// out.
+	/// </returns>
 	private static string Truncate(ReadOnlySpan<char> text, int shortenedLength)
 	{
 		int end = shortenedLength - 1;
@@ -89,6 +97,8 @@ public readonly struct ShortOverview
 		}
 
 		ReadOnlySpan<char> kept = text.UnsafeSlice(0, end).Trim();
-		return string.Concat(kept, _ellipsis);
+		return text.UnsafeSlice(end).IsWhiteSpace()
+			? new string(kept)
+			: string.Concat(kept, _ellipsis);
 	}
 }

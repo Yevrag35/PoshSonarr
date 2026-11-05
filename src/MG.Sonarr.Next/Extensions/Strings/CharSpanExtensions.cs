@@ -188,6 +188,21 @@ public static partial class CharSpanExtensions
 			index = chars.LastIndexOf(value, comparisonType);
 			return index != -1;
 		}
+		/// <summary>
+		/// Attempts to find the last occurrence of a specified character within the span, ensuring that the found index is not the last character in the span.
+		/// </summary>
+		/// <remarks>
+		/// Unlike <see cref="TryLastIndexOf(ReadOnlySpan{char}, char, out int)"/>, a return value of <see langword="false"/> does not necessarily mean that
+		/// <paramref name="index"/> is guaranteed to be <c>-1</c> as the character may be found but is the last index of the span.
+		/// </remarks>
+		/// <param name="c">The character to locate within the span.</param>
+		/// <param name="index">When this method returns, contains the zero-based index of the last occurrence of the specified character, if found; otherwise, -1.</param>
+		/// <returns><see langword="true"/> if the specified character is found within the span and is not the last character; otherwise, <see langword="false"/>.</returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public bool TryLastIndexOfAndNotEnd(char c, out int index)
+		{
+			return TryLastIndexOf(chars, c, out index) && index < chars.Length - 1;
+		}
 	}
 
 	/// <summary>

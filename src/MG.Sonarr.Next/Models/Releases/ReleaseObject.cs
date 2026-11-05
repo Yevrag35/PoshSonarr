@@ -120,7 +120,7 @@ public sealed class ReleaseObject : SonarrObject,
 			compare = Comparer<int?>.Default.Compare(this.IndexerId, other?.IndexerId);
 			if (compare == 0)
 			{
-				compare = StringComparer.InvariantCultureIgnoreCase.Compare(this.ReleaseUrl, other?.ReleaseUrl);
+				compare = StringComparer.OrdinalIgnoreCase.Compare(this.ReleaseUrl, other?.ReleaseUrl);
 			}
 		}
 
@@ -186,8 +186,9 @@ public sealed class ReleaseObject : SonarrObject,
 	/// Puts back the values that Sonarr sent before the release is written to a request body.
 	/// </summary>
 	/// <remarks>
-	/// The method writes the four weights and the <c>IndexerId</c> and <c>ReleaseUrl</c> properties, makes
-	/// <c>Age</c> the day count again, and adds <c>AgeHours</c> and <c>AgeMinutes</c> back.
+	/// The method writes the four weights and the <c>IndexerId</c> property, makes <c>Age</c> the day count again, and
+	/// adds <c>AgeHours</c> and <c>AgeMinutes</c> back. Sonarr's <c>Guid</c>, which <see cref="ReleaseUrl"/> copies,
+	/// stays in place, so it isn't written again.
 	/// </remarks>
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "<Pending>")]
 	public void OnSerializing()
@@ -195,20 +196,36 @@ public sealed class ReleaseObject : SonarrObject,
 		_weight.SetRelease(this);
 		this.ReplaceNumberProperty(nameof(this.Age), _age);
 		this.UpdateProperty(this.IndexerId, propertyName: nameof(IndexerId));
-		this.UpdateProperty(x => x.ReleaseUrl);
 		this.AddNumberProperty("AgeHours", _ageHours);
 		this.AddNumberProperty("AgeMinutes", _ageMinutes);
 	}
 
 	/// <summary>
 	/// Hides the release's <c>AgeHours</c> and <c>AgeMinutes</c> properties and shows its <c>Age</c> as a
+	/// <see cref="TimeSpan"/> again, after a request that sent the release succeeds.
+	/// </summary>
+	public override void Commit()
+	{
+		this.HideSentAge();
+		base.Commit();
+	}
+	/// <summary>
+	/// Hides the release's <c>AgeHours</c> and <c>AgeMinutes</c> properties and shows its <c>Age</c> as a
 	/// <see cref="TimeSpan"/>.
 	/// </summary>
 	public override void Reset()
 	{
+		this.HideSentAge();
+		base.Reset();
+	}
+	/// <summary>
+	/// Removes the <c>AgeHours</c> and <c>AgeMinutes</c> properties and replaces <c>Age</c> with a
+	/// <see cref="TimeSpan"/> property that holds <see cref="Age"/>.
+	/// </summary>
+	private void HideSentAge()
+	{
 		this.Properties.RemoveMany("AgeHours", "AgeMinutes");
 		this.ReplaceStructProperty(nameof(this.Age), this.Age);
-		base.Reset();
 	}
 
 	/// <summary>

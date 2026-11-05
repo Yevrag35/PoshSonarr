@@ -1,6 +1,5 @@
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Json;
-using MG.Sonarr.Next.Models.Errors;
 using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Services.Http.Requests;
 
@@ -39,6 +38,10 @@ public partial interface ISonarrClient
 	/// 404, <see cref="ErrorCategory.PermissionDenied"/> for 403, <see cref="ErrorCategory.AuthenticationError"/> for 401,
 	/// <see cref="ErrorCategory.ConnectionError"/> for a status of 500 or above, and
 	/// <see cref="ErrorCategory.InvalidResult"/> for any other.
+	/// </para>
+	/// <para>
+	/// A request that gets no response gives <see cref="ErrorCategory.ConnectionError"/>, a timeout
+	/// <see cref="ErrorCategory.OperationTimeout"/>, and any other cancellation <see cref="ErrorCategory.OperationStopped"/>.
 	/// </para>
 	/// </remarks>
 	/// <param name="token">A token that cancels the request.</param>
@@ -118,24 +121,40 @@ internal sealed partial class SonarrHttpClient
 		request.Options.TryAdd(PathHandler.Ping, true);
 		_cmdletAccessor.AttachTo(request);
 
-		using var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+		HttpResponseMessage response;
 		try
 		{
-			response.EnsureSuccessStatusCode();
-			return new SonarrClientResult(response, pingPath);
+			response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+		}
+		catch (OperationCanceledException cancelled)
+		{
+			return ReturnFromException(pingPath, response: null, GetCancelledCategory(cancelled), cancelled);
 		}
 		catch (Exception e)
 		{
-			ErrorCategory category = response.StatusCode switch
-			{
-				HttpStatusCode.NotFound => ErrorCategory.ObjectNotFound,
-				HttpStatusCode.Forbidden => ErrorCategory.PermissionDenied,
-				HttpStatusCode.Unauthorized => ErrorCategory.AuthenticationError,
-				>= HttpStatusCode.InternalServerError => ErrorCategory.ConnectionError,
-				_ => ErrorCategory.InvalidResult,
-			};
+			return ReturnFromException(pingPath, response: null, ErrorCategory.ConnectionError, e);
+		}
 
-			return SonarrClientResult.FromException(e, category, response.StatusCode, response);
+		using (response)
+		{
+			try
+			{
+				response.EnsureSuccessStatusCode();
+				return new SonarrClientResult(response, pingPath);
+			}
+			catch (HttpRequestException e)
+			{
+				ErrorCategory category = response.StatusCode switch
+				{
+					HttpStatusCode.NotFound => ErrorCategory.ObjectNotFound,
+					HttpStatusCode.Forbidden => ErrorCategory.PermissionDenied,
+					HttpStatusCode.Unauthorized => ErrorCategory.AuthenticationError,
+					>= HttpStatusCode.InternalServerError => ErrorCategory.ConnectionError,
+					_ => ErrorCategory.InvalidResult,
+				};
+
+				return SonarrClientResult.FromException(e, category, response.StatusCode, response);
+			}
 		}
 	}
 	/// <summary>
@@ -194,7 +213,9 @@ internal sealed partial class SonarrHttpClient
 	/// </summary>
 	/// <remarks>
 	/// The method stores the scope's cmdlet in the request's options before sending it, turns any exception into a failed
-	/// result, and disposes the response before it completes.
+	/// result, and disposes the response before it completes. A request that gets no response gives the category
+	/// <see cref="ErrorCategory.ConnectionError"/>, a timeout <see cref="ErrorCategory.OperationTimeout"/>, and any other
+	/// cancellation <see cref="ErrorCategory.OperationStopped"/>.
 	/// </remarks>
 	/// <param name="request">The request to send.</param>
 	/// <param name="path">The endpoint's path, which the result reports when no other URL is known.</param>
@@ -211,26 +232,15 @@ internal sealed partial class SonarrHttpClient
 		}
 		catch (HttpRequestException httpEx)
 		{
-			_ = TryParseResponse(response, _options.ForDeserializing, out SonarrServerError? pso, disposeResponse: false, token);
-			SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
-
-			var result = SonarrClientResult.FromException(sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
-			if (string.IsNullOrEmpty(result.RequestUrl))
-			{
-				result.RequestUrl = path;
-			}
-
-			return result;
+			return this.ReturnFromHttpException(path, request, response, httpEx, token);
 		}
-		catch (Exception ex)
+		catch (OperationCanceledException cancelled)
 		{
-			var result = SonarrClientResult.FromException(ex, ErrorCategory.ConnectionError, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
-			if (string.IsNullOrEmpty(result.RequestUrl))
-			{
-				result.RequestUrl = path;
-			}
-
-			return result;
+			return ReturnFromException(path, response, GetCancelledCategory(cancelled), cancelled);
+		}
+		catch (Exception e)
+		{
+			return ReturnFromException(path, response, ErrorCategory.ConnectionError, e);
 		}
 		finally
 		{
@@ -242,8 +252,9 @@ internal sealed partial class SonarrHttpClient
 	/// </summary>
 	/// <remarks>
 	/// The method stores the scope's cmdlet in the request's options before sending it, turns any exception into a failed
-	/// result, and disposes the response before it completes. A timeout gives the category
-	/// <see cref="ErrorCategory.OperationTimeout"/>, and any other cancellation <see cref="ErrorCategory.OperationStopped"/>.
+	/// result, and disposes the response before it completes. A request that gets no response gives the category
+	/// <see cref="ErrorCategory.ConnectionError"/>, a timeout <see cref="ErrorCategory.OperationTimeout"/>, and any other
+	/// cancellation <see cref="ErrorCategory.OperationStopped"/>.
 	/// </remarks>
 	/// <typeparam name="T">The type to deserialize the response's body as.</typeparam>
 	/// <param name="request">The request to send.</param>
@@ -262,24 +273,11 @@ internal sealed partial class SonarrHttpClient
 		}
 		catch (HttpRequestException httpEx)
 		{
-			_ = TryParseResponse(response, _options.ForDeserializing, out SonarrServerError? pso, disposeResponse: false, token);
-			SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
-
-			var result = SonarrClientResult.FromException<T>(sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
-			if (string.IsNullOrEmpty(result.RequestUrl))
-			{
-				result.RequestUrl = path;
-			}
-
-			return result;
+			return this.ReturnFromHttpException<T>(path, request, response, httpEx, token);
 		}
-		catch (TaskCanceledException cancelled)
+		catch (OperationCanceledException cancelled)
 		{
-			ErrorCategory cat = cancelled.InnerException is TimeoutException tout
-				? ErrorCategory.OperationTimeout
-				: ErrorCategory.OperationStopped;
-
-			return ReturnFromException<T>(path, response, cat, cancelled);
+			return ReturnFromException<T>(path, response, GetCancelledCategory(cancelled), cancelled);
 		}
 		catch (Exception e)
 		{

@@ -1,6 +1,6 @@
+using MG.Sonarr.Next.Extensions.Services;
 using MG.Sonarr.Next.Models.Config;
 using MG.Sonarr.Next.Shell.Attributes;
-using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.NamingConfig;
 
@@ -23,8 +23,7 @@ public sealed class UpdateSonarrNamingConfigCmdlet : SonarrApiCmdletBase
 		}
 
 		var response = this.SendPutRequest(url, this.InputObject);
-		bool committed = this.TryCommitFromResponse(this.InputObject, response);
-		Debug.Assert(committed);
+		_ = this.TryCommitFromResponse(this.InputObject, response);
 	}
 }
 

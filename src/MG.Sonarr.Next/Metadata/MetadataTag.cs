@@ -187,15 +187,37 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	/// <summary>
 	/// Builds the URL of a request to the tag's endpoint with a query string of one field.
 	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// The field is formatted with the invariant culture, so the URL reads the same whatever the current culture is. A
+	/// field whose <see cref="IQueryField.MaxLength"/> is 0, such as a default one, adds nothing after the <c>?</c>.
+	/// </para>
+	/// <para>
+	/// The URL is built in a stack buffer when it's 256 characters or fewer, and in a pooled buffer otherwise, so the only
+	/// allocation is the returned string.
+	/// </para>
+	/// </remarks>
 	/// <param name="parameter">The query field to append.</param>
 	/// <returns><see cref="UrlBase"/>, followed by <c>?</c> and the formatted field.</returns>
+	/// <exception cref="FormatException">Thrown when <paramref name="parameter"/> doesn't fit in its <see cref="IQueryField.MaxLength"/>.</exception>
 	public string GetUrl(IQueryField parameter)
 	{
-		Span<char> chars = stackalloc char[parameter.MaxLength + 1];
-		chars[0] = '?';
-		_ = parameter.TryFormat(chars[1..], out int written, default, null);
+		int maxLength = parameter.MaxLength;
+		int length = this.UrlBase.Length + 1 + maxLength;
 
-		return string.Concat(this.UrlBase, chars.Slice(0, written + 1));
+		using var builder = SpanStringBuilder.Create(
+			length <= MAX_STACKALLOC
+				? stackalloc char[length]
+				: length);
+
+		builder.Append(this.UrlBase);
+		builder.Append('?');
+		if (maxLength > 0)
+		{
+			builder.Append(parameter, maxLength, provider: CultureInfo.InvariantCulture);
+		}
+
+		return builder.ToString();
 	}
 
 	/// <summary>
@@ -235,7 +257,9 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	/// Builds the URL of a request for the item with the specified ID at the tag's endpoint.
 	/// </summary>
 	/// <remarks>
-	/// The ID is formatted into a stack buffer of 40 characters, which holds any integer up to an <see cref="Int128"/>.
+	/// The ID is formatted with the invariant culture into a stack buffer of 40 characters, which holds any integer up
+	/// to an <see cref="Int128"/>. An ID whose text is longer is formatted to a string of its own, which the URL is
+	/// then concatenated from.
 	/// </remarks>
 	/// <typeparam name="T">The type of the ID, such as <see cref="int"/>.</typeparam>
 	/// <param name="id">The item's ID.</param>
@@ -249,16 +273,9 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 
 		span[position++] = '/';
 
-		if (!id.TryCopyToSlice(span, ref position, provider: CultureInfo.InvariantCulture))
-		{
-			Debug.Fail($"Unable to format '{id}' into the BaseUrl.");
-			position = this.UrlBase.Length + 1;
-
-			position = id.ToString(format: null, formatProvider: CultureInfo.InvariantCulture)
-						 .CopyToSlice(span, position);
-		}
-
-		return new string(span.Slice(0, position));
+		return id.TryCopyToSlice(span, ref position, provider: CultureInfo.InvariantCulture)
+			? new string(span.Slice(0, position))
+			: string.Concat(this.UrlBase, "/", id.ToString(format: null, formatProvider: CultureInfo.InvariantCulture));
 	}
 	/// <summary>
 	/// Builds the URL of a request for the item with the specified ID at the tag's endpoint, with a query string.
@@ -283,7 +300,7 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 
 		unsafe { builder.Append(this.UrlBase.Length + 1, this.UrlBase, &writeUrlBase); }
 
-		builder.Append(id, LengthConstants.INT128_MAX);
+		builder.Append(id, LengthConstants.INT128_MAX, provider: CultureInfo.InvariantCulture);
 		builder.Append(parameters, parameters.MaxLength);
 
 		return builder.ToString();

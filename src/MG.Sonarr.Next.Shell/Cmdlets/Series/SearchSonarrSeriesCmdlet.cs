@@ -11,7 +11,7 @@ public sealed class SearchSonarrSeriesCmdlet : SonarrApiCmdletBase
 	static readonly string SEARCH_STR_QUERY = Constants.Series + "/lookup?term={0}";
 	static readonly string SEARCH_ID_QUERY = Constants.Series + "/lookup?term=tvdb:{0}";
 	Wildcard _wildcardStr;
-	MetadataTag _tag = null!;
+	IMetadataResolver _resolver = null!;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = true, Position = 0, ParameterSetName = "BySeriesName")]
@@ -30,7 +30,7 @@ public sealed class SearchSonarrSeriesCmdlet : SonarrApiCmdletBase
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_tag = provider.GetRequiredService<IMetadataResolver>()[Meta.SeriesAdd];
+		_resolver = provider.GetRequiredService<IMetadataResolver>();
 	}
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
 	protected override void Process(IServiceProvider provider)
@@ -44,6 +44,13 @@ public sealed class SearchSonarrSeriesCmdlet : SonarrApiCmdletBase
 		{
 			this.StopCmdlet(result.Error);
 			return;
+		}
+
+		// A list isn't tagged by the client, which keeps the order that Sonarr ranks its results in, so each result is
+		// tagged here, with the #add_series tag that AddSeriesObject.GetTag returns.
+		foreach (AddSeriesObject series in result.Value)
+		{
+			series.SetTag(_resolver);
 		}
 
 		if (this.Strict)

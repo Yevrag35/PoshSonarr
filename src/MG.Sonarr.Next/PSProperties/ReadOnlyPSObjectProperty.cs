@@ -1,7 +1,7 @@
 namespace MG.Sonarr.Next.PSProperties;
 
 /// <summary>
-/// Represents a read-only note property that holds a nested <see cref="PSObject"/>.
+/// Represents a read-only note property that holds a nested <see cref="PSObject"/>, or no object.
 /// </summary>
 /// <remarks>
 /// The property can't be replaced, though the nested object's own properties can change when they're writable.
@@ -12,17 +12,17 @@ public sealed class ReadOnlyPSObjectProperty<T> : ReadOnlyProperty<T> where T : 
 	/// <summary>
 	/// Gets the nested object that the property holds.
 	/// </summary>
-	/// <value>The property's value.</value>
-	protected override T ValueAsT { get; }
+	/// <value>The property's value, or <see langword="null"/> when it holds no object.</value>
+	protected override T? ValueAsT { get; }
 
 	/// <summary>
 	/// Initializes a new <see cref="ReadOnlyPSObjectProperty{T}"/> instance with the specified name and nested object.
 	/// </summary>
 	/// <param name="propertyName">The name of the property.</param>
-	/// <param name="pso">The nested object that the property holds.</param>
+	/// <param name="pso">The nested object that the property holds, or <see langword="null"/> for none.</param>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="propertyName"/> is null.</exception>
 	/// <exception cref="ArgumentException">Thrown when <paramref name="propertyName"/> is empty.</exception>
-	public ReadOnlyPSObjectProperty(string propertyName, T pso)
+	public ReadOnlyPSObjectProperty(string propertyName, T? pso)
 		: base(propertyName)
 	{
 		this.ValueAsT = pso;
@@ -33,7 +33,7 @@ public sealed class ReadOnlyPSObjectProperty<T> : ReadOnlyProperty<T> where T : 
 	/// </summary>
 	/// <returns>
 	/// A new <see cref="ReadOnlyPSObjectProperty{T}"/> with the same name, holding the result of the nested object's
-	/// <see cref="PSObject.Copy"/>.
+	/// <see cref="PSObject.Copy"/>, or no object when this one holds none.
 	/// </returns>
 	/// <exception cref="InvalidCastException">
 	/// Thrown when the nested object's <see cref="PSObject.Copy"/> returns an object that isn't a
@@ -41,7 +41,7 @@ public sealed class ReadOnlyPSObjectProperty<T> : ReadOnlyProperty<T> where T : 
 	/// </exception>
 	public override PSMemberInfo Copy()
 	{
-		return new ReadOnlyPSObjectProperty<T>(this.Name, (T)this.ValueAsT.Copy());
+		return new ReadOnlyPSObjectProperty<T>(this.Name, (T?)this.ValueAsT?.Copy());
 	}
 }
 

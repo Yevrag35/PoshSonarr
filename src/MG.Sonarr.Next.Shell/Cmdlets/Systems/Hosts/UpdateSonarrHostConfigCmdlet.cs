@@ -1,8 +1,8 @@
 using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.Services;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Shell.Attributes;
-using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Hosts;
 

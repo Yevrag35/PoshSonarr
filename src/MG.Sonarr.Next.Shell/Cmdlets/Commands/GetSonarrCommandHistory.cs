@@ -27,7 +27,7 @@ public sealed class GetSonarrCommandHistory : SonarrCmdletBase
 		}
 		else if (!this.All)
 		{
-			commands = history.Where(x => !x.IsCompleted);
+			commands = history.Where(IsUnfinished);
 		}
 		else
 		{
@@ -42,19 +42,27 @@ public sealed class GetSonarrCommandHistory : SonarrCmdletBase
 		var client = provider.GetRequiredService<ISonarrClient>();
 		var tag = provider.GetRequiredService<IMetadataResolver>()[Meta.Command];
 
-		foreach (ICommand command in history.Where(x => !x.IsCompleted))
+		foreach (ICommand command in history.Where(IsUnfinished).ToArray())
 		{
 			SonarrClientResult<CommandObject> response = client.SendGet<CommandObject>(tag.GetUrlForId(command.Id));
 			if (response.IsError)
 			{
 				this.WriteConditionalError(response.Error);
+				continue;
 			}
-			else if (response.Value.IsCompleted)
+
+			// The history keeps the latest state of every command that it refreshes, and a command that has ended, as
+			// a failed or aborted one has, isn't unfinished, whether or not it completed.
+			history[response.Value.Id] = response.Value;
+			if (!IsUnfinished(response.Value))
 			{
-				history[response.Value.Id] = response.Value;
 				yield return response.Value;
 			}
 		}
+	}
+	private static bool IsUnfinished(ICommand command)
+	{
+		return !command.IsCompleted && !command.Ended.HasValue;
 	}
 	private void WriteResults(IEnumerable<ICommand> commands)
 	{

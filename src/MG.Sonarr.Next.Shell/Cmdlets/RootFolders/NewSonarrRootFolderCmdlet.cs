@@ -1,5 +1,5 @@
+using MG.Sonarr.Next.Exceptions.Shell;
 using MG.Sonarr.Next.Metadata;
-using MG.Sonarr.Next.Shell.Exceptions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders;
 

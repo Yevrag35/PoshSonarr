@@ -57,4 +57,20 @@ internal static class PSConstants
 	/// </summary>
 	/// <value><c>ErrorActionPreference</c></value>
 	internal const string ErrorActionPreference = ErrorAction + Preference;
+
+	/// <summary>
+	/// The PowerShell What if switch name.
+	/// </summary>
+	internal const string WhatIf = "WhatIf";
+
+	/// <summary>
+	/// The PowerShell What if preference variable name.
+	/// </summary>
+	/// <value><c>WhatIfPreference</c></value>
+	internal const string WhatIfPreference = WhatIf + Preference;
+
+	/// <summary>
+	/// The PowerShell confirmation switch name.
+	/// </summary>
+	internal const string Confirm = "Confirm";
 }

@@ -135,7 +135,7 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 	/// Adds the elements of a span to the end of the list.
 	/// </summary>
 	/// <remarks>
-	/// The elements are copied straight into the list's backing array, growing it first when they don't fit.
+	/// Each element is added through <see cref="Add(T)"/>, so a null element isn't added.
 	/// </remarks>
 	/// <param name="values">The elements to add.</param>
 	public void AddRange(params ReadOnlySpan<T> values)
@@ -171,12 +171,17 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 		_list.Clear();
 	}
 	/// <summary>
-	/// Determines whether the list holds an element that equals the specified one or sorts with it.
+	/// Determines whether the list holds an element that equals the specified one.
 	/// </summary>
+	/// <remarks>
+	/// Elements compare through <see cref="EqualityComparer{T}.Default"/>, as <see cref="List{T}.Contains(T)"/> compares
+	/// them, so an element that sorts with <paramref name="item"/> but doesn't equal it doesn't count. A model that
+	/// doesn't override equality equals only itself.
+	/// </remarks>
 	/// <param name="item">The element to look for.</param>
 	/// <returns>
-	/// <see langword="true"/> if an element equals <paramref name="item"/> or compares to it as 0; otherwise,
-	/// <see langword="false"/>.
+	/// <see langword="true"/> if an element equals <paramref name="item"/>; otherwise, <see langword="false"/>, which
+	/// it is for <see langword="null"/>.
 	/// </returns>
 	public bool Contains(T item)
 	{
@@ -273,12 +278,16 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 	/// <summary>
 	/// Tags each element of the list with its metadata tag.
 	/// </summary>
+	/// <remarks>
+	/// A null element, which the indexer, <see cref="Insert(int, T)"/>, and <see cref="AddRange(IEnumerable{T})"/> can
+	/// put in the list, is skipped.
+	/// </remarks>
 	/// <param name="resolver">The resolver that the elements get their tags from.</param>
 	public void SetTag(IMetadataResolver resolver)
 	{
 		foreach (T item in ListMarshal.AsReadOnlySpan(_list))
 		{
-			item.SetTag(resolver);
+			item?.SetTag(resolver);
 		}
 	}
 

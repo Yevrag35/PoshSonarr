@@ -1,9 +1,9 @@
 using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Exceptions.Shell;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using MG.Sonarr.Next.Shell.Exceptions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delay;
 
@@ -69,9 +69,7 @@ public sealed class RemoveSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 	private void DeleteProfile(in int id, MetadataTag tag, bool force)
 	{
 		string url = tag.GetUrlForId(id);
-		if (!force
-			&&
-			!this.ShouldProcess(url, "Delete Delay Profile"))
+		if (!this.ShouldProcessWithForce(url, "Delete Delay Profile", force))
 		{
 			return;
 		}

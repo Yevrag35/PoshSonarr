@@ -1,10 +1,10 @@
+using MG.Sonarr.Next.Exceptions.Shell;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Shell.Attributes;
-using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Services;
 using MG.Sonarr.Next.Shell.Settings;
@@ -61,6 +61,7 @@ public sealed class ConnectSonarrInstanceCmdlet : ConnectCmdlet, IApiCmdlet
 
 	[Parameter]
 	[PSDefaultValue(Value = "5 minutes")]
+	[ValidateTimeout]
 	public TimeSpan Timeout
 	{
 		get => _settings?.Timeout ?? TimeSpan.Zero;
@@ -78,11 +79,6 @@ public sealed class ConnectSonarrInstanceCmdlet : ConnectCmdlet, IApiCmdlet
 	{
 		this.ValidateSettings(_settings);
 
-		if (_settings.Timeout <= TimeSpan.Zero)
-		{
-			_settings.Timeout = TimeSpan.FromMinutes(5);
-		}
-
 		using IServiceScope scope = this.ConnectContext(ModuleServiceConfigurer.AddConfiguration);
 
 		var client = scope.ServiceProvider.GetRequiredService<ISonarrClient>();
@@ -91,7 +87,7 @@ public sealed class ConnectSonarrInstanceCmdlet : ConnectCmdlet, IApiCmdlet
 
 		if (result.IsError)
 		{
-			this.DisconnectContext();
+			this.DisconnectContext(scope);
 			this.ThrowTerminatingError(result.Error);
 		}
 	}

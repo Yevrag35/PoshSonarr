@@ -54,7 +54,12 @@ public static partial class PSOExtensions
 	/// <param name="pso">The object whose property is retrieved.</param>
 	/// <param name="propertyName">The property name.</param>
 	/// <param name="propertyFactory">The factory that creates the property when needed.</param>
-	/// <returns>The existing or newly created property.</returns>
+	/// <returns>
+	/// The existing property, or the one that the object holds after adding the new one. Adding a property stores a copy
+	/// of it, so that's the copy, not the instance that <paramref name="propertyFactory"/> created.
+	/// </returns>
+	/// <exception cref="InvalidCastException">Thrown when the copy of the new property isn't a
+	/// <typeparamref name="TProp"/>.</exception>
 	public static TProp GetOrAdd<TProp>(this PSObject pso,
 		string propertyName,
 		Func<string, TProp> propertyFactory)
@@ -66,8 +71,8 @@ public static partial class PSOExtensions
 		if (rawProperty is null || rawProperty is not TProp alreadyProperty)
 		{
 			pso.Properties.Remove(propertyName);
-			property = propertyFactory(propertyName);
-			pso.Properties.Add(property);
+			pso.Properties.Add(propertyFactory(propertyName));
+			property = (TProp)pso.Properties[propertyName]!;
 		}
 		else
 		{
@@ -85,7 +90,12 @@ public static partial class PSOExtensions
 	/// <param name="propertyName">The property name.</param>
 	/// <param name="state">The state passed to <paramref name="propertyFactory"/>.</param>
 	/// <param name="propertyFactory">The factory that creates the property when needed.</param>
-	/// <returns>The existing or newly created property.</returns>
+	/// <returns>
+	/// The existing property, or the one that the object holds after adding the new one. Adding a property stores a copy
+	/// of it, so that's the copy, not the instance that <paramref name="propertyFactory"/> created.
+	/// </returns>
+	/// <exception cref="InvalidCastException">Thrown when the copy of the new property isn't a
+	/// <typeparamref name="TProp"/>.</exception>
 	public static TProp GetOrAdd<TProp, TState>(this PSObject pso,
 		string propertyName,
 		TState state,
@@ -98,8 +108,8 @@ public static partial class PSOExtensions
 		if (rawProperty is null || rawProperty is not TProp alreadyProperty)
 		{
 			pso.Properties.Remove(propertyName);
-			property = propertyFactory(propertyName, state);
-			pso.Properties.Add(property);
+			pso.Properties.Add(propertyFactory(propertyName, state));
+			property = (TProp)pso.Properties[propertyName]!;
 		}
 		else
 		{

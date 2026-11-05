@@ -65,9 +65,7 @@ public sealed class RemoveSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 	private void DeleteDownloadClient(int id, MetadataTag tag, bool force)
 	{
 		string url = tag.GetUrlForId(id);
-		if (!force
-			&&
-			!this.ShouldProcess(url, "Delete Download Client"))
+		if (!this.ShouldProcessWithForce(url, "Delete Download Client", force))
 		{
 			return;
 		}

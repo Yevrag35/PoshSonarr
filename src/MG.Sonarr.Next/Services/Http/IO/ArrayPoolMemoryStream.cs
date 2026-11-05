@@ -11,6 +11,13 @@ namespace MG.Sonarr.Next.Services.Http.IO;
 /// and writing operations, and the buffer can be cleared before returning to the pool based on the ClearOnReturn
 /// property. The stream's length and position can be managed, and it provides methods to convert the stream contents to
 /// an array or an <see cref="ArraySlice{T}"/>.</para>
+/// <para>Once the stream is disposed, its buffer is back in the pool, so <see cref="ToArray"/>,
+/// <see cref="SetLength(long)"/>, and <see cref="Position"/> throw an <see cref="ObjectDisposedException"/> whatever
+/// their arguments, and <see cref="TryGetBuffer(out ArraySlice{byte})"/> returns <see langword="false"/>. A disposed
+/// <see cref="MemoryStream"/> still gives its contents from <see cref="MemoryStream.ToArray"/> and
+/// <see cref="MemoryStream.TryGetBuffer(out ArraySegment{byte})"/>, throws a <see cref="NotSupportedException"/> from
+/// <see cref="MemoryStream.SetLength(long)"/>, and checks a new length or position before it checks whether it's
+/// disposed.</para>
 /// </remarks>
 [DebuggerDisplay(@"\{Length = {Length}, Position = {Position}, Capacity = {Capacity}\}"), DebuggerStepThrough]
 internal sealed class ArrayPoolMemoryStream : Stream
@@ -94,7 +101,7 @@ internal sealed class ArrayPoolMemoryStream : Stream
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in nameof()")]
 	public override long Position
 	{
-		get => _position;
+		get { this.EnsureNotDisposed(); return _position; }
 		set
 		{
 			this.EnsureNotDisposed();
@@ -106,6 +113,11 @@ internal sealed class ArrayPoolMemoryStream : Stream
 	/// <summary>
 	/// Returns the stream contents as a new array of length <see cref="Length"/>.
 	/// </summary>
+	/// <remarks>
+	/// <see cref="MemoryStream.ToArray"/> still works on a disposed stream, while this stream's buffer is back in the pool
+	/// once it's disposed, so the method throws instead.
+	/// </remarks>
+	/// <returns>A new array that holds the bytes written to the stream.</returns>
 	/// <inheritdoc cref="EnsureNotDisposed" path="/exception"/>
 	public byte[] ToArray()
 	{
@@ -123,6 +135,16 @@ internal sealed class ArrayPoolMemoryStream : Stream
 	/// Returns an <see cref="ArraySlice{T}"/> over the live pooled buffer for the readable portion [0, <see cref="Length"/>).
 	/// Use with care; the segment is invalid after dispose or any expansion.
 	/// </summary>
+	/// <remarks>
+	/// <see cref="MemoryStream.TryGetBuffer(out ArraySegment{byte})"/> still gives the buffer of a disposed stream, while
+	/// this stream's buffer is back in the pool once it's disposed, so a disposed stream gives none.
+	/// </remarks>
+	/// <param name="segment">
+	/// When this method returns, a slice over the stream's contents, or an empty slice when the stream has been disposed.
+	/// </param>
+	/// <returns>
+	/// <see langword="true"/> if the stream hasn't been disposed; otherwise, <see langword="false"/>.
+	/// </returns>
 	public bool TryGetBuffer(out ArraySlice<byte> segment)
 	{
 		if (_buffer is not null)
@@ -433,13 +455,18 @@ internal sealed class ArrayPoolMemoryStream : Stream
 	public override long Seek(long offset, SeekOrigin origin)
 	{
 		this.EnsureNotDisposed();
-		long newPos = origin switch
+		long start = origin switch
 		{
-			SeekOrigin.Begin => offset,
-			SeekOrigin.Current => _position + offset,
-			SeekOrigin.End => _length + offset,
-			_ => throw new ArgumentOutOfRangeException(nameof(origin))
+			SeekOrigin.Begin => 0,
+			SeekOrigin.Current => _position,
+			SeekOrigin.End => _length,
+			_ => throw new ArgumentException("The seek origin isn't a SeekOrigin value.", nameof(origin))
 		};
+
+		if (offset > int.MaxValue)
+			throw new ArgumentOutOfRangeException(nameof(offset), "The offset must be less than 2^31-1.");
+
+		long newPos = start + offset;
 
 		return _position = newPos switch
 		{
@@ -522,6 +549,11 @@ internal sealed class ArrayPoolMemoryStream : Stream
 	}
 
 	/// <inheritdoc/>
+	/// <remarks>
+	/// A write at a position of <see cref="int.MaxValue"/> throws an <see cref="IOException"/>, since the stream can't
+	/// grow past it, where <see cref="MemoryStream.WriteByte(byte)"/> overflows its position and throws an
+	/// <see cref="IndexOutOfRangeException"/>.
+	/// </remarks>
 	public override void WriteByte(byte value)
 	{
 		this.EnsureNotDisposed();

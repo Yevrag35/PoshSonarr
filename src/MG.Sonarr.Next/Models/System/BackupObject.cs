@@ -63,11 +63,11 @@ public sealed class BackupObject : IdSonarrObject<BackupObject>,
 	/// <param name="other">The backup to compare with, or <see langword="null"/>.</param>
 	/// <returns>
 	/// A negative number if this backup sorts before <paramref name="other"/>, 0 if they sort together, or a positive
-	/// number if it sorts after. Names compare by the invariant culture, ignoring case.
+	/// number if it sorts after. Names compare ordinally, ignoring case.
 	/// </returns>
 	public override int CompareTo(BackupObject? other)
 	{
-		int compare = StringComparer.InvariantCultureIgnoreCase.Compare(this.Name, other?.Name);
+		int compare = StringComparer.OrdinalIgnoreCase.Compare(this.Name, other?.Name);
 		if (compare == 0)
 		{
 			compare = base.CompareTo(other);

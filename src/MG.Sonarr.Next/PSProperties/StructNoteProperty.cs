@@ -76,14 +76,25 @@ public sealed class StructNoteProperty<T> : WritableProperty<T> where T : struct
 	}
 
 	/// <summary>
-	/// Returns a value that is being set on the property as a <typeparamref name="T"/>.
+	/// Gets a value that is being set on the property as a <typeparamref name="T"/>.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
-	/// <returns><paramref name="value"/> as a <typeparamref name="T"/>.</returns>
-	/// <exception cref="SetValueException">Thrown when <paramref name="value"/> isn't a <typeparamref name="T"/>.</exception>
-	protected override T ConvertFromObject(object? value)
+	/// <param name="result">When this method returns <see langword="true"/>, <paramref name="value"/> as a
+	/// <typeparamref name="T"/>.</param>
+	/// <returns>
+	/// <see langword="true"/> if <paramref name="value"/> is a <typeparamref name="T"/>; otherwise,
+	/// <see langword="false"/>.
+	/// </returns>
+	protected override bool TryConvertFromObject(object? value, out T result)
 	{
-		return value is T tVal ? tVal : this.ThrowNotType<T>();
+		if (value is T tVal)
+		{
+			result = tVal;
+			return true;
+		}
+
+		result = default;
+		return false;
 	}
 	/// <summary>
 	/// Creates a writable property that holds the same value under the specified name.
@@ -101,19 +112,6 @@ public sealed class StructNoteProperty<T> : WritableProperty<T> where T : struct
 	protected override ReadOnlyProperty<T> CopyToReadOnly()
 	{
 		return new ReadOnlyStructProperty<T>(this.Name, this.StructValue);
-	}
-
-	/// <summary>
-	/// Determines whether a value can be set on the property.
-	/// </summary>
-	/// <param name="value">The value to check.</param>
-	/// <returns>
-	/// <see langword="true"/> if <paramref name="value"/> is a <typeparamref name="T"/>; otherwise,
-	/// <see langword="false"/>.
-	/// </returns>
-	public override bool ValueIsProper(object? value)
-	{
-		return value is T;
 	}
 }
 

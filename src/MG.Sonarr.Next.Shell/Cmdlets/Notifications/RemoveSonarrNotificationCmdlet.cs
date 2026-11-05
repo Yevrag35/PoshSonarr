@@ -1,7 +1,7 @@
 using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.Services;
 using MG.Sonarr.Next.Models.Notifications;
 using MG.Sonarr.Next.Shell.Attributes;
-using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications;
 
@@ -36,9 +36,7 @@ public sealed class RemoveSonarrNotificationCmdlet : SonarrApiCmdletBase
 		}
 
 		string url = tag.GetUrlForId(this.Id);
-		if (!this.Force
-			&&
-			!this.ShouldProcess(url, $"Deleting Notification {this.Id}"))
+		if (!this.ShouldProcessWithForce(url, $"Deleting Notification {this.Id}", this.Force))
 		{
 			return;
 		}

@@ -84,48 +84,52 @@ public sealed class NumberNoteProperty<T> : WritableProperty<T> where T : unmana
 	/// <summary>
 	/// Converts a value that is being set on the property to a <typeparamref name="T"/>.
 	/// </summary>
+	/// <remarks>
+	/// A value that formats to more than 40 characters, or whose text doesn't parse as a <typeparamref name="T"/>,
+	/// such as 1.5 or a <see cref="DateTime"/> for an <see cref="int"/> property, doesn't convert.
+	/// </remarks>
 	/// <param name="value">The value to convert.</param>
+	/// <param name="result">
+	/// When this method returns <see langword="true"/>, <paramref name="value"/> itself when it's a
+	/// <typeparamref name="T"/>, or else the number that its text parses as.
+	/// </param>
 	/// <returns>
-	/// <paramref name="value"/> itself when it's a <typeparamref name="T"/>; otherwise, the number that its text
-	/// parses as.
+	/// <see langword="true"/> if <paramref name="value"/> is a <typeparamref name="T"/>, or a string or an
+	/// <see cref="ISpanFormattable"/> whose text parses as one; otherwise, <see langword="false"/>.
 	/// </returns>
-	/// <exception cref="SetValueException">
-	/// Thrown when <paramref name="value"/> is null, or is neither a <typeparamref name="T"/> nor a string or
-	/// <see cref="ISpanFormattable"/> whose text parses as one.
-	/// </exception>
-	protected override T ConvertFromObject(object? value)
+	protected override bool TryConvertFromObject(object? value, out T result)
 	{
-		if (value is T intVal)
+		switch (value)
 		{
-			return intVal;
-		}
-		else if (value is string strVal && T.TryParse(strVal, CultureInfo.InvariantCulture, out T fromStr))
-		{
-			return fromStr;
-		}
-		else if (value is ISpanFormattable spanFormattable)
-		{
-			Span<char> chars = stackalloc char[LengthConstants.INT128_MAX];
-			if (spanFormattable.TryFormat(chars, out int written, default, CultureInfo.InvariantCulture)
-				&&
-				T.TryParse(chars.Slice(0, written), CultureInfo.InvariantCulture, out T intRes))
-			{
-				return intRes;
-			}
+			case T number:
+				result = number;
+				return true;
 
-			Debug.Fail("Shit");
+			case string text:
+				return T.TryParse(text, CultureInfo.InvariantCulture, out result);
+
+			case ISpanFormattable formattable:
+				Span<char> chars = stackalloc char[LengthConstants.INT128_MAX];
+				if (formattable.TryFormat(chars, out int written, format: default, CultureInfo.InvariantCulture))
+				{
+					return T.TryParse(chars.Slice(0, written), CultureInfo.InvariantCulture, out result);
+				}
+
+				break;
 		}
 
-		return this.ThrowNotType<T>();
+		result = default;
+		return false;
 	}
 	/// <summary>
 	/// Creates a writable number property that holds the same value under the specified name.
 	/// </summary>
 	/// <param name="name">The name of the new property.</param>
-	/// <returns>A new <see cref="NumberNoteProperty{T}"/> that holds <see cref="NumValue"/>.</returns>
+	/// <returns>A new <see cref="NumberNoteProperty{T}"/> named <paramref name="name"/> that holds
+	/// <see cref="NumValue"/>.</returns>
 	protected override PSPropertyInfo CopyIntoNew(string name)
 	{
-		return new NumberNoteProperty<T>(this.Name, this.NumValue);
+		return new NumberNoteProperty<T>(name, this.NumValue);
 	}
 	/// <summary>
 	/// Creates a read-only number property with the property's name and value.
@@ -134,17 +138,5 @@ public sealed class NumberNoteProperty<T> : WritableProperty<T> where T : unmana
 	protected override ReadOnlyProperty<T> CopyToReadOnly()
 	{
 		return new ReadOnlyNumberProperty<T>(this.Name, this.NumValue);
-	}
-	/// <summary>
-	/// Determines whether a value can be set on the property.
-	/// </summary>
-	/// <param name="value">The value to check.</param>
-	/// <returns>
-	/// <see langword="true"/> if <paramref name="value"/> is a <typeparamref name="T"/> or an
-	/// <see cref="IConvertible"/>; otherwise, <see langword="false"/>.
-	/// </returns>
-	public override bool ValueIsProper([NotNullWhen(true)] object? value)
-	{
-		return value is T || value is IConvertible;
 	}
 }

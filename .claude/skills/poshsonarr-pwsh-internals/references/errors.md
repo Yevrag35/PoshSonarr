@@ -17,6 +17,7 @@ Seen from C# that runs a script block (measured 2026-10-05 on PowerShell 7):
 - `throw 'x'` is exactly a `RuntimeException`.
 - `Write-Error` under `Stop` is an `ActionPreferenceStopException`. Its `ErrorRecord` is the record of the error that caused the stop, so its `ToString()` is that error's message, not "The running command stopped because..." (measured 2026-10-06).
 - `break` is a `BreakException`, which is a `FlowControlException`, not a `RuntimeException`.
+- **Inside a cmdlet,** `WriteError` under `-ErrorAction Stop` and `ThrowTerminatingError` both throw a `PipelineStoppedException`, after PowerShell has recorded the error. A throwaway cmdlet that caught it around the call for its second of three inputs still got its `ProcessRecord` call for the third, and then the statement ended with the recorded error, whose exception the caller's `catch` got, with one record in `-ErrorVariable` (measured 2026-11-05 on PowerShell 7.6.9).
 - `PSInvalidOperationException` derives from `InvalidOperationException`, not `RuntimeException`. Likewise, `PSInvalidCastException` derives from `InvalidCastException` (checked 2026-10-07). So C# overload resolution sends either one to an `Exception` overload, not a `RuntimeException` one.
 
 ## What `$Error` and the variable parameters hold
@@ -45,5 +46,6 @@ Measured 2026-10-25 on PowerShell 7.6.8 with throwaway cmdlets that write an err
 
 - Choose between `ThrowTerminatingError` and `WriteError` by whether the rest of the call should still run. Neither `-ErrorAction` nor redirection can hide a statement-ending error, so don't raise one for a problem that a caller should be able to skip, such as one item that Sonarr doesn't have.
 - Code that finds the last Sonarr error in `$Error`, as `Show-SonarrException` does, looks for its exception, a `SonarrHttpException`, on any record, not for a `SonarrErrorRecord`: after `-ErrorAction Stop`, `$ErrorActionPreference = 'Stop'`, or `ThrowTerminatingError`, `$Error` holds a plain `ErrorRecord` that keeps the same exception. After `-ErrorAction Ignore`, there's nothing to find.
+- Code that catches `Exception` around a cmdlet's work, as `SonarrCmdletBase` does around `Begin`, `Process`, and `End`, lets a `PipelineStoppedException` through. It carries an error that PowerShell has already recorded, so writing it again reports the error twice, and swallowing it lets the cmdlet go on working until the statement ends.
 - `InvokeCommand.HasErrors` tells whether anything in the pipeline has written an error, under any `-ErrorAction`. A cmdlet that has to react only to its own errors, or to its own input objects that failed to bind, keeps its own record of them.
 - Don't use `$Error` to tell which errors a preference hid.

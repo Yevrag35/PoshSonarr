@@ -24,6 +24,12 @@ namespace MG.Sonarr.Next.Services.Http.Clients;
 /// <see langword="true"/> and whose <see cref="SonarrClientResult.Error"/> describes it.
 /// </para>
 /// <para>
+/// Apart from the connection test, whose failures each method's remarks describe, a request that gets no response, such
+/// as one whose connection is refused or dropped, gives the category <see cref="ErrorCategory.ConnectionError"/>, a
+/// timeout gives <see cref="ErrorCategory.OperationTimeout"/>, and any other cancellation gives
+/// <see cref="ErrorCategory.OperationStopped"/>, whether or not the request returns a value.
+/// </para>
+/// <para>
 /// A body is serialized as JSON by its runtime type, and a value is deserialized from JSON, with the connection's
 /// <see cref="ISonarrJsonOptions"/>. The synchronous methods and their <c>Async</c> twins send through the same handlers.
 /// </para>
@@ -301,7 +307,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		}
 		catch (Exception e)
 		{
-			return SonarrClientResult.FromException<T>(e, ErrorCategory.ConnectionError, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
+			return ReturnFromException<T>(TEST_API, response, ErrorCategory.ConnectionError, e);
 		}
 		finally
 		{
@@ -314,7 +320,9 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	/// </summary>
 	/// <remarks>
 	/// The method stores the scope's cmdlet in the request's options before sending it, turns any exception into a failed
-	/// result, and disposes the response before it returns.
+	/// result, and disposes the response before it returns. A request that gets no response gives the category
+	/// <see cref="ErrorCategory.ConnectionError"/>, a timeout <see cref="ErrorCategory.OperationTimeout"/>, and any other
+	/// cancellation <see cref="ErrorCategory.OperationStopped"/>.
 	/// </remarks>
 	/// <param name="request">The request to send.</param>
 	/// <param name="path">The endpoint's path, which the result reports when no other URL is known.</param>
@@ -333,20 +341,15 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		}
 		catch (HttpRequestException httpEx)
 		{
-			_ = TryParseResponse(response, _options.ForDeserializing, out SonarrServerError? pso, disposeResponse: true, token);
-			SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
-
-			return SonarrClientResult.FromException(sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
+			return this.ReturnFromHttpException(path, request, response, httpEx, token);
 		}
-		catch (Exception ex)
+		catch (OperationCanceledException cancelled)
 		{
-			var result = SonarrClientResult.FromException(ex, ErrorCategory.ConnectionError, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
-			if (string.IsNullOrEmpty(result.RequestUrl))
-			{
-				result.RequestUrl = path;
-			}
-
-			return result;
+			return ReturnFromException(path, response, GetCancelledCategory(cancelled), cancelled);
+		}
+		catch (Exception e)
+		{
+			return ReturnFromException(path, response, ErrorCategory.ConnectionError, e);
 		}
 		finally
 		{
@@ -359,8 +362,9 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	/// </summary>
 	/// <remarks>
 	/// The method stores the scope's cmdlet in the request's options before sending it, turns any exception into a failed
-	/// result, and disposes the response before it returns. A timeout gives the category
-	/// <see cref="ErrorCategory.OperationTimeout"/>, and any other cancellation <see cref="ErrorCategory.OperationStopped"/>.
+	/// result, and disposes the response before it returns. A request that gets no response gives the category
+	/// <see cref="ErrorCategory.ConnectionError"/>, a timeout <see cref="ErrorCategory.OperationTimeout"/>, and any other
+	/// cancellation <see cref="ErrorCategory.OperationStopped"/>.
 	/// </remarks>
 	/// <typeparam name="T">The type to deserialize the response's body as.</typeparam>
 	/// <param name="request">The request to send.</param>
@@ -380,24 +384,11 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		}
 		catch (HttpRequestException httpEx)
 		{
-			_ = TryParseResponse(response, _options.ForDeserializing, out SonarrServerError? pso, disposeResponse: true, token);
-			SonarrHttpException sonarrEx = new(request, response, ErrorCollection.FromOne(pso), httpEx);
-
-			var result = SonarrClientResult.FromException<T>(sonarrEx, ErrorCategory.InvalidResult, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
-			if (string.IsNullOrEmpty(result.RequestUrl))
-			{
-				result.RequestUrl = path;
-			}
-
-			return result;
+			return this.ReturnFromHttpException<T>(path, request, response, httpEx, token);
 		}
-		catch (TaskCanceledException cancelled)
+		catch (OperationCanceledException cancelled)
 		{
-			ErrorCategory cat = cancelled.InnerException is TimeoutException tout
-				? ErrorCategory.OperationTimeout
-				: ErrorCategory.OperationStopped;
-
-			return ReturnFromException<T>(path, response, cat, cancelled);
+			return ReturnFromException<T>(path, response, GetCancelledCategory(cancelled), cancelled);
 		}
 		catch (Exception e)
 		{
@@ -409,6 +400,45 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		}
 	}
 
+	/// <summary>
+	/// Gets the error category of a request that was canceled.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="HttpClient"/> reports a timeout as a <see cref="TaskCanceledException"/> whose inner exception is a
+	/// <see cref="TimeoutException"/>.
+	/// </remarks>
+	/// <param name="exception">The exception that canceled the request.</param>
+	/// <returns>
+	/// <see cref="ErrorCategory.OperationTimeout"/> for a timeout; otherwise, <see cref="ErrorCategory.OperationStopped"/>.
+	/// </returns>
+	private static ErrorCategory GetCancelledCategory(OperationCanceledException exception)
+	{
+		return exception.InnerException is TimeoutException
+			? ErrorCategory.OperationTimeout
+			: ErrorCategory.OperationStopped;
+	}
+
+	/// <summary>
+	/// Creates the failed result of a request that returns no value from the specified exception.
+	/// </summary>
+	/// <param name="path">The endpoint's path, which the result reports when the exception and the response give no URL.</param>
+	/// <param name="response">The response to the request, or <see langword="null"/> when there was none.</param>
+	/// <param name="category">The category of the error.</param>
+	/// <param name="e">The exception that made the request fail.</param>
+	/// <returns>
+	/// A failed result with the status code of <paramref name="response"/>, or <see cref="ErrorHandler.NoResponseCode"/>
+	/// when there was no response.
+	/// </returns>
+	private static SonarrClientResult ReturnFromException(string path, HttpResponseMessage? response, ErrorCategory category, Exception e)
+	{
+		var result = SonarrClientResult.FromException(e, category, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
+		if (string.IsNullOrEmpty(result.RequestUrl))
+		{
+			result.RequestUrl = path;
+		}
+
+		return result;
+	}
 	/// <summary>
 	/// Creates the failed result of a request that returns a value from the specified exception.
 	/// </summary>
@@ -430,6 +460,72 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		}
 
 		return result;
+	}
+
+	/// <summary>
+	/// Wraps an <see cref="HttpRequestException"/> that made a request that returns no value fail, and creates its failed
+	/// result.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="HttpClient"/> throws the exception when no response arrives, as for a refused or dropped connection, which
+	/// gives the category <see cref="ErrorCategory.ConnectionError"/>. An exception that comes with a response gives
+	/// <see cref="ErrorCategory.InvalidResult"/>, and the server error that the response's body holds, if any, goes into
+	/// the wrapping <see cref="SonarrHttpException"/>.
+	/// </remarks>
+	/// <param name="path">The endpoint's path, which the result reports when no other URL is known.</param>
+	/// <param name="request">The request that failed.</param>
+	/// <param name="response">The response to the request, or <see langword="null"/> when there was none.</param>
+	/// <param name="e">The exception that made the request fail.</param>
+	/// <param name="token">A token that cancels reading the response's body.</param>
+	/// <returns>A failed result whose error record holds a <see cref="SonarrHttpException"/>.</returns>
+	private SonarrClientResult ReturnFromHttpException(string path, HttpRequestMessage request, HttpResponseMessage? response, HttpRequestException e, CancellationToken token)
+	{
+		SonarrHttpException sonarrEx = this.WrapHttpException(request, response, e, token, out ErrorCategory category);
+		return ReturnFromException(path, response, category, sonarrEx);
+	}
+	/// <summary>
+	/// Wraps an <see cref="HttpRequestException"/> that made a request that returns a value fail, and creates its failed
+	/// result.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="HttpClient"/> throws the exception when no response arrives, as for a refused or dropped connection, which
+	/// gives the category <see cref="ErrorCategory.ConnectionError"/>. An exception that comes with a response gives
+	/// <see cref="ErrorCategory.InvalidResult"/>, and the server error that the response's body holds, if any, goes into
+	/// the wrapping <see cref="SonarrHttpException"/>.
+	/// </remarks>
+	/// <typeparam name="T">The type of the value that the request would have returned.</typeparam>
+	/// <param name="path">The endpoint's path, which the result reports when no other URL is known.</param>
+	/// <param name="request">The request that failed.</param>
+	/// <param name="response">The response to the request, or <see langword="null"/> when there was none.</param>
+	/// <param name="e">The exception that made the request fail.</param>
+	/// <param name="token">A token that cancels reading the response's body.</param>
+	/// <returns>A failed result whose error record holds a <see cref="SonarrHttpException"/>.</returns>
+	private SonarrClientResult<T> ReturnFromHttpException<T>(string path, HttpRequestMessage request, HttpResponseMessage? response, HttpRequestException e, CancellationToken token)
+	{
+		SonarrHttpException sonarrEx = this.WrapHttpException(request, response, e, token, out ErrorCategory category);
+		return ReturnFromException<T>(path, response, category, sonarrEx);
+	}
+	/// <summary>
+	/// Wraps an <see cref="HttpRequestException"/> in a <see cref="SonarrHttpException"/>, with the server error that the
+	/// response's body holds, if any.
+	/// </summary>
+	/// <param name="request">The request that failed.</param>
+	/// <param name="response">The response to the request, or <see langword="null"/> when there was none.</param>
+	/// <param name="e">The exception that made the request fail.</param>
+	/// <param name="token">A token that cancels reading the response's body.</param>
+	/// <param name="category">
+	/// When this method returns, <see cref="ErrorCategory.ConnectionError"/> when there's no response; otherwise,
+	/// <see cref="ErrorCategory.InvalidResult"/>.
+	/// </param>
+	/// <returns>The exception that wraps <paramref name="e"/>.</returns>
+	private SonarrHttpException WrapHttpException(HttpRequestMessage request, HttpResponseMessage? response, HttpRequestException e, CancellationToken token, out ErrorCategory category)
+	{
+		_ = TryParseResponse(response, _options.ForDeserializing, out SonarrServerError? error, token);
+		category = response is null
+			? ErrorCategory.ConnectionError
+			: ErrorCategory.InvalidResult;
+
+		return new SonarrHttpException(request, response, ErrorCollection.FromOne(error), e);
 	}
 
 	/// <summary>
@@ -498,16 +594,12 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	/// When this method returns, the deserialized value, or <see langword="null"/> when there's no response or the body
 	/// doesn't deserialize.
 	/// </param>
-	/// <param name="disposeResponse">
-	/// <see langword="true"/> to dispose <paramref name="response"/> before the method returns; otherwise,
-	/// <see langword="false"/>.
-	/// </param>
 	/// <param name="cancellationToken">A token that cancels reading the body.</param>
 	/// <returns>
-	/// <see langword="true"/> if the body deserialized to a value that isn't <see langword="null"/>; otherwise,
-	/// <see langword="false"/>.
+	/// <see langword="true"/> if the body deserialized to a value that isn't <see langword="null"/>; otherwise, and in
+	/// every build for a body that doesn't deserialize, since the server controls the body, <see langword="false"/>.
 	/// </returns>
-	private static bool TryParseResponse<T>([NotNullWhen(true)] HttpResponseMessage? response, JsonSerializerOptions? options, [NotNullWhen(true)] out T? result, bool disposeResponse, CancellationToken cancellationToken)
+	private static bool TryParseResponse<T>([NotNullWhen(true)] HttpResponseMessage? response, JsonSerializerOptions? options, [NotNullWhen(true)] out T? result, CancellationToken cancellationToken)
 		where T : class?
 	{
 		try
@@ -515,18 +607,10 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 			result = response?.Content.ReadFromJsonAsync<T>(options, cancellationToken).GetAwaiter().GetResult();
 			return result is not null;
 		}
-		catch (Exception e)
+		catch (Exception)
 		{
-			Debug.Fail(e.Message);
 			result = null;
 			return false;
-		}
-		finally
-		{
-			if (disposeResponse)
-			{
-				response?.Dispose();
-			}
 		}
 	}
 }
@@ -594,9 +678,17 @@ public static class SonarrClientDependencyInjection
 	/// Registers an <see cref="ISonarrClient"/> for a host outside PowerShell, with the services that it depends on.
 	/// </summary>
 	/// <remarks>
+	/// <para>
 	/// The client sends through <see cref="PathHandler"/> and <see cref="TestingHandler"/> only, so its requests write no
 	/// verbose or debug output and its error responses aren't parsed ahead of the response reader. The metadata tags come
 	/// from this library's own assembly.
+	/// </para>
+	/// <para>
+	/// The registration also adds the <see cref="ISonarrDownloadClient"/> that both registrations share, with the
+	/// <see cref="VerboseHandler"/> and <see cref="DebugSerializeHandler"/> that its chain sends through, which write
+	/// nothing for a request from a scope that no cmdlet owns. Every service it registers resolves, so a provider built
+	/// with <see cref="ServiceProviderOptions.ValidateOnBuild"/> on accepts it.
+	/// </para>
 	/// </remarks>
 	/// <param name="services">The service collection to add the registrations to.</param>
 	/// <param name="settings">The connection's settings.</param>
@@ -606,8 +698,10 @@ public static class SonarrClientDependencyInjection
 		IConnectionSettings settings,
 		Action<IServiceProvider, JsonSerializerOptions> configureJson)
 	{
-		services.AddTransient<PathHandler>()
-				.AddTransient<TestingHandler>();
+		services.AddTransient<DebugSerializeHandler>()
+				.AddTransient<PathHandler>()
+				.AddTransient<TestingHandler>()
+				.AddTransient<VerboseHandler>();
 
 		AddSonarrClientInternal(services, typeof(SonarrHttpClient).Assembly, settings, configureJson)
 			.AddHttpMessageHandler<PathHandler>()

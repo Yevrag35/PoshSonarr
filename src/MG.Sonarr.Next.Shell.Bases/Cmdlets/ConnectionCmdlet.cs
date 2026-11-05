@@ -18,9 +18,11 @@ public abstract class ConnectCmdlet : PSCmdlet,
 
 		return scope;
 	}
-	protected void DisconnectContext()
+	// Removes the connection that ConnectContext made and returned the scope for, unless another runspace has connected
+	// since, so a failed check leaves another runspace's connection in place.
+	protected void DisconnectContext(IServiceScope connectScope)
 	{
-		this.UnsetContext();
+		this.UnsetContext(connectScope);
 	}
 
 	static bool _checked;

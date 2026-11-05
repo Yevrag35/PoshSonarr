@@ -94,8 +94,10 @@ public abstract class WritableProperty : PSPropertyInfo
 	/// </summary>
 	/// <remarks>
 	/// <para>Strings, numbers, and the supported value types get writable properties. Immutable arrays of fields and
-	/// select options, sorted sets of tag IDs and strings, and string-keyed sets of numbers get read-only ones, and any
-	/// other value gets a <see cref="PSNoteProperty"/>.</para>
+	/// select options, sorted sets of integers and strings, and string-keyed sets of numbers get read-only ones, and any
+	/// other value gets a <see cref="PSNoteProperty"/>. Every property takes the name that it's given: a sorted set of
+	/// integers named <c>Tags</c> gets a <see cref="ReadOnlyTagsProperty"/>, and one under any other name a
+	/// <see cref="ReadOnlySetProperty{T}"/>.</para>
 	/// <para>A nested <see cref="SonarrObject"/> gets a writable <see cref="WritableSonarrProperty{T}"/> when
 	/// <typeparamref name="TParent"/> is a <see cref="SonarrObject"/> and the nested object's
 	/// <see cref="SonarrObject.ShouldBeReadOnly(string, Type)"/> returns <see langword="false"/>, and any other nested
@@ -127,7 +129,8 @@ public abstract class WritableProperty : PSPropertyInfo
 			PSObject pso => HandlePSObject<TParent>(name, pso),
 			ImmutableArray<FieldObject> rof => new ReadOnlyCollectionProperty<FieldObject>(name, rof),
 			ImmutableArray<SelectOptionObject> sof => new ReadOnlyCollectionProperty<SelectOptionObject>(name, sof),
-			SortedSet<int> iSet => new ReadOnlyTagsProperty(iSet),
+			SortedSet<int> iSet when string.Equals(name, Constants.Tags, StringComparison.Ordinal) => new ReadOnlyTagsProperty(iSet),
+			SortedSet<int> iSet => new ReadOnlySetProperty<int>(name, iSet),
 			SortedSet<string> sSet => new ReadOnlySetProperty<string>(name, sSet),
 			StringKeyValueSet<int> sKvp => new ReadOnlySetProperty<KeyValuePair<string, int>>(name, sKvp),
 			_ => new PSNoteProperty(name, value),
@@ -191,9 +194,33 @@ public abstract class WritableProperty : PSPropertyInfo
 	/// </summary>
 	/// <param name="value">The value to check.</param>
 	/// <returns>
-	/// <see langword="true"/> if the property accepts <paramref name="value"/>; otherwise, <see langword="false"/>.
+	/// <see langword="true"/> if the property's setter accepts <paramref name="value"/>; otherwise,
+	/// <see langword="false"/>.
 	/// </returns>
 	public abstract bool ValueIsProper(object? value);
+
+	/// <summary>
+	/// Gets the value that a <see cref="PSObject"/> wraps, one layer at a time, and any other value as it is.
+	/// </summary>
+	/// <remarks>
+	/// PowerShell passes a property's setter a value that came out of a command, such as the result of
+	/// <c>Select-Object -ExpandProperty</c>, wrapped in a <see cref="PSObject"/>. A custom object, which a model is,
+	/// wraps no value, so it's returned as it is.
+	/// </remarks>
+	/// <param name="value">The value that is being set or checked.</param>
+	/// <returns>
+	/// The innermost value that <paramref name="value"/> wraps, or <paramref name="value"/> itself when it isn't a
+	/// <see cref="PSObject"/> that wraps one.
+	/// </returns>
+	private protected static object? UnwrapValue(object? value)
+	{
+		while (value is PSObject pso && pso.ImmediateBaseObject is not PSCustomObject)
+		{
+			value = pso.ImmediateBaseObject;
+		}
+
+		return value;
+	}
 
 	/// <summary>
 	/// The open generic <see cref="WritableSonarrProperty{T}"/> type, which
@@ -222,8 +249,13 @@ public abstract class WritableProperty : PSPropertyInfo
 /// Represents a writable note property whose value is a <typeparamref name="T"/>.
 /// </summary>
 /// <remarks>
-/// A derived class holds the value, returns and stores it through <see cref="ValueAsT"/>, and turns a value that is
-/// being set into a <typeparamref name="T"/> in <see cref="ConvertFromObject(object?)"/>.
+/// <para>A derived class holds the value, returns and stores it through <see cref="ValueAsT"/>, and turns a value
+/// that is being set into a <typeparamref name="T"/> in <see cref="TryConvertFromObject(object?, out T)"/>, which
+/// both the setter of <see cref="Value"/> and <see cref="ValueIsProper(object?)"/> call, so
+/// <see cref="ValueIsProper(object?)"/> returns <see langword="true"/> for exactly the values that the setter
+/// takes.</para>
+/// <para>A value wrapped in a <see cref="PSObject"/>, as PowerShell passes the output of a command, is unwrapped
+/// before it's converted, so it's taken as the value that it wraps.</para>
 /// </remarks>
 /// <typeparam name="T">The type of the property's value.</typeparam>
 public abstract class WritableProperty<T> : WritableProperty
@@ -251,7 +283,9 @@ public abstract class WritableProperty<T> : WritableProperty
 	public sealed override object? Value
 	{
 		get => this.ValueAsT;
-		set => this.ValueAsT = this.ConvertFromObject(value);
+		set => this.ValueAsT = this.TryConvertFromObject(UnwrapValue(value), out T? converted)
+			? converted
+			: this.ThrowNotType<T>();
 	}
 	/// <summary>
 	/// When implemented in a derived class, gets or sets the property's value as a <typeparamref name="T"/>.
@@ -263,10 +297,16 @@ public abstract class WritableProperty<T> : WritableProperty
 	/// When implemented in a derived class, converts a value that is being set on the property to a
 	/// <typeparamref name="T"/>.
 	/// </summary>
+	/// <remarks>
+	/// The value that the method receives is already unwrapped, so it's never a <see cref="PSObject"/> that wraps a
+	/// value.
+	/// </remarks>
 	/// <param name="value">The value to convert.</param>
-	/// <returns>The value to store.</returns>
-	/// <exception cref="SetValueException">Thrown when the property doesn't accept <paramref name="value"/>.</exception>
-	protected abstract T? ConvertFromObject(object? value);
+	/// <param name="result">When this method returns <see langword="true"/>, the value to store.</param>
+	/// <returns>
+	/// <see langword="true"/> if the property accepts <paramref name="value"/>; otherwise, <see langword="false"/>.
+	/// </returns>
+	protected abstract bool TryConvertFromObject(object? value, [MaybeNullWhen(false)] out T result);
 	/// <summary>
 	/// Creates a read-only property of the matching kind with the property's name and current value.
 	/// </summary>
@@ -310,14 +350,15 @@ public abstract class WritableProperty<T> : WritableProperty
 	/// <summary>
 	/// Determines whether a value can be set on the property.
 	/// </summary>
-	/// <param name="value">The value to check.</param>
+	/// <param name="value">The value to check, which is unwrapped first when it's a <see cref="PSObject"/> that wraps
+	/// a value.</param>
 	/// <returns>
-	/// <see langword="true"/> if <paramref name="value"/> is <see langword="null"/> or a <typeparamref name="T"/>;
-	/// otherwise, <see langword="false"/>.
+	/// <see langword="true"/> if the setter of <see cref="Value"/> accepts <paramref name="value"/>; otherwise,
+	/// <see langword="false"/>.
 	/// </returns>
-	public override bool ValueIsProper(object? value)
+	public sealed override bool ValueIsProper(object? value)
 	{
-		return value is null || value is T;
+		return this.TryConvertFromObject(UnwrapValue(value), out _);
 	}
 
 	/// <summary>

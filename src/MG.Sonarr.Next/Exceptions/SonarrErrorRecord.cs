@@ -56,14 +56,32 @@ public sealed class SonarrErrorRecord : ErrorRecord, IHttpRequestUri
 	/// <param name="targetObj">The target object associated with the error.</param>
 	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="exception"/> is null.</exception>
 	public SonarrErrorRecord(SonarrHttpException exception, HttpResponseMessage? response, object? targetObj)
-		: base(exception, exception.GetTypeName(), GetCategoryFromStatusCode(exception.StatusCode, out bool isIgnorable), targetObj)
+		: this(exception, response, GetCategoryFromStatusCode(exception.StatusCode), targetObj)
+	{
+	}
+
+	/// <summary>
+	/// Initializes a new <see cref="SonarrErrorRecord"/> instance from a Sonarr HTTP exception, with the specified error
+	/// category.
+	/// </summary>
+	/// <remarks>
+	/// The record takes its status code and headers from <paramref name="exception"/>, and its URL from the request of
+	/// <paramref name="response"/>, or else from <paramref name="exception"/>. It's ignorable when the status code is 404.
+	/// </remarks>
+	/// <param name="exception">The Sonarr HTTP exception.</param>
+	/// <param name="response">The HTTP response associated with the exception, or <see langword="null"/> when there was none.</param>
+	/// <param name="category">The category of the error.</param>
+	/// <param name="targetObj">The target object associated with the error.</param>
+	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="exception"/> is null.</exception>
+	internal SonarrErrorRecord(SonarrHttpException exception, HttpResponseMessage? response, ErrorCategory category, object? targetObj)
+		: base(exception, exception.GetTypeName(), category, targetObj)
 	{
 		ArgumentNullException.ThrowIfNull(exception);
 
 		this.StatusCode = exception.StatusCode;
 		this.ReasonPhrase = response?.ReasonPhrase;
 		_headers = exception.Headers;
-		this.IsIgnorable = isIgnorable;
+		this.IsIgnorable = exception.StatusCode == HttpStatusCode.NotFound;
 
 		this.ErrorDetails = new ErrorDetails(GetMessage(exception, response, out string? requestUri))
 		{
@@ -125,15 +143,12 @@ public sealed class SonarrErrorRecord : ErrorRecord, IHttpRequestUri
 	/// Gets a PowerShell error category from an HTTP status code.
 	/// </summary>
 	/// <param name="statusCode">The HTTP status code.</param>
-	/// <param name="isIgnorable"><see langword="true"/> when the status should be considered ignorable; otherwise, <see langword="false"/>.</param>
 	/// <returns>The mapped PowerShell error category.</returns>
-	private static ErrorCategory GetCategoryFromStatusCode(HttpStatusCode? statusCode, out bool isIgnorable)
+	private static ErrorCategory GetCategoryFromStatusCode(HttpStatusCode? statusCode)
 	{
-		isIgnorable = false;
 		switch (statusCode)
 		{
 			case HttpStatusCode.NotFound:
-				isIgnorable = true;
 				return ErrorCategory.ObjectNotFound;
 
 			case HttpStatusCode.Unauthorized:
@@ -185,13 +200,18 @@ public sealed class SonarrErrorRecord : ErrorRecord, IHttpRequestUri
 	/// <summary>
 	/// Builds the error message and resolves the request URI.
 	/// </summary>
+	/// <remarks>
+	/// The URL comes from the request of <paramref name="response"/>, or else from <paramref name="exception"/>, which
+	/// knows the request's URL even when no response arrived. A message with a URL starts with it, followed by
+	/// <c> - </c>.
+	/// </remarks>
 	/// <param name="exception">The exception providing base message text.</param>
 	/// <param name="response">The HTTP response associated with the exception.</param>
 	/// <param name="requestUri">The resolved request URI string.</param>
 	/// <returns>The formatted error message.</returns>
-	private static string GetMessage(Exception exception, HttpResponseMessage? response, out string? requestUri)
+	private static string GetMessage(SonarrHttpException exception, HttpResponseMessage? response, out string? requestUri)
 	{
-		requestUri = response?.RequestMessage?.RequestUri?.ToString();
+		requestUri = response?.RequestMessage?.RequestUri?.ToString() ?? exception.RequestUri;
 		if (string.IsNullOrWhiteSpace(requestUri))
 		{
 			return exception.Message;
