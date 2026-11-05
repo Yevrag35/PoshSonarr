@@ -23,8 +23,7 @@ public sealed class UpdateSonarrNamingConfigCmdlet : SonarrApiCmdletBase
 		}
 
 		var response = this.SendPutRequest(url, this.InputObject);
-		bool committed = this.TryCommitFromResponse(this.InputObject, response);
-		Debug.Assert(committed);
+		_ = this.TryCommitFromResponse(this.InputObject, response);
 	}
 }
 

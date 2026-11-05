@@ -38,6 +38,16 @@ public sealed class SystemStatusObject : SonarrObject,
 	/// a method.
 	/// </value>
 	public SonarrAuthType Authentication { get; private set; }
+	/// <summary>
+	/// Gets the character that separates the directories of a path on the server.
+	/// </summary>
+	/// <remarks>
+	/// It's read from the <c>IsWindows</c> property, which Sonarr sets for a server that runs on Windows.
+	/// </remarks>
+	/// <value>
+	/// A backslash when the server runs on Windows; otherwise, a forward slash.
+	/// </value>
+	public char DirectorySeparator => this.GetValue<bool>("IsWindows") ? '\\' : '/';
 
 	/// <summary>
 	/// Initializes a new <see cref="SystemStatusObject"/> instance with no properties.
@@ -82,7 +92,7 @@ public sealed class SystemStatusObject : SonarrObject,
 	/// <summary>
 	/// The names of the properties whose values read with an uppercase first letter.
 	/// </summary>
-	static readonly HashSet<string> _capitalProps = new(4, StringComparer.InvariantCultureIgnoreCase)
+	static readonly HashSet<string> _capitalProps = new(4, StringComparer.OrdinalIgnoreCase)
 	{
 		"Authentication", "Mode", "PackageUpdateMechanism", "RuntimeName"
 	};

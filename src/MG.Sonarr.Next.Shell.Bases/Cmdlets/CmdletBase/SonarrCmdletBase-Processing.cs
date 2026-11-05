@@ -313,6 +313,60 @@ public abstract partial class SonarrCmdletBase
 	}
 
 	/// <summary>
+	/// Determines whether the cmdlet goes ahead with an action, where <c>-Force</c> skips the confirmation prompt
+	/// and nothing else.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// In What if mode, which <c>-WhatIf</c> turns on, or <c>$WhatIfPreference</c> when <c>-WhatIf</c> isn't given,
+	/// the method calls <see cref="Cmdlet.ShouldProcess(string, string)"/>, which shows the What if line and returns
+	/// <see langword="false"/>, whatever <paramref name="force"/> is.
+	/// </para>
+	/// <para>
+	/// Otherwise, when <paramref name="force"/> is <see langword="true"/> and the caller didn't pass <c>-Confirm</c>,
+	/// the method returns <see langword="true"/> without prompting. In every other case, it returns what
+	/// <see cref="Cmdlet.ShouldProcess(string, string)"/> returns, which prompts as the cmdlet's confirm impact,
+	/// <c>-Confirm</c>, and <c>$ConfirmPreference</c> say.
+	/// </para>
+	/// </remarks>
+	/// <param name="target">The resource that the action changes, which the What if line and the prompt name.</param>
+	/// <param name="action">The action, which the What if line and the prompt name.</param>
+	/// <param name="force">The value of the cmdlet's <c>-Force</c> parameter.</param>
+	/// <returns>
+	/// <see langword="true"/> if the cmdlet should go ahead with the action; otherwise, <see langword="false"/>.
+	/// </returns>
+	protected bool ShouldProcessWithForce(string target, string action, bool force)
+	{
+		return (force && !this.IsWhatIfOn() && !this.IsSwitchBoundOn(PSConstants.Confirm))
+			|| this.ShouldProcess(target, action);
+	}
+	/// <summary>
+	/// Determines whether the cmdlet runs in What if mode, from its <c>-WhatIf</c> parameter or, when that isn't
+	/// given, from <c>$WhatIfPreference</c>, as <see cref="Cmdlet.ShouldProcess(string, string)"/> decides it.
+	/// </summary>
+	/// <returns><see langword="true"/> if the cmdlet runs in What if mode; otherwise, <see langword="false"/>.</returns>
+	private bool IsWhatIfOn()
+	{
+		return this.MyInvocation.BoundParameters.ContainsKey(PSConstants.WhatIf)
+			? this.IsSwitchBoundOn(PSConstants.WhatIf)
+			: LanguagePrimitives.IsTrue(this.SessionState.PSVariable.GetValue(PSConstants.WhatIfPreference));
+	}
+	/// <summary>
+	/// Determines whether a switch parameter is bound and on, whether the caller passed it or
+	/// <c>$PSDefaultParameterValues</c> supplied it.
+	/// </summary>
+	/// <param name="parameterName">The switch parameter's name.</param>
+	/// <returns>
+	/// <see langword="true"/> if the switch is bound and on; otherwise, <see langword="false"/>, as for
+	/// <c>-Confirm:$false</c>.
+	/// </returns>
+	private bool IsSwitchBoundOn(string parameterName)
+	{
+		return this.MyInvocation.BoundParameters.TryGetValue(parameterName, out object? bound)
+			&& (bound is SwitchParameter sw ? sw.IsPresent : LanguagePrimitives.IsTrue(bound));
+	}
+
+	/// <summary>
 	/// When overridden in derived cmdlets, it sets any logic that should be run before 
 	/// <see cref="Begin(IServiceProvider)"/> is executed but immediately after the scoped
 	/// service provider is created. Default implementation in the base class just returns.

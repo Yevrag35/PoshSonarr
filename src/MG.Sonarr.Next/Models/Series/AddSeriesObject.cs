@@ -19,7 +19,9 @@ namespace MG.Sonarr.Next.Models.Series;
 /// <para>
 /// <see cref="OnSerializing"/> writes <see cref="AddOptions"/>, the title, and <see cref="Path"/> into the request
 /// body that adds the series, the path as <c>Path</c> when <see cref="IsFullPath"/> is <see langword="true"/> and as
-/// <c>RootFolderPath</c> otherwise. A reset removes the path property and clears <see cref="AddOptions"/>.
+/// <c>RootFolderPath</c> otherwise. A commit or a reset takes them out again: it removes the path and
+/// <c>AddOptions</c> properties, or gives back a <c>Path</c> that Sonarr sent its own value, and clears
+/// <see cref="AddOptions"/>.
 /// </para>
 /// <para>
 /// Lookup results sort by title, ignoring case. The object's first PowerShell type name replaces
@@ -49,9 +51,19 @@ public sealed class AddSeriesObject : SeriesObject,
 	/// </summary>
 	private string? _path;
 	/// <summary>
-	/// The name of the property that the path was last written to, or <see langword="null"/> if it hasn't been.
+	/// The name of the property that the path was last written to, or <see langword="null"/> if it hasn't been since
+	/// the last commit or reset.
 	/// </summary>
 	private string? _pathProp;
+	/// <summary>
+	/// Whether the object had a <c>Path</c> property, which Sonarr sends for a series that's in the library, before
+	/// <see cref="OnSerializing"/> wrote the path to it.
+	/// </summary>
+	private bool _hadPath;
+	/// <summary>
+	/// The value of the <c>Path</c> property before <see cref="OnSerializing"/> wrote the path to it.
+	/// </summary>
+	private object? _sentPath;
 
 	/// <summary>
 	/// Gets or sets the options that Sonarr applies when it adds the series.
@@ -170,7 +182,9 @@ public sealed class AddSeriesObject : SeriesObject,
 	/// </summary>
 	/// <remarks>
 	/// It removes <c>Id</c> and <c>Added</c>, makes <c>LanguageProfileId</c> a read-only 1, copies the series type,
-	/// and turns on season folders when the lookup lists more than one season.
+	/// and turns on season folders when the lookup lists more than one season. The series doesn't exist on the
+	/// server until it's added, so <see cref="TagUpdateObject{TSelf}.MustUpdateViaApi"/> is
+	/// <see langword="false"/>, and its tags go out with the request that adds it.
 	/// </remarks>
 	/// <param name="alreadyCalled">
 	/// <see langword="true"/> if the object has been deserialized before; otherwise, <see langword="false"/>.
@@ -178,6 +192,7 @@ public sealed class AddSeriesObject : SeriesObject,
 	protected override void OnDeserialized(bool alreadyCalled)
 	{
 		base.OnDeserialized(alreadyCalled);
+		this.MustUpdateViaApi = false;
 		this.Properties.RemoveMany(Constants.Id, "Added");
 		this.Properties.Remove("LanguageProfileId");
 		this.Properties.Add(ReadOnlyNumberProperty.Create("LanguageProfileId", 1));
@@ -211,6 +226,13 @@ public sealed class AddSeriesObject : SeriesObject,
 	{
 		if (this.IsFullPath)
 		{
+			if (!string.Equals(_pathProp, nameof(Path), StringComparison.Ordinal))
+			{
+				PSPropertyInfo? sent = this.Properties[nameof(Path)];
+				_hadPath = sent is not null;
+				_sentPath = sent?.Value;
+			}
+
 			this.UpdateProperty(x => x.Path);
 			_pathProp = nameof(Path);
 		}
@@ -245,18 +267,51 @@ public sealed class AddSeriesObject : SeriesObject,
 		return true;
 	}
 	/// <summary>
-	/// Removes the path property that <see cref="OnSerializing"/> wrote and clears <see cref="AddOptions"/> after a
-	/// request that sent the series fails.
+	/// Takes out what <see cref="OnSerializing"/> wrote, after a request that sent the series succeeds.
 	/// </summary>
+	/// <inheritdoc cref="RemoveRequestProperties" path="/remarks"/>
+	protected override void OnCommit()
+	{
+		this.RemoveRequestProperties();
+		base.OnCommit();
+	}
+	/// <summary>
+	/// Takes out what <see cref="OnSerializing"/> wrote, after a request that sent the series fails.
+	/// </summary>
+	/// <inheritdoc cref="RemoveRequestProperties" path="/remarks"/>
 	protected override void OnReset()
+	{
+		this.RemoveRequestProperties();
+		base.OnReset();
+	}
+	/// <summary>
+	/// Takes out the properties that <see cref="OnSerializing"/> wrote for the request that adds the series.
+	/// </summary>
+	/// <remarks>
+	/// The <c>AddOptions</c> property is removed and <see cref="AddOptions"/> cleared. The path property is removed, or,
+	/// when the path went to a <c>Path</c> property that Sonarr sent, that property gets back the value that Sonarr
+	/// sent, and <see cref="IsFullPath"/> is set to <see langword="false"/>.
+	/// </remarks>
+	private void RemoveRequestProperties()
 	{
 		if (!string.IsNullOrEmpty(_pathProp))
 		{
-			this.Properties.Remove(_pathProp);
+			if (_hadPath && string.Equals(_pathProp, nameof(this.Path), StringComparison.Ordinal))
+			{
+				this.Properties[_pathProp]!.Value = _sentPath;
+			}
+			else
+			{
+				this.Properties.Remove(_pathProp);
+			}
+
+			_pathProp = null;
+			_hadPath = false;
+			_sentPath = null;
 			this.IsFullPath = false;
 		}
 
+		this.Properties.Remove(nameof(this.AddOptions));
 		this.AddOptions = null;
-		base.OnReset();
 	}
 }

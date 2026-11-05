@@ -102,15 +102,17 @@ public sealed class MediaManagementObject : SonarrObject,
 	/// <summary>
 	/// Determines whether the recycle bin path is empty or ends with the server's directory separator.
 	/// </summary>
+	/// <param name="directorySeparator">The character that separates directories on the server, such as the one that
+	/// <see cref="Models.System.SystemStatusObject.DirectorySeparator"/> gives.</param>
 	/// <param name="path">When the method returns, the value of <see cref="RecycleBinPath"/>.</param>
 	/// <returns>
-	/// <see langword="true"/> if <paramref name="path"/> is empty or white space, or ends with a directory separator;
-	/// otherwise, <see langword="false"/>.
+	/// <see langword="true"/> if <paramref name="path"/> is empty or white space, or ends with
+	/// <paramref name="directorySeparator"/>; otherwise, <see langword="false"/>.
 	/// </returns>
-	public bool IsRecycleBinPathProper(out string path)
+	public bool IsRecycleBinPathProper(char directorySeparator, out string path)
 	{
 		path = this.RecycleBinPath;
-		return string.IsNullOrWhiteSpace(path) || path.EndsWith('\\');
+		return string.IsNullOrWhiteSpace(path) || path.EndsWith(directorySeparator);
 	}
 	/// <summary>
 	/// Finishes the settings after they're deserialized.

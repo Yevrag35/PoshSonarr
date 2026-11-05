@@ -19,12 +19,12 @@ namespace MG.Sonarr.Next.Models.Episodes;
 /// </para>
 /// <para>
 /// The numbers and IDs are copies made when the object is deserialized, and don't follow a change that PowerShell
-/// makes to the properties afterward. The <c>AirDate</c> property is held back from PowerShell and written into a
-/// request body by <see cref="OnSerializing"/>.
+/// makes to the properties afterward. The <c>AirDate</c> property is held back from PowerShell. When Sonarr sent one,
+/// <see cref="OnSerializing"/> writes it into a request body, and <see cref="Commit"/> and <see cref="Reset"/> remove
+/// it again.
 /// </para>
 /// <para>
-/// Episodes sort by <see cref="Series"/>, with series IDs before titles, then by season number, episode number, and
-/// absolute episode number.
+/// Episodes sort by series ID, then by season number, episode number, and absolute episode number.
 /// </para>
 /// </remarks>
 [SonarrObject]
@@ -45,9 +45,17 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 	/// </summary>
 	static readonly string _typeName = typeof(EpisodeObject).GetName();
 	/// <summary>
+	/// The name of the property that holds the episode's air date.
+	/// </summary>
+	const string AIR_DATE = "AirDate";
+	/// <summary>
 	/// The episode's air date, held back from PowerShell until the object is serialized.
 	/// </summary>
 	private DateOnly _airDate;
+	/// <summary>
+	/// Whether Sonarr sent an air date, which <see cref="_airDate"/> then holds.
+	/// </summary>
+	private bool _hasAirDate;
 	/// <summary>
 	/// The series title or ID that <see cref="Series"/> returns.
 	/// </summary>
@@ -109,11 +117,13 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 	}
 
 	/// <summary>
-	/// Compares the episode with another by series, then season number, episode number, and absolute episode number.
+	/// Compares the episode with another by series ID, then season number, episode number, and absolute episode
+	/// number.
 	/// </summary>
 	/// <remarks>
-	/// An episode whose <see cref="Series"/> is a series ID sorts before one whose <see cref="Series"/> is a title. IDs
-	/// compare as numbers, and titles compare ordinally, ignoring case.
+	/// The series compare by ID alone, the ID that <see cref="SetSeries(IEpisodeBySeriesPipeable)"/> set or else
+	/// <see cref="SeriesId"/>, so a series' title takes no part, and the same episode compares as 0 with itself whether
+	/// Sonarr sent it with its series or without.
 	/// </remarks>
 	/// <param name="other">The episode to compare with, or <see langword="null"/>.</param>
 	/// <returns>
@@ -127,7 +137,7 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 			return 1;
 		}
 
-		int compare = CompareSeries(this, other);
+		int compare = this.GetSeriesSortId().CompareTo(other.GetSeriesSortId());
 		if (compare != 0)
 		{
 			return compare;
@@ -146,35 +156,7 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 		return compare;
 	}
 	/// <summary>
-	/// Compares the series that two episodes sort by.
-	/// </summary>
-	/// <remarks>
-	/// A series ID sorts before a title. Two IDs compare as numbers, and two titles compare ordinally, ignoring case.
-	/// </remarks>
-	/// <param name="x">The first episode.</param>
-	/// <param name="y">The second episode.</param>
-	/// <returns>
-	/// A negative number if the series of <paramref name="x"/> sorts first, 0 if both sort the same, and a positive
-	/// number if it sorts after the series of <paramref name="y"/>.
-	/// </returns>
-	private static int CompareSeries(EpisodeObject x, EpisodeObject y)
-	{
-		string? xTitle = x._manuallySetSeries as string;
-		string? yTitle = y._manuallySetSeries as string;
-
-		if (xTitle is null)
-		{
-			return yTitle is null
-				? x.GetSeriesSortId().CompareTo(y.GetSeriesSortId())
-				: -1;
-		}
-
-		return yTitle is null
-			? 1
-			: StringComparer.OrdinalIgnoreCase.Compare(xTitle, yTitle);
-	}
-	/// <summary>
-	/// Gets the series ID that the episode sorts by when <see cref="Series"/> isn't a title.
+	/// Gets the series ID that the episode sorts by.
 	/// </summary>
 	/// <returns>
 	/// The ID that <see cref="SetSeries(IEpisodeBySeriesPipeable)"/> or deserialization set, or else
@@ -221,10 +203,11 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 	protected override void OnDeserialized(bool alreadyCalled)
 	{
 		base.OnDeserialized(alreadyCalled);
-		if (this.TryGetProperty("AirDate", out DateOnly airDate))
+		if (this.TryGetProperty(AIR_DATE, out DateOnly airDate))
 		{
 			_airDate = airDate;
-			this.Properties.Remove("AirDate");
+			_hasAirDate = true;
+			this.Properties.Remove(AIR_DATE);
 		}
 
 		if (this.TryGetProperty(nameof(this.AbsoluteEpisodeNumber), out int abId))
@@ -265,11 +248,65 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 	}
 
 	/// <summary>
-	/// Adds the <c>AirDate</c> property back to the object before it's serialized.
+	/// Removes the <c>AirDate</c> property that <see cref="OnSerializing"/> added, after a request that sent the
+	/// episode succeeds.
+	/// </summary>
+	/// <remarks>
+	/// The nested series that Sonarr sends with an episode from <c>/episode/{id}</c> is written by its own converter,
+	/// which runs its <see cref="SeriesObject.OnSerializing"/>, so the nested series is committed too.
+	/// </remarks>
+	public override void Commit()
+	{
+		this.RemoveAirDate();
+		this.GetNestedSeries()?.Commit();
+		base.Commit();
+	}
+	/// <summary>
+	/// Adds the <c>AirDate</c> property back to the object before it's serialized, when Sonarr sent one.
 	/// </summary>
 	public void OnSerializing()
 	{
-		this.Properties.Add(StructNoteProperty.Create("AirDate", _airDate));
+		if (_hasAirDate)
+		{
+			this.Properties.Add(StructNoteProperty.Create(AIR_DATE, _airDate));
+		}
+	}
+	/// <summary>
+	/// Removes the <c>AirDate</c> property that <see cref="OnSerializing"/> added, after a request that sent the
+	/// episode fails.
+	/// </summary>
+	/// <remarks>
+	/// The nested series that Sonarr sends with an episode from <c>/episode/{id}</c> is written by its own converter,
+	/// which runs its <see cref="SeriesObject.OnSerializing"/>, so the nested series is reset too.
+	/// </remarks>
+	public override void Reset()
+	{
+		this.RemoveAirDate();
+		this.GetNestedSeries()?.Reset();
+		base.Reset();
+	}
+	/// <summary>
+	/// Gets the series that Sonarr nested in the episode.
+	/// </summary>
+	/// <returns>The value of the <c>Series</c> property when it's a <see cref="SeriesObject"/>; otherwise,
+	/// <see langword="null"/>.</returns>
+	private SeriesObject? GetNestedSeries()
+	{
+		return this.Properties[nameof(this.Series)]?.Value as SeriesObject;
+	}
+	/// <summary>
+	/// Removes the <c>AirDate</c> property that <see cref="OnSerializing"/> added, when Sonarr sent an air date.
+	/// </summary>
+	/// <remarks>
+	/// When Sonarr sent none, <see cref="OnSerializing"/> added nothing, so a property of that name, such as one that
+	/// Sonarr sent as <see langword="null"/>, stays.
+	/// </remarks>
+	private void RemoveAirDate()
+	{
+		if (_hasAirDate)
+		{
+			this.Properties.Remove(AIR_DATE);
+		}
 	}
 
 	/// <summary>

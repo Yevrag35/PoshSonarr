@@ -59,8 +59,15 @@ public sealed class UpdateSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 			return;
 		}
 
-		this.SerializeIfDebug(_body);
 		string url = this.Tag.GetUrlForId(this.Id);
+
+		// Sonarr replaces the whole mapping, so a value that wasn't passed keeps the one that the mapping has.
+		if (!this.TryFillMissingValues(url, _body))
+		{
+			return;
+		}
+
+		this.SerializeIfDebug(_body);
 
 		if (!this.ShouldProcess(url, "Updating Remote Path Mapping"))
 		{
@@ -77,6 +84,40 @@ public sealed class UpdateSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 		this.WriteVerbose($"Updated Remote Path Mapping -> {this.Id}");
 	}
 
+	private bool TryFillMissingValues(string url, RemotePathBody body)
+	{
+		bool noHost = string.IsNullOrEmpty(body.Host);
+		bool noLocal = string.IsNullOrEmpty(body.LocalPath);
+		bool noRemote = string.IsNullOrEmpty(body.RemotePath);
+		if (!noHost && !noLocal && !noRemote)
+		{
+			return true;
+		}
+
+		var existing = this.SendGetRequest<RemotePathObject>(url);
+		if (existing.IsError)
+		{
+			this.WriteError(existing.Error);
+			return false;
+		}
+
+		if (noHost)
+		{
+			body.Host = existing.Value.HostName;
+		}
+
+		if (noLocal)
+		{
+			body.LocalPath = existing.Value.LocalPath;
+		}
+
+		if (noRemote)
+		{
+			body.RemotePath = existing.Value.RemotePath;
+		}
+
+		return true;
+	}
 	private void SetBodyParameter(int id)
 	{
 		if (id <= 0)

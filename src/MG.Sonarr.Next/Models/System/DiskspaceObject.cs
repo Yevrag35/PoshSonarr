@@ -75,11 +75,11 @@ public sealed class DiskspaceObject : SonarrObject,
 	/// <param name="other">The drive to compare with, or <see langword="null"/>.</param>
 	/// <returns>
 	/// A negative number if this drive sorts before <paramref name="other"/>, 0 if they sort together, or a positive
-	/// number if it sorts after. Paths compare by the invariant culture, ignoring case.
+	/// number if it sorts after. Paths compare ordinally, ignoring case.
 	/// </returns>
 	public int CompareTo(DiskspaceObject? other)
 	{
-		return StringComparer.InvariantCultureIgnoreCase.Compare(this.Path, other?.Path);
+		return StringComparer.OrdinalIgnoreCase.Compare(this.Path, other?.Path);
 	}
 	/// <summary>
 	/// Gets the metadata tag for drives.

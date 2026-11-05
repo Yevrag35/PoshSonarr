@@ -39,9 +39,7 @@ public sealed class RemoveSonarrReleaseProfile : SonarrApiCmdletBase
 	{
 		string url = _tag.GetUrlForId(this.Id);
 
-		if (!this.Force
-			&&
-			!this.ShouldProcess(url, "Deleting Release Profile"))
+		if (!this.ShouldProcessWithForce(url, "Deleting Release Profile", this.Force))
 		{
 			return;
 		}

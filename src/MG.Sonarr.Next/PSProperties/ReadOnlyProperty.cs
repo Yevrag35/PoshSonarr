@@ -158,8 +158,9 @@ public abstract class ReadOnlyProperty<T> : ReadOnlyProperty
 	/// <summary>
 	/// When implemented in a derived class, gets the property's value as a <typeparamref name="T"/>.
 	/// </summary>
-	/// <value>The property's value.</value>
-	protected abstract T ValueAsT { get; }
+	/// <value>The property's value, which a derived class that holds a reference can leave
+	/// <see langword="null"/>.</value>
+	protected abstract T? ValueAsT { get; }
 
 	/// <summary>
 	/// Initializes a new <see cref="ReadOnlyProperty{T}"/> instance with the specified name.
@@ -217,7 +218,7 @@ public abstract class ReadOnlyProperty<T> : ReadOnlyProperty
 	/// Builds the description of a property whose value formats through <see cref="object.ToString"/>.
 	/// </summary>
 	/// <remarks>
-	/// The value's text is trimmed of leading and trailing white space, and a null value shows as empty.
+	/// The value's text is shown as its <see cref="object.ToString"/> gives it, and a null value shows as empty.
 	/// </remarks>
 	/// <param name="typeName">The PowerShell name of the value's type.</param>
 	/// <param name="valueAsT">The property's value.</param>

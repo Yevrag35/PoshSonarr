@@ -11,22 +11,14 @@ public sealed class RestartSonarrInstanceCmdlet : SonarrApiCmdletBase
 
 	protected override void Process(IServiceProvider provider)
 	{
-		if (!this.Force
-			&&
-			this.ShouldNotProcess(provider))
+		var settings = provider.GetRequiredService<IConnectionSettings>();
+		string host = settings.ServiceUri.GetComponents(UriComponents.Host, UriFormat.Unescaped);
+		if (!this.ShouldProcessWithForce(host, "Restart Sonarr Application", this.Force))
 		{
 			return;
 		}
 
 		var response = this.SendPostRequest<PSObject>(Constants.Restart);
 		_ = this.TryWriteObject(response);
-	}
-
-	private bool ShouldNotProcess(IServiceProvider provider)
-	{
-		var settings = provider.GetRequiredService<IConnectionSettings>();
-		string host = settings.ServiceUri.GetComponents(UriComponents.Host, UriFormat.Unescaped);
-
-		return !this.ShouldProcess(host, "Restart Sonarr Application");
 	}
 }

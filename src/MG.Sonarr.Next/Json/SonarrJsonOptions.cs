@@ -181,7 +181,10 @@ public static class SonarrJsonDependencyInjection
 						// A field's placeholder and a select option's hint, which a provider's schema sends back, and
 						// which Sonarr turns away as a number.
 						new("Hint", exactStringConverter),
-						new("Placeholder", exactStringConverter)
+						new("Placeholder", exactStringConverter),
+						// A provider field's setting, which a PUT of the provider sends back for every field, such as a
+						// download client's category of 0123, which the inference would send back as 123.
+						new("Value", exactStringConverter)
 				  );
 		});
 

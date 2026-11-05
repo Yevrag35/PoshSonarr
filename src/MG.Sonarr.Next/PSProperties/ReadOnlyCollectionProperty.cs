@@ -54,7 +54,7 @@ public sealed class ReadOnlyCollectionProperty<T> : ReadOnlyProperty<ImmutableAr
 /// <typeparam name="T">The type of the collection's elements.</typeparam>
 /// <typeparam name="TCol">The type of the collection.</typeparam>
 public sealed class ReadOnlyCollectionProperty<T, TCol> : ReadOnlyProperty<TCol>
-	where TCol : IEnumerable<T>, new()
+	where TCol : ICollection<T>, new()
 {
 	/// <summary>
 	/// Gets the collection that the property holds.
@@ -84,12 +84,33 @@ public sealed class ReadOnlyCollectionProperty<T, TCol> : ReadOnlyProperty<TCol>
 	}
 
 	/// <summary>
-	/// Returns the property itself as its copy.
+	/// Creates a copy of the property that holds a copy of its collection.
 	/// </summary>
-	/// <returns>The current instance.</returns>
+	/// <remarks>
+	/// The copy's collection is a new instance of the collection's runtime type, made through its public
+	/// parameterless constructor, with the same elements added in the order that the collection enumerates them. A
+	/// change to either collection doesn't show in the other.
+	/// </remarks>
+	/// <returns>
+	/// A new <see cref="ReadOnlyCollectionProperty{T, TCol}"/> with the same name that holds a copy of the collection.
+	/// </returns>
+	/// <exception cref="MissingMethodException">
+	/// Thrown when the collection's runtime type derives from <typeparamref name="TCol"/> and has no public
+	/// parameterless constructor.
+	/// </exception>
 	public override PSMemberInfo Copy()
 	{
-		return this;
+		Type collectionType = this.Collection.GetType();
+		TCol copy = collectionType == typeof(TCol)
+			? new TCol()
+			: (TCol)Activator.CreateInstance(collectionType)!;
+
+		foreach (T item in this.Collection)
+		{
+			copy.Add(item);
+		}
+
+		return new ReadOnlyCollectionProperty<T, TCol>(this.Name, copy);
 	}
 }
 

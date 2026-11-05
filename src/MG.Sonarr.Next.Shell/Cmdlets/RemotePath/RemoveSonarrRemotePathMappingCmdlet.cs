@@ -60,9 +60,7 @@ public sealed class RemoveSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	private void DeleteRemotePathMapping(in int id, MetadataTag tag, in bool force)
 	{
 		string url = tag.GetUrlForId(id);
-		if (!force
-			&&
-			!this.ShouldProcess(url, "Deleting Remote Path Mapping"))
+		if (!this.ShouldProcessWithForce(url, "Deleting Remote Path Mapping", force))
 		{
 			return;
 		}

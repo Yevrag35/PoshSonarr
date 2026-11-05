@@ -72,7 +72,7 @@ public sealed class RemotePathObject : IdSonarrObject<RemotePathObject>,
 	/// mapping's.</exception>
 	public void ApplyFromPost(RemotePathBody body)
 	{
-		if (!body.Id.HasValue && this.Id != body.Id)
+		if (!body.Id.HasValue || this.Id != body.Id.Value)
 		{
 			throw new ArgumentException("The body must represent an existing remote path and must match this object.");
 		}

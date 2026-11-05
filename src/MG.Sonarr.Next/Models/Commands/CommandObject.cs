@@ -100,14 +100,14 @@ public sealed class CommandObject : IdSonarrObject<CommandObject>,
 	public static readonly ICommand Empty = EmptyCommand.Default;
 
 	/// <summary>
-	/// Determines whether a command has the same ID, start time, and name as another command.
+	/// Determines whether a command has the same ID, start and end times, name, and completion as another command.
 	/// </summary>
 	/// <param name="thisAsCommand">The command to compare.</param>
 	/// <param name="otherCommand">The command to compare with, or <see langword="null"/>.</param>
 	/// <returns>
-	/// <see langword="true"/> if <paramref name="otherCommand"/> isn't <see langword="null"/> and has the same ID and
-	/// start time as <paramref name="thisAsCommand"/> and the same name, ignoring case; otherwise,
-	/// <see langword="false"/>.
+	/// <see langword="true"/> if <paramref name="otherCommand"/> isn't <see langword="null"/>, has the same ID, start
+	/// time, end time, and <see cref="ICommand.IsCompleted"/> as <paramref name="thisAsCommand"/>, and has the same
+	/// name, compared ordinally, ignoring case; otherwise, <see langword="false"/>.
 	/// </returns>
 	private static bool AreCommandPropertiesEqual(CommandObject thisAsCommand, [NotNullWhen(true)] ICommand? otherCommand)
 	{
@@ -116,7 +116,11 @@ public sealed class CommandObject : IdSonarrObject<CommandObject>,
 			   // Safe to access directly because other cannot be null if the first part is true.
 			   thisAsCommand.Started == otherCommand.Started
 			   &&
-			   StringComparer.InvariantCultureIgnoreCase.Equals(thisAsCommand.Name, otherCommand.Name);
+			   thisAsCommand.Ended == otherCommand.Ended
+			   &&
+			   thisAsCommand.IsCompleted == otherCommand.IsCompleted
+			   &&
+			   StringComparer.OrdinalIgnoreCase.Equals(thisAsCommand.Name, otherCommand.Name);
 	}
 	/// <summary>
 	/// Determines whether a command has the same ID, start and end times, name, and status as another command.
@@ -125,17 +129,15 @@ public sealed class CommandObject : IdSonarrObject<CommandObject>,
 	/// <param name="other">The command to compare with, or <see langword="null"/>.</param>
 	/// <returns>
 	/// <see langword="true"/> if <paramref name="other"/> isn't <see langword="null"/> and has the same ID, start time,
-	/// and end time as <paramref name="this"/> and the same name and status, ignoring case; otherwise,
-	/// <see langword="false"/>.
+	/// and end time as <paramref name="this"/> and the same name and status, compared ordinally, ignoring case;
+	/// otherwise, <see langword="false"/>.
 	/// </returns>
 	private static bool AreCommandPropertiesEqual(CommandObject @this, CommandObject? other)
 	{
 		return AreCommandPropertiesEqual(thisAsCommand: @this, otherCommand: other)
 			   &&
 			   // Safe to access directly because other cannot be null if the first part is true.
-			   @this.Ended == other.Ended
-			   &&
-			   StringComparer.InvariantCultureIgnoreCase.Equals(@this.Status, other.Status);
+			   StringComparer.OrdinalIgnoreCase.Equals(@this.Status, other.Status);
 	}
 	/// <summary>
 	/// Removes the command's body from the object after a request that sent it succeeds.
@@ -163,7 +165,8 @@ public sealed class CommandObject : IdSonarrObject<CommandObject>,
 	/// <param name="other">The command to compare with, or <see langword="null"/>.</param>
 	/// <returns>
 	/// <see langword="true"/> if <paramref name="other"/> is this instance, or has the same ID, start and end times,
-	/// name, and status, with the name and status compared ignoring case; otherwise, <see langword="false"/>.
+	/// name, and status, with the name and status compared ordinally, ignoring case; otherwise,
+	/// <see langword="false"/>.
 	/// </returns>
 	public bool Equals([NotNullWhen(true)] CommandObject? other)
 	{
@@ -172,14 +175,22 @@ public sealed class CommandObject : IdSonarrObject<CommandObject>,
 	/// <summary>
 	/// Determines whether the command equals another command.
 	/// </summary>
+	/// <remarks>
+	/// A <see cref="CommandObject"/> is compared as <see cref="Equals(CommandObject)"/> compares it, so
+	/// <c>==</c> gives the same answer through either overload. Another <see cref="ICommand"/> has no status, so it's
+	/// compared by its <see cref="ICommand.IsCompleted"/> in place of the status.
+	/// </remarks>
 	/// <param name="command">The command to compare with, or <see langword="null"/>.</param>
 	/// <returns>
 	/// <see langword="true"/> if <paramref name="command"/> is this instance, or has the same ID, start and end times,
-	/// name, and status, with the name and status compared ignoring case; otherwise, <see langword="false"/>.
+	/// name, and status or completion, with the name and status compared ordinally, ignoring case; otherwise,
+	/// <see langword="false"/>.
 	/// </returns>
 	public bool Equals([NotNullWhen(true)] ICommand? command)
 	{
-		return ReferenceEquals(this, command) || AreCommandPropertiesEqual(this, command);
+		return command is CommandObject co
+			? this.Equals(co)
+			: AreCommandPropertiesEqual(this, command);
 	}
 	/// <summary>
 	/// Determines whether the command equals another object.
@@ -203,16 +214,17 @@ public sealed class CommandObject : IdSonarrObject<CommandObject>,
 	/// Gets the command's hash code.
 	/// </summary>
 	/// <returns>
-	/// A hash code made from the command's ID, start and end times, and its name and status, ignoring case.
+	/// A hash code made from the command's ID, start and end times, and its name and status, hashed ordinally, ignoring
+	/// case.
 	/// </returns>
 	public override int GetHashCode()
 	{
 		return HashCode.Combine(
 			this.Id,
 			this.Ended.GetValueOrDefault(),
-			StringComparer.InvariantCultureIgnoreCase.GetHashCode(this.Name),
+			StringComparer.OrdinalIgnoreCase.GetHashCode(this.Name),
 			this.Started,
-			StringComparer.InvariantCultureIgnoreCase.GetHashCode(this.Status));
+			StringComparer.OrdinalIgnoreCase.GetHashCode(this.Status));
 	}
 	/// <summary>
 	/// Gets the metadata tag of the command endpoint.

@@ -133,7 +133,8 @@ public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 
 		for (int i = list.Count - 1; i >= 0; i--)
 		{
-			if (values.IndexOf((int)list[i].AirDateUtc.DayOfWeek) == -1)
+			// The dates that the cmdlet takes are local, so an entry's day is the one that it airs on in local time.
+			if (values.IndexOf((int)list[i].AirDateUtc.ToLocalTime().DayOfWeek) == -1)
 			{
 				list.RemoveAt(i);
 				removed++;

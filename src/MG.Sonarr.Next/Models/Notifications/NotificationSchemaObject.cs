@@ -1,4 +1,5 @@
 using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
@@ -23,6 +24,14 @@ public sealed class NotificationSchemaObject : TagUpdateObject<NotificationSchem
 	/// </summary>
 	const int CAPACITY = 38;
 	/// <summary>
+	/// The name of the property that holds the template's implementation, such as <c>Webhook</c>.
+	/// </summary>
+	const string IMPLEMENTATION = "Implementation";
+	/// <summary>
+	/// The name of the property that holds the implementation's display name, such as <c>Custom Script</c>.
+	/// </summary>
+	const string IMPLEMENTATION_NAME = "ImplementationName";
+	/// <summary>
 	/// The full name of the class, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
 	static readonly string _typeName = typeof(NotificationSchemaObject).GetName();
@@ -42,6 +51,37 @@ public sealed class NotificationSchemaObject : TagUpdateObject<NotificationSchem
 	}
 
 	/// <summary>
+	/// Compares the template with another by its <c>ImplementationName</c>, and then by its <c>Implementation</c>,
+	/// both ordinally, ignoring case.
+	/// </summary>
+	/// <remarks>
+	/// A template has no ID to sort by, and this is the order that Sonarr lists the templates in, which a sort that
+	/// isn't stable would scramble if the templates compared as equal.
+	/// </remarks>
+	/// <param name="other">The template to compare with, or <see langword="null"/>.</param>
+	/// <returns>
+	/// A negative number if this template sorts before <paramref name="other"/>, 0 if they sort together, and a
+	/// positive number if it sorts after or <paramref name="other"/> is <see langword="null"/>.
+	/// </returns>
+	public override int CompareTo(NotificationSchemaObject? other)
+	{
+		if (other is null)
+		{
+			return 1;
+		}
+
+		int compare = StringComparer.OrdinalIgnoreCase.Compare(
+			this.GetStringOrEmpty(IMPLEMENTATION_NAME),
+			other.GetStringOrEmpty(IMPLEMENTATION_NAME));
+
+		return compare != 0
+			? compare
+			: StringComparer.OrdinalIgnoreCase.Compare(
+				this.GetStringOrEmpty(IMPLEMENTATION),
+				other.GetStringOrEmpty(IMPLEMENTATION));
+	}
+
+	/// <summary>
 	/// Gets the metadata tag for a notification template, which is that of a notification connection.
 	/// </summary>
 	/// <param name="resolver">The resolver that holds the connection's metadata tags.</param>
@@ -54,11 +94,16 @@ public sealed class NotificationSchemaObject : TagUpdateObject<NotificationSchem
 	/// <summary>
 	/// Finishes the template after it's deserialized, removing its <c>Id</c> property.
 	/// </summary>
+	/// <remarks>
+	/// The template doesn't exist on the server, so <see cref="TagUpdateObject{TSelf}.MustUpdateViaApi"/> is
+	/// <see langword="false"/>, and its tags go out with the request that creates the connection.
+	/// </remarks>
 	/// <param name="alreadyCalled"><see langword="true"/> if the object was deserialized before; otherwise,
 	/// <see langword="false"/>.</param>
 	protected override void OnDeserialized(bool alreadyCalled)
 	{
 		base.OnDeserialized(alreadyCalled);
+		this.MustUpdateViaApi = false;
 		this.Properties.Remove(nameof(this.Id));
 	}
 	/// <summary>

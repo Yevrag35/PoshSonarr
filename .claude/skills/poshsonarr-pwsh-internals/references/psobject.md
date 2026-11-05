@@ -25,6 +25,14 @@ Measured 2026-11-03 on PowerShell 7.6.9 with a throwaway `Add-Type` subclass of 
 - **Only a thread with a runspace checks.** On a thread-pool thread, adding the property after inserting the type name raised no error.
 - **The check costs a little.** Adding 30 note properties to each of 20,000 instances took 132.5 ms when the type name went in first and 118.8 ms when it went in last, on the pipeline thread, and about 109 ms either way on a thread-pool thread.
 
+## Adding and setting instance properties
+
+Measured 2026-11-05 on PowerShell 7.6.9 with the module's property classes, a `PSNoteProperty`, and `[psobject]::new()`.
+
+- **`Properties.Add` stores a copy.** The property that `$o.psobject.Properties[name]` returns afterward is a different instance from the one passed to `Add`, for a `PSNoteProperty` and for each of the module's property classes: `Add` calls the member's `Copy()` and stores what it returns. A property class whose `Copy()` returns the instance itself is stored as that instance.
+- **Adding a name that's already there replaces the property** and doesn't throw.
+- **A command's output reaches a setter wrapped.** `$o.P = $v` passes the setter of `P` a `PSObject` that wraps the value when `$v` came out of a command: `Write-Output`, `ForEach-Object`, `Where-Object`, `Sort-Object`, `Select-Object -ExpandProperty`, `Get-Random`, `Test-Path`, and `Get-Date` all gave a wrapped value. A note property's value, an array element, and `(... | Measure-Object).Count` reached it unwrapped. Setting a property through the .NET adapter, as in `$property.Value = $v`, passes the unwrapped value.
+
 ## PSObject's own members
 
 Measured 2026-10-03 on PowerShell 7.6.6 from `Add-Type` C# that uses reflection, unless a fact gives another date.
@@ -52,5 +60,7 @@ Measured 2026-10-03 on PowerShell 7.6.6, unless a fact gives another date.
 - A property that a model adds after its type names are in place, such as one that `OnSerializing()`, `Commit()`, or `Reset()` puts back, must not share a name with a type data member of those type names.
 - Match a model by its class, or by any of its type names, never by the first one: `Select-Object -First` and the other switches that pass objects through put `Selected.System.Management.Automation.PSCustomObject` in front of a model's own names.
 - `Copy()` gives an independent copy of the same class, so adding a property to the copy, such as to show it with more detail, leaves the original as it was.
+- A property class's `Copy()` copies each mutable collection that it holds, since `Properties.Add` stores what `Copy()` returns. Code that adds a property and then needs the property or its value, such as a set that a model keeps a C# reference to, reads it back from `Properties` after adding it.
+- A writable property class unwraps a value that's a `PSObject` wrapping a value, one layer at a time and stopping at a custom object, before it converts the value, in its setter and in `ValueIsProper` alike, or a value that came out of a command fails to set.
 - Build a wrapped value in C# with `PSObject.AsPSObject(x)` or `new PSObject((object)x)`, never `new PSObject(<int>)`, which builds an empty custom object.
 - A script block that outputs nothing gives an empty collection through `InvokeWithContext`, not one element that holds `AutomationNull.Value`.

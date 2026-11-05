@@ -69,9 +69,7 @@ public sealed class RemoveSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 	private void DeleteProfile(in int id, MetadataTag tag, bool force)
 	{
 		string url = tag.GetUrlForId(id);
-		if (!force
-			&&
-			!this.ShouldProcess(url, "Delete Delay Profile"))
+		if (!this.ShouldProcessWithForce(url, "Delete Delay Profile", force))
 		{
 			return;
 		}

@@ -1,5 +1,6 @@
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
@@ -29,7 +30,7 @@ public enum LogFileType
 /// <see cref="ContentsUrl"/>.
 /// </para>
 /// <para>
-/// Log files sort by <see cref="LastWriteTime"/> and then by <see cref="ContentsUrl"/>, ignoring case.
+/// Log files sort by <see cref="LastWriteTime"/> and then by <see cref="ContentsUrl"/>, ordinally, ignoring case.
 /// </para>
 /// </remarks>
 [SonarrObject]
@@ -45,6 +46,10 @@ public sealed class LogFileObject : IdSonarrObject<LogFileObject>,
 	/// The part of an update log's contents URL that sets it apart from a general log's.
 	/// </summary>
 	const string UPDATE_PART = "/file/update/";
+	/// <summary>
+	/// The PowerShell type name of <see cref="LogFileObject"/>.
+	/// </summary>
+	static readonly string _typeName = typeof(LogFileObject).GetName();
 
 	/// <summary>
 	/// Gets the URL of the file's contents.
@@ -97,14 +102,15 @@ public sealed class LogFileObject : IdSonarrObject<LogFileObject>,
 	/// <param name="other">The log file to compare with, or <see langword="null"/>.</param>
 	/// <returns>
 	/// A negative number if this file sorts before <paramref name="other"/>, 0 if they sort together, or a positive
-	/// number if it sorts after. URLs compare by the invariant culture, ignoring case.
+	/// number if it sorts after or <paramref name="other"/> is <see langword="null"/>. URLs compare ordinally,
+	/// ignoring case.
 	/// </returns>
 	public override int CompareTo(LogFileObject? other)
 	{
 		int compare = Comparer<DateTimeOffset?>.Default.Compare(this.LastWriteTime, other?.LastWriteTime);
 		if (compare == 0)
 		{
-			compare = StringComparer.InvariantCultureIgnoreCase.Compare(this.ContentsUrl, other?.ContentsUrl);
+			compare = StringComparer.OrdinalIgnoreCase.Compare(this.ContentsUrl, other?.ContentsUrl);
 		}
 
 		return compare;
@@ -112,10 +118,13 @@ public sealed class LogFileObject : IdSonarrObject<LogFileObject>,
 	/// <summary>
 	/// Determines whether this log file is the same as another.
 	/// </summary>
+	/// <remarks>
+	/// <see cref="LastWriteTime"/> isn't compared, so a file that Sonarr wrote to between two reads equals itself.
+	/// </remarks>
 	/// <param name="other">The log file to compare with, or <see langword="null"/>.</param>
 	/// <returns>
 	/// <see langword="true"/> if <paramref name="other"/> is this object, or has the same <see cref="IdSonarrObject{TSelf}.Id"/>
-	/// and <see cref="Type"/> and a <see cref="ContentsUrl"/> that's equal ignoring case; otherwise,
+	/// and <see cref="Type"/> and a <see cref="ContentsUrl"/> that's equal ordinally, ignoring case; otherwise,
 	/// <see langword="false"/>.
 	/// </returns>
 	public bool Equals(LogFileObject? other)
@@ -133,7 +142,7 @@ public sealed class LogFileObject : IdSonarrObject<LogFileObject>,
 			   &&
 			   this.Type == other.Type
 			   &&
-			   StringComparer.InvariantCultureIgnoreCase.Equals(this.ContentsUrl, other.ContentsUrl);
+			   StringComparer.OrdinalIgnoreCase.Equals(this.ContentsUrl, other.ContentsUrl);
 	}
 	/// <summary>
 	/// Determines whether this log file is the same as another object.
@@ -161,14 +170,16 @@ public sealed class LogFileObject : IdSonarrObject<LogFileObject>,
 	/// <summary>
 	/// Returns a hash code for the log file that agrees with <see cref="Equals(LogFileObject)"/>.
 	/// </summary>
-	/// <returns>A hash code of the file's ID, type, and contents URL, with the URL hashed ignoring case.</returns>
+	/// <returns>
+	/// A hash code of the file's ID, type, and contents URL, with the URL hashed ordinally, ignoring case, as
+	/// <see cref="Equals(LogFileObject)"/> compares it.
+	/// </returns>
 	public override int GetHashCode()
 	{
 		return HashCode.Combine(
 			this.Id,
 			this.Type,
-			this.LastWriteTime,
-			StringComparer.InvariantCultureIgnoreCase.GetHashCode(this.ContentsUrl));
+			StringComparer.OrdinalIgnoreCase.GetHashCode(this.ContentsUrl));
 	}
 
 	/// <summary>
@@ -197,7 +208,7 @@ public sealed class LogFileObject : IdSonarrObject<LogFileObject>,
 		if (this.TryGetNonNullProperty(nameof(this.ContentsUrl), out string? cl))
 		{
 			this.ContentsUrl = cl;
-			this.Type = cl.Contains(UPDATE_PART, StringComparison.InvariantCultureIgnoreCase)
+			this.Type = cl.Contains(UPDATE_PART, StringComparison.OrdinalIgnoreCase)
 				? LogFileType.Update
 				: LogFileType.General;
 		}
@@ -206,5 +217,13 @@ public sealed class LogFileObject : IdSonarrObject<LogFileObject>,
 		{
 			this.LastWriteTime = lastWriteTime;
 		}
+	}
+	/// <summary>
+	/// Inserts the <see cref="LogFileObject"/> type name at the start of the object's PowerShell type names.
+	/// </summary>
+	protected override void SetPSTypeName()
+	{
+		base.SetPSTypeName();
+		this.TypeNames.Insert(0, _typeName);
 	}
 }

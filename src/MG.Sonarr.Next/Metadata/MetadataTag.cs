@@ -257,7 +257,9 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	/// Builds the URL of a request for the item with the specified ID at the tag's endpoint.
 	/// </summary>
 	/// <remarks>
-	/// The ID is formatted into a stack buffer of 40 characters, which holds any integer up to an <see cref="Int128"/>.
+	/// The ID is formatted with the invariant culture into a stack buffer of 40 characters, which holds any integer up
+	/// to an <see cref="Int128"/>. An ID whose text is longer is formatted to a string of its own, which the URL is
+	/// then concatenated from.
 	/// </remarks>
 	/// <typeparam name="T">The type of the ID, such as <see cref="int"/>.</typeparam>
 	/// <param name="id">The item's ID.</param>
@@ -271,16 +273,9 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 
 		span[position++] = '/';
 
-		if (!id.TryCopyToSlice(span, ref position, provider: CultureInfo.InvariantCulture))
-		{
-			Debug.Fail($"Unable to format '{id}' into the BaseUrl.");
-			position = this.UrlBase.Length + 1;
-
-			position = id.ToString(format: null, formatProvider: CultureInfo.InvariantCulture)
-						 .CopyToSlice(span, position);
-		}
-
-		return new string(span.Slice(0, position));
+		return id.TryCopyToSlice(span, ref position, provider: CultureInfo.InvariantCulture)
+			? new string(span.Slice(0, position))
+			: string.Concat(this.UrlBase, "/", id.ToString(format: null, formatProvider: CultureInfo.InvariantCulture));
 	}
 	/// <summary>
 	/// Builds the URL of a request for the item with the specified ID at the tag's endpoint, with a query string.

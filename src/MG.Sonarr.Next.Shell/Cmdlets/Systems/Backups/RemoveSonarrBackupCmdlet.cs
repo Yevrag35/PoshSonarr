@@ -53,7 +53,7 @@ public sealed class RemoveSonarrBackupCmdlet : SonarrMetadataCmdlet
 		foreach (int id in _ids)
 		{
 			string url = this.Tag.GetUrlForId(id);
-			if (this.ShouldProcess(url, "Deleting Backup")
+			if (this.ShouldProcessWithForce(url, "Deleting Backup", force)
 				&&
 				(force
 				||

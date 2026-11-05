@@ -76,9 +76,7 @@ public sealed class RemoveSonarrRootFolderCmdlet : SonarrMetadataCmdlet
 	{
 		string url = this.Tag.GetUrlForId(id);
 
-		if (!force
-			&&
-			!this.ShouldProcess(url, "Deleting Root Folder"))
+		if (!this.ShouldProcessWithForce(url, "Deleting Root Folder", force))
 		{
 			return;
 		}

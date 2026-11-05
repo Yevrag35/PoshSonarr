@@ -79,25 +79,27 @@ public sealed class StringNoteProperty : WritableProperty<string>
 	/// Converts a value that is being set on the property to a string.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
-	/// <returns>
-	/// An empty string for <see langword="null"/>, <paramref name="value"/> itself when it's a string, or else its
-	/// text from <see cref="IFormattable"/> or <see cref="IConvertible"/>.
-	/// </returns>
-	/// <exception cref="SetValueException">
-	/// Thrown when <paramref name="value"/> is neither a string, an <see cref="IFormattable"/>, nor an
+	/// <param name="result">
+	/// When this method returns <see langword="true"/>, an empty string for <see langword="null"/>,
+	/// <paramref name="value"/> itself when it's a string, or else its text from <see cref="IFormattable"/> or
 	/// <see cref="IConvertible"/>.
-	/// </exception>
-	protected override string ConvertFromObject(object? value)
+	/// </param>
+	/// <returns>
+	/// <see langword="true"/> if <paramref name="value"/> is <see langword="null"/>, a string, an
+	/// <see cref="IFormattable"/>, or an <see cref="IConvertible"/>; otherwise, <see langword="false"/>.
+	/// </returns>
+	protected override bool TryConvertFromObject(object? value, [NotNullWhen(true)] out string? result)
 	{
-		return value switch
+		result = value switch
 		{
 			null => string.Empty,
 			string strVal => strVal,
 			IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
 			IConvertible icon => Convert.ToString(icon, CultureInfo.InvariantCulture) ?? string.Empty,
-
-			_ => this.ThrowNotType<string>(),
+			_ => null,
 		};
+
+		return result is not null;
 	}
 	/// <summary>
 	/// Creates a read-only string property with the property's name and string.
@@ -106,18 +108,5 @@ public sealed class StringNoteProperty : WritableProperty<string>
 	protected override ReadOnlyProperty<string> CopyToReadOnly()
 	{
 		return new ReadOnlyStringProperty(this.Name, _value);
-	}
-
-	/// <summary>
-	/// Determines whether a value can be set on the property.
-	/// </summary>
-	/// <param name="value">The value to check.</param>
-	/// <returns>
-	/// <see langword="true"/> if <paramref name="value"/> is <see langword="null"/>, a string, an
-	/// <see cref="IFormattable"/>, or an <see cref="IConvertible"/>; otherwise, <see langword="false"/>.
-	/// </returns>
-	public override bool ValueIsProper(object? value)
-	{
-		return value is null || value is string || value is IFormattable || value is IConvertible;
 	}
 }

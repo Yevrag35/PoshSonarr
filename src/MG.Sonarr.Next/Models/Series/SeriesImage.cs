@@ -25,6 +25,6 @@ public sealed record SeriesImage : IComparable<SeriesImage>
 	/// </returns>
 	public int CompareTo(SeriesImage? other)
 	{
-		return StringComparer.InvariantCultureIgnoreCase.Compare(this.CoverType, other?.CoverType);
+		return StringComparer.OrdinalIgnoreCase.Compare(this.CoverType, other?.CoverType);
 	}
 }

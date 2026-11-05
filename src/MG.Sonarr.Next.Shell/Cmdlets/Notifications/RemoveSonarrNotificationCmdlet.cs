@@ -36,9 +36,7 @@ public sealed class RemoveSonarrNotificationCmdlet : SonarrApiCmdletBase
 		}
 
 		string url = tag.GetUrlForId(this.Id);
-		if (!this.Force
-			&&
-			!this.ShouldProcess(url, $"Deleting Notification {this.Id}"))
+		if (!this.ShouldProcessWithForce(url, $"Deleting Notification {this.Id}", this.Force))
 		{
 			return;
 		}

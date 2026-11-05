@@ -11,6 +11,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series;
 [MetadataCanPipe(Tag = Meta.Series)]
 public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
 {
+	const string DELETE_FILES = "deleteFiles";
+
 	QueryCol _col = null!;
 	SortedDictionary<int, string?> _dict = null!;
 	MetadataTag Tag { get; set; } = null!;
@@ -86,6 +88,7 @@ public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
 			return;
 		}
 
+		_col.AddIfTrue(this.DeleteFiles, DELETE_FILES);
 		bool force = this.Force.ToBool();
 		bool noToAll = false;
 		bool yesToAll = false;
@@ -94,7 +97,7 @@ public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
 		{
 			string url = GetUrl(this.Tag, kvp.Key, _col);
 
-			if (this.ShouldProcess(url, "Deleting Series")
+			if (this.ShouldProcessWithForce(url, "Deleting Series", force)
 				&&
 				(force
 				||

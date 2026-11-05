@@ -20,13 +20,10 @@ public class NotificationObject : TagUpdateObject<NotificationObject>,
 	ITestPipeable
 {
 	/// <summary>
-	/// The names of the trigger properties, any of which being on makes the connection enabled.
+	/// The text that starts the name of each trigger property, such as <c>OnGrab</c>, any of which being on makes the
+	/// connection enabled.
 	/// </summary>
-	static readonly string[] _isEnabledProps = new[]
-	{
-		"OnGrab", "OnDownload", "OnUpgrade", "OnRename", "OnSeriesDelete", "OnEpisodeFileDelete",
-		"OnEpisodeFileDeleteForUpgrade", "OnHealthIssue", "OnApplicationUpdate"
-	};
+	const string TRIGGER_PREFIX = "On";
 	/// <summary>
 	/// The number of properties that an instance is sized for, about the number of fields that Sonarr sends.
 	/// </summary>
@@ -55,7 +52,6 @@ public class NotificationObject : TagUpdateObject<NotificationObject>,
 	public NotificationObject()
 		: base(CAPACITY)
 	{
-		this.MustUpdateViaApi = false;
 	}
 
 	/// <summary>
@@ -81,7 +77,6 @@ public class NotificationObject : TagUpdateObject<NotificationObject>,
 	protected override void OnDeserialized(bool alreadyCalled)
 	{
 		base.OnDeserialized(alreadyCalled);
-		this.MustUpdateViaApi = false;
 		bool isEnabled = CalculateIsEnabled(this.Properties);
 		this.Properties.Add(new PSNoteProperty("IsEnabled", isEnabled));
 	}
@@ -100,34 +95,20 @@ public class NotificationObject : TagUpdateObject<NotificationObject>,
 	/// Determines whether any of the connection's triggers is on.
 	/// </summary>
 	/// <remarks>
-	/// The triggers are checked in the order of <see cref="_isEnabledProps"/>, and the first one that's on ends the
-	/// check. A trigger that's missing, can't be read, or doesn't hold a <see cref="bool"/> ends it with
-	/// <see langword="false"/>, as does a collection known to hold fewer properties than there are triggers.
+	/// A trigger is a property whose name is <c>On</c> followed by an uppercase letter, such as <c>OnGrab</c> or
+	/// <c>OnSeriesAdd</c>, so the triggers that a later Sonarr adds count too. A trigger that doesn't hold a
+	/// <see cref="bool"/> counts as off.
 	/// </remarks>
 	/// <typeparam name="T">The type of the collection's properties.</typeparam>
 	/// <param name="properties">The connection's properties.</param>
 	/// <returns>
-	/// <see langword="true"/> if a trigger that's on comes before any trigger that's missing or isn't a
-	/// <see cref="bool"/>; otherwise, <see langword="false"/>.
+	/// <see langword="true"/> if a trigger holds <see langword="true"/>; otherwise, <see langword="false"/>.
 	/// </returns>
 	private static bool CalculateIsEnabled<T>(PSMemberInfoCollection<T> properties) where T : PSPropertyInfo
 	{
-		if (properties.TryGetNonEnumeratedCount(out int count) && count < _isEnabledProps.Length)
+		foreach (T property in properties)
 		{
-			return false;
-		}
-
-		foreach (string propName in _isEnabledProps)
-		{
-			if (!TryGetInfo(properties, propName, out T? info)
-				||
-				!info.IsGettable
-				||
-				info.Value is not bool boolVal)
-			{
-				return false;
-			}
-			else if (boolVal)
+			if (IsTriggerName(property.Name) && property.IsGettable && property.Value is true)
 			{
 				return true;
 			}
@@ -137,21 +118,18 @@ public class NotificationObject : TagUpdateObject<NotificationObject>,
 	}
 
 	/// <summary>
-	/// Gets the property with the specified name from a collection.
+	/// Determines whether a property's name is a trigger's.
 	/// </summary>
-	/// <typeparam name="T">The type of the collection's properties.</typeparam>
-	/// <param name="properties">The collection to look in.</param>
-	/// <param name="propertyName">The name of the property.</param>
-	/// <param name="result">When the method returns, the property, or <see langword="null"/> if the collection has
-	/// none by that name.</param>
+	/// <param name="name">The property's name.</param>
 	/// <returns>
-	/// <see langword="true"/> if the collection has a property named <paramref name="propertyName"/>; otherwise,
-	/// <see langword="false"/>.
+	/// <see langword="true"/> if <paramref name="name"/> is <c>On</c> followed by an uppercase ASCII letter and
+	/// anything after it; otherwise, <see langword="false"/>.
 	/// </returns>
-	private static bool TryGetInfo<T>(PSMemberInfoCollection<T> properties, string propertyName, [NotNullWhen(true)] out T? result) where T : PSPropertyInfo
+	private static bool IsTriggerName(string name)
 	{
-		result = properties[propertyName];
-		return result is not null;
+		return name.Length > TRIGGER_PREFIX.Length
+			&& name.StartsWith(TRIGGER_PREFIX, StringComparison.Ordinal)
+			&& char.IsAsciiLetterUpper(name[TRIGGER_PREFIX.Length]);
 	}
 
 	/// <summary>

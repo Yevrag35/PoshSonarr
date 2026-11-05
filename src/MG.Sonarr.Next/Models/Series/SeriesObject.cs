@@ -66,6 +66,10 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 	/// The date that the series first aired, held back from PowerShell until the object is serialized.
 	/// </summary>
 	private DateOnly _firstAired;
+	/// <summary>
+	/// Whether Sonarr sent a first air date, which <see cref="_firstAired"/> then holds.
+	/// </summary>
+	private bool _hasFirstAired;
 
 	/// <summary>
 	/// Gets or sets the ID of the series' language profile.
@@ -138,11 +142,12 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 	}
 
 	/// <summary>
-	/// Removes the <c>FirstAired</c> property after a request that sent the series succeeds.
+	/// Removes the <c>FirstAired</c> property that <see cref="OnSerializing"/> added, after a request that sent the
+	/// series succeeds.
 	/// </summary>
 	protected override void OnCommit()
 	{
-		this.Properties.Remove(FIRST_AIRED);
+		this.RemoveFirstAired();
 		base.OnCommit();
 	}
 
@@ -171,6 +176,7 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 		if (property is not null && property.Value is DateOnly dateOnly)
 		{
 			_firstAired = dateOnly;
+			_hasFirstAired = true;
 			this.Properties.Remove(property.Name);
 		}
 
@@ -190,19 +196,38 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 		}
 	}
 	/// <summary>
-	/// Adds the <c>FirstAired</c> property back to the object before it's serialized.
+	/// Adds the <c>FirstAired</c> property back to the object before it's serialized, when Sonarr sent one.
 	/// </summary>
 	public virtual void OnSerializing()
 	{
-		this.SetValue(_firstAired, FIRST_AIRED);
+		if (_hasFirstAired)
+		{
+			this.SetValue(_firstAired, FIRST_AIRED);
+		}
 	}
 	/// <summary>
-	/// Removes the <c>FirstAired</c> property after a request that sent the series fails.
+	/// Removes the <c>FirstAired</c> property that <see cref="OnSerializing"/> added, after a request that sent the
+	/// series fails.
 	/// </summary>
 	protected override void OnReset()
 	{
-		this.Properties.Remove(FIRST_AIRED);
+		this.RemoveFirstAired();
 		base.OnReset();
+	}
+	/// <summary>
+	/// Removes the <c>FirstAired</c> property that <see cref="OnSerializing"/> added, when Sonarr sent a first air
+	/// date.
+	/// </summary>
+	/// <remarks>
+	/// When Sonarr sent none, <see cref="OnSerializing"/> added nothing, so a property of that name that Sonarr sent
+	/// without a date stays.
+	/// </remarks>
+	private void RemoveFirstAired()
+	{
+		if (_hasFirstAired)
+		{
+			this.Properties.Remove(FIRST_AIRED);
+		}
 	}
 	/// <summary>
 	/// Inserts the <see cref="SeriesObject"/> type name, followed by <c>SeriesBase</c>, at the start of the object's

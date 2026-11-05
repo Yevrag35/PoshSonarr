@@ -81,7 +81,7 @@ The module's projects under `src/` each reference the one before it:
 
 The base classes in `src/MG.Sonarr.Next.Shell.Bases/Cmdlets/` form one chain: `SonarrCmdletBase` → `TimedCmdlet` → `SonarrApiCmdletBase` → `SonarrMetadataCmdlet`. Most cmdlets derive from one of the last two; `Connect-SonarrInstance`, `Disconnect-SonarrInstance`, and `Test-SonarrHost` use the separate `ConnectCmdlet`, `DisconnectCmdlet`, and `TestConnectionCmdlet` bases.
 
-- `SonarrCmdletBase` seals PowerShell's processing methods. Cmdlets override `Begin`, `Process`, `End`, and `Stop`, which receive the scoped `IServiceProvider`, and set up state in `OnCreatingScope` rather than a constructor. Exceptions thrown from them become error records.
+- `SonarrCmdletBase` seals PowerShell's processing methods. Cmdlets override `Begin`, `Process`, `End`, and `Stop`, which receive the scoped `IServiceProvider`, and set up state in `OnCreatingScope` rather than a constructor. Exceptions thrown from them become error records. A cmdlet with `-Force` calls `ShouldProcessWithForce` instead of skipping `ShouldProcess`, so `-Force` skips only the confirmation prompt, and in What if mode the cmdlet shows its What if line and does nothing.
 - `SonarrApiCmdletBase` provides the synchronous `Send*Request` helpers, which API calls go through. Each call starts the timer that the cmdlet's verbose output reports. The HTTP handlers reach the running cmdlet, to write its verbose and debug output, through the request: the cmdlet's DI scope holds it in an `ApiCmdletAccessor`, and the clients that the scope resolves put it in the options of every request they send.
 - `SonarrMetadataCmdlet` binds a cmdlet to one metadata tag, and so to one endpoint, and adds get-all, filter, and get-by-ID helpers.
 

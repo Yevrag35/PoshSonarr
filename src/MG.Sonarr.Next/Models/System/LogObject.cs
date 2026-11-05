@@ -1,5 +1,6 @@
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 
@@ -20,6 +21,10 @@ public sealed class LogObject : SonarrObject,
 	/// The number of properties that a new log entry reserves room for.
 	/// </summary>
 	const int CAPACITY = 5;
+	/// <summary>
+	/// The PowerShell type name of <see cref="LogObject"/>.
+	/// </summary>
+	static readonly string _typeName = typeof(LogObject).GetName();
 
 	/// <summary>
 	/// Gets the entry's log level.
@@ -76,6 +81,7 @@ public sealed class LogObject : SonarrObject,
 	/// </summary>
 	public override void OnDeserialized()
 	{
+		base.OnDeserialized();
 		if (this.TryGetNonNullProperty(nameof(this.Level), out string? level))
 		{
 			this.Level = level;
@@ -85,5 +91,13 @@ public sealed class LogObject : SonarrObject,
 		{
 			this.Time = time;
 		}
+	}
+	/// <summary>
+	/// Inserts the <see cref="LogObject"/> type name at the start of the object's PowerShell type names.
+	/// </summary>
+	protected override void SetPSTypeName()
+	{
+		base.SetPSTypeName();
+		this.TypeNames.Insert(0, _typeName);
 	}
 }

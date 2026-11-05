@@ -71,23 +71,24 @@ public sealed class WritableSonarrProperty<T> : WritableProperty<T> where T : So
 	/// <returns>A new <see cref="WritableSonarrProperty{T}"/> that holds the copy, or no object when this one holds none.</returns>
 	protected override PSPropertyInfo CopyIntoNew(string name)
 	{
-		if (this.SonarrObject?.Copy() is not T tObj)
-		{
-			tObj = this.SonarrObject!;
-		}
-
-		return new WritableSonarrProperty<T>(name, tObj);
+		T? copy = this.SonarrObject?.Copy() as T ?? this.SonarrObject;
+		return new WritableSonarrProperty<T>(name, copy);
 	}
 
 	/// <summary>
-	/// Returns a value that is being set on the property as a <typeparamref name="T"/>.
+	/// Gets a value that is being set on the property as a <typeparamref name="T"/>.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
-	/// <returns><paramref name="value"/> as a <typeparamref name="T"/>.</returns>
-	/// <exception cref="SetValueException">Thrown when <paramref name="value"/> isn't a <typeparamref name="T"/>.</exception>
-	protected override T? ConvertFromObject(object? value)
+	/// <param name="result">When this method returns <see langword="true"/>, <paramref name="value"/> as a
+	/// <typeparamref name="T"/>.</param>
+	/// <returns>
+	/// <see langword="true"/> if <paramref name="value"/> is a <typeparamref name="T"/>; otherwise,
+	/// <see langword="false"/>, which it is for <see langword="null"/>.
+	/// </returns>
+	protected override bool TryConvertFromObject(object? value, [NotNullWhen(true)] out T? result)
 	{
-		return value is T tObj ? tObj : this.ThrowNotType<T>();
+		result = value as T;
+		return result is not null;
 	}
 
 	/// <summary>
@@ -111,10 +112,13 @@ public sealed class WritableSonarrProperty<T> : WritableProperty<T> where T : So
 	/// <summary>
 	/// Creates a read-only property with the property's name and nested object.
 	/// </summary>
-	/// <returns>A new <see cref="ReadOnlyPSObjectProperty{T}"/> that holds the same nested object.</returns>
+	/// <returns>
+	/// A new <see cref="ReadOnlyPSObjectProperty{T}"/> that holds the same nested object, or no object when this one
+	/// holds none.
+	/// </returns>
 	protected override ReadOnlyProperty<T> CopyToReadOnly()
 	{
-		return new ReadOnlyPSObjectProperty<T>(this.Name, this.SonarrObject!);
+		return new ReadOnlyPSObjectProperty<T>(this.Name, this.SonarrObject);
 	}
 }
 
