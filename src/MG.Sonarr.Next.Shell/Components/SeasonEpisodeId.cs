@@ -63,14 +63,14 @@ public readonly struct SeasonEpisodeId : IEpisodeIdentifier
 			if (dashIndex > -1)
 			{
 				var endSlice = epSlice.Slice(dashIndex + 1);
-				if (int.TryParse(endSlice, Statics.DefaultProvider, out int endEpNum))
+				if (int.TryParse(endSlice, CultureInfo.InvariantCulture, out int endEpNum))
 				{
 					endEp = endEpNum;
 					epSlice = epSlice.Slice(0, dashIndex);
 				}
 			}
 
-			if (int.TryParse(epSlice, Statics.DefaultProvider, out int epNum))
+			if (int.TryParse(epSlice, CultureInfo.InvariantCulture, out int epNum))
 			{
 				episode = epNum;
 			}
@@ -93,7 +93,7 @@ public readonly struct SeasonEpisodeId : IEpisodeIdentifier
 		{
 			var sSlice = value.Slice(index + 1);
 
-			if (int.TryParse(sSlice, Statics.DefaultProvider, out season))
+			if (int.TryParse(sSlice, CultureInfo.InvariantCulture, out season))
 			{
 				result = endEp > -1
 					? new(season, new EpisodeRange(episode, endEp), false)
@@ -102,7 +102,7 @@ public readonly struct SeasonEpisodeId : IEpisodeIdentifier
 				return true;
 			}
 		}
-		else if (int.TryParse(value, Statics.DefaultProvider, out int absolute))
+		else if (int.TryParse(value, CultureInfo.InvariantCulture, out int absolute))
 		{
 			result = endEp > -1
 				? new(season, new EpisodeRange(absolute, endEp), true)

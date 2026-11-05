@@ -3,6 +3,9 @@ namespace MG.Sonarr.Next.Json.Converters.Spans;
 /// <summary>
 /// Provides a span converter that reads a property's value as a <see cref="TimeSpan"/>, such as a <c>Duration</c>.
 /// </summary>
+/// <remarks>
+/// The value is read with the invariant culture, as Sonarr writes it, whatever the current culture.
+/// </remarks>
 public sealed class TimeSpanConverter : SpanConverter<TimeSpan>
 {
 	/// <summary>
@@ -14,7 +17,7 @@ public sealed class TimeSpanConverter : SpanConverter<TimeSpan>
 	/// <returns>The parsed time interval, or <see cref="TimeSpan.Zero"/> when the value doesn't parse.</returns>
 	public override TimeSpan ConvertSpan(Span<char> chars, ReadOnlySpan<char> propertyName, bool isNull)
 	{
-		if (TimeSpan.TryParse(chars, Statics.DefaultProvider, out TimeSpan timeSpan))
+		if (TimeSpan.TryParse(chars, CultureInfo.InvariantCulture, out TimeSpan timeSpan))
 		{
 			return timeSpan;
 		}

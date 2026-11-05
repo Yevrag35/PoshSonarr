@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Json.Converters.Spans;
 using MG.Sonarr.Next.Json.Naming;
 using MG.Sonarr.Next.Metadata;
@@ -8,7 +7,6 @@ using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Models.History;
 using MG.Sonarr.Next.Models.ManualImports;
 using MG.Sonarr.Next.Models.Qualities;
-using MG.Sonarr.Next.Models.Releases;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.PSProperties;
 
@@ -28,7 +26,22 @@ namespace MG.Sonarr.Next.Json.Converters;
 /// property's name and its parent's type call for one, and a plain <see cref="PSObject"/> otherwise.
 /// </para>
 /// <para>
-/// A <see cref="DateTimeOffset"/> is converted to local time unless its property's name ends in <c>Utc</c>.
+/// Sonarr writes its values with the invariant culture, so they're read with it, whatever the current culture. A
+/// number is the text of an <see cref="int"/>, a <see cref="long"/>, or a finite <see cref="double"/>, with no group
+/// separators. A <see cref="DateOnly"/> is an ISO 8601 date, <c>yyyy-MM-dd</c>, and a <see cref="DateTimeOffset"/>
+/// is an ISO 8601 date and time, <c>yyyy-MM-ddTHH:mm</c> with optional seconds and fractions of a second, followed
+/// by <c>Z</c>, an offset, or nothing, which is read as UTC. A value reads the same whether or not Sonarr escaped
+/// any of its characters.
+/// </para>
+/// <para>
+/// A <see cref="DateTimeOffset"/> is converted to local time unless its property's name ends in <c>Utc</c>, or the
+/// local time would fall outside the range of <see cref="DateTime"/>, as it does for <c>0001-01-01T00:00:00Z</c>
+/// west of UTC, where the value keeps its own offset.
+/// </para>
+/// <para>
+/// A history record's <c>Data</c> is read as Sonarr sends it: a plain <see cref="PSObject"/> whose property names
+/// are capitalized and renamed as every object's are, and whose strings stay strings, with no span converter or
+/// parsing.
 /// </para>
 /// <para>
 /// The converter keeps no state between calls beyond its settings, so a connection's serializer options share one
@@ -103,8 +116,8 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 		{
 			JsonTokenType.StartArray => ConvertToListOfObjects(ref reader, options),
 			JsonTokenType.StartObject => this.ConvertToObject<PSObject>(ref reader, options, null, null),
-			JsonTokenType.String => this.ReadString(ref reader, options, string.Empty, null),
-			JsonTokenType.Number => ReadNumber(ref reader, options),
+			JsonTokenType.String => this.ReadString(ref reader, string.Empty, null),
+			JsonTokenType.Number => ReadNumber(ref reader),
 			JsonTokenType.True => true,
 			JsonTokenType.False => false,
 			JsonTokenType.None or JsonTokenType.Null => null,
@@ -129,9 +142,15 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	/// Reads a JSON object into a new <typeparamref name="T"/>, adding a note property for each field.
 	/// </summary>
 	/// <remarks>
+	/// <para>
 	/// A numeric <c>id</c> becomes a <see cref="ReadOnlyNumberProperty{T}"/> of <see cref="int"/>, and every other
 	/// value the property that <see cref="WritableProperty.ToProperty{T}(string, object?)"/> picks for it. The caller
 	/// runs the object's <see cref="SonarrObject.OnDeserialized()"/>, if it has one.
+	/// </para>
+	/// <para>
+	/// The reader holds its value in one span, as the serializer's stream and span paths give it, so the method reads
+	/// <see cref="Utf8JsonReader.ValueSpan"/>, which a Debug build asserts.
+	/// </para>
 	/// </remarks>
 	/// <typeparam name="T">The type of object to create, a model or <see cref="PSObject"/>.</typeparam>
 	/// <param name="reader">The reader positioned at the start of the object, and left at its end.</param>
@@ -144,15 +163,23 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	/// The names of the string properties whose values get an uppercase first letter, or <see langword="null"/> for
 	/// none.
 	/// </param>
+	/// <param name="asSent">
+	/// <see langword="true"/> to read every value as Sonarr sent it, a string as a string and a nested object or array
+	/// the same way, with no span converter, model, or parsing; <see langword="false"/> to read values as the
+	/// converter reads them everywhere else.
+	/// </param>
 	/// <returns>The object, with a property for each of the JSON object's fields.</returns>
 	/// <exception cref="JsonException">Thrown when a value can't be read.</exception>
 	internal T ConvertToObject<T>(
 		ref Utf8JsonReader reader,
 		JsonSerializerOptions options,
 		IReadOnlyDictionary<string, string>? replaceNames,
-		IReadOnlySet<string>? propertiesToCapitalize)
+		IReadOnlySet<string>? propertiesToCapitalize,
+		bool asSent = false)
 			where T : PSObject, new()
 	{
+		Debug.Assert(!reader.HasValueSequence, "The converter reads values from ValueSpan, which a value sequence leaves empty.");
+
 		var pso = new T();
 		replaceNames ??= EmptyNameDictionary.Empty<string>();
 		propertiesToCapitalize ??= EmptyNameDictionary.Empty<string>();
@@ -162,7 +189,7 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 			if (reader.TokenType == JsonTokenType.PropertyName)
 			{
 				string pn = ReadPropertyName(
-					ref reader, options, replaceNames, _config.GlobalReplaceNames.DeserializationNames);
+					ref reader, replaceNames, _config.GlobalReplaceNames.DeserializationNames);
 
 				reader.Read();
 
@@ -172,6 +199,12 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 				{
 					//TODO: Move functionality into a read-only property key lookup operation.
 					pso.Properties.Add(new ReadOnlyNumberProperty<int>(pn, reader.GetInt32()));
+					continue;
+				}
+
+				if (asSent)
+				{
+					pso.Properties.Add(WritableProperty.ToProperty<T>(pn, this.ReadAsSent(ref reader, options)));
 					continue;
 				}
 
@@ -191,11 +224,11 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 						break;
 
 					case JsonTokenType.String:
-						o = this.ReadString(ref reader, options, pn, propertiesToCapitalize);
+						o = this.ReadString(ref reader, pn, propertiesToCapitalize);
 						break;
 
 					case JsonTokenType.Number:
-						o = ReadNumber(ref reader, options);
+						o = ReadNumber(ref reader);
 						break;
 
 					case JsonTokenType.True:
@@ -241,52 +274,53 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	}
 
 	/// <summary>
-	/// Copies a string value into a new string, reducing each backslash-quote pair to a quote and each pair of
-	/// backslashes to one.
+	/// Reads a JSON number as the narrowest of <see cref="int"/>, <see cref="long"/>, and <see cref="double"/> that
+	/// holds it.
 	/// </summary>
 	/// <remarks>
-	/// The copy is built in a stack buffer as long as the value.
+	/// <para>
+	/// A whole number written without a fraction or an exponent is read exactly. One written with them, such as
+	/// <c>1.0</c> or <c>1.5e2</c>, is read as a <see cref="double"/> and becomes an <see cref="int"/> or a
+	/// <see cref="long"/> when the <see cref="double"/> is whole and fits.
+	/// </para>
+	/// <para>
+	/// A whole number past the range of <see cref="long"/>, such as <c>18446744073709551615</c>, stays a
+	/// <see cref="double"/>.
+	/// </para>
 	/// </remarks>
-	/// <param name="chars">The value's characters.</param>
-	/// <param name="propertyName">The name of the property that the value belongs to, which isn't used.</param>
-	/// <returns>The value, with its escaped quotes and backslashes reduced.</returns>
-	private static string ProcessQuotes(ReadOnlySpan<char> chars, string propertyName)
+	/// <param name="reader">The reader positioned at the number.</param>
+	/// <returns>
+	/// The number as an <see cref="int"/> when it's whole and fits, as a <see cref="long"/> when it's whole, fits a
+	/// <see cref="long"/>, and doesn't fit an <see cref="int"/>, and as a <see cref="double"/> otherwise.
+	/// </returns>
+	/// <exception cref="FormatException">Thrown when the number is outside the range of <see cref="double"/>.</exception>
+	private static ValueType ReadNumber(ref Utf8JsonReader reader)
 	{
-		int position = 0;
-		ReadOnlySpan<char> quotes = ['\\', '"'];
-		ReadOnlySpan<char> backs = ['\\', '\\'];
-		Span<char> scratch = stackalloc char[chars.Length];
-		foreach (SplitEntry section in chars.SpanSplit(quotes, backs))
+		// Each return boxes its own type. A conditional of an int and a long has the type long, which boxed every whole
+		// number as a long.
+		if (reader.TryGetInt32(out int intNum))
 		{
-			section.Chars.CopyTo(scratch[position..]);
-			position += section.Chars.Length;
-
-			if (!section.Separator.IsEmpty)
-			{
-				scratch[position++] = section.Separator[1];
-			}
+			return intNum;
 		}
 
-		return new string(scratch[..position]);
-	}
-	/// <summary>
-	/// Reads a JSON number as the narrowest of <see cref="int"/>, <see cref="long"/>, and <see cref="double"/> that
-	/// holds it exactly.
-	/// </summary>
-	/// <param name="reader">The reader positioned at the number.</param>
-	/// <param name="options">The serializer options in use, which aren't used.</param>
-	/// <returns>
-	/// The number as an <see cref="int"/> when it's whole and fits, as a <see cref="long"/> when it's whole and
-	/// doesn't, and as a <see cref="double"/> otherwise.
-	/// </returns>
-	private static ValueType ReadNumber(ref Utf8JsonReader reader, JsonSerializerOptions options)
-	{
+		if (reader.TryGetInt64(out long longNum))
+		{
+			return longNum;
+		}
+
 		double number = reader.GetDouble();
 		if (double.IsInteger(number))
 		{
-			return number <= int.MaxValue && number >= int.MinValue
-				? (int)number
-				: (long)number;
+			if (number >= int.MinValue && number <= int.MaxValue)
+			{
+				return (int)number;
+			}
+
+			// 2^63 is the first double past long.MaxValue, and -2^63 is long.MinValue itself.
+			if (number >= long.MinValue && number < 9223372036854775808.0)
+			{
+				return (long)number;
+			}
 		}
 
 		return number;
@@ -298,11 +332,13 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	/// </summary>
 	/// <remarks>
 	/// <c>Series</c>, <c>Episode</c>, and <c>EpisodeFile</c> become a <see cref="SeriesObject"/>, an
-	/// <see cref="EpisodeObject"/>, and an <see cref="EpisodeFileObject"/> in any parent. <c>Data</c> in a
-	/// <see cref="HistoryObject"/> becomes a <see cref="ReleaseObject"/>. <c>Quality</c> becomes a
+	/// <see cref="EpisodeObject"/>, and an <see cref="EpisodeFileObject"/> in any parent. <c>Quality</c> becomes a
 	/// <see cref="QualityObject"/> in a <see cref="QualityRevisionObject"/> or a <see cref="QualityDefinitionObject"/>,
 	/// and a <see cref="QualityRevisionObject"/> in a <see cref="ManualImportObject"/>. <c>Revision</c> in a
-	/// <see cref="QualityRevisionObject"/> becomes a <see cref="RevisionObject"/>.
+	/// <see cref="QualityRevisionObject"/> becomes a <see cref="RevisionObject"/>. <c>Data</c> in a
+	/// <see cref="HistoryObject"/> becomes a plain <see cref="PSObject"/> whose values are read as Sonarr sent them,
+	/// since Sonarr sends every one of them as a string whatever the event, and the inference would make numbers,
+	/// dates, and versions of some.
 	/// </remarks>
 	/// <typeparam name="TParent">The type of the object that holds the property.</typeparam>
 	/// <param name="reader">The reader positioned at the start of the nested object.</param>
@@ -314,7 +350,12 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 		Type parentType = typeof(TParent);
 		return pn switch
 		{
-			Constants.Property_Data when parentType.Equals(typeof(HistoryObject)) => this.ReadPSObject<ReleaseObject>(ref reader, options),
+			Constants.Property_Data when parentType.Equals(typeof(HistoryObject)) => this.ConvertToObject<PSObject>(
+								ref reader,
+								options,
+								replaceNames: null,
+								propertiesToCapitalize: null,
+								asSent: true),
 			Constants.Property_Episode => this.ReadPSObject<EpisodeObject>(ref reader, options),
 			Constants.Property_EpisodeFile => this.ReadPSObject<EpisodeFileObject>(ref reader, options),
 			Constants.Property_Quality when parentType.Equals(typeof(QualityRevisionObject))
@@ -330,6 +371,53 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 								propertiesToCapitalize: null),
 		};
 	}
+	/// <summary>
+	/// Reads a JSON value as Sonarr sent it: a string as a string, a number as <see cref="ReadNumber"/> reads it, and
+	/// a nested object or array the same way.
+	/// </summary>
+	/// <param name="reader">The reader positioned at the value.</param>
+	/// <param name="options">The serializer options in use, which nested objects pass on.</param>
+	/// <returns>
+	/// The value: a string, a number, a <see cref="bool"/>, a plain <see cref="PSObject"/>, an array of objects, or
+	/// <see langword="null"/> for a JSON null.
+	/// </returns>
+	/// <exception cref="JsonException">Thrown when the reader holds a token that doesn't start a value.</exception>
+	private object? ReadAsSent(ref Utf8JsonReader reader, JsonSerializerOptions options)
+	{
+		return reader.TokenType switch
+		{
+			JsonTokenType.String => reader.GetString(),
+			JsonTokenType.Number => ReadNumber(ref reader),
+			JsonTokenType.True => true,
+			JsonTokenType.False => false,
+			JsonTokenType.Null => null,
+			JsonTokenType.StartObject => this.ConvertToObject<PSObject>(
+				ref reader, options, replaceNames: null, propertiesToCapitalize: null, asSent: true),
+			JsonTokenType.StartArray => this.ReadArrayAsSent(ref reader, options),
+			_ => throw new JsonException($"Unable to read a value from token type '{reader.TokenType}'."),
+		};
+	}
+	/// <summary>
+	/// Reads a JSON array as an array of the values that <see cref="ReadAsSent"/> reads.
+	/// </summary>
+	/// <remarks>
+	/// Sonarr's <c>Data</c> holds no arrays today, so the method is off the hot path.
+	/// </remarks>
+	/// <param name="reader">The reader positioned at the start of the array, and left at its end.</param>
+	/// <param name="options">The serializer options in use, which nested objects pass on.</param>
+	/// <returns>The array's values.</returns>
+	/// <exception cref="JsonException">Thrown when an item can't be read.</exception>
+	private object?[] ReadArrayAsSent(ref Utf8JsonReader reader, JsonSerializerOptions options)
+	{
+		List<object?> items = [];
+		while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+		{
+			items.Add(this.ReadAsSent(ref reader, options));
+		}
+
+		return [.. items];
+	}
+
 	/// <summary>
 	/// Reads a nested JSON object as a <typeparamref name="T"/> with the model's own name maps, then deserializes and
 	/// tags it.
@@ -352,23 +440,31 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	/// Reads a property's name, uppercases its first letter with the invariant culture, and renames it.
 	/// </summary>
 	/// <remarks>
-	/// The name is unescaped into a stack buffer sized for the most characters that its UTF-8 bytes can hold.
+	/// The name is unescaped into a buffer of as many characters as its raw UTF-8 bytes, which is never fewer than it
+	/// unescapes to, on the stack when that's up to <see cref="MAX_STACKALLOC"/> and rented otherwise, which goes back
+	/// to its pool before the method returns.
 	/// </remarks>
 	/// <param name="reader">The reader positioned at the property's name.</param>
-	/// <param name="options">The serializer options in use, which aren't used.</param>
 	/// <param name="replaceNames">The model's renames, which are tried first.</param>
 	/// <param name="globalReplace">The renames that apply to every object, which are tried second.</param>
 	/// <returns>The renamed property name, or the capitalized name when no rename matches.</returns>
-	private static string ReadPropertyName(ref Utf8JsonReader reader, JsonSerializerOptions options, IReadOnlyDictionary<string, string> replaceNames, IReadOnlyDictionary<string, string> globalReplace)
+	private static string ReadPropertyName(ref Utf8JsonReader reader, IReadOnlyDictionary<string, string> replaceNames, IReadOnlyDictionary<string, string> globalReplace)
 	{
-		int length = Encoding.UTF8.GetMaxCharCount(reader.ValueSpan.Length);
-		Span<char> chars = stackalloc char[length];
+		int length = reader.ValueSpan.Length;
+		using RentedBuffer<char> buffer = RentedBuffer.Rent<char>(
+			length <= MAX_STACKALLOC
+				? stackalloc char[length]
+				: length);
 
-		int written = reader.CopyString(chars);
+		int written = reader.CopyString(buffer.Span);
+		Span<char> chars = buffer[..written];
 
-		chars[0] = char.ToUpperInvariant(chars[0]);
+		if (!chars.IsEmpty)
+		{
+			chars[0] = char.ToUpperInvariant(chars[0]);
+		}
 
-		string propertyName = new(chars[..written]);
+		string propertyName = new(chars);
 		if (replaceNames.TryGetValue(propertyName, out string? replacement))
 		{
 			return replacement;
@@ -381,9 +477,27 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 		return propertyName;
 	}
 	/// <summary>
+	/// The format of an ISO 8601 date, which a string has to match exactly to become a <see cref="DateOnly"/>.
+	/// </summary>
+	const string ISO_DATE = "yyyy-MM-dd";
+	/// <summary>
+	/// The formats of an ISO 8601 date and time, one of which a string has to match exactly to become a
+	/// <see cref="DateTimeOffset"/>.
+	/// </summary>
+	/// <remarks>
+	/// <c>FFFFFFF</c> takes no fraction of a second, or up to seven digits of one, and the period before it goes with
+	/// it. <c>K</c> takes <c>Z</c>, an offset, or nothing.
+	/// </remarks>
+	static readonly string[] _isoDateTimes = ["yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK", "yyyy-MM-dd'T'HH:mmK"];
+
+	/// <summary>
 	/// Parses a string value as a <see cref="Guid"/>, a <see cref="DateOnly"/>, a <see cref="DateTimeOffset"/>, or a
 	/// <see cref="Version"/>, tried in that order, or else keeps it a string.
 	/// </summary>
+	/// <remarks>
+	/// Dates are read only in the ISO 8601 forms that Sonarr writes, with the invariant culture, so text such as
+	/// <c>12:00:00</c>, <c>1/2</c>, or <c>3.31.1</c> isn't taken for a date.
+	/// </remarks>
 	/// <param name="chars">The value's unescaped characters.</param>
 	/// <param name="propertyName">
 	/// The name of the property that the value belongs to. A <see cref="DateTimeOffset"/> is converted to local time
@@ -392,19 +506,13 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	/// <returns>The parsed value, or the value as a string.</returns>
 	private static object ReadString(ReadOnlySpan<char> chars, string propertyName)
 	{
-		if (Guid.TryParse(chars, Statics.DefaultProvider, out Guid guidStr))
+		if (Guid.TryParse(chars, CultureInfo.InvariantCulture, out Guid guidStr))
 		{
 			return guidStr;
 		}
-		else if (DateOnly.TryParse(chars, Statics.DefaultProvider, DateTimeStyles.None, out DateOnly @do))
+		else if (TryReadIsoDate(chars, propertyName, out object? date))
 		{
-			return @do;
-		}
-		else if (DateTimeOffset.TryParse(chars, Statics.DefaultProvider, DateTimeStyles.AssumeUniversal, out DateTimeOffset offset))
-		{
-			return propertyName.EndsWith(['U', 'T', 'C'], StringComparison.OrdinalIgnoreCase)
-				? offset
-				: offset.ToLocalTime();
+			return date;
 		}
 		else if (Version.TryParse(chars, out Version? version))
 		{
@@ -412,8 +520,74 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 		}
 		else
 		{
-			return ProcessQuotes(chars, propertyName);
+			return new string(chars);
 		}
+	}
+	/// <summary>
+	/// Tries to parse a string value as an ISO 8601 date, <c>yyyy-MM-dd</c>, or an ISO 8601 date and time.
+	/// </summary>
+	/// <remarks>
+	/// A value that doesn't start with a date shaped like <c>yyyy-MM-dd</c> fails before either parse runs, so most
+	/// strings cost two comparisons.
+	/// </remarks>
+	/// <param name="chars">The value's unescaped characters.</param>
+	/// <param name="propertyName">
+	/// The name of the property that the value belongs to, which decides whether a <see cref="DateTimeOffset"/> is
+	/// converted to local time.
+	/// </param>
+	/// <param name="result">
+	/// When this method returns, a boxed <see cref="DateOnly"/> or <see cref="DateTimeOffset"/> if parsing succeeded;
+	/// otherwise, <see langword="null"/>.
+	/// </param>
+	/// <returns>
+	/// <see langword="true"/> if the value is an ISO 8601 date or date and time; otherwise, <see langword="false"/>.
+	/// </returns>
+	private static bool TryReadIsoDate(ReadOnlySpan<char> chars, string propertyName, [NotNullWhen(true)] out object? result)
+	{
+		if (chars.Length >= ISO_DATE.Length && chars[4] == '-' && chars[7] == '-')
+		{
+			if (chars.Length == ISO_DATE.Length)
+			{
+				if (DateOnly.TryParseExact(chars, ISO_DATE, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateOnly date))
+				{
+					result = date;
+					return true;
+				}
+			}
+			else if (chars[ISO_DATE.Length] == 'T'
+				&&
+				DateTimeOffset.TryParseExact(chars, _isoDateTimes, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset offset))
+			{
+				result = propertyName.EndsWith(['U', 'T', 'C'], StringComparison.OrdinalIgnoreCase)
+					? offset
+					: ToLocalTime(offset);
+
+				return true;
+			}
+		}
+
+		result = null;
+		return false;
+	}
+	/// <summary>
+	/// Converts a <see cref="DateTimeOffset"/> to local time when the local time stands for the same instant.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="DateTimeOffset.ToLocalTime"/> clamps a local time outside the range of <see cref="DateTime"/>, so
+	/// west of UTC, Sonarr's <c>0001-01-01T00:00:00Z</c> would become <c>0001-01-01T00:00:00</c> at the local offset,
+	/// another instant, which a request would then send back.
+	/// </remarks>
+	/// <param name="offset">The value to convert.</param>
+	/// <returns>
+	/// The value in local time, or <paramref name="offset"/> itself when its local time falls outside the range of
+	/// <see cref="DateTime"/>.
+	/// </returns>
+	private static DateTimeOffset ToLocalTime(DateTimeOffset offset)
+	{
+		DateTimeOffset local = offset.ToLocalTime();
+		return local.UtcTicks == offset.UtcTicks
+			? local
+			: offset;
 	}
 	/// <summary>
 	/// Reads a JSON string value as its property's span converter, the number parsing, or the string parsing makes it.
@@ -422,19 +596,16 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	/// <para>
 	/// When the property is one to capitalize, the value's first letter is uppercased first, with the invariant
 	/// culture. Then the property's span converter reads the value, or else it's parsed as an <see cref="int"/>,
-	/// <see cref="long"/>, <see cref="double"/>, or <see cref="decimal"/>, or else as
-	/// <see cref="ReadString(ReadOnlySpan{char}, string)"/> parses it.
-	/// </para>
-	/// <para>
-	/// An escaped value is returned as the reader unescapes it, without any of those steps.
+	/// <see cref="long"/>, or <see cref="double"/>, or else as <see cref="ReadString(ReadOnlySpan{char}, string)"/>
+	/// parses it. An escaped value goes through the same steps once the reader unescapes it.
 	/// </para>
 	/// <para>
 	/// The characters are copied to the stack when the value is up to <see cref="MAX_STACKALLOC"/> bytes long, and to a
-	/// rented buffer otherwise, which goes back to its pool before the method returns.
+	/// rented buffer otherwise, which goes back to its pool before the method returns. The raw bytes, escapes
+	/// included, are never fewer than the characters that they unescape to.
 	/// </para>
 	/// </remarks>
 	/// <param name="reader">The reader positioned at the string value.</param>
-	/// <param name="options">The serializer options in use, which aren't used.</param>
 	/// <param name="propertyName">
 	/// The name of the property that the value belongs to, or empty for a value that isn't in an object.
 	/// </param>
@@ -442,14 +613,10 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	/// The names of the properties whose values get an uppercase first letter, or <see langword="null"/> for none.
 	/// </param>
 	/// <returns>The converted value.</returns>
-	private object? ReadString(ref Utf8JsonReader reader, JsonSerializerOptions options, string propertyName, IReadOnlySet<string>? capitalize)
+	private object? ReadString(ref Utf8JsonReader reader, string propertyName, IReadOnlySet<string>? capitalize)
 	{
+		Debug.Assert(!reader.HasValueSequence, "The converter reads values from ValueSpan, which a value sequence leaves empty.");
 		capitalize ??= EmptyNameDictionary.Empty<string>();
-
-		if (reader.ValueIsEscaped)
-		{
-			return reader.GetString() ?? string.Empty;
-		}
 
 		int length = reader.ValueSpan.Length;
 
@@ -496,43 +663,49 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	}
 
 	/// <summary>
-	/// Tries to parse a string value as an <see cref="int"/>, a <see cref="long"/>, a <see cref="double"/>, or a
-	/// <see cref="decimal"/>, in that order.
+	/// Tries to parse a string value as an <see cref="int"/>, a <see cref="long"/>, or a finite <see cref="double"/>,
+	/// in that order, with the invariant culture.
 	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// The value may have white space at either end and a leading sign, and a <see cref="double"/> a decimal point and
+	/// an exponent, but no group separators, which <see cref="double.TryParse(ReadOnlySpan{char}, IFormatProvider, out double)"/>
+	/// would otherwise take, so <c>1,5</c> stays a string where it would read as 15.
+	/// </para>
+	/// <para>
+	/// <c>NaN</c>, <c>Infinity</c>, and a value past the range of <see cref="double"/>, such as <c>1e400</c>, stay
+	/// strings, since a JSON number can't hold them and writing one back would throw.
+	/// </para>
+	/// </remarks>
 	/// <param name="chars">The value's unescaped characters.</param>
 	/// <param name="result">
 	/// When this method returns, the parsed number, boxed, if parsing succeeded; otherwise, <see langword="null"/>.
 	/// </param>
 	/// <returns>
-	/// <see langword="true"/> if the value parsed as one of the four types; otherwise, <see langword="false"/>.
+	/// <see langword="true"/> if the value parsed as one of the three types; otherwise, <see langword="false"/>.
 	/// </returns>
-	private static bool TryReadAsNumber(Span<char> chars, [NotNullWhen(true)] out ValueType? result)
+	private static bool TryReadAsNumber(ReadOnlySpan<char> chars, [NotNullWhen(true)] out ValueType? result)
 	{
-		bool returnVal = false;
-		result = default;
-
-		if (int.TryParse(chars, Statics.DefaultProvider, out int intNum))
+		if (int.TryParse(chars, NumberStyles.Integer, CultureInfo.InvariantCulture, out int intNum))
 		{
 			result = intNum;
-			returnVal = true;
+			return true;
 		}
-		else if (long.TryParse(chars, Statics.DefaultProvider, out long longNum))
+		else if (long.TryParse(chars, NumberStyles.Integer, CultureInfo.InvariantCulture, out long longNum))
 		{
 			result = longNum;
-			returnVal = true;
+			return true;
 		}
-		else if (double.TryParse(chars, Statics.DefaultProvider, out double dubNum))
+		else if (double.TryParse(chars, NumberStyles.Float, CultureInfo.InvariantCulture, out double dubNum)
+			&&
+			double.IsFinite(dubNum))
 		{
 			result = dubNum;
-			returnVal = true;
-		}
-		else if (decimal.TryParse(chars, Statics.DefaultProvider, out decimal decNum))
-		{
-			result = decNum;
-			returnVal = true;
+			return true;
 		}
 
-		return returnVal;
+		result = null;
+		return false;
 	}
 
 	/// <summary>

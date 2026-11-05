@@ -11,7 +11,10 @@ namespace MG.Sonarr.Next.Models.History;
 /// <c>/history</c>.
 /// </summary>
 /// <remarks>
-/// The record's nested <c>Data</c> holds the details of the event that it records.
+/// The record's nested <c>Data</c> holds the details of the event that it records, which differ from one kind of
+/// event to another. It's a plain <see cref="PSObject"/> whose property names are capitalized as every object's are,
+/// and whose values are the strings that Sonarr sent, such as a grab's <c>size</c> of <c>1234567890</c> or its
+/// <c>publishedDate</c>, which no number, date, or version parsing changes.
 /// </remarks>
 [SonarrObject]
 public sealed class HistoryObject : IdSonarrObject<HistoryObject>,

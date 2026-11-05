@@ -18,8 +18,8 @@ public sealed class ValidatePathExistsAttribute : ValidateArgumentsAttribute
 		return arguments switch
 		{
 			string strVal => strVal,
-			IFormattable formattable => formattable.ToString(null, Statics.DefaultProvider),
-			IConvertible convertible => Convert.ToString(convertible, Statics.DefaultProvider) ?? string.Empty,
+			IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+			IConvertible convertible => Convert.ToString(convertible, CultureInfo.InvariantCulture) ?? string.Empty,
 			_ => ThrowIncorrectType<string>(arguments),
 		};
 	}

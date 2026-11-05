@@ -77,7 +77,7 @@ public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 			chars[position++] = '.';
 
 			scoped Span<char> domain = chars.Slice(position);
-			state.domain.AsSpan().ToLower(domain, Statics.DefaultCulture);
+			state.domain.AsSpan().ToLower(domain, CultureInfo.InvariantCulture);
 		});
 	}
 	private void SendNewRequest(RemotePathBody body, MetadataTag tag)

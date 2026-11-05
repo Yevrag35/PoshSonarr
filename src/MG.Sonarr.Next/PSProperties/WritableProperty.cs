@@ -340,7 +340,8 @@ public abstract class WritableProperty<T> : WritableProperty
 		builder.Append(' ');
 		builder.Append(name);
 		builder.Append('=');
-		builder.Append(formattable, maxLength, format: default, Statics.DefaultProvider);
+		// The description is text that a person reads, so it takes the culture that's current when it's made.
+		builder.Append(formattable, maxLength, format: default, CultureInfo.CurrentCulture);
 
 		return builder.ToString();
 	}

@@ -93,9 +93,9 @@ public readonly ref struct JsonNamingPolicyOverride
 	/// <returns>The converted name as a read-only span of bytes.</returns>
 	public readonly ReadOnlySpan<byte> ConvertName(ReadOnlySpan<byte> utf8PropertyName, Span<byte> buffer)
 	{
-		if (this.IsSpanPolicy && utf8PropertyName.TryCopyTo(buffer))
+		if (this.IsSpanPolicy && Ascii.IsValid(utf8PropertyName) && utf8PropertyName.TryCopyTo(buffer))
 		{
-			return _spanPolicy.ConvertName(buffer);
+			return _spanPolicy.ConvertName(buffer[..utf8PropertyName.Length]);
 		}
 
 		if (!this.HasPolicy)
@@ -126,6 +126,10 @@ public readonly ref struct JsonNamingPolicyOverride
 	/// <summary>
 	/// Tries to convert the specified property name to a new name using the naming policy.
 	/// </summary>
+	/// <remarks>
+	/// The converted name has the length of <paramref name="propertyName"/> and starts at the beginning of
+	/// <paramref name="destination"/>, whose characters past it are left as they were.
+	/// </remarks>
 	/// <param name="propertyName">The property name.</param>
 	/// <param name="destination">The destination buffer to store the converted name.</param>
 	/// <returns>
@@ -136,13 +140,17 @@ public readonly ref struct JsonNamingPolicyOverride
 		if (!this.IsSpanPolicy || string.IsNullOrWhiteSpace(propertyName) || !propertyName.TryCopyTo(destination))
 			return false;
 
-		_spanPolicy.ConvertName(destination);
+		_spanPolicy.ConvertName(destination[..propertyName.Length]);
 		return true;
 	}
 
 	/// <summary>
 	/// Tries to convert the specified property name to a new name using the naming policy.
 	/// </summary>
+	/// <remarks>
+	/// The converted name has the length of <paramref name="propertyName"/> and starts at the beginning of
+	/// <paramref name="destination"/>, whose characters past it are left as they were.
+	/// </remarks>
 	/// <param name="propertyName">The property name.</param>
 	/// <param name="destination">The destination buffer to store the converted name.</param>
 	/// <returns>
@@ -153,13 +161,18 @@ public readonly ref struct JsonNamingPolicyOverride
 		if (!this.IsSpanPolicy || !propertyName.TryCopyTo(destination))
 			return false;
 
-		_spanPolicy.ConvertName(destination);
+		_spanPolicy.ConvertName(destination[..propertyName.Length]);
 		return true;
 	}
 
 	/// <summary>
 	/// Tries to convert the specified UTF-8 property name to a new name using the naming policy.
 	/// </summary>
+	/// <remarks>
+	/// The converted name has the length of <paramref name="utf8PropertyName"/> and starts at the beginning of
+	/// <paramref name="destination"/>, whose bytes past it are left as they were. Only ASCII letters change, as the UTF-8
+	/// overload of <see cref="JsonSpanCamelCaseNamingPolicy.ConvertName(Span{byte})"/> describes.
+	/// </remarks>
 	/// <param name="utf8PropertyName">The UTF-8 property name.</param>
 	/// <param name="destination">The destination buffer to store the converted name.</param>
 	/// <returns>
@@ -170,7 +183,7 @@ public readonly ref struct JsonNamingPolicyOverride
 		if (!this.IsSpanPolicy || !utf8PropertyName.TryCopyTo(destination))
 			return false;
 
-		_spanPolicy.ConvertName(destination);
+		_spanPolicy.ConvertName(destination[..utf8PropertyName.Length]);
 		return true;
 	}
 
@@ -221,6 +234,11 @@ public readonly ref struct JsonNamingPolicyOverride
 	/// <summary>
 	/// Writes the UTF-8 encoded property name to the specified <see cref="Utf8JsonWriter"/>.
 	/// </summary>
+	/// <remarks>
+	/// A span policy converts an ASCII name in place, in a copy of its bytes, and any other name through the policy's
+	/// <see cref="JsonNamingPolicy.ConvertName(string)"/>, so a name that holds a letter outside ASCII is written as the
+	/// policy names it.
+	/// </remarks>
 	/// <param name="writer">The JSON writer.</param>
 	/// <param name="propertyName">The property name as a read-only span of bytes.</param>
 	public readonly void WritePropertyName(Utf8JsonWriter writer, ReadOnlySpan<byte> propertyName)
@@ -231,7 +249,7 @@ public readonly ref struct JsonNamingPolicyOverride
 			writer.WritePropertyName(propertyName);
 			return;
 		}
-		else if (this.IsSpanPolicy)
+		else if (this.IsSpanPolicy && Ascii.IsValid(propertyName))
 		{
 			using (var tempSpan = RentedBuffer.Rent<byte>(
 				propertyName.Length <= MAX_STACKALLOC
@@ -259,24 +277,25 @@ public readonly ref struct JsonNamingPolicyOverride
 	/// <summary>
 	/// Writes the property name to the specified <see cref="Utf8JsonWriter"/> using the specified span policy.
 	/// </summary>
+	/// <remarks>
+	/// The name is converted as characters, in a copy on the stack when it's up to <see cref="MAX_STACKALLOC"/>
+	/// characters and in a rented buffer otherwise, and the writer encodes it, so a name that holds a letter outside
+	/// ASCII is written as <see cref="JsonNamingPolicy.CamelCase"/> names it.
+	/// </remarks>
 	/// <param name="writer">The JSON writer.</param>
 	/// <param name="spanPolicy">The span policy.</param>
 	/// <param name="propertyName">The property name as a read-only span of characters.</param>
 	private static void WriteCharSpan(Utf8JsonWriter writer, JsonSpanCamelCaseNamingPolicy spanPolicy, ReadOnlySpan<char> propertyName)
 	{
-		int maxLength = Encoding.UTF8.GetMaxByteCount(propertyName.Length);
+		int length = propertyName.Length;
 
-		using (var buffer = RentedBuffer.Rent<byte>(
-			maxLength <= MAX_STACKALLOC
-				? stackalloc byte[maxLength]
-				: maxLength))
+		using (var buffer = RentedBuffer.Rent<char>(
+			length <= MAX_STACKALLOC
+				? stackalloc char[length]
+				: length))
 		{
-			scoped var span = buffer.Span;
-			int written = Encoding.UTF8.GetBytes(propertyName, span);
-			span = buffer.Span.UnsafeSlice(0, written);
-
-			spanPolicy.ConvertName(span);
-			writer.WritePropertyName(span);
+			propertyName.CopyTo(buffer.Span);
+			writer.WritePropertyName(spanPolicy.ConvertName(buffer.Span));
 		}
 	}
 }

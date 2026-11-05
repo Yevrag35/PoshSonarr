@@ -20,7 +20,7 @@ public abstract class EnumerableTransformAttribute : ScopedTransformationAttribu
 			return false;
 		}
 
-		return LanguagePrimitives.TryConvertTo(inputData, this.CollectionTypeCore ?? typeof(IEnumerable), Statics.DefaultProvider, out _);
+		return LanguagePrimitives.TryConvertTo(inputData, this.CollectionTypeCore ?? typeof(IEnumerable), CultureInfo.InvariantCulture, out _);
 	}
 	protected virtual bool IsCorrectInputType<T>([DisallowNull] T inputData, IServiceProvider provider)
 	{
@@ -31,7 +31,7 @@ public abstract class EnumerableTransformAttribute : ScopedTransformationAttribu
 	{
 		IEnumerable transformed = LanguagePrimitives.GetEnumerable(inputData);
 		transformed = this.TransformCore(transformed.Cast<object>(), this.ElementTypeCore, inputType, engineIntrinsics, provider);
-		return LanguagePrimitives.TryConvertTo(transformed, this.CollectionTypeCore ?? inputType, Statics.DefaultProvider, out object? convertedBack)
+		return LanguagePrimitives.TryConvertTo(transformed, this.CollectionTypeCore ?? inputType, CultureInfo.InvariantCulture, out object? convertedBack)
 			? convertedBack
 			: transformed;
 	}

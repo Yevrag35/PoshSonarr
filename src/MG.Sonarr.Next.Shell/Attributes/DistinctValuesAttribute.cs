@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Shell.Checkers;
+using MG.Sonarr.Next.Shell.Checkers;
 using System.Collections.Concurrent;
 
 namespace MG.Sonarr.Next.Shell.Attributes;
@@ -22,7 +22,7 @@ public sealed class DistinctValuesAttribute : EnumerableTransformAttribute
 		var checkers = provider.GetRequiredService<ConcurrentDictionary<Type, EqualityChecker>>();
 		var checker = checkers.GetOrAdd(elementType, CreateChecker);
 
-		IEnumerable<object> converted = input.Select(x => LanguagePrimitives.ConvertTo(x, elementType, Statics.DefaultProvider));
+		IEnumerable<object> converted = input.Select(x => LanguagePrimitives.ConvertTo(x, elementType, CultureInfo.InvariantCulture));
 
 		return converted.Distinct(checker).ToArray();
 	}

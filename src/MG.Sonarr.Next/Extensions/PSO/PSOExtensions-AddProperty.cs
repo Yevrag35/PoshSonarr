@@ -123,6 +123,10 @@ public static partial class PSOExtensions
 	/// <summary>
 	/// Replaces the specified property with a read-only numeric property of type <typeparamref name="T"/>.
 	/// </summary>
+	/// <remarks>
+	/// A string value is parsed with the invariant culture, as Sonarr writes it, and any other value that isn't a
+	/// <typeparamref name="T"/> is converted by PowerShell's own conversion, which reads it the same way.
+	/// </remarks>
 	/// <typeparam name="T">The numeric value type.</typeparam>
 	/// <param name="pso">The object whose property is replaced.</param>
 	/// <param name="propertyName">The property name.</param>
@@ -139,7 +143,7 @@ public static partial class PSOExtensions
 				newProp = ReadOnlyNumberProperty.Create(propertyName, numValue);
 				break;
 
-			case string strValue when T.TryParse(strValue, CultureInfo.CurrentCulture, out T result):
+			case string strValue when T.TryParse(strValue, CultureInfo.InvariantCulture, out T result):
 				newProp = ReadOnlyNumberProperty.Create(propertyName, result);
 				break;
 
@@ -268,7 +272,7 @@ public static partial class PSOExtensions
 	/// </summary>
 	/// <remarks>If the property is already a <see cref="ReadOnlyStringProperty"/>, the method returns
 	/// false and does not perform a conversion. The conversion uses the property's value, formatting it as a string
-	/// when possible.</remarks>
+	/// with the invariant culture when possible, since the value can go back to Sonarr.</remarks>
 	/// <param name="property">The property to convert. Must not be null.</param>
 	/// <param name="result">When this method returns <see langword="true"/>, contains the resulting <see cref="ReadOnlyStringProperty"/>
 	/// instance. When it returns <see langword="false"/>, contains <paramref name="property"/> itself if it's already a
@@ -294,8 +298,8 @@ public static partial class PSOExtensions
 		{
 			null => new ReadOnlyStringProperty(property.Name, value: null),
 			string s => new ReadOnlyStringProperty(property.Name, s),
-			IFormattable f => new ReadOnlyStringProperty(property.Name, f.ToString(format: null, CultureInfo.CurrentCulture)),
-			IConvertible c => new ReadOnlyStringProperty(property.Name, c.ToString(CultureInfo.CurrentCulture)),
+			IFormattable f => new ReadOnlyStringProperty(property.Name, f.ToString(format: null, CultureInfo.InvariantCulture)),
+			IConvertible c => new ReadOnlyStringProperty(property.Name, c.ToString(CultureInfo.InvariantCulture)),
 			_ => new ReadOnlyStringProperty(property.Name, value.ToString()),
 		};
 

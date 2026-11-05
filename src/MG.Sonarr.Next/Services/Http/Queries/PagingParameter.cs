@@ -120,7 +120,7 @@ public sealed class PagingParameter : IQueryField
 	/// <param name="destination">The span to write the field into.</param>
 	/// <param name="charsWritten">The position to write at, which advances past each part of the field that fits.</param>
 	/// <param name="name">The field's name.</param>
-	/// <param name="value">The field's value, formatted with the module's default format provider.</param>
+	/// <param name="value">The field's value, formatted with the invariant culture.</param>
 	/// <returns>
 	///     <see langword="true"/> if the whole field fits in <paramref name="destination"/>; otherwise,
 	///     <see langword="false"/>.
@@ -135,7 +135,7 @@ public sealed class PagingParameter : IQueryField
 		try
 		{
 			destination[charsWritten++] = '=';
-			return value.TryCopyToSlice(destination, ref charsWritten, provider: Statics.DefaultProvider);
+			return value.TryCopyToSlice(destination, ref charsWritten, provider: CultureInfo.InvariantCulture);
 		}
 		catch (IndexOutOfRangeException)
 		{
@@ -171,7 +171,7 @@ public sealed class PagingParameter : IQueryField
 			{
 				ListSortDirection.Ascending => nameof(ListSortDirection.Ascending).AsSpan().TryCopyToSlice(destination, ref charsWritten),
 				ListSortDirection.Descending => nameof(ListSortDirection.Descending).AsSpan().TryCopyToSlice(destination, ref charsWritten),
-				_ => ((int)direction).TryCopyToSlice(destination, ref charsWritten, provider: Statics.DefaultProvider),
+				_ => ((int)direction).TryCopyToSlice(destination, ref charsWritten, provider: CultureInfo.InvariantCulture),
 			};
 		}
 		catch (IndexOutOfRangeException)

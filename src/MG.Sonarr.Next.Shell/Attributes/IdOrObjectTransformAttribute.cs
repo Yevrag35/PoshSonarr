@@ -48,7 +48,7 @@ public sealed class IdOrObjectTransformAttribute<T> : ArgumentTransformationAttr
 			return Either<int, T>.FromT2(obj);
 		}
 
-		if (LanguagePrimitives.TryConvertTo(inputData, Statics.DefaultProvider, out int id))
+		if (LanguagePrimitives.TryConvertTo(inputData, CultureInfo.InvariantCulture, out int id))
 		{
 			return Either<int, T>.FromT1(id);
 		}
