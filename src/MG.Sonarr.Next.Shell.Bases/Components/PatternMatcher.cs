@@ -6,6 +6,21 @@ namespace MG.Sonarr.Next.Shell.Components;
 /// <summary>
 /// Represents a lightweight wildcard pattern matcher for character spans.
 /// </summary>
+/// <remarks>
+/// <para>
+/// In the pattern, <c>*</c> matches any run of characters, an empty one included, and <c>?</c> matches exactly one
+/// character. Every other character matches itself, ignoring case as <see cref="char.ToLowerInvariant(char)"/> folds
+/// it. There's no escape character, so a <c>*</c> or <c>?</c> in a pattern is always a wildcard.
+/// </para>
+/// <para>
+/// The matcher refers to the span that it was given rather than copying it, so it lives no longer than that span, and a
+/// change to the span's characters changes the pattern. A <see langword="default"/> instance has an empty pattern,
+/// which matches nothing.
+/// </para>
+/// <para><b>Performance:</b> Matching allocates nothing. It remembers only the last <c>*</c> it passed, and on a
+/// mismatch it goes back to that <c>*</c> and lets it take one more input character, so a pattern with stars can read
+/// parts of the input more than once. It reads characters without bounds checks, behind its own index checks.</para>
+/// </remarks>
 public readonly ref struct PatternMatcher
 {
 	private const char QUESTION = '?';
@@ -83,6 +98,10 @@ public readonly ref struct PatternMatcher
 	/// <summary>
 	/// Determines whether the specified input matches the stored wildcard pattern.
 	/// </summary>
+	/// <remarks>
+	/// The whole input has to match, not a part of it. An empty pattern matches no input, an empty one included, and an
+	/// empty input matches only a pattern made of nothing but <c>*</c> characters.
+	/// </remarks>
 	/// <param name="input">The input characters to test.</param>
 	/// <returns><see langword="true"/> when <paramref name="input"/> matches the pattern; otherwise, <see langword="false"/>.</returns>
 	public bool IsMatch(ReadOnlySpan<char> input)
