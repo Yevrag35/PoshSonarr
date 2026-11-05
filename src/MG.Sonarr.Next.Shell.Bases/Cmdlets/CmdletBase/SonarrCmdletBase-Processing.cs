@@ -40,11 +40,20 @@ public abstract partial class SonarrCmdletBase
 
 	/// <inheritdoc cref="Cmdlet.BeginProcessing" path="/*[not(self::summary) and not(self::remarks)]"/>
 	/// <summary>
-	/// Performs initialization of command execution and traps any exceptions thrown.
+	/// Creates the cmdlet's scope, captures its preferences, and runs <see cref="Begin(IServiceProvider)"/>.
 	/// </summary>
 	/// <remarks>
-	/// This method cannot be overriden.  Dervied cmdlets should instead override the
-	/// <see cref="Begin(IServiceProvider)"/> method.
+	/// <para>
+	/// This method cannot be overriden. Derived cmdlets should instead override the
+	/// <see cref="OnCreatingScope(IServiceProvider)"/> and <see cref="Begin(IServiceProvider)"/> methods.
+	/// </para>
+	/// <para>
+	/// An exception from <see cref="OnCreatingScope(IServiceProvider)"/> disposes the scope and ends the statement with
+	/// its error, through <see cref="Cmdlet.ThrowTerminatingError(ErrorRecord)"/>. One from
+	/// <see cref="Begin(IServiceProvider)"/> ends the cmdlet with its error, as <see cref="StopCmdlet(ErrorRecord)"/>
+	/// does: the error goes to the error stream, where <c>-ErrorAction</c> decides what happens to it, and neither
+	/// <see cref="Process(IServiceProvider)"/> nor <see cref="End(IServiceProvider)"/> runs.
+	/// </para>
 	/// </remarks>
 	/// <exception cref="PipelineStoppedException"/>
 	[DebuggerStepThrough]
@@ -57,18 +66,13 @@ public abstract partial class SonarrCmdletBase
 			this.OnCreatingScopeInternal(_scope.ServiceProvider);
 			this.OnCreatingScope(_scope.ServiceProvider);
 		}
-		catch (Exception e)
-		{
-			this.Error = e.ToRecord();
-		}
-
-		if (this.HasError)
+		catch (Exception e) when (!IsPipelineControl(e))
 		{
 			this.Cleanup();
-			this.ThrowTerminatingError(this.Error);
-			return;
+			this.ThrowTerminatingError(e.ToRecord());
 		}
-		else if (_isStopped)
+
+		if (_isStopped)
 		{
 			return;
 		}
@@ -81,34 +85,12 @@ public abstract partial class SonarrCmdletBase
 				parameterName: PSConstants.ErrorAction,
 				variableName: PSConstants.ErrorActionPreference,
 				defaultIfNotPresent: ActionPreference.Continue);
-		}
-		catch (Exception e)
-		{
-			this.Error = e.ToRecord();
-			this.Cleanup();
-			return;
-		}
 
-		try
-		{
 			this.Begin(_scope.ServiceProvider);
 		}
-		catch (PipelineStoppedException)
+		catch (Exception e) when (!IsPipelineControl(e))
 		{
-			Debug.WriteLine("Pipeline stopped.");
-			this.Cleanup();
-			throw;
-		}
-		catch (Exception e)
-		{
-			this.Error = e.ToRecord();
-			this.Cleanup();
-			return;
-		}
-
-		if (!_isStopped && this.HasError && this.ErrorPreference == ActionPreference.Stop)
-		{
-			this.StopCmdlet(_error);
+			this.StopCmdlet(e.ToRecord());
 		}
 	}
 
@@ -127,44 +109,36 @@ public abstract partial class SonarrCmdletBase
 
 	/// <inheritdoc cref="Cmdlet.ProcessRecord" path="/*[not(self::summary) and not(self::remarks)]"/>
 	/// <summary>
-	/// Performs execution of the command for each input object in the pipeline and traps any 
-	/// exceptions thrown.
+	/// Runs <see cref="Process(IServiceProvider)"/> for each input object in the pipeline, unless the cmdlet has
+	/// stopped.
 	/// </summary>
 	/// <remarks>
-	/// This method cannot be overriden.  Dervied cmdlets should instead override the
+	/// <para>
+	/// This method cannot be overriden. Derived cmdlets should instead override the
 	/// <see cref="Process(IServiceProvider)"/> method.
+	/// </para>
+	/// <para>
+	/// An exception from <see cref="Process(IServiceProvider)"/> writes its error at once, as a binary cmdlet's
+	/// <see cref="Cmdlet.WriteError(ErrorRecord)"/> does, and the cmdlet goes on to the next input object with the same
+	/// scope. Under <c>-ErrorAction Stop</c>, writing the error ends the statement there.
+	/// </para>
 	/// </remarks>
 	/// <exception cref="PipelineStoppedException"/>
 	[DebuggerStepThrough]
 	protected sealed override void ProcessRecord()
 	{
-		if (_isStopped)
+		if (_isStopped || _scope is null)
 		{
 			return;
 		}
-
-		_scope ??= this.CreateScope();
 
 		try
 		{
 			this.Process(_scope.ServiceProvider);
 		}
-		catch (PipelineStoppedException)
+		catch (Exception e) when (!IsPipelineControl(e))
 		{
-			Debug.WriteLine("Pipeline stopped.");
-			this.Cleanup();
-			throw;
-		}
-		catch (Exception e)
-		{
-			this.Error = e.ToRecord();
-			this.Cleanup();
-			return;
-		}
-
-		if (!_isStopped && this.HasError && this.ErrorPreference == ActionPreference.Stop)
-		{
-			this.StopCmdlet(_error);
+			this.WriteError(e.ToRecord());
 		}
 	}
 
@@ -183,43 +157,36 @@ public abstract partial class SonarrCmdletBase
 
 	/// <inheritdoc cref="Cmdlet.EndProcessing" path="/*[not(self::summary) and not(self::remarks)]"/>
 	/// <summary>
-	/// Performs clean-up and disposal of the command after the command execution and traps any 
-	/// exceptions thrown.
+	/// Runs <see cref="End(IServiceProvider)"/>, unless the cmdlet has stopped, and then disposes the cmdlet's scope.
 	/// </summary>
 	/// <remarks>
-	/// This method cannot be overriden.  Dervied cmdlets should instead override the
+	/// <para>
+	/// This method cannot be overriden. Derived cmdlets should instead override the
 	/// <see cref="End(IServiceProvider)"/> method.
+	/// </para>
+	/// <para>
+	/// An exception from <see cref="End(IServiceProvider)"/> writes its error. The scope is disposed whether or not
+	/// <see cref="End(IServiceProvider)"/> ran or threw.
+	/// </para>
 	/// </remarks>
 	/// <exception cref="PipelineStoppedException"/>
 	[DebuggerStepThrough]
 	protected sealed override void EndProcessing()
 	{
-		_scope ??= this.CreateScope();
-
 		try
 		{
-			if (!_isStopped)
+			if (!_isStopped && _scope is not null)
 			{
 				this.End(_scope.ServiceProvider);
 			}
 		}
-		catch (PipelineStoppedException)
+		catch (Exception e) when (!IsPipelineControl(e))
 		{
-			Debug.WriteLine("Pipeline stopped.");
-			throw;
-		}
-		catch (Exception e)
-		{
-			this.Error = e.ToRecord();
+			this.WriteError(e.ToRecord());
 		}
 		finally
 		{
 			this.Cleanup();
-		}
-
-		if (this.HasError)
-		{
-			this.WriteError(this.Error);
 		}
 	}
 
@@ -237,37 +204,48 @@ public abstract partial class SonarrCmdletBase
 	}
 
 	/// <summary>
-	/// Interrupts currently running code within the <see cref="BeginProcessing"/>, 
-	/// <see cref="ProcessRecord"/>, or <see cref="EndProcessing"/> methods. If invoked, the 
-	/// <see cref="Cleanup"/> method is called prior to throwing a terminating error.
+	/// Cancels <see cref="StoppingToken"/> when the pipeline is stopped, and then runs
+	/// <see cref="Stop(IServiceProvider)"/> if the cmdlet has a scope.
 	/// </summary>
 	/// <remarks>
-	/// This method cannot be overriden.  Dervied cmdlets should instead override the
+	/// <para>
+	/// This method cannot be overriden. Derived cmdlets should instead override the
 	/// <see cref="Stop(IServiceProvider)"/> method.
+	/// </para>
+	/// <para>
+	/// PowerShell calls it on another thread while <see cref="BeginProcessing"/>, <see cref="ProcessRecord"/>, or
+	/// <see cref="EndProcessing"/> can still be using the scope's services, so it only signals: canceling the token
+	/// ends a request in flight, and it neither creates nor disposes a scope, since <see cref="Dispose()"/> disposes
+	/// the scope on the pipeline thread once the pipeline ends. Whatever it throws is lost, as is any error it would
+	/// report, so it reports none.
+	/// </para>
 	/// </remarks>
-	/// <exception cref="PipelineStoppedException"/>
 	[DebuggerStepThrough]
 	protected sealed override void StopProcessing()
 	{
-		_scope ??= this.CreateScope();
-
 		try
 		{
-			this.Stop(_scope.ServiceProvider);
-			this.ThrowTerminatingError(this.Error);
+			_stopping.Cancel();
 		}
 		finally
 		{
-			this.Cleanup();
+			if (_scope is { } scope && !_disposed)
+			{
+				this.Stop(scope.ServiceProvider);
+			}
 		}
 	}
 	/// <summary>
-	/// When overridden in the derived <see cref="SonarrCmdletBase"/> cmdlet, interrupts currently running
-	/// code within the command using the provided <see cref="IServiceProvider"/> of the scope cmdlet. 
-	/// Default implementation in the base class just returns.
+	/// When overridden in the derived <see cref="SonarrCmdletBase"/> cmdlet, signals the code that runs in the
+	/// command to stop, such as by canceling the token of a request in flight. Default implementation in the base class
+	/// just returns.
 	/// </summary>
+	/// <remarks>
+	/// It runs on another thread while <see cref="Begin(IServiceProvider)"/>, <see cref="Process(IServiceProvider)"/>,
+	/// or <see cref="End(IServiceProvider)"/> can still be running, and while the pipeline thread can be disposing the
+	/// scope, so it only signals. Whatever it throws is lost.
+	/// </remarks>
 	/// <param name="provider">The scoped service provider for use by derived cmdlets.</param>
-	/// <exception cref="Exception"/>
 	[DebuggerStepThrough]
 	protected virtual void Stop(IServiceProvider provider)
 	{

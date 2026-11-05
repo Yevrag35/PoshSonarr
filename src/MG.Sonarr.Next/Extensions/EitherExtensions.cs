@@ -9,12 +9,21 @@ namespace MG.Sonarr.Next.Extensions;
 public static class EitherExtensions
 {
 	/// <summary>
-	/// Splits an array of <see cref="Either{TLeft, TRight}"/> into two separate sets: one for the left values and one for the right values.
+	/// Splits an array of <see cref="Either{TLeft, TRight}"/> into a set of IDs and a set of name patterns.
 	/// </summary>
+	/// <remarks>
+	/// When <paramref name="explicitlyCalledForString"/> is <see langword="false"/>, as for a positional argument that
+	/// can be either an ID or a name, a number goes to <paramref name="numbers"/>, and so does text that reads as a whole
+	/// number in the invariant culture, such as <c>'5'</c> or <c>'+5'</c>, since a user's input is read the same way in
+	/// every culture. Any other text goes to <paramref name="strings"/>. When it's <see langword="true"/>, as for a
+	/// <c>-Name</c> given by name, every value goes to <paramref name="strings"/>, a number as its invariant text.
+	/// </remarks>
 	/// <param name="array">The array of <see cref="Either{TLeft, TRight}"/> to be split.</param>
-	/// <param name="numbers">The set to which the right values (integers) will be added.</param>
-	/// <param name="strings">The set to which the left values (strings) will be added.</param>
-	/// <param name="explicitlyCalledForString">A boolean flag indicating whether the method was explicitly called for string values.</param>
+	/// <param name="numbers">The set to which the IDs are added.</param>
+	/// <param name="strings">The set to which the name patterns are added.</param>
+	/// <param name="explicitlyCalledForString">
+	/// <see langword="true"/> to read every value as a name; otherwise, <see langword="false"/>.
+	/// </param>
 	public static void SplitToSets(this Either<string, int>[]? array, ISet<int> numbers, WildcardSet strings, bool explicitlyCalledForString = false)
 	{
 		ArgumentNullException.ThrowIfNull(numbers);
@@ -29,7 +38,7 @@ public static class EitherExtensions
 		{
 			_ = item.Index switch
 			{
-				1 when !explicitlyCalledForString && int.TryParse(item.AsT1, out int number) => numbers.Add(number),
+				1 when !explicitlyCalledForString && int.TryParse(item.AsT1, NumberStyles.Integer, CultureInfo.InvariantCulture, out int number) => numbers.Add(number),
 				1 => strings.Add(item.AsT1),
 				2 when explicitlyCalledForString => AddSpan(strings, item.AsT2),
 				_ => numbers.Add(item.AsT2),

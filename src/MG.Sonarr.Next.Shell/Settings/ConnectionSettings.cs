@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Auth;
 using System.Net;
 
 namespace MG.Sonarr.Next.Shell.Settings;
@@ -85,12 +85,12 @@ public sealed class ConnectionSettings : IConnectionSettings
 		this.Key.Validate();
 		if (this.ServiceUri is null)
 		{
-			throw new ArgumentNullException("A base URL must be provided.");
+			throw new ArgumentNullException(nameof(this.ServiceUri), "A base URL must be provided.");
 		}
 
 		if (this.Timeout <= TimeSpan.Zero)
 		{
-			throw new ArgumentOutOfRangeException("The timeout must be greater than zero.");
+			throw new ArgumentOutOfRangeException(nameof(this.Timeout), this.Timeout, "The timeout must be greater than zero.");
 		}
 	}
 }

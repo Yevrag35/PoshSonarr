@@ -7,7 +7,7 @@ namespace MG.Sonarr.Next.Exceptions;
 /// </summary>
 public sealed class InvalidEpisodeIdFormatException : PoshSonarrException
 {
-	const string ARG_MSG = "Episode identifiers should be either be an integer or a string in \"S<season#>E<episode#>\" format.";
+	const string ARG_MSG = "Episode identifiers should be either an integer or a string in \"S<season#>E<episode#>\" format.";
 
 	/// <summary>
 	/// Gets the list of offending episode identifiers that caused this exception to be thrown.

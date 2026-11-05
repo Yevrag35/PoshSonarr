@@ -8,6 +8,7 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Indexers;
 using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Models.Tags;
+using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -79,29 +80,36 @@ public sealed class NewSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 		{
 			MetadataTag tag = provider.GetMetadataTag(Meta.Tag);
 			this.ProcessNames(_tagNames, _tagIds, tag);
+			if (this.IsStopped)
+			{
+				return;
+			}
 		}
 
 		if (this.HasParameter(this.Indexer) && IsIndexNameAndNotAny(this.Indexer, out Wildcard indexerName))
 		{
+			// A name that matches no indexer stops the cmdlet with its error, whether or not the server has any
+			// indexers, since the body would otherwise go out with the indexer ID 0, which means every indexer.
 			MetadataTag tag = provider.GetMetadataTag(Meta.Indexer);
-			var indexers = this.GetAll<IndexerObject>(tag.UrlBase);
-			if (indexers.Count == 0)
+			SonarrClientResult<MetadataList<IndexerObject>> response = this.SendGetRequest<MetadataList<IndexerObject>>(tag.UrlBase);
+			if (response.IsError)
 			{
+				this.StopCmdlet(response.Error);
 				return;
 			}
 
-			if (indexers.TryFind(indexerName, static (x, name) => name.IsMatch(x.Name), out var indexer))
+			if (response.Value.TryFind(indexerName, static (x, name) => name.IsMatch(x.Name), out var indexer))
 			{
 				this.WriteVerbose($"Found indexer from name -> {indexer.Name} ({indexer.Id})");
 				this.Indexer = indexer.Id;
 			}
 			else
 			{
-				this.Error = new SonarrErrorRecord(
+				this.StopCmdlet(new SonarrErrorRecord(
 					normalEx: new SonarrParameterException(nameof(Indexer), ParameterErrorType.Invalid, $"No indexer was found with the name '{indexerName}'."),
 					"New-SonarrReleaseProfile.InvalidIndexerName",
 					ErrorCategory.InvalidArgument,
-					indexerName);
+					indexerName));
 			}
 		}
 	}
@@ -134,6 +142,8 @@ public sealed class NewSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 		this.WriteOutcome(response);
 	}
 
+	// Determines whether -Indexer holds a name to look up. 'Any', '(Any)', and '*' mean every indexer, which the body
+	// sends as the indexer ID 0. Any other text, empty text included, names an indexer to find.
 	private static bool IsIndexNameAndNotAny(Either<string, int> indexerInfo, out Wildcard indexerName)
 	{
 		if (!indexerInfo.TryGetT1(out string? name, out _))
@@ -143,18 +153,18 @@ public sealed class NewSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 		}
 
 		indexerName = Wildcard.Parse(name);
-		if (indexerName.IsEmpty || indexerName.MatchType == WildcardMatchType.All)
+		if (indexerName.MatchType == WildcardMatchType.All && !indexerName.IsEmpty)
 		{
 			return false;
 		}
 
-		bool result = !indexerName.Equals(ANY_INDEXER, StringComparison.OrdinalIgnoreCase);
-		if (!result && indexerName.MatchType == WildcardMatchType.Exact && indexerName.Length == ANY_INDEXER.Length + 2)
+		ReadOnlySpan<char> text = name;
+		if (text.Length == ANY_INDEXER.Length + 2 && text.EnclosedIn('(', ')'))
 		{
-			result = !indexerName.AsSpan().EnclosedIn('(', ')');
+			text = text[1..^1];
 		}
 
-		return result;
+		return !text.Equals(ANY_INDEXER, StringComparison.OrdinalIgnoreCase);
 	}
 	private void ProcessNames(WildcardSet names, SortedSet<int> tagIds, MetadataTag tag)
 	{

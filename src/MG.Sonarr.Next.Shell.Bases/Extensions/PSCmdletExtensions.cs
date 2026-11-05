@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Extensions.Pwsh;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Strings;
 using System.Collections.Frozen;
@@ -125,12 +124,42 @@ public static partial class PSCmdletExtensions
 
 		if (false == cmdlet.MyInvocation?.BoundParameters?.TryGetValue(parameterName, out boundValue)
 			&&
-			cmdlet.SessionState.PSVariable.TryGetVariableValue(variableName, out ActionPreference variablePref))
+			TryGetPreferenceVariable(cmdlet, variableName, out ActionPreference variablePref))
 		{
 			return variablePref;
 		}
 
 		return resolution(boundValue, defaultIfNotPresent);
+	}
+
+	/// <summary>
+	/// Reads a preference variable from the cmdlet's scope and converts its value to an <see cref="ActionPreference"/>,
+	/// as PowerShell does when it applies the preference.
+	/// </summary>
+	/// <remarks>
+	/// At the global scope, a preference variable holds an <see cref="ActionPreference"/>, but a function or a script that
+	/// assigns one, as in <c>$VerbosePreference = 'Continue'</c>, creates a local variable that holds the string its author
+	/// wrote, so the value is converted as an enum name rather than tested for its type.
+	/// </remarks>
+	/// <param name="cmdlet">The cmdlet whose session state is read.</param>
+	/// <param name="variableName">The name of the preference variable, without the <c>$</c>.</param>
+	/// <param name="preference">
+	/// When this method returns <see langword="true"/>, the variable's value as an <see cref="ActionPreference"/>.
+	/// </param>
+	/// <returns>
+	/// <see langword="true"/> if the variable exists and its value converts to an <see cref="ActionPreference"/>;
+	/// otherwise, <see langword="false"/>.
+	/// </returns>
+	private static bool TryGetPreferenceVariable(PSCmdlet cmdlet, string variableName, out ActionPreference preference)
+	{
+		object? value = cmdlet.SessionState.PSVariable.GetValue(variableName);
+		if (value is not null && LanguagePrimitives.TryConvertTo(value, CultureInfo.InvariantCulture, out preference))
+		{
+			return true;
+		}
+
+		preference = default;
+		return false;
 	}
 
 	private static bool ContainsParameterKey(Dictionary<string, object?> dictionary, string key)

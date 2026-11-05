@@ -18,17 +18,20 @@ public static class ScriptBlockExtensions
 	extension(ScriptBlock scriptBlock)
 	{
 		/// <summary>
-		/// A custom <see cref="ScriptBlock"/> invocation method that injects a stated object for '$_' and sets the 
-		/// scriptblock's global 'ErrorActionPreference' to the specified value.
+		/// A custom <see cref="ScriptBlock"/> invocation method that injects a stated object for '$_' and '$this', and
+		/// defines '$ErrorActionPreference' in the script block's scope with the specified value.
 		/// </summary>
 		/// <typeparam name="T">The type of the input value to inject into the script block.</typeparam>
 		/// <typeparam name="TOutput">The type of the output value expected from the script block.</typeparam>
 		/// <param name="value">The input value to inject into the script block.</param>
 		/// <param name="errorAction">
 		///     The optional ErrorActionPreference that the executing scriptblock will have set. If this is
-		///     <see langword="null"/>, then the global ActionPreference will be used.
+		///     <see langword="null"/>, then the script block reads the preference from the scopes that it runs in.
 		/// </param>
-		/// <returns>The output value from the script block, or <see langword="default"/> if no output is produced.</returns>
+		/// <returns>
+		/// The script block's first output when it's a <typeparamref name="TOutput"/>; otherwise, <see langword="default"/>,
+		/// as when the script block writes nothing or writes <see langword="null"/> first.
+		/// </returns>
 		public TOutput? InvokeWith<T, TOutput>(T value, ActionPreference? errorAction) where T : notnull
 		{
 			ArgumentNullException.ThrowIfNull(scriptBlock);
@@ -52,14 +55,19 @@ public static class ScriptBlockExtensions
 
 			Collection<PSObject> results = scriptBlock.InvokeWithContext(null, variables, []);
 
-			return results.Count > 0 && results[0].ImmediateBaseObject is TOutput tRes
+			// A script block that writes $null puts a null element in the results.
+			return results.Count > 0 && results[0]?.ImmediateBaseObject is TOutput tRes
 				? tRes
 				: default;
 		}
 
 		/// <summary>
-		/// Determines whether the given <see cref="ScriptBlock"/> is a "proper" scriptblock, meaning it has either a Begin or Process block, or an End block that contains a pipeline with at least one command expression.
+		/// Determines whether the given <see cref="ScriptBlock"/> is a "proper" scriptblock, meaning it has either a Begin or Process block, or an End block whose first statement is a pipeline that starts with a command expression.
 		/// </summary>
+		/// <remarks>
+		/// It tells a script, such as <c>$_.Label + '-old'</c>, from text that parses as a command name, such as <c>mytag</c>,
+		/// whose first pipeline element is a command rather than a command expression.
+		/// </remarks>
 		/// <returns><see langword="true"/> if the script block is proper; otherwise, <see langword="false"/>.</returns>
 		public bool IsProperScriptBlock()
 		{
