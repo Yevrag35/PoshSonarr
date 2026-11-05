@@ -36,7 +36,7 @@ public sealed class RemoveSonarrTagCmdlet : SonarrApiCmdletBase
 	}
 	protected override void Process(IServiceProvider provider)
 	{
-		if (this.InvokeCommand.HasErrors || this.Id <= 0)
+		if (this.Id <= 0)
 		{
 			return;
 		}

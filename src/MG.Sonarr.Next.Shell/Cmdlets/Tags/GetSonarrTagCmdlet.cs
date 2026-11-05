@@ -66,11 +66,6 @@ public sealed class GetSonarrTagCmdlet : SonarrMetadataCmdlet
 	}
 	protected override void End(IServiceProvider provider)
 	{
-		if (this.InvokeCommand.HasErrors)
-		{
-			return;
-		}
-
 		IList<TagObject> tags = _ids.Count > 0 && _wcNames.Count == 0
 			? this.GetById<TagObject>(_ids)
 			: this.ParameterSetName == PSConstants.PSetPipeline || this.HasParameter(this.Name)

@@ -66,11 +66,6 @@ public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
 	}
 	protected override void End(IServiceProvider provider)
 	{
-		if (this.InvokeCommand.HasErrors)
-		{
-			return;
-		}
-
 		List<QualityProfileObject> list = new(_ids.Count + _wcNames.Count);
 
 		bool addedIds = false;

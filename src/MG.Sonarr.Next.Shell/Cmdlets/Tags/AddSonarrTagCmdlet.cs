@@ -93,11 +93,6 @@ public sealed class AddSonarrTagCmdlet : SonarrMetadataCmdlet
 	}
 	protected override void End(IServiceProvider provider)
 	{
-		if (this.InvokeCommand.HasErrors)
-		{
-			return;
-		}
-
 		foreach (KeyValuePair<string, ITagPipeable> kvp in _updates)
 		{
 			if (kvp.Value.Tags.IsSupersetOf(_ids))

@@ -77,7 +77,7 @@ public sealed class GetSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 	}
 	protected override void End(IServiceProvider provider)
 	{
-		if (this.InvokeCommand.HasErrors || this.HasNoParameters())
+		if (this.HasNoParameters())
 		{
 			return;
 		}

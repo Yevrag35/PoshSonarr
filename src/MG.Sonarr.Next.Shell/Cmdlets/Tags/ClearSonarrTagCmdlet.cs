@@ -98,11 +98,6 @@ public sealed class ClearSonarrTagCmdlet : SonarrMetadataCmdlet
 	}
 	protected override void End(IServiceProvider provider)
 	{
-		if (this.InvokeCommand.HasErrors)
-		{
-			return;
-		}
-
 		foreach (var kvp in _updates)
 		{
 			if (!_ids.Overlaps(kvp.Value.Tags))

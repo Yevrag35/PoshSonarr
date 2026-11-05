@@ -62,7 +62,7 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 	{
 		if (this.HasNotNullParameter(this.EpisodeIdentifier) && this.EpisodeIdentifier.Length > 0 && !this.EpisodeIdentifier.AreAllValid(out ErrorRecord? error))
 		{
-			this.WriteError(error);
+			this.StopCmdlet(error);
 		}
 	}
 
@@ -90,7 +90,7 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
 	protected override void End(IServiceProvider provider)
 	{
-		if (this.InvokeCommand.HasErrors || (_epIds.IsNullOrEmpty && _seriesIds.IsNullOrEmpty))
+		if (_epIds.IsNullOrEmpty && _seriesIds.IsNullOrEmpty)
 		{
 			return;
 		}
