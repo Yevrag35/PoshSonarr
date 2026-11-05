@@ -2,7 +2,6 @@ using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Strings;
 using System.Collections.Frozen;
-using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Shell.Extensions;

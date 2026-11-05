@@ -1,3 +1,4 @@
+using MG.Sonarr.Next.Exceptions.Shell;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Json.Naming;
 using MG.Sonarr.Next.Metadata;

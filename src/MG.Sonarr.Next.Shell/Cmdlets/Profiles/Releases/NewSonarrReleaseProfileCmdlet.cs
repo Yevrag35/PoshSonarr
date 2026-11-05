@@ -1,5 +1,6 @@
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Exceptions;
+using MG.Sonarr.Next.Exceptions.Shell;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Indexers;
@@ -7,7 +8,6 @@ using MG.Sonarr.Next.Models.Profiles;
 using MG.Sonarr.Next.Models.Tags;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using MG.Sonarr.Next.Shell.Exceptions;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Unions;
 

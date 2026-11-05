@@ -1,26 +1,54 @@
-using MG.Sonarr.Next.Buffers;
-using MG.Sonarr.Next.Exceptions;
+namespace MG.Sonarr.Next.Exceptions.Shell;
 
-namespace MG.Sonarr.Next.Shell.Exceptions;
-
+/// <summary>
+/// Defines the types of errors that can occur with cmdlet parameters in Sonarr.
+/// </summary>
 [Flags]
 public enum ParameterErrorType
 {
+	/// <summary>
+	/// Indicates that there is no error with the parameter.
+	/// </summary>
 	None = 0,
+	/// <summary>
+	/// Indicates that the parameter is invalid.
+	/// </summary>
 	Invalid = 1,
+	/// <summary>
+	/// Indicates that the parameter is missing.
+	/// </summary>
 	Missing = 2,
+	/// <summary>
+	/// Indicates that the parameter is malformed.
+	/// </summary>
 	Malformed = 4,
 }
 
+/// <summary>
+/// Represents an exception that is thrown when a cmdlet parameter is invalid, missing, or malformed in the context of Sonarr.
+/// </summary>
 public sealed class SonarrParameterException : PoshSonarrException
 {
 	const string AND = "and ";
 	const string MSG_FORMAT = "The cmdlet parameter '{0}' is {1}.";
 	const string MSG_ADD_FORMAT = MSG_FORMAT + " {2}";
 
+	/// <summary>
+	/// Gets the type of error that occurred with the parameter.
+	/// </summary>
 	public ParameterErrorType ErrorType { get; }
+	/// <summary>
+	/// Gets the name of the parameter that caused the exception.
+	/// </summary>
 	public string ParameterName { get; }
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="SonarrParameterException"/> class with the specified parameter name, error type, additional message, and inner exception.
+	/// </summary>
+	/// <param name="paramName">The name of the parameter that caused the exception.</param>
+	/// <param name="errorType">The type of error that occurred with the parameter.</param>
+	/// <param name="additionalMessage">An additional message that provides more details about the error.</param>
+	/// <param name="innerException">The exception that is the cause of the current exception.</param>
 	public SonarrParameterException(string paramName, ParameterErrorType errorType, string? additionalMessage, Exception? innerException = null)
 		: base(GetMessage(paramName, errorType, additionalMessage), innerException)
 	{
@@ -43,7 +71,7 @@ public sealed class SonarrParameterException : PoshSonarrException
 
 		string typeStr = type.ToString();
 		ReadOnlySpan<char> typeSpan = typeStr;
-		scoped ReadOnlySpan<char> splitBy = stackalloc char[] { ',', ' ' };
+		scoped ReadOnlySpan<char> splitBy = [',', ' '];
 		int count = GetErrorCount(typeSpan, splitBy);
 
 		int length = typeSpan.Length + 4;
@@ -60,7 +88,6 @@ public sealed class SonarrParameterException : PoshSonarrException
 		}
 
 		int i = 0;
-		//foreach (ReadOnlySpan<char> section in typeSpan.SpanSplit(splitBy))
 		foreach (Range range in typeSpan.Split(splitBy))
 		{
 			ReadOnlySpan<char> section = typeSpan[range];
@@ -95,10 +122,19 @@ public sealed class SonarrParameterException : PoshSonarrException
 		return typeSpan.Count(splitBy) + 1;
 	}
 
+	/// <summary>
+	/// Creates an <see cref="ErrorRecord"/> representing this exception, with the parameter name as the target object.
+	/// </summary>
+	/// <returns>An <see cref="ErrorRecord"/> representing this exception.</returns>
 	public SonarrErrorRecord ToRecord()
 	{
 		return this.ToRecord(this.ParameterName);
 	}
+	/// <summary>
+	/// Creates an <see cref="ErrorRecord"/> representing this exception, with the specified target object.
+	/// </summary>
+	/// <param name="targetObj">The target object to associate with the error record.</param>
+	/// <returns>An <see cref="ErrorRecord"/> representing this exception.</returns>
 	public SonarrErrorRecord ToRecord(object? targetObj)
 	{
 		return new SonarrErrorRecord(this, nameof(SonarrParameterException), ErrorCategory.InvalidArgument, targetObj);
