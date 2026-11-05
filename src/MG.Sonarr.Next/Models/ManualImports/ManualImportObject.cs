@@ -184,8 +184,8 @@ public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
 			return;
 		}
 
-		// A name that the converter read as a number, a date, or a version keeps its text, formatted with the
-		// invariant culture, as Sonarr wrote it.
+		// Name is on the always-string list, so the property holds the text that Sonarr sent, such as 01, which the
+		// read-only property keeps.
 		this.ReplaceWithReadOnlyStringProperty(name);
 	}
 

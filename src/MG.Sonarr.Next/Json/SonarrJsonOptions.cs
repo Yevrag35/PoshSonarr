@@ -178,6 +178,9 @@ public static class SonarrJsonDependencyInjection
 						new("ProxyPassword", exactStringConverter),
 						// A release's identifier, which a grab sends back as it came.
 						new("Guid", exactStringConverter),
+						// A resource's name, which a PUT sends back, and which Sonarr turns away as a number, such as a
+						// download client named 2024, or a manual import's file named 01, which the inference would read as 1.
+						new("Name", exactStringConverter),
 						// A field's placeholder and a select option's hint, which a provider's schema sends back, and
 						// which Sonarr turns away as a number.
 						new("Hint", exactStringConverter),

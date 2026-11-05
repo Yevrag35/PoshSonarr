@@ -661,30 +661,12 @@ public static class Utf8JsonWriterExtensions
 	/// <returns>A slice of <paramref name="propertyName"/>.</returns>
 	private static ReadOnlySpan<char> FormatPropertyName(ReadOnlySpan<char> propertyName)
 	{
-		if (TryGetLastIndexOfPeriod(propertyName, out int index))
+		if (propertyName.TryLastIndexOfAndNotEnd('.', out int index))
 		{
 			propertyName = propertyName.UnsafeSlice(index + 1);
 		}
 
 		return propertyName;
-	}
-
-	/// <summary>
-	/// Tries to find the last period in a property name that has at least one character after it.
-	/// </summary>
-	/// <param name="propertyName">The property name to search.</param>
-	/// <param name="index">
-	/// When this method returns, the index of the last period if the name has one; otherwise, an unspecified value.
-	/// </param>
-	/// <returns>
-	/// <see langword="true"/> if the name has a period that isn't its last character; otherwise,
-	/// <see langword="false"/>.
-	/// </returns>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static bool TryGetLastIndexOfPeriod(ReadOnlySpan<char> propertyName, out int index)
-	{
-		return propertyName.TryLastIndexOf('.', out index)
-			&& index < propertyName.Length - 1;
 	}
 
 	/// <summary>
