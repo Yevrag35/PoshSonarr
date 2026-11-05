@@ -1,5 +1,7 @@
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Text;
 using System.Collections.Immutable;
 using System.Text;
@@ -65,7 +67,38 @@ public sealed class ServiceRegistrationGenerator : IIncrementalGenerator
 			"The type passed to [RegisterService] becomes the contract the registration is resolved by, and the marked "
 			+ "type becomes its implementation, so the implementation has to be assignable to it. Reporting the mismatch "
 			+ "here puts the error on the attribute; left to the generated file, it surfaces as a generic constraint "
-			+ "violation on a call site the author never wrote.");
+			+ "violation on a call site the author never wrote. The implementation has to convert to the service type "
+			+ "by an implicit reference conversion, as the container's generic constraint asks, so an interface that "
+			+ "it reaches through variance counts, and an array, a value type, or an open generic doesn't.");
+
+	private static readonly DiagnosticDescriptor s_notAccessibleRule = new(
+		id: "PSNR102",
+		title: "Registered type is not accessible to the generated registration",
+		messageFormat: "'{0}' cannot be registered by [RegisterService] because {1} - the generated registration class sits at namespace scope, where it has to name every type that it registers",
+		category: CATEGORY,
+		defaultSeverity: DiagnosticSeverity.Error,
+		isEnabledByDefault: true,
+		description:
+			"An extension method has to live in a non-nested static class, so the generated registration sits in the "
+			+ "marked type's namespace and names the implementation and the service type from there. A private, "
+			+ "protected, private protected, or file-local type, a type nested in one, and a generic type argument "
+			+ "that is one can't be named from there. Left to the generated file, that surfaces as an inaccessible-type "
+			+ "error on a line the author never wrote; reporting it here puts it on the attribute. Make the type, and "
+			+ "every type that contains it, internal or public.");
+
+	private static readonly DiagnosticDescriptor s_invalidMethodNameRule = new(
+		id: "PSNR103",
+		title: "Registration method name is not a valid identifier",
+		messageFormat: "'{0}' cannot be the name of the method that [RegisterService] generates for '{1}' - MethodName has to be a C# identifier",
+		category: CATEGORY,
+		defaultSeverity: DiagnosticSeverity.Error,
+		isEnabledByDefault: true,
+		description:
+			"The generator writes MethodName into the generated file as the extension method's name, so a name that "
+			+ "isn't an identifier, such as one with a space or one that starts with a digit, leaves the file with "
+			+ "syntax errors that the author never wrote. A reserved keyword, such as 'class', is an identifier once "
+			+ "escaped, so the generator writes it as '@class'. An empty or white-space name isn't reported: the "
+			+ "generator takes it for no name and derives the default one.");
 
 	/// <inheritdoc/>
 	public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -78,10 +111,12 @@ public sealed class ServiceRegistrationGenerator : IIncrementalGenerator
 				SourceText.From(ATTRIBUTE_SOURCE, Encoding.UTF8));
 		});
 
-		// 2) Find classes decorated with [RegisterService] → emit their registration extension.
+		// 2) Find classes decorated with [RegisterService] → emit their registration extension. A record class is
+		//    a RecordDeclarationSyntax, not a ClassDeclarationSyntax; a record struct is too, and CreateResult
+		//    turns it away by its type kind, though the attribute's usage already rejects it (CS0592).
 		IncrementalValuesProvider<RegistrationResult> services = context.SyntaxProvider.ForAttributeWithMetadataName(
 				ATTRIBUTE_FULL_NAME,
-				static (node, _) => node is ClassDeclarationSyntax,
+				static (node, _) => node is ClassDeclarationSyntax or RecordDeclarationSyntax,
 				static (ctx, _) => CreateResult(in ctx))
 			.Where(static result => result is not null)!;
 
@@ -119,18 +154,34 @@ public sealed class ServiceRegistrationGenerator : IIncrementalGenerator
 			return RegistrationResult.Fatal(new DiagnosticInfo(s_notConstructibleRule, location, implementation.Name, reason));
 		}
 
-		ReadConstructorArguments(attribute, out INamedTypeSymbol? serviceType, out int lifetime);
-
-		if (serviceType is not null && !IsAssignableTo(implementation, serviceType))
+		Accessibility accessibility = Accessibility.Public;
+		if (!TryNarrowAccessibility(implementation, ref accessibility, out string hidden))
 		{
-			return RegistrationResult.Fatal(new DiagnosticInfo(s_notAssignableRule, location, serviceType.Name, implementation.Name));
+			return RegistrationResult.Fatal(new DiagnosticInfo(s_notAccessibleRule, location, implementation.Name, hidden));
+		}
+
+		ReadConstructorArguments(attribute, out ITypeSymbol? serviceType, out int lifetime);
+
+		if (serviceType is not null)
+		{
+			if (!IsAssignableTo(ctx.SemanticModel.Compilation, implementation, serviceType))
+			{
+				return RegistrationResult.Fatal(new DiagnosticInfo(
+					s_notAssignableRule, location, serviceType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), implementation.Name));
+			}
+
+			if (!TryNarrowAccessibility(serviceType, ref accessibility, out hidden))
+			{
+				return RegistrationResult.Fatal(new DiagnosticInfo(s_notAccessibleRule, location, implementation.Name, hidden));
+			}
 		}
 
 		ReadNamedArguments(attribute, out string? methodName);
 
-		string? ns = implementation.ContainingNamespace?.IsGlobalNamespace == true
-			? null
-			: implementation.ContainingNamespace?.ToDisplayString();
+		if (methodName is not null && !SyntaxFacts.IsValidIdentifier(methodName))
+		{
+			return RegistrationResult.Fatal(new DiagnosticInfo(s_invalidMethodNameRule, location, methodName, implementation.Name));
+		}
 
 		string implementationName = implementation.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
@@ -140,14 +191,15 @@ public sealed class ServiceRegistrationGenerator : IIncrementalGenerator
 
 		return new RegistrationResult(
 			Model: new ServiceRegistrationModel(
-				Namespace: ns,
+				Namespace: SourceNames.GetNamespace(implementation),
+				IsPublic: accessibility == Accessibility.Public,
 				ClassName: GetRegistrationClassName(implementation),
-				MethodName: methodName ?? GetDefaultMethodName(implementation.Name),
+				MethodName: SourceNames.EscapeIdentifier(methodName ?? GetDefaultMethodName(implementation.Name)),
 				ImplementationFullName: implementationName,
 				ServiceFullName: selfRegistering ? null : serviceType!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
 				AddMethodName: GetAddMethodName(lifetime),
 				LifetimeWord: GetLifetimeWord(lifetime),
-				HintName: MakeHintName(implementationName)),
+				HintName: SourceNames.MakeHintName(implementationName)),
 			Diagnostic: null);
 	}
 
@@ -158,11 +210,12 @@ public sealed class ServiceRegistrationGenerator : IIncrementalGenerator
 	/// </remarks>
 	/// <param name="attribute">The applied attribute.</param>
 	/// <param name="serviceType">
-	/// When this method returns, contains the contract the registration is resolved by, or <see langword="null"/> when
-	/// the marked type registers as its own.
+	/// When this method returns, contains the contract the registration is resolved by, which can be any type, an array
+	/// included, for <see cref="IsAssignableTo"/> to judge, or <see langword="null"/> when the marked type registers as
+	/// its own.
 	/// </param>
 	/// <param name="lifetime">When this method returns, contains the lifetime's numeric value, defaulting to singleton.</param>
-	private static void ReadConstructorArguments(AttributeData attribute, out INamedTypeSymbol? serviceType, out int lifetime)
+	private static void ReadConstructorArguments(AttributeData attribute, out ITypeSymbol? serviceType, out int lifetime)
 	{
 		serviceType = null;
 		lifetime = 0;
@@ -183,7 +236,7 @@ public sealed class ServiceRegistrationGenerator : IIncrementalGenerator
 			switch (parameters[i].Name)
 			{
 				case "serviceType":
-					serviceType = arguments[i].Value as INamedTypeSymbol;
+					serviceType = arguments[i].Value as ITypeSymbol;
 					break;
 
 				// The enum arrives boxed as its underlying int.
@@ -270,32 +323,92 @@ public sealed class ServiceRegistrationGenerator : IIncrementalGenerator
 	}
 
 	/// <summary>Determines whether <paramref name="implementation"/> can be resolved as <paramref name="serviceType"/>.</summary>
+	/// <remarks>
+	/// The generated call's constraint, <c>where TImplementation : class, TService</c>, asks for an identity or implicit
+	/// reference conversion, so this asks the compilation for the same one. That takes in a base class, an interface
+	/// that the implementation or a base class implements, and one that it reaches through variance, such as
+	/// <c>IEnumerable&lt;object&gt;</c> for an <c>IEnumerable&lt;string&gt;</c>, and turns away an array, a value
+	/// type, an open generic such as <c>IGen&lt;&gt;</c>, and a user-defined conversion.
+	/// </remarks>
+	/// <param name="compilation">The compilation that holds both types.</param>
 	/// <param name="implementation">The marked type.</param>
 	/// <param name="serviceType">The contract named by the attribute.</param>
-	/// <returns><see langword="true"/> if the implementation is the service type, derives from it, or implements it; otherwise, <see langword="false"/>.</returns>
-	private static bool IsAssignableTo(INamedTypeSymbol implementation, INamedTypeSymbol serviceType)
+	/// <returns><see langword="true"/> if the implementation converts to the service type as the constraint needs; otherwise, <see langword="false"/>.</returns>
+	private static bool IsAssignableTo(Compilation compilation, INamedTypeSymbol implementation, ITypeSymbol serviceType)
 	{
-		if (SymbolEqualityComparer.Default.Equals(implementation, serviceType))
-			return true;
+		CommonConversion conversion = compilation.ClassifyCommonConversion(implementation, serviceType);
+		return conversion.IsIdentity || (conversion.IsImplicit && conversion.IsReference && !conversion.IsUserDefined);
+	}
 
-		if (serviceType.TypeKind == TypeKind.Interface)
+	/// <summary>
+	/// Narrows the generated class's accessibility to what a type allows, or finds the type that the class can't name.
+	/// </summary>
+	/// <remarks>
+	/// The generated class sits at namespace scope, so it names a nested type through every type that contains it, and
+	/// a constructed type through each of its type arguments. It's public only when all of them are public, and
+	/// internal when one of them is internal or <see langword="protected"/> <see langword="internal"/>, so its public
+	/// method never registers a type that callers outside the assembly couldn't name.
+	/// </remarks>
+	/// <param name="type">The type that the generated class names.</param>
+	/// <param name="accessibility">
+	/// The accessibility so far, <see cref="Accessibility.Public"/> or <see cref="Accessibility.Internal"/>, which this
+	/// method lowers to internal when <paramref name="type"/> calls for it.
+	/// </param>
+	/// <param name="hidden">
+	/// When this method returns <see langword="false"/>, contains the phrase that names the type the class can't name,
+	/// such as <c>'Hidden' is private</c>; otherwise, an empty string.
+	/// </param>
+	/// <returns><see langword="true"/> if the generated class can name <paramref name="type"/>; otherwise, <see langword="false"/>.</returns>
+	private static bool TryNarrowAccessibility(ITypeSymbol type, ref Accessibility accessibility, out string hidden)
+	{
+		switch (type)
 		{
-			foreach (INamedTypeSymbol iface in implementation.AllInterfaces)
-			{
-				if (SymbolEqualityComparer.Default.Equals(iface, serviceType))
-					return true;
-			}
+			case IArrayTypeSymbol array:
+				return TryNarrowAccessibility(array.ElementType, ref accessibility, out hidden);
 
-			return false;
-		}
+			case INamedTypeSymbol named:
+				for (INamedTypeSymbol? current = named; current is not null; current = current.ContainingType)
+				{
+					if (current.IsFileLocal)
+					{
+						hidden = $"'{current.Name}' is file-local";
+						return false;
+					}
 
-		for (INamedTypeSymbol? baseType = implementation.BaseType; baseType is not null; baseType = baseType.BaseType)
-		{
-			if (SymbolEqualityComparer.Default.Equals(baseType, serviceType))
+					switch (current.DeclaredAccessibility)
+					{
+						case Accessibility.Internal:
+						case Accessibility.ProtectedOrInternal:
+							accessibility = Accessibility.Internal;
+							break;
+
+						case Accessibility.Private:
+							hidden = $"'{current.Name}' is private";
+							return false;
+
+						case Accessibility.Protected:
+							hidden = $"'{current.Name}' is protected";
+							return false;
+
+						case Accessibility.ProtectedAndInternal:
+							hidden = $"'{current.Name}' is private protected";
+							return false;
+					}
+				}
+
+				foreach (ITypeSymbol argument in named.TypeArguments)
+				{
+					if (!TryNarrowAccessibility(argument, ref accessibility, out hidden))
+						return false;
+				}
+
+				hidden = string.Empty;
+				return true;
+
+			default:
+				hidden = string.Empty;
 				return true;
 		}
-
-		return false;
 	}
 
 	/// <summary>Builds the default method name from the marked type's name.</summary>
@@ -324,17 +437,8 @@ public sealed class ServiceRegistrationGenerator : IIncrementalGenerator
 	private static string GetRegistrationClassName(INamedTypeSymbol implementation)
 	{
 		StringBuilder sb = new(implementation.Name.Length + 12);
-		AppendContainingTypeNames(sb, implementation.ContainingType);
+		SourceNames.AppendContainingTypeNames(sb, implementation.ContainingType);
 		return sb.Append(implementation.Name).Append("Registration").ToString();
-
-		static void AppendContainingTypeNames(StringBuilder sb, INamedTypeSymbol? containing)
-		{
-			if (containing is null)
-				return;
-
-			AppendContainingTypeNames(sb, containing.ContainingType);
-			sb.Append(containing.Name);
-		};
 	}
 
 	/// <summary>Maps the attribute's lifetime value onto the extension method that registers it.</summary>
@@ -363,29 +467,6 @@ public sealed class ServiceRegistrationGenerator : IIncrementalGenerator
 		}
 	}
 
-	/// <summary>Builds a unique, stable file hint name from a fully qualified type name.</summary>
-	/// <param name="fullyQualifiedName">The marked type's fully qualified name.</param>
-	/// <returns>The hint name, carrying no characters that are illegal in a file name.</returns>
-	private static string MakeHintName(string fullyQualifiedName)
-	{
-		return fullyQualifiedName.Replace("global::", "")
-								 .Replace('<', '_')
-								 .Replace('>', '_')
-								 .Replace('.', '_')
-								 .Replace('+', '_');
-	}
-
-	/// <summary>Strips the global alias from a fully qualified name, so it can be written into a <c>cref</c>.</summary>
-	/// <param name="fullyQualifiedName">The name to strip.</param>
-	/// <returns>The name without its <c>global::</c> prefix.</returns>
-	private static string Speakable(string fullyQualifiedName)
-	{
-		const string global_alias = "global::";
-		return fullyQualifiedName.StartsWith(global_alias, StringComparison.Ordinal)
-			? fullyQualifiedName.Substring(global_alias.Length)
-			: fullyQualifiedName;
-	}
-
 	// ── Rendering ────────────────────────────────────────────────────────
 
 	/// <summary>Renders the registration extension class for one marked type.</summary>
@@ -393,8 +474,8 @@ public sealed class ServiceRegistrationGenerator : IIncrementalGenerator
 	/// <returns>The generated source text.</returns>
 	private static string Render(ServiceRegistrationModel model)
 	{
-		string implementation = Speakable(model.ImplementationFullName);
-		string? service = model.ServiceFullName is null ? null : Speakable(model.ServiceFullName);
+		string implementation = SourceNames.ToDocReference(model.ImplementationFullName);
+		string? service = model.ServiceFullName is null ? null : SourceNames.ToDocReference(model.ServiceFullName);
 
 		StringBuilder sb = new(2_000);
 		sb.AppendLine("// <auto-generated/>");
@@ -406,12 +487,12 @@ public sealed class ServiceRegistrationGenerator : IIncrementalGenerator
 			sb.AppendLine();
 		}
 
-		sb.Append("/// <summary>Provides the generated dependency injection registration for <see cref=\"")
-		  .Append(implementation).AppendLine("\"/>.</summary>");
-		sb.Append("public static class ").AppendLine(model.ClassName);
+		sb.Append("/// <summary>Provides the generated dependency injection registration for ")
+		  .Append(implementation).AppendLine(".</summary>");
+		sb.Append(model.IsPublic ? "public" : "internal").Append(" static class ").AppendLine(model.ClassName);
 		sb.AppendLine("{");
 
-		sb.Append("\t/// <summary>Registers <see cref=\"").Append(implementation).Append("\"/> as ");
+		sb.Append("\t/// <summary>Registers ").Append(implementation).Append(" as ");
 
 		if (service is null)
 		{
@@ -419,14 +500,13 @@ public sealed class ServiceRegistrationGenerator : IIncrementalGenerator
 		}
 		else
 		{
-			sb.Append("the ").Append(model.LifetimeWord).Append(" implementation of <see cref=\"")
-			  .Append(service).Append("\"/>");
+			sb.Append("the ").Append(model.LifetimeWord).Append(" implementation of ").Append(service);
 		}
 
 		sb.AppendLine(".</summary>");
 		sb.AppendLine("\t/// <param name=\"services\">The service collection to add the registration to.</param>");
-		sb.Append("\t/// <returns>The same <see cref=\"").Append(Speakable(SERVICE_COLLECTION))
-		  .AppendLine("\"/> instance so that additional calls can be chained.</returns>");
+		sb.Append("\t/// <returns>The same ").Append(SourceNames.ToDocReference(SERVICE_COLLECTION))
+		  .AppendLine(" instance so that additional calls can be chained.</returns>");
 
 		sb.Append("\tpublic static ").Append(SERVICE_COLLECTION).Append(' ').Append(model.MethodName)
 		  .Append("(this ").Append(SERVICE_COLLECTION).AppendLine(" services)");
@@ -478,6 +558,14 @@ namespace MG.Sonarr.Next.Generators
 	/// The generated method lands in the marked type's own namespace and is named <c>Add</c> plus the type name with a
 	/// trailing <c>Service</c> trimmed, unless <see cref="MethodName"/> names it. The method registers the marked type
 	/// as the implementation, so the type has to be one the container can construct.
+	/// </para>
+	/// <para>
+	/// The method's class sits at namespace scope, so a nested type's class folds its containing types' names into its
+	/// own: <c>Outer.Inner</c> gets <c>OuterInnerRegistration</c>, which a type named <c>OuterInner</c> would also get.
+	/// The method's name doesn't fold, so two like-named nested types in one namespace need a
+	/// <see cref="MethodName"/> each to be called apart. The class is public when every type that it names, and each
+	/// type that contains one, is public, and internal otherwise, and it can't name a private, protected, or
+	/// file-local type at all.
 	/// </para>
 	/// <para>
 	/// A registration is a singleton unless it passes a <see cref="ServiceRegistrationLifetime"/>.
@@ -567,9 +655,13 @@ namespace MG.Sonarr.Next.Generators
 	}
 
 	/// <summary>Describes one registration to render, as plain values that the incremental cache can compare.</summary>
-	/// <param name="Namespace">The marked type's namespace, or <see langword="null"/> for the global namespace.</param>
+	/// <param name="Namespace">The marked type's namespace, with its keywords escaped, or <see langword="null"/> for the global namespace.</param>
+	/// <param name="IsPublic">
+	/// A value that indicates whether the generated class is public, which it is only when every type that it names is
+	/// public, along with each type that contains it; otherwise, it's internal.
+	/// </param>
 	/// <param name="ClassName">The name of the generated static class.</param>
-	/// <param name="MethodName">The name of the generated extension method.</param>
+	/// <param name="MethodName">The name of the generated extension method, escaped with <c>@</c> when it's a keyword.</param>
 	/// <param name="ImplementationFullName">The marked type's fully qualified name.</param>
 	/// <param name="ServiceFullName">
 	/// The contract's fully qualified name, or <see langword="null"/> when the marked type registers as its own.
@@ -579,6 +671,7 @@ namespace MG.Sonarr.Next.Generators
 	/// <param name="HintName">The file hint name for the generated source.</param>
 	private sealed record ServiceRegistrationModel(
 		string? Namespace,
+		bool IsPublic,
 		string ClassName,
 		string MethodName,
 		string ImplementationFullName,

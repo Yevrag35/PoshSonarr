@@ -13,10 +13,17 @@ namespace MG.Sonarr.Next.Generators;
 /// </summary>
 /// <remarks>
 /// <para>
-/// An enum named <c>Foo</c> gets a static <c>FooExtensions</c> class in its namespace, with its accessibility, whose
-/// members stand in for the general-purpose <see cref="Enum"/> APIs: <c>TryGetName</c> and <c>ToStringFast</c> for
+/// An enum named <c>Foo</c> gets a static <c>FooExtensions</c> class in its namespace, whose members stand in for the
+/// general-purpose <see cref="Enum"/> APIs: <c>TryGetName</c> and <c>ToStringFast</c> for
 /// <see cref="Enum.ToString()"/>, <c>TryFormat</c> for UTF-16 and UTF-8 formatting, <c>IsValidEnum</c> for
 /// <see cref="Enum.IsDefined(Type, object)"/>, and <c>TryParseFast</c> and <c>ParseFast</c> for parsing.
+/// </para>
+/// <para>
+/// The class sits at namespace scope, since an extension block can't be nested, so it has to name the enum from there.
+/// It's public when the enum and every type that contains it are public, and internal when one of them is internal. An
+/// enum that it can't name gets no class: a private, protected, or file-local enum, and one inside a type that's
+/// private, protected, file-local, or generic. A nested enum's class folds its containing types' names into its own,
+/// so <c>Outer.Foo</c> gets <c>OuterFooExtensions</c>, which a top-level enum named <c>OuterFoo</c> would also get.
 /// </para>
 /// <para>
 /// Where the consuming compilation can reach the module's unchecked span helpers, the formatting members copy through
@@ -83,14 +90,14 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 	/// <summary>Reads one attributed enum into the model that its extensions class renders from.</summary>
 	/// <param name="ctx">The context describing the attributed enum.</param>
 	/// <returns>
-	/// The model to render, or <see langword="null"/> when the target isn't a public or internal enum that declares at
-	/// least one member.
+	/// The model to render, or <see langword="null"/> when the target isn't an enum that the extensions class can name
+	/// from namespace scope, or declares no member.
 	/// </returns>
 	private static EnumModel? CreateEnumModel(in GeneratorAttributeSyntaxContext ctx)
 	{
 		if (ctx.TargetSymbol is not INamedTypeSymbol enumSymbol || enumSymbol.TypeKind != TypeKind.Enum
 			||
-			!(enumSymbol.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal))
+			!TryGetClassAccessibility(enumSymbol, out Accessibility accessibility))
 			return null;
 
 		// Only constants that are actual enum members (skip value__).
@@ -100,9 +107,9 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 		if (members.Length == 0)
 			return null;
 
-		string? ns = enumSymbol.ContainingNamespace?.IsGlobalNamespace == true
-			? null
-			: enumSymbol.ContainingNamespace?.ToDisplayString();
+		StringBuilder className = new(enumSymbol.Name.Length + 10);
+		SourceNames.AppendContainingTypeNames(className, enumSymbol.ContainingType);
+		className.Append(enumSymbol.Name).Append("Extensions");
 
 		const string FLAGS_ATTRIBUTE_FULL_NAME = "System.FlagsAttribute";
 		bool isFlags = false;
@@ -128,17 +135,70 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 			disableDict = ad.NamedArguments[0].Value.Value as bool? ?? false;
 		}
 
+		string fullType = enumSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 		return new EnumModel(
-			Namespace: ns,
+			Namespace: SourceNames.GetNamespace(enumSymbol),
 			EnumName: enumSymbol.Name,
-			EnumFullType: enumSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+			ClassName: className.ToString(),
+			EnumFullType: fullType,
 			UnderlyingKeyword: GetUnderlyingKeyword(enumSymbol.EnumUnderlyingType),
 			AllNamesAscii: AllNamesAreAscii(members),
 			IsFlags: isFlags,
 			DisableDictionary: disableDict,
-			Accessibility: enumSymbol.DeclaredAccessibility,
-			Members: members,
-			HintName: MakeHintName(enumSymbol));
+			Accessibility: accessibility,
+			Members: new EquatableArray<EnumMember>(members),
+			HintName: SourceNames.MakeHintName(fullType));
+	}
+
+	/// <summary>Determines the accessibility of the extensions class, which has to name the enum from namespace scope.</summary>
+	/// <remarks>
+	/// The class can't be more accessible than the enum is from outside its containing types, or its members' signatures
+	/// would be inconsistent (CS0051), and it can't name an enum that a private, protected, or file-local type hides
+	/// (CS0122), or one inside a generic type, whose type parameters it has none of. A <see langword="protected"/>
+	/// <see langword="internal"/> containing type is reachable from anywhere in the assembly, so it counts as internal.
+	/// </remarks>
+	/// <param name="enumSymbol">The attributed enum.</param>
+	/// <param name="accessibility">
+	/// When this method returns <see langword="true"/>, contains <see cref="Accessibility.Public"/> or
+	/// <see cref="Accessibility.Internal"/>; otherwise, <see cref="Accessibility.Public"/>.
+	/// </param>
+	/// <returns><see langword="true"/> if the class can name the enum; otherwise, <see langword="false"/>.</returns>
+	private static bool TryGetClassAccessibility(INamedTypeSymbol enumSymbol, out Accessibility accessibility)
+	{
+		accessibility = Accessibility.Public;
+		if (enumSymbol.IsFileLocal || !(enumSymbol.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal))
+			return false;
+
+		if (enumSymbol.DeclaredAccessibility == Accessibility.Internal)
+		{
+			accessibility = Accessibility.Internal;
+		}
+
+		for (INamedTypeSymbol? containing = enumSymbol.ContainingType; containing is not null; containing = containing.ContainingType)
+		{
+			if (containing.IsFileLocal || !containing.TypeParameters.IsEmpty)
+			{
+				accessibility = Accessibility.Public;
+				return false;
+			}
+
+			switch (containing.DeclaredAccessibility)
+			{
+				case Accessibility.Public:
+					break;
+
+				case Accessibility.Internal:
+				case Accessibility.ProtectedOrInternal:
+					accessibility = Accessibility.Internal;
+					break;
+
+				default:
+					accessibility = Accessibility.Public;
+					return false;
+			}
+		}
+
+		return true;
 	}
 
 	/// <summary>
@@ -173,6 +233,10 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 		bool emitsParsing = !model.DisableDictionary;
 		bool usesNameTable = emitsParsing && model.Members.Length > name_table_threshold;
 
+		// A name that equals an earlier one when case is ignored can only win through an exact comparison,
+		// made before the case-insensitive lookup that the earlier name wins, and stays out of the table.
+		SplitCaseCollisions(model.Members, out List<EnumMember> distinct, out List<EnumMember> shadowed);
+
 		// Budget ", " between every name so the constant also covers a comma-separated listing.
 		int totalLength = 0;
 		foreach (EnumMember m in model.Members)
@@ -185,7 +249,7 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 		sb.Append("/// <summary>Provides fast, allocation-aware extension members for the <see cref=\"")
 		  .Append(type)
 		  .AppendLine("\"/> enumeration.</summary>");
-		sb.Append(access).Append(" static partial class ").Append(model.EnumName).AppendLine("Extensions");
+		sb.Append(access).Append(" static partial class ").AppendLine(model.ClassName);
 		sb.AppendLine("{");
 
 		// Storage stays at class scope: an extension block accepts methods, properties, and indexers,
@@ -194,12 +258,12 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 		// const is substituted at the call site, so a property fronting one could at best inline back to
 		// the value the const already supplies for free, while giving up const initializers and every
 		// other compile-time constant position.
-		sb.AppendLine("\t/// <summary>Gets the total number of unique enum values with defined names for this enum type.</summary>");
+		sb.AppendLine("\t/// <summary>The number of members that this enum type defines, aliases included, which is the length of <c>Values</c>.</summary>");
 		sb.Append("\tpublic const int ValueCount = ").Append(model.Members.Length).AppendLine(";");
 		sb.AppendLine();
 
-		sb.AppendLine("\t/// <summary>Gets the constant maximum length of the strings returned by <see cref=\"ToStringFast\"/> for this enum type.</summary>");
-		sb.AppendLine("\t/// <remarks>Useful for sizing buffers when formatting enum values as strings.</remarks>");
+		sb.AppendLine("\t/// <summary>The length of all of this enum type's names joined with <c>\", \"</c>, which no name or list of flags that <see cref=\"ToStringFast\"/> returns exceeds.</summary>");
+		sb.AppendLine("\t/// <remarks>Useful for sizing buffers when formatting enum values as strings. A value without a name formats as its number instead, which can run longer, and longer still in a culture whose negative sign has more than one character.</remarks>");
 		sb.Append("\tpublic const int MaxToStringFastLength = ").Append(totalLength).AppendLine(";");
 		sb.AppendLine();
 
@@ -208,11 +272,11 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 			// Flags enums: valid iff every set bit belongs to a defined flag. Fold all members into a
 			// mask (idempotent for aliases/combined members), then reject any value with out-of-mask bits.
 			sb.Append("\tprivate const ").Append(type).Append(" DEFINED_FLAGS_MASK = ")
-			  .Append(type).Append('.').Append(model.Members[0].Name);
+			  .Append(type).Append('.').Append(model.Members[0].Identifier);
 
-			foreach (EnumMember fm in model.Members.AsSpan(1, model.Members.Length - 1))
+			foreach (EnumMember fm in model.Members.AsSpan().Slice(1))
 			{
-				sb.Append(" | ").Append(type).Append('.').Append(fm.Name);
+				sb.Append(" | ").Append(type).Append('.').Append(fm.Identifier);
 			}
 
 			sb.AppendLine(";");
@@ -221,7 +285,7 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 
 		if (usesNameTable)
 		{
-			RenderNameTable(sb, model, type);
+			RenderNameTable(sb, type, distinct);
 		}
 
 		// One extension block carries everything callable: the instance members bind to the receiver,
@@ -250,7 +314,7 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 			if (!seen.Add(m.Value))
 				continue;
 
-			sb.Append("\t\t\t\tcase ").Append(type).Append('.').Append(m.Name)
+			sb.Append("\t\t\t\tcase ").Append(type).Append('.').Append(m.Identifier)
 			  .Append(": name = \"").Append(m.Name).AppendLine("\"; return true;");
 		}
 
@@ -319,15 +383,17 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 
 				sb.Append("\t\tpublic bool IsValidEnum() => ");
 
+				// Both forms are explicitly unchecked, so a value below the run wraps to a large one and
+				// fails the compare, rather than throwing if the consumer compiles with overflow checking
+				// on: the cast of a negative value to the unsigned type overflows as much as the
+				// subtraction does.
 				if (min == 0)
 				{
-					sb.Append('(').Append(cast).Append(")value <= ").Append(max).Append(suffix).AppendLine(";");
+					sb.Append("unchecked((").Append(cast).Append(")value) <= ").Append(max).Append(suffix).AppendLine(";");
 				}
 				else
 				{
-					// A run that starts above zero slides down to it first. The subtraction is explicitly
-					// unchecked so a value below the run wraps to a large one and fails the compare, rather
-					// than throwing if the consumer compiles with overflow checking on.
+					// A run that starts above zero slides down to it first.
 					sb.Append("unchecked((").Append(cast).Append(")value - ").Append(min).Append(suffix)
 					  .Append(") <= ").Append(max - min).Append(suffix).AppendLine(";");
 				}
@@ -341,39 +407,24 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 
 		sb.AppendLine();
 
-		// Values
-		if (!usesNameTable)
+		// Values: the members are listed inline as a read-only span literal, which the compiler emits as
+		// static data, on both parse strategies. The name table can't stand in for the list: its order is
+		// its own, and it holds one entry for names that differ only in case.
+		sb.AppendLine("\t\t/// <summary>Gets every value that this enum type defines, aliases included, in declaration order.</summary>");
+		sb.AppendLine("\t\t/// <value>A read-only span over the values, which the compiler emits as static data.</value>");
+		sb.Append("\t\tpublic static global::System.ReadOnlySpan<").Append(type).Append("> Values => [");
+
+		for (int i = 0; i < model.Members.Length; i++)
 		{
-			// No name table is generated, so materialize the values inline as a read-only span literal.
-			sb.AppendLine("\t\t/// <summary>Gets a read-only span of all enum values for this enum type.</summary>");
-			sb.AppendLine("\t\t/// <value>A read-only span of all enum values.</value>");
-			sb.Append("\t\tpublic static global::System.ReadOnlySpan<").Append(type).Append("> Values => [");
-
-			for (int i = 0; i < model.Members.Length; i++)
+			if (i > 0)
 			{
-				if (i > 0)
-				{
-					sb.Append(", ");
-				}
-
-				sb.Append(type).Append('.').Append(model.Members[i].Name);
+				sb.Append(", ");
 			}
 
-			sb.AppendLine("];");
+			sb.Append(type).Append('.').Append(model.Members[i].Identifier);
 		}
-		else
-		{
-			// The frozen name table already holds the values as an ImmutableArray, so surface that
-			// directly (zero-copy on .NET 10) instead of re-listing every member - the dictionary
-			// stays the single source of truth.
-			sb.AppendLine("\t\t/// <summary>Gets an immutable array of all enum values for this enum type.</summary>");
-			sb.AppendLine("\t\t/// <value>An immutable array containing every defined value of the enumeration.</value>");
-			sb.AppendLine("#if NET10_0_OR_GREATER");
-			sb.Append("\t\tpublic static global::System.Collections.Immutable.ImmutableArray<").Append(type).AppendLine("> Values => s_nameToValue.Values;");
-			sb.AppendLine("#else");
-			sb.Append("\t\tpublic static global::System.Collections.Immutable.ImmutableArray<").Append(type).AppendLine("> Values => global::System.Collections.Immutable.ImmutableArray.CreateRange(s_nameToValue.Values);");
-			sb.AppendLine("#endif");
-		}
+
+		sb.AppendLine("];");
 
 		if (emitsParsing)
 		{
@@ -381,11 +432,11 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 
 			if (usesNameTable)
 			{
-				RenderTableTryParse(sb, type);
+				RenderTableTryParse(sb, type, shadowed);
 			}
 			else
 			{
-				RenderChainTryParse(sb, model, type);
+				RenderChainTryParse(sb, type, distinct, shadowed);
 			}
 
 			RenderParseFast(sb, model, type);
@@ -475,7 +526,7 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 				if (!seen.Add(m.Value))
 					continue;
 
-				sb.Append("\t\t\t\tcase ").Append(type).Append('.').Append(m.Name)
+				sb.Append("\t\t\t\tcase ").Append(type).Append('.').Append(m.Identifier)
 				  .Append(": name = \"").Append(m.Name).AppendLine("\"u8; break;");
 			}
 
@@ -493,10 +544,22 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 			sb.AppendLine("\t\t\tbytesWritten = 0;");
 			sb.AppendLine("\t\t\treturn false;");
 		}
-		else
+		else if (!model.IsFlags)
 		{
 			// At least one name carries a non-ASCII character, so there is no compile-time UTF-8 blob to
-			// copy - format to characters and transcode instead.
+			// copy - transcode the name that the character overload writes, straight from its string. Only
+			// a value without a name falls back to its number.
+			sb.AppendLine("\t\t\tif (value.TryGetName(out string? name))");
+			sb.AppendLine("\t\t\t{");
+			sb.AppendLine("\t\t\t\treturn global::System.Text.Encoding.UTF8.TryGetBytes(name, utf8Destination, out bytesWritten);");
+			sb.AppendLine("\t\t\t}");
+			sb.AppendLine();
+			RenderUtf8Fallback(sb, model, fallbackLength, "\t\t\t", useSpanUnsafeExtensions);
+		}
+		else
+		{
+			// A flags value's character form, whether a name or a list of them, comes from the character
+			// overload, so the whole body formats to characters and transcodes.
 			RenderUtf8Fallback(sb, model, fallbackLength, "\t\t\t", useSpanUnsafeExtensions);
 		}
 
@@ -506,8 +569,13 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 	}
 
 	/// <summary>
-	/// Emits the UTF-8 path taken by a value that has no defined name.
+	/// Emits the UTF-8 path taken by a value that the names emitted before it don't cover.
 	/// </summary>
+	/// <remarks>
+	/// For an enum that isn't a flags enum, that's a value without a name, which writes its number. For a flags enum, it's
+	/// a list of names or a number, or the whole body when a name isn't ASCII, and it transcodes what the character
+	/// overload writes.
+	/// </remarks>
 	/// <param name="sb">The builder receiving the generated source.</param>
 	/// <param name="model">The enum being rendered.</param>
 	/// <param name="fallbackLength">The length of the scratch character buffer used when transcoding.</param>
@@ -525,13 +593,9 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 		// A combined flags value formats as a comma-joined listing, which only Enum composes - reach it
 		// through the character overload above and transcode the result.
 		sb.Append(indent).Append("global::System.Span<char> chars = stackalloc char[").Append(fallbackLength).AppendLine("];");
-		sb.Append(indent).AppendLine("if (!value.TryFormat(chars, out int written))");
+		sb.Append(indent).AppendLine("if (value.TryFormat(chars, out int written))");
 		sb.Append(indent).AppendLine("{");
-		sb.Append(indent).AppendLine("\tbytesWritten = 0;");
-		sb.Append(indent).AppendLine("\treturn false;");
-		sb.Append(indent).AppendLine("}");
-		sb.AppendLine();
-		sb.Append(indent).Append("return global::System.Text.Encoding.UTF8.TryGetBytes(");
+		sb.Append(indent).Append("\treturn global::System.Text.Encoding.UTF8.TryGetBytes(");
 
 		// The character overload only reports success after writing inside the buffer, so 'written' is already
 		// known to be in range and the slice's own check has nothing left to decide.
@@ -545,6 +609,13 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 		}
 
 		sb.AppendLine(", utf8Destination, out bytesWritten);");
+		sb.Append(indent).AppendLine("}");
+		sb.AppendLine();
+
+		// The scratch buffer holds every listing of names and every number in a one-character negative sign,
+		// but Enum formats a number in the current culture, whose negative sign can run longer, as ar-SA's
+		// U+061C and hyphen do. That text comes from ToString, which allocates, on this rare path alone.
+		sb.Append(indent).AppendLine("return global::System.Text.Encoding.UTF8.TryGetBytes(value.ToString(), utf8Destination, out bytesWritten);");
 	}
 
 	/// <summary>
@@ -577,10 +648,15 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 	/// <summary>
 	/// Emits the class-scope name table, and its span alternate lookup, backing the parsing members.
 	/// </summary>
+	/// <remarks>
+	/// The table compares names ignoring case, so it holds only the first of the names that differ only in case, as
+	/// <paramref name="distinct"/> lists them. Given all of them, both kinds of table keep the last one without an
+	/// error, which would make a later name win over the first.
+	/// </remarks>
 	/// <param name="sb">The builder receiving the generated source.</param>
-	/// <param name="model">The enum being rendered.</param>
 	/// <param name="type">The fully qualified name of the enum.</param>
-	private static void RenderNameTable(StringBuilder sb, EnumModel model, string type)
+	/// <param name="distinct">The members whose names no earlier member's name equals when case is ignored, in declaration order.</param>
+	private static void RenderNameTable(StringBuilder sb, string type, List<EnumMember> distinct)
 	{
 		sb.AppendLine("\t// String -> Enum lookup (name -> value)");
 		sb.AppendLine("#if NET10_0_OR_GREATER");
@@ -590,17 +666,9 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 		  .AppendLine("> s_nameToValue =")
 		  .Append("\t\tglobal::System.Collections.Frozen.FrozenDictionary.Create<string, ")
 		  .Append(type)
-		  .AppendLine(">(global::System.StringComparer.OrdinalIgnoreCase, ");
+		  .Append(">(global::System.StringComparer.OrdinalIgnoreCase");
 
-		sb.Append("\t\t\tnew global::System.Collections.Generic.KeyValuePair<string, ")
-		  .Append(type)
-		  .Append(">(\"")
-		  .Append(model.Members[0].Name)
-		  .Append("\", ")
-		  .Append(type).Append('.').Append(model.Members[0].Name)
-		  .Append(')');
-
-		foreach (EnumMember m in model.Members.AsSpan(1, model.Members.Length - 1))
+		foreach (EnumMember m in distinct)
 		{
 			// include aliases too (same numeric value but different name)
 			sb.Append(',').AppendLine();
@@ -609,7 +677,7 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 			  .Append(">(\"")
 			  .Append(m.Name)
 			  .Append("\", ")
-			  .Append(type).Append('.').Append(m.Name)
+			  .Append(type).Append('.').Append(m.Identifier)
 			  .Append(')');
 		}
 
@@ -621,12 +689,12 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 		  .AppendLine("> s_nameToValue = new(global::System.StringComparer.OrdinalIgnoreCase)")
 		  .AppendLine("\t{");
 
-		foreach (EnumMember m in model.Members)
+		foreach (EnumMember m in distinct)
 		{
 			sb.Append("\t\t[\"")
 			  .Append(m.Name)
 			  .Append("\"] = ")
-			  .Append(type).Append('.').Append(m.Name)
+			  .Append(type).Append('.').Append(m.Identifier)
 			  .AppendLine(",");
 		}
 
@@ -645,6 +713,40 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 
 
 	/// <summary>
+	/// Emits the exact comparisons that let a name win over an earlier one that equals it when case is ignored.
+	/// </summary>
+	/// <remarks>
+	/// They go ahead of the case-insensitive lookup, which finds the earlier name, so text that matches a name exactly
+	/// gives back that name's value, and text that matches only when case is ignored gives the first declared name's.
+	/// Nothing is emitted for an enum without such names.
+	/// </remarks>
+	/// <param name="sb">The builder receiving the generated source.</param>
+	/// <param name="indent">The leading tabs to place before each emitted line.</param>
+	/// <param name="type">The fully qualified name of the enum.</param>
+	/// <param name="shadowed">The members whose names an earlier member's name equals when case is ignored.</param>
+	private static void RenderExactMatches(StringBuilder sb, string indent, string type, List<EnumMember> shadowed)
+	{
+		foreach (EnumMember member in shadowed)
+		{
+			sb.Append(indent).Append("if (global::System.MemoryExtensions.Equals(text, \"").Append(member.Name)
+			  .Append("\", global::System.StringComparison.Ordinal)) { result = ")
+			  .Append(type).Append('.').Append(member.Identifier).AppendLine("; return true; }");
+		}
+
+		if (shadowed.Count > 0)
+		{
+			sb.AppendLine();
+		}
+	}
+
+	/// <summary>Emits the remarks that the <c>TryParseFast</c> and <c>ParseFast</c> overloads share.</summary>
+	/// <param name="sb">The builder receiving the generated source.</param>
+	private static void RenderParseRemarks(StringBuilder sb)
+	{
+		sb.AppendLine("\t\t/// <remarks>A name matches whatever the case of the text, and one that matches it exactly wins over one that matches only when case is ignored, so the text of a value's name always parses back to that value. Text that matches no name is parsed as <see cref=\"global::System.Enum.TryParse{TEnum}(string, bool, out TEnum)\"/> parses it, case ignored, which also takes a number and a list of flags.</remarks>");
+	}
+
+	/// <summary>
 	/// Emits the two <c>TryParseFast</c> overloads backed by the frozen name table.
 	/// </summary>
 	/// <remarks>
@@ -653,9 +755,11 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 	/// </remarks>
 	/// <param name="sb">The builder receiving the generated source.</param>
 	/// <param name="type">The fully qualified name of the enum.</param>
-	private static void RenderTableTryParse(StringBuilder sb, string type)
+	/// <param name="shadowed">The members whose names an earlier member's name equals when case is ignored, which the table leaves out.</param>
+	private static void RenderTableTryParse(StringBuilder sb, string type, List<EnumMember> shadowed)
 	{
 		sb.AppendLine("\t\t/// <summary>Attempts to parse the string representation of the enum ignoring case.</summary>");
+		RenderParseRemarks(sb);
 		sb.AppendLine("\t\t/// <param name=\"text\">The string representation of the enum.</param>");
 		sb.AppendLine("\t\t/// <param name=\"result\">When this method returns, contains the enum value equivalent to the string, if the conversion succeeded, or the default value if the conversion failed.</param>");
 		sb.AppendLine("\t\t/// <returns><see langword=\"true\"/> if the string was converted successfully; otherwise, <see langword=\"false\"/>.</returns>");
@@ -668,6 +772,7 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 		sb.AppendLine("\t\t\t\treturn false;");
 		sb.AppendLine("\t\t\t}");
 		sb.AppendLine();
+		RenderExactMatches(sb, "\t\t\t", type, shadowed);
 		sb.AppendLine("\t\t\tif (s_nameToValue.TryGetValue(text, out result))");
 		sb.AppendLine("\t\t\t\treturn true;");
 		sb.AppendLine();
@@ -678,12 +783,14 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 
 		// Span<char> overload - parse a name from a character span without allocating a string (.NET 9+).
 		sb.AppendLine("\t\t/// <summary>Attempts to parse the character span representation of the enum ignoring case.</summary>");
+		RenderParseRemarks(sb);
 		sb.AppendLine("\t\t/// <param name=\"text\">The character span representation of the enum.</param>");
 		sb.AppendLine("\t\t/// <param name=\"result\">When this method returns, contains the enum value equivalent to the span, if the conversion succeeded, or the default value if the conversion failed.</param>");
 		sb.AppendLine("\t\t/// <returns><see langword=\"true\"/> if the span was converted successfully; otherwise, <see langword=\"false\"/>.</returns>");
 		sb.AppendLine("\t\t[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]");
 		sb.Append("\t\tpublic static bool TryParseFast(global::System.ReadOnlySpan<char> text, out ").Append(type).AppendLine(" result)");
 		sb.AppendLine("\t\t{");
+		RenderExactMatches(sb, "\t\t\t", type, shadowed);
 		sb.AppendLine("#if NET9_0_OR_GREATER");
 		sb.AppendLine("\t\t\tif (s_nameSpanLookup.TryGetValue(text, out result))");
 		sb.AppendLine("\t\t\t\treturn true;");
@@ -714,13 +821,17 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 	/// so the chain does equivalent work while skipping the table's construction and retained storage.</para>
 	/// <para>The span overload carries the chain and the string overload forwards to it, which also drops
 	/// the span alternate lookup and its framework conditionals.</para>
+	/// <para>Names that equal each other when case is ignored always share a length, so each bucket
+	/// compares the later of them exactly before it compares its first-declared names ignoring case.</para>
 	/// </remarks>
 	/// <param name="sb">The builder receiving the generated source.</param>
-	/// <param name="model">The enum being rendered.</param>
 	/// <param name="type">The fully qualified name of the enum.</param>
-	private static void RenderChainTryParse(StringBuilder sb, EnumModel model, string type)
+	/// <param name="distinct">The members whose names no earlier member's name equals when case is ignored, in declaration order.</param>
+	/// <param name="shadowed">The members whose names an earlier member's name equals when case is ignored.</param>
+	private static void RenderChainTryParse(StringBuilder sb, string type, List<EnumMember> distinct, List<EnumMember> shadowed)
 	{
 		sb.AppendLine("\t\t/// <summary>Attempts to parse the string representation of the enum ignoring case.</summary>");
+		RenderParseRemarks(sb);
 		sb.AppendLine("\t\t/// <param name=\"text\">The string representation of the enum.</param>");
 		sb.AppendLine("\t\t/// <param name=\"result\">When this method returns, contains the enum value equivalent to the string, if the conversion succeeded, or the default value if the conversion failed.</param>");
 		sb.AppendLine("\t\t/// <returns><see langword=\"true\"/> if the string was converted successfully; otherwise, <see langword=\"false\"/>.</returns>");
@@ -738,6 +849,7 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 		sb.AppendLine();
 
 		sb.AppendLine("\t\t/// <summary>Attempts to parse the character span representation of the enum ignoring case.</summary>");
+		RenderParseRemarks(sb);
 		sb.AppendLine("\t\t/// <param name=\"text\">The character span representation of the enum.</param>");
 		sb.AppendLine("\t\t/// <param name=\"result\">When this method returns, contains the enum value equivalent to the span, if the conversion succeeded, or the default value if the conversion failed.</param>");
 		sb.AppendLine("\t\t/// <returns><see langword=\"true\"/> if the span was converted successfully; otherwise, <see langword=\"false\"/>.</returns>");
@@ -750,16 +862,26 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 
 		// Group the names by length so a wrong-length input is rejected by the switch alone. Lengths are
 		// emitted in ascending order to keep the output stable across runs for the incremental cache.
-		Dictionary<int, List<EnumMember>> byLength = [];
-		foreach (EnumMember member in model.Members)
+		Dictionary<int, (List<EnumMember> Exact, List<EnumMember> IgnoringCase)> byLength = [];
+		void AddToBucket(EnumMember member, bool exact)
 		{
-			if (!byLength.TryGetValue(member.Name.Length, out List<EnumMember>? bucket))
+			if (!byLength.TryGetValue(member.Name.Length, out var bucket))
 			{
-				bucket = [];
+				bucket = ([], []);
 				byLength[member.Name.Length] = bucket;
 			}
 
-			bucket.Add(member);
+			(exact ? bucket.Exact : bucket.IgnoringCase).Add(member);
+		}
+
+		foreach (EnumMember member in shadowed)
+		{
+			AddToBucket(member, exact: true);
+		}
+
+		foreach (EnumMember member in distinct)
+		{
+			AddToBucket(member, exact: false);
 		}
 
 		List<int> lengths = new(byLength.Keys);
@@ -769,13 +891,21 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 		{
 			sb.Append("\t\t\t\tcase ").Append(length).AppendLine(":");
 
-			foreach (EnumMember member in byLength[length])
+			var (exactMembers, ignoringCaseMembers) = byLength[length];
+			foreach (EnumMember member in exactMembers)
+			{
+				sb.Append("\t\t\t\t\tif (global::System.MemoryExtensions.Equals(text, \"").Append(member.Name)
+				  .Append("\", global::System.StringComparison.Ordinal)) { result = ")
+				  .Append(type).Append('.').Append(member.Identifier).AppendLine("; return true; }");
+			}
+
+			foreach (EnumMember member in ignoringCaseMembers)
 			{
 				// Called statically: the generated file carries no usings, so the MemoryExtensions
 				// extension form would only bind when the consumer happens to enable implicit usings.
 				sb.Append("\t\t\t\t\tif (global::System.MemoryExtensions.Equals(text, \"").Append(member.Name)
 				  .Append("\", global::System.StringComparison.OrdinalIgnoreCase)) { result = ")
-				  .Append(type).Append('.').Append(member.Name).AppendLine("; return true; }");
+				  .Append(type).Append('.').Append(member.Identifier).AppendLine("; return true; }");
 			}
 
 			sb.AppendLine("\t\t\t\t\tbreak;");
@@ -819,18 +949,21 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 		sb.Append("\t\t\t\t: throw new global::System.FormatException(\"Unrecognized value for enum ").Append(model.EnumName).AppendLine(": '\" + text.ToString() + \"'.\");");
 	}
 
-	/// <summary>Builds a unique, stable file hint name from the enum's fully qualified name.</summary>
-	/// <param name="enumSymbol">The attributed enum.</param>
-	/// <returns>The hint name, carrying no characters that are illegal in a file name.</returns>
-	private static string MakeHintName(INamedTypeSymbol enumSymbol)
+	/// <summary>
+	/// Splits the members into those whose names no earlier name equals when case is ignored, and those whose names one does.
+	/// </summary>
+	/// <param name="members">The enum's members, in declaration order.</param>
+	/// <param name="distinct">When this method returns, contains the first member of each name that case alone tells apart, in declaration order.</param>
+	/// <param name="shadowed">When this method returns, contains the later members of those names, in declaration order.</param>
+	private static void SplitCaseCollisions(EquatableArray<EnumMember> members, out List<EnumMember> distinct, out List<EnumMember> shadowed)
 	{
-		// Unique, stable-ish hint name.
-		string fq = enumSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-		return fq.Replace("global::", "")
-				 .Replace('<', '_')
-				 .Replace('>', '_')
-				 .Replace('.', '_')
-				 .Replace('+', '_');
+		distinct = new List<EnumMember>(members.Length);
+		shadowed = [];
+		HashSet<string> seen = new(StringComparer.OrdinalIgnoreCase);
+		foreach (EnumMember member in members)
+		{
+			(seen.Add(member.Name) ? distinct : shadowed).Add(member);
+		}
 	}
 
 	private const string ATTRIBUTE_SOURCE = """
@@ -842,8 +975,15 @@ namespace MG.Sonarr.Next.Generators
 	/// Marks an enum as the source for generated conversion, validation, and parsing extension members.
 	/// </summary>
 	/// <remarks>
+	/// <para>
 	/// Applying this attribute to an enum named <c>Foo</c> generates a static <c>FooExtensions</c> class in the enum's
-	/// namespace, with the enum's accessibility.
+	/// namespace. The class is public when the enum and every type that contains it are public, and internal otherwise.
+	/// </para>
+	/// <para>
+	/// The class sits at namespace scope, so a nested enum's class folds its containing types' names into its own:
+	/// <c>Outer.Foo</c> gets <c>OuterFooExtensions</c>. An enum that the class can't name from there gets no class: a
+	/// private, protected, or file-local enum, or one inside a type that's private, protected, file-local, or generic.
+	/// </para>
 	/// </remarks>
 	[global::System.AttributeUsage(global::System.AttributeTargets.Enum, AllowMultiple = false, Inherited = false)]
 	internal sealed class GenerateEnumToStringAttribute : global::System.Attribute
@@ -862,26 +1002,28 @@ namespace MG.Sonarr.Next.Generators
 	/// <remarks>
 	/// Record value equality lets the incremental pipeline skip rendering an enum that an edit leaves unchanged.
 	/// </remarks>
-	/// <param name="Namespace">The enum's namespace, or <see langword="null"/> for the global namespace.</param>
-	/// <param name="EnumName">The enum's simple name.</param>
+	/// <param name="Namespace">The enum's namespace, with its keywords escaped, or <see langword="null"/> for the global namespace.</param>
+	/// <param name="EnumName">The enum's simple name, as it reads in a message.</param>
+	/// <param name="ClassName">The name of the extensions class, with the names of the enum's containing types folded in.</param>
 	/// <param name="EnumFullType">The enum's fully qualified name, with its <c>global::</c> alias.</param>
 	/// <param name="UnderlyingKeyword">The C# keyword naming the enum's underlying type.</param>
 	/// <param name="AllNamesAscii">A value that indicates whether every member name is ASCII.</param>
 	/// <param name="IsFlags">A value that indicates whether the enum carries <see cref="FlagsAttribute"/>.</param>
 	/// <param name="DisableDictionary">A value that indicates whether the attribute turns the parsing members off.</param>
-	/// <param name="Accessibility">The enum's declared accessibility, which the extensions class copies.</param>
-	/// <param name="Members">The enum's defined members.</param>
+	/// <param name="Accessibility">The accessibility of the extensions class: public, or internal when the enum or a type containing it is.</param>
+	/// <param name="Members">The enum's defined members, in declaration order, which compare element by element.</param>
 	/// <param name="HintName">The file hint name for the enum's generated source.</param>
 	private sealed record EnumModel(
 		string? Namespace,
 		string EnumName,
+		string ClassName,
 		string EnumFullType,
 		string UnderlyingKeyword,
 		bool AllNamesAscii,
 		bool IsFlags,
 		bool DisableDictionary,
 		Accessibility Accessibility,
-		EnumMember[] Members,
+		EquatableArray<EnumMember> Members,
 		string HintName);
 
 	/// <summary>
@@ -916,7 +1058,7 @@ namespace MG.Sonarr.Next.Generators
 	/// <param name="min">When this method returns, contains the lowest defined value; otherwise, zero.</param>
 	/// <param name="max">When this method returns, contains the highest defined value; otherwise, zero.</param>
 	/// <returns><see langword="true"/> when the distinct values are exactly <paramref name="min"/> through <paramref name="max"/>; otherwise, <see langword="false"/>.</returns>
-	private static bool TryGetContiguousRange(EnumMember[] members, out ulong min, out ulong max)
+	private static bool TryGetContiguousRange(EquatableArray<EnumMember> members, out ulong min, out ulong max)
 	{
 		min = 0;
 		max = 0;
@@ -985,9 +1127,10 @@ namespace MG.Sonarr.Next.Generators
 	}
 
 	/// <summary>Pairs an enum member's name with its value.</summary>
-	/// <param name="Name">The member's name.</param>
+	/// <param name="Name">The member's name, as <see cref="Enum.ToString()"/> writes it and a string literal holds it.</param>
+	/// <param name="Identifier">The member's name as generated code writes it, escaped with <c>@</c> when it's a keyword.</param>
 	/// <param name="Value">The member's value, widened to 64 bits with its signedness kept.</param>
-	private sealed record EnumMember(string Name, Int64Value Value);
+	private sealed record EnumMember(string Name, string Identifier, Int64Value Value);
 
 	/// <summary>Collects the enum's defined members along with their values.</summary>
 	/// <remarks>
@@ -1012,15 +1155,16 @@ namespace MG.Sonarr.Next.Generators
 			}
 
 			array ??= new EnumMember[members.Length];
+			string identifier = SourceNames.EscapeIdentifier(field.Name);
 			try
 			{
 				long value = Convert.ToInt64(field.ConstantValue!, CultureInfo.InvariantCulture);
-				array[count++] = new EnumMember(field.Name, value);
+				array[count++] = new EnumMember(field.Name, identifier, value);
 			}
 			catch (OverflowException)
 			{
 				ulong value = Convert.ToUInt64(field.ConstantValue!, CultureInfo.InvariantCulture);
-				array[count++] = new EnumMember(field.Name, value);
+				array[count++] = new EnumMember(field.Name, identifier, value);
 			}
 		}
 
