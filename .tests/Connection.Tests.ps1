@@ -56,7 +56,7 @@ Describe 'Connect-SonarrInstance' {
 
 		It 'leaves no connection' {
 			{ Connect-SonarrInstance -Url $SandboxSettings.BaseUrl -ApiKey $wrongKey -PassThru:$PassThru -ErrorAction Stop } | Should -Throw
-			{ Get-SonarrTag -ErrorAction Stop } | Should -Throw -ExceptionType ([MG.Sonarr.Next.Shell.Exceptions.ContextNotSetException])
+			{ Get-SonarrTag -ErrorAction Stop } | Should -Throw -ExceptionType ([MG.Sonarr.Next.Exceptions.Shell.ContextNotSetException])
 		}
 	}
 
@@ -80,7 +80,7 @@ Describe 'Connect-SonarrInstance' {
 
 		It 'leaves no connection' {
 			{ Connect-SonarrInstance -Url $SandboxSettings.BaseUrl -ApiKey $SandboxSettings.ApiKey -NoApiInPath -PassThru:$PassThru -ErrorAction Stop } | Should -Throw
-			{ Get-SonarrTag -ErrorAction Stop } | Should -Throw -ExceptionType ([MG.Sonarr.Next.Shell.Exceptions.ContextNotSetException])
+			{ Get-SonarrTag -ErrorAction Stop } | Should -Throw -ExceptionType ([MG.Sonarr.Next.Exceptions.Shell.ContextNotSetException])
 		}
 	}
 }
@@ -92,7 +92,7 @@ Describe 'Disconnect-SonarrInstance' {
 
 	It 'leaves the API cmdlets failing with ContextNotSetException' {
 		Disconnect-SonarrInstance -ErrorAction Stop
-		{ Get-SonarrTag -ErrorAction Stop } | Should -Throw -ExceptionType ([MG.Sonarr.Next.Shell.Exceptions.ContextNotSetException])
+		{ Get-SonarrTag -ErrorAction Stop } | Should -Throw -ExceptionType ([MG.Sonarr.Next.Exceptions.Shell.ContextNotSetException])
 	}
 
 	It 'does nothing without a connection' {
@@ -169,7 +169,7 @@ Describe 'Test-SonarrHost' {
 
 		It 'tests the host without connecting' {
 			Test-SonarrHost -Url $SandboxSettings.BaseUrl -ApiKey $SandboxSettings.ApiKey -Quiet -ErrorAction Stop | Should -BeTrue
-			{ Get-SonarrTag -ErrorAction Stop } | Should -Throw -ExceptionType ([MG.Sonarr.Next.Shell.Exceptions.ContextNotSetException])
+			{ Get-SonarrTag -ErrorAction Stop } | Should -Throw -ExceptionType ([MG.Sonarr.Next.Exceptions.Shell.ContextNotSetException])
 		}
 	}
 }
