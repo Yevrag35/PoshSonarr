@@ -37,6 +37,7 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 	private IServiceScope? _scope;
 	// Never disposed: StopProcessing cancels it on another thread, which Dispose would race, and a source whose
 	// WaitHandle nothing reads holds nothing that needs disposing.
+	//TODO: Newer PowerShell versions have a PipelineStopToken property - replace this with that.
 	private readonly CancellationTokenSource _stopping = new();
 
 	/// <summary>
@@ -53,7 +54,7 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 	/// <see langword="true"/> while the cmdlet holds its scope; otherwise, <see langword="false"/>.
 	/// </value>
 	[MemberNotNullWhen(true, nameof(Services), nameof(_scope))]
-	protected private bool IsScopeInitialized => _isInitialized;
+	private protected bool IsScopeInitialized => _isInitialized;
 	/// <summary>
 	/// Gets the service provider of the cmdlet's scope.
 	/// </summary>
@@ -61,7 +62,7 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 	/// The scope's <see cref="IServiceProvider"/>, or <see langword="null"/> before <see cref="BeginProcessing"/> has
 	/// created the scope and after <see cref="Dispose(bool)"/> has disposed it.
 	/// </value>
-	protected private IServiceProvider? Services => _scope?.ServiceProvider;
+	private protected IServiceProvider? Services => _scope?.ServiceProvider;
 
 	/// <summary>
 	/// Gets a value that indicates whether the cmdlet has stopped, through <see cref="StopCmdlet()"/>, through
@@ -169,9 +170,8 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 	/// <value>The Verbose preference that the cmdlet runs with.</value>
 	protected ActionPreference VerbosePreference { get; private set; }
 
-	#region EXCEPTIONS
-
-	const string PIPELINE_STOPPED = "The pipeline has been stopped.";
+	// EXCEPTIOND
+	private const string PIPELINE_STOPPED = "The pipeline has been stopped.";
 
 	/// <summary>
 	/// Throws a <see cref="PipelineStoppedException"/> with the message "The pipeline has been stopped."
@@ -182,7 +182,7 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 	/// <typeparam name="T">The output type of this method. It will never be returned.</typeparam>
 	/// <returns>This method never returns.</returns>
 	/// <exception cref="PipelineStoppedException">Thrown when the method is called.</exception>
-	[DoesNotReturn]
+	[DoesNotReturn, DebuggerStepThrough, StackTraceHidden]
 	protected static T ThrowPipelineStopped<T>()
 	{
 		throw new PipelineStoppedException(PIPELINE_STOPPED);
@@ -201,17 +201,12 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 	/// </param>
 	/// <returns>This method never returns.</returns>
 	/// <exception cref="PipelineStoppedException">Thrown when the method is called.</exception>
-	[DoesNotReturn]
+	[DoesNotReturn, DebuggerStepThrough, StackTraceHidden]
 	protected static T ThrowPipelineStopped<T>(Exception? innerException)
 	{
-		if (innerException is null)
-		{
-			return ThrowPipelineStopped<T>();
-		}
-		else
-		{
-			return ThrowPipelineStopped<T>(innerException.Message, innerException);
-		}
+		return innerException is null
+			? ThrowPipelineStopped<T>()
+			: ThrowPipelineStopped<T>(innerException.Message, innerException);
 	}
 
 	/// <summary>
@@ -246,8 +241,6 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 
 		throw new PipelineStoppedException(message, innerException);
 	}
-
-	#endregion
 
 	private static bool _hasChecked;
 	/// <summary>
@@ -297,8 +290,7 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 		return exception is PipelineStoppedException or ActionPreferenceStopException or FlowControlException;
 	}
 
-	#region CLEANUP
-
+	// CLEANUP
 	/// <summary>
 	/// When overridden in a derived class, releases what the cmdlet holds once it has finished, or once
 	/// <see cref="OnCreatingScope(IServiceProvider)"/> has failed.
@@ -313,7 +305,7 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 		this.Dispose();
 	}
 
-	#region DISPOSAL
+	// DISPOSAL
 	/// <summary>
 	/// Disposes the cmdlet's scoped <see cref="IServiceProvider"/> once the <see cref="SonarrCmdletBase"/> has
 	/// finished execution.
@@ -349,8 +341,4 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 		this.Dispose(disposing: true);
 		GC.SuppressFinalize(this);
 	}
-
-	#endregion
-
-	#endregion
 }
