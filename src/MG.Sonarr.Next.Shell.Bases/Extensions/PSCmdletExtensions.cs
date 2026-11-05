@@ -1,4 +1,5 @@
 using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Pwsh;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Strings;
 using System.Collections.Frozen;
