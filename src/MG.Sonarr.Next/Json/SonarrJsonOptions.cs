@@ -24,6 +24,10 @@ public interface ISonarrJsonOptions
 	/// <summary>
 	/// Gets options used for debug-friendly JSON output.
 	/// </summary>
+	/// <remarks>
+	/// They match <see cref="ForSerializing"/> in everything but indentation, so an object written with them reads as the
+	/// body that a request sends.
+	/// </remarks>
 	/// <value>The serializer options for debugging output.</value>
 	JsonSerializerOptions ForDebugging { get; }
 
@@ -77,41 +81,10 @@ internal sealed class SonarrJsonOptions : ISonarrJsonOptions
 		this.ForDebugging = new(this.ForDeserializing)
 		{
 			Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+			DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
 			PropertyNameCaseInsensitive = true,
 			WriteIndented = true,
 		};
-	}
-
-	/// <summary>
-	/// Applies camel-casing to a character span.
-	/// </summary>
-	/// <param name="chars">The characters to transform.</param>
-	[Obsolete("Complete rework", error: true)]
-	internal static void ApplyCamelCasing(Span<char> chars)
-	{
-		for (int i = 0; i < chars.Length; i++)
-		{
-			if (i == 1 && !char.IsUpper(chars[i]))
-			{
-				break;
-			}
-
-			bool hasNext = (i + 1 < chars.Length);
-
-			// Stop when next char is already lowercase.
-			if (i > 0 && hasNext && !char.IsUpper(chars[i + 1]))
-			{
-				// If the next char is a space, lowercase current char before exiting.
-				if (chars[i + 1] == ' ')
-				{
-					chars[i] = char.ToLowerInvariant(chars[i]);
-				}
-
-				break;
-			}
-
-			chars[i] = char.ToLowerInvariant(chars[i]);
-		}
 	}
 }
 
@@ -123,6 +96,10 @@ public static class SonarrJsonDependencyInjection
 	/// <summary>
 	/// Adds Sonarr JSON options services to the specified service collection.
 	/// </summary>
+	/// <remarks>
+	/// The callback runs before the module's converters are built, so they write property names with the
+	/// <see cref="JsonSerializerOptions.PropertyNamingPolicy"/> that it sets, as System.Text.Json's own converters do.
+	/// </remarks>
 	/// <param name="services">The service collection to update.</param>
 	/// <param name="configureOptions">The callback that configures serializer options.</param>
 	/// <returns>The same <see cref="IServiceCollection"/> instance so additional calls can be chained.</returns>
@@ -141,9 +118,11 @@ public static class SonarrJsonDependencyInjection
 					}
 				};
 
-				AddAllConverters(provider, options);
-
+				// The converters' naming policy reads PropertyNamingPolicy when it's built, so the callback that sets it
+				// runs first.
 				configureOptions(provider, options);
+
+				AddAllConverters(provider, options);
 			}
 
 			return new SonarrJsonOptions(newAction);
@@ -188,13 +167,21 @@ public static class SonarrJsonDependencyInjection
 						// Keyed by the names that EnumerateGlobalReplaceNames gives these properties.
 						new("CHMODFolder", alwaysStringConverter),
 						new("CHOWNGroup", alwaysStringConverter),
+						// Keyed by the name that RemotePathObject gives Sonarr's host, such as 192.168.1.10.
+						new("HostName", alwaysStringConverter),
 						// Credentials go back to Sonarr exactly as they came, whitespace included.
 						new("Username", exactStringConverter),
 						new("Password", exactStringConverter),
 						new("PasswordConfirmation", exactStringConverter),
 						new("SslCertPassword", exactStringConverter),
 						new("ProxyUsername", exactStringConverter),
-						new("ProxyPassword", exactStringConverter)
+						new("ProxyPassword", exactStringConverter),
+						// A release's identifier, which a grab sends back as it came.
+						new("Guid", exactStringConverter),
+						// A field's placeholder and a select option's hint, which a provider's schema sends back, and
+						// which Sonarr turns away as a number.
+						new("Hint", exactStringConverter),
+						new("Placeholder", exactStringConverter)
 				  );
 		});
 
@@ -303,16 +290,18 @@ public static class SonarrJsonDependencyInjection
 	/// <summary>
 	/// Gets exported Sonarr object types from marked assemblies.
 	/// </summary>
+	/// <remarks>
+	/// An assembly whose attributes can't be read, such as one whose attribute types come from an assembly that isn't
+	/// there, is skipped rather than failing the connection. The marker is on the module's own assembly, whose
+	/// attributes all resolve.
+	/// </remarks>
 	/// <returns>The discovered Sonarr object types.</returns>
 	private static IEnumerable<Type> GetSonarrObjectTypes()
 	{
 		Assembly[] assemblies = AssemblyLoader.GetAppDomainAssemblies(AppDomain.CurrentDomain);
 
 		return assemblies
-			.Where(ass => !ass.IsDynamic
-						&& ass.IsDefined(
-								typeof(SonarrObjectConverterAssemblyAttribute),
-								inherit: false))
+			.Where(ass => !ass.IsDynamic && IsMarked(ass))
 
 			.SelectMany(ass => ass.GetExportedTypes()
 								  .Where(t => t.IsClass
@@ -324,6 +313,30 @@ public static class SonarrJsonDependencyInjection
 												  inherit: false)
 											  &&
 											  typeof(SonarrObject).IsAssignableFrom(t)));
+	}
+
+	/// <summary>
+	/// Determines whether an assembly carries the attribute that marks its models for converters.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="Assembly.IsDefined(Type, bool)"/> resolves the type of every attribute on the assembly, so an
+	/// attribute from an assembly that can't be loaded makes it throw, even when the marker isn't among them.
+	/// </remarks>
+	/// <param name="assembly">The assembly to check.</param>
+	/// <returns>
+	/// <see langword="true"/> if <paramref name="assembly"/> carries the marker; otherwise, <see langword="false"/>,
+	/// also when its attributes can't be read.
+	/// </returns>
+	private static bool IsMarked(Assembly assembly)
+	{
+		try
+		{
+			return assembly.IsDefined(typeof(SonarrObjectConverterAssemblyAttribute), inherit: false);
+		}
+		catch (Exception e) when (e is FileNotFoundException or FileLoadException or BadImageFormatException or TypeLoadException)
+		{
+			return false;
+		}
 	}
 
 	/// <summary>

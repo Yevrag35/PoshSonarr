@@ -4,6 +4,9 @@ namespace MG.Sonarr.Next.Json.Converters.Spans;
 /// Provides a span converter that reads a property's value as a <see cref="TimeOnly"/>, such as a series'
 /// <c>AirTime</c>.
 /// </summary>
+/// <remarks>
+/// The value is read with the invariant culture, as Sonarr writes it, whatever the current culture.
+/// </remarks>
 public sealed class TimeOnlyConverter : SpanConverter<TimeOnly>
 {
 	/// <summary>
@@ -20,11 +23,12 @@ public sealed class TimeOnlyConverter : SpanConverter<TimeOnly>
 	/// <returns>The parsed time, or midnight when the value doesn't parse.</returns>
 	public override TimeOnly ConvertSpan(Span<char> chars, ReadOnlySpan<char> propertyName, bool isNull)
 	{
-		if (TimeOnly.TryParse(chars, Statics.DefaultProvider, DateTimeStyles.AssumeUniversal, out TimeOnly @to))
+		// TimeOnly takes only white-space styles, and returns false for AssumeUniversal.
+		if (TimeOnly.TryParse(chars, CultureInfo.InvariantCulture, DateTimeStyles.None, out TimeOnly @to))
 		{
 			return @to;
 		}
-		else if (DateTimeOffset.TryParse(chars, Statics.DefaultProvider, DateTimeStyles.AssumeUniversal, out DateTimeOffset tempOff))
+		else if (DateTimeOffset.TryParse(chars, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset tempOff))
 		{
 			return TimeOnly.FromDateTime(tempOff.UtcDateTime);
 		}
@@ -37,6 +41,10 @@ public sealed class TimeOnlyConverter : SpanConverter<TimeOnly>
 /// Provides a span converter that reads a property's value as a <see cref="DateOnly"/>, such as an episode's
 /// <c>AirDate</c> or a series' <c>FirstAired</c>.
 /// </summary>
+/// <remarks>
+/// The value is read with the invariant culture, as Sonarr writes it, whatever the current culture, so a date such
+/// as <c>2024-01-15</c> is a Gregorian date under a culture whose calendar is another, such as th-TH's Buddhist one.
+/// </remarks>
 public sealed class DateOnlyConverter : SpanConverter<DateOnly>
 {
 	/// <summary>
@@ -53,15 +61,16 @@ public sealed class DateOnlyConverter : SpanConverter<DateOnly>
 	/// <returns>The parsed date, or <see cref="DateOnly.MinValue"/> when the value doesn't parse.</returns>
 	public override DateOnly ConvertSpan(Span<char> chars, ReadOnlySpan<char> propertyName, bool isNull)
 	{
-		if (DateOnly.TryParse(chars, Statics.DefaultProvider, DateTimeStyles.AssumeUniversal, out DateOnly @do))
+		// DateOnly takes only white-space styles, and returns false for AssumeUniversal.
+		if (DateOnly.TryParse(chars, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateOnly @do))
 		{
 			return @do;
 		}
-		else if (DateTimeOffset.TryParse(chars, Statics.DefaultProvider, DateTimeStyles.AssumeUniversal, out DateTimeOffset tempOff))
+		else if (DateTimeOffset.TryParse(chars, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset tempOff))
 		{
 			return DateOnly.FromDateTime(tempOff.DateTime);
 		}
 
-		return @do;
+		return DateOnly.MinValue;
 	}
 }

@@ -20,13 +20,12 @@ public sealed class RemoveSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 	public int[] Id { get; set; } = [];
 
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "ByPipelineInput")]
-	[ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodeFilePipeable))]
+	[ValidateIds<IEpisodeFilePipeable>(ValidateRangeKind.NonNegative)]
 	public IEpisodeFilePipeable[] InputObject { get; set; } = [];
 
 	[Parameter]
 	public SwitchParameter Force { get; set; }
 
-	protected override int Capacity => 1;
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
 		return resolver[Meta.EpisodeFile];
@@ -34,8 +33,7 @@ public sealed class RemoveSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_ids = this.GetPooledObject<SortedSet<int>>();
-		this.SetReturnables(_ids);
+		_ids = [];
 	}
 
 	protected override void Begin(IServiceProvider provider)
@@ -47,9 +45,7 @@ public sealed class RemoveSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 	{
 		if (this.HasParameter(InputObject) && this.InputObject.Length > 0)
 		{
-			_ids.UnionWith(
-				this.InputObject.Select(x => x.EpisodeFileId)
-								.Where(x => x > 0));
+			EpisodeFileInput.AddFileIds(this, this.InputObject, _ids);
 		}
 	}
 	protected override void End(IServiceProvider provider)

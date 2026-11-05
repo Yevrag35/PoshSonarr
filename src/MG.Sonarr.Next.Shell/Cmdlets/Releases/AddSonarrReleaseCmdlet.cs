@@ -33,7 +33,7 @@ public sealed class AddSonarrReleaseCmdlet : SonarrApiCmdletBase
 
 	private void SendRelease(PostRelease post)
 	{
-		var response = this.SendPostRequest<PostRelease, PSObject>(this.Tag.UrlBase, post);
+		var response = this.SendPostRequest<PSObject>(this.Tag.UrlBase, post);
 		if (response.TryGetT1(out var result, out var error))
 		{
 			this.WriteObject(result);

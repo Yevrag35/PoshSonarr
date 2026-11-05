@@ -1,5 +1,5 @@
-using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Exceptions;
+using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Shell.Extensions;

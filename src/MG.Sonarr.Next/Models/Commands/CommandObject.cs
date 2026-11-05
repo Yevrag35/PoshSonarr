@@ -111,7 +111,7 @@ public sealed class CommandObject : IdSonarrObject<CommandObject>,
 	/// </returns>
 	private static bool AreCommandPropertiesEqual(CommandObject thisAsCommand, [NotNullWhen(true)] ICommand? otherCommand)
 	{
-		return thisAsCommand.Id.IsEqualTo(otherCommand?.Id)
+		return thisAsCommand.Id == otherCommand?.Id
 			   &&
 			   // Safe to access directly because other cannot be null if the first part is true.
 			   thisAsCommand.Started == otherCommand.Started
@@ -310,7 +310,7 @@ public sealed class CommandObject : IdSonarrObject<CommandObject>,
 	/// </returns>
 	public static bool operator ==(CommandObject? x, CommandObject? y)
 	{
-		return x.IsEqualTo<CommandObject>(y);
+		return x is null ? y is null : x.Equals(y);
 	}
 	/// <summary>
 	/// Determines whether two command objects aren't equal.
@@ -336,7 +336,7 @@ public sealed class CommandObject : IdSonarrObject<CommandObject>,
 	/// </returns>
 	public static bool operator ==(CommandObject? x, ICommand? y)
 	{
-		return x.IsEqualTo(y);
+		return x is null ? y is null : x.Equals(y);
 	}
 	/// <summary>
 	/// Determines whether a command object doesn't equal another command.
@@ -363,7 +363,7 @@ public sealed class CommandObject : IdSonarrObject<CommandObject>,
 	/// </returns>
 	public static bool operator ==(ICommand? x, CommandObject? y)
 	{
-		return x.IsEqualTo(y);
+		return x is null ? y is null : x.Equals(y);
 	}
 	/// <summary>
 	/// Determines whether a command doesn't equal a command object.

@@ -141,18 +141,6 @@
   <data name="Null_AsString" xml:space="preserve">
     <value>&lt;null&gt;</value>
   </data>
-  <data name="Reflection_CannotCastToType" xml:space="preserve">
-    <value>Unable to cast the value to the specified type -&gt; {0}</value>
-  </data>
-  <data name="Reflection_ExpectedEitherType_2" xml:space="preserve">
-    <value>The value is neither of the types expected. Expected: '{0}' or '{1}', Received: '{2}'</value>
-  </data>
-  <data name="Reflection_ExpectedExactlyType" xml:space="preserve">
-    <value>The value is not of the expected type. Expected: '{0}', Received: '{1}'</value>
-  </data>
-  <data name="Reflection_ExpectedTypeOrDerivative" xml:space="preserve">
-    <value>The value is not the exact or a derivative of the expected type. Expected: '{0}', Received: '{1}'</value>
-  </data>
   <data name="Startup_Exception_DefaultMessage" xml:space="preserve">
     <value>An exception occured during the PoshSonarr module initialization.</value>
     <comment>Try not to use this one.</comment>

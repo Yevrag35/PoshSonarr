@@ -69,7 +69,7 @@ public sealed class NewSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 				? this.Tag.GetUrl(BooleanQueryField.CreateTrue("forceSave"))
 				: this.Tag.UrlBase;
 
-			var response = this.SendPostRequest<DownloadClientSchemaObject, DownloadClientObject>(url, schema);
+			var response = this.SendPostRequest<DownloadClientObject>(url, schema);
 
 			this.WriteOutcome(response);
 		}

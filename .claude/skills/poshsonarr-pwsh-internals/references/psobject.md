@@ -17,6 +17,14 @@ Measured 2026-10-25 on PowerShell 7.6.8 with throwaway `Add-Type` subclasses of 
 - **`PSSerializer`:** serializing an instance and reading it back gives a plain `PSObject` around a custom object, with the note properties, without the C# properties, and with `Deserialized.` before each type name.
 - **`Select-Object`** with `-First`, `-Last`, `-Skip`, `-Index`, or `-Unique`, and without `-Property`, passes the same instance on and inserts `Selected.System.Management.Automation.PSCustomObject` at the front of its type names, once however often it runs. It does the same to a `[pscustomobject]`, while `Where-Object` and `Sort-Object` change nothing. With `-Property`, `Select-Object` builds a new `PSObject` instead, whose first type name is `Selected.System.Management.Automation.PSCustomObject`, and leaves the original as it was. A format view and type data for a type name further down the list still apply to the changed instance.
 
+## Type names and type data
+
+Measured 2026-11-03 on PowerShell 7.6.9 with a throwaway `Add-Type` subclass of `PSObject` that calls `base(capacity)`, and type data that gives its type name an alias property `Name` for `Title`.
+
+- **Type data blocks a property of the same name.** Once an instance's type names include one whose type data defines a member, adding an instance property with that member's name through `Properties.Add` throws `ExtendedTypeSystemException` ("The member "Name" is already present from the extended type data file."). Adding the note property first and inserting the type name afterward raises no error, and the note property then hides the type data's member: `Properties["Name"]` returns the `NoteProperty`.
+- **Only a thread with a runspace checks.** On a thread-pool thread, adding the property after inserting the type name raised no error.
+- **The check costs a little.** Adding 30 note properties to each of 20,000 instances took 132.5 ms when the type name went in first and 118.8 ms when it went in last, on the pipeline thread, and about 109 ms either way on a thread-pool thread.
+
 ## PSObject's own members
 
 Measured 2026-10-03 on PowerShell 7.6.6 from `Add-Type` C# that uses reflection, unless a fact gives another date.
@@ -40,6 +48,8 @@ Measured 2026-10-03 on PowerShell 7.6.6, unless a fact gives another date.
 - A model built on `SonarrObject` is an empty custom object that holds its values as note properties, so `ImmediateBaseObject is PSCustomObject` is true for every model, and unwrapping one layer at a time through `ImmediateBaseObject` stops at a model and keeps it. `PSObject.BaseObject` unwraps a model to the placeholder, so don't use it to reach the model, and don't read `PSObject`'s private members, which a release can rename.
 - Everything that a user, a format view, or type data should see on a model is a note property or type data, because PowerShell doesn't see a model's C# members. A C# property that copies a note property doesn't see a change PowerShell makes to the note property, nor the reverse, so code that has to honor a user's change reads the note property.
 - A model gets the module's type names only from code that inserts them, such as its deserialization hook, so a model built with `new`, or by the binder from a hashtable, matches no format view or type data of the module until that code runs.
+- Insert a model's type names after its properties are in place, never in a constructor. The converter adds a note property for every field that Sonarr sends, including fields that Sonarr adds later, so with the type names already in place, a field named like a member of the module's type data would make every read of that resource throw.
+- A property that a model adds after its type names are in place, such as one that `OnSerializing()`, `Commit()`, or `Reset()` puts back, must not share a name with a type data member of those type names.
 - Match a model by its class, or by any of its type names, never by the first one: `Select-Object -First` and the other switches that pass objects through put `Selected.System.Management.Automation.PSCustomObject` in front of a model's own names.
 - `Copy()` gives an independent copy of the same class, so adding a property to the copy, such as to show it with more detail, leaves the original as it was.
 - Build a wrapped value in C# with `PSObject.AsPSObject(x)` or `new PSObject((object)x)`, never `new PSObject(<int>)`, which builds an empty custom object.

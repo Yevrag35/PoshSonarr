@@ -53,9 +53,6 @@ public sealed class NewSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 	[ValidateIds(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.Ignore)]
 	public Either<string, int>[] Tags { get; set; } = [];
 
-	protected override int Capacity => 2;
-
-
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
 		return resolver[Meta.ReleaseProfile];
@@ -64,9 +61,8 @@ public sealed class NewSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_tagIds = this.GetPooledObject<SortedSet<int>>();
-		_tagNames = this.GetPooledObject<WildcardSet>();
-		this.SetReturnables(_tagIds, _tagNames);
+		_tagIds = [];
+		_tagNames = new();
 	}
 
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in nameof()")]
@@ -92,8 +88,7 @@ public sealed class NewSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 				return;
 			}
 
-			IndexerObject? indexer = indexers.Find(x => indexerName.IsMatch(x.Name));
-			if (indexer is not null)
+			if (indexers.TryFind(indexerName, static (x, name) => name.IsMatch(x.Name), out var indexer))
 			{
 				this.WriteVerbose($"Found indexer from name -> {indexer.Name} ({indexer.Id})");
 				this.Indexer = indexer.Id;
@@ -130,9 +125,9 @@ public sealed class NewSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 		}
 	}
 
-	private void CreateProfile<T>(T body) where T : notnull
+	private void CreateProfile(object body)
 	{
-		Either<ReleaseProfileObject, SonarrErrorRecord> response = this.SendPostRequest<T, ReleaseProfileObject>(this.Tag.UrlBase, body);
+		Either<ReleaseProfileObject, SonarrErrorRecord> response = this.SendPostRequest<ReleaseProfileObject>(this.Tag.UrlBase, body);
 
 		this.WriteOutcome(response);
 	}

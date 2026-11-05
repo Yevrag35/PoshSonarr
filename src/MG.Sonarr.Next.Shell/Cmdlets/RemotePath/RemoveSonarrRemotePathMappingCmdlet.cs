@@ -23,15 +23,13 @@ public sealed class RemoveSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	[Parameter]
 	public SwitchParameter Force { get; set; }
 
-	protected override int Capacity => 1;
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
 		return resolver[Meta.RemotePathMapping];
 	}
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
-		_ids = this.GetPooledObject<SortedSet<int>>();
-		this.GetReturnables()[0] = _ids;
+		_ids = [];
 	}
 
 	protected override void Begin(IServiceProvider provider)

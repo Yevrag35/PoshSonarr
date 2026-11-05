@@ -1,4 +1,3 @@
-using MG.Sonarr.Next.Collections.Pools;
 using MG.Sonarr.Next.Strings;
 
 namespace MG.Sonarr.Next.Collections;
@@ -22,7 +21,7 @@ namespace MG.Sonarr.Next.Collections;
 /// </remarks>
 [DebuggerDisplay("Count = {Count}")]
 [CollectionBuilder(typeof(WildcardSet), nameof(Create))]
-public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
+public sealed class WildcardSet : IReadOnlyCollection<Wildcard>
 {
 	private const int DEFAULT_CAPACITY = 5;
 	private static readonly WildcardEqualityComparer s_comparer = new();
@@ -277,13 +276,6 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>, IResettable
 	IEnumerator IEnumerable.GetEnumerator()
 	{
 		return this.GetEnumerator();
-	}
-
-	/// <inheritdoc/>
-	bool IResettable.TryReset()
-	{
-		this.Clear();
-		return true;
 	}
 
 	/// <summary>

@@ -133,42 +133,6 @@ namespace MG.Sonarr.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to cast the value to the specified type -&gt; {0}.
-        /// </summary>
-        public static string Reflection_CannotCastToType {
-            get {
-                return ResourceManager.GetString("Reflection_CannotCastToType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The value is neither of the types expected. Expected: &apos;{0}&apos; or &apos;{1}&apos;, Received: &apos;{2}&apos;.
-        /// </summary>
-        public static string Reflection_ExpectedEitherType_2 {
-            get {
-                return ResourceManager.GetString("Reflection_ExpectedEitherType_2", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The value is not of the expected type. Expected: &apos;{0}&apos;, Received: &apos;{1}&apos;.
-        /// </summary>
-        public static string Reflection_ExpectedExactlyType {
-            get {
-                return ResourceManager.GetString("Reflection_ExpectedExactlyType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The value is not the exact or a derivative of the expected type. Expected: &apos;{0}&apos;, Received: &apos;{1}&apos;.
-        /// </summary>
-        public static string Reflection_ExpectedTypeOrDerivative {
-            get {
-                return ResourceManager.GetString("Reflection_ExpectedTypeOrDerivative", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to An exception occured during the PoshSonarr module initialization..
         /// </summary>
         public static string Startup_Exception_DefaultMessage {

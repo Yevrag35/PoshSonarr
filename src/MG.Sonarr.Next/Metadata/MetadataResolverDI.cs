@@ -15,7 +15,7 @@ public static class MetadataResolverDI
 	/// The table holds each assembly weakly, so it keeps none loaded, and it's thread-safe. When two threads look up a
 	/// new assembly at once, each can create a resolver, but the table keeps one and returns it to both.
 	/// </remarks>
-	private static readonly ConditionalWeakTable<Assembly, MetadataResolver> _resolvers = new();
+	private static readonly ConditionalWeakTable<Assembly, MetadataResolver> s_resolvers = [];
 
 	/// <summary>
 	/// Registers an <see cref="IMetadataResolver"/> singleton that holds a tag for each endpoint, with the cmdlets that
@@ -44,7 +44,7 @@ public static class MetadataResolverDI
 		ArgumentNullException.ThrowIfNull(services);
 		ArgumentNullException.ThrowIfNull(cmdletAssembly);
 
-		MetadataResolver resolver = _resolvers.GetValue(cmdletAssembly, CreateResolver);
+		MetadataResolver resolver = s_resolvers.GetValue(cmdletAssembly, CreateResolver);
 		return services.AddSingleton<IMetadataResolver>(resolver);
 	}
 
@@ -114,7 +114,7 @@ public static class MetadataResolverDI
 	/// </remarks>
 	/// <param name="cmdletAssembly">The assembly to search.</param>
 	/// <returns>
-	/// The cmdlet names for each tag, in ordinal order, keyed by tag name without regard to case.
+	/// The cmdlet names for each tag, in ordinal order, keyed by tag name with an ordinal comparer.
 	/// </returns>
 	/// <exception cref="ArgumentException">
 	/// Thrown when a cmdlet class has no <see cref="CmdletAttribute"/> that gives its verb and noun.
@@ -138,7 +138,7 @@ public static class MetadataResolverDI
 			.ToDictionary(
 				keySelector: x => x.Key,
 				elementSelector: x => x.Select(c => c.Second).Order(StringComparer.Ordinal).ToImmutableArray(),
-				comparer: StringComparer.OrdinalIgnoreCase);
+				comparer: StringComparer.Ordinal);
 	}
 
 	/// <summary>

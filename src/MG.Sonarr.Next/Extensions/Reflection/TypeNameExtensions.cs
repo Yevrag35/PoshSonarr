@@ -10,43 +10,48 @@ public static class TypeNameExtensions
 	private static readonly ConcurrentDictionary<PSTypeKey, string> s_typeNameCache = [];
 
 	/// <summary>
-	/// Returns the PowerShell type name for the specified .NET type.
+	/// Provides extension methods that return the PowerShell type name of a <see cref="Type"/>.
 	/// </summary>
-	/// <param name="type">The .NET type for which to retrieve the corresponding PowerShell type name. Cannot be null.</param>
-	/// <returns>A string containing the PowerShell type name associated with the specified .NET type.</returns>
-	public static string GetPSTypeName(this Type type)
-	{
-		return GetPSTypeName(type, removeBrackets: false);
-	}
-	/// <summary>
-	/// Gets the PowerShell type name for the specified .NET type, optionally without its enclosing brackets.
-	/// </summary>
-	/// <remarks>
-	/// <para>This method uses PowerShell's type accelerator name when the type has one, such as <c>int</c> for
-	/// <see cref="int"/>, and otherwise the full type name in PowerShell's notation. A type that has no full name, such
-	/// as a generic parameter, or that PowerShell can't name, such as a pointer, takes its own .NET name instead, such
-	/// as <c>[T]</c>.</para>
-	/// <para><paramref name="removeBrackets"/> strips only the enclosing pair, so a generic or array type name keeps its
-	/// own brackets: <c>[string[]]</c> becomes <c>string[]</c>.</para>
-	/// </remarks>
 	/// <param name="type">The .NET type for which to retrieve the PowerShell type name. Cannot be null.</param>
-	/// <param name="removeBrackets"><see langword="true"/> to remove the enclosing pair of brackets from the name; otherwise,
-	/// <see langword="false"/>.</param>
-	/// <returns>A string containing the PowerShell type name corresponding to the specified .NET type. If no accelerated
-	/// name is found, returns the full type name.</returns>
-	public static string GetPSTypeName(this Type type, bool removeBrackets)
+	extension(Type type)
 	{
-		if (PSTypeAcceleratorNames.Shared.TryGetName(
-			type: type,
-			includeBrackets: !removeBrackets,
-			acceleratedName: out string? acceleratedName))
+		/// <summary>
+		/// Returns the PowerShell type name for the specified .NET type.
+		/// </summary>
+		/// <returns>A string containing the PowerShell type name associated with the specified .NET type.</returns>
+		public string GetPSTypeName()
 		{
-			return acceleratedName;
+			return type.GetPSTypeName(removeBrackets: false);
 		}
+		/// <summary>
+		/// Gets the PowerShell type name for the specified .NET type, optionally without its enclosing brackets.
+		/// </summary>
+		/// <remarks>
+		/// <para>This method uses PowerShell's type accelerator name when the type has one, such as <c>int</c> for
+		/// <see cref="int"/>, and otherwise the full type name in PowerShell's notation. A type that has no full name, such
+		/// as a generic parameter, or that PowerShell can't name, such as a pointer, takes its own .NET name instead, such
+		/// as <c>[T]</c>.</para>
+		/// <para><paramref name="removeBrackets"/> strips only the enclosing pair, so a generic or array type name keeps its
+		/// own brackets: <c>[string[]]</c> becomes <c>string[]</c>.</para>
+		/// </remarks>
+		/// <param name="removeBrackets"><see langword="true"/> to remove the enclosing pair of brackets from the name; otherwise,
+		/// <see langword="false"/>.</param>
+		/// <returns>A string containing the PowerShell type name corresponding to the specified .NET type. If no accelerated
+		/// name is found, returns the full type name.</returns>
+		public string GetPSTypeName(bool removeBrackets)
+		{
+			if (PSTypeAcceleratorNames.Shared.TryGetName(
+				type: type,
+				includeBrackets: !removeBrackets,
+				acceleratedName: out string? acceleratedName))
+			{
+				return acceleratedName;
+			}
 
-		return s_typeNameCache.GetOrAdd(
-			key: new PSTypeKey(KeyedType: type, IncludeBrackets: !removeBrackets),
-			valueFactory: GetTypeName);
+			return s_typeNameCache.GetOrAdd(
+				key: new PSTypeKey(KeyedType: type, IncludeBrackets: !removeBrackets),
+				valueFactory: GetTypeName);
+		}
 	}
 
 	/// <summary>

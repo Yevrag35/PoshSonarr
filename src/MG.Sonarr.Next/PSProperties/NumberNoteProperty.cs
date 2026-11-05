@@ -26,7 +26,8 @@ public static class NumberProperty
 /// <remarks>
 /// <para>Setting <see cref="WritableProperty{T}.Value"/> accepts a <typeparamref name="T"/>, a string that parses as
 /// one, or another number type whose text parses as one, such as an <see cref="int"/> for a <see cref="long"/>
-/// property. Strings and other values are parsed with <see cref="Statics.DefaultProvider"/>.</para>
+/// property. Strings and other values are formatted and parsed with <see cref="CultureInfo.InvariantCulture"/>, as
+/// PowerShell's own conversions read them, whatever the current culture.</para>
 /// <para>The property's <see cref="WritableProperty{T}.ToString"/> formats the value into a buffer of up to 40
 /// characters, which holds every value of the built-in number types.</para>
 /// </remarks>
@@ -98,16 +99,16 @@ public sealed class NumberNoteProperty<T> : WritableProperty<T> where T : unmana
 		{
 			return intVal;
 		}
-		else if (value is string strVal && T.TryParse(strVal, Statics.DefaultProvider, out T fromStr))
+		else if (value is string strVal && T.TryParse(strVal, CultureInfo.InvariantCulture, out T fromStr))
 		{
 			return fromStr;
 		}
 		else if (value is ISpanFormattable spanFormattable)
 		{
 			Span<char> chars = stackalloc char[LengthConstants.INT128_MAX];
-			if (spanFormattable.TryFormat(chars, out int written, default, Statics.DefaultProvider)
+			if (spanFormattable.TryFormat(chars, out int written, default, CultureInfo.InvariantCulture)
 				&&
-				T.TryParse(chars.Slice(0, written), Statics.DefaultProvider, out T intRes))
+				T.TryParse(chars.Slice(0, written), CultureInfo.InvariantCulture, out T intRes))
 			{
 				return intRes;
 			}

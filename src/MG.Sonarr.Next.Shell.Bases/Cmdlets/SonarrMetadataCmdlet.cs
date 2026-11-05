@@ -67,7 +67,7 @@ public abstract class SonarrMetadataCmdlet : SonarrApiCmdletBase
 	}
 	protected List<T> GetById<T>(IReadOnlyCollection<int>? ids) where T : PSObject
 	{
-		if (ids.IsNullOrEmpty())
+		if (ids.IsNullOrEmpty)
 		{
 			return [];
 		}

@@ -13,7 +13,7 @@ namespace MG.Sonarr.Next.Models;
 /// </remarks>
 /// <typeparam name="T">The type of the records.</typeparam>
 public sealed class RecordResult<T> : IJsonMetadataTaggable, ISortable
-	where T : IComparable<T>, IJsonMetadataTaggable
+	where T : class, IComparable<T>, IJsonMetadataTaggable
 {
 	/// <summary>
 	/// Gets the number of records on the page.

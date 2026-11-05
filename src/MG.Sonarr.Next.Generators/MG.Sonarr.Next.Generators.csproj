@@ -2,11 +2,10 @@
 
 	<!--
 		The compiler loads generators into its own process, which runs on .NET Framework inside Visual Studio and on .NET in
-		the SDK, so this project targets netstandard2.0 rather than the module's net10.0.
+		the SDK, so this project targets netstandard2.0, replacing the net10.0 that src/Directory.Build.props sets.
 	-->
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<Nullable>enable</Nullable>
 		<IsPackable>false</IsPackable>
 		<IsRoslynComponent>true</IsRoslynComponent>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>

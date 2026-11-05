@@ -3,6 +3,18 @@ namespace MG.Sonarr.Next.Json.Naming;
 /// <summary>
 /// Provides a naming policy for converting JSON property names to camel case using spans.
 /// </summary>
+/// <remarks>
+/// <para>
+/// The span overloads change a name in place by the rules of <see cref="JsonNamingPolicy.CamelCase"/>: a name whose
+/// first character isn't uppercase stays as it is, and otherwise the leading run of uppercase characters is
+/// lowercased, except for the last one when a lowercase character follows it, so <c>IMDbId</c> becomes
+/// <c>imDbId</c> and <c>ID</c> becomes <c>id</c>.
+/// </para>
+/// <para>
+/// The UTF-8 overload changes only ASCII letters, so its result can differ from the policy's for a name whose leading
+/// run holds an uppercase letter outside ASCII, such as <c>Été</c>, which it leaves as it is.
+/// </para>
+/// </remarks>
 public sealed class JsonSpanCamelCaseNamingPolicy : JsonNamingPolicy
 {
 	private static readonly JsonNamingPolicy s_camelCase = CamelCase;
@@ -35,6 +47,10 @@ public sealed class JsonSpanCamelCaseNamingPolicy : JsonNamingPolicy
 	/// <summary>
 	/// Converts the specified span of UTF-8 bytes to camel case.
 	/// </summary>
+	/// <remarks>
+	/// Only ASCII letters change, so the span keeps its length, and a name whose leading run holds an uppercase letter
+	/// outside ASCII doesn't get that letter lowercased, as it would through <see cref="ConvertName(string)"/>.
+	/// </remarks>
 	/// <param name="utf8Text">The span of UTF-8 bytes to convert.</param>
 	/// <returns>The camel case version of the span.</returns>
 	[SuppressMessage("Style", "CA1822", Justification = "This method is an instance method to match the signature of the base class.")]
@@ -45,15 +61,18 @@ public sealed class JsonSpanCamelCaseNamingPolicy : JsonNamingPolicy
 	}
 
 	/// <summary>
-	/// Converts the initial characters of the specified span to lowercase according to custom casing rules.
+	/// Converts the initial characters of the specified span to lowercase by the rules of
+	/// <see cref="JsonNamingPolicy.CamelCase"/>.
 	/// </summary>
-	/// <remarks>This method updates the contents of the provided span directly. Only the first few characters are
+	/// <remarks>This method updates the contents of the provided span directly. A span whose first character isn't
+	/// uppercase is left as it is, as the policy leaves such a name. Otherwise only the first few characters are
 	/// affected, based on the casing and spacing of the input. The operation stops when a non-uppercase character or a
 	/// space is encountered after the first character.</remarks>
 	/// <param name="chars">A span of characters whose initial casing will be modified in place. The span must be writable.</param>
 	private static void FixCasing(Span<char> chars)
 	{
-		if (chars.IsEmpty)
+		// JsonNamingPolicy.CamelCase returns a name whose first character isn't uppercase as it is, so aB stays aB.
+		if (chars.IsEmpty || !char.IsUpper(chars[0]))
 		{
 			return;
 		}
@@ -88,14 +107,15 @@ public sealed class JsonSpanCamelCaseNamingPolicy : JsonNamingPolicy
 	/// Converts the initial bytes of the specified UTF-8 span to lowercase, applying the same camel-case rules as
 	/// <see cref="FixCasing(Span{char})"/>.
 	/// </summary>
-	/// <remarks>This method updates the contents of the provided span directly. Only the leading run of ASCII
-	/// uppercase letters is affected; the operation stops when a non-uppercase byte or a space is encountered after the
-	/// first byte. Bytes outside the ASCII uppercase range (including every byte of a multi-byte UTF-8 sequence) are
-	/// left untouched, so the length of the span never changes.</remarks>
+	/// <remarks>This method updates the contents of the provided span directly. A span whose first byte isn't an ASCII
+	/// uppercase letter is left as it is. Otherwise only the leading run of ASCII uppercase letters is affected; the
+	/// operation stops when a non-uppercase byte or a space is encountered after the first byte. Bytes outside the ASCII
+	/// uppercase range (including every byte of a multi-byte UTF-8 sequence) are left untouched, so the length of the
+	/// span never changes.</remarks>
 	/// <param name="utf8Bytes">A span of UTF-8 bytes whose initial casing is modified in place. The span must be writable.</param>
 	private static void FixCasing(Span<byte> utf8Bytes)
 	{
-		if (utf8Bytes.IsEmpty)
+		if (utf8Bytes.IsEmpty || !IsAsciiUpper(utf8Bytes[0]))
 		{
 			return;
 		}

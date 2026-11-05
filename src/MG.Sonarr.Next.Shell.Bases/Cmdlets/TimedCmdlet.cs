@@ -11,11 +11,11 @@ using System.Text.Json;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Bases;
 
 /// <summary>
-/// An <see langword="abstract"/>, <see cref="PoolableCmdlet"/> that implements 
-/// <see cref="IApiCmdlet"/> and provides methods for timing the execution of Sonarr API requests.
+/// Represents a <see cref="SonarrCmdletBase"/> that implements <see cref="IApiCmdlet"/> and times the Sonarr API
+/// requests that it sends.
 /// </summary>
 //[DebuggerStepThrough]
-public abstract class TimedCmdlet : PoolableCmdlet, IApiCmdlet
+public abstract class TimedCmdlet : SonarrCmdletBase, IApiCmdlet
 {
 	private long _timestamp;
 
@@ -25,7 +25,6 @@ public abstract class TimedCmdlet : PoolableCmdlet, IApiCmdlet
 	/// Implementation in the base class always returns <see langword="true"/>.
 	/// </remarks>
 	protected sealed override bool CaptureVerbosePreference => true;
-	private protected sealed override int InternalCapacity => 0;
 	public virtual bool CanDebugSerializeBefore => this.DebugPreference != ActionPreference.SilentlyContinue;
 	public virtual bool CanDebugSerializeAfter => this.DebugPreference != ActionPreference.SilentlyContinue;
 	public bool CanWriteVerbose => !(this.VerbosePreference is ActionPreference.SilentlyContinue or ActionPreference.Ignore);
@@ -50,11 +49,11 @@ public abstract class TimedCmdlet : PoolableCmdlet, IApiCmdlet
 
 	public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options)
 	{
-		if (this.Host?.UI is not null)
+		if (this.Host?.UI is { } ui)
 		{
 			TimeSpan elapsed = this.StopTimer();
 			string msg = GetAfterMessage(elapsed, response.StatusCode);
-			this.Host.UI.WriteVerboseLine(msg);
+			ui.WriteVerboseLine(msg);
 		}
 	}
 
@@ -73,17 +72,17 @@ public abstract class TimedCmdlet : PoolableCmdlet, IApiCmdlet
 	}
 	public void WriteDebugPayload(string jsonPayload)
 	{
-		if (this.Host?.UI is not null)
+		if (this.Host?.UI is { } ui)
 		{
-			this.Host.UI.WriteDebugLine(jsonPayload);
+			ui.WriteDebugLine(jsonPayload);
 		}
 	}
 	public void WriteVerboseBefore(IHttpRequestDetails request)
 	{
-		if (this.Host?.UI is not null)
+		if (this.Host?.UI is { } ui)
 		{
 			string msg = GenerateBeforeMessage(request);
-			this.Host.UI.WriteVerboseLine(msg);
+			ui.WriteVerboseLine(msg);
 		}
 	}
 	private static string GenerateBeforeMessage(IHttpRequestDetails request)
@@ -92,7 +91,6 @@ public abstract class TimedCmdlet : PoolableCmdlet, IApiCmdlet
 	}
 
 	[DebuggerStepThrough]
-	[StructLayout(LayoutKind.Auto)]
 	private readonly struct TimedResponse : ISonarrTimedResponse
 	{
 		readonly ISonarrResponse? _response;

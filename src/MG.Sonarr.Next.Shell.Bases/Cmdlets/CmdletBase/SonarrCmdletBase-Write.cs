@@ -8,16 +8,33 @@ namespace MG.Sonarr.Next.Shell.Cmdlets;
 public abstract partial class SonarrCmdletBase
 {
 	/// <summary>
-	/// Serializes a given object to the cmdlet's Debug output stream but only if the
-	/// <see cref="DebugPreference"/> preference would allow for writing it. This possibly saves not 
-	/// calling on expensive serialization operations if the output would not be shared.
+	/// Writes the JSON of the specified object to the debug stream when the cmdlet's <see cref="DebugPreference"/>
+	/// allows it, and skips serializing it otherwise.
 	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <param name="value">The object to serialize.</param>
-	/// <param name="message">An optional message to display before the serialization.</param>
-	/// <param name="options">Options to provide the <see cref="JsonSerializer"/>.</param>
+	/// <remarks>
+	/// <para>
+	/// The object is serialized by its runtime type, as the HTTP client serializes a request's body, and with
+	/// <see cref="ISonarrJsonOptions.ForDebugging"/> unless <paramref name="options"/> names others, so the JSON is the
+	/// body that a request sends, indented.
+	/// </para>
+	/// <para>
+	/// Serializing a model runs its <see cref="System.Text.Json.Serialization.IJsonOnSerializing.OnSerializing"/>, which
+	/// only the <see cref="MG.Sonarr.Next.Models.SonarrObject.Commit"/> or
+	/// <see cref="MG.Sonarr.Next.Models.SonarrObject.Reset"/> after a request undoes. So a cmdlet writes a model here
+	/// only once <see cref="Cmdlet.ShouldProcess(string, string)"/> has agreed to send it, or <c>-WhatIf</c> would leave
+	/// the model changed.
+	/// </para>
+	/// </remarks>
+	/// <param name="value">The object to serialize, or <see langword="null"/>.</param>
+	/// <param name="message">A message to write before the JSON, or <see langword="null"/> to write none.</param>
+	/// <param name="includeType">
+	/// <see langword="true"/> to write the name of the object's type before the JSON; otherwise, <see langword="false"/>.
+	/// </param>
+	/// <param name="options">
+	/// The options to serialize with, or <see langword="null"/> for <see cref="ISonarrJsonOptions.ForDebugging"/>.
+	/// </param>
 	[DebuggerStepThrough]
-	protected void SerializeIfDebug<T>(T value, string? message = null, bool includeType = true, JsonSerializerOptions? options = null)
+	protected void SerializeIfDebug(object? value, string? message = null, bool includeType = true, JsonSerializerOptions? options = null)
 	{
 		if (this.DebugPreference != ActionPreference.SilentlyContinue)
 		{
@@ -28,9 +45,7 @@ public abstract partial class SonarrCmdletBase
 
 			options ??= this.Services?.GetService<ISonarrJsonOptions>()?.ForDebugging;
 
-			Type type = value is not null
-				? typeof(T)
-				: typeof(object);
+			Type type = value?.GetType() ?? typeof(object);
 
 			if (includeType)
 			{

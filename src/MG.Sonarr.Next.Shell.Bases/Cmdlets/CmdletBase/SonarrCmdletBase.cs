@@ -1,4 +1,4 @@
-﻿using MG.Sonarr.Next.Shell.Context;
+using MG.Sonarr.Next.Shell.Context;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets;
 
@@ -173,43 +173,17 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 
 	#region DISPOSAL
 	/// <summary>
-	/// When overriden in derived classes, it should dispose of any resources when the cmdlet's execution
-	/// has finished that may require a new scoped <see cref="IServiceProvider"/>. Default implementation
-	/// in the base class just returns.
+	/// Disposes the cmdlet's scoped <see cref="IServiceProvider"/> once the <see cref="SonarrCmdletBase"/> has
+	/// finished execution.
 	/// </summary>
-	/// <param name="disposing">The method should dispose of resources.</param>
-	/// <param name="scopeFactory">
-	///     The scope factory that can be used to create any services needed.
-	/// </param>
-	[DebuggerStepThrough]
-	protected virtual void Dispose(bool disposing, IServiceScopeFactory? scopeFactory)
-	{
-		return;
-	}
-
-	/// <summary>
-	/// The overridable disposal method that cleans up the scoped <see cref="IServiceProvider"/>
-	/// instance when the <see cref="SonarrCmdletBase"/> has finished execution.  If a 
-	/// <see cref="IServiceProvider"/> is needed in derived cmdlet's context, then the 
-	/// <see cref="Dispose(bool, IServiceScopeFactory?)"/> overload should be overriden.
-	/// </summary>
+	/// <remarks>
+	/// A derived cmdlet that overrides it releases its own resources first and then calls the base method.
+	/// </remarks>
 	/// <param name="disposing">The method should dispose of the scope.</param>
 	protected virtual void Dispose(bool disposing)
 	{
 		if (!_disposed)
 		{
-			IServiceProvider? provider = null;
-			try
-			{
-				provider = this.CreateScope().ServiceProvider;
-			}
-			catch (InvalidOperationException)
-			{
-				provider = null;
-			}
-
-			this.Dispose(disposing, provider?.GetService<IServiceScopeFactory>());
-
 			_scope?.Dispose();
 			_scope = null!;
 			_disposed = true;

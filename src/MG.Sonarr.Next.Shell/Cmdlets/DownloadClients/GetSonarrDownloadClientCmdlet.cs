@@ -12,12 +12,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients;
 [Cmdlet(VerbsCommon.Get, "SonarrDownloadClient", DefaultParameterSetName = "ByNameOrId"), OutputType(typeof(IDownloadClientOutput))]
 public sealed class GetSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 {
-	const int CAPACITY = 2;
 	static readonly string _namePropertyName = nameof(Name);
 
 	SortedSet<int> _ids = null!;
 	WildcardSet _wcNames = null!;
-	protected override int Capacity => CAPACITY;
 
 	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetExplicitId)]
 	public int[] Id { get; set; } = [];
@@ -28,11 +26,8 @@ public sealed class GetSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-
-		_ids = this.GetPooledObject<SortedSet<int>>();
-		_wcNames = this.GetPooledObject<WildcardSet>();
-
-		this.SetReturnables(_ids, _wcNames);
+		_ids = [];
+		_wcNames = new();
 	}
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
@@ -63,8 +58,7 @@ public sealed class GetSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 		if (all.Count > 0 && (names.Count > 0 || ids.Count > 0))
 		{
 			FnPtr<DownloadClientObject, WildcardSet, SortedSet<int>, bool> removePtr;
-			unsafe
-			{ removePtr = new(&removeIf); }
+			unsafe { removePtr = new(&removeIf); }
 
 			all.RemoveAll(names, ids, removePtr);
 		}

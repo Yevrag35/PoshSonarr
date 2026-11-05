@@ -5,7 +5,8 @@ namespace MG.Sonarr.Next.PSProperties;
 /// </summary>
 /// <remarks>
 /// The property's value is never null: setting it to <see langword="null"/> stores an empty string, and setting it
-/// to another value stores that value's text, formatted with <see cref="Statics.DefaultProvider"/>.
+/// to another value stores that value's text, formatted with <see cref="CultureInfo.InvariantCulture"/>, as
+/// PowerShell's own conversions format it, since the value can go back to Sonarr.
 /// </remarks>
 public sealed class StringNoteProperty : WritableProperty<string>
 {
@@ -92,8 +93,8 @@ public sealed class StringNoteProperty : WritableProperty<string>
 		{
 			null => string.Empty,
 			string strVal => strVal,
-			IFormattable formattable => formattable.ToString(null, Statics.DefaultProvider),
-			IConvertible icon => Convert.ToString(icon, Statics.DefaultProvider) ?? string.Empty,
+			IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+			IConvertible icon => Convert.ToString(icon, CultureInfo.InvariantCulture) ?? string.Empty,
 
 			_ => this.ThrowNotType<string>(),
 		};

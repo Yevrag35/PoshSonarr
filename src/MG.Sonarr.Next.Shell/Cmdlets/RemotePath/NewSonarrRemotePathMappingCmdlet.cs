@@ -77,12 +77,12 @@ public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 			chars[position++] = '.';
 
 			scoped Span<char> domain = chars.Slice(position);
-			state.domain.AsSpan().ToLower(domain, Statics.DefaultCulture);
+			state.domain.AsSpan().ToLower(domain, CultureInfo.InvariantCulture);
 		});
 	}
-	private void SendNewRequest<T>(T body, MetadataTag tag) where T : notnull
+	private void SendNewRequest(RemotePathBody body, MetadataTag tag)
 	{
-		var oneOf = this.SendPostRequest<T, RemotePathObject>(tag.UrlBase, body);
+		var oneOf = this.SendPostRequest<RemotePathObject>(tag.UrlBase, body);
 		if (oneOf.TryGetT2(out var error, out var remotePath))
 		{
 			this.WriteError(error);

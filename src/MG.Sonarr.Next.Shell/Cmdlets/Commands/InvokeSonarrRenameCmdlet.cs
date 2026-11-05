@@ -19,7 +19,7 @@ public sealed class InvokeSonarrRenameCmdlet : SonarrCmdletBase
 	List<IRenameFilePipeable> _renameables = null!;
 
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
-	[ValidateIds(ValidateRangeKind.Positive, typeof(IRenameFilePipeable))]
+	[ValidateIds<IRenameFilePipeable>(ValidateRangeKind.Positive)]
 	[ValidateNotNull]
 	public IRenameFilePipeable[] InputObject { get; set; } = [];
 
@@ -44,7 +44,7 @@ public sealed class InvokeSonarrRenameCmdlet : SonarrCmdletBase
 	{
 		var client = provider.GetRequiredService<ICommandTracker>();
 
-		if (!_renameables.IsNullOrEmpty())
+		if (!_renameables.IsNullOrEmpty)
 		{
 			this.SendRenamesFromPipeline(client);
 		}

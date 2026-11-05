@@ -172,17 +172,16 @@ public sealed class NoKeyHostObject : HostObject,
 	private static readonly string s_typeName = typeof(NoKeyHostObject).GetName();
 
 	/// <summary>
-	/// Compares this object with another through
-	/// <see cref="global::System.Management.Automation.PSObject.CompareTo(object)"/>.
+	/// Compares this object with another by <see cref="HostObject.Id"/>.
 	/// </summary>
 	/// <param name="other">The object to compare with, or <see langword="null"/>.</param>
 	/// <returns>
-	/// A negative number if this object sorts before <paramref name="other"/>, 0 if they sort together, or a
-	/// positive number if it sorts after.
+	/// A negative number if this object's ID is less than that of <paramref name="other"/>, 0 if they're equal, or a
+	/// positive number if it's greater or <paramref name="other"/> is <see langword="null"/>.
 	/// </returns>
 	public int CompareTo(NoKeyHostObject? other)
 	{
-		return base.CompareTo(other);
+		return other is null ? 1 : this.Id.CompareTo(other.Id);
 	}
 
 	/// <summary>

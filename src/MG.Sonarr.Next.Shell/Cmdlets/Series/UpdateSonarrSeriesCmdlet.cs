@@ -50,13 +50,13 @@ public sealed class UpdateSonarrSeriesCmdlet : SonarrApiCmdletBase
 
 		foreach (SeriesObject item in _list)
 		{
-			this.SerializeIfDebug(
-				value: item,
-				options: provider.GetService<ISonarrJsonOptions>()?.ForSerializing);
-
 			string path = tag.GetUrlForId(item.Id);
 			if (this.ShouldProcess(path, "Update Series"))
 			{
+				this.SerializeIfDebug(
+					value: item,
+					options: provider.GetService<ISonarrJsonOptions>()?.ForSerializing);
+
 				var response = this.SendPutRequest(path, item);
 				if (response.IsError)
 				{

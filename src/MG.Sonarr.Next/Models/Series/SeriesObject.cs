@@ -132,7 +132,7 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 	/// Initializes a new <see cref="SeriesObject"/> instance with room for a number of properties.
 	/// </summary>
 	/// <param name="capacity">The number of properties that the object is created with room for.</param>
-	protected SeriesObject(int capacity)
+	protected SeriesObject([ConstantExpected] int capacity)
 		: base(capacity)
 	{
 	}

@@ -28,7 +28,7 @@ public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = false, Position = 0, ParameterSetName = "BySeriesName")]
-	[SupportsWildcards, ValidateIds(ValidateRangeKind.Positive, typeof(Either<string, int>), NullBehavior = InputNullBehavior.Ignore)]
+	[SupportsWildcards, ValidateIds(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.Ignore)]
 	public Either<string, int>[] Name { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -39,16 +39,14 @@ public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetPipeline, DontShow = true,
 		ValueFromPipeline = true)]
-	[ValidateIds(ValidateRangeKind.Positive, typeof(ISeriesPipeable))]
+	[ValidateIds<ISeriesPipeable>(ValidateRangeKind.Positive)]
 	public ISeriesPipeable[] InputObject { get; set; } = [];
 
-	protected override int Capacity => 2;
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_ids = this.GetPooledObject<SortedSet<int>>();
-		_wcNames = this.GetPooledObject<WildcardSet>();
-		this.SetReturnables(_ids, _wcNames);
+		_ids = [];
+		_wcNames = new();
 	}
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
 	{
@@ -142,18 +140,5 @@ public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
 
 			this.WriteObject(result.Value);
 		}
-	}
-
-	bool _disposed;
-	protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
-	{
-		if (disposing && !_disposed)
-		{
-			_ids = null!;
-			_wcNames = null!;
-			_disposed = true;
-		}
-
-		base.Dispose(disposing, factory);
 	}
 }

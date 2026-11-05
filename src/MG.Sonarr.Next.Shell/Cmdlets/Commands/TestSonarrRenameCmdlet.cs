@@ -18,7 +18,7 @@ public sealed class TestSonarrRenameCmdlet : SonarrApiCmdletBase
 	QueryCol _params = null!;
 
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "BySeriesInput")]
-	[ValidateId(ValidateRangeKind.Positive, typeof(ISeriesPipeable))]
+	[ValidateId<ISeriesPipeable>(ValidateRangeKind.Positive)]
 	public ISeriesPipeable InputObject
 	{
 		get => null!;
@@ -35,12 +35,9 @@ public sealed class TestSonarrRenameCmdlet : SonarrApiCmdletBase
 	[ValidateRange(ValidateRangeKind.NonNegative)]
 	public int SeasonNumber { get; set; }
 
-	protected override int Capacity => 1;
-
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
-		_params = this.GetPooledObject<QueryCol>();
-		this.SetReturnables(_params);
+		_params = new(10);
 	}
 
 	protected override void Begin(IServiceProvider provider)

@@ -9,41 +9,40 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing;
 [Cmdlet(VerbsCommon.Get, "SonarrWantedMissing", DefaultParameterSetName = "ByPage")]
 public sealed class GetSonarrWantedMissingCmdlet : SonarrApiCmdletBase
 {
-	QueryCol QueryCol { get; set; } = null!;
+	QueryCol _parameters = null!;
 
 	[Parameter(Mandatory = true, ParameterSetName = "AllRecords")]
 	public SwitchParameter All { get; set; }
 
-	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = false, ParameterSetName = "ByPage")]
 	[Alias("Page")]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int PageNumber { get; set; }
-	//{
-	//    get => 0;
-	//    set
-	//    {
-	//        this.QueryCol ??= new(3);
-	//        this.QueryCol.Add("page", value);
-	//    }
-	//}
 
-	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = false, ParameterSetName = "ByPage")]
 	[ValidateRange(ValidateRangeKind.Positive)]
-	public int PageSize
+	public int PageSize { get; set; }
+
+	protected override void OnCreatingScope(IServiceProvider provider)
 	{
-		get => 0;
-		set
+		base.OnCreatingScope(provider);
+		_parameters = new(2);
+	}
+	protected override void Begin(IServiceProvider provider)
+	{
+		if (this.HasParameter(this.PageNumber))
 		{
-			this.QueryCol ??= new(3);
-			this.QueryCol.Add("pageSize", value);
+			_parameters.Add(PagingConstants.PageNumber, this.PageNumber);
+		}
+
+		if (this.HasParameter(this.PageSize))
+		{
+			_parameters.Add(PagingConstants.PageSize, this.PageSize);
 		}
 	}
 
 	protected override void Process(IServiceProvider provider)
 	{
-		this.QueryCol ??= [];
 		if (this.All)
 		{
 			IEnumerable<EpisodeObject> records = this.SendAllRecords();
@@ -51,7 +50,7 @@ public sealed class GetSonarrWantedMissingCmdlet : SonarrApiCmdletBase
 			return;
 		}
 
-		string url = GetUrl(this.QueryCol);
+		string url = GetUrl(_parameters);
 		if (this.GetWantedMissing(url, out RecordResult<EpisodeObject>? result))
 		{
 			this.WriteCollection(result.Records);
@@ -89,18 +88,18 @@ public sealed class GetSonarrWantedMissingCmdlet : SonarrApiCmdletBase
 
 	private MetadataList<EpisodeObject> SendAllRecords()
 	{
-		this.PageNumber = 1;
-		this.PageSize = 1;
+		_parameters.Add(PagingConstants.PageNumber, 1);
+		_parameters.Add(PagingConstants.PageSize, 1);
 
-		string url = GetUrl(this.QueryCol);
+		string url = GetUrl(_parameters);
 		if (!this.GetWantedMissing(url, out RecordResult<EpisodeObject>? result))
 		{
 			return [];
 		}
 
-		this.QueryCol.AddOrUpdate(PagingConstants.PageSize, result.TotalRecords);
+		_parameters.AddOrUpdate(PagingConstants.PageSize, result.TotalRecords);
 
-		url = GetUrl(this.QueryCol);
+		url = GetUrl(_parameters);
 		return this.GetWantedMissing(url, out result)
 			? result.Records
 			: [];

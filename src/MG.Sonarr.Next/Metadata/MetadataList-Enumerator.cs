@@ -1,6 +1,8 @@
+using MG.Sonarr.Next.Collections.Intrinsics;
+
 namespace MG.Sonarr.Next.Metadata;
 
-public sealed partial class MetadataList<T>
+partial class MetadataList<T>
 {
 	/// <summary>
 	/// Returns an enumerator over the list's elements.
@@ -90,7 +92,7 @@ public sealed partial class MetadataList<T>
 			if ((uint)index < (uint)_list._list.Count)
 			{
 				_index = index;
-				_current = Unsafe.Add(ref MemoryMarshal.GetReference(_list.AsSpan()), index);
+				_current = ListMarshal.GetRawArray(_list._list).Ref(index);
 				return true;
 			}
 

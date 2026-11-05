@@ -22,9 +22,20 @@
 		<FileVersion>$(Version)</FileVersion>
 	</PropertyGroup>
 
+	<!--
+		Every project targets net10.0 except the generators' project, which sets netstandard2.0 in its own file. MSBuild
+		imports this file before a project's body, so a value that the project sets replaces this one. A project that
+		multi-targets through TargetFrameworks must also set TargetFramework to empty, because the SDK builds a project for
+		each framework in that list only when TargetFramework is empty, and otherwise builds it for net10.0 alone.
+	-->
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+	</PropertyGroup>
+
 	<!-- Compiler settings shared by every project. A project can override any of them in its own file. -->
 	<PropertyGroup>
 		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>

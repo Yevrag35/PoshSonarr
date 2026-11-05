@@ -74,7 +74,7 @@ internal readonly struct EmptyCommand : ICommand
 			return true;
 		}
 
-		return this.Id.IsEqualTo(other?.Id)
+		return this.Id == other?.Id
 			   &&
 			   this.Started == other.Started
 			   &&

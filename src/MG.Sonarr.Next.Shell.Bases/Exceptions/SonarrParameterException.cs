@@ -54,7 +54,7 @@ public sealed class SonarrParameterException : PoshSonarrException
 
 		if (count < 2)
 		{
-			typeSpan.Slice(0, 1).ToLower(builder.AppendSpan(1), Statics.DefaultCulture);
+			typeSpan.Slice(0, 1).ToLower(builder.AppendSpan(1), CultureInfo.InvariantCulture);
 			builder.Append(typeSpan.Slice(1));
 			return builder.ToString();
 		}
@@ -64,7 +64,7 @@ public sealed class SonarrParameterException : PoshSonarrException
 		foreach (Range range in typeSpan.Split(splitBy))
 		{
 			ReadOnlySpan<char> section = typeSpan[range];
-			section.Slice(0, 1).ToLower(builder.AppendSpan(1), Statics.DefaultCulture);
+			section.Slice(0, 1).ToLower(builder.AppendSpan(1), CultureInfo.InvariantCulture);
 			builder.Append(section.Slice(1));
 
 			if (i < count - 1)

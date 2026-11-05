@@ -27,8 +27,8 @@ public sealed class EditSonarrManualImportCmdlet : SonarrApiCmdletBase
 
 	[Parameter]
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[ValidateId(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.PassAsZero)]
-	[ValidateType(typeof(int), typeof(SeriesObject))]
+	[IdOrObjectTransform<SeriesObject>]
+	[ValidateId(ValidateRangeKind.Positive)]
 	public Either<int, SeriesObject> Series
 	{
 		get => _series;
@@ -37,18 +37,19 @@ public sealed class EditSonarrManualImportCmdlet : SonarrApiCmdletBase
 
 	[Parameter]
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[ValidateId(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.PassAsZero)]
-	[ValidateType(typeof(int), typeof(EpisodeObject))]
+	[IdOrObjectTransform<EpisodeObject>]
+	[ValidateId(ValidateRangeKind.Positive)]
 	public Either<int, EpisodeObject> Episode
 	{
 		get => _episode;
 		set => _episode = value;
 	}
 
+	// A quality revision has no ID of its own, so only an ID is range-checked.
 	[Parameter]
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[ValidateId(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.PassAsZero)]
-	[ValidateType(typeof(int), typeof(QualityRevisionObject))]
+	[IdOrObjectTransform<QualityRevisionObject>]
+	[ValidateId(ValidateRangeKind.Positive, NullBehavior = InputNullBehavior.Ignore)]
 	public Either<int, QualityRevisionObject> Quality
 	{
 		get => _quality;

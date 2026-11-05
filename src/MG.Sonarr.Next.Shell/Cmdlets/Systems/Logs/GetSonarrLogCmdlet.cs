@@ -12,7 +12,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs;
 [Cmdlet(VerbsCommon.Get, "SonarrLog")]
 public sealed class GetSonarrLogCmdlet : SonarrMetadataCmdlet
 {
-	protected override int Capacity => 1;
 	QueryCol _parameters = null!;
 
 	[Parameter]
@@ -40,10 +39,7 @@ public sealed class GetSonarrLogCmdlet : SonarrMetadataCmdlet
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-
-		_parameters = this.GetPooledObject<QueryCol>();
-
-		this.SetReturnables(_parameters);
+		_parameters = new(10);
 	}
 	protected override void Begin(IServiceProvider provider)
 	{

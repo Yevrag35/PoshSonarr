@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 
 namespace MG.Sonarr.Next.Shell.Checkers;
 
@@ -50,7 +50,7 @@ public abstract class EqualityChecker : IEqualityComparer, IEqualityComparer<obj
 	{
 		protected override bool EqualsCore([DisallowNull] object x, [DisallowNull] object y)
 		{
-			return LanguagePrimitives.Equals(x, y, ignoreCase: true, Statics.DefaultProvider);
+			return LanguagePrimitives.Equals(x, y, ignoreCase: true, CultureInfo.InvariantCulture);
 		}
 
 		protected override int GetHashCodeCore([DisallowNull] object obj)

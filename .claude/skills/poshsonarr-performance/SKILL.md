@@ -40,7 +40,7 @@ When you need a temporary buffer:
 
 Each part of the `RefEither` ternary rests on a language rule. A `stackalloc` nested inside another expression, such as an arm of `?:`, is a `Span<T>` and needs no `unsafe` context. `Span<T>` and `int` don't convert to each other, so the conditional has no natural type. Since C# 9, a conditional without one takes its target's type, here the `RefEither<Span<T>, int>` parameter, as long as each arm converts to that type on its own. `RefEither` provides both conversions with an implicit operator from each type argument, and its `allows ref struct` anti-constraints are what let `Span<T>` be a type argument at all. Ref safety then scopes the whole expression to its narrowest arm: the stack arm can't leave the method, so neither can the union nor the buffer or builder that `RentedBuffer.Rent<T>` or `SpanStringBuilder.Create` returns, even on a run that took the `int` arm.
 
-`stackalloc` needs an unmanaged `T`, so a `T` that is or holds a reference has no stack arm. Rent its buffer with `new RentedBuffer<T>(length)` or `RentedBuffer.RentMin<T>(length)`, as `ArrayExtensions.ToNonNullArray` does. Both return an empty buffer for a length of zero and throw `ArgumentOutOfRangeException` for a negative one.
+`stackalloc` needs an unmanaged `T`, so a `T` that is or holds a reference has no stack arm. Rent its buffer with `new RentedBuffer<T>(length)` or `RentedBuffer.RentMin<T>(length)`. Both return an empty buffer for a length of zero and throw `ArgumentOutOfRangeException` for a negative one.
 
 ### Carve-out: `SpanStringBuilder` owns its own buffer
 
@@ -117,8 +117,6 @@ When such a site does need the mutable ref, typically to reach `Offset`, whose r
 | `ValidateVersion<T>(list, expectedVersion)` | throws if the list changed since that version |
 
 `AsSpan` aliases where `ToArray()` copies: anything that grows or changes the list invalidates the span, and `SetCount` publishes slots the list never initialized. Neither is a drop-in substitution; both are a decision. `AddRange` grows the list through `List<T>`'s internal `Grow` method, so a .NET release that renames that method surfaces as a `MissingMethodException` on the first call rather than as a compile error.
-
-A separate, `file`-scoped `ListMarshal` in `src/MG.Sonarr.Next/Metadata/MetadataList_T-Marshalling.cs` serves only `MetadataList<T>`.
 
 ## Migrating raw forms
 

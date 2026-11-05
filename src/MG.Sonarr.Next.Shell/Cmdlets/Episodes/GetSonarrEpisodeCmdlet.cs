@@ -20,12 +20,10 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 	const string BY_EP_INPUT = "ByEpisodeInput";
 	const string BY_SERIES_ID = "BySeriesId";
 	const string BY_SERIES_INPUT = "BySeriesInput";
-	const int CAPACITY = 3;
 
 	SortedSet<int> _epIds = null!;
 	QueryCol _params = null!;
 	Dictionary<int, IEpisodeBySeriesPipeable> _seriesIds = null!;
-	protected override int Capacity => CAPACITY;
 
 	[Parameter(Mandatory = true, ParameterSetName = BY_EP_ID)]
 	[ValidateRange(ValidateRangeKind.Positive)]
@@ -36,11 +34,11 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 	public int[] SeriesId { get; set; } = [];
 
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_EP_INPUT)]
-	[ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodePipeable))]
+	[ValidateIds<IEpisodePipeable>(ValidateRangeKind.Positive)]
 	public IEpisodePipeable[] EpisodeInput { get; set; } = [];
 
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BY_SERIES_INPUT)]
-	[ValidateIds(ValidateRangeKind.Positive, typeof(IEpisodeBySeriesPipeable))]
+	[ValidateIds<IEpisodeBySeriesPipeable>(ValidateRangeKind.Positive)]
 	public IEpisodeBySeriesPipeable[] SeriesInput { get; set; } = [];
 
 	[Parameter(Mandatory = false, Position = 1, ParameterSetName = BY_SERIES_ID)]
@@ -55,11 +53,9 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_epIds = this.GetPooledObject<SortedSet<int>>();
-		_seriesIds = this.GetPooledObject<Dictionary<int, IEpisodeBySeriesPipeable>>();
-		_params = this.GetPooledObject<QueryCol>();
-
-		this.SetReturnables(_epIds, _seriesIds, _params);
+		_epIds = [];
+		_seriesIds = [];
+		_params = new(10);
 	}
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
 	protected override void Begin(IServiceProvider provider)
@@ -94,13 +90,13 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
 	protected override void End(IServiceProvider provider)
 	{
-		if (this.InvokeCommand.HasErrors || (_epIds.IsNullOrEmpty() && _seriesIds.IsNullOrEmpty()))
+		if (this.InvokeCommand.HasErrors || (_epIds.IsNullOrEmpty && _seriesIds.IsNullOrEmpty))
 		{
 			return;
 		}
 
 		IEnumerable<EpisodeObject> episodes = this.ParameterSetNameIsLike("ByEpisode*")
-			? this.GetEpisodesById<EpisodeObject>(_epIds!)
+			? this.GetEpisodesById<EpisodeObject>(_epIds)
 			: this.GetEpisodesBySeries(_seriesIds);
 
 		if (this.HasNotNullParameter(EpisodeIdentifier) && this.EpisodeIdentifier.Length > 0)
@@ -126,7 +122,7 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 		}
 	}
 
-	private IEnumerable<T> GetEpisodesById<T>(IEnumerable<int> episodeIds) where T : PSObject, IJsonMetadataTaggable
+	private IEnumerable<T> GetEpisodesById<T>(IEnumerable<int> episodeIds) where T : PSObject
 	{
 		foreach (int id in episodeIds)
 		{

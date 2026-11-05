@@ -30,6 +30,13 @@ Measured 2026-10-25 on PowerShell 7.6.8 with throwaway structs shaped like the m
 - `$null` fails for a single struct with `ParameterBindingFailed` ("Cannot bind parameter 'Key' to the target. Exception setting "Key": "Cannot convert null to type ..."."), without calling the `string` operator, and binds `null` to an array of the struct. `''` goes through the `string` operator.
 - In an array, each element takes its own operator, as in `5, 'abc'`.
 
+Measured 2026-11-01 on PowerShell 7.6.9 with a throwaway `Pair<T1, T2>` struct that has implicit operators from `T1` and `T2`, a `PSObject` subclass with no note properties, a plain class, and a cmdlet whose `Pair<int, Model>` parameters had a validation attribute that logged what it received, one of them behind a transformation attribute; and with the module's Debug build, converting a series from `Get-SonarrSeries` to `Either<int, SeriesObject>`.
+
+- **An operator whose parameter is a `PSObject` subclass never runs** for an instance of that class. PowerShell converts the instance as a custom object instead: it creates a default struct and sets each note property on it. A series, which has note properties the union lacks, fails to convert, by name and through `LanguagePrimitives.ConvertTo`, with "Cannot convert the ... value of type "MG.Sonarr.Next.Models.Series.SeriesObject" to type "MG.Sonarr.Next.Unions.Either`2[...]"", although the union declares `op_Implicit(SeriesObject)`. The model with no note properties binds without an error, as a default struct that holds neither type. A cast, `[Pair[int, Model]] $model`, gives the default struct too.
+- An operator whose parameter is `PSObject` or `object` does run for the model, and so does one whose parameter is a plain class, for an instance of it.
+- **Validation sees the converted struct.** A validation attribute on the struct parameter receives the boxed struct, not the argument, for `5` and for a model, so a check of the argument's own type never passes.
+- **A transformation attribute** receives the model as itself, by name and as the one output of a parenthesized command. A boxed struct that it returns binds as itself, holding what the transformation put in it, and the validation attribute receives that struct.
+
 ## Enums
 
 Measured 2026-10-24 on PowerShell 7.6.8 with a throwaway `Add-Type` cmdlet whose parameter is a `[Flags]` enum with a `None` member at 0, single-bit members, a member that combines them, and members whose names share a prefix, and on 2026-10-25 on PowerShell 7.6.8 with a cmdlet that takes a non-flags enum, `Auto` (0), `Manual` (1), `ManualMove` (2), and `Move` (3), and a `DayOfWeek[]`.
@@ -75,6 +82,15 @@ Measured 2026-10-23 on PowerShell 7.6.8 for named arguments, and on 2026-10-25 o
 - For pipeline input, it receives each pipeline object as itself, not the one-element array that an array parameter then gets.
 - On a parameter that isn't mandatory, PowerShell calls it for `$null` too.
 
+## Generic validation attributes
+
+Measured 2026-11-03 on PowerShell 7.6.9 with throwaway `Add-Type` code: a `PSObject` subclass built on `PSObject(int)` that implements two interfaces shaped like `IPipeable<T>`'s, whose explicit `GetId()` implementations return different IDs, and two cmdlets whose interface-array pipeline parameters carried a `ValidateEnumeratedArgumentsAttribute` subclass generic over that interface, `where T : IPipeable<T>`, which logged the ID it read through `((T)element).GetId()`.
+
+- PowerShell 7's `Add-Type` compiles a generic attribute, which needs C# 11.
+- `(Get-Command <cmdlet>).Parameters['<name>'].Attributes` lists the closed type, as in ``ValidateIdsAttribute`1[ISeriesP]``, and the binder runs it for pipeline input and for named arguments, as it runs a non-generic one.
+- The same model piped to each cmdlet gave each cmdlet's attribute the ID of that cmdlet's interface.
+- A `ValidationMetadataException` from it fails the binding with `ParameterArgumentValidationError` and a `ParameterBindingValidationException`, one pipeline object at a time: of two models piped together, the first was processed and the second refused.
+
 ## Enumerating a value the way the pipeline does
 
 Measured 2026-10-25 on PowerShell 7.6.8, comparing what `ForEach-Object` received with what `LanguagePrimitives.GetEnumerator` and `GetEnumerable` gave and what `IsObjectEnumerable` said.
@@ -109,8 +125,10 @@ Measured 2026-10-24 on PowerShell 7.6.8 with throwaway `Add-Type` cmdlets that h
 - A pipeline parameter typed as a pipeable interface, such as `ISeriesPipeable[]`, takes exactly the objects that implement it, so a hashtable, a projection, or a deserialized copy fails with `InputObjectNotBound`, one object at a time.
 - A parameter typed as a model class takes more than that model when the class has a public parameterless constructor, as the module's models have: the binder turns any hashtable, any `[pscustomobject]`, and a model of another class into a new model that holds only note properties. Such a model's C# state, such as its C# `Id`, keeps its default, and it has none of the module's type names, so a check through the model's C# members sees those defaults, while one through its note properties sees the values the caller supplied.
 - An ID validation attribute gets the model itself, or each element of an array, and passes an element whose ID is in range. It also gets `null`, from the pipeline and by name, before the binder's own null check, and each `null` element of a named list, so its null behavior decides what happens to those.
+- A pipeable parameter's ID check names the parameter's interface as its type argument, as `[ValidateIds<ISeriesPipeable>(ValidateRangeKind.Positive)]` does, since the binder runs a generic validation attribute like any other. The attribute reads the ID through a direct call to `IPipeable<T>.GetId()`, and its `where T : IPipeable<T>` makes the compiler refuse a type argument that isn't a pipeable interface. Nothing checks that the type argument matches the parameter's element type, so an element that isn't a `T` fails validation at run time.
 - A model given by position goes to the parameter at that position, such as an explicit-ID set's `-Id`, and fails to convert. Help, examples, and tests pass a model through the pipeline or by name.
 - To `Either<string, int>`, only an `[int]` argument binds as a number. A `[long]`, a `[double]`, or a string of digits binds as text, through the `string` operator, so `[long] 607` reaches the cmdlet as the name `'607'`.
+- A struct parameter that takes a model, such as `Either<int, SeriesObject>`, needs a transformation attribute that builds the struct from the model, as `IdOrObjectTransformAttribute<T>` does, because the binder never calls the struct's operator from a model's class. Without one, a model fails to bind, or one without note properties binds as an empty struct. A validation attribute on that parameter reads the ID or the model out of the struct it receives.
 - A single-value enum parameter can't tell `Manual, ManualMove` from `Move` once it's bound, because the binder ORs a list even for a non-flags enum. When a list has to fail, a transformation attribute, which sees the raw `object[]`, refuses it.
 - An enum-array parameter, such as `-DayOfWeek`, binds one quoted string with commas as a single OR'd value, so `'Monday,Tuesday'` is `Wednesday`. Help and examples write a list, as in `Monday, Tuesday`.
 - Settle an enum's member names before it ships. A single name can be cut to a prefix of one member's name, so a member added later can make a script's prefix fit two, and the script fails. Exact names keep working, so help, tests, and examples use them.

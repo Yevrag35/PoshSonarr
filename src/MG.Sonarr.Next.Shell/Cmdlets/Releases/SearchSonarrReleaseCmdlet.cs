@@ -28,7 +28,7 @@ public sealed class SearchSonarrReleaseCmdlet : SonarrApiCmdletBase
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = ByEpisodeInput)]
-	[ValidateId(ValidateRangeKind.Positive, typeof(IReleasePipeableByEpisode))]
+	[ValidateId<IReleasePipeableByEpisode>(ValidateRangeKind.Positive)]
 	public IReleasePipeableByEpisode Episode
 	{
 		get => null!;
@@ -41,7 +41,7 @@ public sealed class SearchSonarrReleaseCmdlet : SonarrApiCmdletBase
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = BySeriesInput)]
-	[ValidateId(ValidateRangeKind.Positive, typeof(IReleasePipeableBySeries))]
+	[ValidateId<IReleasePipeableBySeries>(ValidateRangeKind.Positive)]
 	public IReleasePipeableBySeries Series
 	{
 		get => null!;
@@ -53,14 +53,12 @@ public sealed class SearchSonarrReleaseCmdlet : SonarrApiCmdletBase
 	[Alias("Season")]
 	[ValidateRange(ValidateRangeKind.NonNegative)]
 	public int SeasonNumber { get; set; }
-	protected override int Capacity => 1;
 
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
 		this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.Release];
-		_queryParams = this.GetPooledObject<QueryCol>();
-		this.SetReturnables(_queryParams);
+		_queryParams = new(10);
 	}
 
 	protected override void Process(IServiceProvider provider)

@@ -66,55 +66,42 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 		return _client.SendPostAsync<T>(path, token).GetAwaiter().GetResult();
 	}
 	/// <summary>
-	/// Sends a POST Http request to the specified Sonarr API endpoint with the specified object 
-	/// of type <typeparamref name="T"/> JSON-serialized into the request's body.
+	/// Sends a POST request with the specified body to the specified Sonarr API endpoint.
 	/// </summary>
-	/// <typeparam name="T">The type of object the request body will serialized from.</typeparam>
-	/// <param name="path">The relative URL path of the API endpoint.</param>
-	/// <param name="body">The body to serialize into the request's body.</param>
-	/// <param name="token"></param>
-	/// <returns>
-	///     A response object indicating the status code and any errors that may have occurred.
-	/// </returns>
-	protected SonarrClientResult SendPostRequest<T>(string path, T body, CancellationToken token = default) where T : notnull
+	/// <param name="path">The endpoint's path, relative to the API.</param>
+	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
+	/// <param name="token">A token that cancels the request.</param>
+	/// <returns>The result of the request.</returns>
+	protected SonarrClientResult SendPostRequest(string path, object body, CancellationToken token = default)
 	{
 		this.StartTimer();
 		return _client.SendPostAsync(path, body, token).GetAwaiter().GetResult();
 	}
 	/// <summary>
-	/// Sends a POST Http request to the specified Sonarr API endpoint with the specified object 
-	/// of type <typeparamref name="T"/> JSON-serialized into the request's body.
+	/// Sends a POST request with the specified body to the specified Sonarr API endpoint and deserializes the response's
+	/// body.
 	/// </summary>
-	/// <typeparam name="TBody">The type of object the request body will serialized from.</typeparam>
-	/// <typeparam name="TOutput">The type of object the response's content will be deserialized as.</typeparam>
-	/// <param name="path">The relative URL path of the API endpoint.</param>
-	/// <param name="body">The body to serialize into the request's body.</param>
-	/// <param name="token"></param>
-	/// <returns>
-	///     A <see cref="OneOf{T0, T1}"/> object that can either be the deserialized HTTP response or
-	///     an <see cref="SonarrErrorRecord"/>.
-	/// </returns>
-	protected Either<TOutput, SonarrErrorRecord> SendPostRequest<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull
+	/// <typeparam name="TOutput">The type to deserialize the response's body as.</typeparam>
+	/// <param name="path">The endpoint's path, relative to the API.</param>
+	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
+	/// <param name="token">A token that cancels the request.</param>
+	/// <returns>The deserialized value on success; otherwise, the error record that describes the failure.</returns>
+	protected Either<TOutput, SonarrErrorRecord> SendPostRequest<TOutput>(string path, object body, CancellationToken token = default)
 	{
 		this.StartTimer();
-		SonarrClientResult<TOutput> response = _client.SendPostAsync<TBody, TOutput>(path, body, token).GetAwaiter().GetResult();
+		SonarrClientResult<TOutput> response = _client.SendPostAsync<TOutput>(path, body, token).GetAwaiter().GetResult();
 		return !response.IsError
 			? response.Value
 			: response.Error;
 	}
 	/// <summary>
-	/// Sends a PUT Http request to the specified Sonarr API endpoint with the specified object 
-	/// of type <typeparamref name="T"/> JSON-serialized into the request's body.
+	/// Sends a PUT request with the specified body to the specified Sonarr API endpoint.
 	/// </summary>
-	/// <typeparam name="T">The type of object the request body will serialized from.</typeparam>
-	/// <param name="path">The relative URL path of the API endpoint.</param>
-	/// <param name="body">The body to serialize into the request's body.</param>
-	/// <param name="token"></param>
-	/// <returns>
-	///     A response object indicating the status code and any errors that may have occurred.
-	/// </returns>
-	protected SonarrClientResult SendPutRequest<T>(string path, T body, CancellationToken token = default)
-		where T : notnull
+	/// <param name="path">The endpoint's path, relative to the API.</param>
+	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
+	/// <param name="token">A token that cancels the request.</param>
+	/// <returns>The result of the request.</returns>
+	protected SonarrClientResult SendPutRequest(string path, object body, CancellationToken token = default)
 	{
 		this.StartTimer();
 		return _client.SendPutAsync(path, body, token).GetAwaiter().GetResult();

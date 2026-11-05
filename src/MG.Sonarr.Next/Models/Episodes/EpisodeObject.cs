@@ -23,7 +23,8 @@ namespace MG.Sonarr.Next.Models.Episodes;
 /// request body by <see cref="OnSerializing"/>.
 /// </para>
 /// <para>
-/// Episodes sort by <see cref="Series"/>, then season number, episode number, and absolute episode number.
+/// Episodes sort by <see cref="Series"/>, with series IDs before titles, then by season number, episode number, and
+/// absolute episode number.
 /// </para>
 /// </remarks>
 [SonarrObject]
@@ -110,6 +111,10 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 	/// <summary>
 	/// Compares the episode with another by series, then season number, episode number, and absolute episode number.
 	/// </summary>
+	/// <remarks>
+	/// An episode whose <see cref="Series"/> is a series ID sorts before one whose <see cref="Series"/> is a title. IDs
+	/// compare as numbers, and titles compare ordinally, ignoring case.
+	/// </remarks>
 	/// <param name="other">The episode to compare with, or <see langword="null"/>.</param>
 	/// <returns>
 	/// A negative number if this episode comes first, 0 if both sort the same, and a positive number if this episode
@@ -117,23 +122,67 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 	/// </returns>
 	public override int CompareTo(EpisodeObject? other)
 	{
-		int compare = this.Series.CompareTo(other?.Series);
+		if (other is null)
+		{
+			return 1;
+		}
+
+		int compare = CompareSeries(this, other);
 		if (compare != 0)
 		{
 			return compare;
 		}
 
-		compare = this.SeasonNumber.CompareTo(other?.SeasonNumber);
+		compare = this.SeasonNumber.CompareTo(other.SeasonNumber);
 		if (compare == 0)
 		{
-			compare = this.EpisodeNumber.CompareTo(other?.EpisodeNumber);
+			compare = this.EpisodeNumber.CompareTo(other.EpisodeNumber);
 			if (compare == 0)
 			{
-				compare = this.AbsoluteEpisodeNumber.CompareTo(other?.AbsoluteEpisodeNumber);
+				compare = this.AbsoluteEpisodeNumber.CompareTo(other.AbsoluteEpisodeNumber);
 			}
 		}
 
 		return compare;
+	}
+	/// <summary>
+	/// Compares the series that two episodes sort by.
+	/// </summary>
+	/// <remarks>
+	/// A series ID sorts before a title. Two IDs compare as numbers, and two titles compare ordinally, ignoring case.
+	/// </remarks>
+	/// <param name="x">The first episode.</param>
+	/// <param name="y">The second episode.</param>
+	/// <returns>
+	/// A negative number if the series of <paramref name="x"/> sorts first, 0 if both sort the same, and a positive
+	/// number if it sorts after the series of <paramref name="y"/>.
+	/// </returns>
+	private static int CompareSeries(EpisodeObject x, EpisodeObject y)
+	{
+		string? xTitle = x._manuallySetSeries as string;
+		string? yTitle = y._manuallySetSeries as string;
+
+		if (xTitle is null)
+		{
+			return yTitle is null
+				? x.GetSeriesSortId().CompareTo(y.GetSeriesSortId())
+				: -1;
+		}
+
+		return yTitle is null
+			? 1
+			: StringComparer.OrdinalIgnoreCase.Compare(xTitle, yTitle);
+	}
+	/// <summary>
+	/// Gets the series ID that the episode sorts by when <see cref="Series"/> isn't a title.
+	/// </summary>
+	/// <returns>
+	/// The ID that <see cref="SetSeries(IEpisodeBySeriesPipeable)"/> or deserialization set, or else
+	/// <see cref="SeriesId"/>.
+	/// </returns>
+	private int GetSeriesSortId()
+	{
+		return _manuallySetSeries is int id ? id : this.SeriesId;
 	}
 
 	/// <summary>
@@ -258,7 +307,7 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 	/// <returns>The <see cref="EpisodeFileId"/>.</returns>
 	int? IPipeable<IEpisodeFilePipeable>.GetId()
 	{
-		return this.Id;
+		return this.EpisodeFileId;
 	}
 	/// <summary>
 	/// Gets the ID that the episode pipes as an episode to search releases for.

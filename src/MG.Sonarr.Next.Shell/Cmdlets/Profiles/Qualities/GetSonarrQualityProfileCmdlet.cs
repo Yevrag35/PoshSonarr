@@ -20,7 +20,7 @@ public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetPipeline, ValueFromPipeline = true)]
-	[ValidateIds(ValidateRangeKind.Positive, typeof(IQualityProfilePipeable))]
+	[ValidateIds<IQualityProfilePipeable>(ValidateRangeKind.Positive)]
 	public IQualityProfilePipeable[] InputObject { get; set; } = [];
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -33,13 +33,11 @@ public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
 	[SupportsWildcards]
 	public Either<string, int>[] Name { get; set; } = [];
 
-	protected override int Capacity => 2;
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
-		_ids = this.GetPooledObject<SortedSet<int>>();
-		_wcNames = this.GetPooledObject<WildcardSet>();
-		this.SetReturnables(_ids, _wcNames);
+		_ids = [];
+		_wcNames = new();
 	}
 
 	protected override MetadataTag GetMetadataTag(IMetadataResolver resolver)
@@ -109,18 +107,5 @@ public sealed class GetSonarrQualityProfileCmdlet : SonarrMetadataCmdlet
 				list.RemoveAt(i);
 			}
 		}
-	}
-
-	bool _disposed;
-	protected override void Dispose(bool disposing, IServiceScopeFactory? factory)
-	{
-		if (disposing && !_disposed)
-		{
-			_ids = null!;
-			_wcNames = null!;
-			_disposed = true;
-		}
-
-		base.Dispose(disposing, factory);
 	}
 }

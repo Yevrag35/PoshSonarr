@@ -34,16 +34,13 @@ public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
 	[Parameter(Mandatory = false)]
 	public SwitchParameter Force { get; set; }
 
-	protected override int Capacity => 2;
-
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
 		this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.Series];
 
-		_dict = this.GetPooledObject<SortedDictionary<int, string?>>();
-		_col = this.GetPooledObject<QueryCol>();
-		this.SetReturnables(_dict, _col);
+		_dict = [];
+		_col = new(10);
 	}
 
 	private static void AddIdsToDict(ReadOnlySpan<SeriesObject> array, SortedDictionary<int, string?> dictionary)
