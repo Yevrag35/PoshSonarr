@@ -63,7 +63,10 @@ public readonly record struct KeyOnlyQueryField : IQueryField
 	/// Tries to write the field's key into the specified span.
 	/// </summary>
 	/// <param name="destination">The span to write the key into.</param>
-	/// <param name="charsWritten">When this method returns, the number of characters written to <paramref name="destination"/>.</param>
+	/// <param name="charsWritten">
+	///     When this method returns, the number of characters written to <paramref name="destination"/>,
+	///     or 0 when the key doesn't fit.
+	/// </param>
 	/// <param name="format">Ignored; the key is written as is.</param>
 	/// <param name="provider">Ignored; the key is written as is.</param>
 	/// <returns>
@@ -72,8 +75,14 @@ public readonly record struct KeyOnlyQueryField : IQueryField
 	/// </returns>
 	public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 	{
-		bool result = this.Key.AsSpan().TryCopyTo(destination);
-		charsWritten = this.Key.Length;
-		return result;
+		string key = this.Key;
+		if (key.AsSpan().TryCopyTo(destination))
+		{
+			charsWritten = key.Length;
+			return true;
+		}
+
+		charsWritten = 0;
+		return false;
 	}
 }

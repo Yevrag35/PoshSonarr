@@ -18,6 +18,13 @@ namespace MG.Sonarr.Next.Services.Http.Clients;
 /// response isn't the file.
 /// </para>
 /// <para>
+/// No method throws for a failed download. A refused connection, a timeout, a cancellation, a failed login, and a file
+/// that can't be written each come back as a result whose <see cref="SonarrClientResult.IsError"/> is
+/// <see langword="true"/>, with the category <see cref="ErrorCategory.ConnectionError"/>,
+/// <see cref="ErrorCategory.OperationTimeout"/>, <see cref="ErrorCategory.OperationStopped"/>,
+/// <see cref="ErrorCategory.AuthenticationError"/>, or <see cref="ErrorCategory.WriteError"/>.
+/// </para>
+/// <para>
 /// An instance takes the cmdlet of the DI scope that resolves it, so resolve it from a scope, not from the root provider.
 /// </para>
 /// </remarks>
@@ -67,6 +74,11 @@ public interface ISonarrDownloadClient
 /// </remarks>
 internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 {
+	/// <summary>
+	/// The message of the exception that an error response, or a successful one with an empty body, gives.
+	/// </summary>
+	const string NO_FILE_MESSAGE = "The Sonarr server didn't return the file.";
+
 	/// <summary>
 	/// The connection's URL base, with its leading slash and without its trailing one, or an empty string when the
 	/// connection has none.
@@ -165,13 +177,27 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 	/// <summary>
 	/// Sends the specified download request and writes the file that the response holds to a path.
 	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// The method returns every failure as an error result. A failure of the credentials that <see cref="AuthHandler"/>
+	/// adds gives the category <see cref="ErrorCategory.AuthenticationError"/>. A request that gets no response gives
+	/// <see cref="ErrorCategory.ConnectionError"/>, a timeout <see cref="ErrorCategory.OperationTimeout"/>, and any other
+	/// cancellation <see cref="ErrorCategory.OperationStopped"/>.
+	/// </para>
+	/// <para>
+	/// A status that isn't a success gives the category that the status calls for, such as
+	/// <see cref="ErrorCategory.ObjectNotFound"/> for 404. A body that's empty, and a file that can't be written, such as
+	/// one in a folder that doesn't exist, give <see cref="ErrorCategory.WriteError"/>, and the error record of a file that
+	/// can't be written names <paramref name="path"/> as its target.
+	/// </para>
+	/// </remarks>
 	/// <param name="request">The request for the file.</param>
 	/// <param name="url">The download URL that the caller gave, which an error reports when it has no other URL.</param>
 	/// <param name="path">The path of the file to write.</param>
 	/// <param name="token">The token that cancels the download.</param>
 	/// <returns>
 	/// A result that holds <paramref name="path"/> once the file is written, or an error when the request fails, the
-	/// server answers with a status that isn't a success, or the response holds no file.
+	/// server answers with a status that isn't a success, the response holds no file, or the file can't be written.
 	/// </returns>
 	private async Task<SonarrClientResult<string>> DownloadAsync(SonarrRequestMessage request, string url, string path, CancellationToken token)
 	{
@@ -184,7 +210,19 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 		}
 		catch (SonarrHttpException ex)
 		{
-			return FromException(ex, ErrorHandler.NoResponseCode, response: null, url);
+			return FromException(ex, ErrorCategory.AuthenticationError, ex.StatusCode ?? ErrorHandler.NoResponseCode, response: null, url);
+		}
+		catch (OperationCanceledException cancelled)
+		{
+			ErrorCategory category = cancelled.InnerException is TimeoutException
+				? ErrorCategory.OperationTimeout
+				: ErrorCategory.OperationStopped;
+
+			return FromException(cancelled, category, ErrorHandler.NoResponseCode, response: null, url);
+		}
+		catch (Exception e)
+		{
+			return FromException(e, ErrorCategory.ConnectionError, ErrorHandler.NoResponseCode, response: null, url);
 		}
 
 		using (response)
@@ -193,16 +231,42 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 			{
 				// A download URL serves a file, so the body of an error response, often an HTML page, isn't the file.
 				SonarrHttpException statusEx = new(request, response, ErrorCollection.Empty,
-					new HttpRequestException("The Sonarr server didn't return the file.", null, response.StatusCode));
+					new HttpRequestException(NO_FILE_MESSAGE, null, response.StatusCode));
 
-				return FromException(statusEx, response.StatusCode, response, url);
+				return new SonarrClientResult<string>(new SonarrErrorRecord(statusEx, url));
 			}
 
-			bool written = await WriteFileAsync(response, path, token).ConfigureAwait(false);
+			bool written;
+			try
+			{
+				written = await WriteFileAsync(response, path, token).ConfigureAwait(false);
+			}
+			catch (OperationCanceledException cancelled)
+			{
+				return FromException(cancelled, ErrorCategory.OperationStopped, response.StatusCode, response, url);
+			}
+			catch (Exception e)
+			{
+				SonarrErrorRecord record = new(e, e.GetTypeName(), ErrorCategory.WriteError, path)
+				{
+					RequestUri = response.RequestMessage?.RequestUri?.ToString() ?? url,
+				};
 
-			return written
-				? SonarrClientResult.Create(path, response, url)
-				: SonarrClientResult.FromException<string>(new SonarrHttpException(request, response, ErrorCollection.Empty, null), ErrorCategory.WriteError, response.StatusCode, response);
+				return new SonarrClientResult<string>(record)
+				{
+					StatusCode = response.StatusCode,
+				};
+			}
+
+			if (written)
+			{
+				return SonarrClientResult.Create(path, response, url);
+			}
+
+			SonarrHttpException emptyEx = new(request, response, ErrorCollection.Empty,
+				new HttpRequestException(NO_FILE_MESSAGE, null, response.StatusCode));
+
+			return FromException(emptyEx, ErrorCategory.WriteError, response.StatusCode, response, url);
 		}
 	}
 
@@ -210,15 +274,16 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 	/// Creates the error result of a download that failed with the specified exception.
 	/// </summary>
 	/// <param name="exception">The exception that describes the failure.</param>
+	/// <param name="category">The category of the error.</param>
 	/// <param name="statusCode">
 	/// The status code of the response, or <see cref="ErrorHandler.NoResponseCode"/> when there's none.
 	/// </param>
 	/// <param name="response">The response to the download request, or <see langword="null"/> when there's none.</param>
 	/// <param name="url">The download URL that the result reports when the exception gives no URL.</param>
 	/// <returns>An error result for the download.</returns>
-	private static SonarrClientResult<string> FromException(SonarrHttpException exception, HttpStatusCode statusCode, HttpResponseMessage? response, string url)
+	private static SonarrClientResult<string> FromException(Exception exception, ErrorCategory category, HttpStatusCode statusCode, HttpResponseMessage? response, string url)
 	{
-		var result = SonarrClientResult.FromException<string>(exception, ErrorCategory.InvalidResult, statusCode, response);
+		var result = SonarrClientResult.FromException<string>(exception, category, statusCode, response);
 		if (string.IsNullOrEmpty(result.RequestUrl))
 		{
 			result.RequestUrl = url;

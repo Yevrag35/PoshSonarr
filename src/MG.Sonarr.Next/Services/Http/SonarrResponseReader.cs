@@ -28,18 +28,22 @@ public interface IResponseReader
 	/// <param name="targetObj">The object that the request acted on, which an error record names as its target, or <see langword="null"/>.</param>
 	/// <param name="token">A token that cancels reading the response's body.</param>
 	/// <returns>A task that completes with the result of the request.</returns>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled while the response's body is read.</exception>
 	Task<SonarrClientResult> ReadNoResultAsync(HttpCall call, object? targetObj = null, CancellationToken token = default);
 	/// <summary>
 	/// Reads the outcome of a request that returns a value, and deserializes the value from a successful response's body.
 	/// </summary>
 	/// <remarks>
-	/// A 404 response gives the ignorable result that <see cref="SonarrClientResult.NotFound{T}"/> creates.
+	/// A 404 response gives the ignorable result that
+	/// <see cref="SonarrClientResult.NotFound{T}(string?, object?)"/> creates, with the request's URL and
+	/// <paramref name="targetObj"/>. Every failed result carries the request's URL.
 	/// </remarks>
 	/// <typeparam name="T">The type to deserialize the body as.</typeparam>
 	/// <param name="call">The exchange to read.</param>
 	/// <param name="targetObj">The object that the request acted on, which an error record names as its target, or <see langword="null"/>.</param>
 	/// <param name="token">A token that cancels reading the response's body.</param>
 	/// <returns>A task that completes with the result of the request, which holds the deserialized value on success.</returns>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled while the response's body is read.</exception>
 	Task<SonarrClientResult<T>> ReadResultAsync<T>(HttpCall call, object? targetObj = null, CancellationToken token = default);
 }
 
@@ -92,7 +96,7 @@ internal sealed class SonarrResponseReader : IResponseReader
 	{
 		if (((IReadOnlyDictionary<string, object?>)call.Request.Options).ContainsKey(ErrorHandler.Is404))
 		{
-			return SonarrClientResult.NotFound<T>();
+			return SonarrClientResult.NotFound<T>(call.RequestUri, targetObj);
 		}
 
 		if (TryGetInvalidResult(call, call.Response, out SonarrClientResult<T>? result))
@@ -125,7 +129,8 @@ internal sealed class SonarrResponseReader : IResponseReader
 	/// </summary>
 	/// <remarks>
 	/// A body that is one JSON object gives one error, and a JSON array, such as Sonarr's validation failures, gives one
-	/// error for each item. Any other body, and one that doesn't deserialize, gives an empty collection.
+	/// error for each item. Any other body, and one that doesn't deserialize, gives an empty collection, in every build,
+	/// since the server controls the body.
 	/// </remarks>
 	/// <param name="content">The body of the response, or <see langword="null"/>.</param>
 	/// <param name="options">The JSON options that deserialize the errors, or <see langword="null"/> for the defaults.</param>
@@ -157,9 +162,8 @@ internal sealed class SonarrResponseReader : IResponseReader
 				list = ErrorCollection.Empty;
 			}
 		}
-		catch (Exception e)
+		catch (Exception)
 		{
-			Debug.Fail(e.Message);
 			list = ErrorCollection.Empty;
 		}
 
@@ -171,13 +175,15 @@ internal sealed class SonarrResponseReader : IResponseReader
 	/// </summary>
 	/// <remarks>
 	/// The method doesn't throw for a body it can't read: a body that is JSON <c>null</c>, or that fails to deserialize,
-	/// gives an error record with the category <see cref="ErrorCategory.ParserError"/>.
+	/// gives an error record with the category <see cref="ErrorCategory.ParserError"/>. A cancellation isn't a body that
+	/// can't be read, so it propagates to the client, which reports it as a stopped request.
 	/// </remarks>
 	/// <typeparam name="T">The type to deserialize the body as.</typeparam>
 	/// <param name="response">The response whose body is read.</param>
 	/// <param name="targetObj">The object that an error record names as its target, or <see langword="null"/>.</param>
 	/// <param name="token">A token that cancels reading the body.</param>
 	/// <returns>A task that completes with the deserialized value, or with an error record when the body can't be read.</returns>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled while the body is read.</exception>
 	private async Task<Either<SonarrErrorRecord, T>> ReadContentAsync<T>(HttpResponseMessage response, object? targetObj, CancellationToken token)
 	{
 		try
@@ -185,7 +191,7 @@ internal sealed class SonarrResponseReader : IResponseReader
 			return await response.Content.ReadFromJsonAsync<T>(_options, token).ConfigureAwait(false)
 				?? throw new JsonException("Unable to deserialize the response content.");
 		}
-		catch (Exception e)
+		catch (Exception e) when (e is not OperationCanceledException)
 		{
 			SonarrErrorRecord record = new(e, e.GetTypeName(), ErrorCategory.ParserError, targetObj);
 			return record;
@@ -282,10 +288,13 @@ internal sealed class SonarrResponseReader : IResponseReader
 	/// <param name="error">The record that describes why the body couldn't be read.</param>
 	/// <param name="call">The exchange whose response was read.</param>
 	/// <returns>
-	/// A failed result with the status code of <paramref name="error"/>, or else that of the response.
+	/// A failed result with the status code of <paramref name="error"/>, or else that of the response, and the URL of
+	/// <paramref name="error"/>, or else that of <paramref name="call"/>.
 	/// </returns>
 	private static SonarrClientResult<T> ReadErrorFromOneOf<T>(SonarrErrorRecord error, HttpCall call)
 	{
+		error.RequestUri ??= call.RequestUri;
+
 		return new(error)
 		{
 			StatusCode = error.StatusCode ?? call.Response!.StatusCode,
