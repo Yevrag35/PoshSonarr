@@ -206,7 +206,7 @@ Each entry gives the model's base and the `Meta` tag that its `GetTag` returns, 
 
 - `TagObject` (`SonarrObject`, `#tag`): a tag, with `Id` and `Label` as copies and `IHasName` giving `Label`. It sorts by ID, and a format view shows it.
 - `SonarrServerError` (`SonarrObject`, no tag): one validation error in an error response. `Message` joins the string properties whose names end in `message`, and `PropertyName` names the field. It sorts by property name, then message.
-- Not models: `SonarrTag` is the record that `New-SonarrTag` posts, with an `Id` that's left out when it's 0 and a `Label`. `IdModel` is a record that holds only an `Id`. `RecordResult<T>` is one page of `/history`, `/log`, or `/wanted/missing`, with `Page`, `PageSize`, `TotalRecords`, and `Records` as a `MetadataList<T>` that it tags and sorts. `ShortOverview` cuts text after a word and ends it with `...`, and `SonarrStatus` holds the `Authentication` value that the connection test reads.
+- Not models: `SonarrTag` is the record that `New-SonarrTag` posts, with an `Id` that's left out when it's 0 and a `Label`. `RecordResult<T>` is one page of `/history`, `/log`, or `/wanted/missing`, with `Page`, `PageSize`, `TotalRecords`, and `Records` as a `MetadataList<T>` that it tags and sorts. `ShortOverview` cuts text after a word and ends it with `...`, and `SonarrStatus` holds the `Authentication` value that the connection test reads.
 
 ## Adding or changing a model
 
