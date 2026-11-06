@@ -1,4 +1,6 @@
 using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Exceptions;
+using MG.Sonarr.Next.Exceptions.Shell;
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Services;
 using MG.Sonarr.Next.Metadata;
@@ -22,7 +24,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delay;
 /// <para>
 /// <c>-Protocol</c> sets which of Usenet and torrents the profile allows and which one it prefers, and
 /// <c>-UsenetDelay</c> and <c>-TorrentDelay</c> set how long Sonarr waits before grabbing a release of each, in whole
-/// minutes. <c>-Tags</c> names the tags of the series that the profile applies to.
+/// minutes. <c>-Tags</c> names the tags of the series that the profile applies to. When finding the tags fails, or a
+/// tag name matches no tag, the cmdlet stops with an error and creates no profile.
 /// </para>
 /// <para>
 /// The cmdlet confirms before it creates the profile, and its confirm impact is low, so it prompts only when
@@ -101,7 +104,9 @@ public sealed class NewSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 	/// is a name, which can hold wildcards and matches a tag's label ignoring case.
 	/// </para>
 	/// <para>
-	/// When the request for the tags fails, the cmdlet stops with its error and creates no profile.
+	/// Each name has to match at least one tag's label, since the profile would otherwise go out without the tag that
+	/// the name meant. When a name matches no tag, or the request for the tags fails, the cmdlet stops with an error and
+	/// creates no profile.
 	/// </para>
 	/// </remarks>
 	/// <value>The IDs and names of the tags. The default is an empty array, for a profile without tags.</value>
@@ -148,7 +153,8 @@ public sealed class NewSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 	/// Splits <c>-Tags</c> into IDs and names, and finds the IDs of the tags whose labels match the names.
 	/// </summary>
 	/// <remarks>
-	/// Matching the names gets every tag with one request, and when that request fails, the cmdlet stops with its error.
+	/// Matching the names gets every tag with one request. When that request fails, or a name matches no tag, the cmdlet
+	/// stops with an error, so <see cref="Process(IServiceProvider)"/> doesn't run.
 	/// </remarks>
 	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in nameof()")]
@@ -211,10 +217,18 @@ public sealed class NewSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 	}
 
 	/// <summary>
-	/// Adds to the specified set the IDs of the tags whose labels match one of the specified names.
+	/// Adds to the specified set the IDs of the tags whose labels match one of the specified names, and stops the cmdlet
+	/// with an error when a name matches no tag.
 	/// </summary>
 	/// <remarks>
+	/// <para>
 	/// The method gets every tag with one request, and when that request fails, the cmdlet stops with its error.
+	/// </para>
+	/// <para>
+	/// Each name is matched against every tag's label, ignoring case, so a name counts as matched even when the tag it
+	/// matches was also given by ID. The error for the names that match no tag names each of them, and its target is
+	/// their text.
+	/// </para>
 	/// </remarks>
 	/// <param name="names">The names, which can hold wildcards, that the tags' labels are matched against.</param>
 	/// <param name="tagIds">The tag IDs that the cmdlet sends, which the method adds the matching tags' IDs to.</param>
@@ -226,15 +240,39 @@ public sealed class NewSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 			return;
 		}
 
-		var tags = this.GetAll<TagObject>(tag.UrlBase).AsSpan();
-
-		for (int i = 0; i < tags.Length; i++)
+		MetadataList<TagObject> tags = this.GetAll<TagObject>(tag.UrlBase);
+		if (this.IsStopped)
 		{
-			TagObject tagObj = tags[i];
-			if (!tagIds.Contains(tagObj.Id) && names.IsAnyMatch(tagObj.Label))
+			return;
+		}
+
+		List<string>? unmatched = null;
+		foreach (Wildcard name in names)
+		{
+			bool matched = false;
+			foreach (var tagObj in tags.AsSpan())
 			{
-				tagIds.Add(tagObj.Id);
+				if (name.IsMatch(tagObj.Label))
+				{
+					_ = tagIds.Add(tagObj.Id);
+					matched = true;
+				}
 			}
+
+			if (!matched)
+			{
+				(unmatched ??= []).Add(name.ToString());
+			}
+		}
+
+		if (unmatched is not null)
+		{
+			this.StopCmdlet(new SonarrErrorRecord(
+				normalEx: new SonarrParameterException(nameof(this.Tags), ParameterErrorType.Invalid,
+					$"No tag was found with a label that matches '{string.Join("' or '", unmatched)}'."),
+				"New-SonarrDelayProfile.InvalidTagName",
+				ErrorCategory.InvalidArgument,
+				unmatched.ToArray()));
 		}
 	}
 }
