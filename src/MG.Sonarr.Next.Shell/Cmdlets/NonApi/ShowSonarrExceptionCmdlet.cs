@@ -123,18 +123,28 @@ public sealed class ShowSonarrExceptionCmdlet : PSCmdlet
 	private static bool TryGetLastError(PSVariableIntrinsics intrinsics, [NotNullWhen(true)] out SonarrHttpException? result)
 	{
 		result = null;
-		if (!intrinsics.TryGetVariableValue(ERROR, out ICollection? collection) || collection.Count <= 0)
+		if (!intrinsics.TryGetVariableValue(ERROR, out ICollection? collection) || collection is null)
 		{
 			return false;
 		}
 
-		IEnumerable<SonarrErrorRecord> records = collection.OfType<SonarrErrorRecord>();
-		SonarrErrorRecord? record = records.FirstOrDefault();
-
-		if (record is not null && record.Exception is SonarrHttpException httpEx)
+		foreach (object? entry in collection)
 		{
-			result = httpEx;
-			return true;
+			Exception? exception = entry is ErrorRecord record
+				? record.Exception
+				: entry as Exception;
+
+			result = exception switch
+			{
+				SonarrHttpException httpException => httpException,
+				IContainsErrorRecord { ErrorRecord.Exception: SonarrHttpException httpException } => httpException,
+				_ => null,
+			};
+
+			if (result is not null)
+			{
+				return true;
+			}
 		}
 
 		return false;

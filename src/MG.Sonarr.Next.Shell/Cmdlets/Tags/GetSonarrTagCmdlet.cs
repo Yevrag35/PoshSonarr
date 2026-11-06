@@ -18,8 +18,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags;
 /// <para>
 /// The cmdlet writes each tag to the pipeline as a <see cref="TagObject"/>. Without arguments, it gets every tag.
 /// <c>-Name</c> gets the tags with the given IDs or labels, and <c>-Id</c> the tags with the given IDs. Piped
-/// objects that carry tags, such as series, delay profiles, download clients, indexers, and release profiles, taken
-/// through <c>-InputObject</c> as <see cref="ITagPipeable"/> values, get the tags that they carry.
+/// objects that carry tags, such as series, delay profiles, download clients, indexers, notifications, and release
+/// profiles, taken through <c>-InputObject</c> as <see cref="ITagPipeable"/> values, get the tags that they carry, and
+/// so do objects that don't exist on the server yet, such as series lookup results and download client and
+/// notification schemas.
 /// </para>
 /// <para>
 /// When only IDs are given, the cmdlet gets each tag with a request of its own, and an ID that Sonarr doesn't have
@@ -30,7 +32,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags;
 [Cmdlet(VerbsCommon.Get, "SonarrTag", DefaultParameterSetName = PSConstants.PSetByName)]
 [MetadataCanPipe(Tag = Meta.DelayProfile)]
 [MetadataCanPipe(Tag = Meta.DownloadClient)]
+[MetadataCanPipe(Tag = Meta.DownloadClientSchema)]
 [MetadataCanPipe(Tag = Meta.Indexer)]
+[MetadataCanPipe(Tag = Meta.Notification)]
 [MetadataCanPipe(Tag = Meta.ReleaseProfile)]
 [MetadataCanPipe(Tag = Meta.Series)]
 [MetadataCanPipe(Tag = Meta.SeriesAdd)]
@@ -43,12 +47,12 @@ public sealed class GetSonarrTagCmdlet : SonarrMetadataCmdlet
 	/// Gets or sets the objects whose tags the cmdlet gets.
 	/// </summary>
 	/// <remarks>
-	/// The parameter takes pipeline input. Each object has to implement <see cref="ITagPipeable"/> and have an ID
-	/// greater than zero. An object without tags adds none.
+	/// The parameter takes pipeline input, and each object has to implement <see cref="ITagPipeable"/>. The cmdlet reads
+	/// only the object's tags, so the object needs no ID, and one that doesn't exist on the server yet, such as a series
+	/// lookup result, passes too. An object without tags adds none.
 	/// </remarks>
 	/// <value>The objects that carry tags. The default is an empty array.</value>
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
-	[ValidateIds<ITagPipeable>(ValidateRangeKind.Positive)]
 	public ITagPipeable[] InputObject { get; set; } = [];
 
 	/// <summary>

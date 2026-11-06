@@ -64,12 +64,17 @@ public readonly struct ApiKey : IApiKey
 	/// <param name="ss">The secure string to read.</param>
 	/// <returns>The plain text of <paramref name="ss"/>.</returns>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="ss"/> is null.</exception>
-	private static string? ConvertFromSecureString(SecureString ss)
+	private static string ConvertFromSecureString(SecureString ss)
 	{
-		IntPtr pp = Marshal.SecureStringToBSTR(ss);
-		string? s = Marshal.PtrToStringAuto(pp);
-		Marshal.ZeroFreeBSTR(pp);
-		return s;
+		nint bstr = Marshal.SecureStringToBSTR(ss);
+		try
+		{
+			return Marshal.PtrToStringBSTR(bstr);
+		}
+		finally
+		{
+			Marshal.ZeroFreeBSTR(bstr);
+		}
 	}
 
 	/// <summary>

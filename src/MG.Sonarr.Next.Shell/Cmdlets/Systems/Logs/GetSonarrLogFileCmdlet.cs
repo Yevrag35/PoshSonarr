@@ -38,6 +38,10 @@ public sealed class GetSonarrLogFileCmdlet : SonarrMetadataCmdlet
 	protected override void Process(IServiceProvider provider)
 	{
 		var logs = this.GetAll<LogFileObject>();
+		if (this.IsStopped)
+		{
+			return;
+		}
 
 		var updateLogs = this.SendGetRequest<MetadataList<LogFileObject>>(this.Tag.UrlBase + "/update");
 		if (updateLogs.IsError)
