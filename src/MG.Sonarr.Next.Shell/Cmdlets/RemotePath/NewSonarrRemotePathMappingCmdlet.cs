@@ -1,8 +1,10 @@
+using MG.Sonarr.Next.Exceptions;
+using MG.Sonarr.Next.Exceptions.Shell;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.RemotePaths;
-using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Shell.Internal;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.RemotePath;
 
@@ -18,6 +20,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RemotePath;
 /// <para>
 /// When <c>-HostName</c> is <c>localhost</c> or <c>.</c>, the cmdlet sends this computer's name in its place, and
 /// <c>-LocalPath</c> converted to a full path from the current location, whether or not the item it names exists.
+/// For any other host, <c>-LocalPath</c> has to be an absolute path on the computer where Sonarr runs, in the form
+/// of Linux, macOS, or Windows, and the cmdlet sends it as it's given. A <c>-LocalPath</c> that doesn't suit the host
+/// stops the cmdlet with an error, so no mapping is created.
 /// </para>
 /// <para>
 /// The cmdlet confirms the mapping before it creates it, and its confirm impact is Low, so it prompts only under
@@ -80,13 +85,27 @@ public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	/// Gets or sets the path that Sonarr uses in place of the remote path.
 	/// </summary>
 	/// <remarks>
-	/// The path can't be empty, and it has to be a local path, not a UNC path, once a relative path is resolved from
-	/// the current location. It doesn't have to exist. When <c>-HostName</c> stands for this computer, the cmdlet sends
-	/// the full path that it converts to from the current location, and wildcards in it aren't expanded.
+	/// <para>
+	/// The path can't be empty, and it doesn't have to exist. Which paths are allowed depends on <c>-HostName</c>, so
+	/// the cmdlet checks the path once its parameters are bound, and a path that isn't allowed stops the cmdlet with an
+	/// error, so no mapping is created.
+	/// </para>
+	/// <para>
+	/// When <c>-HostName</c> stands for this computer, the path can be relative, and the cmdlet sends the full path that
+	/// it converts to from the current location, without expanding wildcards in it. That full path has to be a local
+	/// path on this computer, not a UNC path.
+	/// </para>
+	/// <para>
+	/// For any other host, the path has to be absolute on the computer where Sonarr runs, so it has to start with a
+	/// single <c>/</c>, as in <c>/data/tv</c>, or with a drive letter, a colon, and a separator, as in <c>C:\tv</c>. The
+	/// cmdlet checks only the path's text, the same way on every platform, so a session on any platform can give a
+	/// path for a Sonarr on any other. Any other path, such as <c>.\tv</c>, <c>tv</c>, <c>~/tv</c>, <c>C:tv</c>, or the
+	/// UNC paths <c>\\server\tv</c> and <c>//server/tv</c>, isn't allowed.
+	/// </para>
 	/// </remarks>
 	/// <value>The local path.</value>
 	[Parameter(Mandatory = true)]
-	[ValidateIsLocalPath(AllowRelative = true, MustExist = false)]
+	[ValidateNotNullOrEmpty]
 	public string LocalPath { get; set; } = string.Empty;
 
 	/// <summary>
@@ -100,21 +119,45 @@ public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	}
 
 	/// <summary>
-	/// Replaces <c>-HostName</c> with this computer's name, and <c>-LocalPath</c> with its full path, when
-	/// <c>-HostName</c> is <c>localhost</c> or <c>.</c>.
+	/// Checks <c>-LocalPath</c> for the host that <c>-HostName</c> names, and when that's <c>localhost</c> or <c>.</c>,
+	/// replaces <c>-HostName</c> with this computer's name and <c>-LocalPath</c> with its full path.
 	/// </summary>
 	/// <remarks>
-	/// The path is converted from the current location as <c>-LocalPath</c>'s validation converts it, so the item it
-	/// names doesn't have to exist, and wildcards in it aren't expanded. When the conversion throws, as for a drive that
-	/// doesn't exist, the cmdlet ends with the error.
+	/// <para>
+	/// For this computer, the path is converted from the current location, so the item it names doesn't have to exist,
+	/// and wildcards in it aren't expanded. When the conversion throws, as for a drive that doesn't exist, the cmdlet
+	/// ends with the error, and a full path that isn't a local, non-UNC path stops the cmdlet with an error.
+	/// </para>
+	/// <para>
+	/// For any other host, the path is one on the computer where Sonarr runs, which neither the current location nor
+	/// this computer's drives say anything about, so the cmdlet checks only its text, and a path that isn't absolute
+	/// there, or is a UNC path, stops the cmdlet with an error.
+	/// </para>
+	/// <para>
+	/// Either error's target is the path as <c>-LocalPath</c> gave it, and after it,
+	/// <see cref="Process(IServiceProvider)"/> doesn't run.
+	/// </para>
 	/// </remarks>
 	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	protected override void Begin(IServiceProvider provider)
 	{
 		if (LOCALHOST.Equals(this.HostName, StringComparison.OrdinalIgnoreCase) || DOT_HOST.Equals(this.HostName, StringComparison.Ordinal))
 		{
-			this.LocalPath = this.GetUnresolvedPath(this.LocalPath);
+			string path = this.GetUnresolvedPath(this.LocalPath);
+			if (!IsLocalPathOnThisComputer(path))
+			{
+				this.StopForInvalidLocalPath(
+					$"The path '{path}' isn't a local path on this computer. Give a file system path that isn't a UNC path.");
+				return;
+			}
+
+			this.LocalPath = path;
 			this.HostName = GetLocalHostName(Environment.MachineName);
+		}
+		else if (!ServerPath.IsFullyQualified(this.LocalPath, allowUnc: false))
+		{
+			this.StopForInvalidLocalPath(
+				$"With the host '{this.HostName}', the path has to be absolute on the computer where Sonarr runs, such as '/data/tv' or 'C:\\tv', and not a UNC path.");
 		}
 	}
 	/// <summary>
@@ -144,6 +187,38 @@ public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 		this.SendNewRequest(newMap, this.Tag);
 	}
 
+	/// <summary>
+	/// Determines whether the specified full path is a local path on this computer, one that isn't a UNC path.
+	/// </summary>
+	/// <remarks>
+	/// A path that a provider other than the file system's gives, such as a registry key's, isn't an absolute URI, so
+	/// it isn't one.
+	/// </remarks>
+	/// <param name="path">The full path that a provider converted <c>-LocalPath</c> to.</param>
+	/// <returns>
+	/// <see langword="true"/> if <paramref name="path"/> is an absolute path and not a UNC path; otherwise,
+	/// <see langword="false"/>.
+	/// </returns>
+	private static bool IsLocalPathOnThisComputer(string path)
+	{
+		return Uri.TryCreate(path, UriKind.Absolute, out Uri? uri) && !uri.IsUnc;
+	}
+	/// <summary>
+	/// Stops the cmdlet with an error that says <c>-LocalPath</c> isn't allowed.
+	/// </summary>
+	/// <remarks>
+	/// The error's category is <see cref="ErrorCategory.InvalidArgument"/>, and its target is the path as
+	/// <c>-LocalPath</c> gave it.
+	/// </remarks>
+	/// <param name="message">The text that says what's wrong with the path and which path to give instead.</param>
+	private void StopForInvalidLocalPath(string message)
+	{
+		this.StopCmdlet(new SonarrErrorRecord(
+			normalEx: new SonarrParameterException(nameof(this.LocalPath), ParameterErrorType.Invalid, message),
+			"New-SonarrRemotePathMapping.InvalidLocalPath",
+			ErrorCategory.InvalidArgument,
+			this.LocalPath));
+	}
 	/// <summary>
 	/// Gets the specified computer name, followed by a <c>.</c> and the value of the <c>USERDNSDOMAIN</c> environment
 	/// variable in lowercase, or the name alone when the variable isn't set or is only white space.

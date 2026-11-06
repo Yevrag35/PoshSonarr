@@ -4,10 +4,10 @@ using MG.Sonarr.Next.Models.ManualImports;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Shell.Extensions;
+using MG.Sonarr.Next.Shell.Internal;
 using System.Net;
 
 //using CanBeNullAttribute = System.Management.Automation.AllowNullAttribute;
-using IOPath = System.IO.Path;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports;
 
@@ -47,9 +47,18 @@ public sealed class GetSonarrManualImportCmdlet : SonarrApiCmdletBase
 	/// <c>Get-Item</c>, and its alias is <c>-PSPath</c>.
 	/// </para>
 	/// <para>
-	/// The cmdlet trims trailing slashes from the path. A path that isn't fully qualified is resolved as a PowerShell
-	/// path, against the current location, and has to exist, while a fully qualified one is sent as it is, since Sonarr
-	/// reads it on its own server.
+	/// A path that's fully qualified on Linux, macOS, or Windows is sent as it is, since Sonarr reads it on its own
+	/// server: one that starts with <c>/</c>, as in <c>/downloads/tv</c>, a UNC path that starts with <c>\\</c> or
+	/// <c>//</c>, or a drive path such as <c>C:\downloads\tv</c>. The cmdlet checks only the path's text, the same way
+	/// on every platform, so a session on any platform can give a path for a Sonarr on any other.
+	/// </para>
+	/// <para>
+	/// Any other path, such as a relative one or the <c>PSPath</c> of a folder from <c>Get-Item</c>, is resolved as a
+	/// PowerShell path, against the current location, and has to exist.
+	/// </para>
+	/// <para>
+	/// Either way, the cmdlet trims the trailing slashes from the path it sends, but not the slashes of a root, so
+	/// <c>/downloads/</c> goes out as <c>/downloads</c>, while <c>/</c> and <c>C:\</c> go out as they are.
 	/// </para>
 	/// </remarks>
 	/// <value>The folder's path. The default is an empty string.</value>
@@ -182,11 +191,19 @@ public sealed class GetSonarrManualImportCmdlet : SonarrApiCmdletBase
 	}
 
 	/// <summary>
-	/// Trims the trailing slashes from the specified path, resolves it when it isn't fully qualified, and URL-encodes
-	/// it for the query.
+	/// Resolves the specified path when it isn't fully qualified on Linux, macOS, or Windows, trims its trailing slashes
+	/// down to its root, and URL-encodes it for the query.
 	/// </summary>
 	/// <remarks>
+	/// <para>
+	/// A UNC path counts as fully qualified, and the check reads only the path's text, so a path on Sonarr's server is
+	/// sent as it is, whatever platform the session runs on. The path is resolved before it's trimmed, since trimming
+	/// a PowerShell path such as <c>Temp:\</c> would leave <c>Temp:</c>, which names the drive's current location
+	/// rather than its root.
+	/// </para>
+	/// <para>
 	/// The method writes the path to the verbose stream before and after encoding it.
+	/// </para>
 	/// </remarks>
 	/// <param name="path">The folder's path, as <c>-Path</c> gave it.</param>
 	/// <returns>The URL-encoded path.</returns>
@@ -195,11 +212,12 @@ public sealed class GetSonarrManualImportCmdlet : SonarrApiCmdletBase
 	/// </exception>
 	private string ResolveAndFormatPath(string path)
 	{
-		path = path.TrimEnd('/', '\\');
-		if (!IOPath.IsPathFullyQualified(path))
+		if (!ServerPath.IsFullyQualified(path, allowUnc: true))
 		{
 			path = this.GetResolvedPath(path);
 		}
+
+		path = ServerPath.TrimEndSeparators(path);
 
 		this.WriteVerbose($"Original path -> {path}");
 		path = WebUtility.UrlEncode(path);

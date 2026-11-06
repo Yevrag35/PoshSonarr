@@ -136,7 +136,9 @@ public sealed class AddSonarrSeriesCmdlet : SonarrApiCmdletBase//, IDynamicParam
 	/// <para>
 	/// Any value makes Sonarr search for missing episodes once it adds the series. <c>Default</c> leaves every episode
 	/// monitored, <c>IgnoreWithEpisodes</c> leaves unmonitored the episodes that already have files, and
-	/// <c>IgnoreWithoutEpisodes</c> the episodes that don't have files yet. A value given more than once binds once.
+	/// <c>IgnoreWithoutEpisodes</c> the episodes that don't have files yet. Each <c>Ignore</c> value sets only its own
+	/// half, so the two together leave both unmonitored, and <c>Default</c> given with either changes nothing. A value
+	/// given more than once binds once.
 	/// </para>
 	/// <para>
 	/// When the parameter is left out, or is <see langword="null"/> or empty, the series get the default add options,
@@ -184,18 +186,21 @@ public sealed class AddSonarrSeriesCmdlet : SonarrApiCmdletBase//, IDynamicParam
 	/// Builds the add options from <c>-SearchForMissingEpisodes</c>, when it holds a value, for every series that the
 	/// cmdlet posts.
 	/// </summary>
+	/// <remarks>
+	/// Each of the two ignore options is set when its own value is in the parameter, whatever the other values are.
+	/// </remarks>
 	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
 	protected override void Begin(IServiceProvider provider)
 	{
 		if (this.HasNotNullParameter(SearchForMissingEpisodes) && this.SearchForMissingEpisodes.Length > 0)
 		{
-			int actions = this.SearchForMissingEpisodes.Distinct().Sum(x => (int)x);
+			SeriesAddIgnoreAction[] actions = this.SearchForMissingEpisodes;
 
 			_addOptions = new EditableSeriesAddOptions
 			{
-				IgnoreEpsWithFiles = actions > 0,
-				IgnoreEpsWithoutFiles = actions > 1,
+				IgnoreEpsWithFiles = actions.Contains(SeriesAddIgnoreAction.IgnoreWithEpisodes),
+				IgnoreEpsWithoutFiles = actions.Contains(SeriesAddIgnoreAction.IgnoreWithoutEpisodes),
 				SearchForMissingEps = true,
 			};
 		}

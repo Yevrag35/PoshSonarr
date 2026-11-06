@@ -149,7 +149,7 @@ public abstract class EqualityChecker : IEqualityComparer, IEqualityComparer<obj
 		/// <returns>The value that <paramref name="obj"/>'s <see cref="object.GetHashCode"/> returns.</returns>
 		protected override int GetHashCodeCore([DisallowNull] object obj)
 		{
-			return obj.GetHashCode();
+			return StringComparer.InvariantCultureIgnoreCase.GetHashCode(obj);
 		}
 	}
 }
