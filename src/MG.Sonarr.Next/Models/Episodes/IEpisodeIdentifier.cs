@@ -3,6 +3,10 @@ namespace MG.Sonarr.Next.Models.Episodes;
 /// <summary>
 /// Represents the episodes that a season and an episode range name, or that an absolute range names.
 /// </summary>
+/// <remarks>
+/// An implementation overrides <see cref="object.ToString"/> to return the identifier's text, which the message of
+/// an <see cref="MG.Sonarr.Next.Exceptions.InvalidEpisodeIdFormatException"/> shows for an identifier that isn't valid.
+/// </remarks>
 public interface IEpisodeIdentifier
 {
 	/// <summary>

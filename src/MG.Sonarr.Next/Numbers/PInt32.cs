@@ -28,7 +28,7 @@ namespace MG.Sonarr.Next.Numbers;
 /// </remarks>
 [DebuggerStepThrough, DebuggerDisplay("{_value,nq}")]
 [SuppressMessage("Style", "IDE0023"), SuppressMessage("Style", "IDE0024")]
-public readonly struct PInt32 : IComparable<PInt32>, IEquatable<PInt32>
+public readonly struct PInt32 : IComparable<PInt32>, IEquatable<PInt32>, ISpanFormattable
 {
 	/// <summary>
 	/// Represents the smallest possible value of <see cref="PInt32"/>.
@@ -455,6 +455,17 @@ public readonly struct PInt32 : IComparable<PInt32>, IEquatable<PInt32>
 	public override string ToString()
 	{
 		return _value.ToString(CultureInfo.CurrentCulture);
+	}
+
+	/// <inheritdoc/>
+	public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+	{
+		return _value.TryFormat(destination, out charsWritten, format, provider);
+	}
+	/// <inheritdoc/>
+	public string ToString(string? format, IFormatProvider? formatProvider)
+	{
+		return _value.ToString(format, formatProvider);
 	}
 }
 
