@@ -68,11 +68,12 @@ public sealed class EmptyStructException : PoshSonarrException
 	///     The name of the instance to include in any resulting <see cref="EmptyStructException"/>.
 	/// </param>
 	/// <exception cref="EmptyStructException">Thrown when <paramref name="condition"/> is <see langword="true"/>.</exception>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void ThrowIf<T>([DoesNotReturnIf(true)] bool condition, T instance, string? instanceName = null) where T : struct
 	{
 		if (condition)
 		{
-			throw new EmptyStructException(TrimThisDot(instanceName), typeof(T), innerException: null);
+			ThrowEmpty(instanceName, typeof(T));
 		}
 	}
 	/// <summary>
@@ -84,11 +85,12 @@ public sealed class EmptyStructException : PoshSonarrException
 	///     The type whose name should be included in any resulting <see cref="EmptyStructException"/>.
 	/// </param>
 	/// <exception cref="EmptyStructException">Thrown when <paramref name="condition"/> is <see langword="true"/>.</exception>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void ThrowIf([DoesNotReturnIf(true)] bool condition, Type structType)
 	{
 		if (condition)
 		{
-			throw new EmptyStructException(objectName: null, structType, innerException: null);
+			ThrowEmpty(objectName: null, structType);
 		}
 	}
 
@@ -114,5 +116,17 @@ public sealed class EmptyStructException : PoshSonarrException
 		{
 			return string.Format(CultureInfo.CurrentCulture, ExMessages.EmptyStruct_Full_Format, objectName, structType.GetName());
 		}
+	}
+
+	/// <summary>
+	/// Throws an <see cref="EmptyStructException"/> with the specified object name and struct type.
+	/// </summary>
+	/// <param name="objectName">The name of the object.</param>
+	/// <param name="structType">The type of the struct.</param>
+	/// <exception cref="EmptyStructException"/>
+	[DoesNotReturn, StackTraceHidden, DebuggerStepThrough]
+	private static void ThrowEmpty(string? objectName, Type? structType)
+	{
+		throw new EmptyStructException(TrimThisDot(objectName), structType, innerException: null);
 	}
 }

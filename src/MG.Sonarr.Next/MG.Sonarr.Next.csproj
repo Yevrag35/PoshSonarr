@@ -70,12 +70,6 @@
 		<Using Include="System.Text.Json.Nodes" />
 		<Using Include="System.Text.Json.Serialization" />
 	</ItemGroup>
-
-	<ItemGroup>
-		<Folder Include="Buffers\Intrinsics\" />
-		<Folder Include="Services\Time\" />
-	</ItemGroup>
-
 	<ItemGroup>
 		<ProjectReference Include="..\MG.Sonarr.Resources\MG.Sonarr.Resources.csproj" />
 	</ItemGroup>
