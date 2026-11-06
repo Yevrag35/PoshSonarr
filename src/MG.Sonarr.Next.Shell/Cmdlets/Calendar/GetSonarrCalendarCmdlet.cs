@@ -42,18 +42,24 @@ public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 	/// Gets or sets the start of the range of dates.
 	/// </summary>
 	/// <remarks>
-	/// <c>-Today</c> and <c>-Tomorrow</c> replace the value when the cmdlet begins.
+	/// When the parameter isn't given, the cmdlet sets the value when it begins, from the scope's
+	/// <see cref="TimeProvider"/>, since a property initializer runs before the cmdlet has a scope. <c>-Today</c> and
+	/// <c>-Tomorrow</c> replace the value when the cmdlet begins.
 	/// </remarks>
-	/// <value>The local date and time that the range starts at. The default is the time that the cmdlet was created.</value>
+	/// <value>
+	/// The local date and time that the range starts at. The default is the local date and time when the cmdlet begins.
+	/// </value>
 	[Parameter(Position = 0)]
-	public DateTime StartDate { get; set; } = DateTime.Now;
+	public DateTime StartDate { get; set; }
 
 	/// <summary>
 	/// Gets or sets the end of the range of dates.
 	/// </summary>
 	/// <remarks>
-	/// Until a value is set, the first read computes the default from <see cref="StartDate"/> and keeps it.
-	/// <c>-Today</c> and <c>-Tomorrow</c> replace the value when the cmdlet begins.
+	/// Until a value is set, the first read computes the default from <see cref="StartDate"/> and keeps it. PowerShell's
+	/// binder never reads a parameter that takes no pipeline input, so the first read comes after the cmdlet has set
+	/// <see cref="StartDate"/>'s default when it begins. <c>-Today</c> and <c>-Tomorrow</c> replace the value when the
+	/// cmdlet begins.
 	/// </remarks>
 	/// <value>
 	/// The local date and time that the range ends at, which a read never gives as <see langword="null"/>. The default is
@@ -176,24 +182,35 @@ public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 	}
 
 	/// <summary>
-	/// Sets the range of dates for <c>-Today</c> or <c>-Tomorrow</c>, and finds the IDs of the tags whose labels match
-	/// the names in <c>-Tags</c>.
+	/// Sets the range of dates for <c>-Today</c> or <c>-Tomorrow</c>, or the start of the range when <c>-StartDate</c>
+	/// isn't given, and finds the IDs of the tags whose labels match the names in <c>-Tags</c>.
 	/// </summary>
 	/// <remarks>
+	/// <para>
+	/// The current date and time come from the scope's <see cref="TimeProvider"/>, in its local time zone.
+	/// </para>
+	/// <para>
 	/// Matching the names gets every tag with one request, and when that request fails, the cmdlet stops with its error.
+	/// </para>
 	/// </remarks>
 	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	protected override void Begin(IServiceProvider provider)
 	{
+		DateTimeOffset now = provider.GetRequiredService<TimeProvider>().GetLocalNow();
+
 		if (this.Today)
 		{
-			this.StartDate = DateTime.Today;
+			this.StartDate = now.Date;
 			this.EndDate = this.StartDate.AddDays(1).AddSeconds(-1);
 		}
 		else if (this.Tomorrow)
 		{
-			this.StartDate = DateTime.Today.AddDays(1);
+			this.StartDate = now.Date.AddDays(1);
 			this.EndDate = this.StartDate.AddDays(1).AddSeconds(-1);
+		}
+		else if (!this.HasParameter(this.StartDate))
+		{
+			this.StartDate = now.DateTime;
 		}
 
 		if (this.HasParameter(this.Tags))

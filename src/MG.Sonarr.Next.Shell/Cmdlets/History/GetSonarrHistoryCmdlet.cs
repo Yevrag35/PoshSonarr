@@ -6,7 +6,6 @@ using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.History;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Services.Http.Queries;
-using MG.Sonarr.Next.Services.Time;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using MG.Sonarr.Next.Shell.Extensions;
@@ -121,7 +120,8 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 	/// Gets or sets the date and time that the cmdlet gets every record since.
 	/// </summary>
 	/// <remarks>
-	/// The cmdlet writes a warning when the value is in the future.
+	/// The cmdlet writes a warning when the value is later than the current time. A UTC value, such as
+	/// <c>[datetime]::UtcNow</c> gives, is compared as UTC, and any other value as local time.
 	/// </remarks>
 	/// <value>The date and time that the records start at.</value>
 	[Parameter(Mandatory = true, ParameterSetName = SINCE_DATE)]
@@ -203,7 +203,8 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 	/// switches that are present, the paging and sorting parameters in the default parameter set, and the event type.
 	/// </summary>
 	/// <remarks>
-	/// The cmdlet writes a warning when <c>-Since</c> is in the future.
+	/// The cmdlet writes a warning when <c>-Since</c> is later than the current time of the scope's
+	/// <see cref="TimeProvider"/>.
 	/// </remarks>
 	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in implicit naming.")]
@@ -221,8 +222,8 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 			_parameters.Add([nameof(this.IncludeSeries), this.IncludeSeries.ToBool()]);
 		}
 
-		var clock = provider.GetRequiredService<IClock>();
-		if (this.HasParameter(Since) && this.Since > clock.Now.DateTime)
+		var timeProvider = provider.GetRequiredService<TimeProvider>();
+		if (this.HasParameter(Since) && IsInFuture(this.Since, timeProvider))
 		{
 			this.WriteWarning($"The specified parameter '{nameof(this.Since)}' is set to a time in the future. This could give unpredicatable results.");
 		}
@@ -366,6 +367,41 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 	#endregion
 
 	#region SINCE FUNCTIONALITY
+
+	/// <summary>
+	/// Determines whether the specified date and time is later than the current time of the specified time provider.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// The method compares moments in time, and the value's <see cref="DateTime.Kind"/> decides which moment it stands
+	/// for: a <see cref="DateTimeKind.Utc"/> value is UTC, a <see cref="DateTimeKind.Local"/> value is in the
+	/// computer's time zone, as <see cref="DateTime.ToUniversalTime"/> reads it, and a
+	/// <see cref="DateTimeKind.Unspecified"/> value is in the provider's <see cref="TimeProvider.LocalTimeZone"/>.
+	/// </para>
+	/// <para>
+	/// The value's UTC time is computed in ticks rather than with
+	/// <see cref="TimeZoneInfo.ConvertTimeToUtc(DateTime, TimeZoneInfo)"/>, which throws for a local time that daylight
+	/// saving time skips. Such a time takes the zone's standard offset, and a value near <see cref="DateTime.MinValue"/>
+	/// or <see cref="DateTime.MaxValue"/> doesn't throw either.
+	/// </para>
+	/// </remarks>
+	/// <param name="value">The date and time to compare.</param>
+	/// <param name="timeProvider">The time provider that gives the current time and the local time zone.</param>
+	/// <returns>
+	/// <see langword="true"/> if <paramref name="value"/> is later than the current time; otherwise,
+	/// <see langword="false"/>.
+	/// </returns>
+	private static bool IsInFuture(DateTime value, TimeProvider timeProvider)
+	{
+		long utcTicks = value.Kind switch
+		{
+			DateTimeKind.Utc => value.Ticks,
+			DateTimeKind.Local => value.ToUniversalTime().Ticks,
+			_ => value.Ticks - timeProvider.LocalTimeZone.GetUtcOffset(value).Ticks,
+		};
+
+		return utcTicks > timeProvider.GetUtcNow().UtcTicks;
+	}
 
 	/// <summary>
 	/// Gets every record since the specified date and time from the history-since endpoint, and writes the records to

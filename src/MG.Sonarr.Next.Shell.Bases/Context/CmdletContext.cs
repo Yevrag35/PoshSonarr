@@ -7,7 +7,6 @@ using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Services.Testing;
-using MG.Sonarr.Next.Services.Time;
 using MG.Sonarr.Next.Shell.Attributes;
 using System.Reflection;
 using System.Text.Json;
@@ -417,9 +416,10 @@ file static class SonarrContext
 	/// own.
 	/// </para>
 	/// <para>
-	/// The provider holds <paramref name="configureServices"/>'s services, the clock, the HTTP client with its JSON
-	/// options and metadata tags, the command tracker, and the testing service. The JSON options name properties in
-	/// camel case, read names without regard to case, and indent what they write.
+	/// The provider holds <paramref name="configureServices"/>'s services, <see cref="TimeProvider.System"/> as the
+	/// <see cref="TimeProvider"/>, the HTTP client with its JSON options and metadata tags, the command tracker, and the
+	/// testing service. The JSON options name properties in camel case, read names without regard to case, and indent
+	/// what they write.
 	/// </para>
 	/// <para>
 	/// Builds other than Release turn on the container's <see cref="ServiceProviderOptions.ValidateOnBuild"/> and
@@ -440,8 +440,7 @@ file static class SonarrContext
 		configureServices(services);
 
 		services
-			//.AddClock(mock => mock.GetNow = c => c.Now.AddDays(-7d))
-			.AddClock()
+			.AddSingleton(TimeProvider.System)
 			.AddSonarrClient(cmdletAssembly, settings, (provider, options) =>
 			{
 				options.PropertyNamingPolicy = JsonSpanCamelCaseNamingPolicy.SpanPolicy;
