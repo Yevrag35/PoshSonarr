@@ -5,7 +5,7 @@ namespace MG.Sonarr.Next.Exceptions;
 /// </summary>
 public sealed class EmptyHttpResponseException : PoshSonarrException, Services.Http.Requests.IHttpRequestUri
 {
-	const string MSG = "An empty response was received when there should have been one.";
+	private const string MSG = "An empty response was received when there should have been one.";
 
 	/// <summary>
 	/// Gets the URL of the request that generated the exception, if available.

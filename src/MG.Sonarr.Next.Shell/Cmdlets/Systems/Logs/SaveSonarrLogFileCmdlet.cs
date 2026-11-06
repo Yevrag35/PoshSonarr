@@ -131,7 +131,7 @@ public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
 		get => null;
 		set => _creds = value?.GetNetworkCredential();
 	}
-	NetworkCredential? _creds;
+	private NetworkCredential? _creds;
 
 	/// <summary>
 	/// Gets a value that indicates whether the request's JSON body is written to the debug stream before the request is

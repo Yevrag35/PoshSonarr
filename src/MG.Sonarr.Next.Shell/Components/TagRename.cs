@@ -12,9 +12,9 @@ namespace MG.Sonarr.Next.Shell.Components;
 /// </remarks>
 public readonly struct TagRename
 {
-	readonly string? _name;
-	readonly int _id;
-	readonly bool _isNotEmpty;
+	private readonly string? _name;
+	private readonly int _id;
+	private readonly bool _isNotEmpty;
 
 	/// <summary>
 	/// Gets the ID of the tag to rename.

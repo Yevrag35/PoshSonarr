@@ -40,8 +40,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags;
 [MetadataCanPipe(Tag = Meta.SeriesAdd)]
 public sealed class GetSonarrTagCmdlet : SonarrMetadataCmdlet
 {
-	SortedSet<int> _ids = null!;
-	WildcardSet _wcNames = null!;
+	private SortedSet<int> _ids = null!;
+	private WildcardSet _wcNames = null!;
 
 	/// <summary>
 	/// Gets or sets the objects whose tags the cmdlet gets.

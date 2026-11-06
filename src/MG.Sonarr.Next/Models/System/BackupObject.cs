@@ -25,11 +25,11 @@ public sealed class BackupObject : IdSonarrObject<BackupObject>,
 	/// <summary>
 	/// The number of properties that a new backup reserves room for.
 	/// </summary>
-	const int CAPACITY = 6;
+	private const int CAPACITY = 6;
 	/// <summary>
 	/// The full name of the type, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
-	static readonly string _typeName = typeof(BackupObject).GetName();
+	private static readonly string _typeName = typeof(BackupObject).GetName();
 
 	/// <summary>
 	/// Gets the backup's path, relative to the server.

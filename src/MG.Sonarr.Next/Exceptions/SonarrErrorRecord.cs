@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Exceptions;
 /// <inheritdoc cref="ErrorRecord"/>
 public sealed class SonarrErrorRecord : ErrorRecord, IHttpRequestUri
 {
-	readonly IReadOnlyDictionary<string, string> _headers;
+	private readonly IReadOnlyDictionary<string, string> _headers;
 
 	/// <inheritdoc cref="SonarrHttpException.Headers"/>
 	/// <value>The HTTP headers associated with the error.</value>

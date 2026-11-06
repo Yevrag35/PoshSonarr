@@ -36,9 +36,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RemotePath;
 [Alias("New-SonarrRemotePath", "New-SonarrRemoteMapping")]
 public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 {
-	const string USERDNSDOMAIN = "USERDNSDOMAIN";
-	const string LOCALHOST = "localhost";
-	const string DOT_HOST = ".";
+	private const string USERDNSDOMAIN = "USERDNSDOMAIN";
+	private const string LOCALHOST = "localhost";
+	private const string DOT_HOST = ".";
 
 	/// <summary>
 	/// Gets a value that indicates whether the cmdlet captures its debug preference before processing begins.

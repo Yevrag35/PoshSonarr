@@ -22,9 +22,9 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// </remarks>
 public sealed class TestingHandler : DelegatingHandler
 {
-	const string NOT_API_MESSAGE = "The response isn't the JSON object that Sonarr's API returns, so it may be an HTML page. You sure the URL is correct?";
+	private const string NOT_API_MESSAGE = "The response isn't the JSON object that Sonarr's API returns, so it may be an HTML page. You sure the URL is correct?";
 
-	readonly JsonSerializerOptions _options;
+	private readonly JsonSerializerOptions _options;
 
 	/// <summary>
 	/// Initializes a new <see cref="TestingHandler"/> instance with the specified JSON options.

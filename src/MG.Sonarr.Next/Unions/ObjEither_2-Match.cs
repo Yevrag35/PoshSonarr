@@ -1,6 +1,6 @@
 namespace MG.Sonarr.Next.Unions;
 
-partial struct ObjEither<T1, T2>
+public partial struct ObjEither<T1, T2>
 {
 	/// <summary>
 	/// Match on the stored value and invoke the corresponding function.

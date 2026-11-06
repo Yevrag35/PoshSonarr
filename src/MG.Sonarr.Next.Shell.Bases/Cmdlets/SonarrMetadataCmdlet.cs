@@ -18,7 +18,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases;
 //[DebuggerStepThrough]
 public abstract class SonarrMetadataCmdlet : SonarrApiCmdletBase
 {
-	MetadataTag? _tag;
+	private MetadataTag? _tag;
 
 	/// <summary>
 	/// Gets the defined <see cref="MetadataTag"/> that this cmdlet deals with when querying

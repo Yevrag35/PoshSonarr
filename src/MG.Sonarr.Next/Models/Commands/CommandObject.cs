@@ -34,24 +34,24 @@ public sealed class CommandObject : IdSonarrObject<CommandObject>,
 	/// <summary>
 	/// The name of the property that holds the command's body.
 	/// </summary>
-	const string BODY = "Body";
+	private const string BODY = "Body";
 	/// <summary>
 	/// The number of properties that a command is created with room for.
 	/// </summary>
-	const int CAPACITY = 16;
+	private const int CAPACITY = 16;
 	/// <summary>
 	/// The status that a completed command has.
 	/// </summary>
-	const string COMPLETED = "completed";
+	private const string COMPLETED = "completed";
 	/// <summary>
 	/// The PowerShell type name of <see cref="CommandObject"/>.
 	/// </summary>
-	static readonly string _typeName = typeof(CommandObject).GetName();
+	private static readonly string _typeName = typeof(CommandObject).GetName();
 
 	/// <summary>
 	/// The command's body, held back from PowerShell until the object is serialized.
 	/// </summary>
-	PSObject? _body;
+	private PSObject? _body;
 
 	/// <summary>
 	/// Gets the time that the command ended.
@@ -298,7 +298,7 @@ public sealed class CommandObject : IdSonarrObject<CommandObject>,
 	/// <summary>
 	/// The names of the properties whose values get an uppercase first letter.
 	/// </summary>
-	static readonly HashSet<string> _capitalProps =
+	private static readonly HashSet<string> _capitalProps =
 	[
 		"Priority", "Status", "Trigger",
 	];

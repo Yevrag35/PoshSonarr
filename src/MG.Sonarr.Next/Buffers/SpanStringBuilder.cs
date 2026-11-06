@@ -42,8 +42,8 @@ internal ref struct SpanStringBuilder
 
 	internal const int DEFAULT_CAPACITY = 128;
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	static readonly string s_newLine = Environment.NewLine;
-	static readonly int s_newLineLength = s_newLine.Length;
+	private static readonly string s_newLine = Environment.NewLine;
+	private static readonly int s_newLineLength = s_newLine.Length;
 
 	private char[]? _array;
 	private Span<char> _chars;

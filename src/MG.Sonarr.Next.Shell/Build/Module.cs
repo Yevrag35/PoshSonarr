@@ -142,9 +142,9 @@ public static class Module
 	/// </remarks>
 	private readonly ref struct FileTypes
 	{
-		readonly string _outputDir;
-		readonly ReadOnlySpan<char> _formatStr;
-		readonly ReadOnlySpan<char> _typeStr;
+		private readonly string _outputDir;
+		private readonly ReadOnlySpan<char> _formatStr;
+		private readonly ReadOnlySpan<char> _typeStr;
 
 		/// <summary>
 		/// The paths of the format files.

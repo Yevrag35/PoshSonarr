@@ -21,8 +21,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags;
 [MetadataCanPipe(Tag = Meta.Tag)]
 public sealed class RenameSonarrTagCmdlet : SonarrApiCmdletBase
 {
-	TagObject? _pipedObject;
-	MetadataTag _tag = null!;
+	private TagObject? _pipedObject;
+	private MetadataTag _tag = null!;
 
 	/// <summary>
 	/// Gets or sets the ID of the tag to rename.

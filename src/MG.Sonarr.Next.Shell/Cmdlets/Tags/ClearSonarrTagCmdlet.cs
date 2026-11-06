@@ -45,11 +45,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags;
 [MetadataCanPipe(Tag = Meta.SeriesAdd)]
 public sealed class ClearSonarrTagCmdlet : SonarrMetadataCmdlet
 {
-	static readonly string _namePropertyName = nameof(Name);
-	SortedSet<int> _ids = null!;
-	WildcardSet _wcNames = null!;
-	Dictionary<string, ITagPipeable> _updates = null!;
-	HashSet<ITagPipeable> _unsaved = null!;
+	private static readonly string _namePropertyName = nameof(Name);
+	private SortedSet<int> _ids = null!;
+	private WildcardSet _wcNames = null!;
+	private Dictionary<string, ITagPipeable> _updates = null!;
+	private HashSet<ITagPipeable> _unsaved = null!;
 
 	/// <summary>
 	/// Gets or sets the objects that the tags are removed from.

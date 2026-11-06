@@ -26,15 +26,15 @@ public sealed class DiskspaceObject : SonarrObject,
 	/// <summary>
 	/// The number of properties that a new drive reserves room for.
 	/// </summary>
-	const int CAPACITY = 6;
+	private const int CAPACITY = 6;
 	/// <summary>
 	/// The name of the property that holds the drive's label.
 	/// </summary>
-	const string LABEL = "Label";
+	private const string LABEL = "Label";
 	/// <summary>
 	/// The full name of the type, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
-	static readonly string _typeName = typeof(DiskspaceObject).GetName();
+	private static readonly string _typeName = typeof(DiskspaceObject).GetName();
 
 	/// <summary>
 	/// Gets the drive's free space.

@@ -274,7 +274,7 @@ file static class SonarrContext
 	/// <summary>
 	/// The module's connection, or <see langword="null"/> when there's none.
 	/// </summary>
-	static Connection? _connection;
+	private static Connection? _connection;
 
 	/// <summary>
 	/// Gets the provider of the module's connection, without a lease on it.

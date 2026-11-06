@@ -23,11 +23,11 @@ public sealed class HistoryObject : IdSonarrObject<HistoryObject>,
 	/// <summary>
 	/// The number of properties that a new history record reserves room for.
 	/// </summary>
-	const int CAPACITY = 14;
+	private const int CAPACITY = 14;
 	/// <summary>
 	/// The full name of the type, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
-	static readonly string _typeName = typeof(HistoryObject).GetName();
+	private static readonly string _typeName = typeof(HistoryObject).GetName();
 
 	/// <summary>
 	/// Gets the ID that the download client gave the download that the record is about.

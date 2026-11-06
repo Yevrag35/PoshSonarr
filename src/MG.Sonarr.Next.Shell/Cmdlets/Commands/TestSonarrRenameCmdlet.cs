@@ -31,7 +31,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands;
 [MetadataCanPipe(Tag = Meta.Series)]
 public sealed class TestSonarrRenameCmdlet : SonarrApiCmdletBase
 {
-	QueryCol _params = null!;
+	private QueryCol _params = null!;
 
 	/// <summary>
 	/// Gets or sets the object whose series' episode files are tested.

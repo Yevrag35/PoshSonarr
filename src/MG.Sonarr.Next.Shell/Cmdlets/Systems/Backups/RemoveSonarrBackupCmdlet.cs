@@ -37,9 +37,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups;
 [MetadataCanPipe(Tag = Meta.Backup)]
 public sealed class RemoveSonarrBackupCmdlet : SonarrMetadataCmdlet
 {
-	SortedSet<int> _ids = null!;
-	bool _yesToAll;
-	bool _noToAll;
+	private SortedSet<int> _ids = null!;
+	private bool _yesToAll;
+	private bool _noToAll;
 
 	/// <summary>
 	/// Gets or sets the IDs of the backups to delete.

@@ -29,15 +29,15 @@ public class HostObject : SonarrObject,
 	/// <summary>
 	/// The number of properties that a new host config reserves room for.
 	/// </summary>
-	const int CAPACITY = 32;
+	private const int CAPACITY = 32;
 	/// <summary>
 	/// The number of values that <see cref="Conditionals"/> reserves room for.
 	/// </summary>
-	const int CONDITIONAL_CAPACITY = 3;
+	private const int CONDITIONAL_CAPACITY = 3;
 	/// <summary>
 	/// The full name of the type, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
-	static readonly string _typeName = typeof(HostObject).GetName();
+	private static readonly string _typeName = typeof(HostObject).GetName();
 
 	/// <summary>
 	/// Gets the values of the properties that a derived class keeps out of PowerShell's view until a request body
@@ -124,7 +124,7 @@ public class HostObject : SonarrObject,
 	/// <summary>
 	/// The names of the properties whose values read with an uppercase first letter.
 	/// </summary>
-	static readonly HashSet<string> _capitalProps = [
+	private static readonly HashSet<string> _capitalProps = [
 		"AuthenticationMethod", "CertificateValidation", "LogLevel", "ProxyType", "UpdateMechanism",
 	];
 	/// <summary>

@@ -23,36 +23,36 @@ public readonly struct Size : IComparable, IComparable<Size>, IEquatable<Size>,
 	/// <summary>
 	/// The number of decimal places that the sizes round to by default.
 	/// </summary>
-	const int DEFAULT_PRECISION = 2;
+	private const int DEFAULT_PRECISION = 2;
 	/// <summary>
 	/// The number of bytes in a mebibyte.
 	/// </summary>
-	const double ONE_MB = 1_048_576d;
+	private const double ONE_MB = 1_048_576d;
 	/// <summary>
 	/// The number of bytes in a gibibyte.
 	/// </summary>
-	const double ONE_GB = 1_073_741_824d;
+	private const double ONE_GB = 1_073_741_824d;
 	/// <summary>
 	/// The number of bytes in a tebibyte.
 	/// </summary>
-	const double ONE_TB = 1_099_511_627_776d;
+	private const double ONE_TB = 1_099_511_627_776d;
 
 	/// <summary>
 	/// The number of bytes.
 	/// </summary>
-	readonly long _bytes;
+	private readonly long _bytes;
 	/// <summary>
 	/// The size in mebibytes, rounded.
 	/// </summary>
-	readonly double _inMb;
+	private readonly double _inMb;
 	/// <summary>
 	/// The size in gibibytes, rounded.
 	/// </summary>
-	readonly double _inGb;
+	private readonly double _inGb;
 	/// <summary>
 	/// The size in tebibytes, rounded.
 	/// </summary>
-	readonly double _inTb;
+	private readonly double _inTb;
 
 	/// <summary>
 	/// Gets the size in mebibytes.

@@ -32,15 +32,15 @@ public sealed class MediaManagementObject : SonarrObject,
 	/// <summary>
 	/// The <c>Path</c> alias of the <c>RecycleBinPath</c> property.
 	/// </summary>
-	static readonly PSAliasProperty _pathAlias = new("Path", "RecycleBinPath");
+	private static readonly PSAliasProperty _pathAlias = new("Path", "RecycleBinPath");
 	/// <summary>
 	/// The full name of the class, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
-	static readonly string _typeName = typeof(MediaManagementObject).GetName();
+	private static readonly string _typeName = typeof(MediaManagementObject).GetName();
 	/// <summary>
 	/// The number of properties that an instance is sized for, about the number of fields that Sonarr sends.
 	/// </summary>
-	const int CAPACITY = 21;
+	private const int CAPACITY = 21;
 
 	/// <summary>
 	/// Gets the ID of the media management settings.
@@ -170,7 +170,7 @@ public sealed class MediaManagementObject : SonarrObject,
 	/// The name maps that rename Sonarr's <c>RecycleBin</c> field to the <c>RecycleBinPath</c> property and back,
 	/// built when they're first used.
 	/// </summary>
-	static readonly Lazy<JsonNameHolder> _names = new(() => JsonNameHolder
+	private static readonly Lazy<JsonNameHolder> _names = new(() => JsonNameHolder
 		.FromSingleNamePair("RecycleBin", "RecycleBinPath"));
 
 	/// <summary>

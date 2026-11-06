@@ -28,8 +28,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems;
 [MetadataCanPipe(Tag = Meta.Indexer)]
 public sealed class TestSonarrResourceCmdlet : TimedCmdlet
 {
-	const string TEST = "/test";
-	ITestingService _tester = null!;
+	private const string TEST = "/test";
+	private ITestingService _tester = null!;
 
 	/// <summary>
 	/// Gets or sets the providers to test.

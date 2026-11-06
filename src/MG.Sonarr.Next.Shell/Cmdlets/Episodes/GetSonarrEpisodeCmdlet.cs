@@ -37,14 +37,14 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes;
 [MetadataCanPipe(Tag = Meta.Series)]
 public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 {
-	const string BY_EP_ID = "ByEpisodeId";
-	const string BY_EP_INPUT = "ByEpisodeInput";
-	const string BY_SERIES_ID = "BySeriesId";
-	const string BY_SERIES_INPUT = "BySeriesInput";
+	private const string BY_EP_ID = "ByEpisodeId";
+	private const string BY_EP_INPUT = "ByEpisodeInput";
+	private const string BY_SERIES_ID = "BySeriesId";
+	private const string BY_SERIES_INPUT = "BySeriesInput";
 
-	SortedSet<int> _epIds = null!;
-	QueryCol _params = null!;
-	Dictionary<int, IEpisodeBySeriesPipeable> _seriesIds = null!;
+	private SortedSet<int> _epIds = null!;
+	private QueryCol _params = null!;
+	private Dictionary<int, IEpisodeBySeriesPipeable> _seriesIds = null!;
 
 	/// <summary>
 	/// Gets or sets the IDs of the episodes to get.

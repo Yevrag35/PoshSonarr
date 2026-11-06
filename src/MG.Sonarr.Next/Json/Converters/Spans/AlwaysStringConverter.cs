@@ -13,7 +13,7 @@ public sealed class AlwaysStringConverter : SpanConverter<string>
 	/// <summary>
 	/// A value that indicates whether white space is trimmed from both ends of a value.
 	/// </summary>
-	readonly bool _trim;
+	private readonly bool _trim;
 
 	/// <summary>
 	/// Initializes a new <see cref="AlwaysStringConverter"/> instance that trims white space from both ends of a value.

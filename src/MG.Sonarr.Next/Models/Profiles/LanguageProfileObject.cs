@@ -16,11 +16,11 @@ public sealed class LanguageProfileObject : IdSonarrObject<LanguageProfileObject
 	/// <summary>
 	/// The number of properties that a new instance makes room for.
 	/// </summary>
-	const int CAPACITY = 6;
+	private const int CAPACITY = 6;
 	/// <summary>
 	/// The type's full name, which <see cref="SetPSTypeName"/> puts first in the PowerShell type names.
 	/// </summary>
-	static readonly string _typeName = typeof(LanguageProfileObject).GetName();
+	private static readonly string _typeName = typeof(LanguageProfileObject).GetName();
 
 	/// <summary>
 	/// Gets or sets the profile's name.

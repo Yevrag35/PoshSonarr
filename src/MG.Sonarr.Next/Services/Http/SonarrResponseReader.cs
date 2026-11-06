@@ -59,7 +59,7 @@ internal sealed class SonarrResponseReader : IResponseReader
 	/// <summary>
 	/// The JSON options that deserialize response bodies.
 	/// </summary>
-	readonly JsonSerializerOptions _options;
+	private readonly JsonSerializerOptions _options;
 
 	/// <summary>
 	/// Initializes a new <see cref="SonarrResponseReader"/> instance with the deserializing options of the specified JSON

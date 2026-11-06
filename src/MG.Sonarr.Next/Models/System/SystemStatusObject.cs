@@ -21,11 +21,11 @@ public sealed class SystemStatusObject : SonarrObject,
 	/// <summary>
 	/// The number of properties that a new status reserves room for.
 	/// </summary>
-	const int CAPACITY = 26;
+	private const int CAPACITY = 26;
 	/// <summary>
 	/// The full name of the type, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
-	static readonly string _typeName = typeof(SystemStatusObject).GetName();
+	private static readonly string _typeName = typeof(SystemStatusObject).GetName();
 
 	/// <summary>
 	/// Gets the authentication method that the server uses.
@@ -92,7 +92,7 @@ public sealed class SystemStatusObject : SonarrObject,
 	/// <summary>
 	/// The names of the properties whose values read with an uppercase first letter.
 	/// </summary>
-	static readonly HashSet<string> _capitalProps = new(4, StringComparer.OrdinalIgnoreCase)
+	private static readonly HashSet<string> _capitalProps = new(4, StringComparer.OrdinalIgnoreCase)
 	{
 		"Authentication", "Mode", "PackageUpdateMechanism", "RuntimeName"
 	};

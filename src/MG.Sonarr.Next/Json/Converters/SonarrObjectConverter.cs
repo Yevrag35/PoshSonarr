@@ -22,19 +22,19 @@ public sealed class SonarrObjectConverter<T> : ByPolicyJsonConverter<T> where T 
 	/// <summary>
 	/// The shared converter that reads and writes the model's properties.
 	/// </summary>
-	readonly ObjectConverter _converter;
+	private readonly ObjectConverter _converter;
 	/// <summary>
 	/// The model's renames of JSON fields to property names.
 	/// </summary>
-	readonly IReadOnlyDictionary<string, string> _deserializedNames;
+	private readonly IReadOnlyDictionary<string, string> _deserializedNames;
 	/// <summary>
 	/// The names of the string properties whose values get an uppercase first letter.
 	/// </summary>
-	readonly IReadOnlySet<string> _capitalizeProperties;
+	private readonly IReadOnlySet<string> _capitalizeProperties;
 	/// <summary>
 	/// The model's renames of property names back to JSON fields.
 	/// </summary>
-	readonly IReadOnlyDictionary<string, string> _serializedNames;
+	private readonly IReadOnlyDictionary<string, string> _serializedNames;
 
 	/// <summary>
 	/// Initializes a new <see cref="SonarrObjectConverter{T}"/> instance around the connection's shared object

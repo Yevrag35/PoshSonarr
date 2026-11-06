@@ -14,7 +14,7 @@ public sealed class InvalidEpisodeIdFormatException : PoshSonarrException
 	/// <summary>
 	/// What a valid identifier is, which ends every message.
 	/// </summary>
-	const string FORMS = "An identifier is S and a season number for the whole season, as in S01; that, E, and an episode number or a range of them, as in S01E02, S01E02-05, or S01E02-E05; or an absolute episode number or range, as in 25, E25, or E25-28. A number can't be negative, and a range can't end before it starts.";
+	private const string FORMS = "An identifier is S and a season number for the whole season, as in S01; that, E, and an episode number or a range of them, as in S01E02, S01E02-05, or S01E02-E05; or an absolute episode number or range, as in 25, E25, or E25-28. A number can't be negative, and a range can't end before it starts.";
 
 	/// <summary>
 	/// Gets the identifiers that aren't valid.
@@ -114,11 +114,11 @@ public sealed class InvalidEpisodeIdFormatException : PoshSonarrException
 	/// </summary>
 	private readonly struct StoredId : IEpisodeIdentifier
 	{
-		readonly EpisodeRange _ep;
-		readonly int _season;
-		readonly bool _isAb;
-		readonly bool _isValid;
-		readonly string _text;
+		private readonly EpisodeRange _ep;
+		private readonly int _season;
+		private readonly bool _isAb;
+		private readonly bool _isValid;
+		private readonly string _text;
 
 		/// <summary>
 		/// Gets the range of episode numbers.

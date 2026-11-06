@@ -25,7 +25,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Logs;
 [Cmdlet(VerbsCommon.Get, "SonarrLog")]
 public sealed class GetSonarrLogCmdlet : SonarrMetadataCmdlet
 {
-	QueryCol _parameters = null!;
+	private QueryCol _parameters = null!;
 
 	/// <summary>
 	/// Gets or sets how many entries the page holds.

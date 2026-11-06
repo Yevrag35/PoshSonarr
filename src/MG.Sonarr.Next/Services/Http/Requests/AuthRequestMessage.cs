@@ -16,9 +16,9 @@ namespace MG.Sonarr.Next.Services.Http.Requests;
 /// </remarks>
 internal sealed class AuthedRequestMessage : SonarrRequestMessage
 {
-	const string PASSWORD = "password";
-	const string USERNAME = "username";
-	static readonly NetworkCredential _blankCreds = new();
+	private const string PASSWORD = "password";
+	private const string USERNAME = "username";
+	private static readonly NetworkCredential _blankCreds = new();
 
 	/// <summary>
 	/// Gets the credentials that the request logs in with.

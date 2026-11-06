@@ -34,7 +34,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes;
 [MetadataCanPipe(Tag = Meta.EpisodeFile)]
 public sealed class RemoveSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 {
-	SortedSet<int> _ids = null!;
+	private SortedSet<int> _ids = null!;
 
 	/// <summary>
 	/// Gets or sets the IDs of the episode files to delete.

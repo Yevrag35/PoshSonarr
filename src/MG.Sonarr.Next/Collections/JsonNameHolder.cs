@@ -19,8 +19,8 @@ internal readonly struct JsonNameHolder
 {
 	private static readonly EmptyNameDictionary<string> s_empty = [];
 
-	readonly IReadOnlyDictionary<string, string> _deserialization;
-	readonly IReadOnlyDictionary<string, string> _serialization;
+	private readonly IReadOnlyDictionary<string, string> _deserialization;
+	private readonly IReadOnlyDictionary<string, string> _serialization;
 
 	/// <summary>
 	/// Gets the name map used during deserialization.

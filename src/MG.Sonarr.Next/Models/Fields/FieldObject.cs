@@ -28,11 +28,11 @@ public sealed class FieldObject : SonarrObject,
 	/// <summary>
 	/// The number of properties that an instance is sized for, about the number of fields that Sonarr sends.
 	/// </summary>
-	const int CAPACITY = 8;
+	private const int CAPACITY = 8;
 	/// <summary>
 	/// The full name of the class, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
-	static readonly string _typeName = typeof(FieldObject).GetName();
+	private static readonly string _typeName = typeof(FieldObject).GetName();
 	/// <summary>
 	/// Gets a value that indicates whether tagging the field adds no metadata tag.
 	/// </summary>

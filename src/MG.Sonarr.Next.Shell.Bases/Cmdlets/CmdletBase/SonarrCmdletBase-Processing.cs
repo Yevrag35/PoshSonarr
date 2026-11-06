@@ -5,7 +5,7 @@ using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets;
 
-partial class SonarrCmdletBase
+public partial class SonarrCmdletBase
 {
 	// PRE-PROCESSING
 	/// <summary>

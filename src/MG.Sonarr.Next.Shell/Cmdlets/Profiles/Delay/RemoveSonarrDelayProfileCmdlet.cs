@@ -30,7 +30,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delay;
 [MetadataCanPipe(Tag = Meta.DelayProfile)]
 public sealed class RemoveSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 {
-	SortedSet<int> _ids = null!;
+	private SortedSet<int> _ids = null!;
 
 	/// <summary>
 	/// Gets or sets the IDs of the delay profiles to delete.

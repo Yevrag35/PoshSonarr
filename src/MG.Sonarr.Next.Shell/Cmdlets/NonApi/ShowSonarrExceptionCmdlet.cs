@@ -30,8 +30,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.NonApi;
 [Alias("Show-SonarrError")]
 public sealed class ShowSonarrExceptionCmdlet : PSCmdlet
 {
-	const string ERROR = "error";
-	bool _processedPipeline;
+	private const string ERROR = "error";
+	private bool _processedPipeline;
 
 	/// <summary>
 	/// Gets or sets the exception whose server errors the cmdlet writes.

@@ -1,9 +1,9 @@
-﻿namespace MG.Sonarr.Next.Services.Time.Mock;
+namespace MG.Sonarr.Next.Services.Time.Mock;
 
 internal sealed class MockClockService : IClock
 {
-	readonly IClock _baseClock;
-	readonly MockClockParameters _parameters;
+	private readonly IClock _baseClock;
+	private readonly MockClockParameters _parameters;
 
 	public DateTimeOffset Now => _parameters.GetNow(_baseClock);
 	public DateTime Today => _parameters.GetToday(_baseClock);

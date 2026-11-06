@@ -33,8 +33,8 @@ public interface ICommandTracker
 /// </summary>
 file sealed class CommandTracker : ICommandTracker
 {
-	readonly ISonarrClient _client;
-	readonly ICommandHistory _history;
+	private readonly ISonarrClient _client;
+	private readonly ICommandHistory _history;
 
 	/// <summary>
 	/// Initializes a new <see cref="CommandTracker"/> instance with the specified client and history store.

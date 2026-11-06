@@ -21,7 +21,7 @@ public sealed class ReleaseProfileObject : TagUpdateObject<ReleaseProfileObject>
 	/// <summary>
 	/// The type's full name, which <see cref="SetPSTypeName"/> puts first in the PowerShell type names.
 	/// </summary>
-	static readonly string _typeName = typeof(ReleaseProfileObject).GetName();
+	private static readonly string _typeName = typeof(ReleaseProfileObject).GetName();
 
 	/// <summary>
 	/// Gets or sets the profile's name.

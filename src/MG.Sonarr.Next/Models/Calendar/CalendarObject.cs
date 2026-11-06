@@ -32,11 +32,11 @@ public sealed class CalendarObject : IdSonarrObject<CalendarObject>,
 	/// <summary>
 	/// The number of properties that a calendar entry is created with room for.
 	/// </summary>
-	const int CAPACITY = 20;
+	private const int CAPACITY = 20;
 	/// <summary>
 	/// The PowerShell type name of <see cref="CalendarObject"/>.
 	/// </summary>
-	static readonly string _typeName = typeof(CalendarObject).GetName();
+	private static readonly string _typeName = typeof(CalendarObject).GetName();
 	/// <summary>
 	/// Gets the time that the episode airs, in UTC.
 	/// </summary>

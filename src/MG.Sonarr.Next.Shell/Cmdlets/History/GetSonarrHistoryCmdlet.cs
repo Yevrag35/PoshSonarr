@@ -38,13 +38,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.History;
 [MetadataCanPipe(Tag = Meta.Series)]
 public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 {
-	const string BY_PAGING = "ByPaging";
-	const string BY_SERIES_ID = "ByExplicitSeriesId";
-	const string BY_SERIES_PIPE = "BySeriesPipelineInput";
-	const string SINCE_DATE = "SinceDate";
+	private const string BY_PAGING = "ByPaging";
+	private const string BY_SERIES_ID = "ByExplicitSeriesId";
+	private const string BY_SERIES_PIPE = "BySeriesPipelineInput";
+	private const string SINCE_DATE = "SinceDate";
 
-	SortedSet<int> _ids = null!;
-	QueryCol _parameters = null!;
+	private SortedSet<int> _ids = null!;
+	private QueryCol _parameters = null!;
 
 	#region BY_PAGING PARAMETER SET
 

@@ -26,7 +26,7 @@ namespace MG.Sonarr.Next.Shell.Attributes;
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 public sealed class ValidateIdAttribute : ValidateArgumentsAttribute
 {
-	readonly IdValidator _predicate;
+	private readonly IdValidator _predicate;
 
 	/// <summary>
 	/// Gets the range that the ID must be in to pass validation.
@@ -92,7 +92,7 @@ public sealed class ValidateIdAttribute : ValidateArgumentsAttribute
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 public sealed class ValidateIdAttribute<T> : ValidateArgumentsAttribute where T : IPipeable<T>
 {
-	readonly IdValidator _predicate;
+	private readonly IdValidator _predicate;
 
 	/// <summary>
 	/// Gets the range that the ID must be in to pass validation.
@@ -214,7 +214,7 @@ public sealed class ValidateIdsAttribute : ValidateEnumeratedArgumentsAttribute
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 public sealed class ValidateIdsAttribute<T> : ValidateEnumeratedArgumentsAttribute where T : IPipeable<T>
 {
-	readonly IdValidator _predicate;
+	private readonly IdValidator _predicate;
 
 	/// <summary>
 	/// Gets the range that each element's ID must be in to pass validation.
@@ -307,7 +307,7 @@ file static class IdValidationHelper
 	/// </summary>
 	/// <param name="element">The argument, or one element of it, which isn't <see langword="null"/>.</param>
 	/// <returns>The ID that <paramref name="element"/> gives, or <see langword="null"/> when it gives none.</returns>
-	delegate int? GetIdDelegate(object element);
+	private delegate int? GetIdDelegate(object element);
 
 	/// <summary>
 	/// Applies the specified null behavior to an ID that may be missing, and checks an ID that is present, or the one that

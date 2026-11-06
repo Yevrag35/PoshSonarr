@@ -31,8 +31,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Languages;
 [Obsolete("The LanguageProfileController and its endpoints are deprecated.")]
 public sealed class GetSonarrLanguageProfileCmdlet : SonarrMetadataCmdlet
 {
-	SortedSet<int> _ids = null!;
-	WildcardSet _wcNames = null!;
+	private SortedSet<int> _ids = null!;
+	private WildcardSet _wcNames = null!;
 
 	/// <summary>
 	/// Gets or sets the IDs of the language profiles to get.

@@ -28,7 +28,7 @@ public sealed class AddSonarrReleaseCmdlet : SonarrApiCmdletBase
 	/// Gets or sets the metadata tag of the release endpoint, which the cmdlet posts the releases to.
 	/// </summary>
 	/// <value>The <c>#release</c> tag, set when the cmdlet's scope is created.</value>
-	MetadataTag Tag { get; set; } = null!;
+	private MetadataTag Tag { get; set; } = null!;
 
 	/// <summary>
 	/// Gets or sets the releases to grab.

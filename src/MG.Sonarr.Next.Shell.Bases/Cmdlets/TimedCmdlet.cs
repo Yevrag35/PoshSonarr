@@ -217,9 +217,9 @@ public abstract class TimedCmdlet : SonarrCmdletBase, IApiCmdlet
 	[DebuggerStepThrough]
 	private readonly struct TimedResponse : ISonarrTimedResponse
 	{
-		readonly ISonarrResponse? _response;
-		readonly TimeSpan _timeSpan;
-		readonly IServiceProvider _provider;
+		private readonly ISonarrResponse? _response;
+		private readonly TimeSpan _timeSpan;
+		private readonly IServiceProvider _provider;
 
 		/// <summary>
 		/// Initializes a new <see cref="TimedResponse"/> instance with the specified elapsed time, response, and service

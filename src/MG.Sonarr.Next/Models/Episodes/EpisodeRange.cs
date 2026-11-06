@@ -21,7 +21,7 @@ public readonly struct EpisodeRange
 	/// <summary>
 	/// Whether the range was made from episode numbers, which the <see langword="default"/> range wasn't.
 	/// </summary>
-	readonly bool _isSet;
+	private readonly bool _isSet;
 
 	/// <summary>
 	/// Gets the range that matches every episode.

@@ -57,7 +57,7 @@ public class InvalidTypeException : PoshSonarrException
 /// </summary>
 public sealed class InvalidKeyTypeException : InvalidTypeException
 {
-	const string DEF_MSG = "The dictionary key was not of the correct type - expected '{0}' and got '{1}'.";
+	private const string DEF_MSG = "The dictionary key was not of the correct type - expected '{0}' and got '{1}'.";
 
 	/// <summary>
 	/// Initializes a new <see cref="InvalidKeyTypeException"/> instance.
@@ -86,7 +86,7 @@ public sealed class InvalidKeyTypeException : InvalidTypeException
 /// </summary>
 public sealed class InvalidValueTypeException : InvalidTypeException
 {
-	const string DEF_MSG = "The dictionary value was not of the correct type - expected '{0}' and got '{1}'.";
+	private const string DEF_MSG = "The dictionary value was not of the correct type - expected '{0}' and got '{1}'.";
 
 	/// <summary>
 	/// Initializes a new <see cref="InvalidValueTypeException"/> instance.

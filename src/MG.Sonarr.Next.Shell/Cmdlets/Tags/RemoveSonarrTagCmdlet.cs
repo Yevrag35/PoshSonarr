@@ -29,7 +29,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Tags;
 [MetadataCanPipe(Tag = Meta.Tag)]
 public sealed class RemoveSonarrTagCmdlet : SonarrApiCmdletBase
 {
-	MetadataTag _tag = null!;
+	private MetadataTag _tag = null!;
 
 	/// <summary>
 	/// Gets or sets the ID of the tag to delete.

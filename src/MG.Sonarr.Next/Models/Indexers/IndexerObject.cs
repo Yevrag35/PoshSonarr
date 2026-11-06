@@ -23,11 +23,11 @@ public sealed class IndexerObject : TagUpdateObject<IndexerObject>,
 	/// <summary>
 	/// The number of properties that an instance is sized for, about the number of fields that Sonarr sends.
 	/// </summary>
-	const int CAPACITY = 17;
+	private const int CAPACITY = 17;
 	/// <summary>
 	/// The full name of the class, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
-	static readonly string _typeName = typeof(IndexerObject).GetName();
+	private static readonly string _typeName = typeof(IndexerObject).GetName();
 
 	/// <summary>
 	/// Gets a value that indicates whether Sonarr reads the indexer's RSS feed.

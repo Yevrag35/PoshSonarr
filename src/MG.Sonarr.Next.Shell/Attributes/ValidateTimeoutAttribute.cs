@@ -20,7 +20,7 @@ namespace MG.Sonarr.Next.Shell.Attributes;
 /// </remarks>
 public sealed class ValidateTimeoutAttribute : ValidateArgumentsAttribute
 {
-	static readonly TimeSpan _maxTimeout = TimeSpan.FromMilliseconds(int.MaxValue);
+	private static readonly TimeSpan _maxTimeout = TimeSpan.FromMilliseconds(int.MaxValue);
 
 	/// <summary>
 	/// Checks that the argument is a <see cref="TimeSpan"/> in the range that the client accepts.

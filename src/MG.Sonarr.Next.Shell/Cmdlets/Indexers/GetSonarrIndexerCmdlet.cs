@@ -26,10 +26,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Indexers;
 [Cmdlet(VerbsCommon.Get, "SonarrIndexer")]
 public sealed class GetSonarrIndexerCmdlet : SonarrMetadataCmdlet
 {
-	static readonly string _namePropertyName = nameof(Name);
+	private static readonly string _namePropertyName = nameof(Name);
 
-	SortedSet<int> _ids = null!;
-	WildcardSet _wcNames = null!;
+	private SortedSet<int> _ids = null!;
+	private WildcardSet _wcNames = null!;
 
 	/// <summary>
 	/// Gets or sets the IDs of the indexers to get.

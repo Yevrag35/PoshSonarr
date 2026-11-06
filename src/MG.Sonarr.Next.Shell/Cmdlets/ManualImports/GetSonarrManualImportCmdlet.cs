@@ -30,13 +30,13 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports;
 //[OutputType(typeof())]
 public sealed class GetSonarrManualImportCmdlet : SonarrApiCmdletBase
 {
-	const string BY_FOLDER = "ByFolderPath";
-	const string BY_DOWNLOAD = "ByDownloadId";
-	const string BY_SERIES = "ByExplicitSeriesId";
-	const string BY_SERIES_PIPE = "BySeriesPipelineInput";
-	const string FILTER_EXISTING = "filterExistingFiles";
-	const string FOLDER = "folder";
-	QueryCol _parameters = null!;
+	private const string BY_FOLDER = "ByFolderPath";
+	private const string BY_DOWNLOAD = "ByDownloadId";
+	private const string BY_SERIES = "ByExplicitSeriesId";
+	private const string BY_SERIES_PIPE = "BySeriesPipelineInput";
+	private const string FILTER_EXISTING = "filterExistingFiles";
+	private const string FOLDER = "folder";
+	private QueryCol _parameters = null!;
 
 	/// <summary>
 	/// Gets or sets the path of the folder that Sonarr looks for files in.

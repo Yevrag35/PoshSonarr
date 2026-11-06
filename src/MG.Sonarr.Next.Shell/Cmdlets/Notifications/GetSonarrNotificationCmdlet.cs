@@ -23,8 +23,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Notifications;
 [Cmdlet(VerbsCommon.Get, "SonarrNotification", DefaultParameterSetName = "None")]
 public sealed class GetSonarrNotificationCmdlet : SonarrMetadataCmdlet
 {
-	SortedSet<int> _ids = null!;
-	WildcardSet _wcNames = null!;
+	private SortedSet<int> _ids = null!;
+	private WildcardSet _wcNames = null!;
 
 	/// <summary>
 	/// Gets or sets the IDs of the notification connections to get.

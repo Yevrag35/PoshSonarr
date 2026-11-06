@@ -42,7 +42,7 @@ public interface ICommandHistory : IReadOnlyCollection<ICommand>
 /// </summary>
 file sealed class CommandHistory : ICommandHistory
 {
-	readonly Dictionary<int, ICommand> _dict;
+	private readonly Dictionary<int, ICommand> _dict;
 
 	/// <summary>
 	/// Gets or sets the command associated with the specified identifier.

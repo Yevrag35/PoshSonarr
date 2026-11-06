@@ -27,11 +27,11 @@ public sealed class QualityRevisionObject : SonarrObject,
 	/// <summary>
 	/// The number of properties that a new instance makes room for.
 	/// </summary>
-	const int CAPACITY = 2;
+	private const int CAPACITY = 2;
 	/// <summary>
 	/// The type's full name, which <see cref="SetPSTypeName"/> puts first in the PowerShell type names.
 	/// </summary>
-	static readonly string _typeName = typeof(QualityRevisionObject).GetName();
+	private static readonly string _typeName = typeof(QualityRevisionObject).GetName();
 
 	/// <summary>
 	/// Gets a value that indicates whether <see cref="SonarrObject.SetTag(IMetadataResolver)"/> leaves the object

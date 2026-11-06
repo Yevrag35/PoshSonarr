@@ -23,7 +23,7 @@ public sealed class TagObject : SonarrObject,
 	/// <summary>
 	/// The number of properties that a new instance makes room for.
 	/// </summary>
-	const int CAPACITY = 3;
+	private const int CAPACITY = 3;
 
 	/// <summary>
 	/// Gets the tag's ID.
@@ -105,7 +105,7 @@ public sealed class TagObject : SonarrObject,
 	/// <summary>
 	/// The type's full name, which <see cref="SetPSTypeName"/> puts first in the PowerShell type names.
 	/// </summary>
-	static readonly string _typeName = typeof(TagObject).GetName();
+	private static readonly string _typeName = typeof(TagObject).GetName();
 	/// <summary>
 	/// Puts the type's full name first in the object's PowerShell type names, ahead of the name that the base class
 	/// adds.

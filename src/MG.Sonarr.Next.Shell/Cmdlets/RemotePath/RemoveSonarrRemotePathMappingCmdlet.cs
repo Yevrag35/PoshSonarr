@@ -25,7 +25,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RemotePath;
 [MetadataCanPipe(Tag = Meta.RemotePathMapping)]
 public sealed class RemoveSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 {
-	SortedSet<int> _ids = null!;
+	private SortedSet<int> _ids = null!;
 
 	/// <summary>
 	/// Gets or sets the IDs of the remote path mappings to delete.

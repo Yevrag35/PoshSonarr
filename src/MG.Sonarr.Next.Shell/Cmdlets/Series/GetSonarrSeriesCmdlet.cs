@@ -39,9 +39,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series;
 [OutputType(typeof(ISeriesOutput))]
 public sealed class GetSonarrSeriesCmdlet : SonarrMetadataCmdlet
 {
-	static readonly string _namePropertyName = nameof(Name);
-	SortedSet<int> _ids = null!;
-	WildcardSet _wcNames = null!;
+	private static readonly string _namePropertyName = nameof(Name);
+	private SortedSet<int> _ids = null!;
+	private WildcardSet _wcNames = null!;
 
 	/// <summary>
 	/// Gets or sets the IDs and the names of the series to get.

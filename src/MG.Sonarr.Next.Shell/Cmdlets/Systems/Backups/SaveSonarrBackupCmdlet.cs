@@ -47,12 +47,12 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups;
 [OutputType(typeof(FileInfo))]
 public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 {
-	bool _noFileName;
+	private bool _noFileName;
 	/// <summary>
 	/// Gets or sets the client that downloads the backups.
 	/// </summary>
 	/// <value>The download client of the cmdlet's scope.</value>
-	ISonarrDownloadClient Downloader { get; set; } = null!;
+	private ISonarrDownloadClient Downloader { get; set; } = null!;
 
 	/// <summary>
 	/// Gets a value that indicates whether the response's body is written to the debug stream after the response is
@@ -160,7 +160,7 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 		get => null;
 		set => _creds = value?.GetNetworkCredential();
 	}
-	NetworkCredential? _creds;
+	private NetworkCredential? _creds;
 
 	/// <summary>
 	/// Runs the base class's setup for the scope, then resolves the client that downloads the backups.

@@ -50,7 +50,7 @@ public sealed class UpdateSonarrNotificationCmdlet : SonarrApiCmdletBase
 	[Parameter]
 	public SwitchParameter Force { get; set; }
 
-	Dictionary<int, NotificationObject> _dict = null!;
+	private Dictionary<int, NotificationObject> _dict = null!;
 
 	/// <summary>
 	/// Runs the base class's setup for the scope, then creates the dictionary of connections that the cmdlet fills.

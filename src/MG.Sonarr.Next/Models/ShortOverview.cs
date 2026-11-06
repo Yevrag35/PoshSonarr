@@ -15,7 +15,7 @@ public readonly struct ShortOverview
 	/// <summary>
 	/// The shortened text, or <see langword="null"/> for a default instance.
 	/// </summary>
-	readonly string? _text;
+	private readonly string? _text;
 
 	/// <summary>
 	/// Gets a value that indicates whether the shortened text is empty.

@@ -23,10 +23,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series;
 [Cmdlet(VerbsCommon.Search, "SonarrSeries", DefaultParameterSetName = "BySeriesName")]
 public sealed class SearchSonarrSeriesCmdlet : SonarrApiCmdletBase
 {
-	static readonly string SEARCH_STR_QUERY = Constants.Series + "/lookup?term={0}";
-	static readonly string SEARCH_ID_QUERY = Constants.Series + "/lookup?term=tvdb:{0}";
-	Wildcard _wildcardStr;
-	IMetadataResolver _resolver = null!;
+	private static readonly string SEARCH_STR_QUERY = Constants.Series + "/lookup?term={0}";
+	private static readonly string SEARCH_ID_QUERY = Constants.Series + "/lookup?term=tvdb:{0}";
+	private Wildcard _wildcardStr;
+	private IMetadataResolver _resolver = null!;
 
 	/// <summary>
 	/// Gets or sets the name to search for.

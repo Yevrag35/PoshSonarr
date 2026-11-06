@@ -32,32 +32,32 @@ public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
 	/// <summary>
 	/// The number of properties that an instance is sized for, about the number of fields that Sonarr sends.
 	/// </summary>
-	const int CAPACITY = 13;
+	private const int CAPACITY = 13;
 	/// <summary>
 	/// The name of the property that holds the file's episodes.
 	/// </summary>
-	const string EPISODES = "Episodes";
+	private const string EPISODES = "Episodes";
 	/// <summary>
 	/// The name of the property that holds the file's quality.
 	/// </summary>
-	const string QUALITY = "Quality";
+	private const string QUALITY = "Quality";
 	/// <summary>
 	/// The name of the script property that gives the season of the file's first episode.
 	/// </summary>
-	const string SEASON_NUMBER = "SeasonNumber";
+	private const string SEASON_NUMBER = "SeasonNumber";
 	/// <summary>
 	/// The name of the property that holds the file's release group.
 	/// </summary>
-	const string RELEASE_GROUP = "ReleaseGroup";
+	private const string RELEASE_GROUP = "ReleaseGroup";
 	/// <summary>
 	/// The name of the property that holds the file's series.
 	/// </summary>
-	const string SERIES = "Series";
+	private const string SERIES = "Series";
 
 	/// <summary>
 	/// The full name of the class, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
-	static readonly string _typeName = typeof(ManualImportObject).GetName();
+	private static readonly string _typeName = typeof(ManualImportObject).GetName();
 
 	/// <summary>
 	/// Gets the episodes that the file is imported as.

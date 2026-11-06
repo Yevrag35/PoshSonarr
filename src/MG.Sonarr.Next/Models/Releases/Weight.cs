@@ -12,7 +12,7 @@ public readonly struct Weight
 	/// The names of a release's weight properties: <c>LanguageWeight</c>, <c>PreferredWordScore</c>,
 	/// <c>QualityWeight</c>, and <c>ReleaseWeight</c>, in that order.
 	/// </summary>
-	static readonly ImmutableArray<string> _weightProps =
+	private static readonly ImmutableArray<string> _weightProps =
 	[
 		"LanguageWeight", "PreferredWordScore", "QualityWeight", "ReleaseWeight"
 	];
@@ -20,23 +20,23 @@ public readonly struct Weight
 	/// <summary>
 	/// The language weight.
 	/// </summary>
-	readonly int _langWeight;
+	private readonly int _langWeight;
 	/// <summary>
 	/// The release weight.
 	/// </summary>
-	readonly int _releaseWeight;
+	private readonly int _releaseWeight;
 	/// <summary>
 	/// The quality weight.
 	/// </summary>
-	readonly int _qualWeight;
+	private readonly int _qualWeight;
 	/// <summary>
 	/// The preferred-word score.
 	/// </summary>
-	readonly int _prefWord;
+	private readonly int _prefWord;
 	/// <summary>
 	/// The sum of the four weights.
 	/// </summary>
-	readonly int _total;
+	private readonly int _total;
 
 	/// <summary>
 	/// Gets the weight that the release's language gives it.

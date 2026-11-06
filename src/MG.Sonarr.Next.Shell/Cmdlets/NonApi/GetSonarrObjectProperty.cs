@@ -27,7 +27,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.NonApi;
 [Alias("Get-SonarrObjectProperties", "Get-SonarrProperties")]
 public sealed class GetSonarrObjectProperty : SonarrCmdletBase
 {
-	SortedSet<SonarrProperty> _set = null!;
+	private SortedSet<SonarrProperty> _set = null!;
 
 	/// <summary>
 	/// Gets or sets the objects whose properties the cmdlet lists.

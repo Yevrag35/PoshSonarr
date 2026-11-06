@@ -21,7 +21,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Delays;
 [Cmdlet(VerbsCommon.Get, "SonarrDelayProfile")]
 public sealed class GetSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 {
-	SortedSet<int> _ids = null!;
+	private SortedSet<int> _ids = null!;
 
 	/// <summary>
 	/// Gets or sets the IDs of the delay profiles to get.

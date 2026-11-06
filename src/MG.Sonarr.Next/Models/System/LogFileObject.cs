@@ -41,15 +41,15 @@ public sealed class LogFileObject : IdSonarrObject<LogFileObject>,
 	/// <summary>
 	/// The number of properties that a new log file reserves room for.
 	/// </summary>
-	const int CAPACITY = 5;
+	private const int CAPACITY = 5;
 	/// <summary>
 	/// The part of an update log's contents URL that sets it apart from a general log's.
 	/// </summary>
-	const string UPDATE_PART = "/file/update/";
+	private const string UPDATE_PART = "/file/update/";
 	/// <summary>
 	/// The PowerShell type name of <see cref="LogFileObject"/>.
 	/// </summary>
-	static readonly string _typeName = typeof(LogFileObject).GetName();
+	private static readonly string _typeName = typeof(LogFileObject).GetName();
 
 	/// <summary>
 	/// Gets the URL of the file's contents.

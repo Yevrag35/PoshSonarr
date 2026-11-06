@@ -42,7 +42,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands;
 [MetadataCanPipe(Tag = Meta.Renamable)]
 public sealed class InvokeSonarrRenameCmdlet : SonarrCmdletBase
 {
-	List<IRenameFilePipeable> _renameables = null!;
+	private List<IRenameFilePipeable> _renameables = null!;
 
 	/// <summary>
 	/// Gets or sets the episode files to rename.

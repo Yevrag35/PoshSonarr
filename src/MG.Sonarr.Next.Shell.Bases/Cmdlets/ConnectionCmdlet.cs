@@ -80,7 +80,7 @@ public abstract class ConnectCmdlet : PSCmdlet,
 		this.UnsetContext(connectScope);
 	}
 
-	static bool _checked;
+	private static bool _checked;
 	/// <summary>
 	/// Gets the flag that <see cref="IScopeCmdlet{T}.SetChecked(bool)"/> last set for <see cref="ConnectCmdlet"/>.
 	/// </summary>

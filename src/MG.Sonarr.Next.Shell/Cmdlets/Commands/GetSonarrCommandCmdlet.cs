@@ -28,7 +28,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands;
 [OutputType(typeof(ICommandOutput))]
 public sealed class GetSonarrCommandCmdlet : SonarrMetadataCmdlet
 {
-	SortedSet<int> _ids = null!;
+	private SortedSet<int> _ids = null!;
 
 	/// <summary>
 	/// Gets or sets the commands to get again.

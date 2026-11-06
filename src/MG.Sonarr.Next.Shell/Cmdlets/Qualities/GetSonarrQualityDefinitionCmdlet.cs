@@ -32,10 +32,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Qualities;
 [Alias("Get-SonarrQuality")]
 public sealed class GetSonarrQualityDefinitionCmdlet : SonarrMetadataCmdlet
 {
-	static readonly string _namePropertyName = nameof(Name);
-	SortedSet<int> _ids = null!;
-	WildcardSet _wcNames = null!;
-	List<QualityDefinitionObject> _list = null!;
+	private static readonly string _namePropertyName = nameof(Name);
+	private SortedSet<int> _ids = null!;
+	private WildcardSet _wcNames = null!;
+	private List<QualityDefinitionObject> _list = null!;
 
 	/// <summary>
 	/// Gets or sets the IDs of the quality definitions to get.

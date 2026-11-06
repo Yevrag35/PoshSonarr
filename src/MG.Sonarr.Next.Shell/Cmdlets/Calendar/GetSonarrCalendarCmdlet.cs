@@ -34,9 +34,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Calendar;
 [OutputType(typeof(ICalendarOutput))]
 public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 {
-	const string START = "start";
-	const string END = "end";
-	static readonly TimeSpan WEEK_TIME_SPAN = TimeSpan.FromDays(8).Subtract(TimeSpan.FromSeconds(1));
+	private const string START = "start";
+	private const string END = "end";
+	private static readonly TimeSpan WEEK_TIME_SPAN = TimeSpan.FromDays(8).Subtract(TimeSpan.FromSeconds(1));
 
 	/// <summary>
 	/// Gets or sets the start of the range of dates.

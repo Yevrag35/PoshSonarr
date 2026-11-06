@@ -16,8 +16,8 @@ namespace MG.Sonarr.Next.Services.Http.Requests;
 /// </remarks>
 public abstract class SonarrRequestMessage : HttpRequestMessage, IHttpRequestDetails
 {
-	bool _disposed;
-	readonly IServiceScope _scope;
+	private bool _disposed;
+	private readonly IServiceScope _scope;
 
 	/// <summary>
 	/// When overridden in a derived class, gets a value that indicates whether the request tests the connection to

@@ -25,7 +25,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients;
 	DefaultParameterSetName = PSConstants.PSetExplicitId)]
 public sealed class RemoveSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 {
-	SortedSet<int> _ids = null!;
+	private SortedSet<int> _ids = null!;
 
 	/// <summary>
 	/// Gets or sets the IDs of the download clients to delete.

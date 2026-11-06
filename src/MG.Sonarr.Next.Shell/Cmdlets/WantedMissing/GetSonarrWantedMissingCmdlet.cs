@@ -24,7 +24,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.WantedMissing;
 [Cmdlet(VerbsCommon.Get, "SonarrWantedMissing", DefaultParameterSetName = "ByPage")]
 public sealed class GetSonarrWantedMissingCmdlet : SonarrApiCmdletBase
 {
-	QueryCol _parameters = null!;
+	private QueryCol _parameters = null!;
 
 	/// <summary>
 	/// Gets or sets a value that indicates whether the cmdlet gets every missing episode instead of one page.

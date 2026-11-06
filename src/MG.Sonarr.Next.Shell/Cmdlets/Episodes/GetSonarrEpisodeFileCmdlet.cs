@@ -33,9 +33,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes;
 [MetadataCanPipe(Tag = Meta.Episode)]
 public sealed class GetSonarrEpisodeFileCmdlet : SonarrMetadataCmdlet
 {
-	SortedSet<int> _ids = null!;
-	SortedSet<int> _seriesIds = null!;
-	QueryCol _params = null!;
+	private SortedSet<int> _ids = null!;
+	private SortedSet<int> _seriesIds = null!;
+	private QueryCol _params = null!;
 
 	/// <summary>
 	/// Gets or sets the objects whose episode files the cmdlet gets.

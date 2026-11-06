@@ -32,9 +32,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.ManualImports;
 [MetadataCanPipe(Tag = Meta.ManualImport)]
 public sealed class EditSonarrManualImportCmdlet : SonarrApiCmdletBase
 {
-	Either<int, SeriesObject> _series;
-	Either<int, EpisodeObject> _episode;
-	Either<int, QualityRevisionObject> _quality;
+	private Either<int, SeriesObject> _series;
+	private Either<int, EpisodeObject> _episode;
+	private Either<int, QualityRevisionObject> _quality;
 
 	/// <summary>
 	/// Gets or sets the file to edit.

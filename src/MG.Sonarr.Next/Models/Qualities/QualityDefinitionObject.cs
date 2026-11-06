@@ -20,11 +20,11 @@ public sealed class QualityDefinitionObject : SonarrObject,
 	/// <summary>
 	/// The number of properties that a new instance makes room for.
 	/// </summary>
-	const int CAPACITY = 10;
+	private const int CAPACITY = 10;
 	/// <summary>
 	/// The type's full name, which <see cref="SetPSTypeName"/> puts first in the PowerShell type names.
 	/// </summary>
-	static readonly string _typeName = typeof(QualityDefinitionObject).GetName();
+	private static readonly string _typeName = typeof(QualityDefinitionObject).GetName();
 
 	/// <summary>
 	/// Gets the definition's ID.

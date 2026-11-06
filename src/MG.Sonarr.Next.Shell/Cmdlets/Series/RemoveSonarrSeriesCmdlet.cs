@@ -32,15 +32,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series;
 [MetadataCanPipe(Tag = Meta.Series)]
 public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
 {
-	const string DELETE_FILES = "deleteFiles";
+	private const string DELETE_FILES = "deleteFiles";
 
-	QueryCol _col = null!;
-	SortedDictionary<int, string?> _dict = null!;
+	private QueryCol _col = null!;
+	private SortedDictionary<int, string?> _dict = null!;
 	/// <summary>
 	/// Gets or sets the metadata tag of the series endpoint, which the cmdlet sends its delete requests to.
 	/// </summary>
 	/// <value>The <c>#series</c> tag, set when the cmdlet's scope is created.</value>
-	MetadataTag Tag { get; set; } = null!;
+	private MetadataTag Tag { get; set; } = null!;
 
 	/// <summary>
 	/// Gets or sets a value that indicates whether Sonarr also deletes the series' folders and files from disk.

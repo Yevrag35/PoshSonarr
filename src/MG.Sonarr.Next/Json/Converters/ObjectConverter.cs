@@ -53,11 +53,11 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	/// <summary>
 	/// The longest string value, in UTF-8 bytes, whose characters are copied to the stack instead of a rented buffer.
 	/// </summary>
-	const int MAX_STACKALLOC = 256;
+	private const int MAX_STACKALLOC = 256;
 	/// <summary>
 	/// The settings that the constructor's callback filled.
 	/// </summary>
-	readonly ObjectConverterConfiguration _config;
+	private readonly ObjectConverterConfiguration _config;
 
 	/// <summary>
 	/// Initializes a new <see cref="ObjectConverter"/> instance with the resolver that nested models are tagged with,
@@ -479,7 +479,7 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	/// <summary>
 	/// The format of an ISO 8601 date, which a string has to match exactly to become a <see cref="DateOnly"/>.
 	/// </summary>
-	const string ISO_DATE = "yyyy-MM-dd";
+	private const string ISO_DATE = "yyyy-MM-dd";
 	/// <summary>
 	/// The formats of an ISO 8601 date and time, one of which a string has to match exactly to become a
 	/// <see cref="DateTimeOffset"/>.
@@ -488,7 +488,7 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	/// <c>FFFFFFF</c> takes no fraction of a second, or up to seven digits of one, and the period before it goes with
 	/// it. <c>K</c> takes <c>Z</c>, an offset, or nothing.
 	/// </remarks>
-	static readonly string[] _isoDateTimes = ["yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK", "yyyy-MM-dd'T'HH:mmK"];
+	private static readonly string[] _isoDateTimes = ["yyyy-MM-dd'T'HH:mm:ss.FFFFFFFK", "yyyy-MM-dd'T'HH:mmK"];
 
 	/// <summary>
 	/// Parses a string value as a <see cref="Guid"/>, a <see cref="DateOnly"/>, a <see cref="DateTimeOffset"/>, or a

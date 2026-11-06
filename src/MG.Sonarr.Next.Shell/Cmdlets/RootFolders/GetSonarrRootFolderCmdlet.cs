@@ -15,7 +15,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders;
 [Cmdlet(VerbsCommon.Get, "SonarrRootFolder")]
 public sealed class GetSonarrRootFolderCmdlet : SonarrMetadataCmdlet
 {
-	SortedSet<int> _ids = null!;
+	private SortedSet<int> _ids = null!;
 
 	/// <summary>
 	/// Gets or sets the IDs of the root folders to get.

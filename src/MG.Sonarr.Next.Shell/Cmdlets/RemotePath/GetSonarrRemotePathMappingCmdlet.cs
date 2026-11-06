@@ -21,7 +21,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RemotePath;
 [Alias("Get-SonarrRemotePath", "Get-SonarrRemoteMapping")]
 public sealed class GetSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 {
-	SortedSet<int> _ids = null!;
+	private SortedSet<int> _ids = null!;
 
 	/// <summary>
 	/// Gets or sets the IDs of the remote path mappings to get.

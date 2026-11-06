@@ -36,10 +36,10 @@ namespace MG.Sonarr.Next.Shell.Components;
 [DebuggerDisplay(@"{GetDebugString()}")]
 public readonly struct SeasonEpisodeId : IEpisodeIdentifier
 {
-	readonly int _season;
-	readonly bool _isAbsolute;
-	readonly EpisodeRange _range;
-	readonly string? _text;
+	private readonly int _season;
+	private readonly bool _isAbsolute;
+	private readonly EpisodeRange _range;
+	private readonly string? _text;
 
 	/// <summary>
 	/// Gets the range of episode numbers.

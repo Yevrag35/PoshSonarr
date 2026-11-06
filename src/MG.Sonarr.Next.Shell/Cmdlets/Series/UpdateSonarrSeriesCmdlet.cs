@@ -32,7 +32,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series;
 [MetadataCanPipe(Tag = Meta.Series)]
 public sealed class UpdateSonarrSeriesCmdlet : SonarrApiCmdletBase
 {
-	List<SeriesObject> _list = null!;
+	private List<SeriesObject> _list = null!;
 
 	/// <summary>
 	/// Gets a value that indicates whether the HTTP pipeline writes each request's JSON body to the debug stream before

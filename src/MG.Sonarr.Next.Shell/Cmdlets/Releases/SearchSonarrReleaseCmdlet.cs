@@ -35,12 +35,12 @@ public sealed class SearchSonarrReleaseCmdlet : SonarrApiCmdletBase
 	private static readonly Wildcard _byEpisodeWildcard = Wildcard
 		.ParseAs(WildcardMatchType.StartsWith, ByEpisodeId.AsSpan(0, ByEpisodeId.Length - 2));
 
-	QueryCol _queryParams = null!;
+	private QueryCol _queryParams = null!;
 	/// <summary>
 	/// Gets or sets the metadata tag of the release endpoint, which the cmdlet sends its searches to.
 	/// </summary>
 	/// <value>The <c>#release</c> tag, set when the cmdlet's scope is created.</value>
-	MetadataTag Tag { get; set; } = null!;
+	private MetadataTag Tag { get; set; } = null!;
 
 	/// <summary>
 	/// Gets or sets the ID of the episode to search for.
