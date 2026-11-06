@@ -29,6 +29,11 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems.Backups;
 /// backup, unless <c>-Force</c> is present.
 /// </para>
 /// <para>
+/// The cmdlet asks for confirmation before it writes each file, as its confirm impact, <c>-Confirm</c>, and
+/// <c>$ConfirmPreference</c> say, and <c>-Force</c> doesn't skip the prompt. In What if mode, the cmdlet shows a What
+/// if line for each file, which says whether the file would be replaced, and downloads nothing.
+/// </para>
+/// <para>
 /// A download that fails, as it does for a response that isn't a success, writes its error and leaves no file. When
 /// the server's authentication needs credentials, <c>-Credential</c> supplies them.
 /// </para>
@@ -58,6 +63,9 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 	/// </remarks>
 	/// <value>Always <see langword="false"/>.</value>
 	public bool CanDebugSerializeAfter => false;
+
+	/// <inheritdoc/>
+	protected override bool CaptureVerbosePreference => true;
 	/// <summary>
 	/// Gets a value that indicates whether the request's JSON body is written to the debug stream before the request is
 	/// sent.
@@ -68,7 +76,7 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 	/// <value>
 	/// <see langword="true"/> if a request's body is written to the debug stream; otherwise, <see langword="false"/>.
 	/// </value>
-	public bool CanDebugSerializeBefore => this.VerbosePreference != ActionPreference.SilentlyContinue;
+	public bool CanDebugSerializeBefore => this.DebugPreference != ActionPreference.SilentlyContinue;
 	/// <summary>
 	/// Gets a value that indicates whether the cmdlet writes verbose messages about its requests.
 	/// </summary>
@@ -94,6 +102,9 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 	/// <summary>
 	/// Gets or sets a value that indicates whether the cmdlet replaces a file that exists already.
 	/// </summary>
+	/// <remarks>
+	/// The switch doesn't skip the confirmation prompt, and in What if mode, the cmdlet replaces nothing.
+	/// </remarks>
 	/// <value>The switch, which is present to overwrite existing files.</value>
 	[Parameter]
 	public SwitchParameter Force { get; set; }
@@ -193,21 +204,32 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 		}
 	}
 	/// <summary>
-	/// Downloads the backup to its file and writes a <see cref="FileInfo"/> for the file.
+	/// Downloads the backup to its file, once the user confirms, and writes a <see cref="FileInfo"/> for the file.
 	/// </summary>
 	/// <remarks>
-	/// When the file exists already and <c>-Force</c> isn't present, the cmdlet writes an error and downloads nothing.
-	/// When the download fails, the cmdlet writes its error.
+	/// <para>
+	/// When the file exists already and <c>-Force</c> isn't present, the cmdlet writes an error and downloads nothing,
+	/// in What if mode too. When the download fails, the cmdlet writes its error.
+	/// </para>
+	/// <para>
+	/// The confirmation and the What if line name the file, and say whether the backup replaces it.
+	/// </para>
 	/// </remarks>
 	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	protected override void Process(IServiceProvider provider)
 	{
 		string downloadPath = this.MakeFilePath(this.Path, this.BackupUri, _noFileName);
-		if (!this.Force && IOFile.Exists(downloadPath))
+		bool fileExists = IOFile.Exists(downloadPath);
+		if (fileExists && !this.Force)
 		{
 			this.WriteError(new IOException($"The file '{downloadPath}' already exists.")
 				.ToRecord(ErrorCategory.WriteError, downloadPath));
 
+			return;
+		}
+
+		if (!this.ShouldProcess(downloadPath, fileExists ? "Replace File With Backup" : "Save Backup"))
+		{
 			return;
 		}
 
@@ -314,7 +336,10 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 	/// <param name="request">The details of the pending request.</param>
 	public void WriteVerboseBefore(IHttpRequestDetails request)
 	{
-		this.WriteVerbose($"Sending {request.RequestMethod} request -> {request.RequestUrl}");
+		if (this.VerbosePreference != ActionPreference.SilentlyContinue && this.Host?.UI is { } ui)
+		{
+			ui.WriteVerboseLine($"Sending {request.RequestMethod} request -> {request.RequestUrl}");
+		}
 	}
 	/// <summary>
 	/// Writes a verbose line that reports the response to a request, as the JSON of the request's outcome.

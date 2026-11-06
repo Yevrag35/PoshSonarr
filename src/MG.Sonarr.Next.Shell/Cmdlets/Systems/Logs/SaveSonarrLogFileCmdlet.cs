@@ -47,6 +47,9 @@ public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
 	/// </summary>
 	/// <value>The download client of the cmdlet's scope.</value>
 	private ISonarrDownloadClient Downloader { get; set; } = null!;
+
+	/// <inheritdoc/>
+	protected override bool CaptureVerbosePreference => true;
 	/// <summary>
 	/// Gets a value that indicates whether the cmdlet writes verbose messages about its requests.
 	/// </summary>
@@ -317,7 +320,10 @@ public sealed class SaveSonarrLogFileCmdlet : SonarrCmdletBase, IApiCmdlet
 	/// <param name="request">The details of the pending request.</param>
 	public void WriteVerboseBefore(IHttpRequestDetails request)
 	{
-		this.WriteVerbose($"Sending {request.RequestMethod} request -> {request.RequestUrl}");
+		if (this.Host?.UI is { } ui)
+		{
+			ui.WriteVerboseLine($"Sending {request.RequestMethod} request -> {request.RequestUrl}");
+		}
 	}
 	/// <summary>
 	/// Writes a verbose line that reports the response to a request, as the JSON of the request's outcome.

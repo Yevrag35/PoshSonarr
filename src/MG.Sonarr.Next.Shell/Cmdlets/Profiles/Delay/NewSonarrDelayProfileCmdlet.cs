@@ -179,8 +179,8 @@ public sealed class NewSonarrDelayProfileCmdlet : SonarrMetadataCmdlet
 	{
 		var body = new
 		{
-			EnableUsenet = this.Protocol is PreferredProtocol.PreferUsenet or PreferredProtocol.OnlyUsenet,
-			EnableTorrent = this.Protocol is PreferredProtocol.PreferTorrent or PreferredProtocol.OnlyTorrent,
+			EnableUsenet = this.Protocol is not PreferredProtocol.OnlyTorrent,
+			EnableTorrent = this.Protocol is not PreferredProtocol.OnlyUsenet,
 			BypassIfHighestQuality = this.BypassIfHighestQuality.ToBool(),
 			BypassIfAboveCustomFormatScore = this.BypassIfAboveCustomFormatScore.ToBool(),
 			MinimumCustomFormatScore = this.MinimumCustomFormatScore,

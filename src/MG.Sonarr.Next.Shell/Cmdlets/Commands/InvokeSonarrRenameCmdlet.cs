@@ -1,5 +1,4 @@
 using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Renames;
 using MG.Sonarr.Next.Services.Jobs;
@@ -14,10 +13,15 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands;
 /// <remarks>
 /// <para>
 /// With <c>-SeriesId</c> and <c>-EpisodeFileId</c>, the cmdlet sends one rename command for those files of that
-/// series. With piped input, such as the results of <c>Test-SonarrRename</c>, episodes, episode files, and calendar
+/// series, once the rename is confirmed. With piped input, such as the results of <c>Test-SonarrRename</c>, episodes, episode files, and calendar
 /// entries, taken through <c>-InputObject</c> as <see cref="IRenameFilePipeable"/> values, it collects the files until
 /// the pipeline ends and sends one command for each series, once that series' rename is confirmed. A file piped more
 /// than once is renamed once.
+/// </para>
+/// <para>
+/// Each confirmation names the series ID and the file IDs, and the cmdlet asks for it as its confirm impact,
+/// <c>-Confirm</c>, and <c>$ConfirmPreference</c> say. In What if mode, the cmdlet shows a What if line for each command
+/// and sends nothing.
 /// </para>
 /// <para>
 /// The cmdlet writes each command that Sonarr queued to the pipeline as a
@@ -97,22 +101,25 @@ public sealed class InvokeSonarrRenameCmdlet : SonarrCmdletBase
 	{
 		var client = provider.GetRequiredService<ICommandTracker>();
 
-		if (!_renameables.IsNullOrEmpty)
+		switch (this.ParameterSetName)
 		{
-			this.SendRenamesFromPipeline(client);
-		}
-		else
-		{
-			this.SendRenameFromExplicit(client);
+			case PSConstants.PSetExplicitId:
+				this.SendRenameFromExplicit(client);
+				break;
+
+			case PSConstants.PSetPipeline when _renameables is { Count: > 0 }:
+				this.SendRenamesFromPipeline(client);
+				break;
 		}
 	}
 
 	/// <summary>
-	/// Sends the rename command for <c>-SeriesId</c> and <c>-EpisodeFileId</c> and writes the command that Sonarr
-	/// queued.
+	/// Sends the rename command for <c>-SeriesId</c> and <c>-EpisodeFileId</c>, once the rename is confirmed, and writes
+	/// the command that Sonarr queued.
 	/// </summary>
 	/// <remarks>
-	/// When the request fails, the method writes its error, unless it's ignorable.
+	/// The confirmation names the series ID and the file IDs. When the request fails, the method writes its error,
+	/// unless it's ignorable.
 	/// </remarks>
 	/// <param name="client">The tracker that sends the command and adds it to the command history.</param>
 	private void SendRenameFromExplicit(ICommandTracker client)
@@ -122,6 +129,11 @@ public sealed class InvokeSonarrRenameCmdlet : SonarrCmdletBase
 			FileIds = this.EpisodeFileId,
 			SeriesId = this.SeriesId,
 		};
+
+		if (!this.ShouldProcess(rename.ToString(), "Rename Episode Files"))
+		{
+			return;
+		}
 
 		var response = client.SendRename(rename);
 		_ = this.TryWriteObject(response);

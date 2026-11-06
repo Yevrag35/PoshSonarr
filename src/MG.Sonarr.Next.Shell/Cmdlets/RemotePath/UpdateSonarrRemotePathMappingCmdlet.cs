@@ -34,8 +34,6 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RemotePath;
 [MetadataCanPipe(Tag = Meta.RemotePathMapping)]
 public sealed class UpdateSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 {
-	RemotePathBody? _body;
-
 	/// <summary>
 	/// Gets a value that indicates whether the cmdlet captures its debug preference before processing begins.
 	/// </summary>
@@ -66,11 +64,7 @@ public sealed class UpdateSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	/// <value>The host, or an empty string to keep the mapping's. The default is an empty string.</value>
 	[Parameter(ValueFromPipelineByPropertyName = true)]
 	[ValidateNotNullOrEmpty]
-	public string HostName
-	{
-		get => _body?.Host ?? string.Empty;
-		set => this.SetBodyParameter(value, (x, s) => x.Host = s);
-	}
+	public string HostName { get; set; } = string.Empty;
 
 	/// <summary>
 	/// Gets or sets the ID of the remote path mapping to update.
@@ -81,11 +75,7 @@ public sealed class UpdateSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	/// <value>The mapping's ID. The default is 0.</value>
 	[Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true)]
 	[ValidateRange(ValidateRangeKind.Positive)]
-	public int Id
-	{
-		get => _body?.Id ?? 0;
-		set => this.SetBodyParameter(value);
-	}
+	public int Id { get; set; }
 
 	/// <summary>
 	/// Gets or sets the new path that Sonarr uses in place of the remote path.
@@ -97,11 +87,7 @@ public sealed class UpdateSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	/// <value>The local path, or an empty string to keep the mapping's. The default is an empty string.</value>
 	[Parameter(ValueFromPipelineByPropertyName = true)]
 	[ValidateNotNullOrEmpty]
-	public string LocalPath
-	{
-		get => _body?.LocalPath ?? string.Empty;
-		set => this.SetBodyParameter(value, (x, s) => x.LocalPath = s);
-	}
+	public string LocalPath { get; set; } = string.Empty;
 
 	/// <summary>
 	/// Gets or sets the new path that the download client reports.
@@ -113,11 +99,7 @@ public sealed class UpdateSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	/// <value>The remote path, or an empty string to keep the mapping's. The default is an empty string.</value>
 	[Parameter(ValueFromPipelineByPropertyName = true)]
 	[ValidateNotNullOrEmpty]
-	public string RemotePath
-	{
-		get => _body?.RemotePath ?? string.Empty;
-		set => this.SetBodyParameter(value, (x, s) => x.RemotePath = s);
-	}
+	public string RemotePath { get; set; } = string.Empty;
 
 	/// <summary>
 	/// Gets the metadata tag of the remote path mapping endpoint.
@@ -147,27 +129,29 @@ public sealed class UpdateSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	protected override void Process(IServiceProvider provider)
 	{
-		if (_body is null)
+		RemotePathBody body = new()
 		{
-			return;
-		}
-
+			Id = this.Id,
+			Host = this.HostName,
+			LocalPath = this.LocalPath,
+			RemotePath = this.RemotePath,
+		};
 		string url = this.Tag.GetUrlForId(this.Id);
 
 		// Sonarr replaces the whole mapping, so a value that wasn't passed keeps the one that the mapping has.
-		if (!this.TryFillMissingValues(url, _body))
+		if (!this.TryFillMissingValues(url, body))
 		{
 			return;
 		}
 
-		this.SerializeIfDebug(_body);
+		this.SerializeIfDebug(body);
 
 		if (!this.ShouldProcess(url, "Updating Remote Path Mapping"))
 		{
 			return;
 		}
 
-		var response = this.SendPutRequest(url, _body);
+		var response = this.SendPutRequest(url, body);
 		if (response.IsError)
 		{
 			this.WriteError(response.Error);
@@ -193,9 +177,9 @@ public sealed class UpdateSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	/// </returns>
 	private bool TryFillMissingValues(string url, RemotePathBody body)
 	{
-		bool noHost = string.IsNullOrEmpty(body.Host);
-		bool noLocal = string.IsNullOrEmpty(body.LocalPath);
-		bool noRemote = string.IsNullOrEmpty(body.RemotePath);
+		bool noHost = string.IsNullOrWhiteSpace(body.Host);
+		bool noLocal = string.IsNullOrWhiteSpace(body.LocalPath);
+		bool noRemote = string.IsNullOrWhiteSpace(body.RemotePath);
 		if (!noHost && !noLocal && !noRemote)
 		{
 			return true;
@@ -224,41 +208,6 @@ public sealed class UpdateSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 		}
 
 		return true;
-	}
-	/// <summary>
-	/// Sets the ID in the body to send, creating the body when there isn't one yet.
-	/// </summary>
-	/// <remarks>
-	/// An ID that isn't greater than zero is ignored.
-	/// </remarks>
-	/// <param name="id">The ID of the mapping to update.</param>
-	private void SetBodyParameter(int id)
-	{
-		if (id <= 0)
-		{
-			return;
-		}
-
-		_body ??= new();
-		_body.Id = id;
-	}
-	/// <summary>
-	/// Sets a value in the body to send through the specified action, creating the body when there isn't one yet.
-	/// </summary>
-	/// <remarks>
-	/// A value that's <see langword="null"/>, empty, or only white space is ignored.
-	/// </remarks>
-	/// <param name="value">The value to set.</param>
-	/// <param name="action">The action that sets <paramref name="value"/> on the body.</param>
-	private void SetBodyParameter(string value, Action<RemotePathBody, string> action)
-	{
-		if (string.IsNullOrWhiteSpace(value))
-		{
-			return;
-		}
-
-		_body ??= new();
-		action(_body, value);
 	}
 }
 
