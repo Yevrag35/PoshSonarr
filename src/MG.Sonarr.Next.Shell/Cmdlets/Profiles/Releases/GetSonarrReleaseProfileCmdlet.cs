@@ -26,9 +26,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Profiles.Releases;
 [Cmdlet(VerbsCommon.Get, "SonarrReleaseProfile")]
 public sealed class GetSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 {
-	static readonly string _namePropertyName = nameof(Name);
-	SortedSet<int> _ids = null!;
-	WildcardSet _wcNames = null!;
+	private SortedSet<int> _ids = null!;
+	private WildcardSet _wcNames = null!;
 
 	/// <summary>
 	/// Gets or sets the IDs of the release profiles to get.
@@ -38,7 +37,6 @@ public sealed class GetSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 	/// have writes no error. The parameter can't be combined with <c>-Name</c>.
 	/// </remarks>
 	/// <value>The IDs of the profiles.</value>
-	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = true, ParameterSetName = PSConstants.PSetExplicitId)]
 	[ValidateRange(ValidateRangeKind.Positive)]
 	public int[] Id { get; set; } = [];
@@ -56,7 +54,6 @@ public sealed class GetSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 	/// </para>
 	/// </remarks>
 	/// <value>The names and IDs of the profiles. The default is an empty array, for every profile.</value>
-	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[Parameter(Mandatory = false, Position = 0, ParameterSetName = "ByProfileNameOrId")]
 	[SupportsWildcards]
 	public Either<string, int>[] Name { get; set; } = [];
@@ -69,7 +66,7 @@ public sealed class GetSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 	{
 		base.OnCreatingScope(provider);
 		_ids = [];
-		_wcNames = new();
+		_wcNames = [];
 	}
 
 	/// <summary>
@@ -91,7 +88,7 @@ public sealed class GetSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 		_ids.UnionWith(this.Id);
 		if (this.HasParameter(this.Name))
 		{
-			this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(_namePropertyName));
+			this.Name.SplitToSets(_ids, _wcNames, !this.MyInvocation.IsBoundPositionally(nameof(this.Name)));
 		}
 	}
 	/// <summary>
@@ -105,11 +102,17 @@ public sealed class GetSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	protected override void Process(IServiceProvider provider)
 	{
-		IList<ReleaseProfileObject> profiles = _ids.Count > 0
-			? this.GetById<ReleaseProfileObject>(_ids)
-			: this.GetByName(_wcNames);
+		bool hasIds = _ids.Count > 0;
 
-		this.WriteCollection(profiles);
+		if (hasIds)
+		{
+			this.WriteCollection(this.GetById<ReleaseProfileObject>(_ids));
+		}
+
+		if (!hasIds || !_wcNames.IsNullOrEmpty)
+		{
+			this.WriteCollection(this.GetByName(_wcNames));
+		}
 	}
 
 	/// <summary>

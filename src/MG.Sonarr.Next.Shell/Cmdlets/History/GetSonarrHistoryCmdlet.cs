@@ -9,7 +9,6 @@ using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Services.Time;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using MG.Sonarr.Next.Shell.Completers;
 using MG.Sonarr.Next.Shell.Extensions;
 using System.ComponentModel;
 
@@ -44,7 +43,6 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 	const string BY_SERIES_PIPE = "BySeriesPipelineInput";
 	const string SINCE_DATE = "SinceDate";
 
-	int _eventType = -1;
 	SortedSet<int> _ids = null!;
 	QueryCol _parameters = null!;
 
@@ -155,20 +153,15 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 	/// Gets or sets the kind of event whose records the cmdlet gets.
 	/// </summary>
 	/// <remarks>
-	/// The name is one of Sonarr's history event types, such as <c>Grabbed</c>, <c>DownloadFolderImported</c>, or
-	/// <c>EpisodeFileDeleted</c>, ignoring case, and tab completion offers them. The value is kept as the event type's
-	/// number, and a read gives an empty string.
+	/// The cmdlet sends the event type's number, and only when the parameter is given. PowerShell binds a member's name,
+	/// such as <c>Grabbed</c> or <c>EpisodeFileDeleted</c>, ignoring case, or its number, and tab completion offers the
+	/// names.
 	/// </remarks>
-	/// <value>The event type's name, which a read gives as an empty string.</value>
-	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+	/// <value>
+	/// The event type. The default is <see cref="EpisodeHistoryEventType.Unknown"/>, which isn't sent.
+	/// </value>
 	[Parameter]
-	[ArgumentCompleter(typeof(EventTypeCompleter))]
-	[ValidateNotNullOrEmpty]
-	public string EventType
-	{
-		get => string.Empty;
-		set => _eventType = EventTypeCompleter.GetNumberFromEventType(value);
-	}
+	public EpisodeHistoryEventType EventType { get; set; }
 
 	/// <summary>
 	/// Gets or sets a value that indicates whether each record includes its episode.
@@ -239,9 +232,9 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 			this.SetPagingParams();
 		}
 
-		if (this.HasParameter(EventType) && _eventType > -1)
+		if (this.HasParameter(this.EventType))
 		{
-			_parameters.Add(nameof(this.EventType), _eventType, LengthConstants.INT_MAX);
+			_parameters.Add(nameof(this.EventType), (int)this.EventType);
 		}
 	}
 	/// <summary>
@@ -396,4 +389,27 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 	}
 
 	#endregion
+}
+
+/// <summary>
+/// Specifies the kinds of event that Sonarr records in an episode's history, with the numbers that Sonarr gives them.
+/// </summary>
+public enum EpisodeHistoryEventType
+{
+	/// <summary>An event of no known kind.</summary>
+	Unknown = 0,
+	/// <summary>A release of the episode was grabbed and sent to a download client.</summary>
+	Grabbed = 1,
+	/// <summary>An episode file was imported from the series' folder.</summary>
+	SeriesFolderImported = 2,
+	/// <summary>An episode file was imported from a download client's folder.</summary>
+	DownloadFolderImported = 3,
+	/// <summary>A download of the episode failed.</summary>
+	DownloadFailed = 4,
+	/// <summary>The episode's file was deleted.</summary>
+	EpisodeFileDeleted = 5,
+	/// <summary>The episode's file was renamed.</summary>
+	EpisodeFileRenamed = 6,
+	/// <summary>A download of the episode was ignored.</summary>
+	DownloadIgnored = 7,
 }

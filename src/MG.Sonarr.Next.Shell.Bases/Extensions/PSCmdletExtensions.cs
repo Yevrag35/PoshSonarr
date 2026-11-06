@@ -1,6 +1,7 @@
 using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Strings;
 using MG.Sonarr.Next.Strings;
+using System.Collections;
 using System.Collections.Frozen;
 using System.Runtime.CompilerServices;
 
@@ -275,10 +276,9 @@ public static partial class PSCmdletExtensions
 	/// <summary>
 	/// Writes each element of the specified collection to the output stream as an object of its own.
 	/// </summary>
-	/// <typeparam name="T">The type of the collection's elements.</typeparam>
 	/// <param name="cmdlet">The cmdlet that writes the elements.</param>
 	/// <param name="collection">The collection whose elements are written.</param>
-	public static void WriteCollection<T>(this Cmdlet cmdlet, IEnumerable<T> collection)
+	public static void WriteCollection(this Cmdlet cmdlet, IEnumerable collection)
 	{
 		cmdlet.WriteObject(collection, enumerateCollection: true);
 	}
