@@ -71,8 +71,8 @@ public readonly struct SeasonEpisodeId : IEpisodeIdentifier
 	/// Gets the season number.
 	/// </summary>
 	/// <value>
-	/// The number of the season that <see cref="EpisodeRange"/> is in, or 0 when <see cref="IsAbsolute"/> or
-	/// <see cref="IsEmpty"/> is <see langword="true"/>, since absolute episode numbers aren't in a season.
+	/// The number of the season that <see cref="EpisodeRange"/> is in, or 0 when <see cref="IsAbsolute"/> is
+	/// <see langword="true"/>, since absolute episode numbers aren't in a season, and when <see cref="IsEmpty"/> is.
 	/// </value>
 	public int Season => _season;
 
