@@ -1,5 +1,6 @@
 using MG.Sonarr.Next.Exceptions.Shell;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.RootFolders;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders;
 
@@ -24,7 +25,7 @@ public sealed class NewSonarrRootFolderCmdlet : SonarrApiCmdletBase
 	/// Gets or sets the metadata tag of the root folder endpoint, which the new folder is posted to.
 	/// </summary>
 	/// <value>The root folder's metadata tag, which <see cref="OnCreatingScope(IServiceProvider)"/> sets.</value>
-	MetadataTag Tag { get; set; } = null!;
+	private MetadataTag Tag { get; set; } = null!;
 
 	/// <summary>
 	/// Gets or sets the path of the folder to add.
@@ -106,7 +107,7 @@ public sealed class NewSonarrRootFolderCmdlet : SonarrApiCmdletBase
 	private void RegisterFolder(string path, Func<string, object> toBody)
 	{
 		object obj = toBody(path);
-		var response = this.SendPostRequest<PSObject>(this.Tag.UrlBase, obj);
+		var response = this.SendPostRequest<RootFolderObject>(this.Tag.UrlBase, obj);
 		if (response.TryGetT1(out var pso, out var error))
 		{
 			this.WriteObject(pso);

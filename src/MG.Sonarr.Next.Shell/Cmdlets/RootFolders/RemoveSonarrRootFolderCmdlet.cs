@@ -26,7 +26,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders;
 [MetadataCanPipe(Tag = Meta.RootFolder)]
 public sealed class RemoveSonarrRootFolderCmdlet : SonarrMetadataCmdlet
 {
-	SortedSet<int> _ids = null!;
+	private SortedSet<int> _ids = null!;
 
 	/// <summary>
 	/// Gets or sets the root folders to remove.

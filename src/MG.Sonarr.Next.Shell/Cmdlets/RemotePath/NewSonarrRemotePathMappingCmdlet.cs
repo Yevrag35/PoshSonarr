@@ -16,8 +16,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RemotePath;
 /// returns to the pipeline as a <see cref="RemotePathObject"/>.
 /// </para>
 /// <para>
-/// When <c>-HostName</c> is <c>localhost</c> or <c>.</c>, the cmdlet sends this computer's name in its place, and the
-/// path of the item that <c>-LocalPath</c> names, resolved from the current location.
+/// When <c>-HostName</c> is <c>localhost</c> or <c>.</c>, the cmdlet sends this computer's name in its place, and
+/// <c>-LocalPath</c> converted to a full path from the current location, whether or not the item it names exists.
 /// </para>
 /// <para>
 /// The cmdlet confirms the mapping before it creates it, and its confirm impact is Low, so it prompts only under
@@ -82,7 +82,7 @@ public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	/// <remarks>
 	/// The path can't be empty, and it has to be a local path, not a UNC path, once a relative path is resolved from
 	/// the current location. It doesn't have to exist. When <c>-HostName</c> stands for this computer, the cmdlet sends
-	/// the path of the item that it names instead.
+	/// the full path that it converts to from the current location, and wildcards in it aren't expanded.
 	/// </remarks>
 	/// <value>The local path.</value>
 	[Parameter(Mandatory = true)]
@@ -100,19 +100,20 @@ public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	}
 
 	/// <summary>
-	/// Replaces <c>-HostName</c> with this computer's name, and <c>-LocalPath</c> with the path of the item that it
-	/// names, when <c>-HostName</c> is <c>localhost</c> or <c>.</c>.
+	/// Replaces <c>-HostName</c> with this computer's name, and <c>-LocalPath</c> with its full path, when
+	/// <c>-HostName</c> is <c>localhost</c> or <c>.</c>.
 	/// </summary>
 	/// <remarks>
-	/// Resolving the path expands wildcards and takes the first item's path, and when no item exists at the path, the
-	/// cmdlet ends with the error.
+	/// The path is converted from the current location as <c>-LocalPath</c>'s validation converts it, so the item it
+	/// names doesn't have to exist, and wildcards in it aren't expanded. When the conversion throws, as for a drive that
+	/// doesn't exist, the cmdlet ends with the error.
 	/// </remarks>
 	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	protected override void Begin(IServiceProvider provider)
 	{
 		if (LOCALHOST.Equals(this.HostName, StringComparison.OrdinalIgnoreCase) || DOT_HOST.Equals(this.HostName, StringComparison.Ordinal))
 		{
-			this.LocalPath = this.GetResolvedPath(this.LocalPath);
+			this.LocalPath = this.GetUnresolvedPath(this.LocalPath);
 			this.HostName = GetLocalHostName(Environment.MachineName);
 		}
 	}
