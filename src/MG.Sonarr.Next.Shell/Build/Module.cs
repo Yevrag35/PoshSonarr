@@ -6,8 +6,9 @@ namespace MG.Sonarr.Next.Shell.Build;
 /// Provides the lists that the module's manifest exports: the cmdlets and their aliases, and the format and type files.
 /// </summary>
 /// <remarks>
-/// The packaging script that a Release build runs imports the module's root assembly and calls these methods, then
-/// passes their lists to <c>New-ModuleManifest</c> as <c>CmdletsToExport</c>, <c>AliasesToExport</c>,
+/// The packaging script, which a Release build runs on its output and the Pester runner on its staged copy, imports
+/// the module's root assembly and calls these methods, then passes their lists to <c>New-ModuleManifest</c> as
+/// <c>CmdletsToExport</c>, <c>AliasesToExport</c>,
 /// <c>FormatsToProcess</c>, and <c>TypesToProcess</c>. Each list is sorted ordinally, so the manifest's order doesn't
 /// change from one build to the next.
 /// </remarks>
@@ -17,9 +18,16 @@ public static class Module
 	/// Finds the format and type files in the specified output folder and its subfolders.
 	/// </summary>
 	/// <remarks>
+	/// <para>
 	/// A format file's name ends with <c>.Format.ps1xml</c> and a type file's with <c>.Type.ps1xml</c>, ignoring case.
-	/// Each path is meant to be relative to the output folder, where the manifest goes, and is given as the file's name
-	/// after the name of the folder that holds it, such as <c>PSFormats\Series.Format.ps1xml</c>.
+	/// </para>
+	/// <para>
+	/// Each path is relative to the output folder, where the manifest goes, however deep the file is:
+	/// <c>PSFormats\Series.Format.ps1xml</c> for a file in <c>PSFormats</c>, and <c>Series.Format.ps1xml</c> for one in
+	/// the output folder itself. An import reads a manifest's paths from the manifest's folder, while
+	/// <c>New-ModuleManifest</c> writes an absolute path relative to the current directory, so only relative paths make
+	/// a manifest that works whatever directory the packaging script runs from.
+	/// </para>
 	/// </remarks>
 	/// <param name="outputDir">The folder that the build writes the module to.</param>
 	/// <returns>
@@ -35,7 +43,7 @@ public static class Module
 
 		ReadOnlySpan<char> formatStr = ".Format.ps1xml";
 		ReadOnlySpan<char> typeStr = ".Type.ps1xml";
-		FileTypes paths = new(formatStr, typeStr);
+		FileTypes paths = new(outputDir, formatStr, typeStr);
 
 		foreach (string file in Directory.EnumerateFiles(outputDir, "*.ps1xml", SearchOption.AllDirectories))
 		{
@@ -134,6 +142,7 @@ public static class Module
 	/// </remarks>
 	private readonly ref struct FileTypes
 	{
+		readonly string _outputDir;
 		readonly ReadOnlySpan<char> _formatStr;
 		readonly ReadOnlySpan<char> _typeStr;
 
@@ -147,12 +156,15 @@ public static class Module
 		internal readonly HashSet<string> TypePaths;
 
 		/// <summary>
-		/// Initializes a new <see cref="FileTypes"/> instance with the specified suffixes of format and type file names.
+		/// Initializes a new <see cref="FileTypes"/> instance for the output folder that the paths are relative to, with
+		/// the specified suffixes of format and type file names.
 		/// </summary>
+		/// <param name="outputDir">The output folder that the paths are relative to.</param>
 		/// <param name="formatStr">The suffix of a format file's name, such as <c>.Format.ps1xml</c>.</param>
 		/// <param name="typeStr">The suffix of a type file's name, such as <c>.Type.ps1xml</c>.</param>
-		internal FileTypes(ReadOnlySpan<char> formatStr, ReadOnlySpan<char> typeStr)
+		internal FileTypes(string outputDir, ReadOnlySpan<char> formatStr, ReadOnlySpan<char> typeStr)
 		{
+			_outputDir = outputDir;
 			_formatStr = formatStr;
 			_typeStr = typeStr;
 			FormatPaths = new(10, StringComparer.OrdinalIgnoreCase);
@@ -160,54 +172,23 @@ public static class Module
 		}
 
 		/// <summary>
-		/// Adds a file's path to the format or type set when its name ends with that set's suffix, ignoring case.
+		/// Adds a file's path, relative to the output folder, to the format or type set when its name ends with that set's
+		/// suffix, ignoring case.
 		/// </summary>
 		/// <remarks>
-		/// A file whose name has neither suffix isn't added, nor one that <see cref="TryGetFinalPath"/> gives no path
-		/// for.
+		/// A file whose name has neither suffix isn't added.
 		/// </remarks>
-		/// <param name="path">The file's full path.</param>
-		internal void AddPath(ReadOnlySpan<char> path)
+		/// <param name="path">The file's path, which starts with the output folder's.</param>
+		internal void AddPath(string path)
 		{
-			if (path.EndsWith(_formatStr, StringComparison.OrdinalIgnoreCase)
-				&&
-				TryGetFinalPath(path, out string? finalPath))
+			if (path.AsSpan().EndsWith(_formatStr, StringComparison.OrdinalIgnoreCase))
 			{
-				FormatPaths.Add(finalPath);
+				FormatPaths.Add(Path.GetRelativePath(_outputDir, path));
 			}
-			else if (path.EndsWith(_typeStr, StringComparison.OrdinalIgnoreCase)
-				&&
-				TryGetFinalPath(path, out string? typePath))
+			else if (path.AsSpan().EndsWith(_typeStr, StringComparison.OrdinalIgnoreCase))
 			{
-				TypePaths.Add(typePath);
+				TypePaths.Add(Path.GetRelativePath(_outputDir, path));
 			}
-		}
-		/// <summary>
-		/// Gets the path that the manifest lists for a file, relative to the module's folder.
-		/// </summary>
-		/// <remarks>
-		/// The path is the name of the folder that holds the file, followed by the file's name, as for a file in a
-		/// folder such as <c>PSFormats</c> directly under the output folder. No path is given when the folder and the
-		/// file have the same name.
-		/// </remarks>
-		/// <param name="path">The file's full path.</param>
-		/// <param name="finalPath">When the method returns <see langword="true"/>, the file's relative path; otherwise,
-		/// <see langword="null"/>.</param>
-		/// <returns><see langword="true"/> if the method gives a path; otherwise, <see langword="false"/>.</returns>
-		private static bool TryGetFinalPath(ReadOnlySpan<char> path, [NotNullWhen(true)] out string? finalPath)
-		{
-			ReadOnlySpan<char> parentPath = Path.GetDirectoryName(path);
-			ReadOnlySpan<char> parentDirName = Path.GetFileName(parentPath);
-			ReadOnlySpan<char> fileName = Path.GetFileName(path);
-
-			if (parentDirName.Equals(fileName, StringComparison.Ordinal))
-			{
-				finalPath = null;
-				return false;
-			}
-
-			finalPath = Path.Join(parentDirName, fileName);
-			return true;
 		}
 	}
 }
