@@ -64,11 +64,19 @@ public sealed class GetSonarrLanguageProfileCmdlet : SonarrMetadataCmdlet
 	/// Gets or sets the names of the language profiles to get.
 	/// </summary>
 	/// <remarks>
+	/// <para>
 	/// A name can hold wildcards, and it matches a profile's name ignoring case.
+	/// </para>
+	/// <para>
+	/// The parameter comes first by position, except after <c>-Id</c>, where it comes second, so
+	/// <c>Get-SonarrLanguageProfile 1 Eng*</c> gives both.
+	/// </para>
 	/// </remarks>
 	/// <value>The names of the profiles. The default is an empty array.</value>
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	[Parameter(Mandatory = false, Position = 0)]
+	[Parameter(Mandatory = false, Position = 0, ParameterSetName = "None")]
+	[Parameter(Mandatory = false, Position = 1, ParameterSetName = PSConstants.PSetExplicitId)]
+	[Parameter(Mandatory = false, Position = 0, ParameterSetName = PSConstants.PSetPipeline)]
 	[SupportsWildcards]
 	public string[] Name { get; set; } = [];
 

@@ -40,10 +40,17 @@ public sealed class GetSonarrNotificationCmdlet : SonarrMetadataCmdlet
 	/// Gets or sets the names of the notification connections to get.
 	/// </summary>
 	/// <remarks>
+	/// <para>
 	/// A name can hold wildcards and matches a connection's name ignoring case.
+	/// </para>
+	/// <para>
+	/// The parameter comes first by position, except after <c>-Id</c>, where it comes second, so
+	/// <c>Get-SonarrNotification 5 Email*</c> gives both.
+	/// </para>
 	/// </remarks>
 	/// <value>The names of the connections. The default is an empty array.</value>
-	[Parameter(Position = 0)]
+	[Parameter(Position = 0, ParameterSetName = "None")]
+	[Parameter(Position = 1, ParameterSetName = PSConstants.PSetExplicitId)]
 	public string[] Name { get; set; } = Array.Empty<string>();
 
 	/// <summary>

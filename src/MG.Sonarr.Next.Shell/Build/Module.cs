@@ -206,7 +206,7 @@ public static class Module
 				return false;
 			}
 
-			finalPath = Path.Join(parentDirName, fileName);
+			finalPath = Path.Join(parentPath, fileName);
 			return true;
 		}
 	}
