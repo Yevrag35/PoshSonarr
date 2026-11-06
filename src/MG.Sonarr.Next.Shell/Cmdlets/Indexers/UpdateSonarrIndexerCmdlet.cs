@@ -60,7 +60,9 @@ public sealed class UpdateSonarrIndexerCmdlet : SonarrApiCmdletBase
 	/// <see cref="Cmdlet.ShouldProcess(string, string)"/> has agreed to send it, where <c>-WhatIf</c> doesn't reach.
 	/// </para>
 	/// <para>
-	/// When the request fails, the cmdlet writes its error, unless the error is ignorable, and resets the indexer.
+	/// When the request fails, the cmdlet resets the indexer and then writes the request's error, unless the error is
+	/// ignorable. It resets first because under <c>-ErrorAction Stop</c>, writing the error ends the statement, and the
+	/// indexer would keep the tags that the request failed to save.
 	/// </para>
 	/// </remarks>
 	/// <param name="provider">The cmdlet's scoped service provider.</param>
@@ -74,8 +76,8 @@ public sealed class UpdateSonarrIndexerCmdlet : SonarrApiCmdletBase
 			var response = this.SendPutRequest(path, this.InputObject);
 			if (response.IsError)
 			{
-				this.WriteConditionalError(response.Error);
 				this.InputObject.Reset();
+				this.WriteConditionalError(response.Error);
 			}
 			else
 			{

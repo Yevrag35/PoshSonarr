@@ -15,8 +15,9 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Series;
 /// The cmdlet takes series that <c>Get-SonarrSeries</c> wrote, after their properties were changed in PowerShell,
 /// from the pipeline or through <c>-InputObject</c>, and collects them until its input ends. Then it sends each
 /// confirmed series to Sonarr with a PUT request, and writes nothing to the pipeline. After a request that succeeds,
-/// the series is committed, and after one that fails, the cmdlet writes the request's error, resets the series, and
-/// goes on to the next. When no series reaches it, it writes a warning.
+/// the series is committed, and after one that fails, the cmdlet resets the series, writes the request's error, and
+/// goes on to the next, unless <c>-ErrorAction Stop</c> ends the statement there. When no series reaches it, it writes
+/// a warning.
 /// </para>
 /// <para>
 /// The cmdlet confirms each series before it sends it. Its confirm impact is low, so it prompts only when
@@ -86,11 +87,18 @@ public sealed class UpdateSonarrSeriesCmdlet : SonarrApiCmdletBase
 	}
 	/// <summary>
 	/// Sends each confirmed series to Sonarr with a PUT request, and commits the series after a request that succeeds
-	/// or writes the error and resets it after one that fails.
+	/// or resets it and writes the error after one that fails.
 	/// </summary>
 	/// <remarks>
+	/// <para>
 	/// Each series' JSON body goes to the debug stream once the series is confirmed, as the request sends it. When no
 	/// series reached the cmdlet, it writes a warning and sends nothing.
+	/// </para>
+	/// <para>
+	/// The series is reset before the error is written, because under <c>-ErrorAction Stop</c>, writing the error ends
+	/// the statement, and the series would keep what serializing it added, such as its <c>FirstAired</c> property, and
+	/// the tags that the request failed to save.
+	/// </para>
 	/// </remarks>
 	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	protected override void End(IServiceProvider provider)
@@ -115,8 +123,8 @@ public sealed class UpdateSonarrSeriesCmdlet : SonarrApiCmdletBase
 				var response = this.SendPutRequest(path, item);
 				if (response.IsError)
 				{
-					this.WriteError(response.Error);
 					item.Reset();
+					this.WriteError(response.Error);
 				}
 				else
 				{
