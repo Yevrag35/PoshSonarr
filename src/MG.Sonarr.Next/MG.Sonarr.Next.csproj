@@ -16,7 +16,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<InternalsVisibleTo Include="MG.Sonarr.Next.Shell;MG.Sonarr.Next.Shell.Bases" />
+		<InternalsVisibleTo Include="MG.Sonarr.Next.Shell;MG.Sonarr.Next.Shell.Bases;MG.Sonarr.Next.Tests" />
 		<AssemblyAttribute Include="MG.Sonarr.Next.Attributes.SonarrObjectConverterAssemblyAttribute" />
 	</ItemGroup>
 

@@ -16,6 +16,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="MG.Sonarr.Next.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\MG.Sonarr.Next\MG.Sonarr.Next.csproj" />
 	</ItemGroup>
 

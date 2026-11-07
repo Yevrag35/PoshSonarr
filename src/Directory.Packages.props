@@ -8,10 +8,18 @@
 			below the compiler version in the .NET SDK and in Visual Studio.
 		-->
 		<PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
+		<!-- The property-based tests are written against the 4.x API. -->
+		<PackageVersion Include="CsCheck" Version="4.9.1" />
 		<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.14" />
 		<PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.14" />
 		<!-- Requires System.Management.Automation at its own version or later, so the two move together. -->
 		<PackageVersion Include="Microsoft.PowerShell.Commands.Utility" Version="7.6.9" />
 		<PackageVersion Include="System.Management.Automation" Version="7.6.9" />
+		<!--
+			A metapackage that brings xUnit.net's runner on Microsoft.Testing.Platform v2, so the test projects need no
+			Microsoft.NET.Test.Sdk or xunit.runner.visualstudio, which run tests through VSTest, a mode that Microsoft.Testing.Platform
+			v2 doesn't support on the .NET 10 SDK.
+		-->
+		<PackageVersion Include="xunit.v3" Version="4.0.2" />
 	</ItemGroup>
 </Project>

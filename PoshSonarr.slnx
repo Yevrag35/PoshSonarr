@@ -7,12 +7,16 @@
 	</Folder>
 	<Folder Name="/Solution Items/">
 		<File Path=".editorconfig" />
+		<File Path="global.json" />
 		<File Path="src/Directory.Build.props" />
 		<File Path="src/Directory.Packages.props" />
 	</Folder>
 	<Folder Name="/Tasks/">
 		<File Path=".tasks/clean_project.ps1" />
 		<File Path=".tasks/publish_module.ps1" />
+	</Folder>
+	<Folder Name="/Tests/">
+		<Project Path="src/MG.Sonarr.Next.Tests/MG.Sonarr.Next.Tests.csproj" />
 	</Folder>
 	<Folder Name="/Tools/">
 		<Project Path="src/MG.Sonarr.Tools.Asm/MG.Sonarr.Tools.Asm.csproj" />
