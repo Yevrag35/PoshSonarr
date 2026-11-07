@@ -6,12 +6,12 @@ using System.Net;
 namespace MG.Sonarr.Next.Tests.Http;
 
 /// <summary>
-/// Tests the HTTP client that every request goes through, with the module's handler chain above a fake Sonarr.
+/// Tests the HTTP clients that every request goes through, with the module's handler chains above a fake Sonarr.
 /// </summary>
 public sealed class SonarrHttpClientTests
 {
 	/// <summary>
-	/// The ways that a request fails before any response arrives.
+	/// The ways that a request fails.
 	/// </summary>
 	public enum Failure
 	{
@@ -21,6 +21,8 @@ public sealed class SonarrHttpClientTests
 		Timeout,
 		/// <summary>The caller's token is canceled, as Ctrl+C cancels a cmdlet's.</summary>
 		Canceled,
+		/// <summary>The response arrives, and the file that it holds can't be written, as in a folder that doesn't exist.</summary>
+		Unwritable,
 	}
 
 	/// <summary>
@@ -36,14 +38,6 @@ public sealed class SonarrHttpClientTests
 	[MemberData(nameof(Failures))]
 	public void B75_ARequestThatGetsNoResponseGivesTheCategoryOfItsFailure(string method, Failure failure)
 	{
-		FakeSonarr sonarr = failure switch
-		{
-			Failure.NoResponse => new("refusing", new ProbeLog(), (_, _) => Task.FromException<HttpResponseMessage>(
-				new HttpRequestException(HttpRequestError.ConnectionError, "No connection could be made because the target machine actively refused it."))),
-			Failure.Timeout => new("stalling", new ProbeLog(), Stall, TimeSpan.FromMilliseconds(250)),
-			_ => new("stalling", new ProbeLog(), Stall),
-		};
-
 		(ErrorCategory category, string url) = failure switch
 		{
 			Failure.NoResponse => (ErrorCategory.ConnectionError, ClientCalls.AbsoluteUrl),
@@ -54,7 +48,7 @@ public sealed class SonarrHttpClientTests
 		using CancellationTokenSource canceled = new();
 		canceled.Cancel();
 
-		using ServiceProvider provider = ModuleServices.Build(sonarr);
+		using ServiceProvider provider = ModuleServices.Build(Fail(failure, new ProbeLog()));
 		using IServiceScope scope = provider.CreateScope();
 		ISonarrClient client = scope.ServiceProvider.GetRequiredService<ISonarrClient>();
 
@@ -76,7 +70,7 @@ public sealed class SonarrHttpClientTests
 			TheoryData<string, Failure> data = [];
 			foreach (string method in ClientCalls.ApiMethods.Keys)
 			{
-				foreach (Failure failure in Enum.GetValues<Failure>())
+				foreach (Failure failure in (Failure[])[Failure.NoResponse, Failure.Timeout, Failure.Canceled])
 				{
 					data.Add(method, failure);
 				}
@@ -85,6 +79,78 @@ public sealed class SonarrHttpClientTests
 			return data;
 		}
 	}
+
+	/// <summary>
+	/// O27: a ping and a download give every failure as an error result, as the clients' docs say, rather than throwing.
+	/// One that gets no response gives <see cref="ErrorCategory.ConnectionError"/>, a timeout
+	/// <see cref="ErrorCategory.OperationTimeout"/>, and any other cancellation
+	/// <see cref="ErrorCategory.OperationStopped"/>, and a download whose file can't be written gives
+	/// <see cref="ErrorCategory.WriteError"/>, with the file's path as the error's target.
+	/// </summary>
+	/// <param name="call">The method that sends the request, <c>SendPingAsync</c> or <c>DownloadToPathAsync</c>.</param>
+	/// <param name="failure">How the request fails.</param>
+	[Theory]
+	[MemberData(nameof(PingAndDownloadFailures))]
+	public async Task O27_APingOrADownloadGivesEveryFailureAsAnErrorResult(string call, Failure failure)
+	{
+		ErrorCategory category = failure switch
+		{
+			Failure.NoResponse => ErrorCategory.ConnectionError,
+			Failure.Timeout => ErrorCategory.OperationTimeout,
+			Failure.Canceled => ErrorCategory.OperationStopped,
+			_ => ErrorCategory.WriteError,
+		};
+
+		using CancellationTokenSource canceled = new();
+		await canceled.CancelAsync();
+		CancellationToken token = failure == Failure.Canceled ? canceled.Token : TestContext.Current.CancellationToken;
+
+		ProbeLog log = new();
+		DirectoryInfo folder = Directory.CreateTempSubdirectory("PoshSonarr.Tests.");
+		string path = failure == Failure.Unwritable
+			? Path.Combine(folder.FullName, "missing", "backup.zip")
+			: Path.Combine(folder.FullName, "backup.zip");
+
+		try
+		{
+			using ServiceProvider provider = ModuleServices.Build(Fail(failure, log));
+			using IServiceScope scope = provider.CreateScope();
+
+			SonarrClientResult result = call == nameof(ISonarrClient.SendPingAsync)
+				? await scope.ServiceProvider.GetRequiredService<ISonarrClient>().SendPingAsync(token)
+				: await scope.ServiceProvider.GetRequiredService<ISonarrDownloadClient>().DownloadToPathAsync(ClientCalls.DOWNLOAD_PATH, path, token);
+
+			Assert.True(result.IsError, $"{call} succeeded.");
+			Assert.True(
+				category == result.Error.CategoryInfo.Category,
+				$"{call} gave {result.Error.CategoryInfo.Category}, where {category} was expected, for {result.Error.Exception}");
+
+			// The request reached the fake, which answered it as the row says.
+			Assert.Equal(
+				[call == nameof(ISonarrClient.SendPingAsync) ? "HEAD /ping" : "GET " + ClientCalls.DOWNLOAD_PATH],
+				log.Snapshot());
+
+			if (failure == Failure.Unwritable)
+			{
+				Assert.Equal(path, result.Error.TargetObject);
+			}
+		}
+		finally
+		{
+			folder.Delete(recursive: true);
+		}
+	}
+
+	public static TheoryData<string, Failure> PingAndDownloadFailures => new()
+	{
+		{ nameof(ISonarrClient.SendPingAsync), Failure.NoResponse },
+		{ nameof(ISonarrClient.SendPingAsync), Failure.Timeout },
+		{ nameof(ISonarrClient.SendPingAsync), Failure.Canceled },
+		{ nameof(ISonarrDownloadClient.DownloadToPathAsync), Failure.NoResponse },
+		{ nameof(ISonarrDownloadClient.DownloadToPathAsync), Failure.Timeout },
+		{ nameof(ISonarrDownloadClient.DownloadToPathAsync), Failure.Canceled },
+		{ nameof(ISonarrDownloadClient.DownloadToPathAsync), Failure.Unwritable },
+	};
 
 	/// <summary>
 	/// B1: no await in the client or its handlers resumes on the caller's <see cref="SynchronizationContext"/>, since a
@@ -123,6 +189,37 @@ public sealed class SonarrHttpClientTests
 	}
 
 	public static TheoryData<string> AllMethods => [.. ClientCalls.AllMethods.Keys];
+
+	/// <summary>
+	/// Creates a fake instance that fails each request as the specified failure says, and logs each request that reaches
+	/// it as its method and path.
+	/// </summary>
+	/// <param name="failure">How each request fails.</param>
+	/// <param name="log">The log that the instance writes each request to.</param>
+	/// <returns>
+	/// An instance that refuses the connection, that stalls past a timeout of 250 milliseconds or until the request is
+	/// canceled, or that answers <c>200 OK</c>, for a file that the test can't write.
+	/// </returns>
+	private static FakeSonarr Fail(Failure failure, ProbeLog log)
+	{
+		Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> respond = failure switch
+		{
+			Failure.NoResponse => (_, _) => Task.FromException<HttpResponseMessage>(new HttpRequestException(
+				HttpRequestError.ConnectionError, "No connection could be made because the target machine actively refused it.")),
+			Failure.Unwritable => (request, _) => Task.FromResult(Respond.Ok(request)),
+			_ => Stall,
+		};
+
+		return new(
+			failure.ToString(),
+			log,
+			(request, token) =>
+			{
+				log.Add(string.Concat(request.Method.Method, " ", request.RequestUri?.AbsolutePath));
+				return respond(request, token);
+			},
+			failure == Failure.Timeout ? TimeSpan.FromMilliseconds(250) : null);
+	}
 
 	/// <summary>
 	/// Answers no request, and ends when the request's token is canceled, as a network handler does.

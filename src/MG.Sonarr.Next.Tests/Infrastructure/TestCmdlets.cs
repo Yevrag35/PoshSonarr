@@ -1,6 +1,9 @@
 using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Cmdlets;
+using MG.Sonarr.Next.Shell.Cmdlets.Bases;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.PowerShell.Commands;
 using System.Collections.ObjectModel;
 using System.Management.Automation.Runspaces;
 
@@ -16,16 +19,25 @@ namespace MG.Sonarr.Next.Tests.Infrastructure;
 internal static class PowerShellHost
 {
 	/// <summary>
-	/// Creates a <see cref="PowerShell"/> instance on a new runspace that holds <c>Connect-FakeSonarr</c>,
-	/// <c>Disconnect-FakeSonarr</c>, and <c>Test-Probe</c>.
+	/// Creates a <see cref="PowerShell"/> instance on a new runspace that holds the test cmdlets, <c>Connect-FakeSonarr</c>,
+	/// <c>Disconnect-FakeSonarr</c>, <c>Test-Preference</c>, <c>Test-Probe</c>, and <c>Test-Request</c>, and PowerShell's
+	/// <c>Select-Object</c> and <c>Write-Output</c>.
 	/// </summary>
+	/// <remarks>
+	/// PowerShell's two cmdlets come from their types, so the runspace holds them without loading the module that ships
+	/// them.
+	/// </remarks>
 	/// <returns>The new instance, which the caller disposes.</returns>
 	internal static PowerShell Create()
 	{
 		InitialSessionState state = InitialSessionState.CreateDefault2();
 		state.Commands.Add(new SessionStateCmdletEntry("Connect-FakeSonarr", typeof(ConnectFakeSonarrCmdlet), helpFileName: null));
 		state.Commands.Add(new SessionStateCmdletEntry("Disconnect-FakeSonarr", typeof(DisconnectFakeSonarrCmdlet), helpFileName: null));
+		state.Commands.Add(new SessionStateCmdletEntry("Test-Preference", typeof(TestPreferenceCmdlet), helpFileName: null));
 		state.Commands.Add(new SessionStateCmdletEntry("Test-Probe", typeof(TestProbeCmdlet), helpFileName: null));
+		state.Commands.Add(new SessionStateCmdletEntry("Test-Request", typeof(TestRequestCmdlet), helpFileName: null));
+		state.Commands.Add(new SessionStateCmdletEntry("Select-Object", typeof(SelectObjectCommand), helpFileName: null));
+		state.Commands.Add(new SessionStateCmdletEntry("Write-Output", typeof(WriteOutputCommand), helpFileName: null));
 		state.ThrowOnRunspaceOpenError = true;
 
 		return PowerShell.Create(state);
@@ -237,5 +249,83 @@ public sealed class TestProbeCmdlet : SonarrCmdletBase
 		{
 			throw new InvalidOperationException("End failed");
 		}
+	}
+}
+
+/// <summary>
+/// A cmdlet on <see cref="TimedCmdlet"/>, which captures its error, verbose, and debug preferences, that writes the
+/// preferences that it runs with.
+/// </summary>
+[Cmdlet(VerbsDiagnostic.Test, "Preference")]
+public sealed class TestPreferenceCmdlet : TimedCmdlet
+{
+	/// <summary>
+	/// Writes the cmdlet's error, verbose, and debug preferences, in that order, as one string with a space between
+	/// each two.
+	/// </summary>
+	/// <param name="provider">The scope's services, which the cmdlet doesn't use.</param>
+	protected override void Begin(IServiceProvider provider)
+	{
+		this.WriteObject(string.Join(' ', this.ErrorPreference, this.VerbosePreference, this.DebugPreference));
+	}
+}
+
+/// <summary>
+/// A cmdlet on <see cref="SonarrApiCmdletBase"/> that sends one request through its <c>Send*Request</c> helpers, logs how
+/// the request ended, and then logs whether its scope still serves.
+/// </summary>
+/// <remarks>
+/// <c>Stop</c> logs that it ran and releases <see cref="Gate"/>, where <c>Process</c> waits once its request has ended,
+/// so <c>Process</c> touches its scope only after <c>StopProcessing</c> has done what it does before it calls
+/// <c>Stop</c>.
+/// </remarks>
+[Cmdlet(VerbsDiagnostic.Test, "Request")]
+public sealed class TestRequestCmdlet : SonarrApiCmdletBase
+{
+	/// <summary>
+	/// Gets or sets the log that the cmdlet writes its steps to.
+	/// </summary>
+	[Parameter(Mandatory = true)]
+	public ProbeLog Log { get; set; } = null!;
+
+	/// <summary>
+	/// Gets or sets the gate that <c>Process</c> waits at once its request has ended, and that <c>Stop</c> releases.
+	/// </summary>
+	[Parameter(Mandatory = true)]
+	public ProbeGate Gate { get; set; } = null!;
+
+	/// <summary>
+	/// Sends a GET request for the tags, waits at the gate, logs how the request ended, and resolves the scope's
+	/// <see cref="ScopeProbe"/>.
+	/// </summary>
+	/// <param name="provider">The scope's services.</param>
+	protected override void Process(IServiceProvider provider)
+	{
+		SonarrClientResult<object> result = this.SendGetRequest<object>("/tag");
+		this.Gate.EnterAndWait();
+
+		this.Log.Add(result.IsError
+			? string.Concat("Request ended: ", result.Error.CategoryInfo.Category.ToString())
+			: "Request succeeded");
+
+		try
+		{
+			_ = provider.GetRequiredService<ScopeProbe>();
+			this.Log.Add("Scope open");
+		}
+		catch (ObjectDisposedException)
+		{
+			this.Log.Add("Scope disposed under Process");
+		}
+	}
+
+	/// <summary>
+	/// Logs that the cmdlet was stopped, and releases <see cref="Gate"/>.
+	/// </summary>
+	/// <param name="provider">The scope's services, which the method doesn't use.</param>
+	protected override void Stop(IServiceProvider provider)
+	{
+		this.Log.Add("Stop");
+		this.Gate.Release();
 	}
 }

@@ -9,13 +9,14 @@ namespace MG.Sonarr.Next.Tests.Infrastructure;
 
 /// <summary>
 /// Stands in for a Sonarr instance: a connection's settings, and a primary handler that answers every request that the
-/// connection's <see cref="ISonarrClient"/> sends, beneath the module's own handler chain.
+/// connection's <see cref="ISonarrClient"/> and <see cref="ISonarrDownloadClient"/> send, beneath the module's own
+/// handler chains.
 /// </summary>
 /// <remarks>
 /// <para>
 /// <see cref="AddServices(IServiceCollection)"/> goes in a connection's service collection before the module's own
-/// services, and its post-configuration of the typed client's options runs after theirs, so the fake handler replaces
-/// the primary handler that the module registers, and every delegating handler of the module still runs.
+/// services, and its post-configuration of the typed clients' options runs after theirs, so the fake handler replaces
+/// the primary handler that the module registers for each, and every delegating handler of the module still runs.
 /// </para>
 /// <para>
 /// It also registers a <see cref="ConnectionProbe"/> singleton and a <see cref="ScopeProbe"/> scoped service, which
@@ -31,6 +32,11 @@ public sealed class FakeSonarr
 	/// The URL that every fake instance answers at. Nothing listens there, since no request leaves the process.
 	/// </summary>
 	internal static readonly Uri BaseUri = new("http://sonarr.test:8989/");
+
+	/// <summary>
+	/// The names of the typed clients whose primary handler the fake replaces.
+	/// </summary>
+	private static readonly string[] s_clients = [typeof(ISonarrClient).Name, typeof(ISonarrDownloadClient).Name];
 
 	private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> _respond;
 
@@ -84,15 +90,18 @@ public sealed class FakeSonarr
 	}
 
 	/// <summary>
-	/// Adds the fake primary handler and the probes to a connection's service collection.
+	/// Adds the fake primary handler of both typed clients, and the probes, to a connection's service collection.
 	/// </summary>
 	/// <param name="services">The connection's service collection.</param>
 	internal void AddServices(IServiceCollection services)
 	{
-		_ = services.PostConfigure<HttpClientFactoryOptions>(
-			typeof(ISonarrClient).Name,
-			options => options.HttpMessageHandlerBuilderActions.Add(
-				builder => builder.PrimaryHandler = new PrimaryHandler(_respond)));
+		foreach (string client in s_clients)
+		{
+			_ = services.PostConfigure<HttpClientFactoryOptions>(
+				client,
+				options => options.HttpMessageHandlerBuilderActions.Add(
+					builder => builder.PrimaryHandler = new PrimaryHandler(_respond)));
+		}
 
 		_ = services.AddSingleton(_ => new ConnectionProbe(this.Name, this.Log));
 		_ = services.AddScoped(_ => new ScopeProbe(this.Name, this.Log));

@@ -15,6 +15,11 @@ internal static class ClientCalls
 	internal const string PATH = "/tag";
 
 	/// <summary>
+	/// The URL of a file to download, as Sonarr gives a backup's path.
+	/// </summary>
+	internal const string DOWNLOAD_PATH = "/backup/manual/sonarr_backup.zip";
+
+	/// <summary>
 	/// The URL that a request to <see cref="PATH"/> goes to once the module's handlers have built it.
 	/// </summary>
 	internal static readonly string AbsoluteUrl = new Uri(FakeSonarr.BaseUri, "/api/v3" + PATH).AbsoluteUri;
