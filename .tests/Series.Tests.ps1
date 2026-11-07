@@ -1,13 +1,73 @@
 #Requires -Version 7.6
 #Requires -Modules @{ ModuleName = 'Pester'; ModuleVersion = '6.2.0'; MaximumVersion = '6.99.99' }
 
-# Series. The Update-SonarrSeries tests send Sandbox Continuing Show with a quality profile ID of 0, which Sonarr turns
-# away with a 400, and check that the series object comes back as it was before the request: with the tags that it had,
-# and without the FirstAired property that serializing it adds. AfterAll puts the series back through the API if a
-# request went through anyway.
+# Series. The Add-SonarrSeries tests add Sandbox Lookup Show from a lookup result that an earlier add serialized and
+# then stopped before its commit or reset, as an add stops when its debug prompt is halted, and check that Sonarr puts
+# the show where the second add says and that the lookup result looks as it did before. AfterEach deletes the show
+# through the API. The Update-SonarrSeries tests send Sandbox Continuing Show with a quality profile ID of 0, which
+# Sonarr turns away with a 400, and check that the series object comes back as it was before the request: with the
+# tags that it had, and without the FirstAired property that serializing it adds. AfterAll puts the series back
+# through the API if a request went through anyway.
 
 BeforeAll {
 	. "$PSScriptRoot/setup.ps1"
+}
+
+Describe 'Add-SonarrSeries' {
+	BeforeAll {
+		$lookupShow = $Fixtures.LookupSeries
+		$anyProfileId = [int] ((Invoke-SandboxApi qualityprofile -ExpectStatus 200).Body | Where-Object name -EQ 'Any').id
+
+		# The properties that an add writes into a lookup result for its request body, and takes out again afterward.
+		$requestProperties = 'Path', 'RootFolderPath', 'AddOptions'
+	}
+	AfterEach {
+		# Sonarr fetches the episodes after it answers the add, so the show is deleted once Sonarr has finished adding it.
+		$added = @((Invoke-SandboxApi series -ExpectStatus 200).Body | Where-Object tvdbId -EQ $lookupShow.TvdbId)
+		foreach ($series in $added) {
+			try {
+				Wait-SandboxSeries -Series ([pscustomobject]@{ Id = $series.id; Title = $lookupShow.Title; EpisodeCount = $lookupShow.EpisodeCount })
+			}
+			finally {
+				$null = Invoke-SandboxApi "series/$($series.id)?deleteFiles=true" -Method Delete -ExpectStatus 200
+			}
+		}
+	}
+
+	Context 'after an add that serialized the lookup result and stopped before its commit or reset' {
+		It 'adds the show <Name>, and leaves the lookup result without a path or add options' -ForEach @(
+			@{ Name = 'under -RootFolderPath after a stopped -AbsolutePath add'; StoppedFullPath = $true; FullPath = $false }
+			@{ Name = 'at -AbsolutePath after a stopped -RootFolderPath add'; StoppedFullPath = $false; FullPath = $true }
+			@{ Name = 'under -RootFolderPath after a stopped -RootFolderPath add'; StoppedFullPath = $false; FullPath = $false }
+			@{ Name = 'at -AbsolutePath after a stopped -AbsolutePath add'; StoppedFullPath = $true; FullPath = $true }
+		) {
+			$lookup = Search-SonarrSeries "tvdb:$($lookupShow.TvdbId)" -ErrorAction Stop
+			foreach ($property in $requestProperties) {
+				$lookup.psobject.Properties[$property] | Should -BeNullOrEmpty -Because "a lookup result for a show that isn't in the library has no $property property"
+			}
+
+			# What an add does to the lookup result before it sends it, through the C# members that .psobject reaches: it
+			# sets the path and serializes the object, which writes the path property. The stopped add goes no further.
+			$lookup.psobject.Path = if ($StoppedFullPath) { "$($Fixtures.RootFolder)/$(New-TestName)" } else { $Fixtures.RootFolder }
+			$lookup.psobject.IsFullPath = $StoppedFullPath
+			$lookup.psobject.OnSerializing()
+
+			if ($FullPath) {
+				$pathArgs = @{ AbsolutePath = "$($Fixtures.RootFolder)/$(New-TestName)" }
+				$expected = $pathArgs.AbsolutePath
+			}
+			else {
+				$pathArgs = @{ RootFolderPath = $Fixtures.RootFolder }
+				$expected = "$($Fixtures.RootFolder)/$($lookup.Folder)"
+			}
+			$added = $lookup | Add-SonarrSeries @pathArgs -QualityProfileId $anyProfileId -ErrorAction Stop
+
+			(Invoke-SandboxApi "series/$($added.Id)" -ExpectStatus 200).Body.path | Should -BeExactly $expected
+			foreach ($property in $requestProperties) {
+				$lookup.psobject.Properties[$property] | Should -BeNullOrEmpty -Because "the add's commit takes the $property property out again"
+			}
+		}
+	}
 }
 
 Describe 'Update-SonarrSeries' {
