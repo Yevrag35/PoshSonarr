@@ -62,16 +62,24 @@ public sealed class FakeSonarr
 	/// <param name="log">The log that the instance's probes write to.</param>
 	/// <param name="respond">The function that answers each request, or throws as a failed send does.</param>
 	/// <param name="timeout">The timeout of a connection's requests, or <see langword="null"/> for 30 seconds.</param>
+	/// <param name="serviceUri">
+	/// The URL that a connection names, whose path is the URL base, or <see langword="null"/> for <see cref="BaseUri"/>.
+	/// </param>
+	/// <param name="noApiInPath">
+	/// <see langword="true"/> to connect as <c>-NoApiInPath</c> does, for a reverse proxy that removes <c>/api</c>.
+	/// </param>
 	internal FakeSonarr(
 		string name,
 		ProbeLog log,
 		Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> respond,
-		TimeSpan? timeout = null)
+		TimeSpan? timeout = null,
+		Uri? serviceUri = null,
+		bool noApiInPath = false)
 	{
 		this.Name = name;
 		this.Log = log;
 		_respond = respond;
-		this.Settings = new TestConnectionSettings(BaseUri, timeout ?? TimeSpan.FromSeconds(30));
+		this.Settings = new TestConnectionSettings(serviceUri ?? BaseUri, timeout ?? TimeSpan.FromSeconds(30), noApiInPath);
 	}
 
 	/// <summary>
@@ -183,7 +191,7 @@ internal sealed class TestConnectionSettings : IConnectionSettings
 	public SonarrAuthType AuthType { get; set; }
 
 	/// <inheritdoc/>
-	public bool NoApiInPath => false;
+	public bool NoApiInPath { get; }
 
 	/// <inheritdoc/>
 	public Uri ServiceUri { get; }
@@ -195,14 +203,17 @@ internal sealed class TestConnectionSettings : IConnectionSettings
 	public TimeSpan Timeout { get; }
 
 	/// <summary>
-	/// Initializes a new <see cref="TestConnectionSettings"/> instance with the specified URL and timeout.
+	/// Initializes a new <see cref="TestConnectionSettings"/> instance with the specified URL, timeout, and API prefix
+	/// setting.
 	/// </summary>
 	/// <param name="serviceUri">The instance's URL.</param>
 	/// <param name="timeout">The timeout of each request.</param>
-	internal TestConnectionSettings(Uri serviceUri, TimeSpan timeout)
+	/// <param name="noApiInPath"><see langword="true"/> to leave <c>/api</c> out of each API request's path.</param>
+	internal TestConnectionSettings(Uri serviceUri, TimeSpan timeout, bool noApiInPath)
 	{
 		this.ServiceUri = serviceUri;
 		this.Timeout = timeout;
+		this.NoApiInPath = noApiInPath;
 	}
 
 	/// <inheritdoc/>

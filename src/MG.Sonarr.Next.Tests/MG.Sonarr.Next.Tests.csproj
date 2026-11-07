@@ -32,6 +32,14 @@
 		<PackageReference Include="xunit.v3" />
 	</ItemGroup>
 
+	<!--
+		The responses that the sandbox's Sonarr gave for the models that a request sends back, which the tests read from
+		beside the test assembly.
+	-->
+	<ItemGroup>
+		<None Update="Fixtures\*.json" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<Using Include="CsCheck" />
 		<Using Include="MG.Sonarr.Next.Tests.Infrastructure" />

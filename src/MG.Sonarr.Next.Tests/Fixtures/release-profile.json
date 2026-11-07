@@ -1,0 +1,13 @@
+{
+	"name": "sandbox-temp-fixture",
+	"enabled": true,
+	"required": [
+		"x265"
+	],
+	"ignored": [
+		"cam"
+	],
+	"indexerId": 0,
+	"tags": [],
+	"id": 1
+}
