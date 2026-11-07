@@ -357,6 +357,8 @@ internal ref struct SpanStringBuilder
 	/// <param name="length">The number of characters to be written.</param>
 	/// <param name="state">The state passed to the <paramref name="spanAction"/>.</param>
 	/// <param name="spanAction">The action that writes to the span.</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="length"/> is negative.</exception>
+	/// <inheritdoc cref="EnsureCapacity(pint)" path="/exception"/>
 	public void Append<T>(int length, scoped T state, Action<Span<char>, T> spanAction) where T : allows ref struct
 	{
 		this.EnsureCapacity(length);
@@ -909,7 +911,7 @@ internal ref struct SpanStringBuilder
 	/// </summary>
 	/// <param name="index">The zero-based index at which to begin writing. Must be between <c>0</c> and the current <see cref="Length"/>, inclusive.</param>
 	/// <param name="length">The number of characters to write.</param>
-	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="index"/> is negative or greater than the current <see cref="Length"/>.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="index"/> is negative or greater than the current <see cref="Length"/>, or when <paramref name="length"/> is negative.</exception>
 	/// <inheritdoc cref="EnsureCapacity(pint)" path="/exception"/>
 	public Span<char> OverlapAppendSpan(int index, int length)
 	{
