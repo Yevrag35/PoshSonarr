@@ -1,3 +1,6 @@
+using MG.Sonarr.Next.Extensions;
+using System.Runtime.CompilerServices;
+
 namespace MG.Sonarr.Next.Shell.Internal;
 
 /// <summary>
@@ -68,12 +71,14 @@ internal static class ServerPath
 	{
 		int rootLength = GetRootLength(path);
 		int end = path.Length;
-		while (end > rootLength && IsSeparator(path[end - 1]))
+		ref char cRef = ref Unsafe.AsRef(in path.GetPinnableReference());
+
+		while (end > rootLength && IsSeparator(cRef.Offset(end - 1)))
 		{
 			end--;
 		}
 
-		return end == path.Length ? path : path[..end];
+		return end == path.Length ? path : new(cRef.UnsafeSpan(end));
 	}
 
 	/// <summary>
