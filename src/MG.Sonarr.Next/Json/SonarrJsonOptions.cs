@@ -186,8 +186,46 @@ public static class SonarrJsonDependencyInjection
 						new("Hint", exactStringConverter),
 						new("Placeholder", exactStringConverter),
 						// A provider field's setting, which a PUT of the provider sends back for every field, such as a
-						// download client's category of 0123, which the inference would send back as 123.
-						new("Value", exactStringConverter)
+						// download client's category of 0123, which the inference would send back as 123. A list of
+						// settings, such as Flood's tags, keeps each of its strings as it came too.
+						new("Value", exactStringConverter),
+						// Text that Sonarr takes from a show's title or its metadata, which an update or an add of the
+						// series sends back, and which Sonarr turns away as a number, such as the slug and folder of a
+						// show named 24 or 1883, and an alternate title's comment from the scene mappings.
+						new("TitleSlug", exactStringConverter),
+						new("Folder", exactStringConverter),
+						new("Network", exactStringConverter),
+						new("Overview", exactStringConverter),
+						new("Comment", exactStringConverter),
+						// A release's group, such as 126811, which a manual import posts back, and the group and name of
+						// the release behind an episode's file, which an update of the episode sends back.
+						new("ReleaseGroup", exactStringConverter),
+						new("SceneName", exactStringConverter),
+						// Settings that a person types, which a PUT of the host config, the naming config, the media
+						// management settings, or a remote path mapping sends back, kept exactly, since a colon
+						// replacement such as " - " relies on its spaces. A path or URL is among them when Sonarr checks
+						// its form only while a feature uses it, or never.
+						new("AllowedHosts", exactStringConverter),
+						new("ApplicationUrl", exactStringConverter),
+						new("BackupFolder", exactStringConverter),
+						new("BindAddress", exactStringConverter),
+						new("Branch", exactStringConverter),
+						new("InstanceName", exactStringConverter),
+						new("ProxyBypassFilter", exactStringConverter),
+						new("ProxyHostname", exactStringConverter),
+						new("SslCertPath", exactStringConverter),
+						new("TrustedNetworks", exactStringConverter),
+						new("UpdateScriptPath", exactStringConverter),
+						new("AnimeEpisodeFormat", exactStringConverter),
+						new("CustomColonReplacementFormat", exactStringConverter),
+						new("DailyEpisodeFormat", exactStringConverter),
+						new("SeasonFolderFormat", exactStringConverter),
+						new("SeriesFolderFormat", exactStringConverter),
+						new("SpecialsFolderFormat", exactStringConverter),
+						new("StandardEpisodeFormat", exactStringConverter),
+						new("ExtraFileExtensions", exactStringConverter),
+						new("ScriptImportPath", exactStringConverter),
+						new("RemotePath", exactStringConverter)
 				  );
 		});
 

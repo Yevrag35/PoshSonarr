@@ -1,4 +1,8 @@
+using MG.Sonarr.Next.Models.Config;
+using MG.Sonarr.Next.Models.DownloadClients;
+using MG.Sonarr.Next.Models.Media;
 using MG.Sonarr.Next.Models.RemotePaths;
+using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Models.System;
 
 namespace MG.Sonarr.Next.Tests.Json;
@@ -117,9 +121,11 @@ public sealed class ObjectConverterTests
 
 	/// <summary>
 	/// B2, O66, B69, B93, O22: a value whose property is on the always-string list reads as the string that Sonarr sent
-	/// and goes back to Sonarr as that string, exactly as it came for credentials, names, a provider field's value, a
-	/// hint, a placeholder, and a release's guid, since Sonarr answers a number there with a 400 and the inference would
-	/// read each of these as a number, a <see cref="Guid"/>, a date, or a <see cref="Version"/>.
+	/// and goes back to Sonarr as that string, exactly as it came for credentials, names, a show's slug, folder, network,
+	/// and overview, an alternate title's comment, a release's group and name, text that a person types into Sonarr's
+	/// settings, paths and URLs included, a provider field's value, a hint, a placeholder, and a release's guid, since
+	/// Sonarr answers a number there with a 400 and the inference would read each of these as a number, a
+	/// <see cref="Guid"/>, a date, or a <see cref="Version"/>.
 	/// </summary>
 	/// <param name="field">The JSON field's name.</param>
 	/// <param name="value">The string that Sonarr sent.</param>
@@ -157,7 +163,69 @@ public sealed class ObjectConverterTests
 		{ "guid", "2024-01-15", typeof(PSObject) },
 		{ "guid", "0f8fad5b-d9cb-469f-a165-70867728950e", typeof(PSObject) },
 		{ "host", "192.168.1.10", typeof(RemotePathObject) },
+		{ "titleSlug", "24", typeof(SeriesObject) },
+		{ "folder", "1883", typeof(AddSeriesObject) },
+		{ "network", "10", typeof(SeriesObject) },
+		{ "overview", "2024", typeof(SeriesObject) },
+		{ "comment", "2", typeof(PSObject) },
+		{ "releaseGroup", "126811", typeof(PSObject) },
+		{ "sceneName", "1883", typeof(PSObject) },
+		{ "allowedHosts", "10", typeof(HostObject) },
+		{ "applicationUrl", "8989", typeof(HostObject) },
+		{ "backupFolder", "2024", typeof(HostObject) },
+		{ "bindAddress", "1", typeof(HostObject) },
+		{ "branch", "4", typeof(HostObject) },
+		{ "instanceName", "2", typeof(HostObject) },
+		{ "proxyBypassFilter", "10", typeof(HostObject) },
+		{ "proxyHostname", "10", typeof(HostObject) },
+		{ "sslCertPath", "001", typeof(HostObject) },
+		{ "trustedNetworks", "10", typeof(HostObject) },
+		{ "updateScriptPath", "007", typeof(HostObject) },
+		{ "animeEpisodeFormat", "001", typeof(NamingConfigObject) },
+		{ "customColonReplacementFormat", "0", typeof(NamingConfigObject) },
+		{ "dailyEpisodeFormat", "2024", typeof(NamingConfigObject) },
+		{ "seasonFolderFormat", "01", typeof(NamingConfigObject) },
+		{ "seriesFolderFormat", "24", typeof(NamingConfigObject) },
+		{ "specialsFolderFormat", "00", typeof(NamingConfigObject) },
+		{ "standardEpisodeFormat", "001", typeof(NamingConfigObject) },
+		{ "extraFileExtensions", "001", typeof(MediaManagementObject) },
+		{ "scriptImportPath", "01", typeof(MediaManagementObject) },
+		{ "remotePath", "2024", typeof(RemotePathObject) },
 	};
+
+	/// <summary>
+	/// B2: in an array whose property is on the always-string list, each string reads as the string that Sonarr sent and
+	/// goes back to Sonarr as that string, and each number stays a number, so a provider field's list, such as Flood's
+	/// tags, goes back as it came, while an indexer's categories stay numbers.
+	/// </summary>
+	[Fact]
+	public void B2_SendsEachStringOfAnAlwaysStringArrayBackAsItCame()
+	{
+		const string body = """
+			{
+				"id": 1,
+				"name": "Sandbox Flood",
+				"fields": [
+					{ "order": 0, "name": "tags", "type": "tag", "value": ["2024", "007", "sonarr"] },
+					{ "order": 1, "name": "categories", "type": "select", "value": [5030, 5040] }
+				]
+			}
+			""";
+
+		object read = JsonSerializer.Deserialize(body, typeof(DownloadClientObject), ModuleServices.Json.ForDeserializing)!;
+		string written = JsonSerializer.Serialize(read, read.GetType(), ModuleServices.Json.ForSerializing);
+
+		using JsonDocument document = JsonDocument.Parse(written);
+		JsonElement[] fields = [.. document.RootElement.GetProperty("fields").EnumerateArray()];
+		Assert.Equal(["\"2024\"", "\"007\"", "\"sonarr\""], ValueOf(fields, "tags"));
+		Assert.Equal(["5030", "5040"], ValueOf(fields, "categories"));
+
+		static string[] ValueOf(JsonElement[] fields, string name)
+		{
+			JsonElement field = Assert.Single(fields, f => f.GetProperty("name").GetString() == name);
+			return [.. field.GetProperty("value").EnumerateArray().Select(item => item.GetRawText())];
+		}
+	}
 
 	private static T Deserialize<T>(string json)
 	{

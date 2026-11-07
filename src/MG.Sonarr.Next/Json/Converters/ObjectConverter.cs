@@ -23,7 +23,9 @@ namespace MG.Sonarr.Next.Json.Converters;
 /// becomes a read-only property. A string is read by the span converter registered for its property's name, or else
 /// as a number, a <see cref="Guid"/>, a <see cref="DateOnly"/>, a <see cref="DateTimeOffset"/>, or a
 /// <see cref="Version"/>, tried in that order, and otherwise stays a string. A nested object becomes a model when its
-/// property's name and its parent's type call for one, and a plain <see cref="PSObject"/> otherwise.
+/// property's name and its parent's type call for one, and a plain <see cref="PSObject"/> otherwise. An array becomes
+/// the type that the settings give its property's name, or else an array of objects, in which a string is read by its
+/// property's span converter too, when the property has one.
 /// </para>
 /// <para>
 /// Sonarr writes its values with the invariant culture, so they're read with it, whatever the current culture. A
@@ -262,15 +264,50 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	/// <summary>
 	/// Reads a JSON array as the type that the settings give its property, or else as an array of objects.
 	/// </summary>
+	/// <remarks>
+	/// In an array of objects whose property has a span converter, such as a provider field's <c>Value</c>, each string
+	/// is read by that converter, as a string value of the property is, so a list of a field's settings keeps
+	/// <c>2024</c> a string, while its numbers stay numbers.
+	/// </remarks>
 	/// <param name="reader">The reader positioned at the start of the array.</param>
 	/// <param name="propertyName">The name of the property that the array belongs to.</param>
 	/// <param name="options">The serializer options that the array is read with.</param>
 	/// <returns>The array, as its property's type or as an array of objects.</returns>
 	private object? ConvertToEnumerable(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options)
 	{
-		return _config.ConvertProperties.TryGetValue(propertyName, out Type? convertTo)
-			? JsonSerializer.Deserialize(ref reader, convertTo, options)
+		if (_config.ConvertProperties.TryGetValue(propertyName, out Type? convertTo))
+		{
+			return JsonSerializer.Deserialize(ref reader, convertTo, options);
+		}
+
+		return _config.SpanConverters.ContainsKey(propertyName)
+			? this.ReadArrayOfProperty(ref reader, propertyName, options)
 			: JsonSerializer.Deserialize<object[]>(ref reader, options);
+	}
+	/// <summary>
+	/// Reads a JSON array whose property has a span converter, reading each string in it through that converter and
+	/// every other item as a value outside an object is read.
+	/// </summary>
+	/// <remarks>
+	/// Like the serializer's own path, which every other array of objects takes, the method fills a list and copies it
+	/// to an array.
+	/// </remarks>
+	/// <param name="reader">The reader positioned at the start of the array, and left at its end.</param>
+	/// <param name="propertyName">The name of the property that the array belongs to.</param>
+	/// <param name="options">The serializer options that the items are read with.</param>
+	/// <returns>The array's values.</returns>
+	/// <exception cref="JsonException">Thrown when an item can't be read.</exception>
+	private object?[] ReadArrayOfProperty(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options)
+	{
+		List<object?> items = [];
+		while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+		{
+			items.Add(reader.TokenType == JsonTokenType.String
+				? this.ReadString(ref reader, propertyName, capitalize: null)
+				: this.Read(ref reader, typeof(object), options));
+		}
+
+		return [.. items];
 	}
 
 	/// <summary>
@@ -607,7 +644,8 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	/// </remarks>
 	/// <param name="reader">The reader positioned at the string value.</param>
 	/// <param name="propertyName">
-	/// The name of the property that the value belongs to, or empty for a value that isn't in an object.
+	/// The name of the property that the value, or the array that holds it, belongs to, or empty for a value that isn't
+	/// in an object.
 	/// </param>
 	/// <param name="capitalize">
 	/// The names of the properties whose values get an uppercase first letter, or <see langword="null"/> for none.
