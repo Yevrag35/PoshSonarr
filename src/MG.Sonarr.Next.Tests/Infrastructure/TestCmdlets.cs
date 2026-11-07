@@ -2,10 +2,6 @@ using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Shell.Cmdlets;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.PowerShell.Commands;
-using System.Collections.ObjectModel;
-using System.Management.Automation.Runspaces;
 
 namespace MG.Sonarr.Next.Tests.Infrastructure;
 

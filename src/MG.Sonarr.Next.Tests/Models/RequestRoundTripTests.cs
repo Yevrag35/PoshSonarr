@@ -2,8 +2,6 @@ using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Models.Releases;
 using MG.Sonarr.Next.Models.Series;
-using System.Collections;
-using System.Text;
 
 namespace MG.Sonarr.Next.Tests.Models;
 

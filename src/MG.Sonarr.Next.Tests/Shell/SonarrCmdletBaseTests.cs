@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-
 namespace MG.Sonarr.Next.Tests.Shell;
 
 /// <summary>

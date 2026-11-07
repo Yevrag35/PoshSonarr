@@ -1,4 +1,3 @@
-using CsCheck;
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Strings;
 

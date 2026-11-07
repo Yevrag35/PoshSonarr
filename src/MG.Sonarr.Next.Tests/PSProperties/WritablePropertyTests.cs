@@ -1,7 +1,6 @@
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.PSProperties;
-using System.Runtime.CompilerServices;
 
 namespace MG.Sonarr.Next.Tests.PSProperties;
 

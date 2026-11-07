@@ -2,7 +2,6 @@ using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Shell.Cmdlets;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MG.Sonarr.Next.Tests.Infrastructure;
 

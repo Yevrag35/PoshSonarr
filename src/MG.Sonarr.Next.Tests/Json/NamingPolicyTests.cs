@@ -1,9 +1,5 @@
-using CsCheck;
 using MG.Sonarr.Next.Json.Converters;
 using MG.Sonarr.Next.Json.Naming;
-using System.Buffers;
-using System.Text;
-using System.Text.Encodings.Web;
 
 namespace MG.Sonarr.Next.Tests.Json;
 

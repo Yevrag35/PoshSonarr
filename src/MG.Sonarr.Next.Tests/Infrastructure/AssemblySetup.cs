@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace MG.Sonarr.Next.Tests.Infrastructure;
 
 /// <summary>

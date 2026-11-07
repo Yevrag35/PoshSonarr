@@ -1,9 +1,6 @@
 using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Http.Clients;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
-using System.Net;
-using System.Text;
 
 namespace MG.Sonarr.Next.Tests.Infrastructure;
 
