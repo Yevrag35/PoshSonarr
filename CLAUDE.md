@@ -67,6 +67,12 @@ Run these from the repository root. Building needs a .NET 10 SDK.
 - `pwsh -NoProfile -File tools/check-bytes.ps1` checks every file changed since `HEAD`, plus untracked files, for a BOM, CRLF, stray CRs, invalid UTF-8, and similar problems. Pass file paths, separated by spaces, to check only those; add `-Base realDev` to cover everything the branch changed, and `-Fix` to strip a BOM and turn CRLF into LF. The script needs PowerShell 7.6 or later.
 - Not every file in the codebase adheres to the LF rule yet, so don't be alarmed when encountering one. Simply fix if the file is being edited currently or leave alone if not.
 
+### Always-string check
+
+- `pwsh -NoProfile -File tools/check-always-strings.ps1` reads Sonarr's source and checks that each property that can hold a string, in every body that a cmdlet sends back to Sonarr, is either on the always-string list in `src/MG.Sonarr.Next/Json/SonarrJsonOptions.cs` or in the script's table of held properties, which Sonarr keeps in a form that the module can't read as a number. It reports each property that's neither, and each entry in its tables that the source or the module lacks. It exits 0 when it finds nothing, 1 when it finds something, and 2 when it can't read the files. `-Verbose` lists what claims or holds each property.
+- It reads the source from `.temp/sonarr-src` unless `-SonarrSource` names another checkout: a clone of Sonarr's repository checked out at the tag of the version that `sandbox/sonarr/compose.yaml` pins, which is `v` followed by the version. Git ignores `.temp/`, so each machine needs its own clone. The script warns when no tag on the checkout's HEAD names the pinned version, which is expected when it checks the next version before the sandbox moves to it.
+- Run it after changing the list, a model that a request sends back, or a cmdlet that sends one, and before moving the sandbox to a new Sonarr version. A cmdlet that starts sending a model back needs that model's resource class in the script's table of bodies.
+
 ### Disassembly
 
 - `pwsh -NoProfile -File src/MG.Sonarr.Tools.Asm/run-asmdump.ps1 <Class> [Method] -DontOpen` writes RyuJIT's FullOpts disassembly of the methods it names to `.temp/asm_<Class>[_<Method>].txt`. It builds the solution in Release first, which also packages the module, and without `-DontOpen` it opens a viewer on the desktop.

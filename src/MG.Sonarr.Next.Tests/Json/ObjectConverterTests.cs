@@ -122,10 +122,10 @@ public sealed class ObjectConverterTests
 	/// <summary>
 	/// B2, O66, B69, B93, O22: a value whose property is on the always-string list reads as the string that Sonarr sent
 	/// and goes back to Sonarr as that string, exactly as it came for credentials, names, a show's slug, folder, network,
-	/// and overview, an alternate title's comment, a release's group and name, text that a person types into Sonarr's
-	/// settings, paths and URLs included, a provider field's value, a hint, a placeholder, and a release's guid, since
-	/// Sonarr answers a number there with a 400 and the inference would read each of these as a number, a
-	/// <see cref="Guid"/>, a date, or a <see cref="Version"/>.
+	/// and overview, an alternate title's comment, a release's group and name, the languages that a file's tags name,
+	/// text that a person types into Sonarr's settings, paths and URLs included, a provider field's value, a hint, a
+	/// placeholder, and a release's guid, since Sonarr answers a number there with a 400 and the inference would read
+	/// each of these as a number, a <see cref="Guid"/>, a date, or a <see cref="Version"/>.
 	/// </summary>
 	/// <param name="field">The JSON field's name.</param>
 	/// <param name="value">The string that Sonarr sent.</param>
@@ -170,6 +170,8 @@ public sealed class ObjectConverterTests
 		{ "comment", "2", typeof(PSObject) },
 		{ "releaseGroup", "126811", typeof(PSObject) },
 		{ "sceneName", "1883", typeof(PSObject) },
+		{ "audioLanguages", "1", typeof(PSObject) },
+		{ "subtitles", "007", typeof(PSObject) },
 		{ "allowedHosts", "10", typeof(HostObject) },
 		{ "applicationUrl", "8989", typeof(HostObject) },
 		{ "backupFolder", "2024", typeof(HostObject) },

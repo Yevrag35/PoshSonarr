@@ -201,6 +201,11 @@ public static class SonarrJsonDependencyInjection
 						// the release behind an episode's file, which an update of the episode sends back.
 						new("ReleaseGroup", exactStringConverter),
 						new("SceneName", exactStringConverter),
+						// The languages that a file's audio and subtitle streams are tagged with, joined by /, which an
+						// update of an episode sends back with the episode's file. Sonarr copies them from the file's
+						// tags, which can hold any text.
+						new("AudioLanguages", exactStringConverter),
+						new("Subtitles", exactStringConverter),
 						// Settings that a person types, which a PUT of the host config, the naming config, the media
 						// management settings, or a remote path mapping sends back, kept exactly, since a colon
 						// replacement such as " - " relies on its spaces. A path or URL is among them when Sonarr checks
