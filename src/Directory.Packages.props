@@ -8,8 +8,8 @@
 			below the compiler version in the .NET SDK and in Visual Studio.
 		-->
 		<PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
-		<!-- The property-based tests are written against the 4.x API. -->
-		<PackageVersion Include="CsCheck" Version="4.9.1" />
+		<!-- The property-based tests are written against the 5.x API. -->
+		<PackageVersion Include="CsCheck" Version="5.0.1" />
 		<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.14" />
 		<PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.14" />
 		<!-- Requires System.Management.Automation at its own version or later, so the two move together. -->

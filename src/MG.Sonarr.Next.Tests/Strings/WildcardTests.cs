@@ -13,7 +13,7 @@ public sealed class WildcardTests
 	/// characters that a <see cref="WildcardPattern"/> treats specially but a <see cref="Wildcard"/> doesn't, white
 	/// space, and the Deseret capital and small long I, a surrogate pair each.
 	/// </summary>
-	private static readonly Gen<string> s_text = Gen.OneOfConst(
+	private static readonly Gen<string> s_text = Gen.OneOf(
 			"*", "?", "a", "A", "b", "é", "É", "k", "K", "%", "[", "`", " ", "\U00010400", "\U00010428")
 		.Array[0, 8]
 		.Select(units => string.Concat(units));

@@ -12,7 +12,7 @@ public sealed class WildcardSetTests
 	/// The units that names are built from, which an empty draw leaves empty: digits, as an ID's text, letters that
 	/// differ only in case, inside and outside ASCII and in a surrogate pair, both wildcards, and white space.
 	/// </summary>
-	private static readonly Gen<string> s_names = Gen.OneOfConst("5", "a", "B", "é", "É", "\U00010400", "*", "?", " ")
+	private static readonly Gen<string> s_names = Gen.OneOf("5", "a", "B", "é", "É", "\U00010400", "*", "?", " ")
 		.Array[0, 5]
 		.Select(units => string.Concat(units));
 

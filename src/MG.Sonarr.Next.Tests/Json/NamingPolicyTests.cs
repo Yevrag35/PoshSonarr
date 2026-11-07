@@ -12,7 +12,7 @@ public sealed class NamingPolicyTests
 	/// The names to write: ASCII letters in both cases, a digit, a space, an underscore, and letters outside ASCII in
 	/// both cases, the Turkish dotted capital I and dotless small i among them.
 	/// </summary>
-	private static readonly Gen<string> s_names = Gen.OneOfConst(
+	private static readonly Gen<string> s_names = Gen.OneOf(
 			'A', 'B', 'I', 'a', 'b', 'i', '1', ' ', '_', 'É', 'é', 'Ä', 'ß', 'İ', 'ı', 'Ω', 'ω')
 		.Array[1, 10]
 		.Select(chars => new string(chars));
