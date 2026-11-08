@@ -1,6 +1,6 @@
 namespace MG.Sonarr.Next.Unions;
 
-public partial struct ObjEither<T1, T2>
+partial struct ObjEither<T1, T2>
 {
 	/// <summary>
 	/// Match on the stored value and invoke the corresponding function.
@@ -47,5 +47,62 @@ public partial struct ObjEither<T1, T2>
 			2 => f2(state, Unsafe.As<T2>(_value)!),
 			_ => default!,
 		};
+	}
+
+	/// <summary>
+	/// Match on the stored value and invoke the corresponding function with an additional state argument.
+	/// </summary>
+	/// <remarks>
+	/// <para>If this instance is <see langword="default"/>, this method returns <see langword="default"/> for <typeparamref name="TOutput"/>.</para>
+	/// <para>Type constraint: <typeparamref name="TState"/> allows <c>ref struct</c> usage, so state can be stack-only and cannot be boxed.</para>
+	/// </remarks>
+	/// <typeparam name="TState">The type of the state value passed to the match functions.</typeparam>
+	/// <param name="state">A state value passed to the invoked function.</param>
+	/// <param name="f1">The function to invoke when the stored value is a <typeparamref name="T1"/>.</param>
+	/// <param name="f2">The function to invoke when the stored value is a <typeparamref name="T2"/>.</param>
+	/// <returns>The value returned by the invoked function, or <see langword="default"/> when this instance is <see langword="default"/>.</returns>
+	public void Match<TState>(
+		TState state,
+		Action<TState, T1> f1,
+		Action<TState, T2> f2) where TState : allows ref struct
+	{
+		switch (_index)
+		{
+			case 1:
+				f1(state, Unsafe.As<T1>(_value)!);
+				break;
+			case 2:
+				f2(state, Unsafe.As<T2>(_value)!);
+				break;
+			default:
+				break;
+		}
+	}
+
+	/// <summary>
+	/// Match on the stored value and invoke the corresponding function with an additional state argument.
+	/// </summary>
+	/// <typeparam name="TState">The type of the state value passed to the match functions.</typeparam>
+	/// <typeparam name="TOutput">The result type returned by the match functions.</typeparam>
+	/// <param name="state">A state value passed to the invoked function.</param>
+	/// <param name="f1">The function to invoke when the stored value is a <typeparamref name="T1"/>.</param>
+	/// <param name="f2">The function to invoke when the stored value is a <typeparamref name="T2"/>.</param>
+	/// <returns>The value returned by the invoked function, or <see langword="default"/> when this instance is <see langword="default"/>.</returns>
+	internal TOutput FnMatch<TState, TOutput>(
+		TState state,
+		FnPtr<TState, T1, TOutput> f1,
+		FnPtr<TState, T2, TOutput> f2) where TState : allows ref struct
+	{
+		return _index switch
+		{
+			1 => tryInvoke1(state, Unsafe.As<T1>(_value)!, f1),
+			2 => tryInvoke2(state, Unsafe.As<T2>(_value)!, f2),
+			_ => default!,
+		};
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static TOutput tryInvoke1(TState state, T1 value, FnPtr<TState, T1, TOutput> f) => f.IsValid ? f.Invoke(state, value) : default!;
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static TOutput tryInvoke2(TState state, T2 value, FnPtr<TState, T2, TOutput> f) => f.IsValid ? f.Invoke(state, value) : default!;
 	}
 }
