@@ -372,12 +372,7 @@ public static partial class PSOExtensions
 	public static void UpdateProperty<T>(this T pso, bool replaceReadOnly, params ReadOnlySpan<Expression<Func<T, object?>>> expressions)
 		where T : SonarrObject
 	{
-		if (expressions.IsEmpty)
-		{
-			return;
-		}
-
-		foreach (ref readonly var exp in expressions)
+		foreach (var exp in expressions)
 		{
 			FieldOrPropertyInfo info = exp.GetMemberInfo();
 			if (info.IsEmpty || !info.CanGet)
@@ -420,51 +415,4 @@ public static partial class PSOExtensions
 
 		rawProperty.Value = value;
 	}
-
-	///// <exception cref="ArgumentNullException"/>
-	///// <exception cref="ReadOnlyPropertyException"/>
-	//[Obsolete("Stop using", error: true)]
-	//public static void UpdateProperty<T>(this T pso, Expression<Func<T, object?>> expression) where T : SonarrObject
-	//{
-	//    ArgumentNullException.ThrowIfNull(expression);
-
-	//    if (!expression.TryGetAsMember(out var memberExp))
-	//    {
-	//        return;
-	//    }
-
-	//    var func = expression.Compile();
-	//    UpdateProperty(pso, memberExp.Member.Name, func(pso));
-	//}
-
-	///// <exception cref="ArgumentException"/>
-	///// <exception cref="ArgumentNullException"/>
-	///// <exception cref="ReadOnlyPropertyException">
-	//[Obsolete("Stop using", error: true)]
-	//public static void UpdateProperty<T>(this T pso, string propertyName, object? value) where T : PSObject
-	//{
-	//    ArgumentNullException.ThrowIfNull(pso);
-	//    ArgumentException.ThrowIfNullOrEmpty(propertyName);
-
-	//    PSPropertyInfo? propInfo = pso.Properties[propertyName];
-	//    if (propInfo is null)
-	//    {
-	//        propInfo = WritableProperty.ToProperty<T>(propertyName, value);
-	//        pso.Properties.Add(propInfo);
-	//    }
-	//    else if (propInfo is ReadOnlyProperty)
-	//    {
-	//        throw new ReadOnlyPropertyException(propertyName);
-	//    }
-	//    else if (propInfo is WritableProperty writable && writable.ValueIsProper(value))
-	//    {
-	//        writable.Value = value;
-	//    }
-	//    else
-	//    {
-	//        propInfo.Value = value;
-	//    }
-	//}
-
-
 }

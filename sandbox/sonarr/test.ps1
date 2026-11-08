@@ -5,7 +5,7 @@
 	Run the smoke tests against the running Sonarr sandbox.
 
 .DESCRIPTION
-	Checks that the running sandbox is the one that README.md describes, through raw HTTP requests to
+	Checks that the running sandbox is the one that start.ps1 sets up, through raw HTTP requests to
 	its API rather than through PoshSonarr. In order, it checks Sonarr's identity, that a request
 	without the key or with a wrong one gets a 401, the update lock, the baseline tag and root
 	folder, the seeded series and their episodes, lookups through the mock metadata service,
