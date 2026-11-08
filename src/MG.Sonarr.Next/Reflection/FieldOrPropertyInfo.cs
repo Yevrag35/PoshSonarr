@@ -146,8 +146,7 @@ public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemb
 	/// </summary>
 	/// <param name="instance">The instance to read from, or null for static members.</param>
 	/// <returns>The member value from <paramref name="instance"/>.</returns>
-	/// <inheritdoc cref="FieldInfo.GetValue(object)" path="/exception"/>
-	/// <inheritdoc cref="PropertyInfo.GetValue(object)" path="/exception"/>
+	/// <exception cref="InvalidOperationException">Thrown when the member does not have a getter.</exception>
 	public readonly object? GetValue(object? instance)
 	{
 		if (!_canGet) ThrowCannotGetValue(_memberName);

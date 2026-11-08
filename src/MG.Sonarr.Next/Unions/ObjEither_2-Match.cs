@@ -50,17 +50,12 @@ partial struct ObjEither<T1, T2>
 	}
 
 	/// <summary>
-	/// Match on the stored value and invoke the corresponding function with an additional state argument.
+	/// Match on the stored value and invoke the corresponding action with an additional state argument.
 	/// </summary>
-	/// <remarks>
-	/// <para>If this instance is <see langword="default"/>, this method returns <see langword="default"/> for <typeparamref name="TOutput"/>.</para>
-	/// <para>Type constraint: <typeparamref name="TState"/> allows <c>ref struct</c> usage, so state can be stack-only and cannot be boxed.</para>
-	/// </remarks>
 	/// <typeparam name="TState">The type of the state value passed to the match functions.</typeparam>
 	/// <param name="state">A state value passed to the invoked function.</param>
-	/// <param name="f1">The function to invoke when the stored value is a <typeparamref name="T1"/>.</param>
-	/// <param name="f2">The function to invoke when the stored value is a <typeparamref name="T2"/>.</param>
-	/// <returns>The value returned by the invoked function, or <see langword="default"/> when this instance is <see langword="default"/>.</returns>
+	/// <param name="f1">The action to invoke when the stored value is a <typeparamref name="T1"/>.</param>
+	/// <param name="f2">The action to invoke when the stored value is a <typeparamref name="T2"/>.</param>
 	public void Match<TState>(
 		TState state,
 		Action<TState, T1> f1,
