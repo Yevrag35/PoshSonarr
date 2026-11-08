@@ -225,7 +225,7 @@ public sealed class SonarrErrorRecord : ErrorRecord, IHttpRequestUri
 				state.requestUri.CopyTo(chars);
 				int position = state.requestUri.Length;
 
-				ReadOnlySpan<char> separator = stackalloc char[3] { ' ', '-', ' ' };
+				ReadOnlySpan<char> separator = [' ', '-', ' '];
 				separator.CopyTo(chars.Slice(position));
 				position += separator.Length;
 

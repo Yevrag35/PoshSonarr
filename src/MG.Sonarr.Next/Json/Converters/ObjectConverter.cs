@@ -70,11 +70,12 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	/// <param name="configure">
 	/// The callback that adds the converter's span converters, array types, global renames, and ignored properties.
 	/// </param>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="policy"/> is null.</exception>
-	/// <exception cref="NullReferenceException">Thrown when <paramref name="configure"/> is null.</exception>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="resolver"/>, <paramref name="policy"/>, or <paramref name="configure"/> is null.</exception>
 	public ObjectConverter(IMetadataResolver resolver, WorkingNamingPolicy policy, Action<IObjectConverterConfig> configure)
 		: base(policy)
 	{
+		ArgumentNullException.ThrowIfNull(resolver);
+		ArgumentNullException.ThrowIfNull(configure);
 		ObjectConverterConfiguration config = new(resolver);
 		configure(config);
 

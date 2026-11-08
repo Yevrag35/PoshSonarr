@@ -52,9 +52,9 @@ public static class EitherExtensions
 	/// <param name="set">The <see cref="WildcardSet"/> to which the string representation of the integer value will be added.</param>
 	/// <param name="value">The integer value to be added to the <see cref="WildcardSet"/>.</param>
 	/// <returns><see langword="true"/> if the value was successfully added; otherwise, <see langword="false"/>.</returns>
+	[SkipLocalsInit]
 	private static bool AddSpan(WildcardSet set, int value)
 	{
-#if NET9_0_OR_GREATER
 		Span<char> chars = stackalloc char[LengthConstants.INT_MAX];
 		if (value.TryFormat(chars, out int written, provider: CultureInfo.InvariantCulture))
 		{
@@ -63,8 +63,5 @@ public static class EitherExtensions
 		}
 
 		return false;
-#else
-        return set.Add(value.ToString());
-#endif
 	}
 }

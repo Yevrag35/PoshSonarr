@@ -330,10 +330,11 @@ public static class SonarrJsonDependencyInjection
 	/// <returns>The ignored property names.</returns>
 	private static string[] EnumerateIgnoreProperties()
 	{
-		return [
+		return
+		[
 			Constants.MetaPropertyName,
-			 Constants.Property_ShortOverview,
-		 ];
+			Constants.Property_ShortOverview,
+		];
 	}
 
 	/// <summary>
@@ -351,7 +352,6 @@ public static class SonarrJsonDependencyInjection
 
 		return assemblies
 			.Where(ass => !ass.IsDynamic && IsMarked(ass))
-
 			.SelectMany(ass => ass.GetExportedTypes()
 								  .Where(t => t.IsClass
 											  &&

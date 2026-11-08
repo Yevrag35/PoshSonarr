@@ -215,6 +215,7 @@ internal ref struct SpanStringBuilder
 	/// <typeparam name="TEnum">The type of the enumeration. Must be an unmanaged enumeration type.</typeparam>
 	/// <param name="enumValue">The enumeration value to append.</param>
 	/// <inheritdoc cref="EnsureCapacity(pint)" path="/exception"/>
+	[SkipLocalsInit]
 	public void Append<TEnum>(TEnum enumValue) where TEnum : unmanaged, Enum
 	{
 		const int stack_cap = DEFAULT_CAPACITY / 2; // 64
