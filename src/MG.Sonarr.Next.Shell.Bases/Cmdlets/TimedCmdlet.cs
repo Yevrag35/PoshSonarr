@@ -155,7 +155,7 @@ public abstract class TimedCmdlet : SonarrCmdletBase, IApiCmdlet
 	/// <returns>The line, such as <c>Received response after 25ms - 404 (Not Found)</c>.</returns>
 	private static string GetAfterMessage(TimedValue elapsedTime, HttpStatusCode statusCode)
 	{
-		return Messenger.Format(
+		return string.Format(
 			provider: CultureInfo.CurrentCulture,
 			format: Messages.Verbose_ReceivedResponse_Timed_Format,
 			elapsedTime, statusCode.AsResponseString);
