@@ -3,6 +3,7 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Services.Http.Queries;
 using MG.Sonarr.Next.Shell.Attributes;
+using System.Net;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series;
 
@@ -189,7 +190,7 @@ public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
 				||
 				this.ShouldContinue(in kvp, ref yesToAll, ref noToAll)))
 			{
-				this.SendDeleteSeries(url);
+				this.SendDeleteSeries(in kvp, url);
 			}
 		}
 	}
@@ -219,11 +220,19 @@ public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
 	/// Sends the delete request for one series, and writes a warning or an error when it fails.
 	/// </summary>
 	/// <remarks>
-	/// An ignorable error, as Sonarr's answer for a series that it doesn't have is, becomes a warning, and any other
-	/// error is written to the error stream.
+	/// <para>
+	/// A series that Sonarr doesn't have gets a warning, not an error. A 404 for the delete is ignorable, and its message
+	/// becomes the warning. Sonarr 4 answers the delete of a series that it doesn't have with a 500 instead, so after a
+	/// 500, the method asks Sonarr for the series, and when that request gets a 404, it writes a warning that names the
+	/// series.
+	/// </para>
+	/// <para>
+	/// Any other failure is written to the error stream, and so is a 500 for a series that Sonarr still has.
+	/// </para>
 	/// </remarks>
+	/// <param name="kvp">The series' ID and its title, or <see langword="null"/> when the title isn't known.</param>
 	/// <param name="url">The series' endpoint path, with its query.</param>
-	private void SendDeleteSeries(string url)
+	private void SendDeleteSeries(in KeyValuePair<int, string?> kvp, string url)
 	{
 		var result = this.SendDeleteRequest(url);
 		if (result.IsError)
@@ -232,11 +241,28 @@ public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
 			{
 				this.WriteWarning(result.Error.Message);
 			}
+			else if (result.StatusCode == HttpStatusCode.InternalServerError && this.IsSeriesMissing(kvp.Key))
+			{
+				this.WriteWarning(GetMissingMessage(in kvp));
+			}
 			else
 			{
 				this.WriteConditionalError(result.Error);
 			}
 		}
+	}
+	/// <summary>
+	/// Asks Sonarr for the series with the specified ID, and determines whether Sonarr doesn't have it.
+	/// </summary>
+	/// <param name="id">The series' ID.</param>
+	/// <returns>
+	/// <see langword="true"/> if Sonarr answers the request for the series with a 404; otherwise,
+	/// <see langword="false"/>.
+	/// </returns>
+	private bool IsSeriesMissing(int id)
+	{
+		var result = this.SendGetRequest<SeriesObject>(this.Tag.GetUrlForId(id));
+		return result.StatusCode == HttpStatusCode.NotFound;
 	}
 	/// <summary>
 	/// Gets the question that the confirmation prompt asks for the specified series.
@@ -250,6 +276,17 @@ public sealed class RemoveSonarrSeriesCmdlet : SonarrApiCmdletBase
 			: kvp.Key;
 
 		return $"Are you sure you want to delete the Series \"{id}\"?";
+	}
+	/// <summary>
+	/// Gets the warning for the specified series, which Sonarr doesn't have.
+	/// </summary>
+	/// <param name="kvp">The series' ID and its title, or <see langword="null"/> when the title isn't known.</param>
+	/// <returns>The warning's message, which names the series by its title and ID, or by its ID alone.</returns>
+	private static string GetMissingMessage(in KeyValuePair<int, string?> kvp)
+	{
+		return !string.IsNullOrWhiteSpace(kvp.Value)
+			? $"Sonarr doesn't have the series \"{kvp.Value}\" ({kvp.Key}), so there's nothing to delete."
+			: $"Sonarr doesn't have a series with the ID {kvp.Key}, so there's nothing to delete.";
 	}
 
 	/// <summary>
