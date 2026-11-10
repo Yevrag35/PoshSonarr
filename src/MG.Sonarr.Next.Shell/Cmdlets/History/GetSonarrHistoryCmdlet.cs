@@ -225,7 +225,7 @@ public sealed class GetSonarrHistoryCmdlet : SonarrMetadataCmdlet
 		var timeProvider = provider.GetRequiredService<TimeProvider>();
 		if (this.HasParameter(Since) && IsInFuture(this.Since, timeProvider))
 		{
-			this.WriteWarning($"The specified parameter '{nameof(this.Since)}' is set to a time in the future. This could give unpredicatable results.");
+			this.WriteWarning($"The specified parameter '{nameof(this.Since)}' is set to a time in the future. This could give unpredictable results.");
 		}
 
 		if (this.ParameterSetName == BY_PAGING)
