@@ -25,20 +25,28 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Commands;
 public sealed class InvokeSonarrRssSyncCmdlet : TimedCmdlet
 {
 	/// <summary>
-	/// Gets or sets the priority of the command in Sonarr's queue.
+	/// Gets or sets the priority that the cmdlet asks Sonarr to give the command in its queue.
 	/// </summary>
 	/// <remarks>
+	/// <para>
+	/// Sonarr 4 ignores this priority: it queues every RSS sync that the API starts at normal priority.
+	/// </para>
+	/// <para>
 	/// A value that <see cref="CommandPriority"/> doesn't define is sent as the default priority.
+	/// </para>
 	/// </remarks>
-	/// <value>The command's priority. The default is <see cref="CommandPriority.Normal"/>.</value>
+	/// <value>The priority that the cmdlet asks for. The default is <see cref="CommandPriority.Normal"/>.</value>
 	[Parameter]
 	public CommandPriority Priority { get; set; }
 
 	/// <summary>
-	/// Gets or sets a value that indicates whether Sonarr records this run as the last run of its scheduled RSS sync
-	/// task.
+	/// Gets or sets a value that indicates whether the cmdlet asks Sonarr to record this run as the last run of its
+	/// scheduled RSS sync task.
 	/// </summary>
-	/// <value>The switch, which is present to update the scheduled task.</value>
+	/// <remarks>
+	/// Sonarr 4 ignores this switch: it records every RSS sync that it runs as the last run of the scheduled task.
+	/// </remarks>
+	/// <value>The switch, which is present to ask Sonarr to update the scheduled task.</value>
 	[Parameter]
 	public SwitchParameter UpdateScheduledTask { get; set; }
 
