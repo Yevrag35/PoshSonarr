@@ -24,11 +24,11 @@ public sealed class RemotePathObject : IdSonarrObject<RemotePathObject>,
 	/// <summary>
 	/// The number of properties that an instance is sized for, about the number of fields that Sonarr sends.
 	/// </summary>
-	const int CAPACITY = 5;
+	private const int CAPACITY = 5;
 	/// <summary>
 	/// The full name of the class, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
-	static readonly string _typeName = typeof(RemotePathObject).GetName();
+	private static readonly string _typeName = typeof(RemotePathObject).GetName();
 
 	/// <summary>
 	/// Gets the host of the download client that the mapping applies to.

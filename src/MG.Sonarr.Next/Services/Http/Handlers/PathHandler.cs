@@ -23,15 +23,15 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// </remarks>
 public sealed class PathHandler : DelegatingHandler
 {
-	const string API = "/api";
-	const string API_V3 = "api/v3";
-	const string V3 = "/v3/";
+	private const string API = "/api";
+	private const string API_V3 = "api/v3";
+	private const string V3 = "/v3/";
 	/// <summary>
 	/// The key of the request option that marks a ping request, whose path gets the URL base but no API prefix.
 	/// </summary>
 	internal const string Ping = "IsPing";
-	readonly string _basePath;
-	readonly bool _noApiInPath;
+	private readonly string _basePath;
+	private readonly bool _noApiInPath;
 
 	/// <summary>
 	/// Initializes a new <see cref="PathHandler"/> instance with the URL base and the API prefix setting of the specified

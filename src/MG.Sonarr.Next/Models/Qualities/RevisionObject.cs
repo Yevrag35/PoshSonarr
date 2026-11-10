@@ -22,11 +22,11 @@ public sealed class RevisionObject : SonarrObject,
 	/// <summary>
 	/// The number of properties that a new instance makes room for.
 	/// </summary>
-	const int CAPACITY = 3;
+	private const int CAPACITY = 3;
 	/// <summary>
 	/// The type's full name, which <see cref="SetPSTypeName"/> puts first in the PowerShell type names.
 	/// </summary>
-	static readonly string _typeName = typeof(RevisionObject).GetName();
+	private static readonly string _typeName = typeof(RevisionObject).GetName();
 
 	/// <summary>
 	/// Gets a value that indicates whether the release is a repack.

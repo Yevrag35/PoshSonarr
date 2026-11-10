@@ -3,6 +3,13 @@
 	<PropertyGroup>
 		<Product>PoshSonarr .NET 10</Product>
 		<Description>The binary library of the PoshSonarr PowerShell module.</Description>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<!--
+			PowerShell looks for a module's dependencies in the module's folder, not in the NuGet cache, so this project copies
+			its NuGet packages' runtime assemblies into its output folder, which a class library's build leaves out by default.
+			MG.Sonarr.Next excludes the runtime assets of PowerShell's own packages, so no part of PowerShell is copied.
+		-->
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -11,15 +18,6 @@
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<NoWarn>1701;1702;IDE0130</NoWarn>
-	</PropertyGroup>
-
-	<!--
-		PowerShell looks for a module's dependencies in the module's folder, not in the NuGet cache, so this project copies
-		its NuGet packages' runtime assemblies into its output folder, which a class library's build leaves out by default.
-		MG.Sonarr.Next excludes the runtime assets of PowerShell's own packages, so no part of PowerShell is copied.
-	-->
-	<PropertyGroup>
-		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 	</PropertyGroup>
 
 	<ItemGroup>

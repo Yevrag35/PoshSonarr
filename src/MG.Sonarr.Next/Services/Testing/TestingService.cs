@@ -25,7 +25,7 @@ public interface ITestingService
 /// </summary>
 internal sealed class TestingService : ITestingService
 {
-	readonly ISonarrClient _client;
+	private readonly ISonarrClient _client;
 
 	/// <summary>
 	/// Initializes a new <see cref="TestingService"/> instance with the specified Sonarr client.

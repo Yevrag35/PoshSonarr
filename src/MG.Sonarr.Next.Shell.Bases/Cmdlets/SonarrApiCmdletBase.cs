@@ -8,14 +8,37 @@ using MG.Sonarr.Next.Unions;
 namespace MG.Sonarr.Next.Shell.Cmdlets;
 
 /// <summary>
-/// An <see langword="abstract"/>, base class for Sonarr cmdlets that issue HTTP requests to Sonarr API
-/// endpoints.
+/// Provides the synchronous <c>Send*Request</c> helpers that Sonarr cmdlets send their HTTP requests to Sonarr API
+/// endpoints through.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Each helper starts the cmdlet's timer, sends the request through the <see cref="ISonarrClient"/> of the cmdlet's
+/// scope, and blocks the calling thread until the result is read. The client puts the cmdlet in the request, so the
+/// cmdlet's verbose and debug output reports the request and its response.
+/// </para>
+/// <para>
+/// The helpers don't throw for a failed request. The result carries the error record instead, and the cmdlet decides
+/// whether to write it. Unless a caller passes a token that can be canceled, a helper sends with
+/// <see cref="SonarrCmdletBase.StoppingToken"/>, so stopping the pipeline, as Ctrl+C does, ends a request in flight,
+/// and its result reports the error with the category <see cref="ErrorCategory.OperationStopped"/>.
+/// </para>
+/// </remarks>
 [DebuggerStepThrough]
 public abstract class SonarrApiCmdletBase : TimedCmdlet
 {
 	private ISonarrClient _client = null!;
 
+	/// <summary>
+	/// Runs the base class's setup for a new scope and then resolves the scope's <see cref="ISonarrClient"/>, which the
+	/// <c>Send*Request</c> helpers send through.
+	/// </summary>
+	/// <remarks>
+	/// It runs before <see cref="SonarrCmdletBase.OnCreatingScope(IServiceProvider)"/>, so a derived cmdlet can send
+	/// requests from there.
+	/// </remarks>
+	/// <param name="provider">The scoped service provider of the cmdlet.</param>
+	/// <exception cref="InvalidOperationException">Thrown when the scope has no <see cref="ISonarrClient"/>.</exception>
 	private protected override void OnCreatingScopeInternal(IServiceProvider provider)
 	{
 		base.OnCreatingScopeInternal(provider);
@@ -34,7 +57,7 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	}
 
 	/// <summary>
-	/// Sends a DELETE Http request to the specified Sonarr API endpoint.
+	/// Sends a DELETE HTTP request to the specified Sonarr API endpoint.
 	/// </summary>
 	/// <param name="path">The relative URL path of the API endpoint.</param>
 	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
@@ -49,8 +72,12 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	}
 
 	/// <summary>
-	/// Sends a GET Http request to the specified Sonarr API endpoint.
+	/// Sends a GET HTTP request to the specified Sonarr API endpoint and deserializes the response's body.
 	/// </summary>
+	/// <remarks>
+	/// A value that is an <see cref="MG.Sonarr.Next.Json.IJsonMetadataTaggable"/> gets its metadata tag, and a list of more than one item
+	/// that can be sorted is sorted.
+	/// </remarks>
 	/// <typeparam name="T">The type of object the response's content will be deserialized as.</typeparam>
 	/// <param name="path">The relative URL path of the API endpoint.</param>
 	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
@@ -64,13 +91,13 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	}
 
 	/// <summary>
-	/// Sends a POST Http request to the specified Sonarr API endpoint with no body in the request but deserializes 
-	/// the response as the specified type <typeparamref name="T"/>.
+	/// Sends a POST HTTP request without a body to the specified Sonarr API endpoint and deserializes the response's
+	/// body as <typeparamref name="T"/>.
 	/// </summary>
 	/// <typeparam name="T">The type of object to deserialize the response's content to.</typeparam>
-	/// <param name="path"></param>
+	/// <param name="path">The endpoint's path, relative to the API.</param>
 	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
-	/// <returns></returns>
+	/// <returns>The result of the request, which holds the deserialized value on success.</returns>
 	protected SonarrClientResult<T> SendPostRequest<T>(string path, CancellationToken token = default)
 	{
 		this.StartTimer();
@@ -119,10 +146,14 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	}
 
 	/// <summary>
-	/// Attempts to commit or reset properties of the <typeparamref name="T"/> object depending on if
-	/// the accompanying <see cref="SonarrClientResult"/> indicates an error occurred.
+	/// Commits the properties of the specified object when the response reports success, or resets them and writes the
+	/// response's error when it reports a failure.
 	/// </summary>
-	/// <typeparam name="T">The type of <see cref="SonarrObject"/> to process.</typeparam>
+	/// <remarks>
+	/// Serializing a model for a request body can change its properties, and committing or resetting it brings it back
+	/// in step afterward. The error is written whether or not it's ignorable, and <c>-ErrorAction</c> decides what
+	/// happens to it.
+	/// </remarks>
 	/// <param name="sonarrObj">
 	/// The <see cref="SonarrObject"/> whose properties can be
 	/// either committed or reset.
@@ -133,10 +164,10 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	/// the properties of <paramref name="sonarrObj"/>.
 	/// </param>
 	/// <returns>
-	/// <see langword="true"/> if <paramref name="sonarrObj"/> had it properties committed, indicating
+	/// <see langword="true"/> if <paramref name="sonarrObj"/> had its properties committed, indicating
 	/// a successful operation; otherwise, <see langword="false"/> indicating an error occurred.
 	/// </returns>
-	protected bool TryCommitFromResponse<T>(T sonarrObj, SonarrClientResult response) where T : SonarrObject
+	protected bool TryCommitFromResponse(SonarrObject sonarrObj, SonarrClientResult response)
 	{
 		if (response.IsError)
 		{

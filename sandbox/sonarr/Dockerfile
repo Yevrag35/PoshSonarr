@@ -16,10 +16,13 @@ RUN : "${SONARR_VERSION:?compose.yaml passes SONARR_VERSION}" "${SONARR_SHA256:?
 	&& rm /tmp/sonarr.tar.gz \
 	&& printf 'UpdateMethod=Docker\nPackageVersion=%s\nPackageAuthor=PoshSonarr sandbox\n' "${SONARR_VERSION}" > /opt/sonarr/package_info
 
+# /tv-temp is an empty folder beside /tv for tests to add as a root folder and remove, since Sonarr accepts a root
+# folder only when the folder exists and Sonarr can write to it. It isn't a volume, so recreating the container empties
+# it.
 RUN groupadd -g 1000 sonarr \
 	&& useradd -u 1000 -g sonarr -d /config -M -s /usr/sbin/nologin sonarr \
-	&& mkdir -p /config /tv \
-	&& chown sonarr:sonarr /config /tv
+	&& mkdir -p /config /tv /tv-temp \
+	&& chown sonarr:sonarr /config /tv /tv-temp
 
 USER sonarr
 EXPOSE 8989

@@ -11,7 +11,7 @@ public sealed class PostRename
 	/// <summary>
 	/// The JSON name of the field that holds the file IDs.
 	/// </summary>
-	const string FILES = "files";
+	private const string FILES = "files";
 	/// <summary>
 	/// The IDs of the episode files to rename.
 	/// </summary>
@@ -101,7 +101,7 @@ public sealed class PostRename
 	/// <summary>
 	/// The format of <see cref="ToString"/>'s text, with the series ID and the comma-separated file IDs.
 	/// </summary>
-	const string FORMAT = "SeriesId = {0}; Ids = {{{1}}}";
+	private const string FORMAT = "SeriesId = {0}; Ids = {{{1}}}";
 	/// <summary>
 	/// Returns a string that shows the series ID and the file IDs.
 	/// </summary>

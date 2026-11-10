@@ -1,22 +1,74 @@
 using MG.Sonarr.Next.Exceptions.Shell;
 using MG.Sonarr.Next.Metadata;
+using MG.Sonarr.Next.Models.RootFolders;
+using MG.Sonarr.Next.Shell.Internal;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders;
 
+/// <summary>
+/// Represents the <c>New-SonarrRootFolder</c> cmdlet, which adds a root folder to Sonarr.
+/// </summary>
+/// <remarks>
+/// <para>
+/// The cmdlet posts the full path of <c>-Path</c> to Sonarr and writes the root folder that Sonarr returns to the
+/// pipeline. A path that's fully qualified on Linux, macOS, or Windows goes to Sonarr as it's given, and any other path
+/// is converted to a full path from the current location first. <c>-Path</c> binds by property name, and through its
+/// <c>FullName</c> alias, so a folder from <c>Get-Item</c> or <c>Get-ChildItem</c> can be piped to the cmdlet.
+/// </para>
+/// <para>
+/// The cmdlet confirms each folder before it adds it, and its confirm impact is Low, so it prompts only under
+/// <c>-Confirm</c> or a <c>$ConfirmPreference</c> of Low.
+/// </para>
+/// </remarks>
 [Cmdlet(VerbsCommon.New, "SonarrRootFolder", SupportsShouldProcess = true, ConfirmImpact = ConfirmImpact.Low)]
 public sealed class NewSonarrRootFolderCmdlet : SonarrApiCmdletBase
 {
-	MetadataTag Tag { get; set; } = null!;
+	/// <summary>
+	/// Gets or sets the metadata tag of the root folder endpoint, which the new folder is posted to.
+	/// </summary>
+	/// <value>The root folder's metadata tag, which <see cref="OnCreatingScope(IServiceProvider)"/> sets.</value>
+	private MetadataTag Tag { get; set; } = null!;
 
+	/// <summary>
+	/// Gets or sets the path of the folder to add.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// A path that's fully qualified on Linux, macOS, or Windows goes to Sonarr as it's given, since Sonarr reads it on
+	/// its own computer: one that starts with <c>/</c>, as in <c>/data/tv</c>, a UNC path that starts with <c>\\</c> or
+	/// <c>//</c>, or a drive path such as <c>C:\tv</c>. The cmdlet checks only the path's text, the same way on every
+	/// platform, so a session on any platform can give a path for a Sonarr on any other.
+	/// </para>
+	/// <para>
+	/// Any other path, such as a relative one, is converted to a full path from the current location, and the folder
+	/// doesn't have to exist on this computer.
+	/// </para>
+	/// <para>
+	/// The parameter binds by property name from the pipeline, and its alias is <c>FullName</c>.
+	/// </para>
+	/// </remarks>
+	/// <value>The folder's path.</value>
 	[Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
 	[Alias("FullName")]
 	public string Path { get; set; } = string.Empty;
 
+	/// <summary>
+	/// Runs the base class's setup for the scope, then gets the root folder's metadata tag from the scope.
+	/// </summary>
+	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	protected override void OnCreatingScope(IServiceProvider provider)
 	{
 		base.OnCreatingScope(provider);
 		this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.RootFolder];
 	}
+	/// <summary>
+	/// Gets the full path of <c>-Path</c> and adds it to Sonarr as a root folder once the action is confirmed.
+	/// </summary>
+	/// <remarks>
+	/// When a path that isn't fully qualified can't be converted, the cmdlet writes the error and goes on to the next
+	/// input.
+	/// </remarks>
+	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	protected override void Process(IServiceProvider provider)
 	{
 		string path = this.GetAbsolutePath(this.Path);
@@ -26,9 +78,35 @@ public sealed class NewSonarrRootFolderCmdlet : SonarrApiCmdletBase
 		}
 	}
 
-	/// <exception cref="SonarrParameterException"/>
+	/// <summary>
+	/// Gets the specified path as it's given when it's fully qualified on Linux, macOS, or Windows, or else converts it
+	/// to a provider path from the current location, whether or not the item it names exists.
+	/// </summary>
+	/// <remarks>
+	/// A UNC path counts as fully qualified, and the check reads only the path's text, so a path on Sonarr's computer
+	/// goes to Sonarr as it is, whatever platform the session runs on. Converting it instead would put the current drive
+	/// in front of a path such as <c>/data/tv</c> on Windows.
+	/// </remarks>
+	/// <param name="providedPath">The path that <c>-Path</c> gives, which can be relative.</param>
+	/// <returns>
+	/// <paramref name="providedPath"/> when it's fully qualified; otherwise, the provider path that it names.
+	/// </returns>
+	/// <exception cref="SonarrParameterException">
+	/// Thrown when a path that isn't fully qualified converts to an empty path or one of only white space.
+	/// </exception>
+	/// <exception cref="System.Management.Automation.DriveNotFoundException">
+	/// Thrown when a path that isn't fully qualified names a drive that doesn't exist.
+	/// </exception>
+	/// <exception cref="ProviderNotFoundException">
+	/// Thrown when a path that isn't fully qualified names a provider that isn't loaded.
+	/// </exception>
 	private string GetAbsolutePath(string providedPath)
 	{
+		if (ServerPath.IsFullyQualified(providedPath, allowUnc: true))
+		{
+			return providedPath;
+		}
+
 		string path = this.GetUnresolvedProviderPathFromPSPath(providedPath);
 		if (string.IsNullOrWhiteSpace(path))
 		{
@@ -38,10 +116,19 @@ public sealed class NewSonarrRootFolderCmdlet : SonarrApiCmdletBase
 
 		return path;
 	}
+	/// <summary>
+	/// Posts the body that the specified function builds from the specified path, and writes the root folder that
+	/// Sonarr returns to the pipeline.
+	/// </summary>
+	/// <remarks>
+	/// When the request fails, the method writes its error, whatever the error is.
+	/// </remarks>
+	/// <param name="path">The folder's full path.</param>
+	/// <param name="toBody">The function that builds the request's body from <paramref name="path"/>.</param>
 	private void RegisterFolder(string path, Func<string, object> toBody)
 	{
 		object obj = toBody(path);
-		var response = this.SendPostRequest<PSObject>(this.Tag.UrlBase, obj);
+		var response = this.SendPostRequest<RootFolderObject>(this.Tag.UrlBase, obj);
 		if (response.TryGetT1(out var pso, out var error))
 		{
 			this.WriteObject(pso);

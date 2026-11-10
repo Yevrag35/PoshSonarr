@@ -45,7 +45,7 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 	/// <summary>
 	/// The number of properties that a series is created with room for.
 	/// </summary>
-	const int CAPACITY = 46;
+	private const int CAPACITY = 46;
 	/// <summary>
 	/// The name of the property that holds the date that the series first aired.
 	/// </summary>
@@ -61,7 +61,7 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 	/// <summary>
 	/// The PowerShell type name of <see cref="SeriesObject"/>.
 	/// </summary>
-	static readonly string _typeName = typeof(SeriesObject).GetName();
+	private static readonly string _typeName = typeof(SeriesObject).GetName();
 	/// <summary>
 	/// The date that the series first aired, held back from PowerShell until the object is serialized.
 	/// </summary>
@@ -287,7 +287,7 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 	/// <summary>
 	/// The number of property names to capitalize.
 	/// </summary>
-	const int DICT_CAPACITY = 2;
+	private const int DICT_CAPACITY = 2;
 	/// <summary>
 	/// The maps between JSON field names and property names, built when first used.
 	/// </summary>

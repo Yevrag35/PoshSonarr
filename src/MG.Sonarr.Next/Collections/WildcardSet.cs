@@ -112,11 +112,13 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>
 	public bool Add(int value)
 	{
 		Span<char> chars = stackalloc char[LengthConstants.INT_MAX];
-		_ = value.TryFormat(chars, out int written, provider: CultureInfo.InvariantCulture);
-		chars = chars.Slice(0, written);
-#if NET9_0_OR_GREATER
+		bool result = false;
+		if (value.TryFormat(chars, out int written, provider: CultureInfo.InvariantCulture))
+		{
+			result = this.Add(chars.UnsafeSlice(0, written));
+		}
 
-		return this.Add(chars);
+		return result;
 	}
 
 	/// <summary>
@@ -145,11 +147,6 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>
 	{
 		return _alternate.Contains(value);
 	}
-
-#else
-        return this.Add(Wildcard.Parse(chars));
-    }
-#endif
 
 	/// <summary>
 	/// Determines whether the set contains a specific wildcard.

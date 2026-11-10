@@ -2,7 +2,7 @@ using MG.Sonarr.Next.Collections.Intrinsics;
 
 namespace MG.Sonarr.Next.Metadata;
 
-partial class MetadataList<T>
+public partial class MetadataList<T>
 {
 	/// <summary>
 	/// Returns an enumerator over the list's elements.

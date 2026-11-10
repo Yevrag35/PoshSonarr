@@ -226,7 +226,7 @@ public abstract class WritableProperty : PSPropertyInfo
 	/// The open generic <see cref="WritableSonarrProperty{T}"/> type, which
 	/// <see cref="CreateSonarrObjectProperty(string, SonarrObject)"/> closes over a nested object's runtime type.
 	/// </summary>
-	static readonly Type _sonarrPropertyType = typeof(WritableSonarrProperty<>);
+	private static readonly Type _sonarrPropertyType = typeof(WritableSonarrProperty<>);
 	/// <summary>
 	/// Creates a writable property, typed by the nested object's runtime type, that holds a nested Sonarr object.
 	/// </summary>

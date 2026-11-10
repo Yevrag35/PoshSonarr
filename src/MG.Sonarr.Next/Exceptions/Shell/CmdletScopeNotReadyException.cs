@@ -5,7 +5,7 @@ namespace MG.Sonarr.Next.Exceptions.Shell;
 /// </summary>
 public sealed class CmdletScopeNotReadyException : PoshSonarrException
 {
-	const string DEF_MSG = "The dependency injection scope for the cmdlet has not yet been initialized.";
+	private const string DEF_MSG = "The dependency injection scope for the cmdlet has not yet been initialized.";
 
 	/// <summary>
 	/// Gets the type of the cmdlet that caused this exception to be thrown.

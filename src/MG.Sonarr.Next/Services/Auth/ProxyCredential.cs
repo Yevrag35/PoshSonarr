@@ -9,7 +9,7 @@ namespace MG.Sonarr.Next.Services.Auth;
 /// </remarks>
 public sealed class ProxyCredential : ICredentials
 {
-	readonly ICredentials _nc;
+	private readonly ICredentials _nc;
 
 	/// <summary>
 	/// Initializes a new <see cref="ProxyCredential"/> instance with the specified credentials.

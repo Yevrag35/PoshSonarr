@@ -22,11 +22,11 @@ public sealed class DownloadClientConfigObject : IdSonarrObject<DownloadClientCo
 	/// <summary>
 	/// The full name of the class, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
-	static readonly string _typeName = typeof(DownloadClientConfigObject).GetName();
+	private static readonly string _typeName = typeof(DownloadClientConfigObject).GetName();
 	/// <summary>
 	/// The number of properties that an instance is sized for, about the number of fields that Sonarr sends.
 	/// </summary>
-	const int CAPACITY = 5;
+	private const int CAPACITY = 5;
 
 	/// <summary>
 	/// Initializes a new <see cref="DownloadClientConfigObject"/> instance with no properties, for the JSON converter

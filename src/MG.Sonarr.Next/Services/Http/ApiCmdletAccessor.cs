@@ -19,7 +19,7 @@ internal sealed class ApiCmdletAccessor
 	/// <summary>
 	/// The key of the request option that holds the cmdlet that sent the request.
 	/// </summary>
-	static readonly HttpRequestOptionsKey<IApiCmdlet> s_cmdletKey = new(nameof(IApiCmdlet));
+	private static readonly HttpRequestOptionsKey<IApiCmdlet> s_cmdletKey = new(nameof(IApiCmdlet));
 
 	/// <summary>
 	/// Gets or sets the cmdlet that the scope belongs to.

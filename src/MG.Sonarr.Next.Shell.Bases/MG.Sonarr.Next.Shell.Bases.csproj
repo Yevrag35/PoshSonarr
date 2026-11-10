@@ -4,6 +4,7 @@
 		<RootNamespace>MG.Sonarr.Next.Shell</RootNamespace>
 		<Product>PoshSonarr Bases .NET 10</Product>
 		<Description>The binary library of the PoshSonarr PowerShell module containing the base modules.</Description>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -13,6 +14,10 @@
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<NoWarn>1701;1702;IDE0130</NoWarn>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="MG.Sonarr.Next.Tests" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\MG.Sonarr.Next\MG.Sonarr.Next.csproj" />

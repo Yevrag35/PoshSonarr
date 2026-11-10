@@ -25,11 +25,11 @@ public sealed class DelayProfileObject : TagUpdateObject<DelayProfileObject>,
 	/// <summary>
 	/// The number of properties that a new instance makes room for.
 	/// </summary>
-	const int CAPACITY = 10;
+	private const int CAPACITY = 10;
 	/// <summary>
 	/// The type's full name, which <see cref="SetPSTypeName"/> puts first in the PowerShell type names.
 	/// </summary>
-	static readonly string _typeName = typeof(DelayProfileObject).GetName();
+	private static readonly string _typeName = typeof(DelayProfileObject).GetName();
 
 	/// <summary>
 	/// Initializes a new <see cref="DelayProfileObject"/> instance with no properties, which the JSON converter fills.
@@ -63,11 +63,11 @@ public sealed class DelayProfileObject : TagUpdateObject<DelayProfileObject>,
 	/// <summary>
 	/// The names of the string properties whose values get an uppercase first letter.
 	/// </summary>
-	static readonly OneStringSet _capitalSet = new("PreferredProtocol");
+	private static readonly OneStringSet _capitalSet = new("PreferredProtocol");
 	/// <summary>
 	/// The JSON name maps, built the first time they're read.
 	/// </summary>
-	static readonly Lazy<JsonNameHolder> _names = new(GetJsonNames);
+	private static readonly Lazy<JsonNameHolder> _names = new(GetJsonNames);
 	/// <summary>
 	/// Builds the JSON name maps from the pairs that rename the two delay fields.
 	/// </summary>

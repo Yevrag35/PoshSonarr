@@ -77,25 +77,25 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 	/// <summary>
 	/// The message of the exception that an error response, or a successful one with an empty body, gives.
 	/// </summary>
-	const string NO_FILE_MESSAGE = "The Sonarr server didn't return the file.";
+	private const string NO_FILE_MESSAGE = "The Sonarr server didn't return the file.";
 
 	/// <summary>
 	/// The connection's URL base, with its leading slash and without its trailing one, or an empty string when the
 	/// connection has none.
 	/// </summary>
-	readonly string _basePath;
+	private readonly string _basePath;
 	/// <summary>
 	/// The typed client that sends the download requests.
 	/// </summary>
-	readonly HttpClient _client;
+	private readonly HttpClient _client;
 	/// <summary>
 	/// The accessor that holds the cmdlet of the scope that resolved the client.
 	/// </summary>
-	readonly ApiCmdletAccessor _cmdletAccessor;
+	private readonly ApiCmdletAccessor _cmdletAccessor;
 	/// <summary>
 	/// The factory that each request message opens its scope from.
 	/// </summary>
-	readonly IServiceScopeFactory _scopeFactory;
+	private readonly IServiceScopeFactory _scopeFactory;
 
 	/// <summary>
 	/// Initializes a new <see cref="SonarrDownloadClient"/> instance with the specified typed client and the connection's

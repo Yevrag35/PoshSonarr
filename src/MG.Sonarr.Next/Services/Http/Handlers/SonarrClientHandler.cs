@@ -55,5 +55,5 @@ internal sealed class SonarrClientHandler : HttpClientHandler
 	/// <param name="chain">The certificate's chain.</param>
 	/// <param name="errors">The errors that validating the certificate found.</param>
 	/// <returns>Always <see langword="true"/>.</returns>
-	static bool SkipValidation(HttpRequestMessage msg, X509Certificate2? cert, X509Chain? chain, SslPolicyErrors errors) => true;
+	private static bool SkipValidation(HttpRequestMessage msg, X509Certificate2? cert, X509Chain? chain, SslPolicyErrors errors) => true;
 }

@@ -22,7 +22,9 @@ public interface ICommandTracker
 	/// Sends an RSS sync command to Sonarr.
 	/// </summary>
 	/// <param name="priority">The command priority to request.</param>
-	/// <param name="updateScheduledTask">A value that indicates whether the RSS scheduled task is updated.</param>
+	/// <param name="updateScheduledTask">
+	/// A value that indicates whether to ask Sonarr to update the RSS sync's scheduled task.
+	/// </param>
 	/// <param name="token">The cancellation token for the request.</param>
 	/// <returns>The result of the submitted RSS sync command.</returns>
 	SonarrClientResult<CommandObject> SendRssSync(CommandPriority priority, bool updateScheduledTask, CancellationToken token = default);
@@ -33,8 +35,8 @@ public interface ICommandTracker
 /// </summary>
 file sealed class CommandTracker : ICommandTracker
 {
-	readonly ISonarrClient _client;
-	readonly ICommandHistory _history;
+	private readonly ISonarrClient _client;
+	private readonly ICommandHistory _history;
 
 	/// <summary>
 	/// Initializes a new <see cref="CommandTracker"/> instance with the specified client and history store.

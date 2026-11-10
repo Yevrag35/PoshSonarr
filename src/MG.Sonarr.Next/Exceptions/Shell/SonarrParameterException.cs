@@ -29,9 +29,9 @@ public enum ParameterErrorType
 /// </summary>
 public sealed class SonarrParameterException : PoshSonarrException
 {
-	const string AND = "and ";
-	const string MSG_FORMAT = "The cmdlet parameter '{0}' is {1}.";
-	const string MSG_ADD_FORMAT = MSG_FORMAT + " {2}";
+	private const string AND = "and ";
+	private const string MSG_FORMAT = "The cmdlet parameter '{0}' is {1}.";
+	private const string MSG_ADD_FORMAT = MSG_FORMAT + " {2}";
 
 	/// <summary>
 	/// Gets the type of error that occurred with the parameter.

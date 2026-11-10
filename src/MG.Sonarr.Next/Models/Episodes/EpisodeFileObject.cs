@@ -25,11 +25,11 @@ public sealed class EpisodeFileObject : IdSonarrObject<EpisodeFileObject>,
 	/// <summary>
 	/// The number of properties that an episode file is created with room for.
 	/// </summary>
-	const int CAPACITY = 14;
+	private const int CAPACITY = 14;
 	/// <summary>
 	/// The PowerShell type name of <see cref="EpisodeFileObject"/>.
 	/// </summary>
-	static readonly string _typeName = typeof(EpisodeFileObject).GetName();
+	private static readonly string _typeName = typeof(EpisodeFileObject).GetName();
 
 	/// <summary>
 	/// Gets the ID of the episode file.

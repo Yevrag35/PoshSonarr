@@ -6,14 +6,15 @@ namespace MG.Sonarr.Next.Json.Converters.Spans;
 /// </summary>
 /// <remarks>
 /// It's for values such as titles, labels, hashes, and file modes, which Sonarr expects back as strings, and,
-/// without trimming, for credentials, which go back exactly as they came.
+/// without trimming, for text that goes back exactly as it came, such as credentials, names, and the settings that a
+/// person types.
 /// </remarks>
 public sealed class AlwaysStringConverter : SpanConverter<string>
 {
 	/// <summary>
 	/// A value that indicates whether white space is trimmed from both ends of a value.
 	/// </summary>
-	readonly bool _trim;
+	private readonly bool _trim;
 
 	/// <summary>
 	/// Initializes a new <see cref="AlwaysStringConverter"/> instance that trims white space from both ends of a value.

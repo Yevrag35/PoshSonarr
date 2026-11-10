@@ -39,15 +39,15 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 	/// <summary>
 	/// The number of properties that an episode is created with room for.
 	/// </summary>
-	const int CAPACITY = 25;
+	private const int CAPACITY = 25;
 	/// <summary>
 	/// The PowerShell type name of <see cref="EpisodeObject"/>.
 	/// </summary>
-	static readonly string _typeName = typeof(EpisodeObject).GetName();
+	private static readonly string _typeName = typeof(EpisodeObject).GetName();
 	/// <summary>
 	/// The name of the property that holds the episode's air date.
 	/// </summary>
-	const string AIR_DATE = "AirDate";
+	private const string AIR_DATE = "AirDate";
 	/// <summary>
 	/// The episode's air date, held back from PowerShell until the object is serialized.
 	/// </summary>

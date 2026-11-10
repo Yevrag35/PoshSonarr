@@ -151,36 +151,36 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	/// <summary>
 	/// The path of the endpoint that <see cref="SendTest{T}(CancellationToken)"/> requests.
 	/// </summary>
-	const string TEST_API = "/system/status";
+	private const string TEST_API = "/system/status";
 
 	/// <summary>
 	/// The typed client that sends the requests.
 	/// </summary>
-	readonly HttpClient _client;
+	private readonly HttpClient _client;
 	/// <summary>
 	/// The accessor that holds the cmdlet of the scope that resolved the client.
 	/// </summary>
-	readonly ApiCmdletAccessor _cmdletAccessor;
+	private readonly ApiCmdletAccessor _cmdletAccessor;
 	/// <summary>
 	/// The connection's JSON options, which serialize request bodies and deserialize response bodies.
 	/// </summary>
-	ISonarrJsonOptions _options;
+	private ISonarrJsonOptions _options;
 	/// <summary>
 	/// The resolver that tags the values that requests return.
 	/// </summary>
-	readonly IMetadataResolver _resolver;
+	private readonly IMetadataResolver _resolver;
 	/// <summary>
 	/// The reader that turns each exchange into a result.
 	/// </summary>
-	readonly IResponseReader _responseReader;
+	private readonly IResponseReader _responseReader;
 	/// <summary>
 	/// The factory that each request message opens its scope from.
 	/// </summary>
-	readonly IServiceScopeFactory _scopeFactory;
+	private readonly IServiceScopeFactory _scopeFactory;
 	/// <summary>
 	/// The connection's settings, which <see cref="SendTest(CancellationToken)"/> stores the authentication type in.
 	/// </summary>
-	readonly IConnectionSettings _settings;
+	private readonly IConnectionSettings _settings;
 
 	/// <summary>
 	/// Initializes a new <see cref="SonarrHttpClient"/> instance with the specified typed client and the connection's

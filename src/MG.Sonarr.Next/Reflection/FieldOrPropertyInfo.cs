@@ -8,12 +8,6 @@ namespace MG.Sonarr.Next.Reflection;
 public interface IMemberInfo
 {
 	/// <summary>
-	/// Gets a value that indicates whether the member represented by this instance is static.
-	/// </summary>
-	/// <value><see langword="true"/> when the member is static; otherwise, <see langword="false"/>.</value>
-	bool IsStatic { get; }
-
-	/// <summary>
 	/// Gets the name of the member.
 	/// </summary>
 	/// <value>The member name.</value>
@@ -74,15 +68,13 @@ public interface IMemberSetter : IMemberInfo
 [DebuggerDisplay(@"\{{MemberName,nq} = {_either}\}")]
 public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemberInfo
 {
-	private readonly Either<PropertyInfo, FieldInfo> _either;
+	private readonly ObjEither<PropertyInfo, FieldInfo> _either;
 	private readonly MemberInfo? _member;
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	private readonly bool _canGet;
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	private readonly bool _canSet;
-	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	private readonly bool _isStatic;
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	private readonly string? _memberName;
 
@@ -112,20 +104,13 @@ public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemb
 	/// </summary>
 	/// <value><see langword="true"/> when this instance is empty; otherwise, <see langword="false"/>.</value>
 	[MemberNotNullWhen(false, nameof(_memberName), nameof(_member))]
-	public readonly bool IsEmpty => _either.IsDefaultOrEmpty;
+	public readonly bool IsEmpty => _either.IsNeither;
 
 	/// <summary>
 	/// Gets the name of the field or property represented by this instance.
 	/// </summary>
 	/// <value>The field or property name, or an empty string when this instance is empty.</value>
 	public readonly string MemberName => _memberName ?? string.Empty;
-
-	/// <summary>
-	/// Gets a value that indicates whether the member represented by this instance is static.
-	/// </summary>
-	/// <value><see langword="true"/> when the member is static; otherwise, <see langword="false"/>.</value>
-	[MemberNotNullWhen(true, nameof(_member), nameof(_memberName))]
-	public readonly bool IsStatic => _isStatic;
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="FieldOrPropertyInfo"/> with the specified backing <see cref="FieldInfo"/>.
@@ -140,7 +125,6 @@ public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemb
 		_canGet = true;
 		_canSet = !fieldInfo.IsInitOnly && !fieldInfo.IsLiteral;
 		_member = fieldInfo;
-		_isStatic = fieldInfo.IsStatic;
 	}
 	/// <summary>
 	/// Initializes a new instance of <see cref="FieldOrPropertyInfo"/> with the specified backing <see cref="PropertyInfo"/>.
@@ -155,7 +139,6 @@ public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemb
 		_canGet = propertyInfo.CanRead;
 		_canSet = propertyInfo.CanWrite;
 		_member = propertyInfo;
-		_isStatic = propertyInfo.GetMethod?.IsStatic ?? propertyInfo.SetMethod?.IsStatic ?? false;
 	}
 
 	/// <summary>
@@ -163,13 +146,20 @@ public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemb
 	/// </summary>
 	/// <param name="instance">The instance to read from, or null for static members.</param>
 	/// <returns>The member value from <paramref name="instance"/>.</returns>
-	/// <inheritdoc cref="FieldInfo.GetValue(object)" path="/exception"/>
-	/// <inheritdoc cref="PropertyInfo.GetValue(object)" path="/exception"/>
+	/// <exception cref="InvalidOperationException">Thrown when the member does not have a getter.</exception>
 	public readonly object? GetValue(object? instance)
 	{
-		return _either.MatchObj(instance,
-			f1: static (pi, instance) => pi.GetValue(instance),
-			f2: static (fi, instance) => fi.GetValue(instance));
+		if (!_canGet) ThrowCannotGetValue(_memberName);
+
+		unsafe
+		{
+			return _either.FnMatch(instance,
+				f1: new FnPtr<object?, PropertyInfo, object?>(&getFromT1),
+				f2: new FnPtr<object?, FieldInfo, object?>(&getFromT2));
+		}
+
+		static object? getFromT1(object? instance, PropertyInfo pi) => pi.GetValue(instance);
+		static object? getFromT2(object? instance, FieldInfo fi) => fi.GetValue(instance);
 	}
 
 	/// <summary>
@@ -181,10 +171,21 @@ public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemb
 	/// <inheritdoc cref="FieldInfo.SetValue(object, object)" path="/exception"/>
 	public readonly void SetValue(object? instance, object? value)
 	{
-		_either.MatchObj(
-			f1: static (pi, state) => pi.SetValue(state[0], state[1]),
-			f2: static (fi, state) => fi.SetValue(state[0], state[1]),
-			instance, value);
+		_either.Match(
+			state: (instance, value),
+			f1: static (state, pi) => pi.SetValue(state.instance, state.value),
+			f2: static (state, fi) => fi.SetValue(state.instance, state.value));
+	}
+
+	/// <summary>
+	/// Throws an <see cref="InvalidOperationException"/> indicating that the value of the member cannot be retrieved because it does not have a getter.
+	/// </summary>
+	/// <param name="memberName">The name of the member that cannot be accessed.</param>
+	/// <exception cref="InvalidOperationException"/>
+	[DoesNotReturn, StackTraceHidden, DebuggerStepThrough]
+	private static void ThrowCannotGetValue(string? memberName)
+	{
+		throw new InvalidOperationException($"Cannot get value from member '{memberName}' because it does not have a getter.");
 	}
 
 	/// <summary>

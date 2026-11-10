@@ -1,0 +1,104 @@
+{
+	"onGrab": false,
+	"onDownload": false,
+	"onUpgrade": false,
+	"onImportComplete": false,
+	"onRename": false,
+	"onSeriesAdd": false,
+	"onSeriesDelete": false,
+	"onEpisodeFileDelete": false,
+	"onEpisodeFileDeleteForUpgrade": false,
+	"onHealthIssue": false,
+	"includeHealthWarnings": false,
+	"onHealthRestored": false,
+	"onApplicationUpdate": false,
+	"onManualInteractionRequired": false,
+	"supportsOnGrab": true,
+	"supportsOnDownload": true,
+	"supportsOnUpgrade": true,
+	"supportsOnImportComplete": true,
+	"supportsOnRename": true,
+	"supportsOnSeriesAdd": true,
+	"supportsOnSeriesDelete": true,
+	"supportsOnEpisodeFileDelete": true,
+	"supportsOnEpisodeFileDeleteForUpgrade": true,
+	"supportsOnHealthIssue": true,
+	"supportsOnHealthRestored": true,
+	"supportsOnApplicationUpdate": true,
+	"supportsOnManualInteractionRequired": true,
+	"name": "sandbox-temp-fixture",
+	"fields": [
+		{
+			"order": 0,
+			"name": "url",
+			"label": "Webhook URL",
+			"value": "http://webhook.test/hook",
+			"type": "url",
+			"advanced": false,
+			"privacy": "normal",
+			"isFloat": false
+		},
+		{
+			"order": 1,
+			"name": "method",
+			"label": "Method",
+			"helpText": "Which HTTP method to use submit to the Webservice",
+			"value": 1,
+			"type": "select",
+			"advanced": false,
+			"selectOptions": [
+				{
+					"value": 1,
+					"name": "POST",
+					"order": 1
+				},
+				{
+					"value": 2,
+					"name": "PUT",
+					"order": 2
+				}
+			],
+			"privacy": "normal",
+			"isFloat": false
+		},
+		{
+			"order": 2,
+			"name": "username",
+			"label": "Username",
+			"type": "textbox",
+			"advanced": false,
+			"privacy": "userName",
+			"isFloat": false
+		},
+		{
+			"order": 3,
+			"name": "password",
+			"label": "Password",
+			"type": "password",
+			"advanced": false,
+			"privacy": "password",
+			"isFloat": false
+		},
+		{
+			"order": 4,
+			"name": "headers",
+			"label": "Headers",
+			"value": [
+				{
+					"key": "X-Token",
+					"value": "2024"
+				}
+			],
+			"type": "keyValueList",
+			"advanced": true,
+			"privacy": "normal",
+			"isFloat": false
+		}
+	],
+	"implementationName": "Webhook",
+	"implementation": "Webhook",
+	"configContract": "WebhookSettings",
+	"infoLink": "https://wiki.servarr.com/sonarr/supported#webhook",
+	"tags": [],
+	"id": 1
+}

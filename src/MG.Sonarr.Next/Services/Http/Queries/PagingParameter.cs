@@ -19,19 +19,19 @@ namespace MG.Sonarr.Next.Services.Http.Queries;
 /// </remarks>
 public sealed class PagingParameter : IQueryField
 {
-	const string PAGING_KEY = "Paging";
+	private const string PAGING_KEY = "Paging";
 	private const string PAGE = "page";
 	private const string PAGE_SIZE = "pageSize";
 	private const string SORT_DIRECTION = "sortDirection";
 	private const string SORT_KEY = "sortKey";
 
-	const int DEFAULT_PAGE_NO = 1;
-	const int DEFAULT_PAGE_SIZE = 10;
+	private const int DEFAULT_PAGE_NO = 1;
+	private const int DEFAULT_PAGE_SIZE = 10;
 	/// <summary>
 	/// The largest number of characters that formatting the fields as a string stack-allocates.
 	/// </summary>
-	const int MAX_STACKALLOC = 256;
-	static readonly int STARTING_LENGTH = GetStartingLength();
+	private const int MAX_STACKALLOC = 256;
+	private static readonly int STARTING_LENGTH = GetStartingLength();
 
 	private string _sortKey = string.Empty;
 
@@ -266,7 +266,7 @@ public sealed class PagingParameter : IQueryField
 	/// <param name="values">The field names.</param>
 	/// <returns>The number of characters that the names and their separators take.</returns>
 	[DebuggerStepThrough]
-	static int CombineLengths(params ReadOnlySpan<string> values)
+	private static int CombineLengths(params ReadOnlySpan<string> values)
 	{
 		int length = 0;
 		foreach (string value in values)
@@ -285,7 +285,7 @@ public sealed class PagingParameter : IQueryField
 	///     sort direction.
 	/// </returns>
 	[DebuggerStepThrough]
-	static int GetStartingLength()
+	private static int GetStartingLength()
 	{
 		return (LengthConstants.INT_MAX * 2) + 10 + CombineLengths(PAGE, PAGE_SIZE, SORT_DIRECTION, SORT_KEY);
 	}

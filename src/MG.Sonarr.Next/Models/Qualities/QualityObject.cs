@@ -29,15 +29,15 @@ public sealed class QualityObject : SonarrObject,
 	/// <summary>
 	/// The number of properties that a new instance makes room for.
 	/// </summary>
-	const int CAPACITY = 4;
+	private const int CAPACITY = 4;
 	/// <summary>
 	/// The type's full name, which <see cref="SetPSTypeName"/> puts first in the PowerShell type names.
 	/// </summary>
-	static readonly string _typeName = typeof(QualityObject).GetName();
+	private static readonly string _typeName = typeof(QualityObject).GetName();
 	/// <summary>
 	/// Whether a constructor set the instance's properties, rather than the JSON converter.
 	/// </summary>
-	readonly bool _wasCtored;
+	private readonly bool _wasCtored;
 
 	/// <summary>
 	/// Gets the quality's ID.

@@ -16,21 +16,18 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<InternalsVisibleTo Include="MG.Sonarr.Next.Shell;MG.Sonarr.Next.Shell.Bases" />
+		<InternalsVisibleTo Include="MG.Sonarr.Next.Shell;MG.Sonarr.Next.Shell.Bases;MG.Sonarr.Next.Tests" />
 		<AssemblyAttribute Include="MG.Sonarr.Next.Attributes.SonarrObjectConverterAssemblyAttribute" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 		<PackageReference Include="Microsoft.Extensions.Http" />
-	</ItemGroup>
-
-	<!--
-		PowerShell supplies these assemblies itself, so these references exclude the packages' runtime and native assets. NuGet
-		applies the exclusion to the packages they depend on as well, and to every project that references this one, so no
-		part of PowerShell is copied into the module's folder.
-	-->
-	<ItemGroup>
+		<!--
+			PowerShell supplies these assemblies itself, so these references exclude the packages' runtime and native assets. NuGet
+			applies the exclusion to the packages they depend on as well, and to every project that references this one, so no
+			part of PowerShell is copied into the module's folder.
+		-->
 		<PackageReference Include="Microsoft.PowerShell.Commands.Utility" ExcludeAssets="runtime;native" />
 		<PackageReference Include="System.Management.Automation" ExcludeAssets="runtime;native" />
 	</ItemGroup>
@@ -38,6 +35,9 @@
 	<ItemGroup>
 		<Compile Update="**\*-*.cs">
 			<DependentUpon>$([System.Text.RegularExpressions.Regex]::Replace('$([System.String]::Copy(%(Filename)))', '^(.+)\-.+$', '$1.cs'))</DependentUpon>
+		</Compile>
+		<Compile Update="Metadata\MetadataList-Enumerator.cs">
+			<DependentUpon>MetadataList_T.cs</DependentUpon>
 		</Compile>
 	</ItemGroup>
 
@@ -70,28 +70,14 @@
 		<Using Include="System.Text.Json.Nodes" />
 		<Using Include="System.Text.Json.Serialization" />
 	</ItemGroup>
-
-	<ItemGroup>
-		<Folder Include="Buffers\Intrinsics\" />
-		<Folder Include="Services\Time\" />
-	</ItemGroup>
-
+	
 	<ItemGroup>
 		<ProjectReference Include="..\MG.Sonarr.Resources\MG.Sonarr.Resources.csproj" />
-	</ItemGroup>
-
-	<!--
-		The generators run inside the compiler, so this reference loads the project as an analyzer and keeps its assembly out
-		of this project's references and output folder.
-	-->
-	<ItemGroup>
+		<!--
+			The generators run inside the compiler, so this reference loads the project as an analyzer and keeps its assembly out
+			of this project's references and output folder.
+		-->
 		<ProjectReference Include="..\MG.Sonarr.Next.Generators\MG.Sonarr.Next.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Compile Update="Metadata\MetadataList-Enumerator.cs">
-			<DependentUpon>MetadataList_T.cs</DependentUpon>
-		</Compile>
 	</ItemGroup>
 
 </Project>

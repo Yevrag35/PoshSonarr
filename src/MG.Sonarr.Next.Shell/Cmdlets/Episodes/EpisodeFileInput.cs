@@ -4,7 +4,7 @@ using MG.Sonarr.Next.Models;
 namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes;
 
 /// <summary>
-/// Reads the episode file IDs from the pipeline input of the cmdlets that act on episode files.
+/// Provides a helper that reads the episode file IDs from the pipeline input of the cmdlets that act on episode files.
 /// </summary>
 /// <remarks>
 /// An episode or a calendar entry without a file pipes an <see cref="IEpisodeFilePipeable.EpisodeFileId"/> of 0, which
@@ -13,7 +13,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Episodes;
 internal static class EpisodeFileInput
 {
 	/// <summary>
-	/// Adds the file ID of each input that has a file to a set, and writes a warning for each input that has none.
+	/// Adds the file ID of each specified input that has a file to the specified set, and writes a warning for each
+	/// input that has none.
 	/// </summary>
 	/// <param name="cmdlet">The cmdlet that writes the warnings.</param>
 	/// <param name="inputs">The objects that the cmdlet received.</param>
@@ -33,6 +34,12 @@ internal static class EpisodeFileInput
 		}
 	}
 
+	/// <summary>
+	/// Gets the warning for the specified input that has no file, which names the episode and its series when the
+	/// input gives them.
+	/// </summary>
+	/// <param name="input">The input whose <see cref="IEpisodeFilePipeable.EpisodeFileId"/> is 0.</param>
+	/// <returns>The warning's message.</returns>
 	private static string GetNoFileMessage(IEpisodeFilePipeable input)
 	{
 		return input switch

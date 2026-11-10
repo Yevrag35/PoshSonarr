@@ -8,7 +8,7 @@ public sealed class PingResponse
 	/// <summary>
 	/// The response that a server that's up sends.
 	/// </summary>
-	const string PONG = "pong";
+	private const string PONG = "pong";
 
 	/// <summary>
 	/// Gets the response that the server sent.

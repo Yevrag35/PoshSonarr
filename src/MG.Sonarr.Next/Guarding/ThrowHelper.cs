@@ -22,7 +22,7 @@ internal static partial class ThrowHelper
 	/// If <see langword="null"/>, the <see cref="CultureInfo.CurrentCulture"/> is used.
 	/// </param>
 	/// <exception cref="ArgumentException">The buffer is too small for the operation to be performed.</exception>
-	[DoesNotReturn]
+	[DoesNotReturn, StackTraceHidden, DebuggerStepThrough]
 	internal static void BufferTooSmall(int requiredMinimum, int actualValue, [CallerArgumentExpression(nameof(actualValue))] string? parameterName = null, IFormatProvider? provider = null)
 	{
 		const string msg = "The buffer is too small to be used as a copy destination. Expected minimum length: {0}, Received length: {1}";
@@ -47,12 +47,19 @@ internal static partial class ThrowHelper
 	/// <param name="paramName">The name of the parameter being validated. This is automatically populated by the compiler if not explicitly
 	/// provided.</param>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="value"/> is negative or greater than <paramref name="other"/>.</exception>
+	[MethodImpl(MethodImplOptions.AggressiveInlining), DebuggerStepThrough]
 	internal static void ThrowIfNegativeOrGreaterThan(int value, uint other, [CallerArgumentExpression(nameof(value))] string? paramName = null)
 	{
 		Debug.Assert(other <= int.MaxValue, "The other value should always be less than or equal to int.MaxValue.");
 		if ((uint)value > other)
 		{
 			// The exception appends the parameter's name and the actual value to the message itself.
+			throwEx(value, other, paramName);
+		}
+
+		[DoesNotReturn, StackTraceHidden, DebuggerStepThrough]
+		static void throwEx(int value, uint other, string? paramName)
+		{
 			throw new ArgumentOutOfRangeException(paramName, value,
 				message: string.Format(
 					CultureInfo.CurrentCulture,

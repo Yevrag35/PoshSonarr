@@ -13,4 +13,3 @@ public sealed class StringSet : SortedSet<string>
 	{
 	}
 }
-

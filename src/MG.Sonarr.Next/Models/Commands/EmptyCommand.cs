@@ -12,7 +12,7 @@ internal readonly struct EmptyCommand : ICommand
 	/// <summary>
 	/// The empty command's name.
 	/// </summary>
-	const string NA = "N/A";
+	private const string NA = "N/A";
 
 	/// <summary>
 	/// Gets the time that the command ended.

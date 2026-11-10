@@ -25,11 +25,11 @@ public sealed class RenameObject : SonarrObject,
 	/// <summary>
 	/// The number of properties that a new instance makes room for.
 	/// </summary>
-	const int CAPACITY = 6;
+	private const int CAPACITY = 6;
 	/// <summary>
 	/// The type's full name, which <see cref="SetPSTypeName"/> puts first in the PowerShell type names.
 	/// </summary>
-	static readonly string _typeName = typeof(RenameObject).GetName();
+	private static readonly string _typeName = typeof(RenameObject).GetName();
 
 	/// <summary>
 	/// Gets the ID of the episode file that the rename changes.

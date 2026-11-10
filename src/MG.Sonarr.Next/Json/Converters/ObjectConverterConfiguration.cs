@@ -57,19 +57,19 @@ internal sealed class ObjectConverterConfiguration : IObjectConverterConfig
 	/// <summary>
 	/// The types that properties' arrays are read as, by property name.
 	/// </summary>
-	readonly Dictionary<string, Type> _convertProps;
+	private readonly Dictionary<string, Type> _convertProps;
 	/// <summary>
 	/// The property renames that apply to every object.
 	/// </summary>
-	JsonNameHolder _globalReplaceNames;
+	private JsonNameHolder _globalReplaceNames;
 	/// <summary>
 	/// The names of the properties that are left out when an object is written.
 	/// </summary>
-	readonly HashSet<string> _ignoreProps;
+	private readonly HashSet<string> _ignoreProps;
 	/// <summary>
 	/// The span converters that read properties' string values, by property name.
 	/// </summary>
-	readonly Dictionary<string, SpanConverter> _spanConverters;
+	private readonly Dictionary<string, SpanConverter> _spanConverters;
 
 	/// <summary>
 	/// Gets the types that properties' arrays are read as.

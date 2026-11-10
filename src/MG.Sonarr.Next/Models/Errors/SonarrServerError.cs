@@ -25,23 +25,23 @@ public sealed class SonarrServerError : SonarrObject,
 	/// <summary>
 	/// The number of properties that a new error reserves room for.
 	/// </summary>
-	const int CAPACITY = 5;
+	private const int CAPACITY = 5;
 	/// <summary>
 	/// The name of the property that holds a problem details object's messages, keyed by the field that each is about.
 	/// </summary>
-	const string ERRORS = "Errors";
+	private const string ERRORS = "Errors";
 	/// <summary>
 	/// The type name of a property whose value is a string.
 	/// </summary>
-	const string STRING_TYPE = "System.String";
+	private const string STRING_TYPE = "System.String";
 	/// <summary>
 	/// The name of the property that holds a problem details object's summary.
 	/// </summary>
-	const string TITLE = "Title";
+	private const string TITLE = "Title";
 	/// <summary>
 	/// The full name of the type, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
-	static readonly string _typeName = typeof(SonarrServerError).GetName();
+	private static readonly string _typeName = typeof(SonarrServerError).GetName();
 
 	/// <summary>
 	/// Gets the error's message.

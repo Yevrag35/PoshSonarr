@@ -19,8 +19,10 @@ namespace MG.Sonarr.Next.Models.Series;
 /// <para>
 /// <see cref="OnSerializing"/> writes <see cref="AddOptions"/>, the title, and <see cref="Path"/> into the request
 /// body that adds the series, the path as <c>Path</c> when <see cref="IsFullPath"/> is <see langword="true"/> and as
-/// <c>RootFolderPath</c> otherwise. A commit or a reset takes them out again: it removes the path and
-/// <c>AddOptions</c> properties, or gives back a <c>Path</c> that Sonarr sent its own value, and clears
+/// <c>RootFolderPath</c> otherwise. It first undoes the path that an earlier call wrote when no commit or reset
+/// followed it, so the body holds only the path property that <see cref="IsFullPath"/> names, however often the
+/// object is serialized. A commit or a reset takes them out again: it removes the path and <c>AddOptions</c>
+/// properties, or gives a path property that the object already had its earlier value back, and clears
 /// <see cref="AddOptions"/>.
 /// </para>
 /// <para>
@@ -39,6 +41,10 @@ public sealed class AddSeriesObject : SeriesObject,
 	/// </summary>
 	private const int CAPACITY = 50;
 	/// <summary>
+	/// The name of the property that holds the series' own folder.
+	/// </summary>
+	private const string PATH = nameof(Path);
+	/// <summary>
 	/// The name of the property that holds the root folder that the series is added under.
 	/// </summary>
 	private const string ROOT_FOLDER_PATH = "RootFolderPath";
@@ -51,19 +57,10 @@ public sealed class AddSeriesObject : SeriesObject,
 	/// </summary>
 	private string? _path;
 	/// <summary>
-	/// The name of the property that the path was last written to, or <see langword="null"/> if it hasn't been since
-	/// the last commit or reset.
+	/// The path property that <see cref="SetPath"/> wrote and what it held before, which <see cref="RestorePath"/>
+	/// puts back, or the default value when no path property is written.
 	/// </summary>
-	private string? _pathProp;
-	/// <summary>
-	/// Whether the object had a <c>Path</c> property, which Sonarr sends for a series that's in the library, before
-	/// <see cref="OnSerializing"/> wrote the path to it.
-	/// </summary>
-	private bool _hadPath;
-	/// <summary>
-	/// The value of the <c>Path</c> property before <see cref="OnSerializing"/> wrote the path to it.
-	/// </summary>
-	private object? _sentPath;
+	private PathWrite _pathWrite;
 
 	/// <summary>
 	/// Gets or sets the options that Sonarr applies when it adds the series.
@@ -219,28 +216,31 @@ public sealed class AddSeriesObject : SeriesObject,
 	}
 	/// <summary>
 	/// Writes <see cref="Path"/> to the <c>Path</c> property when <see cref="IsFullPath"/> is <see langword="true"/>,
-	/// and to the <c>RootFolderPath</c> property otherwise, and remembers which one it wrote.
+	/// and to the <c>RootFolderPath</c> property otherwise, and remembers which one it wrote and what that property
+	/// held before.
 	/// </summary>
-	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Using nameof()")]
+	/// <remarks>
+	/// <para>
+	/// It first undoes the path that an earlier call wrote, through <see cref="RestorePath"/>, so it always starts from
+	/// the object as PowerShell shows it. Serializing the object again before a commit or reset, as writing its body to
+	/// the debug stream and then sending it does, or as an add does after an earlier one stopped between the two, then
+	/// leaves only the property that <see cref="IsFullPath"/> names, and what the property held before the first write
+	/// is what a commit or reset puts back.
+	/// </para>
+	/// <para>
+	/// The write is remembered only once it's made, so a write that throws leaves nothing for
+	/// <see cref="RestorePath"/> to undo.
+	/// </para>
+	/// </remarks>
 	private void SetPath()
 	{
-		if (this.IsFullPath)
-		{
-			if (!string.Equals(_pathProp, nameof(Path), StringComparison.Ordinal))
-			{
-				PSPropertyInfo? sent = this.Properties[nameof(Path)];
-				_hadPath = sent is not null;
-				_sentPath = sent?.Value;
-			}
+		this.RestorePath();
 
-			this.UpdateProperty(x => x.Path);
-			_pathProp = nameof(Path);
-		}
-		else
-		{
-			this.SetValue(this.Path, ROOT_FOLDER_PATH);
-			_pathProp = ROOT_FOLDER_PATH;
-		}
+		PathProperty property = this.IsFullPath ? PathProperty.Path : PathProperty.RootFolderPath;
+		string name = GetPathName(property);
+		PathWrite write = new(property, this.Properties[name]);
+		this.UpdateProperty(this.Path, propertyName: name);
+		_pathWrite = write;
 	}
 	/// <summary>
 	/// Replaces the <see cref="SeriesObject"/> type name at the start of the object's PowerShell type names with the
@@ -289,29 +289,129 @@ public sealed class AddSeriesObject : SeriesObject,
 	/// </summary>
 	/// <remarks>
 	/// The <c>AddOptions</c> property is removed and <see cref="AddOptions"/> cleared. The path property is removed, or,
-	/// when the path went to a <c>Path</c> property that Sonarr sent, that property gets back the value that Sonarr
-	/// sent, and <see cref="IsFullPath"/> is set to <see langword="false"/>.
+	/// when the object already had that property before the path was written to it, the property gets back the value
+	/// that it held, and <see cref="IsFullPath"/> is set to <see langword="false"/>.
 	/// </remarks>
 	private void RemoveRequestProperties()
 	{
-		if (!string.IsNullOrEmpty(_pathProp))
+		if (this.RestorePath())
 		{
-			if (_hadPath && string.Equals(_pathProp, nameof(this.Path), StringComparison.Ordinal))
-			{
-				this.Properties[_pathProp]!.Value = _sentPath;
-			}
-			else
-			{
-				this.Properties.Remove(_pathProp);
-			}
-
-			_pathProp = null;
-			_hadPath = false;
-			_sentPath = null;
 			this.IsFullPath = false;
 		}
 
 		this.Properties.Remove(nameof(this.AddOptions));
 		this.AddOptions = null;
+	}
+	/// <summary>
+	/// Undoes the path that <see cref="SetPath"/> wrote: gives the property back the value that it held before, or
+	/// removes it when the object didn't have it.
+	/// </summary>
+	/// <remarks>
+	/// The write is forgotten before it's undone, so an undo that throws isn't tried again by every later call.
+	/// </remarks>
+	/// <returns>
+	/// <see langword="true"/> if a path was written and is now undone; <see langword="false"/> if none was written.
+	/// </returns>
+	private bool RestorePath()
+	{
+		PathWrite write = _pathWrite;
+		if (write.Property == PathProperty.None)
+		{
+			return false;
+		}
+
+		_pathWrite = default;
+		string name = GetPathName(write.Property);
+		if (write.Existed)
+		{
+			this.UpdateProperty(write.Before, propertyName: name);
+		}
+		else
+		{
+			this.Properties.Remove(name);
+		}
+
+		return true;
+	}
+
+	/// <summary>
+	/// Gets the name of the property that the specified path property stands for.
+	/// </summary>
+	/// <param name="property">The path property.</param>
+	/// <returns><c>Path</c> or <c>RootFolderPath</c>.</returns>
+	/// <exception cref="UnreachableException">
+	/// Thrown when <paramref name="property"/> is <see cref="PathProperty.None"/> or isn't a defined value.
+	/// </exception>
+	private static string GetPathName(PathProperty property)
+	{
+		return property switch
+		{
+			PathProperty.Path => PATH,
+			PathProperty.RootFolderPath => ROOT_FOLDER_PATH,
+			_ => throw new UnreachableException(),
+		};
+	}
+
+	/// <summary>
+	/// Specifies the property that <see cref="SetPath"/> wrote the path to.
+	/// </summary>
+	private enum PathProperty : byte
+	{
+		/// <summary>
+		/// No path property is written.
+		/// </summary>
+		None,
+		/// <summary>
+		/// The <c>RootFolderPath</c> property, for the root folder that Sonarr creates the series' folder in.
+		/// </summary>
+		RootFolderPath,
+		/// <summary>
+		/// The <c>Path</c> property, for the series' own folder.
+		/// </summary>
+		Path,
+	}
+
+	/// <summary>
+	/// Represents a write of the path to a path property, with what the property held before the write.
+	/// </summary>
+	/// <remarks>
+	/// A default instance stands for no write: its <see cref="Property"/> is <see cref="PathProperty.None"/>.
+	/// </remarks>
+	private readonly struct PathWrite
+	{
+		private readonly object? _before;
+		private readonly PathProperty _property;
+		private readonly bool _existed;
+
+		/// <summary>
+		/// Gets the value that the property held before the write.
+		/// </summary>
+		/// <value>The property's earlier value, or <see langword="null"/> when the object didn't have the property.</value>
+		internal object? Before => _before;
+		/// <summary>
+		/// Gets a value that indicates whether the object had the property before the write.
+		/// </summary>
+		/// <value>
+		/// <see langword="true"/> if the object had the property before the write; otherwise, <see langword="false"/>.
+		/// </value>
+		internal bool Existed => _existed;
+		/// <summary>
+		/// Gets the property that the path was written to.
+		/// </summary>
+		/// <value>The path property, or <see cref="PathProperty.None"/> for a default instance.</value>
+		internal PathProperty Property => _property;
+
+		/// <summary>
+		/// Initializes a new <see cref="PathWrite"/> instance for a write to the specified property, from the property as
+		/// it was before the write.
+		/// </summary>
+		/// <param name="property">The path property that the path is written to.</param>
+		/// <param name="before">The property before the write, or <see langword="null"/> when the object doesn't have it.</param>
+		internal PathWrite(PathProperty property, PSPropertyInfo? before)
+		{
+			_property = property;
+			_existed = before is not null;
+			_before = before?.Value;
+		}
 	}
 }

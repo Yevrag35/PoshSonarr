@@ -6,7 +6,7 @@ namespace MG.Sonarr.Next.Exceptions.Shell;
 /// </summary>
 public sealed class InvalidApiKeyException : PoshSonarrException
 {
-	const string DEF_MSG = "The supplied Sonarr API key is null, blank, or invalid.";
+	private const string DEF_MSG = "The supplied Sonarr API key is null, blank, or invalid.";
 
 	/// <summary>
 	/// Initializes a new instance of <see cref="InvalidApiKeyException"/> with the default message.

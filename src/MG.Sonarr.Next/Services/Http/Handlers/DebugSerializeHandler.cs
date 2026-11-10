@@ -1,6 +1,5 @@
 using MG.Sonarr.Next.Services.Http.Extensions;
 using MG.Sonarr.Next.Services.Http.IO;
-using MG.Sonarr.Next.Strings;
 
 namespace MG.Sonarr.Next.Services.Http.Handlers;
 
@@ -63,7 +62,7 @@ public sealed class DebugSerializeHandler : DelegatingHandler
 		if (cmdlet.CanDebugSerializeAfter && response.Content is not null)
 		{
 			StringResponse parsed = await SerializeResponseAsync(response, cancellationToken).ConfigureAwait(false);
-			string jsonString = Messenger.Format(
+			string jsonString = string.Format(
 				provider: CultureInfo.CurrentCulture,
 				format: Messages.Debug_JSONResponse_Preamble,
 				parsed.ContentLength, parsed.JsonString);
@@ -91,7 +90,7 @@ public sealed class DebugSerializeHandler : DelegatingHandler
 		await content.LoadIntoBufferAsync(token).ConfigureAwait(false);
 		string jsonString = await content.ReadAsStringAsync(token).ConfigureAwait(false);
 
-		return Messenger.Format(
+		return string.Format(
 			provider: CultureInfo.CurrentCulture,
 			format: Messages.Debug_JSONRequest_Preamble,
 			content.Headers.ContentLength ?? Encoding.UTF8.GetByteCount(jsonString), jsonString);

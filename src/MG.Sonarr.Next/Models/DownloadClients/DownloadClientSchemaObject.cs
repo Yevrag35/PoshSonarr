@@ -22,11 +22,11 @@ public sealed class DownloadClientSchemaObject : TagUpdateObject<DownloadClientS
 	/// <summary>
 	/// The number of properties that an instance is sized for, about the number of fields that Sonarr sends.
 	/// </summary>
-	const int CAPACITY = 15;
+	private const int CAPACITY = 15;
 	/// <summary>
 	/// The full name of the class, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
-	static readonly string _typeName = typeof(DownloadClientSchemaObject).GetName();
+	private static readonly string _typeName = typeof(DownloadClientSchemaObject).GetName();
 
 	/// <summary>
 	/// Gets the name of the settings contract that the client's fields follow.

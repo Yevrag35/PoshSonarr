@@ -10,13 +10,17 @@ public static partial class PSCmdletExtensions
 	/// Writes the outcome of a command to the pipeline.
 	/// </summary>
 	/// <remarks>
-	/// When the outcome is a success, the <typeparamref name="TSuccess"/> is written to the output stream; otherwise, 
-	/// the <see cref="SonarrErrorRecord"/> is written to the error stream.
+	/// When the outcome is a success, the <typeparamref name="TSuccess"/> is written to the output stream; otherwise,
+	/// the <see cref="SonarrErrorRecord"/> is written to the error stream, unless its
+	/// <see cref="SonarrErrorRecord.IsIgnorable"/> is <see langword="true"/>, as it is for a 404, in which case nothing
+	/// is written.
 	/// </remarks>
 	/// <typeparam name="TCmdlet">The type of PowerShell cmdlet this method is extending.</typeparam>
 	/// <typeparam name="TSuccess">The type of object returned when the outcome is a success.</typeparam>
-	/// <param name="cmdlet">The PowerShell cmdlet this method is extending</param>
+	/// <param name="cmdlet">The PowerShell cmdlet this method is extending.</param>
 	/// <param name="outcome">The outcome of the API call.</param>
+	/// <exception cref="EmptyStructException">Thrown when <paramref name="outcome"/> is the default value, which holds
+	/// neither a success nor an error.</exception>
 	public static void WriteOutcome<TCmdlet, TSuccess>(this TCmdlet cmdlet, Either<TSuccess, SonarrErrorRecord> outcome) where TCmdlet : PSCmdlet
 	{
 		WriteOutcome(cmdlet,
@@ -33,16 +37,23 @@ public static partial class PSCmdletExtensions
 	/// Writes the outcome of a command to the pipeline.
 	/// </summary>
 	/// <remarks>
-	/// When the outcome is a success, the <typeparamref name="TSuccess"/> is written to the output stream; otherwise, the
-	/// <typeparamref name="TResetOnFail"/> state is reset and the <see cref="SonarrErrorRecord"/> is written to the
-	/// error stream.
+	/// When the outcome is a success, the <typeparamref name="TSuccess"/> is written to the output stream, and
+	/// <paramref name="resettable"/> is left as it is, for the caller to commit. Otherwise, <paramref name="resettable"/>
+	/// is reset through <see cref="IResettable.TryReset"/>, and the <see cref="SonarrErrorRecord"/> is written to the
+	/// error stream, unless its <see cref="SonarrErrorRecord.IsIgnorable"/> is <see langword="true"/>, in which case
+	/// nothing is written. A reset that returns <see langword="false"/> fails an assertion in Debug builds and is
+	/// otherwise ignored.
 	/// </remarks>
 	/// <typeparam name="TCmdlet">The type of PowerShell cmdlet this method is extending.</typeparam>
 	/// <typeparam name="TSuccess">The type of object returned when the outcome is a success.</typeparam>
-	/// <typeparam name="TResetOnFail">The state that will be reset if the outcome is a <see cref="SonarrErrorRecord"/>.</typeparam>
-	/// <param name="cmdlet">The PowerShell cmdlet this method is extending</param>
-	/// <param name="resettable">The stated object that will be reset if the outcome is a <see cref="SonarrErrorRecord"/>.</param>
+	/// <typeparam name="TResetOnFail">The type of the object that is reset if the outcome is a
+	/// <see cref="SonarrErrorRecord"/>.</typeparam>
+	/// <param name="cmdlet">The PowerShell cmdlet this method is extending.</param>
+	/// <param name="resettable">The stateful object that is reset if the outcome is a
+	/// <see cref="SonarrErrorRecord"/>, such as the model that the request sent.</param>
 	/// <param name="outcome">The outcome of the API call.</param>
+	/// <exception cref="EmptyStructException">Thrown when <paramref name="outcome"/> is the default value, which holds
+	/// neither a success nor an error.</exception>
 	public static void WriteOutcome<TCmdlet, TSuccess, TResetOnFail>(this TCmdlet cmdlet,
 		TResetOnFail resettable,
 		Either<TSuccess, SonarrErrorRecord> outcome)
@@ -62,6 +73,20 @@ public static partial class PSCmdletExtensions
 				}
 			});
 	}
+	/// <summary>
+	/// Writes a successful outcome to the output stream, or passes a failed one to the specified callback.
+	/// </summary>
+	/// <remarks>
+	/// The callback decides what happens to the error, and the method writes nothing for it, an ignorable one included.
+	/// </remarks>
+	/// <typeparam name="TCmdlet">The type of PowerShell cmdlet this method is extending.</typeparam>
+	/// <typeparam name="TSuccess">The type of object returned when the outcome is a success.</typeparam>
+	/// <param name="cmdlet">The PowerShell cmdlet this method is extending.</param>
+	/// <param name="outcome">The outcome of the API call.</param>
+	/// <param name="onFailure">The callback that receives <paramref name="cmdlet"/> and the error when the outcome is a
+	/// failure.</param>
+	/// <exception cref="EmptyStructException">Thrown when <paramref name="outcome"/> is the default value, which holds
+	/// neither a success nor an error.</exception>
 	public static void WriteOutcome<TCmdlet, TSuccess>(this TCmdlet cmdlet,
 		Either<TSuccess, SonarrErrorRecord> outcome,
 		Action<TCmdlet, SonarrErrorRecord> onFailure)
@@ -72,6 +97,24 @@ public static partial class PSCmdletExtensions
 			onSuccess: static (cmdlet, success) => cmdlet.WriteObject(success),
 			onFailure);
 	}
+	/// <summary>
+	/// Writes a successful outcome to the output stream, or passes a failed one, with the specified state, to the
+	/// specified callback.
+	/// </summary>
+	/// <remarks>
+	/// The callback decides what happens to the error, and the method writes nothing for it, an ignorable one included.
+	/// Passing state lets the callback be a static lambda that captures nothing.
+	/// </remarks>
+	/// <typeparam name="TCmdlet">The type of PowerShell cmdlet this method is extending.</typeparam>
+	/// <typeparam name="TSuccess">The type of object returned when the outcome is a success.</typeparam>
+	/// <typeparam name="TState">The type of the state that the callback receives.</typeparam>
+	/// <param name="cmdlet">The PowerShell cmdlet this method is extending.</param>
+	/// <param name="state">The state to pass to <paramref name="onFailure"/>.</param>
+	/// <param name="outcome">The outcome of the API call.</param>
+	/// <param name="onFailure">The callback that receives <paramref name="cmdlet"/>, <paramref name="state"/>, and the
+	/// error when the outcome is a failure.</param>
+	/// <exception cref="EmptyStructException">Thrown when <paramref name="outcome"/> is the default value, which holds
+	/// neither a success nor an error.</exception>
 	public static void WriteOutcome<TCmdlet, TSuccess, TState>(this TCmdlet cmdlet,
 		TState state,
 		Either<TSuccess, SonarrErrorRecord> outcome,
@@ -84,6 +127,21 @@ public static partial class PSCmdletExtensions
 			onSuccess: static (cmdlet, _, success) => cmdlet.WriteObject(success),
 			onFailure);
 	}
+	/// <summary>
+	/// Passes an outcome to the success callback or the failure callback, whichever it holds.
+	/// </summary>
+	/// <remarks>
+	/// The method writes nothing itself, so the callbacks decide what reaches the pipeline.
+	/// </remarks>
+	/// <typeparam name="TCmdlet">The type of PowerShell cmdlet this method is extending.</typeparam>
+	/// <typeparam name="TSuccess">The type of the outcome's success value.</typeparam>
+	/// <typeparam name="TFailure">The type of the outcome's failure value.</typeparam>
+	/// <param name="cmdlet">The PowerShell cmdlet this method is extending.</param>
+	/// <param name="outcome">The outcome to act on.</param>
+	/// <param name="onSuccess">The callback that receives <paramref name="cmdlet"/> and the success value.</param>
+	/// <param name="onFailure">The callback that receives <paramref name="cmdlet"/> and the failure value.</param>
+	/// <exception cref="EmptyStructException">Thrown when <paramref name="outcome"/> is the default value, which holds
+	/// neither a success nor a failure.</exception>
 	public static void WriteOutcome<TCmdlet, TSuccess, TFailure>(this TCmdlet cmdlet,
 		Either<TSuccess, TFailure> outcome,
 		Action<TCmdlet, TSuccess> onSuccess,
@@ -96,6 +154,31 @@ public static partial class PSCmdletExtensions
 			onSuccess: static (cmdlet, state, success) => state.onSuccess(cmdlet, success),
 			onFailure: static (cmdlet, state, failure) => state.onFailure(cmdlet, failure));
 	}
+	/// <summary>
+	/// Passes an outcome, with the specified state, to the success callback or the failure callback, whichever it holds.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// The method writes nothing itself, so the callbacks decide what reaches the pipeline. Every other
+	/// <c>WriteOutcome</c> overload ends here.
+	/// </para>
+	/// <para>
+	/// Passing state lets the callbacks be static lambdas that capture nothing.
+	/// </para>
+	/// </remarks>
+	/// <typeparam name="TCmdlet">The type of PowerShell cmdlet this method is extending.</typeparam>
+	/// <typeparam name="TSuccess">The type of the outcome's success value.</typeparam>
+	/// <typeparam name="TFailure">The type of the outcome's failure value.</typeparam>
+	/// <typeparam name="TState">The type of the state that the callbacks receive.</typeparam>
+	/// <param name="cmdlet">The PowerShell cmdlet this method is extending.</param>
+	/// <param name="state">The state to pass to whichever callback runs.</param>
+	/// <param name="outcome">The outcome to act on.</param>
+	/// <param name="onSuccess">The callback that receives <paramref name="cmdlet"/>, <paramref name="state"/>, and the
+	/// success value.</param>
+	/// <param name="onFailure">The callback that receives <paramref name="cmdlet"/>, <paramref name="state"/>, and the
+	/// failure value.</param>
+	/// <exception cref="EmptyStructException">Thrown when <paramref name="outcome"/> is the default value, which holds
+	/// neither a success nor a failure.</exception>
 	public static void WriteOutcome<TCmdlet, TSuccess, TFailure, TState>(this TCmdlet cmdlet,
 		TState state,
 		Either<TSuccess, TFailure> outcome,

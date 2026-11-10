@@ -5,12 +5,18 @@ using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets;
 
-/// <provider>
-///     <param name="provider">The scoped service provider for use by derived cmdlets.</param>
-/// </provider>
-public abstract partial class SonarrCmdletBase
+public partial class SonarrCmdletBase
 {
-	#region PRE-PROCESSING
+	// PRE-PROCESSING
+	/// <summary>
+	/// Stores the cmdlet's Debug preference in <see cref="DebugPreference"/>, from its <c>-Debug</c> switch or, when
+	/// that isn't bound, from <c>$DebugPreference</c>, when the cmdlet wants it captured.
+	/// </summary>
+	/// <param name="wantsCapture">
+	/// <see langword="true"/> to store the preference; otherwise, <see langword="false"/> to leave
+	/// <see cref="DebugPreference"/> as it is. <see cref="BeginProcessing"/> passes
+	/// <see cref="CaptureDebugPreference"/>.
+	/// </param>
 	[DebuggerStepThrough]
 	private void StoreDebugPreference(bool wantsCapture)
 	{
@@ -23,6 +29,15 @@ public abstract partial class SonarrCmdletBase
 			parameterName: PSConstants.Debug,
 			variableName: PSConstants.DebugPreference);
 	}
+	/// <summary>
+	/// Stores the cmdlet's Verbose preference in <see cref="VerbosePreference"/>, from its <c>-Verbose</c> switch or,
+	/// when that isn't bound, from <c>$VerbosePreference</c>, when the cmdlet wants it captured.
+	/// </summary>
+	/// <param name="wantsCapture">
+	/// <see langword="true"/> to store the preference; otherwise, <see langword="false"/> to leave
+	/// <see cref="VerbosePreference"/> as it is. <see cref="BeginProcessing"/> passes
+	/// <see cref="CaptureVerbosePreference"/>.
+	/// </param>
 	[DebuggerStepThrough]
 	private void StoreVerbosePreference(bool wantsCapture)
 	{
@@ -36,15 +51,13 @@ public abstract partial class SonarrCmdletBase
 			variableName: PSConstants.VerbosePreference);
 	}
 
-	#endregion
-
 	/// <inheritdoc cref="Cmdlet.BeginProcessing" path="/*[not(self::summary) and not(self::remarks)]"/>
 	/// <summary>
 	/// Creates the cmdlet's scope, captures its preferences, and runs <see cref="Begin(IServiceProvider)"/>.
 	/// </summary>
 	/// <remarks>
 	/// <para>
-	/// This method cannot be overriden. Derived cmdlets should instead override the
+	/// This method cannot be overridden. Derived cmdlets should instead override the
 	/// <see cref="OnCreatingScope(IServiceProvider)"/> and <see cref="Begin(IServiceProvider)"/> methods.
 	/// </para>
 	/// <para>
@@ -54,8 +67,20 @@ public abstract partial class SonarrCmdletBase
 	/// does: the error goes to the error stream, where <c>-ErrorAction</c> decides what happens to it, and neither
 	/// <see cref="Process(IServiceProvider)"/> nor <see cref="End(IServiceProvider)"/> runs.
 	/// </para>
+	/// <para>
+	/// When <see cref="OnCreatingScope(IServiceProvider)"/> stops the cmdlet, through <see cref="StopCmdlet()"/> or
+	/// <see cref="StopCmdlet(ErrorRecord)"/>, the method returns without capturing the preferences or running
+	/// <see cref="Begin(IServiceProvider)"/>.
+	/// </para>
 	/// </remarks>
-	/// <exception cref="PipelineStoppedException"/>
+	/// <exception cref="MG.Sonarr.Next.Exceptions.Shell.ContextNotSetException">
+	/// Thrown when no connection exists, so the cmdlet can't create its scope.
+	/// </exception>
+	/// <exception cref="PipelineStoppedException">
+	/// Thrown when <see cref="OnCreatingScope(IServiceProvider)"/> throws and the statement ends with its error, when the
+	/// error from <see cref="Begin(IServiceProvider)"/> is written under <c>-ErrorAction Stop</c>, and when the pipeline
+	/// is stopped.
+	/// </exception>
 	[DebuggerStepThrough]
 	protected sealed override void BeginProcessing()
 	{
@@ -94,13 +119,20 @@ public abstract partial class SonarrCmdletBase
 		}
 	}
 
-	/// <inheritdoc cref="SonarrCmdletBase" path="/provider"/>
-	/// <inheritdoc cref="Cmdlet.BeginProcessing" path="/*[not(self::summary)]"/>
 	/// <summary>
-	/// When overridden in the derived <see cref="SonarrCmdletBase"/> cmdlet, performs initialization of 
-	/// command execution using the provided <see cref="IServiceProvider"/> of the scope cmdlet.
+	/// When overridden in a derived class, initializes the command once, before any input object is processed, with
+	/// the services of the cmdlet's scope.
 	/// </summary>
-	/// <remarks>Default implementation in the base class just returns.</remarks>
+	/// <remarks>
+	/// <para>
+	/// <see cref="BeginProcessing"/> calls it after <see cref="OnCreatingScope(IServiceProvider)"/> and after the
+	/// cmdlet's preferences are captured. An exception from it ends the cmdlet with its error, as
+	/// <see cref="StopCmdlet(ErrorRecord)"/> does, so neither <see cref="Process(IServiceProvider)"/> nor
+	/// <see cref="End(IServiceProvider)"/> runs.
+	/// </para>
+	/// <para>Default implementation in the base class just returns.</para>
+	/// </remarks>
+	/// <inheritdoc cref="SonarrCmdletBase" path="/provider"/>
 	[DebuggerStepThrough]
 	protected virtual void Begin(IServiceProvider provider)
 	{
@@ -114,7 +146,7 @@ public abstract partial class SonarrCmdletBase
 	/// </summary>
 	/// <remarks>
 	/// <para>
-	/// This method cannot be overriden. Derived cmdlets should instead override the
+	/// This method cannot be overridden. Derived cmdlets should instead override the
 	/// <see cref="Process(IServiceProvider)"/> method.
 	/// </para>
 	/// <para>
@@ -123,7 +155,10 @@ public abstract partial class SonarrCmdletBase
 	/// scope. Under <c>-ErrorAction Stop</c>, writing the error ends the statement there.
 	/// </para>
 	/// </remarks>
-	/// <exception cref="PipelineStoppedException"/>
+	/// <exception cref="PipelineStoppedException">
+	/// Thrown when the error from <see cref="Process(IServiceProvider)"/> is written under <c>-ErrorAction Stop</c>, and
+	/// when the pipeline is stopped.
+	/// </exception>
 	[DebuggerStepThrough]
 	protected sealed override void ProcessRecord()
 	{
@@ -142,13 +177,18 @@ public abstract partial class SonarrCmdletBase
 		}
 	}
 
-	/// <inheritdoc cref="SonarrCmdletBase" path="/provider"/>
-	/// <inheritdoc cref="Cmdlet.ProcessRecord" path="/*[not(self::summary)]"/>
 	/// <summary>
-	/// When overridden in the derived <see cref="SonarrCmdletBase"/> cmdlet, performs execution of 
-	/// the command using the provided <see cref="IServiceProvider"/> of the scope cmdlet.
-	/// Default implementation in the base class just returns.
+	/// When overridden in a derived class, processes one input object with the services of the cmdlet's scope.
 	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// <see cref="ProcessRecord"/> calls it once for each input object, or once when the cmdlet takes no pipeline
+	/// input, until the cmdlet stops. An exception from it writes its error, and the cmdlet goes on to the next input
+	/// object.
+	/// </para>
+	/// <para>Default implementation in the base class just returns.</para>
+	/// </remarks>
+	/// <inheritdoc cref="SonarrCmdletBase" path="/provider"/>
 	[DebuggerStepThrough]
 	protected virtual void Process(IServiceProvider provider)
 	{
@@ -161,7 +201,7 @@ public abstract partial class SonarrCmdletBase
 	/// </summary>
 	/// <remarks>
 	/// <para>
-	/// This method cannot be overriden. Derived cmdlets should instead override the
+	/// This method cannot be overridden. Derived cmdlets should instead override the
 	/// <see cref="End(IServiceProvider)"/> method.
 	/// </para>
 	/// <para>
@@ -169,7 +209,10 @@ public abstract partial class SonarrCmdletBase
 	/// <see cref="End(IServiceProvider)"/> ran or threw.
 	/// </para>
 	/// </remarks>
-	/// <exception cref="PipelineStoppedException"/>
+	/// <exception cref="PipelineStoppedException">
+	/// Thrown when the error from <see cref="End(IServiceProvider)"/> is written under <c>-ErrorAction Stop</c>, and
+	/// when the pipeline is stopped.
+	/// </exception>
 	[DebuggerStepThrough]
 	protected sealed override void EndProcessing()
 	{
@@ -190,13 +233,19 @@ public abstract partial class SonarrCmdletBase
 		}
 	}
 
-	/// <inheritdoc cref="SonarrCmdletBase" path="/provider"/>
-	/// <inheritdoc cref="Cmdlet.ProcessRecord" path="/*[not(self::summary)]"/>
 	/// <summary>
-	/// When overridden in the derived <see cref="SonarrCmdletBase"/> cmdlet, performs clean-up 
-	/// of the command after execution using the provided <see cref="IServiceProvider"/> of the 
-	/// scope cmdlet. Default implementation in the base class just returns.
+	/// When overridden in a derived class, finishes the command once every input object has been processed, with the
+	/// services of the cmdlet's scope.
 	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// <see cref="EndProcessing"/> calls it unless the cmdlet has stopped, and disposes the scope afterward. It doesn't
+	/// run when a downstream <c>Select-Object -First</c> or a stop ends the pipeline early, so code that must always
+	/// run belongs in an override of <see cref="Dispose(bool)"/>. An exception from it writes its error.
+	/// </para>
+	/// <para>Default implementation in the base class just returns.</para>
+	/// </remarks>
+	/// <inheritdoc cref="SonarrCmdletBase" path="/provider"/>
 	[DebuggerStepThrough]
 	protected virtual void End(IServiceProvider provider)
 	{
@@ -209,7 +258,7 @@ public abstract partial class SonarrCmdletBase
 	/// </summary>
 	/// <remarks>
 	/// <para>
-	/// This method cannot be overriden. Derived cmdlets should instead override the
+	/// This method cannot be overridden. Derived cmdlets should instead override the
 	/// <see cref="Stop(IServiceProvider)"/> method.
 	/// </para>
 	/// <para>
@@ -236,14 +285,16 @@ public abstract partial class SonarrCmdletBase
 		}
 	}
 	/// <summary>
-	/// When overridden in the derived <see cref="SonarrCmdletBase"/> cmdlet, signals the code that runs in the
-	/// command to stop, such as by canceling the token of a request in flight. Default implementation in the base class
-	/// just returns.
+	/// When overridden in a derived class, signals the code that runs in the command to stop, such as by canceling the
+	/// token of a request in flight.
 	/// </summary>
 	/// <remarks>
+	/// <para>
 	/// It runs on another thread while <see cref="Begin(IServiceProvider)"/>, <see cref="Process(IServiceProvider)"/>,
 	/// or <see cref="End(IServiceProvider)"/> can still be running, and while the pipeline thread can be disposing the
 	/// scope, so it only signals. Whatever it throws is lost.
+	/// </para>
+	/// <para>Default implementation in the base class just returns.</para>
 	/// </remarks>
 	/// <param name="provider">The scoped service provider for use by derived cmdlets.</param>
 	[DebuggerStepThrough]
@@ -253,12 +304,20 @@ public abstract partial class SonarrCmdletBase
 	}
 
 	/// <summary>
-	/// Sets the internal "IsStopped" flag in the base cmdlet.
+	/// Stops the cmdlet without an error, so that none of its later processing steps run.
 	/// </summary>
-	/// <remarks>This flag is checked prior to the execution
-	/// of the <see cref="Begin(IServiceProvider)"/>, <see cref="Process(IServiceProvider)"/>, and
-	/// <see cref="End(IServiceProvider)"/> methods in order to determine is the next processing step 
-	/// should be skipped.
+	/// <remarks>
+	/// <para>
+	/// The method sets <see cref="IsStopped"/>, which is checked before <see cref="Begin(IServiceProvider)"/>,
+	/// <see cref="Process(IServiceProvider)"/>, and <see cref="End(IServiceProvider)"/> run, to determine whether the
+	/// next processing step should be skipped, and then calls
+	/// <see cref="OnErrorStopping(IServiceProvider, ErrorRecord, bool)"/> with no error.
+	/// </para>
+	/// <para>
+	/// It doesn't end the pipeline: the commands around the cmdlet go on, and the cmdlet takes the rest of its input
+	/// without processing it. The scope is still disposed when the pipeline ends. Call it from a processing step, while
+	/// the cmdlet holds its scope.
+	/// </para>
 	/// </remarks>
 	[DebuggerStepThrough]
 	protected void StopCmdlet()
@@ -267,15 +326,28 @@ public abstract partial class SonarrCmdletBase
 		this.OnErrorStopping(_scope!.ServiceProvider, null, errorWasProvided: false);
 	}
 	/// <summary>
-	/// Sets the internal "IsStopped" flag in the base cmdlet and writes the supplied 
-	/// <see cref="ErrorRecord"/> to the output pipeline which can be suppressed via the "ErrorAction" 
-	/// preference values.
+	/// Stops the cmdlet, so that none of its later processing steps run, and writes the specified error to the error
+	/// stream.
 	/// </summary>
-	/// <remarks>This flag is checked prior to the execution
-	/// of the <see cref="Begin(IServiceProvider)"/>, <see cref="Process(IServiceProvider)"/>, and
-	/// <see cref="End(IServiceProvider)"/> methods in order to determine is the next processing step 
-	/// should be skipped.
+	/// <remarks>
+	/// <para>
+	/// The method sets <see cref="IsStopped"/>, which is checked before <see cref="Begin(IServiceProvider)"/>,
+	/// <see cref="Process(IServiceProvider)"/>, and <see cref="End(IServiceProvider)"/> run, to determine whether the
+	/// next processing step should be skipped, calls <see cref="OnErrorStopping(IServiceProvider, ErrorRecord, bool)"/>
+	/// with <paramref name="record"/>, and then writes the record through
+	/// <see cref="Cmdlet.WriteError(ErrorRecord)"/>, so <c>-ErrorAction</c> decides what happens to it, and under
+	/// <c>-ErrorAction Stop</c> the statement ends there.
+	/// </para>
+	/// <para>
+	/// Call it from a processing step, while the cmdlet holds its scope.
+	/// </para>
 	/// </remarks>
+	/// <param name="record">
+	/// The error to write, or <see langword="null"/> to stop without one, as <see cref="StopCmdlet()"/> does.
+	/// </param>
+	/// <exception cref="PipelineStoppedException">
+	/// Thrown when the error is written under <c>-ErrorAction Stop</c>.
+	/// </exception>
 	[DebuggerStepThrough]
 	protected void StopCmdlet(ErrorRecord? record)
 	{
@@ -345,40 +417,70 @@ public abstract partial class SonarrCmdletBase
 	}
 
 	/// <summary>
-	/// When overridden in derived cmdlets, it sets any logic that should be run before 
-	/// <see cref="Begin(IServiceProvider)"/> is executed but immediately after the scoped
-	/// service provider is created. Default implementation in the base class just returns.
+	/// When overridden in a derived class, sets up the cmdlet's state right after its scope is created and before
+	/// <see cref="Begin(IServiceProvider)"/> runs.
 	/// </summary>
 	/// <remarks>
-	///     This method should be used in lieu of setting member fields/properties in the cmdlet's
-	///     constructor.
 	///     <para>
-	///         Any exception thrown will stop the execution of the cmdlet entirely.
+	///         This method should be used in lieu of setting member fields/properties in the cmdlet's
+	///         constructor. The cmdlet's preferences, such as <see cref="DebugPreference"/>, aren't captured yet.
 	///     </para>
+	///     <para>
+	///         Any exception thrown, other than one that PowerShell throws to end the pipeline or to leave a script
+	///         block, disposes the scope and
+	///         ends the statement with its error, so no other processing step runs. A call to
+	///         <see cref="StopCmdlet()"/> or <see cref="StopCmdlet(ErrorRecord)"/> skips
+	///         <see cref="Begin(IServiceProvider)"/> and the rest of the cmdlet's steps instead.
+	///     </para>
+	///     <para>Default implementation in the base class just returns.</para>
 	/// </remarks>
 	/// <param name="provider">The scoped service provider for use by derived cmdlets.</param>
-	/// <exception cref="Exception"/>
 	[DebuggerStepThrough]
 	protected virtual void OnCreatingScope(IServiceProvider provider)
 	{
 		return;
 	}
 
+	/// <summary>
+	/// When overridden in a derived base class of this assembly, resolves the services that the base class needs from
+	/// the cmdlet's scope, before <see cref="OnCreatingScope(IServiceProvider)"/> runs.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// <see cref="SonarrApiCmdletBase"/> resolves its <c>ISonarrClient</c> here, and
+	/// <see cref="MG.Sonarr.Next.Shell.Cmdlets.Bases.SonarrMetadataCmdlet"/> its metadata tag, each after calling the base method, so a cmdlet's own
+	/// <see cref="OnCreatingScope(IServiceProvider)"/> can already use them. An exception from it is handled as one from
+	/// <see cref="OnCreatingScope(IServiceProvider)"/> is.
+	/// </para>
+	/// <para>Default implementation in the base class just returns.</para>
+	/// </remarks>
+	/// <param name="provider">The scoped service provider of the cmdlet.</param>
 	private protected virtual void OnCreatingScopeInternal(IServiceProvider provider)
 	{
 		return;
 	}
 
 	/// <summary>
-	/// When overriden in derived cmdlets, will run any logic when the <see cref="StopCmdlet()"/> methods
-	/// are called but before any errors/exceptions are thrown. In the case that <see cref="StopCmdlet(ErrorRecord)"/>
-	/// was called, the <see cref="ErrorRecord"/> is passed on to this method; otherwise it will be 
-	/// <see langword="null"/>.
+	/// When overridden in a derived class, runs when <see cref="StopCmdlet()"/> or
+	/// <see cref="StopCmdlet(ErrorRecord)"/> stops the cmdlet, before any error is written.
 	/// </summary>
 	/// <remarks>
-	///     Default implementation in the base class just returns.
+	///     <para>
+	///         <see cref="IsStopped"/> is already <see langword="true"/> when it runs.
+	///     </para>
+	///     <para>
+	///         Default implementation in the base class just returns.
+	///     </para>
 	/// </remarks>
-	/// <param name="provider"></param>
+	/// <param name="provider">The scoped service provider for use by derived cmdlets.</param>
+	/// <param name="error">
+	/// The error that <see cref="StopCmdlet(ErrorRecord)"/> is about to write, or <see langword="null"/> when the
+	/// cmdlet stops without one.
+	/// </param>
+	/// <param name="errorWasProvided">
+	/// <see langword="true"/> if <paramref name="error"/> holds an error, and so isn't <see langword="null"/>;
+	/// otherwise, <see langword="false"/>.
+	/// </param>
 	[DebuggerStepThrough]
 	protected virtual void OnErrorStopping(IServiceProvider provider, [ParameterNotNullWhenTrue(nameof(errorWasProvided))] ErrorRecord? error, bool errorWasProvided)
 	{

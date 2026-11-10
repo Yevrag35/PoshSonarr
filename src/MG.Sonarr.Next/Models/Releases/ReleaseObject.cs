@@ -30,28 +30,28 @@ public sealed class ReleaseObject : SonarrObject,
 	/// <summary>
 	/// The number of properties that a new instance makes room for.
 	/// </summary>
-	const int CAPACITY = 46;
+	private const int CAPACITY = 46;
 	/// <summary>
 	/// The type's full name, which <see cref="SetPSTypeName"/> puts first in the PowerShell type names.
 	/// </summary>
-	static readonly string _typeName = typeof(ReleaseObject).GetName();
+	private static readonly string _typeName = typeof(ReleaseObject).GetName();
 
 	/// <summary>
 	/// The release's age in days, as Sonarr sent it.
 	/// </summary>
-	int _age;
+	private int _age;
 	/// <summary>
 	/// The release's weights, read when the object is deserialized.
 	/// </summary>
-	Weight _weight;
+	private Weight _weight;
 	/// <summary>
 	/// The release's age in hours, as Sonarr sent it.
 	/// </summary>
-	double _ageHours;
+	private double _ageHours;
 	/// <summary>
 	/// The release's age in minutes, as Sonarr sent it.
 	/// </summary>
-	double _ageMinutes;
+	private double _ageMinutes;
 
 	/// <summary>
 	/// Gets how old the release is.
@@ -241,7 +241,7 @@ public sealed class ReleaseObject : SonarrObject,
 	/// <summary>
 	/// The names of the string properties whose values get an uppercase first letter.
 	/// </summary>
-	static readonly HashSet<string> _capitalProps =
+	private static readonly HashSet<string> _capitalProps =
 	[
 		"Protocol",
 	];

@@ -15,11 +15,11 @@ public sealed class RootFolderObject : IdSonarrObject<RootFolderObject>,
 	/// <summary>
 	/// The number of properties that a new instance makes room for.
 	/// </summary>
-	const int CAPACITY = 9;
+	private const int CAPACITY = 9;
 	/// <summary>
 	/// The type's full name, which <see cref="SetPSTypeName"/> puts first in the PowerShell type names.
 	/// </summary>
-	static readonly string _typeName = typeof(RootFolderObject).GetName();
+	private static readonly string _typeName = typeof(RootFolderObject).GetName();
 
 	/// <summary>
 	/// Initializes a new <see cref="RootFolderObject"/> instance with no properties, which the JSON converter fills.

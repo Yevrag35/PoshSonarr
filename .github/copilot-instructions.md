@@ -1,1 +1,1 @@
-C:/Users/Mike/.claude/skills/csharp-xml-docs/references/style-guide.md
+%USERPROFILE%/.claude/skills/csharp-xml-docs/references/style-guide.md

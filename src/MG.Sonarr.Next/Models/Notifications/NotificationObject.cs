@@ -23,15 +23,15 @@ public class NotificationObject : TagUpdateObject<NotificationObject>,
 	/// The text that starts the name of each trigger property, such as <c>OnGrab</c>, any of which being on makes the
 	/// connection enabled.
 	/// </summary>
-	const string TRIGGER_PREFIX = "On";
+	private const string TRIGGER_PREFIX = "On";
 	/// <summary>
 	/// The number of properties that an instance is sized for, about the number of fields that Sonarr sends.
 	/// </summary>
-	const int CAPACITY = 38;
+	private const int CAPACITY = 38;
 	/// <summary>
 	/// The full name of the class, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
-	static readonly string _typeName = typeof(NotificationObject).GetName();
+	private static readonly string _typeName = typeof(NotificationObject).GetName();
 
 	/// <summary>
 	/// Gets or sets the connection's name.

@@ -22,19 +22,19 @@ public sealed class NotificationSchemaObject : TagUpdateObject<NotificationSchem
 	/// <summary>
 	/// The number of properties that an instance is sized for, about the number of fields that Sonarr sends.
 	/// </summary>
-	const int CAPACITY = 38;
+	private const int CAPACITY = 38;
 	/// <summary>
 	/// The name of the property that holds the template's implementation, such as <c>Webhook</c>.
 	/// </summary>
-	const string IMPLEMENTATION = "Implementation";
+	private const string IMPLEMENTATION = "Implementation";
 	/// <summary>
 	/// The name of the property that holds the implementation's display name, such as <c>Custom Script</c>.
 	/// </summary>
-	const string IMPLEMENTATION_NAME = "ImplementationName";
+	private const string IMPLEMENTATION_NAME = "ImplementationName";
 	/// <summary>
 	/// The full name of the class, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
-	static readonly string _typeName = typeof(NotificationSchemaObject).GetName();
+	private static readonly string _typeName = typeof(NotificationSchemaObject).GetName();
 	/// <summary>
 	/// Gets a value that indicates whether a connection created from the template can carry tags.
 	/// </summary>

@@ -20,11 +20,11 @@ public sealed class LogObject : SonarrObject,
 	/// <summary>
 	/// The number of properties that a new log entry reserves room for.
 	/// </summary>
-	const int CAPACITY = 5;
+	private const int CAPACITY = 5;
 	/// <summary>
 	/// The PowerShell type name of <see cref="LogObject"/>.
 	/// </summary>
-	static readonly string _typeName = typeof(LogObject).GetName();
+	private static readonly string _typeName = typeof(LogObject).GetName();
 
 	/// <summary>
 	/// Gets the entry's log level.

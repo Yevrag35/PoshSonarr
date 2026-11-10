@@ -42,8 +42,8 @@ internal ref struct SpanStringBuilder
 
 	internal const int DEFAULT_CAPACITY = 128;
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	static readonly string s_newLine = Environment.NewLine;
-	static readonly int s_newLineLength = s_newLine.Length;
+	private static readonly string s_newLine = Environment.NewLine;
+	private static readonly int s_newLineLength = s_newLine.Length;
 
 	private char[]? _array;
 	private Span<char> _chars;
@@ -215,6 +215,7 @@ internal ref struct SpanStringBuilder
 	/// <typeparam name="TEnum">The type of the enumeration. Must be an unmanaged enumeration type.</typeparam>
 	/// <param name="enumValue">The enumeration value to append.</param>
 	/// <inheritdoc cref="EnsureCapacity(pint)" path="/exception"/>
+	[SkipLocalsInit]
 	public void Append<TEnum>(TEnum enumValue) where TEnum : unmanaged, Enum
 	{
 		const int stack_cap = DEFAULT_CAPACITY / 2; // 64
@@ -237,53 +238,6 @@ internal ref struct SpanStringBuilder
 			Rent.Return(rented);
 		}
 	}
-	///// <summary>
-	///// Appends the string representation of the specified enumeration value to the current instance, formatting it
-	///// through the supplied function pointer.
-	///// </summary>
-	///// <remarks>
-	///// <para>Pass the address of the source-generated <c>TryFormat</c> member emitted for <typeparamref name="TEnum"/>
-	///// - for example <c>&amp;TextVoiceExtensions.TryFormat</c>. That member resolves the name through a compile-time
-	///// switch, whereas <see cref="Append{TEnum}(TEnum)"/> can only reach <c>Enum.TryFormat</c>, which searches
-	///// per-type metadata on every call because a generic constrained to <see cref="Enum"/> cannot bind to a
-	///// per-enum member.</para>
-	///// <para>A default-initialized <paramref name="tryFormat"/> carries no pointer. That case routes to
-	///// <see cref="Append{TEnum}(TEnum)"/> rather than throwing, so the overload stays safe to call with
-	///// <see langword="default"/>.</para>
-	///// </remarks>
-	///// <typeparam name="TEnum">The type of the enumeration. Must be an unmanaged enumeration type.</typeparam>
-	///// <param name="enumValue">The enumeration value to append.</param>
-	///// <param name="tryFormat">A pointer to the function that writes <paramref name="enumValue"/> into a character buffer.</param>
-	///// <inheritdoc cref="EnsureCapacity(pint)" path="/exception"/>
-	//public void Append<TEnum>(TEnum enumValue, TryFnPtr<TEnum, Span<char>, int> tryFormat) where TEnum : unmanaged, Enum
-	//{
-	//	// Guarding the local lets the JIT fold the wrapper's internal null branch away (RLT005).
-	//	if (!tryFormat.IsValid)
-	//	{
-	//		this.Append(enumValue);
-	//		return;
-	//	}
-
-	//	const int stack_cap = DEFAULT_CAPACITY / 2; // 64
-
-	//	scoped Span<char> buffer = stackalloc char[stack_cap];
-	//	char[]? rented = null;
-	//	try
-	//	{
-	//		int written = 0;
-	//		while (!tryFormat.Invoke(enumValue, buffer, out written))
-	//		{
-	//			buffer = GrowScratch(ref rented, buffer.Length * 2);
-	//		}
-
-	//		ReadOnlySpan<char> slice = buffer.UnsafeSlice(0, written);
-	//		this.Append(slice);
-	//	}
-	//	finally
-	//	{
-	//		Rent.Return(rented);
-	//	}
-	//}
 	/// <summary>
 	/// Appends the string representation of the specified <see cref="Guid"/> to the current buffer.
 	/// </summary>
@@ -391,7 +345,7 @@ internal ref struct SpanStringBuilder
 	/// <param name="formattable">The value that failed to format.</param>
 	/// <param name="maxLength">The maximum number of characters that the value had to fit in.</param>
 	/// <exception cref="FormatException">Thrown when this method is called.</exception>
-	[DoesNotReturn, StackTraceHidden, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+	[DoesNotReturn, StackTraceHidden, DebuggerStepThrough]
 	private static void ThrowFormatException<T>(T formattable, int maxLength) where T : ISpanFormattable
 	{
 		throw new FormatException($"The value of type '{formattable.GetType()}' could not be formatted into the provided buffer of length {maxLength}.");
@@ -404,6 +358,8 @@ internal ref struct SpanStringBuilder
 	/// <param name="length">The number of characters to be written.</param>
 	/// <param name="state">The state passed to the <paramref name="spanAction"/>.</param>
 	/// <param name="spanAction">The action that writes to the span.</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="length"/> is negative.</exception>
+	/// <inheritdoc cref="EnsureCapacity(pint)" path="/exception"/>
 	public void Append<T>(int length, scoped T state, Action<Span<char>, T> spanAction) where T : allows ref struct
 	{
 		this.EnsureCapacity(length);
@@ -956,7 +912,7 @@ internal ref struct SpanStringBuilder
 	/// </summary>
 	/// <param name="index">The zero-based index at which to begin writing. Must be between <c>0</c> and the current <see cref="Length"/>, inclusive.</param>
 	/// <param name="length">The number of characters to write.</param>
-	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="index"/> is negative or greater than the current <see cref="Length"/>.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="index"/> is negative or greater than the current <see cref="Length"/>, or when <paramref name="length"/> is negative.</exception>
 	/// <inheritdoc cref="EnsureCapacity(pint)" path="/exception"/>
 	public Span<char> OverlapAppendSpan(int index, int length)
 	{

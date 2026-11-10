@@ -34,9 +34,9 @@ public sealed class AuthHandler : DelegatingHandler
 	/// </remarks>
 	public static readonly HttpRequestOptionsKey<NetworkCredential?> CredentialKey = new("Credentials");
 
-	readonly SonarrAuthType _authType;
-	readonly CookieContainer _cookies;
-	readonly Uri _loginUrl;
+	private readonly SonarrAuthType _authType;
+	private readonly CookieContainer _cookies;
+	private readonly Uri _loginUrl;
 
 	/// <summary>
 	/// Initializes a new <see cref="AuthHandler"/> instance with the authentication type and URL base of the specified
@@ -125,8 +125,8 @@ public sealed class AuthHandler : DelegatingHandler
 	}
 
 	#region BASIC AUTH
-	const string BASIC = "Basic";
-	const int MAX_STACKALLOC = 256;
+	private const string BASIC = "Basic";
+	private const int MAX_STACKALLOC = 256;
 
 	/// <summary>
 	/// Adds a Basic <c>Authorization</c> header to a request that carries credentials and sends it to the inner
@@ -189,7 +189,7 @@ public sealed class AuthHandler : DelegatingHandler
 	#endregion
 
 	#region FORMS AUTH
-	const string LOGIN_FAILED = "loginFailed=true";
+	private const string LOGIN_FAILED = "loginFailed=true";
 
 	/// <summary>
 	/// Sends a request that carries credentials to the inner handler, logging in first when there's no cookie for its

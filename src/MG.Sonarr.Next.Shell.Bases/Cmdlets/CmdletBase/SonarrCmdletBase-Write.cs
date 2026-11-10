@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets;
 
-public abstract partial class SonarrCmdletBase
+public partial class SonarrCmdletBase
 {
 	/// <summary>
 	/// Writes the JSON of the specified object to the debug stream when the cmdlet's <see cref="DebugPreference"/>
@@ -56,12 +56,23 @@ public abstract partial class SonarrCmdletBase
 		}
 	}
 
-	/// <inheritdoc cref="TryWriteObject{T, TOutput}(SonarrClientResult{T}, bool, bool, Func{T, TOutput})"
-	///     path="/*[not(self::summary)]"/>
 	/// <summary>
-	/// Attempts to write the response object to the output stream, applying default conditions for 
-	/// writing the object based on the response status and its type.
+	/// Attempts to write the response's value to the output stream, enumerating it when it's a collection, or else
+	/// writes the response's error unless the error is ignorable.
 	/// </summary>
+	/// <remarks>
+	/// The method calls <see cref="TryWriteObject{T}(SonarrClientResult{T}, bool, bool, Func{T, object})"/> with
+	/// <c>writeConditionally</c> and <c>enumerateCollection</c> both <see langword="true"/> and no selector.
+	/// </remarks>
+	/// <typeparam name="T">The type of the data in the Sonarr response.</typeparam>
+	/// <param name="response">The Sonarr response to process.</param>
+	/// <returns>
+	/// <see langword="true"/> if the response succeeded and its value was written; otherwise, <see langword="false"/>.
+	/// </returns>
+	/// <exception cref="PipelineStoppedException">
+	/// Thrown when the error is written under <c>-ErrorAction Stop</c>, and when a downstream command such as
+	/// <c>Select-Object -First</c> has all the objects it needs.
+	/// </exception>
 	[DebuggerStepThrough]
 	protected bool TryWriteObject<T>(SonarrClientResult<T> response)
 	{
@@ -71,12 +82,31 @@ public abstract partial class SonarrCmdletBase
 			enumerateCollection: true);
 	}
 
-	/// <inheritdoc cref="TryWriteObject{T, TOutput}(SonarrClientResult{T}, bool, bool, Func{T, TOutput})"
-	///     path="/*[not(self::summary)]"/>
 	/// <summary>
-	/// Attempts to write the response object to the output stream, applying conditional logic based on 
-	/// the response status and whether to enumerate collections.
+	/// Attempts to write the response's value to the output stream, or else writes the response's error, as
+	/// <paramref name="writeConditionally"/> says.
 	/// </summary>
+	/// <remarks>
+	/// The method calls <see cref="TryWriteObject{T}(SonarrClientResult{T}, bool, bool, Func{T, object})"/> with no
+	/// selector.
+	/// </remarks>
+	/// <typeparam name="T">The type of the data in the Sonarr response.</typeparam>
+	/// <param name="response">The Sonarr response to process.</param>
+	/// <param name="writeConditionally">
+	/// <see langword="true"/> to skip writing an error that is ignorable, such as a 404's; otherwise,
+	/// <see langword="false"/> to write every error.
+	/// </param>
+	/// <param name="enumerateCollection">
+	/// <see langword="true"/> to write each item of the value when it's a collection; otherwise,
+	/// <see langword="false"/> to write it as one object.
+	/// </param>
+	/// <returns>
+	/// <see langword="true"/> if the response succeeded and its value was written; otherwise, <see langword="false"/>.
+	/// </returns>
+	/// <exception cref="PipelineStoppedException">
+	/// Thrown when the error is written under <c>-ErrorAction Stop</c>, and when a downstream command such as
+	/// <c>Select-Object -First</c> has all the objects it needs.
+	/// </exception>
 	[DebuggerStepThrough]
 	protected bool TryWriteObject<T>(SonarrClientResult<T> response, bool writeConditionally, bool enumerateCollection)
 	{
@@ -84,22 +114,38 @@ public abstract partial class SonarrCmdletBase
 
 	}
 	/// <summary>
-	/// Attempts to write the response object to the output stream after transforming it using
-	/// the provided selector, applying conditional logic based on the response status and 
-	/// whether to enumerate collections.
+	/// Attempts to write the response's value, or what the specified selector makes of it, to the output stream, or
+	/// else writes the response's error, as <paramref name="writeConditionally"/> says.
 	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// When the response succeeded, the method writes its value, or the selector's result, through
+	/// <see cref="Cmdlet.WriteObject(object, bool)"/>. When it failed, the method writes its error through
+	/// <see cref="WriteConditionalError(SonarrErrorRecord)"/> or <see cref="Cmdlet.WriteError(ErrorRecord)"/>, so
+	/// <c>-ErrorAction</c> decides what happens to it.
+	/// </para>
+	/// </remarks>
 	/// <typeparam name="T">The type of the data in the Sonarr response.</typeparam>
-	/// <typeparam name="TOutput">The type of the output after applying the transformation.
-	/// </typeparam>
 	/// <param name="response">The Sonarr response to process.</param>
-	/// <param name="writeConditionally">Indicates whether to write the response conditionally
-	/// based on its error status.</param>
-	/// <param name="enumerateCollection">Indicates whether to enumerate the collection if the
-	/// transformed data is a collection type.</param>
-	/// <param name="writeSelector">A function to transform the response data before writing 
-	/// to the output stream.</param>
-	/// <returns><see langword="true"/> if the response was written successfully; otherwise, 
-	/// <see langword="false"/>.</returns>
+	/// <param name="writeConditionally">
+	/// <see langword="true"/> to skip writing an error that is ignorable, such as a 404's; otherwise,
+	/// <see langword="false"/> to write every error.
+	/// </param>
+	/// <param name="enumerateCollection">
+	/// <see langword="true"/> to write each item of the written object when it's a collection; otherwise,
+	/// <see langword="false"/> to write it as one object.
+	/// </param>
+	/// <param name="writeSelector">
+	/// A function that turns the response's value into the object to write, or <see langword="null"/> to write the
+	/// value itself.
+	/// </param>
+	/// <returns>
+	/// <see langword="true"/> if the response succeeded and its value was written; otherwise, <see langword="false"/>.
+	/// </returns>
+	/// <exception cref="PipelineStoppedException">
+	/// Thrown when the error is written under <c>-ErrorAction Stop</c>, and when a downstream command such as
+	/// <c>Select-Object -First</c> has all the objects it needs.
+	/// </exception>
 	protected bool TryWriteObject<T>(SonarrClientResult<T> response, bool writeConditionally, bool enumerateCollection, Func<T, object?>? writeSelector)
 	{
 		if (!response.IsError)
@@ -126,10 +172,17 @@ public abstract partial class SonarrCmdletBase
 	}
 
 	/// <summary>
-	/// Writes the given error record to the host, but only if 
+	/// Writes the specified error record to the error stream, but only if
 	/// <see cref="SonarrErrorRecord.IsIgnorable"/> is <see langword="false"/>.
 	/// </summary>
+	/// <remarks>
+	/// A record that stands for a 404 is ignorable, so a cmdlet that looks up something Sonarr doesn't have writes
+	/// nothing instead of an error.
+	/// </remarks>
 	/// <param name="error">The error record to write.</param>
+	/// <exception cref="PipelineStoppedException">
+	/// Thrown when the error is written under <c>-ErrorAction Stop</c>.
+	/// </exception>
 	//[DebuggerStepThrough]
 	protected void WriteConditionalError(SonarrErrorRecord error)
 	{

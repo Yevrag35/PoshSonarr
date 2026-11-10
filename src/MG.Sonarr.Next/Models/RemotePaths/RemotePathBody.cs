@@ -12,15 +12,15 @@ public sealed class RemotePathBody
 	/// <summary>
 	/// The host, or <see langword="null"/> until it's set.
 	/// </summary>
-	string? _hostName;
+	private string? _hostName;
 	/// <summary>
 	/// The local path, or <see langword="null"/> until it's set.
 	/// </summary>
-	string? _localPath;
+	private string? _localPath;
 	/// <summary>
 	/// The remote path, or <see langword="null"/> until it's set.
 	/// </summary>
-	string? _remotePath;
+	private string? _remotePath;
 
 	/// <summary>
 	/// Gets or sets the ID of the mapping to update.

@@ -18,8 +18,8 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// </remarks>
 public sealed class VerboseHandler : DelegatingHandler
 {
-	readonly JsonSerializerOptions _options;
-	readonly IServiceScopeFactory _scopeFactory;
+	private readonly JsonSerializerOptions _options;
+	private readonly IServiceScopeFactory _scopeFactory;
 
 	/// <summary>
 	/// Initializes a new <see cref="VerboseHandler"/> instance with the specified JSON options and scope factory.

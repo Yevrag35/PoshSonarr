@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Exceptions;
 /// <inheritdoc cref="ErrorRecord"/>
 public sealed class SonarrErrorRecord : ErrorRecord, IHttpRequestUri
 {
-	readonly IReadOnlyDictionary<string, string> _headers;
+	private readonly IReadOnlyDictionary<string, string> _headers;
 
 	/// <inheritdoc cref="SonarrHttpException.Headers"/>
 	/// <value>The HTTP headers associated with the error.</value>
@@ -225,7 +225,7 @@ public sealed class SonarrErrorRecord : ErrorRecord, IHttpRequestUri
 				state.requestUri.CopyTo(chars);
 				int position = state.requestUri.Length;
 
-				ReadOnlySpan<char> separator = stackalloc char[3] { ' ', '-', ' ' };
+				ReadOnlySpan<char> separator = [' ', '-', ' '];
 				separator.CopyTo(chars.Slice(position));
 				position += separator.Length;
 
