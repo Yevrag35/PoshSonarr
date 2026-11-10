@@ -5,7 +5,7 @@ The Pester suite in this folder tests PoshSonarr's cmdlets against the Sonarr sa
 ## Requirements
 
 - Docker Desktop, running Linux containers, with the sandbox started by `sandbox/sonarr/start.ps1`, or reset by the runner's `-Reset`.
-- PowerShell 7.6 or later, and a .NET 10 SDK for the build.
+- PowerShell 7.7 or later, and a .NET 11 SDK for the build.
 - Pester 6.2.0 or a later 6.x. On a machine without it, install it with:
 
 ```powershell

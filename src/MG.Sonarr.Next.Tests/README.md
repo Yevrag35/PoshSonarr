@@ -4,7 +4,7 @@ The xUnit.net v3 suite in this folder tests PoshSonarr's libraries in-process: `
 
 ## Requirements
 
-- A .NET 10 SDK. The project references PowerShell's assemblies as packages, so the suite needs no installed PowerShell.
+- A .NET 11 SDK. The project references PowerShell's assemblies as packages, so the suite needs no installed PowerShell.
 
 ## Running the suite
 
@@ -32,7 +32,7 @@ The suite covers the module's code that isn't a cmdlet: `MG.Sonarr.Next`, and th
 
 ## How the project is set up
 
-- xUnit.net v3 brings its own runner on Microsoft.Testing.Platform, so the project builds as an executable, with `OutputType` set to `Exe`, and references `xunit.v3` with no `Microsoft.NET.Test.Sdk` or `xunit.runner.visualstudio`. Those two run tests through VSTest, which Microsoft.Testing.Platform doesn't support on the .NET 10 SDK, and a project that has either fails before it discovers a test, with "Testing with VSTest target is no longer supported by Microsoft.Testing.Platform on .NET 10 SDK and later", which names neither package.
+- xUnit.net v3 brings its own runner on Microsoft.Testing.Platform, so the project builds as an executable, with `OutputType` set to `Exe`, and references `xunit.v3` with no `Microsoft.NET.Test.Sdk` or `xunit.runner.visualstudio`. Those two run tests through VSTest, and the root `global.json` runs `dotnet test` on Microsoft.Testing.Platform instead. They add nothing that the suite uses, though they don't break it either: on the .NET 11 SDK, a project with `xunit.v3` and either or both of them still built and passed its tests through `dotnet test`, with and without `--solution` (measured 2026-11-10 with SDK 11.0.100 and `xunit.v3` 4.0.2).
 - The project references `MG.Sonarr.Next.Shell.Bases`, which brings `MG.Sonarr.Next`, and both name this assembly in their `InternalsVisibleTo`. It doesn't reference the source generators: they would inject their attributes into this assembly too, and CS0436 would warn on each, since this assembly also sees `MG.Sonarr.Next`'s internal copies of them.
 - The models are PSObjects and the cmdlet tests open runspaces, so the project references `System.Management.Automation` and `Microsoft.PowerShell.Commands.Utility` itself, which brings back the runtime assets that `MG.Sonarr.Next` keeps out of the projects that reference it.
 - The project's global usings cover xUnit.net, CsCheck, the `Infrastructure` namespace, and the PowerShell and .NET namespaces that many tests use, so a test file names only the namespaces that few tests need, such as the library's own.

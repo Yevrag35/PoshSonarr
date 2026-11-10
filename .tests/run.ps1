@@ -59,7 +59,7 @@ param (
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$buildOutput = Join-Path $repoRoot 'src/MG.Sonarr.Next.Shell/bin/Debug/net10.0'
+$buildOutput = Join-Path $repoRoot 'src/MG.Sonarr.Next.Shell/bin/Debug/net11.0'
 $stage = Join-Path $repoRoot '.temp/pester/PoshSonarr'
 $manifest = Join-Path $stage 'PoshSonarr.psd1'
 $results = Join-Path $repoRoot '.temp/pester/results.xml'

@@ -5,7 +5,7 @@ description: Measured PowerShell 7 engine behavior that PoshSonarr's binary cmdl
 
 # PowerShell internals for PoshSonarr
 
-PoshSonarr is a binary module for PowerShell 7 alone: its manifest declares only the Core edition, and its cmdlet assemblies target `net10.0`. Its cmdlets are written in C#, and its models derive from `PSObject`, so how they receive input, report errors, stop, clean up, ship help, and load depends on details of the PowerShell engine that the documentation leaves out. This skill records those details as measured, with the PowerShell version and the date of each measurement.
+PoshSonarr is a binary module for PowerShell 7 alone: its manifest declares only the Core edition, and its cmdlet assemblies target `net11.0`. Its cmdlets are written in C#, and its models derive from `PSObject`, so how they receive input, report errors, stop, clean up, ship help, and load depends on details of the PowerShell engine that the documentation leaves out. This skill records those details as measured, with the PowerShell version and the date of each measurement.
 
 - Trust a measurement here over recollection. When a change depends on a fact that a newer PowerShell release could change, measure it again.
 - When you measure something that later work could depend on, add it to the reference it belongs to, with the version and the date, instead of saving it as a memory. Say what it means for PoshSonarr beside it, as a rule the code has to follow rather than a description of the code as it is today.

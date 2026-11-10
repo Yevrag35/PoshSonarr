@@ -87,7 +87,7 @@ Connect-SonarrInstance -Url http://127.0.0.1:18989 -ApiKey 0123456789abcdef01234
 To point an interactive debugging session at the sandbox instead of the development instance, pass the sandbox's values to `Debug.ps1` after a Debug build:
 
 ```powershell
-pwsh -NoExit -File src/MG.Sonarr.Next.Shell/bin/Debug/net10.0/Debug.ps1 -SonarrUrl http://127.0.0.1:18989 -ApiKey 0123456789abcdef0123456789abcdef -NoApiInPath:$false
+pwsh -NoExit -File src/MG.Sonarr.Next.Shell/bin/Debug/net11.0/Debug.ps1 -SonarrUrl http://127.0.0.1:18989 -ApiKey 0123456789abcdef0123456789abcdef -NoApiInPath:$false
 ```
 
 Each of the script's parameters overrides only its own setting in the repository's `.env` file, so `-NoApiInPath:$false` keeps a `SONARR_NO_API_IN_PATH=true` line, written for a development instance behind a reverse proxy, from removing `/api` from the sandbox's paths.

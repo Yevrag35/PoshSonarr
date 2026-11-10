@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<RootNamespace>MG.Sonarr.Next.Shell</RootNamespace>
-		<Product>PoshSonarr Bases .NET 10</Product>
+		<Product>PoshSonarr Bases .NET 11</Product>
 		<Description>The binary library of the PoshSonarr PowerShell module containing the base modules.</Description>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>

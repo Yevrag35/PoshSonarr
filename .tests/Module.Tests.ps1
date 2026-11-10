@@ -81,8 +81,8 @@ Describe 'PoshSonarr' {
 		$missing | Should -BeNullOrEmpty
 	}
 
-	It 'requires PowerShell 7.6 and the Core edition' {
-		$module.PowerShellVersion | Should -Be ([version] '7.6')
+	It 'requires PowerShell 7.7 and the Core edition' {
+		$module.PowerShellVersion | Should -Be ([version] '7.7')
 		$module.CompatiblePSEditions | Should -Be @('Core')
 	}
 }
