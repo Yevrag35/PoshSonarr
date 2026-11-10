@@ -11,7 +11,8 @@
 	folder, the seeded series and their episodes, lookups through the mock metadata service,
 	wanted/missing and the calendar, and that adding a show the mock lacks fails. Then it takes a tag
 	and Sandbox Lookup Show through a round trip each, adding, reading, changing, and deleting them,
-	and last it checks the user that Sonarr runs as and the address that its port is published on.
+	and last it checks the user that Sonarr runs as, the address that its port is published on, and
+	the owner of /tv-temp, the folder that tests add as a root folder.
 
 	It expects the sandbox running at its baseline, as start.ps1 and reset.ps1 leave it, and first
 	makes the same status call that they make, so it sends nothing to another server that answers on
@@ -310,6 +311,10 @@ Invoke-CheckGroup 'Container' {
 	$address = '127.0.0.1:{0}' -f ([uri] $settings.BaseUrl).Port
 	$published = (Invoke-SandboxCompose port sonarr 8989) -join ' '
 	Write-CheckResult "port 8989 is published on $address" ($published -eq $address) $published
+	# Sonarr adds a root folder only when it can write to the folder. This check comes last, because a folder that isn't
+	# there makes stat exit nonzero, which ends the group.
+	$owner = (Invoke-SandboxCompose exec -T sonarr stat -c %u /tv-temp) -join ' '
+	Write-CheckResult '/tv-temp belongs to UID 1000' ($owner -eq '1000') $owner
 }
 
 Write-Host ''

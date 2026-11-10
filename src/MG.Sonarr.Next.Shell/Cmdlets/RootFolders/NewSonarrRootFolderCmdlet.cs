@@ -1,6 +1,7 @@
 using MG.Sonarr.Next.Exceptions.Shell;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.RootFolders;
+using MG.Sonarr.Next.Shell.Internal;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders;
 
@@ -9,9 +10,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.RootFolders;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The cmdlet converts <c>-Path</c> to a full path from the current location, posts it to Sonarr, and writes the root
-/// folder that Sonarr returns to the pipeline. <c>-Path</c> binds by property name, and through its <c>FullName</c>
-/// alias, so a folder from <c>Get-Item</c> or <c>Get-ChildItem</c> can be piped to the cmdlet.
+/// The cmdlet posts the full path of <c>-Path</c> to Sonarr and writes the root folder that Sonarr returns to the
+/// pipeline. A path that's fully qualified on Linux, macOS, or Windows goes to Sonarr as it's given, and any other path
+/// is converted to a full path from the current location first. <c>-Path</c> binds by property name, and through its
+/// <c>FullName</c> alias, so a folder from <c>Get-Item</c> or <c>Get-ChildItem</c> can be piped to the cmdlet.
 /// </para>
 /// <para>
 /// The cmdlet confirms each folder before it adds it, and its confirm impact is Low, so it prompts only under
@@ -32,8 +34,14 @@ public sealed class NewSonarrRootFolderCmdlet : SonarrApiCmdletBase
 	/// </summary>
 	/// <remarks>
 	/// <para>
-	/// A relative path is converted to a full path from the current location, and the folder doesn't have to exist on
-	/// this computer.
+	/// A path that's fully qualified on Linux, macOS, or Windows goes to Sonarr as it's given, since Sonarr reads it on
+	/// its own computer: one that starts with <c>/</c>, as in <c>/data/tv</c>, a UNC path that starts with <c>\\</c> or
+	/// <c>//</c>, or a drive path such as <c>C:\tv</c>. The cmdlet checks only the path's text, the same way on every
+	/// platform, so a session on any platform can give a path for a Sonarr on any other.
+	/// </para>
+	/// <para>
+	/// Any other path, such as a relative one, is converted to a full path from the current location, and the folder
+	/// doesn't have to exist on this computer.
 	/// </para>
 	/// <para>
 	/// The parameter binds by property name from the pipeline, and its alias is <c>FullName</c>.
@@ -54,10 +62,11 @@ public sealed class NewSonarrRootFolderCmdlet : SonarrApiCmdletBase
 		this.Tag = provider.GetRequiredService<IMetadataResolver>()[Meta.RootFolder];
 	}
 	/// <summary>
-	/// Converts <c>-Path</c> to a full path and adds it to Sonarr as a root folder once the action is confirmed.
+	/// Gets the full path of <c>-Path</c> and adds it to Sonarr as a root folder once the action is confirmed.
 	/// </summary>
 	/// <remarks>
-	/// When the path can't be converted, the cmdlet writes the error and goes on to the next input.
+	/// When a path that isn't fully qualified can't be converted, the cmdlet writes the error and goes on to the next
+	/// input.
 	/// </remarks>
 	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	protected override void Process(IServiceProvider provider)
@@ -70,22 +79,34 @@ public sealed class NewSonarrRootFolderCmdlet : SonarrApiCmdletBase
 	}
 
 	/// <summary>
-	/// Converts the specified PowerShell path to a provider path from the current location, whether or not the item it
-	/// names exists.
+	/// Gets the specified path as it's given when it's fully qualified on Linux, macOS, or Windows, or else converts it
+	/// to a provider path from the current location, whether or not the item it names exists.
 	/// </summary>
+	/// <remarks>
+	/// A UNC path counts as fully qualified, and the check reads only the path's text, so a path on Sonarr's computer
+	/// goes to Sonarr as it is, whatever platform the session runs on. Converting it instead would put the current drive
+	/// in front of a path such as <c>/data/tv</c> on Windows.
+	/// </remarks>
 	/// <param name="providedPath">The path that <c>-Path</c> gives, which can be relative.</param>
-	/// <returns>The provider path that <paramref name="providedPath"/> names.</returns>
+	/// <returns>
+	/// <paramref name="providedPath"/> when it's fully qualified; otherwise, the provider path that it names.
+	/// </returns>
 	/// <exception cref="SonarrParameterException">
-	/// Thrown when the path converts to an empty path or one of only white space.
+	/// Thrown when a path that isn't fully qualified converts to an empty path or one of only white space.
 	/// </exception>
 	/// <exception cref="System.Management.Automation.DriveNotFoundException">
-	/// Thrown when the path names a drive that doesn't exist.
+	/// Thrown when a path that isn't fully qualified names a drive that doesn't exist.
 	/// </exception>
 	/// <exception cref="ProviderNotFoundException">
-	/// Thrown when the path names a provider that isn't loaded.
+	/// Thrown when a path that isn't fully qualified names a provider that isn't loaded.
 	/// </exception>
 	private string GetAbsolutePath(string providedPath)
 	{
+		if (ServerPath.IsFullyQualified(providedPath, allowUnc: true))
+		{
+			return providedPath;
+		}
+
 		string path = this.GetUnresolvedProviderPathFromPSPath(providedPath);
 		if (string.IsNullOrWhiteSpace(path))
 		{

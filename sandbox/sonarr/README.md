@@ -23,6 +23,8 @@ Each script exits 1 when something fails, and a failure while starting or while 
 
 The baseline is what a new Sonarr install holds, plus a tag labeled `sandbox-baseline` and a root folder at `/tv`. On top of it, `start.ps1` makes Sonarr accept the mock's certificate and adds the two seeded series that the next section describes. Each run creates only what's missing and changes nothing else, so it's safe to run again, and whatever you create stays until `reset.ps1`.
 
+Beside `/tv`, Sonarr's image holds an empty folder at `/tv-temp`, owned by the user that Sonarr runs as, for tests that add a root folder and remove it, since Sonarr accepts a root folder only when the folder exists and Sonarr can write to it. It isn't a root folder in the baseline, and it isn't a volume, so recreating the container empties it.
+
 ## Seeded series
 
 Sonarr gets every series and episode from its metadata service, SkyHook, at `https://skyhook.sonarr.tv`. The Compose project's second service, `skyhook`, stands in for it: nginx serving fixed JSON for four made-up shows from the files under `skyhook/v1/tvdb/`. Docker's DNS answers `skyhook.sonarr.tv` with the mock's address for Sonarr's container, so adding, looking up, and refreshing a series all run against the fixtures, without internet access and with the same results every time. The mock publishes no port, so nothing outside the project's network reaches it.
@@ -56,7 +58,7 @@ To change a show or add one, edit or add its file in `skyhook/v1/tvdb/shows/en/`
 | Unknown show | Adding TVDB ID 9009999, which the mock lacks, gets a 400 that says "A series with this ID was not found". |
 | Tag round trip | For a tag labeled `sandbox-temp-` and 8 random hex digits, POST returns 201 with an ID, GET returns the label, PUT with a new label returns 202, GET returns the new label, DELETE returns 200, and GET then returns 404. |
 | Series round trip | For Sandbox Lookup Show, POST returns 201 with an ID, Sonarr finishes adding the show, with its 2 episodes, within 60 seconds, GET returns 200, PUT with `monitored` false returns 202, DELETE returns 200, and GET then returns 404. |
-| Container | Sonarr runs as UID 1000, and port 8989 is published on `127.0.0.1`. |
+| Container | Sonarr runs as UID 1000, port 8989 is published on `127.0.0.1`, and `/tv-temp` belongs to UID 1000. |
 
 Each check prints a PASS or FAIL line that starts with its group, and a failed check shows what the sandbox answered. The script exits 1 when any check fails or the sandbox isn't answering. A round trip deletes what it added even when one of its checks fails, so a run leaves the sandbox as it found it. An interrupted run can leave its tag or Sandbox Lookup Show behind, and with the show still there, the next run fails until `reset.ps1` brings back the baseline. Each run leaves an error and a warning in Sonarr's log for the show that the mock lacks, besides the warning about the empty `/tv` root folder that adding Sandbox Lookup Show brings.
 
