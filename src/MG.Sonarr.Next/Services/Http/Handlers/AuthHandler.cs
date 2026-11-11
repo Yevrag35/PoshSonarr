@@ -171,13 +171,19 @@ public sealed class AuthHandler : DelegatingHandler
 		Span<byte> utf8Bytes = buffer.Span;
 		try
 		{
-			int written = Encoding.UTF8.GetBytes(userName, utf8Bytes);
-			colon.UnsafeCopy(utf8Bytes.UnsafeSlice(written));
-			written += colon.Length;
-			written += Encoding.UTF8.GetBytes(password, utf8Bytes.UnsafeSlice(written));
+			unsafe
+			{
+				// SAFETY: utf8Bytes holds at least length bytes: the most that userName can encode to, one for the colon,
+				// and the most that password can. So the user name leaves room for the colon after it, the password's
+				// bytes fit after that, and written never passes the length of utf8Bytes.
+				int written = Encoding.UTF8.GetBytes(userName, utf8Bytes);
+				colon.UnsafeCopy(utf8Bytes.UnsafeSlice(written));
+				written += colon.Length;
+				written += Encoding.UTF8.GetBytes(password, utf8Bytes.UnsafeSlice(written));
 
-			string base64Auth = Convert.ToBase64String(utf8Bytes.UnsafeSlice(0, written));
-			request.Headers.Authorization = new AuthenticationHeaderValue(BASIC, base64Auth);
+				string base64Auth = Convert.ToBase64String(utf8Bytes.UnsafeSlice(0, written));
+				request.Headers.Authorization = new AuthenticationHeaderValue(BASIC, base64Auth);
+			}
 		}
 		finally
 		{

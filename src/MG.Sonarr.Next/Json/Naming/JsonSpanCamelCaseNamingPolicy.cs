@@ -77,29 +77,34 @@ public sealed class JsonSpanCamelCaseNamingPolicy : JsonNamingPolicy
 			return;
 		}
 
-		ref char c = ref chars.Ref();
-		for (int i = 0; i < chars.Length; i++)
+		unsafe
 		{
-			if (i == 1 && !char.IsUpper(c.Offset(i))) // JIT loses track of i here, for some reason,
-			{                                         // so we help it out for just this one index access with i.
-				break;
-			}
-
-			int next = i + 1;
-
-			// Stop when next char is already lowercase.
-			if (i > 0 && next < chars.Length && !char.IsUpper(c.Offset(next)))
+			// SAFETY: The early return leaves at least one character, so Ref() is in range. Offset(i) runs in the loop
+			// body, where i < chars.Length, and each Offset(next) runs only once next < chars.Length has held.
+			ref char c = ref chars.Ref();
+			for (int i = 0; i < chars.Length; i++)
 			{
-				// If the next char is a space, lowercase current char before exiting.
-				if (c.Offset(next) == ' ')
-				{
-					chars[i] = char.ToLowerInvariant(chars[i]);
+				if (i == 1 && !char.IsUpper(c.Offset(i))) // JIT loses track of i here, for some reason,
+				{                                         // so we help it out for just this one index access with i.
+					break;
 				}
 
-				break;
-			}
+				int next = i + 1;
 
-			chars[i] = char.ToLowerInvariant(chars[i]);
+				// Stop when next char is already lowercase.
+				if (i > 0 && next < chars.Length && !char.IsUpper(c.Offset(next)))
+				{
+					// If the next char is a space, lowercase current char before exiting.
+					if (c.Offset(next) == ' ')
+					{
+						chars[i] = char.ToLowerInvariant(chars[i]);
+					}
+
+					break;
+				}
+
+				chars[i] = char.ToLowerInvariant(chars[i]);
+			}
 		}
 	}
 
@@ -120,31 +125,36 @@ public sealed class JsonSpanCamelCaseNamingPolicy : JsonNamingPolicy
 			return;
 		}
 
-		ref byte firstByte = ref utf8Bytes.Ref();
-		for (int i = 0; i < utf8Bytes.Length; i++)
+		unsafe
 		{
-			if (i == 1 && !IsAsciiUpper(firstByte.Offset(i)))
+			// SAFETY: The early return leaves at least one byte, so Ref() is in range. Each Offset(i) runs in the loop
+			// body, where i < utf8Bytes.Length, and each Offset(next) runs only once next < utf8Bytes.Length has held.
+			ref byte firstByte = ref utf8Bytes.Ref();
+			for (int i = 0; i < utf8Bytes.Length; i++)
 			{
-				break;
-			}
-
-			int next = i + 1;
-
-			// Stop when the next byte is already lowercase (or begins a non-ASCII sequence).
-			if (i > 0 && next < utf8Bytes.Length && !IsAsciiUpper(firstByte.Offset(next)))
-			{
-				// If the next byte is a space, lowercase the current byte before exiting.
-				const byte space = (byte)' ';
-
-				if (firstByte.Offset(next) == space)
+				if (i == 1 && !IsAsciiUpper(firstByte.Offset(i)))
 				{
-					firstByte.Offset(i) = ToAsciiLower(firstByte.Offset(i));
+					break;
 				}
 
-				break;
-			}
+				int next = i + 1;
 
-			firstByte.Offset(i) = ToAsciiLower(firstByte.Offset(i));
+				// Stop when the next byte is already lowercase (or begins a non-ASCII sequence).
+				if (i > 0 && next < utf8Bytes.Length && !IsAsciiUpper(firstByte.Offset(next)))
+				{
+					// If the next byte is a space, lowercase the current byte before exiting.
+					const byte space = (byte)' ';
+
+					if (firstByte.Offset(next) == space)
+					{
+						firstByte.Offset(i) = ToAsciiLower(firstByte.Offset(i));
+					}
+
+					break;
+				}
+
+				firstByte.Offset(i) = ToAsciiLower(firstByte.Offset(i));
+			}
 		}
 	}
 

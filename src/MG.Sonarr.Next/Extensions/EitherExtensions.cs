@@ -55,11 +55,16 @@ public static class EitherExtensions
 	[SkipLocalsInit]
 	private static bool AddSpan(WildcardSet set, int value)
 	{
-		Span<char> chars = stackalloc char[LengthConstants.INT_MAX];
-		if (value.TryFormat(chars, out int written, provider: CultureInfo.InvariantCulture))
+		unsafe
 		{
-			set.Add(chars.UnsafeSlice(0, written));
-			return true;
+			// SAFETY: [SkipLocalsInit] leaves chars uninitialized, but only its first written characters are read, and
+			// int.TryFormat wrote those and reports no more than chars holds.
+			Span<char> chars = stackalloc char[LengthConstants.INT_MAX];
+			if (value.TryFormat(chars, out int written, provider: CultureInfo.InvariantCulture))
+			{
+				set.Add(chars.UnsafeSlice(0, written));
+				return true;
+			}
 		}
 
 		return false;

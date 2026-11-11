@@ -4,7 +4,7 @@ namespace MG.Sonarr.Next.Extensions.Strings;
 /// Custom extension methods for high-performance split operations of <see cref="string"/>
 /// and <see cref="ReadOnlySpan{T}"/> of <see cref="char"/> instances.
 /// </summary>
-public static class SplittingExtensions
+internal static class SplittingExtensions
 {
 	/// <summary>
 	/// Provides extension methods that split a <see cref="ReadOnlySpan{T}"/> of <see cref="char"/> without allocating.
@@ -32,7 +32,7 @@ public static class SplittingExtensions
 		///     split by <paramref name="splitBy1"/> or <paramref name="splitBy2"/>.
 		/// </returns>
 		[DebuggerStepThrough]
-		public DoubleSplitEnumerator SpanSplit(ReadOnlySpan<char> splitBy1, ReadOnlySpan<char> splitBy2)
+		internal DoubleSplitEnumerator SpanSplit(ReadOnlySpan<char> splitBy1, ReadOnlySpan<char> splitBy2)
 		{
 			return new DoubleSplitEnumerator(value, splitBy1, splitBy2);
 		}

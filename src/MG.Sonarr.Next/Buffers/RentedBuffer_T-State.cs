@@ -41,7 +41,11 @@ internal ref partial struct RentedBuffer<T>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static ushort Mask(bool value, [ConstantExpected] byte bit)
 		{
-			return (ushort)((-Unsafe.As<bool, byte>(ref value)) & bit);
+			unsafe
+			{
+				// SAFETY: bool and byte are both one byte wide, so the reinterpretation reads only the byte of value.
+				return (ushort)((-Unsafe.As<bool, byte>(ref value)) & bit);
+			}
 		}
 	}
 }

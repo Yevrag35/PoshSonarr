@@ -29,9 +29,14 @@ internal static class PoolMarshal
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static ref T GetReference<T>(ref readonly PooledBuffer<T> buffer)
 	{
-		return ref !buffer.IsDefaultOrEmpty
-			? ref MemoryMarshal.GetArrayDataReference(buffer.GetRawArray()!)
-			: ref Unsafe.NullRef<T>();
+		unsafe
+		{
+			// SAFETY: A buffer that isn't empty holds a pooled T[] of at least its length, so the array has a first
+			// element, and the pool rents exactly a T[].
+			return ref !buffer.IsDefaultOrEmpty
+				? ref MemoryMarshal.GetArrayDataReference(buffer.GetRawArray()!)
+				: ref Unsafe.NullRef<T>();
+		}
 	}
 
 	/// <summary>

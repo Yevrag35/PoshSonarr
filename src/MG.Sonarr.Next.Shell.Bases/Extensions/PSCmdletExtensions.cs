@@ -73,6 +73,7 @@ public static partial class PSCmdletExtensions
 	{
 		unsafe
 		{
+			// SAFETY: getPreference is a static local function with the signature that the pointer's type gives.
 			return ResolveActionPreferenceFromPSCmdlet(
 				cmdlet,
 				parameterName,
@@ -121,6 +122,7 @@ public static partial class PSCmdletExtensions
 	{
 		unsafe
 		{
+			// SAFETY: getPreference is a static local function with the signature that the pointer's type gives.
 			return ResolveActionPreferenceFromPSCmdlet(
 				cmdlet,
 				parameterName,
@@ -306,6 +308,10 @@ public static partial class PSCmdletExtensions
 	/// <para><b>Performance:</b> <paramref name="resolution"/> is a function pointer to a static method, so the call
 	/// allocates no delegate.</para>
 	/// </remarks>
+	/// <safety>
+	/// <paramref name="resolution"/> must point to a method whose signature matches the pointer's type. It isn't checked
+	/// for <see langword="null"/>.
+	/// </safety>
 	/// <param name="cmdlet">The cmdlet whose bound parameters and scope are read.</param>
 	/// <param name="parameterName">The name of the common parameter, without the <c>-</c>.</param>
 	/// <param name="variableName">The name of the preference variable, without the <c>$</c>.</param>
@@ -329,7 +335,11 @@ public static partial class PSCmdletExtensions
 			return variablePref;
 		}
 
-		return resolution(boundValue, defaultIfNotPresent);
+		unsafe
+		{
+			// SAFETY: The caller passes a pointer to a method of the pointer's signature, as the safety contract requires.
+			return resolution(boundValue, defaultIfNotPresent);
+		}
 	}
 
 	/// <summary>
@@ -393,8 +403,13 @@ public static partial class PSCmdletExtensions
 	/// <returns>The last member name in <paramref name="value"/>, such as <c>Name</c>.</returns>
 	private static ReadOnlySpan<char> TrimProperties(ReadOnlySpan<char> value)
 	{
-		return value.TryLastIndexOfAndNotEnd('.', out int index)
-			? value.UnsafeSlice(index + 1)
-			: value;
+		unsafe
+		{
+			// SAFETY: TryLastIndexOfAndNotEnd returns true only for an index before the last character, so index + 1 is
+			// within value.
+			return value.TryLastIndexOfAndNotEnd('.', out int index)
+				? value.UnsafeSlice(index + 1)
+				: value;
+		}
 	}
 }

@@ -261,17 +261,21 @@ public sealed class ValidateIdsAttribute<T> : ValidateEnumeratedArgumentsAttribu
 /// allocating, and the call needs no delegate invocation. It's immutable and thread-safe.
 /// </remarks>
 [StructLayout(LayoutKind.Sequential, Size = 8)]
-internal readonly unsafe struct IdValidator
+internal readonly struct IdValidator
 {
 	private readonly delegate* managed<int, out ValidateRangeKind, bool> _ptr;
 
 	/// <summary>
 	/// Initializes a new <see cref="IdValidator"/> instance with the specified pointer to a range check.
 	/// </summary>
+	/// <safety>
+	/// <paramref name="ptr"/> must be <see langword="null"/>, which throws, or point to a method whose signature matches
+	/// the pointer's type.
+	/// </safety>
 	/// <param name="ptr">The pointer to a static method that returns whether an ID is in its range and gives the range
 	/// as its <see langword="out"/> argument.</param>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="ptr"/> is null.</exception>
-	internal IdValidator(delegate* managed<int, out ValidateRangeKind, bool> ptr)
+	internal unsafe IdValidator(delegate* managed<int, out ValidateRangeKind, bool> ptr)
 	{
 		ArgumentNullException.ThrowIfNull(ptr);
 		_ptr = ptr;
@@ -287,7 +291,13 @@ internal readonly unsafe struct IdValidator
 	/// <see langword="false"/>.</returns>
 	internal bool Invoke(int id, out ValidateRangeKind kind)
 	{
-		return _ptr(id, out kind);
+		unsafe
+		{
+			// SAFETY: The constructor turns away a null pointer, and its caller passes one to a method of this signature,
+			// as its safety contract requires. Each attribute builds its check in its constructor, so none holds the null
+			// pointer of a default instance.
+			return _ptr(id, out kind);
+		}
 	}
 }
 
@@ -404,15 +414,20 @@ file static class IdValidationHelper
 	/// <param name="kind">The range that IDs are checked against.</param>
 	/// <returns>The check that points at the method for <paramref name="kind"/>, or at the one for
 	/// <see cref="ValidateRangeKind.Positive"/> when <paramref name="kind"/> is undefined.</returns>
-	internal static unsafe IdValidator GetIdValidator(ValidateRangeKind kind)
+	internal static IdValidator GetIdValidator(ValidateRangeKind kind)
 	{
-		return kind switch
+		unsafe
 		{
-			ValidateRangeKind.NonNegative => new(&MustBeNonNegative),
-			ValidateRangeKind.Negative => new(&MustBeNegative),
-			ValidateRangeKind.NonPositive => new(&MustBeNonPositive),
-			ValidateRangeKind.Positive or _ => new(&MustBePositive),
-		};
+			// SAFETY: Each pointer is the address of a static method of this class with the signature that the pointer's
+			// type gives.
+			return kind switch
+			{
+				ValidateRangeKind.NonNegative => new(&MustBeNonNegative),
+				ValidateRangeKind.Negative => new(&MustBeNegative),
+				ValidateRangeKind.NonPositive => new(&MustBeNonPositive),
+				ValidateRangeKind.Positive or _ => new(&MustBePositive),
+			};
+		}
 	}
 
 	/// <summary>

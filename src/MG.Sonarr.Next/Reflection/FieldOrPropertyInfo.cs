@@ -153,6 +153,8 @@ public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemb
 
 		unsafe
 		{
+			// SAFETY: Both pointers are addresses of static local functions, which the compiler matched to the pointer
+			// types.
 			return _either.FnMatch(instance,
 				f1: new FnPtr<object?, PropertyInfo, object?>(&getFromT1),
 				f2: new FnPtr<object?, FieldInfo, object?>(&getFromT2));

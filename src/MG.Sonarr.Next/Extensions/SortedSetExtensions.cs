@@ -5,7 +5,7 @@ namespace MG.Sonarr.Next.Extensions;
 /// <summary>
 /// Provides extension methods for sets of IDs.
 /// </summary>
-public static class SortedSetExtensions
+internal static class SortedSetExtensions
 {
 	/// <summary>
 	/// Provides extension methods that add to a <see cref="SortedSet{T}"/> of IDs.
@@ -22,7 +22,7 @@ public static class SortedSetExtensions
 		/// </remarks>
 		/// <typeparam name="T">The pipeable interface that the objects give their IDs for.</typeparam>
 		/// <param name="values">The objects whose IDs are added.</param>
-		public void AddRange<T>(params ReadOnlySpan<T> values) where T : IPipeable<T>
+		internal void AddRange<T>(params ReadOnlySpan<T> values) where T : IPipeable<T>
 		{
 			foreach (T piped in values)
 			{

@@ -124,13 +124,18 @@ internal static partial class ThrowHelper
 	{
 		const string msg = "Value of parameter '{0}' is of type '{1}' but must be of type '{2}'.";
 
-		return value switch
+		unsafe
 		{
-			null => default,
-			not T => throwMsg(paramName, value),
-			_ when typeof(T).IsValueType => (T)value,
-			_ => Unsafe.As<object, T>(ref value),
-		};
+			// SAFETY: The last arm runs only when value is a T and T is a reference type, so it reinterprets a reference to
+			// a T as one.
+			return value switch
+			{
+				null => default,
+				not T => throwMsg(paramName, value),
+				_ when typeof(T).IsValueType => (T)value,
+				_ => Unsafe.As<object, T>(ref value),
+			};
+		}
 
 		[DoesNotReturn, StackTraceHidden]
 		static T? throwMsg(string? paramName, object value)

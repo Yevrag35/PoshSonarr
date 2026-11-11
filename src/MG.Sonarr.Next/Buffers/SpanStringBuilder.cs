@@ -75,7 +75,11 @@ internal ref struct SpanStringBuilder
 		get
 		{
 			ThrowHelper.ThrowIfNegativeOrGreaterThanOrEqualTo(index, (uint)_position);
-			return ref _chars.Ref(index);
+			unsafe
+			{
+				// SAFETY: The check above keeps index below _position, which never exceeds _chars.Length.
+				return ref _chars.Ref(index);
+			}
 		}
 	}
 
@@ -132,7 +136,12 @@ internal ref struct SpanStringBuilder
 
 		char[] array = Rent.Array<char>(capacity);
 		_array = array;
-		_chars = array.AsUnsafeSpan(0);
+		unsafe
+		{
+			// SAFETY: 0 is within every array.
+			_chars = array.AsUnsafeSpan(0);
+		}
+
 		_position = 0;
 		_clearOnDispose = false;
 	}
@@ -175,7 +184,11 @@ internal ref struct SpanStringBuilder
 	public void Append(char value)
 	{
 		this.EnsureCapacity(new pint(1, true));
-		_chars.Ref(_position++) = value;
+		unsafe
+		{
+			// SAFETY: EnsureCapacity leaves at least one character free after _position, so _position is within _chars.
+			_chars.Ref(_position++) = value;
+		}
 	}
 	/// <summary>
 	/// Appends a specified number of copies of the given character to the <see cref="SpanStringBuilder"/>.
@@ -191,18 +204,23 @@ internal ref struct SpanStringBuilder
 
 		this.EnsureCapacity(new pint(count, true));
 
-		var span = _chars.UnsafeSlice(_position, count);
-		if (count == 1)
+		unsafe
 		{
-			span.Ref() = value;
-		}
-		else if (value == default)
-		{
-			span.Clear();
-		}
-		else
-		{
-			span.Fill(value);
+			// SAFETY: EnsureCapacity leaves count characters free after _position, so the slice lies within _chars, and
+			// count is positive here, so the slice has a first character.
+			var span = _chars.UnsafeSlice(_position, count);
+			if (count == 1)
+			{
+				span.Ref() = value;
+			}
+			else if (value == default)
+			{
+				span.Clear();
+			}
+			else
+			{
+				span.Fill(value);
+			}
 		}
 
 		_position += count;
@@ -220,22 +238,27 @@ internal ref struct SpanStringBuilder
 	{
 		const int stack_cap = DEFAULT_CAPACITY / 2; // 64
 
-		scoped Span<char> buffer = stackalloc char[stack_cap];
-		char[]? rented = null;
-		try
+		unsafe
 		{
-			int written = 0;
-			while (!Enum.TryFormat(enumValue, buffer, out written))
+			// SAFETY: [SkipLocalsInit] leaves the stack buffer uninitialized, but only its first written characters are
+			// read, and Enum.TryFormat wrote those and reports no more than the buffer holds.
+			scoped Span<char> buffer = stackalloc char[stack_cap];
+			char[]? rented = null;
+			try
 			{
-				buffer = GrowScratch(ref rented, buffer.Length * 2);
-			}
+				int written = 0;
+				while (!Enum.TryFormat(enumValue, buffer, out written))
+				{
+					buffer = GrowScratch(ref rented, buffer.Length * 2);
+				}
 
-			ReadOnlySpan<char> slice = buffer.UnsafeSlice(0, written);
-			this.Append(slice);
-		}
-		finally
-		{
-			Rent.Return(rented);
+				ReadOnlySpan<char> slice = buffer.UnsafeSlice(0, written);
+				this.Append(slice);
+			}
+			finally
+			{
+				Rent.Return(rented);
+			}
 		}
 	}
 	/// <summary>
@@ -253,11 +276,17 @@ internal ref struct SpanStringBuilder
 		int length = LengthConstants.GetGuidLength(format);
 		this.EnsureCapacity(new pint(length, true));
 
-		Span<char> slice = _chars.UnsafeSlice(_position);
+		Span<char> slice;
+		unsafe
+		{
+			// SAFETY: _position never exceeds _chars.Length, so the rest of _chars from _position is a valid slice.
+			slice = _chars.UnsafeSlice(_position);
+		}
+
 		_ = value.TryFormat(slice, out int written, format);
 		_position += written;
 
-		Debug.Assert(!slice.UnsafeSlice(0, written).Contains(default), "This is where you're messing up!");
+		Debug.Assert(!slice.Slice(0, written).Contains(default), "This is where you're messing up!");
 	}
 
 	/// <summary>
@@ -272,17 +301,31 @@ internal ref struct SpanStringBuilder
 		{
 			Debug.Assert(value.Length <= _chars.Length - _position || !value.Overlaps(_chars), "A span over the builder was passed to a call that grows its buffer.");
 			this.EnsureCapacity(new pint(value.Length, true));
-			this.AppendCore(value);
+			unsafe
+			{
+				// SAFETY: EnsureCapacity leaves value.Length characters free after _position.
+				this.AppendCore(value);
+			}
 		}
 	}
 
 	/// <summary>
 	/// Appends the characters from the specified <see cref="ReadOnlySpan{T}"/> to the current instance without checking capacity.
 	/// </summary>
+	/// <safety>
+	/// At least <c>value.Length</c> characters must be free after the current position, as
+	/// <see cref="EnsureCapacity(pint)"/> leaves them.
+	/// </safety>
 	/// <param name="value">The span containing the characters to append.</param>
-	private void AppendCore(scoped ReadOnlySpan<char> value)
+	private unsafe void AppendCore(scoped ReadOnlySpan<char> value)
 	{
-		value.UnsafeCopy(_chars.UnsafeSlice(_position));
+		unsafe
+		{
+			// SAFETY: The caller leaves value.Length characters free after _position, as the safety contract requires,
+			// and _position never exceeds _chars.Length.
+			value.UnsafeCopy(_chars.UnsafeSlice(_position));
+		}
+
 		_position += value.Length;
 	}
 
@@ -309,9 +352,14 @@ internal ref struct SpanStringBuilder
 				ThrowFormatException(formattable, maxLength);
 			}
 
+			written = Math.Clamp(written, 0, maxLength);
 			if (written > 0)
 			{
-				this.Append(temp.UnsafeSlice(0, written));
+				unsafe
+				{
+					// SAFETY: The clamp above keeps written within temp, which holds maxLength characters.
+					this.Append(temp.UnsafeSlice(0, written));
+				}
 			}
 
 			return;
@@ -324,13 +372,19 @@ internal ref struct SpanStringBuilder
 	private void AppendCore<T>(T formattable, int maxLength, ReadOnlySpan<char> format, IFormatProvider? provider) where T : ISpanFormattable
 	{
 		this.EnsureCapacity(unchecked((uint)maxLength));
-		var slice = _chars.UnsafeSlice(_position, maxLength);
+		Span<char> slice;
+		unsafe
+		{
+			// SAFETY: EnsureCapacity leaves maxLength characters free after _position.
+			slice = _chars.UnsafeSlice(_position, maxLength);
+		}
+
 		if (!formattable.TryFormat(slice, out int written, format, provider))
 		{
 			ThrowFormatException(formattable, maxLength);
 		}
 
-		_position += written;
+		_position += Math.Clamp(written, 0, maxLength);
 	}
 
 	/// <summary>
@@ -364,7 +418,12 @@ internal ref struct SpanStringBuilder
 	{
 		this.EnsureCapacity(length);
 		ref int pos = ref _position;
-		spanAction(_chars.UnsafeSlice(pos, length), state);
+		unsafe
+		{
+			// SAFETY: EnsureCapacity leaves length characters free after _position.
+			spanAction(_chars.UnsafeSlice(pos, length), state);
+		}
+
 		pos += length;
 	}
 	/// <summary>
@@ -384,6 +443,8 @@ internal ref struct SpanStringBuilder
 	{
 		unsafe
 		{
+			// SAFETY: EnsureCapacity leaves length characters free after _position. spanAction isn't null, and its
+			// callers pass the address of a method with this signature.
 			ArgumentNullException.ThrowIfNull(spanAction);
 			this.EnsureCapacity(length);
 			spanAction(_chars.UnsafeSlice(_position, length), state);
@@ -402,7 +463,13 @@ internal ref struct SpanStringBuilder
 	public void Append<T>(int maxLength, scoped T state, Func<Span<char>, T, int> spanFunc) where T : allows ref struct
 	{
 		this.EnsureCapacity(maxLength);
-		int written = Math.Clamp(spanFunc(_chars.UnsafeSlice(_position, maxLength), state), 0, maxLength);
+		int written;
+		unsafe
+		{
+			// SAFETY: EnsureCapacity leaves maxLength characters free after _position.
+			written = Math.Clamp(spanFunc(_chars.UnsafeSlice(_position, maxLength), state), 0, maxLength);
+		}
+
 		_position += written;
 	}
 	/// <summary>
@@ -429,6 +496,8 @@ internal ref struct SpanStringBuilder
 		int written;
 		unsafe
 		{
+			// SAFETY: EnsureCapacity leaves maxLength characters free after _position. funcPtr isn't null, and its
+			// callers pass the address of a method with this signature.
 			ArgumentNullException.ThrowIfNull(funcPtr);
 			this.EnsureCapacity(maxLength);
 			slice = _chars.UnsafeSlice(_position, maxLength);
@@ -464,11 +533,14 @@ internal ref struct SpanStringBuilder
 			return;
 
 		this.EnsureCapacity(maxLength);
-		Span<char> slice = _chars.UnsafeSlice(_position, maxLength);
-		
+
+		Span<char> slice;
 		int written;
 		unsafe
 		{
+			// SAFETY: EnsureCapacity leaves maxLength characters free after _position. funcPtr isn't null, and its
+			// callers pass the address of a method with this signature.
+			slice = _chars.UnsafeSlice(_position, maxLength);
 			written = Math.Clamp(funcPtr(slice, ref state), 0, maxLength);
 		}
 
@@ -492,10 +564,15 @@ internal ref struct SpanStringBuilder
 		int maxLength = Encoding.UTF8.GetMaxCharCount(utf8Text.Length);
 		this.EnsureCapacity(unchecked((uint)maxLength));
 
-		ref char pos = ref _chars.Ref(_position);
-		var span = pos.UnsafeSpan(maxLength);
+		unsafe
+		{
+			// SAFETY: EnsureCapacity leaves maxLength characters free after _position, and maxLength is positive because
+			// utf8Text isn't empty, so _position indexes a character of _chars and the span ends within it.
+			ref char pos = ref _chars.Ref(_position);
+			var span = pos.UnsafeSpan(maxLength);
 
-		_position += Encoding.UTF8.GetChars(utf8Text, span);
+			_position += Encoding.UTF8.GetChars(utf8Text, span);
+		}
 	}
 	/// <summary>
 	/// Appends the specified spans of characters to the current instance.
@@ -521,12 +598,18 @@ internal ref struct SpanStringBuilder
 			int len = value.Length + 2;
 			Debug.Assert(len <= _chars.Length - _position || !value.Overlaps(_chars), "A span over the builder was passed to a call that grows its buffer.");
 			this.EnsureCapacity(new pint(len, true));
-			var span = _chars.UnsafeSlice(_position, len);
-			_position += len;
+			unsafe
+			{
+				// SAFETY: EnsureCapacity leaves len characters free after _position, so the slice lies within _chars. It
+				// holds value.Length + 2 characters, so its first and last indexes exist, and the rest after the first
+				// holds value.Length + 1.
+				var span = _chars.UnsafeSlice(_position, len);
+				_position += len;
 
-			span.Ref() = enclosedBy;
-			value.UnsafeCopy(span.UnsafeSlice(1));
-			span.Ref(span.Length - 1) = enclosedBy;
+				span.Ref() = enclosedBy;
+				value.UnsafeCopy(span.UnsafeSlice(1));
+				span.Ref(span.Length - 1) = enclosedBy;
+			}
 		}
 	}
 	/// <summary>
@@ -536,10 +619,16 @@ internal ref struct SpanStringBuilder
 	public void AppendLine()
 	{
 		this.EnsureCapacity(new pint(s_newLineLength, true));
-		ref char pos = ref _chars.Ref(_position);
-		var nlSpan = pos.UnsafeSpan(s_newLineLength);
-		ref char c = ref MemoryMarshal.GetReference(s_newLine.AsSpan());
-		MemoryMarshal.CreateReadOnlySpan(ref c, s_newLineLength).UnsafeCopy(nlSpan);
+		unsafe
+		{
+			// SAFETY: EnsureCapacity leaves s_newLineLength characters free after _position, and a new line holds at least
+			// one, so _position indexes a character of _chars and nlSpan ends within it. The read-only span covers
+			// exactly s_newLine, whose length s_newLineLength is, and nothing writes through c.
+			ref char pos = ref _chars.Ref(_position);
+			var nlSpan = pos.UnsafeSpan(s_newLineLength);
+			ref char c = ref MemoryMarshal.GetReference(s_newLine.AsSpan());
+			MemoryMarshal.CreateReadOnlySpan(ref c, s_newLineLength).UnsafeCopy(nlSpan);
+		}
 
 		_position += s_newLineLength;
 	}
@@ -554,14 +643,21 @@ internal ref struct SpanStringBuilder
 		Debug.Assert(len <= _chars.Length - _position || !value.Overlaps(_chars), "A span over the builder was passed to a call that grows its buffer.");
 		this.EnsureCapacity(new pint(len, true));
 
-		ref char pos = ref _chars.Ref(_position);
-		var valueSpan = pos.UnsafeSpan(value.Length);
-		value.UnsafeCopy(valueSpan);
+		unsafe
+		{
+			// SAFETY: EnsureCapacity leaves len characters free after _position, and len is at least the one character
+			// of a new line, so _position indexes a character of _chars. The value.Length characters from there and the
+			// s_newLineLength after them end at _position + len, within _chars, and each copy fills a span of its own
+			// source's length.
+			ref char pos = ref _chars.Ref(_position);
+			var valueSpan = pos.UnsafeSpan(value.Length);
+			value.UnsafeCopy(valueSpan);
 
-		ref char newLinePos = ref pos.Offset(value.Length);
-		var nlSpan = newLinePos.UnsafeSpan(s_newLineLength);
+			ref char newLinePos = ref pos.Offset(value.Length);
+			var nlSpan = newLinePos.UnsafeSpan(s_newLineLength);
 
-		s_newLine.AsSpan().UnsafeCopy(nlSpan);
+			s_newLine.AsSpan().UnsafeCopy(nlSpan);
+		}
 
 		_position += len;
 	}
@@ -578,7 +674,12 @@ internal ref struct SpanStringBuilder
 		if (length <= 0) return [];
 
 		this.EnsureCapacity(new pint(length, true));
-		var slice = _chars.UnsafeSlice(_position, length);
+		Span<char> slice;
+		unsafe
+		{
+			// SAFETY: EnsureCapacity leaves length characters free after _position.
+			slice = _chars.UnsafeSlice(_position, length);
+		}
 
 		_position += length;
 		return slice;
@@ -593,9 +694,13 @@ internal ref struct SpanStringBuilder
 	/// <returns>A <see cref="ReadOnlySpan{T}"/> representing the characters in the builder.</returns>
 	public readonly ReadOnlySpan<char> AsSpan()
 	{
-		return _position > 0
-			? _chars.UnsafeSlice(0, _position)
-			: [];
+		unsafe
+		{
+			// SAFETY: _position never exceeds _chars.Length.
+			return _position > 0
+				? _chars.UnsafeSlice(0, _position)
+				: [];
+		}
 	}
 	/// <summary>
 	/// Returns a read-only span of characters from the underlying buffer, starting at the specified position and spanning
@@ -635,9 +740,14 @@ internal ref struct SpanStringBuilder
 	/// <param name="value">The character to compare with the last character in the builder.</param>
 	public void BackspaceIf(char value)
 	{
-		if (_position > 0 && _chars.Ref(_position - 1) == value)
+		unsafe
 		{
-			_position--;
+			// SAFETY: _position is positive here and never exceeds _chars.Length, so _position - 1 indexes a character of
+			// _chars.
+			if (_position > 0 && _chars.Ref(_position - 1) == value)
+			{
+				_position--;
+			}
 		}
 	}
 
@@ -672,7 +782,12 @@ internal ref struct SpanStringBuilder
 	/// <exception cref="ArgumentException"/>
 	public readonly int CopyTo(Span<char> destination)
 	{
-		_chars.UnsafeSlice(0, _position).CopyTo(destination);
+		unsafe
+		{
+			// SAFETY: _position never exceeds _chars.Length.
+			_chars.UnsafeSlice(0, _position).CopyTo(destination);
+		}
+
 		return _position;
 	}
 
@@ -734,7 +849,11 @@ internal ref struct SpanStringBuilder
 		}
 
 		SpanPosition.ThrowIfOutOfRange(position, _chars.Length);
-		return _chars.UnsafeSlice(position.Index, position.Length);
+		unsafe
+		{
+			// SAFETY: ThrowIfOutOfRange keeps the index and length of position within _chars.
+			return _chars.UnsafeSlice(position.Index, position.Length);
+		}
 	}
 
 	/// <summary>
@@ -763,7 +882,13 @@ internal ref struct SpanStringBuilder
 	public readonly int IndexOf(char value, int startIndex)
 	{
 		ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)startIndex, (uint)_position, nameof(startIndex));
-		int index = _chars.UnsafeSlice(startIndex, _position - startIndex).IndexOf(value);
+		int index;
+		unsafe
+		{
+			// SAFETY: The check above keeps startIndex from 0 to _position, which never exceeds _chars.Length.
+			index = _chars.UnsafeSlice(startIndex, _position - startIndex).IndexOf(value);
+		}
+
 		return index < 0 ? index : index + startIndex;
 	}
 	/// <summary>
@@ -786,7 +911,14 @@ internal ref struct SpanStringBuilder
 		// can't overflow once startIndex is known to lie within the appended characters.
 		ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)startIndex, (uint)_position, nameof(startIndex));
 		ArgumentOutOfRangeException.ThrowIfGreaterThan((uint)count, (uint)(_position - startIndex), nameof(count));
-		int index = _chars.UnsafeSlice(startIndex, count).IndexOf(value);
+		int index;
+		unsafe
+		{
+			// SAFETY: The checks above keep startIndex from 0 to _position and count within the characters after it, and
+			// _position never exceeds _chars.Length.
+			index = _chars.UnsafeSlice(startIndex, count).IndexOf(value);
+		}
+
 		return index < 0 ? index : index + startIndex;
 	}
 
@@ -829,18 +961,24 @@ internal ref struct SpanStringBuilder
 		this.EnsureCapacity(new pint(count, true));
 		int remaining = _position - index;
 
-		var sliceToCopy = _chars.UnsafeSlice(index, remaining);
-		var copyToSlice = _chars.UnsafeSlice(index + count);
-		sliceToCopy.UnsafeCopy(copyToSlice);
+		unsafe
+		{
+			// SAFETY: The check above keeps index from 0 to _position, and EnsureCapacity leaves count characters free
+			// after _position. So each slice lies within _chars, and the one from index + count, which ends where _chars
+			// does, holds at least the remaining characters that move into it.
+			var sliceToCopy = _chars.UnsafeSlice(index, remaining);
+			var copyToSlice = _chars.UnsafeSlice(index + count);
+			sliceToCopy.UnsafeCopy(copyToSlice);
 
-		var sliceToFill = _chars.UnsafeSlice(index, count);
-		if (c != default)
-		{
-			sliceToFill.Fill(c);
-		}
-		else
-		{
-			sliceToFill.Clear();
+			var sliceToFill = _chars.UnsafeSlice(index, count);
+			if (c != default)
+			{
+				sliceToFill.Fill(c);
+			}
+			else
+			{
+				sliceToFill.Clear();
+			}
 		}
 
 		_position += count;
@@ -870,10 +1008,16 @@ internal ref struct SpanStringBuilder
 		this.EnsureCapacity(new pint(value.Length, true));
 		int remaining = _position - index;
 
-		var sliceToCopy = _chars.UnsafeSlice(index, remaining);
-		var copyToSlice = _chars.UnsafeSlice(index + value.Length);
-		sliceToCopy.UnsafeCopy(copyToSlice); // Overlapping shift - relies on UnsafeCopy's memmove semantics.
-		value.UnsafeCopy(_chars.UnsafeSlice(index));
+		unsafe
+		{
+			// SAFETY: The check above keeps index from 0 to _position, and EnsureCapacity leaves value.Length characters
+			// free after _position. So each slice lies within _chars, the one from index + value.Length holds at least
+			// the remaining characters that move into it, and the one from index holds at least value.Length.
+			var sliceToCopy = _chars.UnsafeSlice(index, remaining);
+			var copyToSlice = _chars.UnsafeSlice(index + value.Length);
+			sliceToCopy.UnsafeCopy(copyToSlice); // Overlapping shift - relies on UnsafeCopy's memmove semantics.
+			value.UnsafeCopy(_chars.UnsafeSlice(index));
+		}
 
 		_position += value.Length;
 	}
@@ -903,7 +1047,14 @@ internal ref struct SpanStringBuilder
 			if (growth > 0)
 				this.EnsureCapacity(new pint(growth, true)); // EnsureCapacity(additionalBeyondPosition)
 
-			value.UnsafeCopy(_chars.UnsafeSlice(index));
+			unsafe
+			{
+				// SAFETY: The check above keeps index from 0 to _position. When the write ends past _position, EnsureCapacity
+				// leaves room up to newEnd, and otherwise newEnd is within _position, so the rest of _chars from index
+				// holds at least value.Length characters.
+				value.UnsafeCopy(_chars.UnsafeSlice(index));
+			}
+
 			_position = newEnd;
 		}
 	}
@@ -930,7 +1081,14 @@ internal ref struct SpanStringBuilder
 		if (growth > 0)
 			this.EnsureCapacity(new pint(growth, true)); // EnsureCapacity(additionalBeyondPosition)
 
-		Span<char> buffer = _chars.UnsafeSlice(index, length);
+		Span<char> buffer;
+		unsafe
+		{
+			// SAFETY: The checks above keep index from 0 to _position and length positive. When the slice ends past
+			// _position, EnsureCapacity leaves room up to newEnd, and otherwise newEnd is within _position.
+			buffer = _chars.UnsafeSlice(index, length);
+		}
+
 		_position = newEnd; // Set the position to the new end
 		return buffer;
 	}
@@ -961,8 +1119,13 @@ internal ref struct SpanStringBuilder
 
 		// Move tail left over the removed segment (CopyTo handles overlap)
 		// Only the "used" slice matters; no need to touch unused capacity past _position.
-		Span<char> used = _chars.UnsafeSlice(0, pos);
-		used.UnsafeSlice(startIndex + length).UnsafeCopy(used.UnsafeSlice(startIndex));
+		unsafe
+		{
+			// SAFETY: pos is _position, which never exceeds _chars.Length, and the check above keeps startIndex + length
+			// within pos. The characters after the removed range number fewer than those from startIndex, so they fit.
+			Span<char> used = _chars.UnsafeSlice(0, pos);
+			used.UnsafeSlice(startIndex + length).UnsafeCopy(used.UnsafeSlice(startIndex));
+		}
 
 		_position = pos - length;
 
@@ -994,11 +1157,16 @@ internal ref struct SpanStringBuilder
 	{
 		if (_position > 0)
 		{
-			ref char cRef = ref _chars.Ref();
-
-			while (_position > 0 && cRef.Offset(_position - 1) == trimChar)
+			unsafe
 			{
-				_position--;
+				// SAFETY: _position is positive here and never exceeds _chars.Length, so _chars has a first character, and
+				// the loop reads only while _position - 1 indexes a character of it.
+				ref char cRef = ref _chars.Ref();
+
+				while (_position > 0 && cRef.Offset(_position - 1) == trimChar)
+				{
+					_position--;
+				}
 			}
 		}
 	}
@@ -1060,7 +1228,11 @@ internal ref struct SpanStringBuilder
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private readonly Span<char> GetSpanUpToPosition()
 	{
-		return _chars.UnsafeSlice(0, _position);
+		unsafe
+		{
+			// SAFETY: _position never exceeds _chars.Length.
+			return _chars.UnsafeSlice(0, _position);
+		}
 	}
 	/// <summary>
 	/// Increases the buffer's capacity to ensure it can accommodate at least the specified minimum number of elements.
@@ -1131,8 +1303,14 @@ internal ref struct SpanStringBuilder
 		Debug.Assert((newCapacity & (newCapacity - 1)) == 0, "The new capacity is not a power of 2.");
 
 		char[] newArray = Rent.Array<char>(newCapacity);
-		Span<char> newSpan = newArray.AsUnsafeSpan(0);
-		_chars.UnsafeCopy(newSpan);
+		Span<char> newSpan;
+		unsafe
+		{
+			// SAFETY: 0 is within every array, and newArray holds at least newCapacity characters, more than
+			// _chars.Length, so the copy fits.
+			newSpan = newArray.AsUnsafeSpan(0);
+			_chars.UnsafeCopy(newSpan);
+		}
 
 		(char[]? oldArray, _array) = (_array, newArray);
 		_chars = newSpan;

@@ -110,6 +110,7 @@ internal sealed class SonarrResponseReader : IResponseReader
 
 			unsafe
 			{
+				// SAFETY: Both pointers are addresses of static methods, which the compiler matched to the pointer types.
 				return oneOf.Match(call,
 					f1: &ReadErrorFromOneOf<T>,
 					f2: &ReadContentFromOneOf);

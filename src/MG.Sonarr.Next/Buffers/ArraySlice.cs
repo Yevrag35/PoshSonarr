@@ -64,18 +64,28 @@ internal readonly struct ArraySlice<T> : IReadOnlyCollection<T>
 	/// <param name="index">The zero-based index of the element, relative to the start of the slice.</param>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="index"/> is negative or not less than
 	/// <see cref="Length"/>.</exception>
+	/// <exception cref="ArrayTypeMismatchException">Thrown when the setter is given a value that the underlying array
+	/// can't hold, because the array's element type derives from <typeparamref name="T"/>.</exception>
 	/// <value>The element located at the specified <paramref name="index"/>.</value>
 	public T this[int index]
 	{
 		get
 		{
 			ThrowIfOutsideSlice(index, _length);
-			return _array!.Ref(index + _offset);
+			unsafe
+			{
+				// SAFETY: The check above keeps index below _length, and every constructor keeps _offset + _length within
+				// _array. The element is only read, which is type-safe even when _array's element type derives from T.
+				return _array!.Ref(index + _offset);
+			}
 		}
 		set
 		{
 			ThrowIfOutsideSlice(index, _length);
-			_array!.Ref(index + _offset) = value;
+
+			// An array store rather than a write through Ref, so the runtime type-checks the value when the array's
+			// element type derives from T, which a write through a reference would skip.
+			_array![index + _offset] = value;
 		}
 	}
 
@@ -121,9 +131,14 @@ internal readonly struct ArraySlice<T> : IReadOnlyCollection<T>
 	/// <summary>
 	/// Initializes a new instance of the ArraySlice class that represents a slice of the specified array, using the provided offset and length.
 	/// </summary>
+	/// <safety>
+	/// <paramref name="array"/> must not be <see langword="null"/>, and the offset and length in <paramref name="args"/>
+	/// must not add up to more than the length of <paramref name="array"/>. The slice reads its elements without bounds
+	/// checks, trusting these values for as long as it exists.
+	/// </safety>
 	/// <param name="array">The array to create the slice from. Cannot be null.</param>
 	/// <param name="args">A <see cref="CtorArgs"/> struct containing the offset and length for the slice.</param>
-	internal ArraySlice(T[] array, CtorArgs args)
+	internal unsafe ArraySlice(T[] array, CtorArgs args)
 	{
 		Debug.Assert(array is not null, "We're trusting you here...");
 		_array = array;
@@ -191,9 +206,14 @@ internal readonly struct ArraySlice<T> : IReadOnlyCollection<T>
 	/// segment is empty.</returns>
 	public ReadOnlySpan<T> AsSpan()
 	{
-		return _length > 0
-			? _array!.AsUnsafeSpan(_offset, _length)
-			: [];
+		unsafe
+		{
+			// SAFETY: Every constructor keeps _offset + _length within _array, which a slice with a positive length has,
+			// and the span goes back read-only, so nothing can be written through it.
+			return _length > 0
+				? _array!.AsUnsafeSpan(_offset, _length)
+				: [];
+		}
 	}
 
 	/// <summary>
@@ -217,6 +237,8 @@ internal readonly struct ArraySlice<T> : IReadOnlyCollection<T>
 	/// <remarks>If the underlying array is null or empty, the resulting <see cref="Span{T}"/> will be empty. This
 	/// operator enables seamless use of <see cref="ArraySlice{T}"/> in APIs that accept <see cref="Span{T}"/>.</remarks>
 	/// <param name="slice">The <see cref="ArraySlice{T}"/> to convert to a <see cref="Span{T}"/>.</param>
+	/// <exception cref="ArrayTypeMismatchException">Thrown when the underlying array isn't empty and its element type
+	/// derives from <typeparamref name="T"/>, because nothing checks the type of a value written through a span.</exception>
 	public static implicit operator Span<T>(ArraySlice<T> slice)
 	{
 		return slice._array is T[] array && array.Length > 0

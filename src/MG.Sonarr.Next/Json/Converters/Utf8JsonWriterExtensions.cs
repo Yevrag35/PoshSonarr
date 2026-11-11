@@ -663,7 +663,12 @@ public static class Utf8JsonWriterExtensions
 	{
 		if (propertyName.TryLastIndexOfAndNotEnd('.', out int index))
 		{
-			propertyName = propertyName.UnsafeSlice(index + 1);
+			unsafe
+			{
+				// SAFETY: TryLastIndexOfAndNotEnd returns true only for an index before the last character, so index + 1 is
+				// within propertyName.
+				propertyName = propertyName.UnsafeSlice(index + 1);
+			}
 		}
 
 		return propertyName;

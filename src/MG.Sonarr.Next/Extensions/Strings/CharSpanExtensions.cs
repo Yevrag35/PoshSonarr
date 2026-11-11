@@ -4,7 +4,7 @@ namespace MG.Sonarr.Next.Extensions.Strings;
 /// Custom extension methods for <see cref="Span{T}"/> and <see cref="ReadOnlySpan{T}"/> instances
 /// of type <see cref="char"/>.
 /// </summary>
-public static partial class CharSpanExtensions
+internal static partial class CharSpanExtensions
 {
 	/// <summary>
 	/// Provides extension methods that examine, search, and copy a <see cref="ReadOnlySpan{T}"/> of <see cref="char"/>.
@@ -19,7 +19,7 @@ public static partial class CharSpanExtensions
 		/// <returns><see langword="true"/> if the span begins and ends with the specified character; otherwise,
 		/// <see langword="false"/>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public bool EnclosedIn(char value)
+		internal bool EnclosedIn(char value)
 		{
 			return EnclosedInCore(chars, value, value);
 		}
@@ -31,7 +31,7 @@ public static partial class CharSpanExtensions
 		/// <returns><see langword="true"/> if the span begins with the opening character and ends with the closing character; otherwise,
 		/// <see langword="false"/>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public bool EnclosedIn(char openingChar, char closingChar)
+		internal bool EnclosedIn(char openingChar, char closingChar)
 		{
 			return EnclosedInCore(chars, openingChar, closingChar);
 		}
@@ -53,7 +53,7 @@ public static partial class CharSpanExtensions
 		/// <returns>The number of characters written to the destination span after removal of specified characters.</returns>
 		/// <exception cref="ArgumentException">Thrown when <paramref name="destination"/> is shorter than
 		/// <paramref name="chars"/>.</exception>
-		public int RemoveAny(Span<char> destination, SearchValues<char> removeChars)
+		internal int RemoveAny(Span<char> destination, SearchValues<char> removeChars)
 		{
 			if (destination.Length < chars.Length)
 			{
@@ -63,28 +63,31 @@ public static partial class CharSpanExtensions
 			int written = 0;
 			ReadOnlySpan<char> slice = chars;
 
-			// written + slice.Length starts at chars.Length and drops by one with each removed character,
-			// so with the check above, every copy below lands inside destination.
-			while (!slice.IsEmpty)
+			unsafe
 			{
-				int index = slice.IndexOfAny(removeChars);
-				if (index == -1)
+				// SAFETY: written + slice.Length starts at chars.Length and drops by one with each removed character, so
+				// with the check above, every copy below lands inside destination. IndexOfAny returns an index in
+				// [0, slice.Length), so both slices around it are in range, and a match at the slice's last character
+				// leaves it empty.
+				while (!slice.IsEmpty)
 				{
-					// No more matches, copy the remaining portion and exit.
-					slice.UnsafeCopy(destination.UnsafeSlice(written));
-					written += slice.Length;
-					break;
-				}
+					int index = slice.IndexOfAny(removeChars);
+					if (index == -1)
+					{
+						// No more matches, copy the remaining portion and exit.
+						slice.UnsafeCopy(destination.UnsafeSlice(written));
+						written += slice.Length;
+						break;
+					}
 
-				// IndexOfAny returned an index in [0, slice.Length), so both slices are in range, and
-				// a match at the slice's last character leaves it empty.
-				if (index != 0)
-				{
-					slice.UnsafeSlice(0, index).UnsafeCopy(destination.UnsafeSlice(written));
-					written += index;
-				}
+					if (index != 0)
+					{
+						slice.UnsafeSlice(0, index).UnsafeCopy(destination.UnsafeSlice(written));
+						written += index;
+					}
 
-				slice = slice.UnsafeSlice(index + 1);
+					slice = slice.UnsafeSlice(index + 1);
+				}
 			}
 
 			return written;
@@ -113,7 +116,7 @@ public static partial class CharSpanExtensions
 		///     <see langword="true"/> if the copying operation was successful; otherwise
 		///     <see langword="false"/>.
 		/// </returns>
-		public bool TryCopyToSlice(Span<char> span, ref int position)
+		internal bool TryCopyToSlice(Span<char> span, ref int position)
 		{
 			bool result = false;
 
@@ -135,7 +138,7 @@ public static partial class CharSpanExtensions
 		///     <paramref name="chars"/>; otherwise, <see langword="false"/>.
 		/// </returns>
 		[DebuggerStepThrough]
-		public bool StartsWith(char value)
+		internal bool StartsWith(char value)
 		{
 			return FirstCharEquals(chars, value);
 		}
@@ -153,7 +156,7 @@ public static partial class CharSpanExtensions
 		///     <paramref name="chars"/>; otherwise, <see langword="false"/>.
 		/// </returns>
 		[DebuggerStepThrough]
-		public bool StartsWith(char value, StringComparison comparisonType)
+		internal bool StartsWith(char value, StringComparison comparisonType)
 		{
 			return chars.StartsWith(new ReadOnlySpan<char>(in value), comparisonType);
 		}
@@ -168,7 +171,7 @@ public static partial class CharSpanExtensions
 		/// found; otherwise, -1.</param>
 		/// <returns><see langword="true"/> if the specified character is found in the span; otherwise, <see langword="false"/>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public bool TryLastIndexOf(char c, out int index)
+		internal bool TryLastIndexOf(char c, out int index)
 		{
 			index = chars.LastIndexOf(c);
 			return index >= 0;
@@ -183,7 +186,7 @@ public static partial class CharSpanExtensions
 		/// <paramref name="chars"/>, if found; otherwise, -1.</param>
 		/// <returns><see langword="true"/> if the substring is found within the span; otherwise, <see langword="false"/>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public bool TryLastIndexOf([ConstantExpected] string value, StringComparison comparisonType, out int index)
+		internal bool TryLastIndexOf([ConstantExpected] string value, StringComparison comparisonType, out int index)
 		{
 			index = chars.LastIndexOf(value, comparisonType);
 			return index != -1;
@@ -199,7 +202,7 @@ public static partial class CharSpanExtensions
 		/// <param name="index">When this method returns, contains the zero-based index of the last occurrence of the specified character, if found; otherwise, -1.</param>
 		/// <returns><see langword="true"/> if the specified character is found within the span and is not the last character; otherwise, <see langword="false"/>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public bool TryLastIndexOfAndNotEnd(char c, out int index)
+		internal bool TryLastIndexOfAndNotEnd(char c, out int index)
 		{
 			return TryLastIndexOf(chars, c, out index) && index < chars.Length - 1;
 		}
@@ -238,7 +241,7 @@ public static partial class CharSpanExtensions
 		///     Thrown when <paramref name="position"/> is negative or greater than the length of
 		///     <paramref name="destination"/>.
 		/// </exception>
-		public bool TryCopyToSlice(Span<char> destination, ref int position, ReadOnlySpan<char> format = default, IFormatProvider? provider = null)
+		internal bool TryCopyToSlice(Span<char> destination, ref int position, ReadOnlySpan<char> format = default, IFormatProvider? provider = null)
 		{
 			bool result = false;
 			if (value.TryFormat(destination.Slice(position), out int written, format, provider))

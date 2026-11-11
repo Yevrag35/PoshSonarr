@@ -65,7 +65,12 @@ public static class InvocationInfoExtensions
 	{
 		if (parameterName.TryLastIndexOfAndNotEnd('.', out int index))
 		{
-			parameterName = parameterName.UnsafeSlice(index + 1);
+			unsafe
+			{
+				// SAFETY: TryLastIndexOfAndNotEnd returns true only for an index before the last character, so index + 1 is
+				// within parameterName.
+				parameterName = parameterName.UnsafeSlice(index + 1);
+			}
 		}
 
 		return parameterName;

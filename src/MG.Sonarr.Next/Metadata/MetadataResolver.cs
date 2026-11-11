@@ -256,7 +256,13 @@ internal sealed class MetadataResolver : IMetadataResolver
 			int next = _index + 1;
 			if ((uint)next < (uint)_count)
 			{
-				_current = _array.Ref(next);
+				unsafe
+				{
+					// SAFETY: The values of a frozen dictionary fill an array of exactly its count, which _count holds, so the
+					// check keeps next within _array, and the tag is only read.
+					_current = _array.Ref(next);
+				}
+
 				_index = next;
 				return true;
 			}

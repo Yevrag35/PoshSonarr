@@ -32,7 +32,13 @@ internal static class ListMarshal
 		Debug.Assert(list is not null, "The caller is expected to short-circuit a null list.");
 		if (values.IsEmpty) return;
 
-		values.UnsafeCopy(ReserveTail(list, values.Length, out int size));
+		Span<T> destination = ReserveTail(list, values.Length, out int size);
+		unsafe
+		{
+			// SAFETY: ReserveTail returns exactly values.Length slots, so destination is as long as values.
+			values.UnsafeCopy(destination);
+		}
+
 		CommitTail(list, size, values.Length);
 	}
 
@@ -72,12 +78,18 @@ internal static class ListMarshal
 		int length = values.Length;
 		Span<T> section = ReserveTail(list, length, out int size);
 
-		ref TOther source = ref MemoryMarshal.GetReference(values);
-		ref T destination = ref MemoryMarshal.GetReference(section);
-
-		for (nuint i = 0; i < (uint)length; i++)
+		unsafe
 		{
-			Unsafe.Add(ref destination, i) = conversion.Invoke(Unsafe.Add(ref source, i));
+			// SAFETY: ReserveTail returns exactly length slots, so section and values both hold length elements, and
+			// the loop keeps i below length. A conversion that changes the list can't move section, whose array the
+			// span keeps alive.
+			ref TOther source = ref MemoryMarshal.GetReference(values);
+			ref T destination = ref MemoryMarshal.GetReference(section);
+
+			for (nuint i = 0; i < (uint)length; i++)
+			{
+				Unsafe.Add(ref destination, i) = conversion.Invoke(Unsafe.Add(ref source, i));
+			}
 		}
 
 		CommitTail(list, size, length);
@@ -112,8 +124,13 @@ internal static class ListMarshal
 
 		// Read through the ref after the growth check: Grow replaces the _items field outright, so a by-value
 		// capture taken above would address the abandoned array.
-		return MemoryMarshal.CreateSpan(
-			ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(array), size), count);
+		unsafe
+		{
+			// SAFETY: After the growth check, the backing array, which List<T> allocates as exactly a T[], holds at
+			// least size + count elements, so the count slots from size lie within it.
+			return MemoryMarshal.CreateSpan(
+				ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(array), size), count);
+		}
 	}
 
 	/// <summary>
@@ -166,9 +183,14 @@ internal static class ListMarshal
 	public static ReadOnlySpan<T> AsReadOnlySpan<T>(List<T> list)
 	{
 		int size = View<T>.Size(list);
-		return size > 0
-			? MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetArrayDataReference(View<T>.Items(list)), size)
-			: [];
+		unsafe
+		{
+			// SAFETY: List<T> keeps its count within its backing array, which it allocates as exactly a T[], while no
+			// other thread changes it, as List<T> requires. SetCount, the one write here that can break that, is unsafe.
+			return size > 0
+				? MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetArrayDataReference(View<T>.Items(list)), size)
+				: [];
+		}
 	}
 	/// <summary>
 	/// Returns a read-only span that represents the elements of the specified list.
@@ -183,9 +205,14 @@ internal static class ListMarshal
 	public static Span<T> AsSpan<T>(List<T> list)
 	{
 		int size = View<T>.Size(list);
-		return size > 0
-			? MemoryMarshal.CreateSpan(ref MemoryMarshal.GetArrayDataReference(View<T>.Items(list)), size)
-			: [];
+		unsafe
+		{
+			// SAFETY: List<T> keeps its count within its backing array, which it allocates as exactly a T[], while no
+			// other thread changes it, as List<T> requires. SetCount, the one write here that can break that, is unsafe.
+			return size > 0
+				? MemoryMarshal.CreateSpan(ref MemoryMarshal.GetArrayDataReference(View<T>.Items(list)), size)
+				: [];
+		}
 	}
 
 	/// <summary>
@@ -232,12 +259,17 @@ internal static class ListMarshal
 		List<T> list = new(values.Length);
 		if (!values.IsEmpty)
 		{
-			Span<T> span = MemoryMarshal.CreateSpan(
-				ref MemoryMarshal.GetArrayDataReference(GetRawArray(list)),
-				values.Length);
+			unsafe
+			{
+				// SAFETY: A list constructed with a capacity allocates a T[] of exactly that many elements, so the span
+				// covers the whole array, the copy fills it, and the count that SetCount publishes is its length.
+				Span<T> span = MemoryMarshal.CreateSpan(
+					ref MemoryMarshal.GetArrayDataReference(GetRawArray(list)),
+					values.Length);
 
-			values.UnsafeCopy(span);
-			SetCount(list, values.Length);
+				values.UnsafeCopy(span);
+				SetCount(list, values.Length);
+			}
 		}
 
 		return list;
@@ -282,11 +314,17 @@ internal static class ListMarshal
 
 		if (!values.IsEmpty)
 		{
-			Span<T> span = MemoryMarshal.CreateSpan(
-				ref MemoryMarshal.GetArrayDataReference(array),
-				array.Length);
+			unsafe
+			{
+				// SAFETY: array is a new T[] of capacity elements, so the span covers exactly that array, and capacity
+				// is at least values.Length, so the copy fits.
+				Span<T> span = MemoryMarshal.CreateSpan(
+					ref MemoryMarshal.GetArrayDataReference(array),
+					array.Length);
 
-			values.UnsafeCopy(span);
+				values.UnsafeCopy(span);
+			}
+
 			View<T>.Size(list) = values.Length;
 		}
 
@@ -297,27 +335,45 @@ internal static class ListMarshal
 	/// Returns the backing array of the specified list wrapped as an <see cref="ArraySlice{T}"/> over its populated range.
 	/// </summary>
 	/// <remarks>The slice references the list's internal storage and does not allocate. Modifying the list after this call may invalidate the slice or result in undefined behavior.</remarks>
+	/// <safety>
+	/// The count of <paramref name="list"/> must lie within its backing array, as it does unless another thread changes
+	/// the list during the call or <see cref="SetCount{T}(List{T}, int)"/> was given a size past the end of the array.
+	/// The slice reads its elements without bounds checks, trusting that count for as long as it exists.
+	/// </safety>
 	/// <typeparam name="T">The type of elements in the list.</typeparam>
 	/// <param name="list">The list whose backing array is wrapped. Cannot be null.</param>
 	/// <returns>An <see cref="ArraySlice{T}"/> spanning the elements of <paramref name="list"/> in order.</returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static ArraySlice<T> GetArray<T>(List<T> list)
+	public static unsafe ArraySlice<T> GetArray<T>(List<T> list)
 	{
-		return ArraySliceMarshal.Create(View<T>.Items(list), 0, View<T>.Size(list));
+		unsafe
+		{
+			// SAFETY: The caller keeps the count within the backing array, as the safety contract requires.
+			return ArraySliceMarshal.Create(View<T>.Items(list), 0, View<T>.Size(list));
+		}
 	}
 	/// <summary>
 	/// Returns the backing array of the specified list wrapped as an <see cref="ArraySlice{T}"/> over its populated range.
 	/// </summary>
 	/// <remarks>The slice references the list's internal storage and does not allocate. Modifying the list after this call may invalidate the slice or result in undefined behavior.</remarks>
+	/// <safety>
+	/// The count of <paramref name="list"/> must lie within its backing array, as it does unless another thread changes
+	/// the list during the call or <see cref="SetCount{T}(List{T}, int)"/> was given a size past the end of the array.
+	/// The slice reads its elements without bounds checks, trusting that count for as long as it exists.
+	/// </safety>
 	/// <typeparam name="T">The type of elements in the list.</typeparam>
 	/// <param name="list">The list whose backing array is wrapped. Cannot be null.</param>
 	/// <param name="version">Outputs the current version of the list, which can be used to detect modifications.</param>
 	/// <returns>An <see cref="ArraySlice{T}"/> spanning the elements of <paramref name="list"/> in order.</returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static ArraySlice<T> GetArray<T>(List<T> list, out int version)
+	public static unsafe ArraySlice<T> GetArray<T>(List<T> list, out int version)
 	{
 		version = View<T>.Version(list);
-		return ArraySliceMarshal.Create(View<T>.Items(list), 0, View<T>.Size(list));
+		unsafe
+		{
+			// SAFETY: The caller keeps the count within the backing array, as the safety contract requires.
+			return ArraySliceMarshal.Create(View<T>.Items(list), 0, View<T>.Size(list));
+		}
 	}
 
 	/// <summary>
@@ -401,11 +457,15 @@ internal static class ListMarshal
 	/// alone, and a smaller size leaves the elements past it in the backing array.
 	/// </para>
 	/// </remarks>
+	/// <safety>
+	/// <paramref name="size"/> must be from 0 to the length of the backing array of <paramref name="list"/>, inclusive.
+	/// The spans and slices that this class creates over the list trust its count without checking it.
+	/// </safety>
 	/// <typeparam name="T">The type of elements in the list.</typeparam>
 	/// <param name="list">The list whose count is to be set.</param>
 	/// <param name="size">The new size of the list.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void SetCount<T>(List<T> list, int size)
+	public static unsafe void SetCount<T>(List<T> list, int size)
 	{
 		Debug.Assert((uint)size <= (uint)View<T>.Items(list).Length, "The size being set should be from 0 to the array length.");
 		View<T>.Size(list) = size;

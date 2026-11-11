@@ -81,7 +81,12 @@ public static class TypeNameExtensions
 
 		if (!key.IncludeBrackets && name.EnclosedIn('[', ']'))
 		{
-			name = new(name.AsSpan().UnsafeSlice(1, name.Length - 2));
+			unsafe
+			{
+				// SAFETY: EnclosedIn returns true only for a name of at least two characters, so the slice between its first
+				// and last characters lies within it.
+				name = new(name.AsSpan().UnsafeSlice(1, name.Length - 2));
+			}
 		}
 
 		return name;

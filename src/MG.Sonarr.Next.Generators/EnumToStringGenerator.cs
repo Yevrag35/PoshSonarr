@@ -1,4 +1,5 @@
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using System.Collections.Immutable;
@@ -26,8 +27,9 @@ namespace MG.Sonarr.Next.Generators;
 /// so <c>Outer.Foo</c> gets <c>OuterFooExtensions</c>, which a top-level enum named <c>OuterFoo</c> would also get.
 /// </para>
 /// <para>
-/// Where the consuming compilation can reach the module's unchecked span helpers, the formatting members copy through
-/// them instead of the bounds-checked span methods, because their own guards have already settled the range.
+/// Where the consuming compilation can reach the module's unchecked span helpers and allows unsafe code, the formatting
+/// members copy through them instead of the bounds-checked span methods, because their own guards have already settled
+/// the range. The helpers are marked unsafe, so each call sits in an unsafe block whose SAFETY comment names its guard.
 /// </para>
 /// </remarks>
 [Generator(LanguageNames.CSharp)]
@@ -69,11 +71,17 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 		// 3) Note whether the consuming compilation can reach SpanUnsafeExtensions, which lets the formatting
 		//    members drop the bounds checks their own guards have already settled. The class is internal, so
 		//    reaching it is a matter of access rather than of a public declaration: MG.Sonarr.Next reaches it as
-		//    its own, and each assembly that its InternalsVisibleTo names reaches it through the reference. The
-		//    compilation itself changes on every keystroke, so it is reduced to a bool here: the incremental
-		//    engine compares that instead, and generation only re-runs when that access appears or disappears.
+		//    its own, and each assembly that its InternalsVisibleTo names reaches it through the reference. Its
+		//    members are marked unsafe, so the calls go in unsafe blocks, which only a compilation that allows
+		//    unsafe code accepts. The compilation itself changes on every keystroke, so it is reduced to a bool
+		//    here: the incremental engine compares that instead, and generation only re-runs when that changes.
 		IncrementalValueProvider<bool> hasSpanUnsafeExtensions = context.CompilationProvider.Select(static (compilation, _) =>
 		{
+			if (compilation.Options is not CSharpCompilationOptions { AllowUnsafe: true })
+			{
+				return false;
+			}
+
 			INamedTypeSymbol? helpers = compilation.GetTypeByMetadataName(SPAN_UNSAFE_EXTENSIONS_METADATA_NAME);
 			return helpers is not null && compilation.IsSymbolAccessibleWithin(helpers, compilation.Assembly);
 		});
@@ -205,7 +213,7 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 	/// Renders the complete extensions class for a single enum.
 	/// </summary>
 	/// <param name="model">The enum being rendered.</param>
-	/// <param name="useSpanUnsafeExtensions">A value that indicates whether the consuming compilation can reach <c>SpanUnsafeExtensions</c>.</param>
+	/// <param name="useSpanUnsafeExtensions">A value that indicates whether the consuming compilation can reach <c>SpanUnsafeExtensions</c> and allows unsafe code.</param>
 	/// <returns>The generated source text.</returns>
 	private static string Render(EnumModel model, bool useSpanUnsafeExtensions)
 	{
@@ -461,7 +469,7 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 	/// <param name="model">The enum being rendered.</param>
 	/// <param name="type">The fully qualified name of the enum.</param>
 	/// <param name="totalLength">The maximum formatted length of the enum's names.</param>
-	/// <param name="useSpanUnsafeExtensions">A value that indicates whether the consuming compilation can reach <c>SpanUnsafeExtensions</c>.</param>
+	/// <param name="useSpanUnsafeExtensions">A value that indicates whether the consuming compilation can reach <c>SpanUnsafeExtensions</c> and allows unsafe code.</param>
 	private static void RenderTryFormat(StringBuilder sb, EnumModel model, string type, int totalLength, bool useSpanUnsafeExtensions)
 	{
 		// A value with no defined name falls back to its numeric form, which for a 64-bit underlying type
@@ -580,7 +588,7 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 	/// <param name="model">The enum being rendered.</param>
 	/// <param name="fallbackLength">The length of the scratch character buffer used when transcoding.</param>
 	/// <param name="indent">The leading tabs to place before each emitted line.</param>
-	/// <param name="useSpanUnsafeExtensions">A value that indicates whether the consuming compilation can reach <c>SpanUnsafeExtensions</c>.</param>
+	/// <param name="useSpanUnsafeExtensions">A value that indicates whether the consuming compilation can reach <c>SpanUnsafeExtensions</c> and allows unsafe code.</param>
 	private static void RenderUtf8Fallback(StringBuilder sb, EnumModel model, int fallbackLength, string indent, bool useSpanUnsafeExtensions)
 	{
 		if (!model.IsFlags)
@@ -595,20 +603,24 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 		sb.Append(indent).Append("global::System.Span<char> chars = stackalloc char[").Append(fallbackLength).AppendLine("];");
 		sb.Append(indent).AppendLine("if (value.TryFormat(chars, out int written))");
 		sb.Append(indent).AppendLine("{");
-		sb.Append(indent).Append("\treturn global::System.Text.Encoding.UTF8.TryGetBytes(");
 
 		// The character overload only reports success after writing inside the buffer, so 'written' is already
-		// known to be in range and the slice's own check has nothing left to decide.
+		// known to be in range and the slice's own check has nothing left to decide. The helper is marked unsafe,
+		// so its call goes in an unsafe block that says why the slice is in range.
 		if (useSpanUnsafeExtensions)
 		{
-			sb.Append(SPAN_UNSAFE_EXTENSIONS).Append(".UnsafeSlice(chars, 0, written)");
+			sb.Append(indent).AppendLine("\tunsafe");
+			sb.Append(indent).AppendLine("\t{");
+			sb.Append(indent).AppendLine("\t\t// SAFETY: TryFormat reports success only after writing within chars, so written is within it.");
+			sb.Append(indent).Append("\t\treturn global::System.Text.Encoding.UTF8.TryGetBytes(")
+			  .Append(SPAN_UNSAFE_EXTENSIONS).AppendLine(".UnsafeSlice(chars, 0, written), utf8Destination, out bytesWritten);");
+			sb.Append(indent).AppendLine("\t}");
 		}
 		else
 		{
-			sb.Append("chars.Slice(0, written)");
+			sb.Append(indent).AppendLine("\treturn global::System.Text.Encoding.UTF8.TryGetBytes(chars.Slice(0, written), utf8Destination, out bytesWritten);");
 		}
 
-		sb.AppendLine(", utf8Destination, out bytesWritten);");
 		sb.Append(indent).AppendLine("}");
 		sb.AppendLine();
 
@@ -623,25 +635,28 @@ public sealed class EnumToStringGenerator : IIncrementalGenerator
 	/// </summary>
 	/// <remarks>
 	/// Both call sites stand behind a length guard that is exactly <c>UnsafeCopy</c>'s precondition, so where the
-	/// helper is available the copy's own bounds check is settled work repeated at runtime. The <c>CopyTo</c>
-	/// fallback keeps the generated source valid in a compilation that cannot reach the helper.
+	/// helper is available the copy's own bounds check is settled work repeated at runtime. The helper is marked unsafe,
+	/// so the call goes in an unsafe block whose SAFETY comment names that guard. The <c>CopyTo</c> fallback keeps the
+	/// generated source valid in a compilation that cannot reach the helper or doesn't allow unsafe code.
 	/// </remarks>
 	/// <param name="sb">The builder receiving the generated source.</param>
-	/// <param name="indent">The leading tabs to place before the emitted line.</param>
+	/// <param name="indent">The leading tabs to place before each emitted line.</param>
 	/// <param name="source">The expression naming the read-only span that holds the name.</param>
 	/// <param name="destination">The expression naming the caller's buffer.</param>
-	/// <param name="useSpanUnsafeExtensions">A value that indicates whether the consuming compilation can reach <c>SpanUnsafeExtensions</c>.</param>
+	/// <param name="useSpanUnsafeExtensions">A value that indicates whether the consuming compilation can reach <c>SpanUnsafeExtensions</c> and allows unsafe code.</param>
 	private static void RenderNameCopy(StringBuilder sb, string indent, string source, string destination, bool useSpanUnsafeExtensions)
 	{
-		sb.Append(indent);
-
 		if (useSpanUnsafeExtensions)
 		{
-			sb.Append(SPAN_UNSAFE_EXTENSIONS).Append(".UnsafeCopy(").Append(source).Append(", ").Append(destination).AppendLine(");");
+			sb.Append(indent).AppendLine("unsafe");
+			sb.Append(indent).AppendLine("{");
+			sb.Append(indent).Append("\t// SAFETY: The length guard above makes ").Append(destination).AppendLine(" at least as long as the name.");
+			sb.Append(indent).Append('\t').Append(SPAN_UNSAFE_EXTENSIONS).Append(".UnsafeCopy(").Append(source).Append(", ").Append(destination).AppendLine(");");
+			sb.Append(indent).AppendLine("}");
 		}
 		else
 		{
-			sb.Append(source).Append(".CopyTo(").Append(destination).AppendLine(");");
+			sb.Append(indent).Append(source).Append(".CopyTo(").Append(destination).AppendLine(");");
 		}
 	}
 

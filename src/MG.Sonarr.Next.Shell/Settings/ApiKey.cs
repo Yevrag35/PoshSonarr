@@ -67,13 +67,18 @@ public readonly struct ApiKey : IApiKey
 	private static string ConvertFromSecureString(SecureString ss)
 	{
 		nint bstr = Marshal.SecureStringToBSTR(ss);
-		try
+		unsafe
 		{
-			return Marshal.PtrToStringBSTR(bstr);
-		}
-		finally
-		{
-			Marshal.ZeroFreeBSTR(bstr);
+			// SAFETY: bstr is the BSTR that SecureStringToBSTR just allocated, read here before the finally zeroes and frees
+			// it, once.
+			try
+			{
+				return Marshal.PtrToStringBSTR(bstr);
+			}
+			finally
+			{
+				Marshal.ZeroFreeBSTR(bstr);
+			}
 		}
 	}
 

@@ -71,14 +71,21 @@ internal static class ServerPath
 	{
 		int rootLength = GetRootLength(path);
 		int end = path.Length;
-		ref char cRef = ref Unsafe.AsRef(in path.GetPinnableReference());
 
-		while (end > rootLength && IsSeparator(cRef.Offset(end - 1)))
+		unsafe
 		{
-			end--;
-		}
+			// SAFETY: GetPinnableReference gives the first character of path, or its terminator when it's empty, and
+			// nothing is written through cRef. The loop reads only at end - 1 while end is above rootLength, which is at
+			// least 0, and the span covers the first end characters, end being at most path.Length.
+			ref char cRef = ref Unsafe.AsRef(in path.GetPinnableReference());
 
-		return end == path.Length ? path : new(cRef.UnsafeSpan(end));
+			while (end > rootLength && IsSeparator(cRef.Offset(end - 1)))
+			{
+				end--;
+			}
+
+			return end == path.Length ? path : new(cRef.UnsafeSpan(end));
+		}
 	}
 
 	/// <summary>

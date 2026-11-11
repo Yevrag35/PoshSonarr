@@ -127,20 +127,24 @@ public readonly partial struct ObjEither<T1, T2> : IUnion where T1 : class where
 	/// <exception cref="InvalidOperationException">Thrown when this instance is default.</exception>
 	public bool TryGetT1([NotNullWhen(true)] out T1? value, [NotNullWhen(false)] out T2? other)
 	{
-		switch (_index)
+		unsafe
 		{
-			case 1:
-				value = Unsafe.As<T1>(_value!);
-				other = null;
-				return true;
+			// SAFETY: _index is 1 only when _value holds a T1 and 2 only when it holds a T2, as the constructors set them.
+			switch (_index)
+			{
+				case 1:
+					value = Unsafe.As<T1>(_value!);
+					other = null;
+					return true;
 
-			case 2:
-				value = null;
-				other = Unsafe.As<T2>(_value!);
-				return false;
+				case 2:
+					value = null;
+					other = Unsafe.As<T2>(_value!);
+					return false;
 
-			default:
-				return Exceptions.ThrowInvalidIndexException(out value, out other);
+				default:
+					return Exceptions.ThrowInvalidIndexException(out value, out other);
+			}
 		}
 	}
 	/// <summary>
@@ -155,20 +159,24 @@ public readonly partial struct ObjEither<T1, T2> : IUnion where T1 : class where
 	/// <exception cref="InvalidOperationException">Thrown when this instance is default.</exception>
 	public bool TryGetT2([NotNullWhen(true)] out T2? value, [NotNullWhen(false)] out T1? other)
 	{
-		switch (_index)
+		unsafe
 		{
-			case 1:
-				other = Unsafe.As<T1>(_value)!;
-				value = null;
-				return false;
+			// SAFETY: _index is 1 only when _value holds a T1 and 2 only when it holds a T2, as the constructors set them.
+			switch (_index)
+			{
+				case 1:
+					other = Unsafe.As<T1>(_value)!;
+					value = null;
+					return false;
 
-			case 2:
-				value = Unsafe.As<T2>(_value)!;
-				other = null;
-				return true;
+				case 2:
+					value = Unsafe.As<T2>(_value)!;
+					other = null;
+					return true;
 
-			default:
-				return Exceptions.ThrowInvalidIndexException(out other, out value);
+				default:
+					return Exceptions.ThrowInvalidIndexException(out other, out value);
+			}
 		}
 	}
 

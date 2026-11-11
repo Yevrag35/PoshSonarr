@@ -46,7 +46,11 @@ internal static class Rent
 			bool clear = clearArray || RuntimeHelpers.IsReferenceOrContainsReferences<T>();
 			if (!clear)
 			{
-				Poison(array);
+				unsafe
+				{
+					// SAFETY: clear is false only when T neither is nor holds a reference.
+					Poison(array);
+				}
 			}
 
 			ArrayPool<T>.Shared.Return(array, clear);
@@ -56,19 +60,26 @@ internal static class Rent
 	/// <summary>
 	/// Fills every byte of an array of unmanaged elements with <c>0xDD</c>, in debug builds only.
 	/// </summary>
-	/// <remarks>
-	/// The element type must not be or hold a reference, since the junk bytes would read as object references.
-	/// </remarks>
+	/// <safety>
+	/// <typeparamref name="T"/> must neither be nor hold a reference, since the junk bytes would read as object
+	/// references.
+	/// </safety>
 	/// <typeparam name="T">The type of elements in the array.</typeparam>
 	/// <param name="array">The array to fill.</param>
 	[Conditional("DEBUG")]
-	private static void Poison<T>(T[] array)
+	private static unsafe void Poison<T>(T[] array)
 	{
 		const byte POISON = 0xDD;
 		Debug.Assert(!RuntimeHelpers.IsReferenceOrContainsReferences<T>(), "Junk bytes in a reference would corrupt the heap.");
 
 		T poison = default!;
-		Unsafe.InitBlockUnaligned(ref Unsafe.As<T, byte>(ref poison), POISON, (uint)Unsafe.SizeOf<T>());
+		unsafe
+		{
+			// SAFETY: T neither is nor holds a reference, as the safety contract requires, so no junk byte lands in a
+			// reference, and the block written is exactly the bytes of poison.
+			Unsafe.InitBlockUnaligned(ref Unsafe.As<T, byte>(ref poison), POISON, (uint)Unsafe.SizeOf<T>());
+		}
+
 		array.AsSpan().Fill(poison);
 	}
 }

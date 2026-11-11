@@ -271,6 +271,10 @@ public readonly partial struct Either<T1, T2>
 	/// is the generic type definition, <c>Either&lt;,&gt;</c>, and not the constructed type that the other overloads
 	/// report.
 	/// </remarks>
+	/// <safety>
+	/// <paramref name="f1"/> and <paramref name="f2"/> must each be <see langword="null"/>, which throws, or point to a
+	/// method whose signature matches the pointer's type.
+	/// </safety>
 	/// <typeparam name="TOutput">The output type.</typeparam>
 	/// <typeparam name="TState">The state type.</typeparam>
 	/// <param name="state">The state to pass to the function pointer.</param>
@@ -293,17 +297,22 @@ public readonly partial struct Either<T1, T2>
 
 		// The throw helpers aren't generic and name no constructed type, so shared code never looks up the type
 		// arguments. A lookup would keep the generic context alive, at the cost of a stack store on every call.
-		switch (_index)
+		unsafe
 		{
-			case 1:
-				return f1(_first!, state);
+			// SAFETY: The check above keeps both pointers from being null, and the caller passes pointers to methods of
+			// their types, as the safety contract requires.
+			switch (_index)
+			{
+				case 1:
+					return f1(_first!, state);
 
-			case 2:
-				return f2(_second!, state);
+				case 2:
+					return f2(_second!, state);
 
-			default:
-				EitherThrowHelper.ThrowEmpty();
-				return default!;
+				default:
+					EitherThrowHelper.ThrowEmpty();
+					return default!;
+			}
 		}
 	}
 

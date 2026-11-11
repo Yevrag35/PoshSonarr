@@ -36,13 +36,16 @@
 		Compiler settings shared by every project. A project can override any of them in its own file. LangVersion is preview
 		because the code relies on C# features that the .NET 11 SDK ships only as previews, such as the updated memory safety
 		rules, under which a signature that holds a pointer type needs no unsafe modifier and an extern method can be safe.
+		The updated-memory-safety-rules feature opts in to the rest of them: the unsafe modifier on a member means that its
+		callers need an unsafe context instead of giving its body one, and a call to a member marked unsafe, such as most of
+		Unsafe and MemoryMarshal, compiles only inside an unsafe block.
 	-->
 	<PropertyGroup>
 		<LangVersion>preview</LangVersion>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<Features>runtime-async=on</Features>
+		<Features>runtime-async=on;updated-memory-safety-rules</Features>
 	</PropertyGroup>
 
 	<!--

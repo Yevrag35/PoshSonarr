@@ -3,7 +3,7 @@ namespace MG.Sonarr.Next.Extensions;
 /// <summary>
 /// Provides extension methods for integer values.
 /// </summary>
-public static class UnmanagedExtensions
+internal static class UnmanagedExtensions
 {
 	/// <summary>
 	/// Provides extension methods that measure the decimal form of an integer value.
@@ -19,7 +19,7 @@ public static class UnmanagedExtensions
 		/// <returns>
 		/// The number of decimal digits in <paramref name="value"/>, plus one for the sign when it's negative.
 		/// </returns>
-		public int GetLength()
+		internal int GetLength()
 		{
 			// Fast‑track zero and +1 - these dominate in many counters/state machines.
 			if (T.IsZero(value) || T.One.Equals(value))
@@ -29,7 +29,13 @@ public static class UnmanagedExtensions
 			// (-x)  -> negativeSign = 1,  absValue = ~x + 1
 			// ( x)  -> negativeSign = 0,  absValue =  x
 			bool isNegative = T.IsNegative(value);
-			int negativeSign = Unsafe.As<bool, byte>(ref isNegative);
+			int negativeSign;
+			unsafe
+			{
+				// SAFETY: bool and byte are both one byte wide, so the reinterpretation reads only the byte of isNegative.
+				negativeSign = Unsafe.As<bool, byte>(ref isNegative);
+			}
+
 			T absValue = isNegative
 					   ? T.MinValue.Equals(value) ? T.MaxValue : T.Abs(value)
 					   : value;
@@ -48,7 +54,14 @@ public static class UnmanagedExtensions
 			// If absValue < 10^(digits-1) we must subtract 1.
 			// 10^(digits-1) is read from the per-T Pow10 table (built once in its static
 			// constructor), so this correction costs just one comparison.
-			T lookup = Pow10<T>.Get(digits - 1);
+			T lookup;
+			unsafe
+			{
+				// SAFETY: absValue is at least 1, so bitLen is at least 1, and T is at most 128 bits wide, as Int128 and
+				// UInt128, the widest integer types in .NET, are. So digits - 1 is from 0 to 38, within the table.
+				lookup = Pow10<T>.Get(digits - 1);
+			}
+
 			if (lookup > absValue)
 				digits--;
 
@@ -64,7 +77,22 @@ public static class UnmanagedExtensions
 	{
 		private static readonly T[] s_table;
 
-		internal static T Get(int index) => s_table.Ref(index);
+		/// <summary>
+		/// Returns 10 raised to the specified power, without a bounds check.
+		/// </summary>
+		/// <safety>
+		/// <paramref name="index"/> must be from 0 to 39.
+		/// </safety>
+		/// <param name="index">The power of 10 to return.</param>
+		/// <returns>10 raised to <paramref name="index"/>, wrapped to the width of <typeparamref name="T"/>.</returns>
+		internal static unsafe T Get(int index)
+		{
+			unsafe
+			{
+				// SAFETY: The caller keeps index within the 40-entry table, as the safety contract requires.
+				return s_table.Ref(index);
+			}
+		}
 
 		static Pow10()
 		{

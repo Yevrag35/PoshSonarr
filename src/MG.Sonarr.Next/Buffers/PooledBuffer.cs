@@ -36,9 +36,13 @@ internal struct PooledBuffer<T> : IDisposable
 	{
 		get
 		{
-			return ref (uint)index < (uint)_length && (uint)index < (uint)_array!.Length
-				? ref _array.Ref(index)
-				: ref Unsafe.NullRef<T>();
+			unsafe
+			{
+				// SAFETY: The condition keeps index within _array, which the pool rents as exactly a T[].
+				return ref (uint)index < (uint)_length && (uint)index < (uint)_array!.Length
+					? ref _array.Ref(index)
+					: ref Unsafe.NullRef<T>();
+			}
 		}
 	}
 
@@ -167,9 +171,13 @@ internal struct PooledBuffer<T> : IDisposable
 	{
 		// The null check is not redundant with the bounds test: a zero-length rent leaves this instance default, and
 		// a (0, 0) request satisfies the bounds arm while there is no array for ArraySliceMarshal.Create to wrap.
-		return _array is not null && this.IsInRange(index, length)
-			? ArraySliceMarshal.Create(_array, index, length)
-			: default;
+		unsafe
+		{
+			// SAFETY: IsInRange keeps index and length within _length, which never exceeds _array.Length.
+			return _array is not null && this.IsInRange(index, length)
+				? ArraySliceMarshal.Create(_array, index, length)
+				: default;
+		}
 	}
 
 	/// <summary>
@@ -178,9 +186,13 @@ internal struct PooledBuffer<T> : IDisposable
 	/// <returns>A span covering the first <see cref="Length"/> elements of the backing array, or an empty span if this instance is default or empty.</returns>
 	public readonly Span<T> AsSpan()
 	{
-		return _array is not null && _array.Length != 0 && _length != 0
-			? _array.AsUnsafeSpan(0, _length)
-			: [];
+		unsafe
+		{
+			// SAFETY: _length never exceeds _array.Length, and the pool rents _array as exactly a T[].
+			return _array is not null && _array.Length != 0 && _length != 0
+				? _array.AsUnsafeSpan(0, _length)
+				: [];
+		}
 	}
 	/// <summary>
 	/// Returns a <see cref="Span{T}"/> over a slice of the buffer.
@@ -194,9 +206,14 @@ internal struct PooledBuffer<T> : IDisposable
 	public readonly Span<T> AsSpan(int index, int length)
 	{
 		this.ThrowIfOutOfRange(index, length);
-		return length != 0
-			? _array!.AsUnsafeSpan(index, length)
-			: [];
+		unsafe
+		{
+			// SAFETY: ThrowIfOutOfRange keeps index and length within _length, which never exceeds _array.Length, a
+			// positive length means _array exists, and the pool rents it as exactly a T[].
+			return length != 0
+				? _array!.AsUnsafeSpan(index, length)
+				: [];
+		}
 	}
 	/// <summary>
 	/// Returns a <see cref="Memory{T}"/> over the logical length of the buffer.

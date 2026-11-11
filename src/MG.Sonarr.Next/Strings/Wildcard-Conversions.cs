@@ -42,15 +42,20 @@ public readonly partial struct Wildcard
 				? stackalloc char[length]
 				: length);
 
-		if (pattern.Ref() != '*')
+		unsafe
 		{
-			builder.Append('*');
-		}
+			// SAFETY: The IsEmpty check above returned for an empty pattern, and _state.Length is always the length of
+			// _pattern, so pattern has a first and a last character.
+			if (pattern.Ref() != '*')
+			{
+				builder.Append('*');
+			}
 
-		builder.Append(pattern);
-		if (builder.Length > 1 && pattern.Ref(pattern.Length - 1) != '*')
-		{
-			builder.Append('*');
+			builder.Append(pattern);
+			if (builder.Length > 1 && pattern.Ref(pattern.Length - 1) != '*')
+			{
+				builder.Append('*');
+			}
 		}
 
 		return new(builder.AsSpan(), WildcardMatchType.Like);
