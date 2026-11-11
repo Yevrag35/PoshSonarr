@@ -1,6 +1,6 @@
 # Sonarr sandbox
 
-A disposable Sonarr instance in Docker for testing PoshSonarr against. It runs Sonarr 4.0.20.3014, pinned and unable to update itself, listens only on this machine's loopback address, and starts unattended with a fixed API key. Beside it runs a mock of Sonarr's metadata service that serves four made-up shows, so series and episodes work offline and come out the same every time. Its data lives in two Docker volumes that belong to it alone, so nothing it does reaches another Sonarr instance or real media, and a reset returns it to a known baseline.
+A disposable Sonarr instance in Docker for testing PoshSonarr against. It runs Sonarr 4.0.20.3014, pinned and unable to update itself, listens only on this machine's loopback address, and starts unattended with a fixed API key. Beside it runs a mock of Sonarr's metadata service that serves four made-up shows, so series and episodes work offline and come out the same every time, and that answers webhook notifications' posts. Its data lives in two Docker volumes that belong to it alone, so nothing it does reaches another Sonarr instance or real media, and a reset returns it to a known baseline.
 
 ## Requirements
 
@@ -42,6 +42,10 @@ The seeded series are monitored, in `/tv`, with all their episodes monitored and
 
 To change a show or add one, edit or add its file in `skyhook/v1/tvdb/shows/en/`, named for its TVDB ID, and make the same change in `skyhook/v1/tvdb/search/en/index.json`, which holds every show's object in one array. Then run `reset.ps1`: `start.ps1` alone rebuilds the mock, but Sonarr keeps what it fetched until it refreshes the show. A show's JSON needs its `malIds` and `aniListIds` lists, even when they're empty, because Sonarr stores them in database columns that can't be null. A new show joins the seeded ones through the `$seededShows` list in `sandbox.psm1`. `test.ps1` and PoshSonarr's Pester suite, through the `$Fixtures` table in `.tests/setup.ps1`, each expect the shows, the episode counts, and the totals that this section gives, so update both along with them.
 
+## Webhooks
+
+The mock metadata service also stands in for the receiver of a webhook notification. It answers every request to a path under `https://skyhook.sonarr.tv/hooks/`, such as `/hooks/pester`, with a 200 and `{}`, whatever its method, and any path that it doesn't serve, such as `/missing/`, with a 404. Sonarr's test of a webhook notification, which `POST notification/test` runs whether or not the notification is enabled, posts to the webhook's URL, so it passes for a URL under `/hooks/` and fails for `https://skyhook.sonarr.tv/missing/`, with a validation failure on the URL that names the 404. Sonarr accepts the mock's certificate for a webhook as it does for a lookup. The mock keeps nothing of a post but its line in the log that `logs.ps1 -Service skyhook` shows, with the path and the status, so nothing can check what Sonarr sent.
+
 ## Smoke tests
 
 `test.ps1` checks that the running sandbox is the one this README describes. It sends raw HTTP requests to the API rather than going through PoshSonarr, so it tests the sandbox, not the module. It expects the baseline, as `start.ps1` and `reset.ps1` leave it, and first makes the same status call that they make, so that it sends nothing to another server that answers on the port. Its checks come in these groups, in this order:
@@ -54,6 +58,7 @@ To change a show or add one, edit or add its file in `skyhook/v1/tvdb/shows/en/`
 | Baseline | The `sandbox-baseline` tag exists, and so does the `/tv` root folder, with `accessible` true. |
 | Seeded series | `series` lists TVDB IDs 9000001 and 9000002, each has 6 episodes, and the `sandbox-baseline` tag lists Sandbox Ended Show. |
 | Mock lookup | `series/lookup` finds Sandbox Lookup Show alone for `tvdb:9000003`, Sandbox Wild\*Card Show alone for `tvdb:9000004`, and all four shows for `sandbox`, and `config/host` reports `certificateValidation` `disabledForLocalAddresses`. |
+| Mock webhook | A POST to `https://skyhook.sonarr.tv/hooks/test` from inside Sonarr's container answers 200. |
 | Wanted and calendar | `wanted/missing` reports 9 episodes, and the calendar from 2099-01-01 to 2099-01-31 holds 3. These run before the round trips, which add a show with two aired episodes for a while. |
 | Unknown show | Adding TVDB ID 9009999, which the mock lacks, gets a 400 that says "A series with this ID was not found". |
 | Tag round trip | For a tag labeled `sandbox-temp-` and 8 random hex digits, POST returns 201 with an ID, GET returns the label, PUT with a new label returns 202, GET returns the new label, DELETE returns 200, and GET then returns 404. |
@@ -145,5 +150,5 @@ These need services that the sandbox leaves out on purpose.
 | Indexers, release searches, RSS sync | Real or mock indexers, such as a mock Newznab or Torznab server |
 | Download clients, the queue, grabbing releases | A download client, such as a SABnzbd or qBittorrent container |
 | Episodes with files, manual import, renaming, media info | Media files under `/tv` |
-| Notifications and connections | External services or mock receivers |
+| Notifications other than a webhook's test | External services, or mock receivers that keep what they're sent |
 | Running the sandbox in CI | A GitHub Actions workflow with Docker |
