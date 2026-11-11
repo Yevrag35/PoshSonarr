@@ -33,7 +33,6 @@ public static partial class PSCmdletExtensions
 				}
 			});
 	}
-
 	/// <summary>
 	/// Writes the outcome of a command to the pipeline.
 	/// </summary>

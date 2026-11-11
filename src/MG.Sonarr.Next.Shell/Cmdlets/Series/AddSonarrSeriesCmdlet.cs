@@ -1,9 +1,11 @@
 using MG.Sonarr.Next.Attributes;
+using MG.Sonarr.Next.Exceptions;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Series;
 using MG.Sonarr.Next.Shell.Attributes;
 using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Internal;
+using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Series;
 
@@ -226,7 +228,7 @@ public sealed class AddSonarrSeriesCmdlet : SonarrApiCmdletBase//, IDynamicParam
 			{
 				this.SerializeIfDebug(pso);
 
-				var response = this.SendPostRequest<SeriesObject>(this.Tag.UrlBase, pso);
+				Either<SeriesObject, SonarrErrorRecord> response = this.SendPostRequest<SeriesObject>(this.Tag.UrlBase, pso);
 
 				// WriteOutcome resets the lookup result when the add fails, so commit it when the add succeeds, which
 				// takes out what OnSerializing wrote either way.
