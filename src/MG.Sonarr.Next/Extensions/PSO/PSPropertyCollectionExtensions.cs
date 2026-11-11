@@ -3,7 +3,7 @@ namespace MG.Sonarr.Next.Extensions.PSO;
 /// <summary>
 /// Provides helpers for removing members from PowerShell member collections.
 /// </summary>
-public static class PSMemberInfoCollectionExtensions
+internal static class PSMemberInfoCollectionExtensions
 {
 	/// <summary>
 	/// Provides extension methods that remove members from a <see cref="PSMemberInfoCollection{T}"/>.
@@ -16,7 +16,7 @@ public static class PSMemberInfoCollectionExtensions
 		/// Removes all members that satisfy the specified predicate.
 		/// </summary>
 		/// <param name="predicate">The predicate used to select members to remove.</param>
-		public void RemoveAll(Func<T, bool> predicate)
+		internal void RemoveAll(Func<T, bool> predicate)
 		{
 			foreach (T item in collection)
 			{
@@ -31,7 +31,7 @@ public static class PSMemberInfoCollectionExtensions
 		/// Removes multiple members by name.
 		/// </summary>
 		/// <param name="propertyNames">The member names to remove.</param>
-		public void RemoveMany(params ReadOnlySpan<string> propertyNames)
+		internal void RemoveMany(params ReadOnlySpan<string> propertyNames)
 		{
 			if (propertyNames.IsEmpty)
 			{

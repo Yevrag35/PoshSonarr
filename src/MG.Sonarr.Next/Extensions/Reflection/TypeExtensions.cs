@@ -3,7 +3,7 @@ namespace MG.Sonarr.Next.Extensions.Reflection;
 /// <summary>
 /// Custom extensions for the <see cref="Type"/> class.
 /// </summary>
-public static class TypeExtensions
+internal static class TypeExtensions
 {
 	/// <summary>
 	/// Provides extension methods that name a <see cref="Type"/> that isn't <see langword="null"/>.
@@ -23,7 +23,7 @@ public static class TypeExtensions
 		///     By default, <see cref="Type.FullName"/>, or, if <see langword="null"/>,
 		///     <see cref="MemberInfo.Name"/>.
 		/// </returns>
-		public string GetName()
+		internal string GetName()
 		{
 			return type.FullName ?? type.Name;
 		}
@@ -47,7 +47,7 @@ public static class TypeExtensions
 		/// </returns>
 		[DebuggerStepThrough]
 		[return: NotNullIfNotNull(nameof(otherValue))]
-		public string? GetNameOr(string? otherValue)
+		internal string? GetNameOr(string? otherValue)
 		{
 			return type is not null
 				? type.GetName()
@@ -63,7 +63,7 @@ public static class TypeExtensions
 		/// </returns>
 		[DebuggerStepThrough]
 		[return: NotNullIfNotNull(nameof(type))]
-		public string? GetNameOrNull()
+		internal string? GetNameOrNull()
 		{
 			return type.GetNameOr(otherValue: null);
 		}

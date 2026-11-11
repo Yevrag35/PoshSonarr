@@ -66,7 +66,7 @@ public interface IMemberSetter : IMemberInfo
 /// </summary>
 [StructLayout(LayoutKind.Auto)]
 [DebuggerDisplay(@"\{{MemberName,nq} = {_either}\}")]
-public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemberInfo
+internal readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemberInfo
 {
 	private readonly ObjEither<PropertyInfo, FieldInfo> _either;
 	private readonly MemberInfo? _member;

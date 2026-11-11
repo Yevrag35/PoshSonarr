@@ -5,7 +5,7 @@ namespace MG.Sonarr.Next.Extensions.Reflection;
 /// <summary>
 /// Custom extensions for retrieving names for <see cref="Type"/> instances.
 /// </summary>
-public static class TypeNameExtensions
+internal static class TypeNameExtensions
 {
 	private static readonly ConcurrentDictionary<PSTypeKey, string> s_typeNameCache = [];
 
@@ -19,7 +19,7 @@ public static class TypeNameExtensions
 		/// Returns the PowerShell type name for the specified .NET type.
 		/// </summary>
 		/// <returns>A string containing the PowerShell type name associated with the specified .NET type.</returns>
-		public string GetPSTypeName()
+		internal string GetPSTypeName()
 		{
 			return type.GetPSTypeName(removeBrackets: false);
 		}
@@ -38,7 +38,7 @@ public static class TypeNameExtensions
 		/// <see langword="false"/>.</param>
 		/// <returns>A string containing the PowerShell type name corresponding to the specified .NET type. If no accelerated
 		/// name is found, returns the full type name.</returns>
-		public string GetPSTypeName(bool removeBrackets)
+		internal string GetPSTypeName(bool removeBrackets)
 		{
 			if (PSTypeAcceleratorNames.Shared.TryGetName(
 				type: type,

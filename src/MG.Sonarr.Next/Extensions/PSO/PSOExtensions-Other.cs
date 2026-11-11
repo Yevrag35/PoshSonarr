@@ -3,7 +3,7 @@ namespace MG.Sonarr.Next.Extensions.PSO;
 /// <summary>
 /// Provides miscellaneous property read, write, and projection helpers for <see cref="PSObject"/> instances.
 /// </summary>
-public static partial class PSOExtensions
+static partial class PSOExtensions
 {
 	/// <summary>
 	/// Gets the value of the specified property as <typeparamref name="T"/>.
@@ -13,7 +13,7 @@ public static partial class PSOExtensions
 	/// <param name="propertyName">The property name, which defaults to the calling member's name.</param>
 	/// <returns>The converted value when available; otherwise, the default value of <typeparamref name="T"/>.</returns>
 	[DebuggerStepThrough]
-	public static T? GetValue<T>(this PSObject pso, [CallerMemberName] string propertyName = "")
+	internal static T? GetValue<T>(this PSObject pso, [CallerMemberName] string propertyName = "")
 	{
 		object? value = pso.Properties[propertyName]?.Value;
 		return value switch
@@ -32,7 +32,7 @@ public static partial class PSOExtensions
 	/// <param name="propertyName">The name of the property to get the value of.</param>
 	/// <returns>The value of the property as a string or an empty string if the value is null or cannot be converted to a string.</returns>
 	[DebuggerStepThrough]
-	public static string GetStringOrEmpty(this PSObject pso, [CallerMemberName] string propertyName = "")
+	internal static string GetStringOrEmpty(this PSObject pso, [CallerMemberName] string propertyName = "")
 	{
 		object? value = pso.Properties[propertyName]?.Value;
 		return value switch
@@ -53,7 +53,7 @@ public static partial class PSOExtensions
 	/// <param name="propertyName">The property name, which defaults to the calling member's name.</param>
 	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="pso"/> is null.</exception>
 	[DebuggerStepThrough]
-	public static void SetValue<T>(this PSObject pso, T? value, [CallerMemberName] string propertyName = "")
+	internal static void SetValue<T>(this PSObject pso, T? value, [CallerMemberName] string propertyName = "")
 	{
 		ArgumentNullException.ThrowIfNull(pso);
 
@@ -74,7 +74,7 @@ public static partial class PSOExtensions
 	/// <param name="ignoreKeys">Property names to omit.</param>
 	/// <returns>A dictionary representation of <paramref name="pso"/>, or <see langword="null"/> when <paramref name="pso"/> is null.</returns>
 	[return: NotNullIfNotNull(nameof(pso))]
-	public static Dictionary<string, object?>? ToDictionary(this PSObject? pso, params ReadOnlySpan<string> ignoreKeys)
+	internal static Dictionary<string, object?>? ToDictionary(this PSObject? pso, params ReadOnlySpan<string> ignoreKeys)
 	{
 		if (pso is null)
 			return null;
@@ -144,7 +144,7 @@ public static partial class PSOExtensions
 	/// <returns><see langword="true"/> if the property exists and holds a value that isn't <see langword="null"/> and
 	/// reads as <typeparamref name="T"/>; otherwise, <see langword="false"/>.</returns>
 	[DebuggerStepThrough]
-	public static bool TryGetNonNullProperty<T>(this PSObject? pso, string propertyName, [NotNullWhen(true)] out T? value)
+	internal static bool TryGetNonNullProperty<T>(this PSObject? pso, string propertyName, [NotNullWhen(true)] out T? value)
 	{
 		return TryGetProperty<T>(pso, propertyName, out value) && value is not null;
 	}
@@ -169,7 +169,7 @@ public static partial class PSOExtensions
 	/// <returns><see langword="true"/> if the property exists and its value reads as <typeparamref name="T"/>; otherwise,
 	/// <see langword="false"/>.</returns>
 	[DebuggerStepThrough]
-	public static bool TryGetProperty<T>(this PSObject? pso, string propertyName, [MaybeNull] out T value)
+	internal static bool TryGetProperty<T>(this PSObject? pso, string propertyName, [MaybeNull] out T value)
 	{
 		value = default;
 		PSMemberInfo? prop = pso?.Properties[propertyName];

@@ -8,7 +8,7 @@ namespace MG.Sonarr.Next.Extensions.PSO;
 /// <summary>
 /// Provides helpers that add, replace, convert, and update <see cref="PSObject"/> properties.
 /// </summary>
-public static partial class PSOExtensions
+static partial class PSOExtensions
 {
 	/// <summary>
 	/// Adds a numeric note property with the specified name and value.
@@ -18,7 +18,7 @@ public static partial class PSOExtensions
 	/// <param name="propertyName">The property name.</param>
 	/// <param name="value">The numeric value.</param>
 	/// <exception cref="System.ArgumentException">Thrown when <paramref name="propertyName"/> is null or empty.</exception>
-	public static void AddNumberProperty<T>(this PSObject pso, string propertyName, T value) where T : unmanaged, INumber<T>
+	internal static void AddNumberProperty<T>(this PSObject pso, string propertyName, T value) where T : unmanaged, INumber<T>
 	{
 		ArgumentException.ThrowIfNullOrEmpty(propertyName);
 
@@ -32,7 +32,7 @@ public static partial class PSOExtensions
 	/// <param name="propertyName">The property name.</param>
 	/// <param name="value">The value to assign.</param>
 	/// <exception cref="System.ArgumentException">Thrown when <paramref name="propertyName"/> is null or empty.</exception>
-	public static void AddProperty(this PSObject pso, string propertyName, object? value)
+	internal static void AddProperty(this PSObject pso, string propertyName, object? value)
 	{
 		ArgumentException.ThrowIfNullOrEmpty(propertyName);
 		switch (value)
@@ -75,7 +75,7 @@ public static partial class PSOExtensions
 	/// <param name="propertyName">The name of the property to add. Cannot be null or empty.</param>
 	/// <param name="value">The value to assign to the property. The property's type will be determined based on the runtime type of
 	/// this value.</param>
-	public static void AddReadOnlyProperty(this PSObject pso, string propertyName, object? value)
+	internal static void AddReadOnlyProperty(this PSObject pso, string propertyName, object? value)
 	{
 		ArgumentException.ThrowIfNullOrEmpty(propertyName);
 		switch (value)
@@ -112,7 +112,7 @@ public static partial class PSOExtensions
 	/// property, it is removed and replaced. If conversion is not possible, no changes are made.</remarks>
 	/// <param name="pso">The PSObject whose property will be replaced.</param>
 	/// <param name="propertyName">The name of the property to replace with a read-only string property. Cannot be null.</param>
-	public static void ReplaceWithReadOnlyStringProperty(this PSObject pso, string propertyName)
+	internal static void ReplaceWithReadOnlyStringProperty(this PSObject pso, string propertyName)
 	{
 		if (pso.Properties[propertyName].TryConvertToReadOnly(out ReadOnlyStringProperty? rosp))
 		{
@@ -130,7 +130,7 @@ public static partial class PSOExtensions
 	/// <typeparam name="T">The numeric value type.</typeparam>
 	/// <param name="pso">The object whose property is replaced.</param>
 	/// <param name="propertyName">The property name.</param>
-	public static void ReplaceWithReadOnlyNumberProperty<T>(this PSObject pso, string propertyName) where T : unmanaged, INumber<T>
+	internal static void ReplaceWithReadOnlyNumberProperty<T>(this PSObject pso, string propertyName) where T : unmanaged, INumber<T>
 	{
 		PSPropertyInfo? property = pso.Properties[propertyName];
 		if (property is null || property is ReadOnlyNumberProperty<T>)
@@ -162,7 +162,7 @@ public static partial class PSOExtensions
 	/// <typeparam name="T">The struct value type.</typeparam>
 	/// <param name="pso">The object whose property is replaced.</param>
 	/// <param name="propertyName">The property name.</param>
-	public static void ReplaceWithReadOnlyStructProperty<T>(this PSObject pso, string propertyName) where T : struct
+	internal static void ReplaceWithReadOnlyStructProperty<T>(this PSObject pso, string propertyName) where T : struct
 	{
 		PSPropertyInfo? property = pso.Properties[propertyName];
 		if (property is null || property is ReadOnlyStructProperty<T>)
@@ -193,7 +193,7 @@ public static partial class PSOExtensions
 	/// <param name="propertyName">The property name.</param>
 	/// <param name="value">The replacement value.</param>
 	/// <exception cref="System.ArgumentException">Thrown when <paramref name="propertyName"/> is null or empty.</exception>
-	public static void ReplaceNumberProperty<T, TValue>(this T pso, string propertyName, TValue value)
+	internal static void ReplaceNumberProperty<T, TValue>(this T pso, string propertyName, TValue value)
 		where T : SonarrObject
 		where TValue : unmanaged, INumber<TValue>
 	{
@@ -210,7 +210,7 @@ public static partial class PSOExtensions
 	/// <param name="value">The replacement value.</param>
 	/// <param name="isReadOnly"><see langword="true"/> to add a read-only property; otherwise, <see langword="false"/>.</param>
 	/// <exception cref="System.ArgumentException">Thrown when <paramref name="propertyName"/> is null or empty.</exception>
-	public static void ReplaceNumberProperty<T, TValue>(this T pso, string propertyName, TValue value, bool isReadOnly)
+	internal static void ReplaceNumberProperty<T, TValue>(this T pso, string propertyName, TValue value, bool isReadOnly)
 		where T : SonarrObject
 		where TValue : unmanaged, INumber<TValue>
 	{
@@ -234,7 +234,7 @@ public static partial class PSOExtensions
 	/// <param name="value">The replacement value.</param>
 	/// <exception cref="System.ArgumentException">Thrown when <paramref name="propertyName"/> is null or empty.</exception>
 	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="pso"/> is null.</exception>
-	public static void ReplaceStructProperty<T, TValue>(this T pso, string propertyName, TValue value)
+	internal static void ReplaceStructProperty<T, TValue>(this T pso, string propertyName, TValue value)
 		where T : SonarrObject
 		where TValue : struct
 	{
@@ -252,7 +252,7 @@ public static partial class PSOExtensions
 	/// <param name="isReadOnly"><see langword="true"/> to add a read-only property; otherwise, <see langword="false"/>.</param>
 	/// <exception cref="System.ArgumentException">Thrown when <paramref name="propertyName"/> is null or empty.</exception>
 	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="pso"/> is null.</exception>
-	public static void ReplaceStructProperty<T, TValue>(this T pso, string propertyName, TValue value, bool isReadOnly)
+	internal static void ReplaceStructProperty<T, TValue>(this T pso, string propertyName, TValue value, bool isReadOnly)
 		where T : SonarrObject
 		where TValue : struct
 	{
@@ -279,7 +279,7 @@ public static partial class PSOExtensions
 	/// <see cref="ReadOnlyStringProperty"/>, and <see langword="null"/> otherwise.</param>
 	/// <returns>true if the conversion was successful and <paramref name="result"/> contains a valid <see
 	/// cref="ReadOnlyStringProperty"/>; otherwise, false.</returns>
-	public static bool TryConvertToReadOnly([NotNullWhen(true)] this PSPropertyInfo? property, [NotNullWhen(true)] out ReadOnlyStringProperty? result)
+	internal static bool TryConvertToReadOnly([NotNullWhen(true)] this PSPropertyInfo? property, [NotNullWhen(true)] out ReadOnlyStringProperty? result)
 	{
 		if (property is null)
 		{
@@ -322,7 +322,7 @@ public static partial class PSOExtensions
 	/// <param name="propertyName">The name of the property, which defaults to the calling member's name.</param>
 	/// <exception cref="ReadOnlyPropertyException">Thrown when the property is read-only and
 	/// <paramref name="replaceReadOnly"/> is false.</exception>
-	public static void UpdateProperty<T>(this PSObject pso, T number, bool replaceReadOnly = false, [CallerMemberName] string propertyName = "")
+	internal static void UpdateProperty<T>(this PSObject pso, T number, bool replaceReadOnly = false, [CallerMemberName] string propertyName = "")
 		where T : unmanaged, INumber<T>
 	{
 		PSPropertyInfo? rawProperty = pso.Properties[propertyName];
@@ -355,7 +355,7 @@ public static partial class PSOExtensions
 	/// <param name="pso">The object whose properties are updated.</param>
 	/// <param name="expressions">The member expressions that identify properties to update from current values.</param>
 	[DebuggerStepThrough]
-	public static void UpdateProperty<T>(this T pso, params ReadOnlySpan<Expression<Func<T, object?>>> expressions)
+	internal static void UpdateProperty<T>(this T pso, params ReadOnlySpan<Expression<Func<T, object?>>> expressions)
 		where T : SonarrObject
 	{
 		UpdateProperty(pso, replaceReadOnly: false, expressions);
@@ -369,7 +369,7 @@ public static partial class PSOExtensions
 	/// <param name="replaceReadOnly"><see langword="true"/> to replace read-only properties; otherwise, <see langword="false"/>.</param>
 	/// <param name="expressions">The member expressions that identify properties to update from current values.</param>
 	/// <exception cref="System.InvalidOperationException">Thrown when an expression does not represent a readable member.</exception>
-	public static void UpdateProperty<T>(this T pso, bool replaceReadOnly, params ReadOnlySpan<Expression<Func<T, object?>>> expressions)
+	internal static void UpdateProperty<T>(this T pso, bool replaceReadOnly, params ReadOnlySpan<Expression<Func<T, object?>>> expressions)
 		where T : SonarrObject
 	{
 		foreach (var exp in expressions)
@@ -392,7 +392,7 @@ public static partial class PSOExtensions
 	/// <param name="replaceReadOnly"><see langword="true"/> to replace a read-only property; otherwise, <see langword="false"/>.</param>
 	/// <param name="propertyName">The property name, which defaults to the calling member's name.</param>
 	/// <exception cref="ReadOnlyPropertyException">Thrown when the property is read-only and <paramref name="replaceReadOnly"/> is false.</exception>
-	public static void UpdateProperty(this PSObject pso, object? value, bool replaceReadOnly = false, [CallerMemberName] string propertyName = "")
+	internal static void UpdateProperty(this PSObject pso, object? value, bool replaceReadOnly = false, [CallerMemberName] string propertyName = "")
 	{
 		PSPropertyInfo? rawProperty = pso.Properties[propertyName];
 		if (rawProperty is null)

@@ -6,7 +6,7 @@ namespace MG.Sonarr.Next.Extensions.Pwsh;
 /// <summary>
 /// Provides extension methods for <see cref="ScriptBlock"/> objects to facilitate custom invocation and validation in the context of PowerShell cmdlets.
 /// </summary>
-public static class ScriptBlockExtensions
+internal static class ScriptBlockExtensions
 {
 	private const string UNDERSCORE = "_";
 	private const string THIS = "this";
@@ -32,7 +32,7 @@ public static class ScriptBlockExtensions
 		/// The script block's first output when it's a <typeparamref name="TOutput"/>; otherwise, <see langword="default"/>,
 		/// as when the script block writes nothing or writes <see langword="null"/> first.
 		/// </returns>
-		public TOutput? InvokeWith<T, TOutput>(T value, ActionPreference? errorAction) where T : notnull
+		internal TOutput? InvokeWith<T, TOutput>(T value, ActionPreference? errorAction) where T : notnull
 		{
 			ArgumentNullException.ThrowIfNull(scriptBlock);
 			ArgumentNullException.ThrowIfNull(value);
@@ -69,7 +69,7 @@ public static class ScriptBlockExtensions
 		/// whose first pipeline element is a command rather than a command expression.
 		/// </remarks>
 		/// <returns><see langword="true"/> if the script block is proper; otherwise, <see langword="false"/>.</returns>
-		public bool IsProperScriptBlock()
+		internal bool IsProperScriptBlock()
 		{
 			ArgumentNullException.ThrowIfNull(scriptBlock);
 

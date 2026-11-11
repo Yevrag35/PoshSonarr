@@ -3,7 +3,7 @@ namespace MG.Sonarr.Next.Extensions.PSO;
 /// <summary>
 /// Provides dynamic property add or update helpers for <see cref="PSObject"/> instances.
 /// </summary>
-public static partial class PSOExtensions
+internal static partial class PSOExtensions
 {
 	/// <summary>
 	/// Sets the specified property to a value, or adds a property that <paramref name="valueFactory"/> creates when the
@@ -24,7 +24,7 @@ public static partial class PSOExtensions
 	/// <param name="valueFactory">The function that creates the property from its name and value.</param>
 	/// <exception cref="ReadOnlyPropertyException">Thrown when the property is read-only and
 	/// <paramref name="replaceReadOnly"/> is false.</exception>
-	public static void AddOrUpdate<TProp, TValue>(this PSObject pso,
+	internal static void AddOrUpdate<TProp, TValue>(this PSObject pso,
 		string propertyName,
 		bool replaceReadOnly,
 		TValue value,
@@ -60,7 +60,7 @@ public static partial class PSOExtensions
 	/// </returns>
 	/// <exception cref="InvalidCastException">Thrown when the copy of the new property isn't a
 	/// <typeparamref name="TProp"/>.</exception>
-	public static TProp GetOrAdd<TProp>(this PSObject pso,
+	internal static TProp GetOrAdd<TProp>(this PSObject pso,
 		string propertyName,
 		Func<string, TProp> propertyFactory)
 			where TProp : PSPropertyInfo
@@ -96,7 +96,7 @@ public static partial class PSOExtensions
 	/// </returns>
 	/// <exception cref="InvalidCastException">Thrown when the copy of the new property isn't a
 	/// <typeparamref name="TProp"/>.</exception>
-	public static TProp GetOrAdd<TProp, TState>(this PSObject pso,
+	internal static TProp GetOrAdd<TProp, TState>(this PSObject pso,
 		string propertyName,
 		TState state,
 		Func<string, TState, TProp> propertyFactory)

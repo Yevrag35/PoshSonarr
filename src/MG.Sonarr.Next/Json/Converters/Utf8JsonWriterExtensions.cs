@@ -17,7 +17,7 @@ namespace MG.Sonarr.Next.Json.Converters;
 /// Each method writes into the object that the writer has open.
 /// </para>
 /// </remarks>
-public static class Utf8JsonWriterExtensions
+internal static class Utf8JsonWriterExtensions
 {
 	/// <summary>
 	/// The longest buffer, in elements, that a formatting method allocates on the stack instead of renting.
