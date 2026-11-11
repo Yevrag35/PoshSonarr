@@ -41,7 +41,7 @@ Run these from the repository root. Building needs a .NET 11 SDK.
 ### Pester tests
 
 - `.tests/README.md` documents the Pester suite: what the runner does and takes, what `setup.ps1` gives each test file, and how to write a test against the sandbox, from finding its fixtures to cleaning up and testing a failure. Read it before writing or changing a test, the runner, or `setup.ps1`, and update it along with any change to how the suite works.
-- `pwsh -NoProfile -File .tests/run.ps1` builds the solution in Debug and runs the suite against the sandbox. `-NoBuild` reuses the last build, `-Reset` resets the sandbox first, `-Path` runs only the files it names, and `-Tag` runs only the tests with those tags. The tests tagged `Restart` run only when `-Tag` names `Restart`.
+- `pwsh -NoProfile -File .tests/run.ps1` builds the solution in Debug and runs the suite against the sandbox. `-NoBuild` reuses the last build, `-Reset` resets the sandbox first, `-Path` runs only the files it names, and `-Tag` runs only the tests with those tags.
 - Any session may run the suite, but only through the runner.
 - Never write a test that connects to an instance other than the Docker sandbox, reads `.env`, or references `Debug.ps1`.
 

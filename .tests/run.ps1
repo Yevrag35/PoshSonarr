@@ -17,8 +17,7 @@
 	5. Resets the sandbox with sandbox/sonarr/reset.ps1 when -Reset asks, and otherwise checks that the sandbox answers
 	   with its pinned version and instance name.
 	6. Runs Pester in a new process, in which POSHSONARR_TEST_MANIFEST names the staged manifest. Pester runs the files
-	   one after another, leaves out the tests tagged Restart unless -Tag names Restart, writes detailed output, and saves
-	   NUnit XML results to .temp/pester/results.xml.
+	   one after another, writes detailed output, and saves NUnit XML results to .temp/pester/results.xml.
 
 	It exits 0 when every selected test passes, and 1 when a test fails or a step before the tests does. It builds every
 	path from its own location, so it runs the same from any directory.
@@ -31,9 +30,6 @@
 .EXAMPLE
 	pwsh -NoProfile -File .tests/run.ps1 -NoBuild -Path .tests/Connection.Tests.ps1
 	# one file, on the last build
-.EXAMPLE
-	pwsh -NoProfile -File .tests/run.ps1 -Tag Restart
-	# only the tests tagged Restart
 #>
 [CmdletBinding()]
 param (
@@ -42,8 +38,7 @@ param (
 	[Parameter(Mandatory = $false, Position = 0, ValueFromRemainingArguments = $true)]
 	[string[]] $Path,
 
-	# Runs only the tests with one of these tags. The tests tagged Restart run only when it names Restart. Under -File,
-	# separate several with commas.
+	# Runs only the tests with one of these tags. Under -File, separate several with commas.
 	[Parameter(Mandatory = $false)]
 	[string[]] $Tag,
 
@@ -84,7 +79,6 @@ try {
 		@(Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.Tests.ps1' -File | Sort-Object Name | ForEach-Object FullName)
 	}
 	$tags = @($Tag -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
-	$excludeTags = @(if ('Restart' -notin $tags) { 'Restart' })
 
 	if (-not $NoBuild) {
 
@@ -153,7 +147,7 @@ try {
 	# A script block passes its arguments to the new process without changing this one's environment. The process runs
 	# with -NonInteractive, so a confirmation prompt fails at once instead of waiting for an answer.
 	& $pwsh -NoProfile -NonInteractive -Command {
-		param ($Manifest, $RepoRoot, $Files, $Tags, $ExcludeTags, $ResultsPath, $RenderMode)
+		param ($Manifest, $RepoRoot, $Files, $Tags, $ResultsPath, $RenderMode)
 
 		$env:POSHSONARR_TEST_MANIFEST = $Manifest
 		Import-Module -Name Pester -MinimumVersion 6.2.0 -MaximumVersion 6.99.99 -ErrorAction Stop
@@ -163,9 +157,6 @@ try {
 		$configuration.Run.Exit = $true
 		if ($Tags) {
 			$configuration.Filter.Tag = [string[]] $Tags
-		}
-		if ($ExcludeTags) {
-			$configuration.Filter.ExcludeTag = [string[]] $ExcludeTags
 		}
 		$configuration.Output.Verbosity = 'Detailed'
 		$configuration.Output.RenderMode = $RenderMode
@@ -177,7 +168,7 @@ try {
 		# from the current directory, and the file's folder, so the run starts in the repository from any directory.
 		Set-Location -LiteralPath $RepoRoot
 		Invoke-Pester -Configuration $configuration
-	} -args $manifest, $repoRoot, $files, $tags, $excludeTags, $results, $renderMode
+	} -args $manifest, $repoRoot, $files, $tags, $results, $renderMode
 
 	# Pester exits with the number of tests, blocks, and files that failed, or -1 when the run itself failed.
 	if ($LASTEXITCODE -ne 0) {

@@ -21,7 +21,6 @@ Run these from the repository root. The runner builds every path from its own lo
 | `pwsh -NoProfile -File .tests/run.ps1` | Builds, stages, and runs every `*.Tests.ps1` file in this folder. |
 | `pwsh -NoProfile -File .tests/run.ps1 -Reset` | Resets the sandbox to its baseline first, with `sandbox/sonarr/reset.ps1`. |
 | `pwsh -NoProfile -File .tests/run.ps1 -NoBuild -Path .tests/Connection.Tests.ps1` | Runs one file, on the last build. |
-| `pwsh -NoProfile -File .tests/run.ps1 -Tag Restart` | Runs only the tests tagged `Restart`, which every other run leaves out. |
 
 A run goes through these steps, and stops with exit code 1 at the first that fails:
 

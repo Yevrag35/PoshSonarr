@@ -106,15 +106,13 @@ internal sealed class SonarrResponseReader : IResponseReader
 
 		if (IsSuccessCode(call.Response.StatusCode, call.Method, out bool isIgnorable))
 		{
-			var oneOf = await this.ReadContentAsync<T>(call.Response, targetObj, token).ConfigureAwait(false);
-
-			unsafe
+			SonarrHttpResult<T> oneOf = await this.ReadContentAsync<T>(call.Response, targetObj, token).ConfigureAwait(false);
+			return oneOf switch
 			{
-				// SAFETY: Both pointers are addresses of static methods, which the compiler matched to the pointer types.
-				return oneOf.Match(call,
-					f1: &ReadErrorFromOneOf<T>,
-					f2: &ReadContentFromOneOf);
-			}
+				T httpResult => SonarrClientResult.Create(httpResult, call.Response, call.RequestUri),
+				SonarrErrorRecord error => new(error),
+				null => throw new UnreachableException(),
+			};
 		}
 
 		string? content = await call.Response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
@@ -185,7 +183,7 @@ internal sealed class SonarrResponseReader : IResponseReader
 	/// <param name="token">A token that cancels reading the body.</param>
 	/// <returns>A task that completes with the deserialized value, or with an error record when the body can't be read.</returns>
 	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled while the body is read.</exception>
-	private async Task<Either<SonarrErrorRecord, T>> ReadContentAsync<T>(HttpResponseMessage response, object? targetObj, CancellationToken token)
+	private async Task<SonarrHttpResult<T>> ReadContentAsync<T>(HttpResponseMessage response, object? targetObj, CancellationToken token)
 	{
 		try
 		{
@@ -280,37 +278,6 @@ internal sealed class SonarrResponseReader : IResponseReader
 			default:
 				return false;
 		}
-	}
-
-	/// <summary>
-	/// Creates the failed result for a successful response whose body couldn't be deserialized.
-	/// </summary>
-	/// <typeparam name="T">The type of the value that the request returns.</typeparam>
-	/// <param name="error">The record that describes why the body couldn't be read.</param>
-	/// <param name="call">The exchange whose response was read.</param>
-	/// <returns>
-	/// A failed result with the status code of <paramref name="error"/>, or else that of the response, and the URL of
-	/// <paramref name="error"/>, or else that of <paramref name="call"/>.
-	/// </returns>
-	private static SonarrClientResult<T> ReadErrorFromOneOf<T>(SonarrErrorRecord error, HttpCall call)
-	{
-		error.RequestUri ??= call.RequestUri;
-
-		return new(error)
-		{
-			StatusCode = error.StatusCode ?? call.Response!.StatusCode,
-		};
-	}
-	/// <summary>
-	/// Creates the successful result for a value deserialized from a response's body.
-	/// </summary>
-	/// <typeparam name="T">The type of the value.</typeparam>
-	/// <param name="content">The deserialized value.</param>
-	/// <param name="call">The exchange whose response was read.</param>
-	/// <returns>A result that holds <paramref name="content"/>, with the status code and URL of the response.</returns>
-	private static SonarrClientResult<T> ReadContentFromOneOf<T>(T content, HttpCall call)
-	{
-		return SonarrClientResult.Create(content, call.Response!, call.RequestUri);
 	}
 }
 
