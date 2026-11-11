@@ -3,7 +3,7 @@ namespace MG.Sonarr.Next;
 /// <summary>
 /// Provides debug-only assertion helpers.
 /// </summary>
-public static class Debugger
+internal static class Debugger
 {
 	/// <summary>
 	/// Asserts that the specified predicate evaluates to <see langword="true"/>.
@@ -11,7 +11,7 @@ public static class Debugger
 	/// <param name="predicate">The assertion predicate to evaluate.</param>
 	[Conditional("DEBUG")]
 	[DebuggerStepThrough]
-	public static void Assert(Func<bool> predicate)
+	internal static void Assert(Func<bool> predicate)
 	{
 		Debug.Assert(predicate());
 	}
@@ -23,7 +23,7 @@ public static class Debugger
 	/// <param name="message">The message to include when the assertion fails.</param>
 	[Conditional("DEBUG")]
 	[DebuggerStepThrough]
-	public static void Assert(Func<bool> predicate, string? message)
+	internal static void Assert(Func<bool> predicate, string? message)
 	{
 		Debug.Assert(predicate(), message);
 	}
@@ -36,7 +36,7 @@ public static class Debugger
 	/// <param name="detailedMessage">Additional assertion details to include when the assertion fails.</param>
 	[Conditional("DEBUG")]
 	[DebuggerStepThrough]
-	public static void Assert(Func<bool> predicate, string? message, string? detailedMessage)
+	internal static void Assert(Func<bool> predicate, string? message, string? detailedMessage)
 	{
 		Debug.Assert(predicate(), message, detailedMessage);
 	}

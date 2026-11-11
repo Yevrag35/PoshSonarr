@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Unions;
 /// <typeparam name="T2">The second type.</typeparam>
 [StructLayout(LayoutKind.Auto)]
 [DebuggerDisplay(@"\{Index = {Index}\}")]
-public readonly ref struct RefEither<T1, T2> where T1 : allows ref struct where T2 : allows ref struct
+internal readonly ref struct RefEither<T1, T2> where T1 : allows ref struct where T2 : allows ref struct
 {
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	private readonly T1 _first;

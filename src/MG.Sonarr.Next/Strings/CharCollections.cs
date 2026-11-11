@@ -3,27 +3,27 @@ namespace MG.Sonarr.Next.Strings;
 /// <summary>
 /// Provides cached character sets and helpers for alphabetic and numeric ranges.
 /// </summary>
-public static class CharCollections
+internal static class CharCollections
 {
 	/// <summary>
 	/// Represents search values that include uppercase letters, lowercase letters, and numeric characters.
 	/// </summary>
-	public static readonly SearchValues<char> AllAlphaNumeric;
+	internal static readonly SearchValues<char> AllAlphaNumeric;
 
 	/// <summary>
 	/// Represents search values for lowercase alphabetic characters.
 	/// </summary>
-	public static readonly SearchValues<char> AlphaLowercase;
+	internal static readonly SearchValues<char> AlphaLowercase;
 
 	/// <summary>
 	/// Represents search values for uppercase alphabetic characters.
 	/// </summary>
-	public static readonly SearchValues<char> AlphaUppercase;
+	internal static readonly SearchValues<char> AlphaUppercase;
 
 	/// <summary>
 	/// Represents search values for numeric characters.
 	/// </summary>
-	public static readonly SearchValues<char> Numbers;
+	internal static readonly SearchValues<char> Numbers;
 	private const int ALPHA_LENGTH = 26;
 	private const int MAX_STACKALLOC = 256;
 
@@ -49,7 +49,7 @@ public static class CharCollections
 	/// <exception cref="ArgumentOutOfRangeException">
 	/// Thrown when <paramref name="inclusiveEnd"/> is less than <paramref name="inclusiveStart"/>.
 	/// </exception>
-	public static SearchValues<byte> GetNumberValues(byte inclusiveStart, byte inclusiveEnd)
+	internal static SearchValues<byte> GetNumberValues(byte inclusiveStart, byte inclusiveEnd)
 	{
 		ArgumentOutOfRangeException.ThrowIfLessThan(inclusiveEnd, inclusiveStart);
 		int length = inclusiveEnd - inclusiveStart + 1;
@@ -78,7 +78,7 @@ public static class CharCollections
 	/// </remarks>
 	/// <param name="buffer">The destination buffer that receives lowercase alphabetic characters.</param>
 	/// <exception cref="ArgumentException">Thrown when <paramref name="buffer"/> is shorter than 26 characters.</exception>
-	public static void WriteAlphaLowercase(Span<char> buffer)
+	internal static void WriteAlphaLowercase(Span<char> buffer)
 	{
 		CopyCharactersTo(buffer, 'a', 'z');
 	}
@@ -92,7 +92,7 @@ public static class CharCollections
 	/// </remarks>
 	/// <param name="buffer">The destination buffer that receives uppercase alphabetic characters.</param>
 	/// <exception cref="ArgumentException">Thrown when <paramref name="buffer"/> is shorter than 26 characters.</exception>
-	public static void WriteAlphaUppercase(Span<char> buffer)
+	internal static void WriteAlphaUppercase(Span<char> buffer)
 	{
 		CopyCharactersTo(buffer, 'A', 'Z');
 	}
@@ -106,7 +106,7 @@ public static class CharCollections
 	/// </remarks>
 	/// <param name="buffer">The destination buffer that receives numeric characters.</param>
 	/// <exception cref="ArgumentException">Thrown when <paramref name="buffer"/> is shorter than 10 characters.</exception>
-	public static void WriteNumbers(Span<char> buffer)
+	internal static void WriteNumbers(Span<char> buffer)
 	{
 		CopyCharactersTo(buffer, '0', '9');
 	}
@@ -120,7 +120,7 @@ public static class CharCollections
 	/// </remarks>
 	/// <param name="buffer">The destination buffer that receives numeric ASCII byte values.</param>
 	/// <exception cref="ArgumentException">Thrown when <paramref name="buffer"/> is shorter than 10 bytes.</exception>
-	public static void WriteNumbers(Span<byte> buffer)
+	internal static void WriteNumbers(Span<byte> buffer)
 	{
 		CopyCharactersTo(buffer, '0', '9');
 	}
