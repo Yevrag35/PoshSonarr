@@ -54,7 +54,9 @@
 [CmdletBinding()]
 param (
 	# The root of a clone of Sonarr's repository, the folder that holds src/, checked out at the tag of
-	# the version to check. A relative path resolves against the current directory.
+	# the version to check, which is v followed by the version. A relative path resolves against the
+	# current directory. The default is .temp/sonarr-src in the repository, which git ignores, so each
+	# machine needs a clone of its own there.
 	[Parameter(Mandatory = $false, Position = 0)]
 	[string] $SonarrSource = (Join-Path $PSScriptRoot '..' '.temp' 'sonarr-src')
 )
