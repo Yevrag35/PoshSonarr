@@ -254,7 +254,7 @@ internal struct PooledBuffer<T> : IDisposable
 	/// <param name="length">The number of elements to include in the memory segment.</param>
 	/// <returns>A <see cref="Memory{T}"/> over the specified segment.</returns>
 	[UnsafeAccessor(UnsafeAccessorKind.Constructor)]
-	private static extern Memory<T> CreateMemory(object? array, int start, int length);
+	private static extern safe Memory<T> CreateMemory(object? array, int start, int length);
 	/// <summary>
 	/// Creates a <see cref="ReadOnlyMemory{T}"/> instance over the specified array segment.
 	/// </summary>
@@ -263,7 +263,7 @@ internal struct PooledBuffer<T> : IDisposable
 	/// <param name="length">The number of elements to include in the memory segment.</param>
 	/// <returns>A <see cref="ReadOnlyMemory{T}"/> over the specified segment.</returns>
 	[UnsafeAccessor(UnsafeAccessorKind.Constructor)]
-	private static extern ReadOnlyMemory<T> CreateReadOnlyMemory(object? array, int start, int length);
+	private static extern safe ReadOnlyMemory<T> CreateReadOnlyMemory(object? array, int start, int length);
 
 	/// <summary>
 	/// Clears the contents of the buffer if it is rented and has a non-zero length.

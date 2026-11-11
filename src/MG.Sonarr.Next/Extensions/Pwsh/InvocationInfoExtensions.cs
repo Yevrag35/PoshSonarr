@@ -72,7 +72,7 @@ public static class InvocationInfoExtensions
 	}
 
 	[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_BoundPositionally")]
-	private static extern List<string> GetBoundPositionList(
+	private static extern safe List<string> GetBoundPositionList(
 		   [UnsafeAccessorType("System.Management.Automation.PSBoundParametersDictionary, System.Management.Automation")]
 		   object o);
 }
