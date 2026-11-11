@@ -16,12 +16,16 @@ partial struct ObjEither<T1, T2>
 		Func<T1, TOutput> f1,
 		Func<T2, TOutput> f2)
 	{
-		return _index switch
+		unsafe
 		{
-			1 => f1(Unsafe.As<T1>(_value)!),
-			2 => f2(Unsafe.As<T2>(_value)!),
-			_ => default!,
-		};
+			// SAFETY: _index is 1 only when _value holds a T1 and 2 only when it holds a T2, as the constructors set them.
+			return _index switch
+			{
+				1 => f1(Unsafe.As<T1>(_value)!),
+				2 => f2(Unsafe.As<T2>(_value)!),
+				_ => default!,
+			};
+		}
 	}
 	/// <summary>
 	/// Match on the stored value and invoke the corresponding function with an additional state argument.
@@ -41,12 +45,16 @@ partial struct ObjEither<T1, T2>
 		Func<TState, T1, TOutput> f1,
 		Func<TState, T2, TOutput> f2) where TState : allows ref struct
 	{
-		return _index switch
+		unsafe
 		{
-			1 => f1(state, Unsafe.As<T1>(_value)!),
-			2 => f2(state, Unsafe.As<T2>(_value)!),
-			_ => default!,
-		};
+			// SAFETY: _index is 1 only when _value holds a T1 and 2 only when it holds a T2, as the constructors set them.
+			return _index switch
+			{
+				1 => f1(state, Unsafe.As<T1>(_value)!),
+				2 => f2(state, Unsafe.As<T2>(_value)!),
+				_ => default!,
+			};
+		}
 	}
 
 	/// <summary>
@@ -61,16 +69,20 @@ partial struct ObjEither<T1, T2>
 		Action<TState, T1> f1,
 		Action<TState, T2> f2) where TState : allows ref struct
 	{
-		switch (_index)
+		unsafe
 		{
-			case 1:
-				f1(state, Unsafe.As<T1>(_value)!);
-				break;
-			case 2:
-				f2(state, Unsafe.As<T2>(_value)!);
-				break;
-			default:
-				break;
+			// SAFETY: _index is 1 only when _value holds a T1 and 2 only when it holds a T2, as the constructors set them.
+			switch (_index)
+			{
+				case 1:
+					f1(state, Unsafe.As<T1>(_value)!);
+					break;
+				case 2:
+					f2(state, Unsafe.As<T2>(_value)!);
+					break;
+				default:
+					break;
+			}
 		}
 	}
 
@@ -88,12 +100,16 @@ partial struct ObjEither<T1, T2>
 		FnPtr<TState, T1, TOutput> f1,
 		FnPtr<TState, T2, TOutput> f2) where TState : allows ref struct
 	{
-		return _index switch
+		unsafe
 		{
-			1 => tryInvoke1(state, Unsafe.As<T1>(_value)!, f1),
-			2 => tryInvoke2(state, Unsafe.As<T2>(_value)!, f2),
-			_ => default!,
-		};
+			// SAFETY: _index is 1 only when _value holds a T1 and 2 only when it holds a T2, as the constructors set them.
+			return _index switch
+			{
+				1 => tryInvoke1(state, Unsafe.As<T1>(_value)!, f1),
+				2 => tryInvoke2(state, Unsafe.As<T2>(_value)!, f2),
+				_ => default!,
+			};
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static TOutput tryInvoke1(TState state, T1 value, FnPtr<TState, T1, TOutput> f) => f.IsValid ? f.Invoke(state, value) : default!;

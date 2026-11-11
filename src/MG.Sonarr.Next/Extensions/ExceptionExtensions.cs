@@ -5,7 +5,7 @@ namespace MG.Sonarr.Next.Extensions;
 /// <summary>
 /// Provides extension methods for <see cref="Exception"/>.
 /// </summary>
-public static class ExceptionExtensions
+internal static class ExceptionExtensions
 {
 	/// <summary>
 	/// Provides extension methods that name an <see cref="Exception"/> that may be <see langword="null"/>, or
@@ -23,7 +23,7 @@ public static class ExceptionExtensions
 		/// <see langword="null"/> when <paramref name="exception"/> is <see langword="null"/>.
 		/// </returns>
 		[return: NotNullIfNotNull(nameof(exception))]
-		public string? GetTypeName()
+		internal string? GetTypeName()
 		{
 			return exception?.GetType() is Type eType ? eType.GetName() : null;
 		}
@@ -41,7 +41,7 @@ public static class ExceptionExtensions
 		/// <paramref name="exception"/> is <see langword="null"/>.
 		/// </returns>
 		[return: NotNullIfNotNull(nameof(exception))]
-		public ErrorRecord? ToRecord()
+		internal ErrorRecord? ToRecord()
 		{
 			return exception.ToRecord(ErrorCategory.NotSpecified, targetObj: null);
 		}
@@ -60,7 +60,7 @@ public static class ExceptionExtensions
 		/// <paramref name="exception"/> is <see langword="null"/>.
 		/// </returns>
 		[return: NotNullIfNotNull(nameof(exception))]
-		public ErrorRecord? ToRecord(ErrorCategory category)
+		internal ErrorRecord? ToRecord(ErrorCategory category)
 		{
 			return exception.ToRecord(category, targetObj: null);
 		}
@@ -82,7 +82,7 @@ public static class ExceptionExtensions
 		/// <paramref name="exception"/> is <see langword="null"/>.
 		/// </returns>
 		[return: NotNullIfNotNull(nameof(exception))]
-		public ErrorRecord? ToRecord(ErrorCategory category, object? targetObj)
+		internal ErrorRecord? ToRecord(ErrorCategory category, object? targetObj)
 		{
 			return exception is null
 				? null

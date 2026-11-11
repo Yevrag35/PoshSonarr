@@ -66,7 +66,7 @@ public interface IMemberSetter : IMemberInfo
 /// </summary>
 [StructLayout(LayoutKind.Auto)]
 [DebuggerDisplay(@"\{{MemberName,nq} = {_either}\}")]
-public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemberInfo
+internal readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemberInfo
 {
 	private readonly ObjEither<PropertyInfo, FieldInfo> _either;
 	private readonly MemberInfo? _member;
@@ -153,6 +153,8 @@ public readonly struct FieldOrPropertyInfo : IMemberGetter, IMemberSetter, IMemb
 
 		unsafe
 		{
+			// SAFETY: Both pointers are addresses of static local functions, which the compiler matched to the pointer
+			// types.
 			return _either.FnMatch(instance,
 				f1: new FnPtr<object?, PropertyInfo, object?>(&getFromT1),
 				f2: new FnPtr<object?, FieldInfo, object?>(&getFromT2));

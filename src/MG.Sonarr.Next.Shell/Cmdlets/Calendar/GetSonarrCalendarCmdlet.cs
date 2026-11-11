@@ -274,7 +274,13 @@ public sealed class GetSonarrCalendarCmdlet : SonarrMetadataCmdlet
 	private void FilterByDayOfWeek(MetadataList<CalendarObject> list, DayOfWeek[] dows)
 	{
 		int removed = 0;
-		ReadOnlySpan<int> values = System.Runtime.CompilerServices.Unsafe.As<int[]>(dows).AsSpan();
+		ReadOnlySpan<int> values;
+		unsafe
+		{
+			// SAFETY: The underlying type of DayOfWeek is int, so a DayOfWeek[] has the layout of an int[], and the span
+			// is only read.
+			values = System.Runtime.CompilerServices.Unsafe.As<int[]>(dows).AsSpan();
+		}
 
 		for (int i = list.Count - 1; i >= 0; i--)
 		{

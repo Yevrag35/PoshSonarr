@@ -115,7 +115,11 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>
 		bool result = false;
 		if (value.TryFormat(chars, out int written, provider: CultureInfo.InvariantCulture))
 		{
-			result = this.Add(chars.UnsafeSlice(0, written));
+			unsafe
+			{
+				// SAFETY: int.TryFormat reports no more characters than chars holds.
+				result = this.Add(chars.UnsafeSlice(0, written));
+			}
 		}
 
 		return result;

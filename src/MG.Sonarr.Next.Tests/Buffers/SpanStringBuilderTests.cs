@@ -356,6 +356,7 @@ public sealed class SpanStringBuilderTests
 			case AppendWrittenThroughPointer(int writeLength, char value):
 				unsafe
 				{
+					// SAFETY: FillWith is a static method, which the compiler matched to the pointer's type.
 					builder.Append(writeLength, value, &FillWith);
 				}
 
@@ -370,6 +371,7 @@ public sealed class SpanStringBuilderTests
 			case AppendWrittenUpToThroughPointer(int maxLength, int written, char value):
 				unsafe
 				{
+					// SAFETY: FillUpTo is a static method, which the compiler matched to the pointer's type.
 					builder.Append(maxLength, (Value: value, Written: written), &FillUpTo);
 				}
 
@@ -497,6 +499,7 @@ public sealed class SpanStringBuilderTests
 			case NegativeRoomToWrite(Writer.ActionPointer, int writeLength):
 				unsafe
 				{
+					// SAFETY: FillWith is a static method, which the compiler matched to the pointer's type.
 					builder.Append(writeLength, 'x', &FillWith);
 				}
 
@@ -505,6 +508,7 @@ public sealed class SpanStringBuilderTests
 			case NegativeRoomToWrite(Writer.FuncPointer, int writeLength):
 				unsafe
 				{
+					// SAFETY: FillUpTo is a static method, which the compiler matched to the pointer's type.
 					builder.Append(writeLength, (Value: 'x', Written: 0), &FillUpTo);
 				}
 
@@ -513,6 +517,7 @@ public sealed class SpanStringBuilderTests
 			case NullWriter(false, int writeLength):
 				unsafe
 				{
+					// SAFETY: Append checks the pointer for null and throws before it calls through it.
 					builder.Append(writeLength, 'x', (delegate*<Span<char>, char, void>)null);
 				}
 
@@ -521,6 +526,7 @@ public sealed class SpanStringBuilderTests
 			case NullWriter(true, int writeLength):
 				unsafe
 				{
+					// SAFETY: Append checks the pointer for null and throws before it calls through it.
 					builder.Append(writeLength, 'x', (delegate*<Span<char>, char, int>)null);
 				}
 

@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Extensions;
 /// as the <c>(object)x.Id</c> that the compiler emits for a value-type member in a lambda that returns
 /// <see cref="object"/>.
 /// </remarks>
-public static class ExpressionExtensions
+internal static class ExpressionExtensions
 {
 	/// <summary>
 	/// Gets the field or property that a lambda expression's body accesses.
@@ -22,7 +22,7 @@ public static class ExpressionExtensions
 	/// <see cref="FieldOrPropertyInfo.IsEmpty"/> is <see langword="true"/>, when the body isn't a field or property
 	/// access.
 	/// </returns>
-	public static FieldOrPropertyInfo GetMemberInfo(this LambdaExpression expression)
+	internal static FieldOrPropertyInfo GetMemberInfo(this LambdaExpression expression)
 	{
 		MemberExpression? memEx = expression.Body as MemberExpression;
 		if (memEx is null && expression.Body is UnaryExpression unEx && unEx.Operand is MemberExpression unMemEx)

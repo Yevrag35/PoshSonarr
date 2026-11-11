@@ -3,7 +3,7 @@ namespace MG.Sonarr.Next.Extensions.Strings;
 /// <summary>
 /// Provides extension methods for <see cref="Span{T}"/> and <see cref="ReadOnlySpan{T}"/> types.
 /// </summary>
-public static partial class CharSpanExtensions
+internal static partial class CharSpanExtensions
 {
 	/// <summary>
 	/// Provides extension methods that copy a <see cref="ReadOnlySpan{T}"/> of <see cref="char"/> and check it for
@@ -18,7 +18,7 @@ public static partial class CharSpanExtensions
 		/// <param name="destination">The target span where characters will be copied.</param>
 		/// <param name="charsWritten">When this method returns, contains the number of characters written to the destination span.</param>
 		/// <exception cref="ArgumentException"/>
-		public void CopyTo(Span<char> destination, out int charsWritten)
+		internal void CopyTo(Span<char> destination, out int charsWritten)
 		{
 			chars.CopyTo(destination);
 			charsWritten = chars.Length;
@@ -33,7 +33,7 @@ public static partial class CharSpanExtensions
 		/// <returns>The new position in the target <paramref name="span"/> after the copied data, calculated as the sum of <paramref
 		/// name="currentPosition"/> and the length of <paramref name="chars"/>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public int CopyToSlice(Span<char> span, int currentPosition)
+		internal int CopyToSlice(Span<char> span, int currentPosition)
 		{
 			chars.CopyTo(span.Slice(currentPosition));
 			return chars.Length + currentPosition;
@@ -42,6 +42,10 @@ public static partial class CharSpanExtensions
 		/// <summary>
 		/// Determines if the character at the specified index is escaped with the specified escape character.
 		/// </summary>
+		/// <safety>
+		/// <paramref name="chars"/> must not be empty, and <paramref name="index"/> must be from 0 to its length,
+		/// inclusive.
+		/// </safety>
 		/// <param name="index">
 		///     The index of the character within the span where the preceding characters will be checked.
 		/// </param>
@@ -52,20 +56,26 @@ public static partial class CharSpanExtensions
 		/// <see langword="true"/> if the character at the specified index is found to be escaped;
 		/// otherwise, <see langword="false"/>.
 		/// </returns>
-		internal bool IsEscapedAtUnsafe(int index, char escapeChar = '\\')
+		internal unsafe bool IsEscapedAtUnsafe(int index, char escapeChar = '\\')
 		{
-			ref char start = ref Unsafe.AsRef(in chars.Ref());
-
-			int i = index - 1;
-			int escapeCount = 0;
-
-			while (i >= 0 && start.Offset(i) == escapeChar)
+			unsafe
 			{
-				escapeCount++;
-				i--;
-			}
+				// SAFETY: The caller passes a span that isn't empty and an index from 0 to its length, as the safety contract
+				// requires, so chars has a first character and the loop reads only from index - 1 down to 0. Nothing is
+				// written through start, so making it mutable for Offset leaves the span read-only in effect.
+				ref char start = ref Unsafe.AsRef(in chars.Ref());
 
-			return (escapeCount & 1) != 0;
+				int i = index - 1;
+				int escapeCount = 0;
+
+				while (i >= 0 && start.Offset(i) == escapeChar)
+				{
+					escapeCount++;
+					i--;
+				}
+
+				return (escapeCount & 1) != 0;
+			}
 		}
 
 		/// <summary>
@@ -83,14 +93,19 @@ public static partial class CharSpanExtensions
 		/// otherwise, if it is not escaped or the <see cref="string"/> value is <see langword="null"/>, empty,
 		/// or whitespace, <see langword="false"/>.
 		/// </returns>
-		public bool IsEscapedAt(int index, char escapeChar = '\\')
+		internal bool IsEscapedAt(int index, char escapeChar = '\\')
 		{
 			if (chars.IsWhiteSpace() || index < 0 || index >= chars.Length)
 			{
 				return false;
 			}
 
-			return chars.IsEscapedAtUnsafe(index, escapeChar);
+			unsafe
+			{
+				// SAFETY: IsWhiteSpace is true for an empty span, so the check above leaves a span that isn't empty and an
+				// index within it.
+				return chars.IsEscapedAtUnsafe(index, escapeChar);
+			}
 		}
 	}
 
@@ -116,7 +131,7 @@ public static partial class CharSpanExtensions
 		/// <param name="provider">An optional <see cref="IFormatProvider"/> to use for culture-specific formatting.  If null, the current culture is
 		/// used.</param>
 		/// <returns>The updated position within the span after the formatted value has been written.</returns>
-		public int CopyToSlice(Span<char> span, int currentPosition, ReadOnlySpan<char> format = default, IFormatProvider? provider = null)
+		internal int CopyToSlice(Span<char> span, int currentPosition, ReadOnlySpan<char> format = default, IFormatProvider? provider = null)
 		{
 			if (value.TryFormat(span.Slice(currentPosition), out int written, format, provider))
 			{
@@ -141,7 +156,7 @@ public static partial class CharSpanExtensions
 		/// <param name="value">The characters to copy.</param>
 		/// <returns>The number of characters copied, which is the length of <paramref name="value"/>.</returns>
 		/// <exception cref="ArgumentException">Thrown when <paramref name="span"/> is shorter than <paramref name="value"/>.</exception>
-		public int Push(params ReadOnlySpan<char> value)
+		internal int Push(params ReadOnlySpan<char> value)
 		{
 			value.CopyTo(span);
 			return value.Length;

@@ -234,14 +234,19 @@ public readonly struct FormattableQueryField : IQueryField
 		///     <see langword="true"/> if the value was written to <paramref name="destination"/>;
 		///     otherwise, or for a default instance, <see langword="false"/>.
 		/// </returns>
-		internal unsafe bool TryWrite(Span<char> destination, out int written, ReadOnlySpan<char> format, IFormatProvider? formatProvider)
+		internal bool TryWrite(Span<char> destination, out int written, ReadOnlySpan<char> format, IFormatProvider? formatProvider)
 		{
-			written = _index switch
+			unsafe
 			{
-				1 => WriteString(Unsafe.As<string>(_value!), destination),
-				2 => WriteFormattable(ref Unsafe.Unbox<FormattableObject>(_value!), destination, format, formatProvider),
-				_ => -1,
-			};
+				// SAFETY: Only the constructors set _index, the string one to 1 and the FormattableObject one to 2, each
+				// with a value of that type, so each arm reinterprets _value as the type that it holds.
+				written = _index switch
+				{
+					1 => WriteString(Unsafe.As<string>(_value!), destination),
+					2 => WriteFormattable(ref Unsafe.Unbox<FormattableObject>(_value!), destination, format, formatProvider),
+					_ => -1,
+				};
+			}
 
 			return written >= 0;
 		}

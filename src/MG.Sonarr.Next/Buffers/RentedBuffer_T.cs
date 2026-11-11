@@ -31,7 +31,11 @@ internal ref partial struct RentedBuffer<T> : IDisposable
 			ref T ret = ref Unsafe.NullRef<T>();
 			if ((uint)index < (uint)_length)
 			{
-				ret = ref _span.Ref(index);
+				unsafe
+				{
+					// SAFETY: _length always equals _span.Length, so the check keeps index within _span.
+					ret = ref _span.Ref(index);
+				}
 			}
 
 			return ref ret;
@@ -133,7 +137,12 @@ internal ref partial struct RentedBuffer<T> : IDisposable
 		int length = useEntireCapacity ? array.Length : minimumLength;
 		_length = length;
 		_array = array;
-		_span = array.AsUnsafeSpan(0, length);
+		unsafe
+		{
+			// SAFETY: Rent.Array returns at least minimumLength elements, so length fits in array either way, and the pool
+			// rents exactly a T[].
+			_span = array.AsUnsafeSpan(0, length);
+		}
 	}
 	/// <summary>
 	/// Initializes a new instance of the RentedBuffer class using the specified span as the underlying buffer.
@@ -237,8 +246,13 @@ internal ref partial struct RentedBuffer<T> : IDisposable
 		}
 
 		T[] newArray = Rent.Array<T>(newMinimumCapacity);
-		var newSpan = newArray.AsUnsafeSpan(0);
-		_span.UnsafeCopy(newSpan);
+		unsafe
+		{
+			// SAFETY: 0 is within every array, and the pool rents exactly a T[] of at least newMinimumCapacity elements,
+			// which the check above keeps at least _length, the length of _span, so the copy fits.
+			var newSpan = newArray.AsUnsafeSpan(0);
+			_span.UnsafeCopy(newSpan);
+		}
 
 		if (_state.IsRented)
 		{

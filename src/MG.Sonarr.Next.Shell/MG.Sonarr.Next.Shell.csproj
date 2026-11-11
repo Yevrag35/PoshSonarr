@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<Product>PoshSonarr .NET 10</Product>
+		<Product>PoshSonarr .NET 11</Product>
 		<Description>The binary library of the PoshSonarr PowerShell module.</Description>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<!--

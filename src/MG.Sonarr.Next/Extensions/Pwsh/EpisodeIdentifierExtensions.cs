@@ -5,7 +5,7 @@ namespace MG.Sonarr.Next.Extensions.Pwsh;
 /// <summary>
 /// Provides extension methods for working with <see cref="IEpisodeIdentifier"/> instances in PowerShell cmdlets.
 /// </summary>
-public static class EpisodeIdentifierExtensions
+internal static class EpisodeIdentifierExtensions
 {
 	/// <summary>
 	/// Determines whether all of the identifiers in the given array are valid, and if not, returns an <see cref="ErrorRecord"/> describing the invalid identifiers.
@@ -15,7 +15,7 @@ public static class EpisodeIdentifierExtensions
 	/// <param name="error">The error record describing any invalid identifiers.</param>
 	/// <param name="argumentName">The name of the argument.</param>
 	/// <returns><see langword="true"/> if all identifiers are valid; otherwise, <see langword="false"/>.</returns>
-	public static bool AreAllValid<T>([NotNullWhen(true)] this T[]? array, [NotNullWhen(false)] out ErrorRecord? error, [CallerArgumentExpression(nameof(array))] string argumentName = "") where T : IEpisodeIdentifier
+	internal static bool AreAllValid<T>([NotNullWhen(true)] this T[]? array, [NotNullWhen(false)] out ErrorRecord? error, [CallerArgumentExpression(nameof(array))] string argumentName = "") where T : IEpisodeIdentifier
 	{
 		if (array is null || array.Length <= 0)
 		{
@@ -52,7 +52,7 @@ public static class EpisodeIdentifierExtensions
 	/// <param name="array">The array of episode identifiers to filter by.</param>
 	/// <param name="collection">The collection of <see cref="EpisodeObject"/> instances to filter.</param>
 	/// <returns>An <see cref="IEnumerable{EpisodeObject}"/> containing only the episodes that match any of the identifiers in the array.</returns>
-	public static IEnumerable<EpisodeObject> FilterEpisodes<T>(this T[] array, IEnumerable<EpisodeObject> collection)
+	internal static IEnumerable<EpisodeObject> FilterEpisodes<T>(this T[] array, IEnumerable<EpisodeObject> collection)
 		where T : IEpisodeIdentifier
 	{
 		ArgumentNullException.ThrowIfNull(array);

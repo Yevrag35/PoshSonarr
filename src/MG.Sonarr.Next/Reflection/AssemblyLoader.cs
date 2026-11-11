@@ -6,7 +6,7 @@ namespace MG.Sonarr.Next.Reflection;
 /// <remarks>
 /// The class loads no assembly itself.
 /// </remarks>
-public static class AssemblyLoader
+internal static class AssemblyLoader
 {
 	/// <summary>
 	/// Gets all loaded assemblies in the specified <see cref="AppDomain"/>.
@@ -17,7 +17,7 @@ public static class AssemblyLoader
 	/// </remarks>
 	/// <param name="appDomain">The <see cref="AppDomain"/> to get loaded assemblies from.</param>
 	/// <returns>An array of assemblies loaded in the specified application domain.</returns>
-	public static Assembly[] GetAppDomainAssemblies(AppDomain appDomain)
+	internal static Assembly[] GetAppDomainAssemblies(AppDomain appDomain)
 	{
 		Assembly[] assemblies = appDomain.GetAssemblies();
 		SortAssemblies(assemblies);

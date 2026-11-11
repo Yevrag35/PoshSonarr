@@ -5,7 +5,7 @@ namespace MG.Sonarr.Next.Extensions;
 /// <summary>
 /// Provides extension blocks for <see cref="ListSortDirection"/>.
 /// </summary>
-public static class ListSortDirectionExtensions
+internal static class ListSortDirectionExtensions
 {
 	private const int ASCENDING_LENGTH = 9;     // Number of characters in "Ascending"
 	private const int DESCENDING_LENGTH = 10;   // Number of characters in "Descending"
@@ -31,7 +31,7 @@ public static class ListSortDirectionExtensions
 		/// The length of the direction's name, or, for a value that <see cref="ListSortDirection"/> doesn't name, the
 		/// length of its number in decimal, which is what <see cref="Enum.ToString()"/> writes for it.
 		/// </returns>
-		public int Length
+		internal int Length
 		{
 			get
 			{

@@ -373,12 +373,17 @@ public readonly partial struct Wildcard
 					&& (uint)(j + 1) < (uint)pattern.Length
 					&& char.IsLowSurrogate(pattern[j + 1]))
 				{
-					if ((uint)(i + 1) < (uint)input.Length
-						&& pattern.UnsafeSlice(j, 2).Equals(input.UnsafeSlice(i, 2), StringComparison.OrdinalIgnoreCase))
+					unsafe
 					{
-						i += 2;
-						j += 2;
-						continue;
+						// SAFETY: i and j start at 0 and only grow, the check above keeps j + 1 within pattern, and the first
+						// condition here keeps i + 1 within input, so each two-character slice lies within its span.
+						if ((uint)(i + 1) < (uint)input.Length
+							&& pattern.UnsafeSlice(j, 2).Equals(input.UnsafeSlice(i, 2), StringComparison.OrdinalIgnoreCase))
+						{
+							i += 2;
+							j += 2;
+							continue;
+						}
 					}
 				}
 				else if (AreCharactersEqual(p, input[i], comparisonType, textInfo))
@@ -464,7 +469,13 @@ public readonly partial struct Wildcard
 		{
 			_index = -1;
 			_length = wildcard._state.Length;
-			_start = ref MemoryMarshal.GetReference<char>(wildcard);
+			unsafe
+			{
+				// SAFETY: MoveNext reads through _start only at an index below _length, the length of the pattern that it
+				// begins, so the reference of an empty pattern is never read, and nothing writes through it.
+				_start = ref MemoryMarshal.GetReference<char>(wildcard);
+			}
+
 			_current = default;
 		}
 
@@ -481,7 +492,12 @@ public readonly partial struct Wildcard
 			if ((uint)newIndex < (uint)_length)
 			{
 				_index = newIndex;
-				_current = Unsafe.Add(ref _start, _index);
+				unsafe
+				{
+					// SAFETY: The check keeps _index below _length, the length of the pattern that _start begins.
+					_current = Unsafe.Add(ref _start, _index);
+				}
+
 				return true;
 			}
 

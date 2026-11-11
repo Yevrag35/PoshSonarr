@@ -6,7 +6,7 @@ namespace MG.Sonarr.Next.Extensions.Pwsh;
 /// <summary>
 /// Provides extension methods for <see cref="InvocationInfo"/>.
 /// </summary>
-public static class InvocationInfoExtensions
+internal static class InvocationInfoExtensions
 {
 	/// <summary>
 	/// Determines whether a parameter is bound positionally in the invocation.
@@ -25,7 +25,7 @@ public static class InvocationInfoExtensions
 		/// <param name="parameterName">The name of the parameter.</param>
 		/// <returns><see langword="true"/> if the parameter is bound positionally; otherwise, <see langword="false"/>.</returns>
 		[DebuggerStepThrough]
-		public bool IsBoundPositionally<T>(T value, [CallerArgumentExpression(nameof(value))] string parameterName = "") where T : struct
+		internal bool IsBoundPositionally<T>(T value, [CallerArgumentExpression(nameof(value))] string parameterName = "") where T : struct
 		{
 			return IsBoundPositionally(invocation, parameterName);
 		}
@@ -34,7 +34,7 @@ public static class InvocationInfoExtensions
 		/// </summary>
 		/// <param name="parameterName">The name of the parameter.</param>
 		/// <returns><see langword="true"/> if the parameter is bound positionally; otherwise, <see langword="false"/>.</returns>
-		public bool IsBoundPositionally(string parameterName)
+		internal bool IsBoundPositionally(string parameterName)
 		{
 			if (string.IsNullOrEmpty(parameterName)) return false;
 
@@ -65,14 +65,19 @@ public static class InvocationInfoExtensions
 	{
 		if (parameterName.TryLastIndexOfAndNotEnd('.', out int index))
 		{
-			parameterName = parameterName.UnsafeSlice(index + 1);
+			unsafe
+			{
+				// SAFETY: TryLastIndexOfAndNotEnd returns true only for an index before the last character, so index + 1 is
+				// within parameterName.
+				parameterName = parameterName.UnsafeSlice(index + 1);
+			}
 		}
 
 		return parameterName;
 	}
 
 	[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_BoundPositionally")]
-	private static extern List<string> GetBoundPositionList(
+	private static extern safe List<string> GetBoundPositionList(
 		   [UnsafeAccessorType("System.Management.Automation.PSBoundParametersDictionary, System.Management.Automation")]
 		   object o);
 }

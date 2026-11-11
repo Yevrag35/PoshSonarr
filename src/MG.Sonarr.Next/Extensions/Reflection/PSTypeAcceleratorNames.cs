@@ -7,12 +7,12 @@ namespace MG.Sonarr.Next.Extensions.Reflection;
 /// bracketed type accelerator representations. This is useful when generating or analyzing PowerShell scripts that
 /// reference types by their accelerator names. The set of mappings is based on common PowerShell type accelerators and
 /// is case-insensitive for name lookups.</remarks>
-public sealed class PSTypeAcceleratorNames
+internal sealed class PSTypeAcceleratorNames
 {
 	/// <summary>
 	/// Gets the shared type accelerator map instance.
 	/// </summary>
-	public static readonly PSTypeAcceleratorNames Shared = new(InitializeDictionaries());
+	internal static readonly PSTypeAcceleratorNames Shared = new(InitializeDictionaries());
 
 	private readonly FrozenDictionary<Type, string> _typeToNames;
 	private readonly FrozenDictionary<string, string> _namesToBrackets;
@@ -22,7 +22,7 @@ public sealed class PSTypeAcceleratorNames
 	/// </summary>
 	/// <param name="key">The type to resolve.</param>
 	/// <value>The accelerator name when available; otherwise, the type display name.</value>
-	public string this[Type key] => this.TryGetName(key, out string? name)
+	internal string this[Type key] => this.TryGetName(key, out string? name)
 		? name
 		: key.GetName();
 
@@ -42,7 +42,7 @@ public sealed class PSTypeAcceleratorNames
 	/// <param name="type">The type to resolve.</param>
 	/// <returns>The accelerator name when available; otherwise, the type display name.</returns>
 	[DebuggerStepThrough]
-	public string GetName([DisallowNull] Type type)
+	internal string GetName([DisallowNull] Type type)
 	{
 		return this.TryGetName(type, out string? acceleratedName)
 			? acceleratedName
@@ -55,7 +55,7 @@ public sealed class PSTypeAcceleratorNames
 	/// <param name="type">The type to resolve.</param>
 	/// <param name="includeBrackets"><see langword="true"/> to return the bracketed accelerator form; otherwise, <see langword="false"/>.</param>
 	/// <returns>The accelerator name when available; otherwise, the type display name.</returns>
-	public string GetName([DisallowNull] Type type, bool includeBrackets)
+	internal string GetName([DisallowNull] Type type, bool includeBrackets)
 	{
 		return this.TryGetName(type, includeBrackets, out string? acceleratedName)
 			? acceleratedName
@@ -70,7 +70,7 @@ public sealed class PSTypeAcceleratorNames
 	/// <returns>The accelerator name when available; otherwise, <paramref name="otherName"/>.</returns>
 	[DebuggerStepThrough]
 	[return: NotNullIfNotNull(nameof(otherName))]
-	public string? GetNameOr(Type? type, string? otherName)
+	internal string? GetNameOr(Type? type, string? otherName)
 	{
 		return this.GetNameOr(type, otherName, includeBrackets: false);
 	}
@@ -83,7 +83,7 @@ public sealed class PSTypeAcceleratorNames
 	/// <param name="includeBrackets"><see langword="true"/> to return the bracketed accelerator form; otherwise, <see langword="false"/>.</param>
 	/// <returns>The accelerator name when available; otherwise, <paramref name="otherName"/>.</returns>
 	[return: NotNullIfNotNull(nameof(otherName))]
-	public string? GetNameOr(Type? type, string? otherName, bool includeBrackets)
+	internal string? GetNameOr(Type? type, string? otherName, bool includeBrackets)
 	{
 		return type is not null && this.TryGetName(type, includeBrackets, out string? acceleratedName)
 			? acceleratedName
@@ -96,7 +96,7 @@ public sealed class PSTypeAcceleratorNames
 	/// <param name="type">The type to resolve.</param>
 	/// <param name="acceleratedName">The accelerator name when found; otherwise, <see langword="null"/>.</param>
 	/// <returns><see langword="true"/> when the type has a mapped accelerator; otherwise, <see langword="false"/>.</returns>
-	public bool TryGetName(Type type, [NotNullWhen(true)] out string? acceleratedName)
+	internal bool TryGetName(Type type, [NotNullWhen(true)] out string? acceleratedName)
 	{
 		return _typeToNames.TryGetValue(type, out acceleratedName);
 	}
@@ -108,7 +108,7 @@ public sealed class PSTypeAcceleratorNames
 	/// <param name="includeBrackets"><see langword="true"/> to return the bracketed accelerator form; otherwise, <see langword="false"/>.</param>
 	/// <param name="acceleratedName">The accelerator name when found; otherwise, <see langword="null"/>.</param>
 	/// <returns><see langword="true"/> when the type has a mapped accelerator and, when requested, a bracketed mapping; otherwise, <see langword="false"/>.</returns>
-	public bool TryGetName(Type type, bool includeBrackets, [NotNullWhen(true)] out string? acceleratedName)
+	internal bool TryGetName(Type type, bool includeBrackets, [NotNullWhen(true)] out string? acceleratedName)
 	{
 		return this.TryGetName(type, out acceleratedName)
 			   &&
@@ -123,7 +123,7 @@ public sealed class PSTypeAcceleratorNames
 	/// <param name="name">The accelerator name.</param>
 	/// <param name="bracketName">The bracketed accelerator name when found; otherwise, <see langword="null"/>.</param>
 	/// <returns><see langword="true"/> when the name has a mapped bracket form; otherwise, <see langword="false"/>.</returns>
-	public bool TryGetBracketName(string name, [NotNullWhen(true)] out string? bracketName)
+	internal bool TryGetBracketName(string name, [NotNullWhen(true)] out string? bracketName)
 	{
 		return _namesToBrackets.TryGetValue(name, out bracketName);
 	}

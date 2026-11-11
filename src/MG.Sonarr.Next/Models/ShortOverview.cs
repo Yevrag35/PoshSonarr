@@ -64,7 +64,13 @@ public readonly struct ShortOverview
 		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(howLong);
 		ArgumentOutOfRangeException.ThrowIfGreaterThan(howLong, text.Length);
 
-		string shorted = Truncate(text, howLong);
+		string shorted;
+		unsafe
+		{
+			// SAFETY: The checks above keep howLong from 1 to text.Length.
+			shorted = Truncate(text, howLong);
+		}
+
 		return new ShortOverview(shorted);
 	}
 
@@ -79,6 +85,9 @@ public readonly struct ShortOverview
 	/// <para>The kept text is trimmed of white space at both ends, so the periods never follow white space.</para>
 	/// <para>The kept text is copied once, straight into the new string, with no buffer in between.</para>
 	/// </remarks>
+	/// <safety>
+	/// <paramref name="shortenedLength"/> must be from 1 to the length of <paramref name="text"/>.
+	/// </safety>
 	/// <param name="text">The text to shorten.</param>
 	/// <param name="shortenedLength">
 	/// The number of characters to keep before looking for the end of a word, from 1 through the length of
@@ -88,7 +97,7 @@ public readonly struct ShortOverview
 	/// The kept text, with white space trimmed from both ends, followed by three periods when some of the text was left
 	/// out.
 	/// </returns>
-	private static string Truncate(ReadOnlySpan<char> text, int shortenedLength)
+	private static unsafe string Truncate(ReadOnlySpan<char> text, int shortenedLength)
 	{
 		int end = shortenedLength - 1;
 		while ((uint)end < (uint)text.Length && !char.IsWhiteSpace(text[end]))
@@ -96,9 +105,14 @@ public readonly struct ShortOverview
 			end++;
 		}
 
-		ReadOnlySpan<char> kept = text.UnsafeSlice(0, end).Trim();
-		return text.UnsafeSlice(end).IsWhiteSpace()
-			? new string(kept)
-			: string.Concat(kept, _ellipsis);
+		unsafe
+		{
+			// SAFETY: The caller keeps shortenedLength from 1 to text.Length, as the safety contract requires, so end
+			// starts within text, and the loop stops it at text.Length at most.
+			ReadOnlySpan<char> kept = text.UnsafeSlice(0, end).Trim();
+			return text.UnsafeSlice(end).IsWhiteSpace()
+				? new string(kept)
+				: string.Concat(kept, _ellipsis);
+		}
 	}
 }

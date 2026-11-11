@@ -298,17 +298,28 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 				? stackalloc char[length]
 				: length);
 
-		unsafe { builder.Append(this.UrlBase.Length + 1, this.UrlBase, &writeUrlBase); }
+		unsafe
+		{
+			// SAFETY: writeUrlBase has the signature that Append calls, and Append passes it a buffer of the length given,
+			// UrlBase.Length + 1, as writeUrlBase requires.
+			builder.Append(this.UrlBase.Length + 1, this.UrlBase, &writeUrlBase);
+		}
 
 		builder.Append(id, LengthConstants.INT128_MAX, provider: CultureInfo.InvariantCulture);
 		builder.Append(parameters, parameters.MaxLength);
 
 		return builder.ToString();
 
-		static void writeUrlBase(Span<char> buffer, string urlBase)
+		// Requires a buffer of exactly urlBase.Length + 1 characters, which it fills without a bounds check.
+		static unsafe void writeUrlBase(Span<char> buffer, string urlBase)
 		{
-			urlBase.CopyTo(buffer.UnsafeSlice(0, urlBase.Length));
-			buffer.Ref(urlBase.Length) = '/';
+			unsafe
+			{
+				// SAFETY: The caller passes a buffer of urlBase.Length + 1 characters, so the slice fits and the last index
+				// is urlBase.Length.
+				urlBase.CopyTo(buffer.UnsafeSlice(0, urlBase.Length));
+				buffer.Ref(urlBase.Length) = '/';
+			}
 		}
 	}
 

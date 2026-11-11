@@ -9,7 +9,7 @@ namespace MG.Sonarr.Next.Extensions.Strings;
 /// can only be used on the stack; it cannot be stored in fields of classes or boxed.</remarks>
 [DebuggerStepThrough]
 [StructLayout(LayoutKind.Auto)]
-public readonly ref struct SplitEntry
+internal readonly ref struct SplitEntry
 {
 	/// <summary>
 	/// Gets the segment of characters that were separated.
@@ -66,7 +66,7 @@ public readonly ref struct SplitEntry
 /// an entry would carry neither characters nor a delimiter.</para></remarks>
 [DebuggerStepThrough]
 [StructLayout(LayoutKind.Auto)]
-public ref struct DoubleSplitEnumerator
+internal ref struct DoubleSplitEnumerator
 {
 	private ReadOnlySpan<char> _str;
 	private readonly ReadOnlySpan<char> _splitBy1;

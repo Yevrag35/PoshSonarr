@@ -31,7 +31,7 @@ internal static class HttpStatusCodeExtensions
 		/// standard phrase.</para>
 		/// </remarks>
 		/// <value>The status text, such as <c>404 (Not Found)</c>.</value>
-		public string AsResponseString => (int)statusCode switch
+		internal string AsResponseString => (int)statusCode switch
 		{
 			100 => "100 (Continue)",
 			101 => "101 (Switching Protocols)",

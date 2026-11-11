@@ -5,9 +5,10 @@ namespace MG.Sonarr.Next.Extensions;
 /// </summary>
 /// <remarks>
 /// <para>
-/// No runtime bounds checks are performed; callers must guarantee that all index and length arguments
-/// are within range. In debug builds, <see cref="Debug"/> assertions verify preconditions; in release
-/// builds, out-of-range arguments produce undefined behavior.
+/// No runtime bounds checks are performed, so every member is <see langword="unsafe"/>: a call compiles only in an
+/// unsafe context, and the caller must meet the conditions in the member's safety section. In debug builds,
+/// <see cref="Debug"/> assertions verify some of those conditions; in release builds, breaking one is undefined
+/// behavior.
 /// </para>
 /// <para><b>Performance:</b> Every member is decorated with <see cref="MethodImplOptions.AggressiveInlining"/>
 /// to keep hot-path call stacks clean.</para>
@@ -26,13 +27,21 @@ internal static class SpanUnsafeExtensions
 		/// Returns a reference to the element at <paramref name="index"/> in <paramref name="source"/>,
 		/// without performing runtime bounds checks.
 		/// </summary>
+		/// <safety>
+		/// <paramref name="index"/> must be at least 0 and less than the length of <paramref name="source"/>, so an empty
+		/// span has no valid index.
+		/// </safety>
 		/// <param name="index">The zero-based index of the element to reference.</param>
 		/// <returns>A reference to the element at the specified index.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ref readonly T Ref(int index = 0)
+		public unsafe ref readonly T Ref(int index = 0)
 		{
 			Debug.Assert((uint)index < (uint)source.Length, "index out of range");
-			return ref Unsafe.Add(ref MemoryMarshal.GetReference(source), index);
+			unsafe
+			{
+				// SAFETY: The caller keeps index within source, as the safety contract requires.
+				return ref Unsafe.Add(ref MemoryMarshal.GetReference(source), index);
+			}
 		}
 
 		/// <summary>
@@ -49,35 +58,59 @@ internal static class SpanUnsafeExtensions
 		/// since net9 the <c>cpblk</c> it emits resolves through <c>CORINFO_HELP_MEMCPY</c> to the same
 		/// <c>SpanHelpers.Memmove</c> this calls directly.</para>
 		/// </remarks>
+		/// <safety>
+		/// <paramref name="destination"/> must be at least as long as <paramref name="source"/>.
+		/// </safety>
 		/// <param name="destination">The destination span to copy to.</param>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void UnsafeCopy(Span<T> destination)
+		public unsafe void UnsafeCopy(Span<T> destination)
 		{
 			Debug.Assert(source.Length <= destination.Length, "The destination is too short to hold the source.");
-			source.CopyTo(destination.UnsafeSlice(0, source.Length));
+			unsafe
+			{
+				// SAFETY: The caller makes destination at least as long as source, as the safety contract requires, so
+				// the slice lies within destination.
+				source.CopyTo(destination.UnsafeSlice(0, source.Length));
+			}
 		}
 		/// <summary>
 		/// Returns a <see cref="ReadOnlySpan{T}"/> that begins at <paramref name="start"/> and extends to the
 		/// end of <paramref name="source"/>, without performing runtime bounds checks.
 		/// </summary>
+		/// <safety>
+		/// <paramref name="start"/> must be from 0 to the length of <paramref name="source"/>, inclusive.
+		/// </safety>
 		/// <param name="start">The zero-based index at which the slice begins. Must satisfy <c>0 &lt;= start &lt;= source.Length</c>.</param>
 		/// <returns>A <see cref="ReadOnlySpan{T}"/> equivalent to <c>source[start..]</c>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ReadOnlySpan<T> UnsafeSlice(int start)
+		public unsafe ReadOnlySpan<T> UnsafeSlice(int start)
 		{
-			return SliceCore(source, start, source.Length - start);
+			unsafe
+			{
+				// SAFETY: The caller keeps start from 0 to source.Length, as the safety contract requires, so the rest of
+				// source from start lies within it.
+				return SliceCore(source, start, source.Length - start);
+			}
 		}
 		/// <summary>
 		/// Returns a <see cref="ReadOnlySpan{T}"/> that begins at <paramref name="start"/> and covers
 		/// <paramref name="length"/> elements, without performing runtime bounds checks.
 		/// </summary>
+		/// <safety>
+		/// <paramref name="start"/> and <paramref name="length"/> must not be negative, and their sum must not exceed the
+		/// length of <paramref name="source"/>.
+		/// </safety>
 		/// <param name="start">The zero-based index at which the slice begins.</param>
 		/// <param name="length">The number of elements in the slice. Must satisfy <c>start + length &lt;= source.Length</c>.</param>
 		/// <returns>A <see cref="ReadOnlySpan{T}"/> equivalent to <c>source[start..(start + length)]</c>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ReadOnlySpan<T> UnsafeSlice(int start, int length)
+		public unsafe ReadOnlySpan<T> UnsafeSlice(int start, int length)
 		{
-			return SliceCore(source, start, length);
+			unsafe
+			{
+				// SAFETY: The caller keeps start and length within source, as the safety contract requires.
+				return SliceCore(source, start, length);
+			}
 		}
 
 		/// <summary>
@@ -92,16 +125,24 @@ internal static class SpanUnsafeExtensions
 		/// non-negative and ends within it. A <paramref name="start"/> equal to <c>span.Length</c> is in range
 		/// and yields an empty span, matching <c>span[start..]</c>.
 		/// </remarks>
+		/// <safety>
+		/// <paramref name="start"/> and <paramref name="length"/> must not be negative, and their sum must not exceed the
+		/// length of <paramref name="span"/>.
+		/// </safety>
 		/// <param name="span">The source span.</param>
 		/// <param name="start">The zero-based offset at which the slice begins.</param>
 		/// <param name="length">The number of elements in the resulting slice.</param>
 		/// <returns>A <see cref="ReadOnlySpan{T}"/> starting at <paramref name="start"/> with <paramref name="length"/> elements.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static ReadOnlySpan<T> SliceCore(ReadOnlySpan<T> span, int start, int length)
+		private static unsafe ReadOnlySpan<T> SliceCore(ReadOnlySpan<T> span, int start, int length)
 		{
 			Debug.Assert((uint)start <= (uint)span.Length, "start index out of range");
 			Debug.Assert((ulong)(uint)start + (uint)length <= (uint)span.Length, "length out of range");
-			return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(span), start), length);
+			unsafe
+			{
+				// SAFETY: The caller keeps start and length within span, as the safety contract requires.
+				return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(span), start), length);
+			}
 		}
 	}
 
@@ -116,37 +157,61 @@ internal static class SpanUnsafeExtensions
 		/// Returns a reference to the element at <paramref name="index"/> in <paramref name="span"/>,
 		/// without performing runtime bounds checks.
 		/// </summary>
+		/// <safety>
+		/// <paramref name="index"/> must be at least 0 and less than the length of <paramref name="span"/>, so an empty
+		/// span has no valid index.
+		/// </safety>
 		/// <param name="index">The zero-based index of the element to reference.</param>
 		/// <returns>A reference to the element at the specified index.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ref T Ref(int index = 0)
+		public unsafe ref T Ref(int index = 0)
 		{
 			Debug.Assert((uint)index < (uint)span.Length, "index out of range");
-			return ref Unsafe.Add(ref MemoryMarshal.GetReference(span), index);
+			unsafe
+			{
+				// SAFETY: The caller keeps index within span, as the safety contract requires.
+				return ref Unsafe.Add(ref MemoryMarshal.GetReference(span), index);
+			}
 		}
 		/// <summary>
 		/// Returns a <see cref="Span{T}"/> that begins at <paramref name="start"/> and extends to the
 		/// end of <paramref name="span"/>, without performing runtime bounds checks.
 		/// </summary>
+		/// <safety>
+		/// <paramref name="start"/> must be from 0 to the length of <paramref name="span"/>, inclusive.
+		/// </safety>
 		/// <param name="start">The zero-based index at which the slice begins. Must satisfy <c>0 &lt;= start &lt;= span.Length</c>.</param>
 		/// <returns>A <see cref="Span{T}"/> equivalent to <c>span[start..]</c>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Span<T> UnsafeSlice(int start)
+		public unsafe Span<T> UnsafeSlice(int start)
 		{
-			return SliceMutableCore(span, start, span.Length - start);
+			unsafe
+			{
+				// SAFETY: The caller keeps start from 0 to span.Length, as the safety contract requires, so the rest of
+				// span from start lies within it.
+				return SliceMutableCore(span, start, span.Length - start);
+			}
 		}
 
 		/// <summary>
 		/// Returns a <see cref="Span{T}"/> that begins at <paramref name="start"/> and covers
 		/// <paramref name="length"/> elements, without performing runtime bounds checks.
 		/// </summary>
+		/// <safety>
+		/// <paramref name="start"/> and <paramref name="length"/> must not be negative, and their sum must not exceed the
+		/// length of <paramref name="span"/>.
+		/// </safety>
 		/// <param name="start">The zero-based index at which the slice begins.</param>
 		/// <param name="length">The number of elements in the slice. Must satisfy <c>start + length &lt;= span.Length</c>.</param>
 		/// <returns>A <see cref="Span{T}"/> equivalent to <c>span[start..(start + length)]</c>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Span<T> UnsafeSlice(int start, int length)
+		public unsafe Span<T> UnsafeSlice(int start, int length)
 		{
-			return SliceMutableCore(span, start, length);
+			unsafe
+			{
+				// SAFETY: The caller keeps start and length within span, as the safety contract requires.
+				return SliceMutableCore(span, start, length);
+			}
 		}
 
 		/// <summary>
@@ -161,16 +226,24 @@ internal static class SpanUnsafeExtensions
 		/// non-negative and ends within it. A <paramref name="start"/> equal to <c>source.Length</c> is in range
 		/// and yields an empty span, matching <c>source[start..]</c>.
 		/// </remarks>
+		/// <safety>
+		/// <paramref name="start"/> and <paramref name="length"/> must not be negative, and their sum must not exceed the
+		/// length of <paramref name="source"/>.
+		/// </safety>
 		/// <param name="source">The source span.</param>
 		/// <param name="start">The zero-based offset at which the slice begins.</param>
 		/// <param name="length">The number of elements in the resulting slice.</param>
 		/// <returns>A <see cref="Span{T}"/> starting at <paramref name="start"/> with <paramref name="length"/> elements.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static Span<T> SliceMutableCore(Span<T> source, int start, int length)
+		private static unsafe Span<T> SliceMutableCore(Span<T> source, int start, int length)
 		{
 			Debug.Assert((uint)start <= (uint)source.Length, "start index out of range");
 			Debug.Assert((ulong)(uint)start + (uint)length <= (uint)source.Length, "length out of range");
-			return MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(source), start), length);
+			unsafe
+			{
+				// SAFETY: The caller keeps start and length within source, as the safety contract requires.
+				return MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(source), start), length);
+			}
 		}
 	}
 
@@ -185,41 +258,74 @@ internal static class SpanUnsafeExtensions
 		/// Returns a <see cref="Span{T}"/> that begins at <paramref name="index"/> and extends to the
 		/// end of <paramref name="array"/>, without performing runtime bounds checks.
 		/// </summary>
+		/// <safety>
+		/// <paramref name="index"/> must be from 0 to the length of <paramref name="array"/>, inclusive. When
+		/// <typeparamref name="T"/> is a reference type, nothing may be written through the span unless
+		/// <paramref name="array"/> is exactly a <c>T[]</c>, not an array of a type that derives from
+		/// <typeparamref name="T"/>, because such a write skips the type check that array covariance relies on.
+		/// </safety>
 		/// <param name="index">The zero-based index at which the slice begins. Must satisfy <c>0 &lt;= index &lt;= array.Length</c>.</param>
 		/// <returns>A <see cref="Span{T}"/> equivalent to <c>array.AsSpan(index)</c>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Span<T> AsUnsafeSpan(int index)
+		public unsafe Span<T> AsUnsafeSpan(int index)
 		{
-			return AsUnsafeSpan(array, index, length: array.Length - index);
+			unsafe
+			{
+				// SAFETY: The caller keeps index from 0 to array.Length, as the safety contract requires, so the rest of
+				// array from index lies within it, and the contract's rule on writes is the other overload's too.
+				return AsUnsafeSpan(array, index, length: array.Length - index);
+			}
 		}
 		/// <summary>
 		/// Returns a <see cref="Span{T}"/> that begins at <paramref name="index"/> and covers
 		/// <paramref name="length"/> elements, without performing runtime bounds or null-checks.
 		/// </summary>
+		/// <safety>
+		/// <paramref name="index"/> and <paramref name="length"/> must not be negative, and their sum must not exceed the
+		/// length of <paramref name="array"/>. When <typeparamref name="T"/> is a reference type, nothing may be written
+		/// through the span unless <paramref name="array"/> is exactly a <c>T[]</c>, not an array of a type that derives
+		/// from <typeparamref name="T"/>, because such a write skips the type check that array covariance relies on.
+		/// </safety>
 		/// <param name="index">The zero-based index at which the slice begins.</param>
 		/// <param name="length">The number of elements in the slice. Must satisfy <c>index + length &lt;= array.Length</c>.</param>
 		/// <returns>A <see cref="Span{T}"/> equivalent to <c>array.AsSpan(index, length)</c>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Span<T> AsUnsafeSpan(int index, int length)
+		public unsafe Span<T> AsUnsafeSpan(int index, int length)
 		{
 			Debug.Assert(array is not null, "array cannot be null");
 			Debug.Assert((uint)index <= (uint)array.Length, "start index out of range");
 			Debug.Assert((ulong)(uint)index + (uint)length <= (uint)array.Length, "length out of range");
-			return MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(array), index), length);
+			unsafe
+			{
+				// SAFETY: The caller keeps index and length within array, and writes through the span only when array is
+				// exactly a T[], as the safety contract requires.
+				return MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(array), index), length);
+			}
 		}
 
 		/// <summary>
 		/// Returns a reference to the element at <paramref name="index"/> in <paramref name="array"/>,
 		/// without performing runtime bounds checks.
 		/// </summary>
+		/// <safety>
+		/// <paramref name="index"/> must be at least 0 and less than the length of <paramref name="array"/>, so an empty
+		/// array has no valid index. When <typeparamref name="T"/> is a reference type, nothing may be written through
+		/// the reference unless <paramref name="array"/> is exactly a <c>T[]</c>, not an array of a type that derives
+		/// from <typeparamref name="T"/>, because such a write skips the type check that array covariance relies on.
+		/// </safety>
 		/// <param name="index">The zero-based index of the element to reference.</param>
 		/// <returns>A reference to the element at the specified index.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ref T Ref(int index = 0)
+		public unsafe ref T Ref(int index = 0)
 		{
 			Debug.Assert(array is not null, "array cannot be null");
 			Debug.Assert((uint)index < (uint)array.Length, "index out of range");
-			return ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(array), index);
+			unsafe
+			{
+				// SAFETY: The caller keeps index within array, and writes through the reference only when array is
+				// exactly a T[], as the safety contract requires.
+				return ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(array), index);
+			}
 		}
 	}
 
@@ -240,26 +346,43 @@ internal static class SpanUnsafeExtensions
 		/// undefined behavior.</para>
 		/// <para>The span aliases that memory rather than copying it, so writes through the span change it.</para>
 		/// </remarks>
+		/// <safety>
+		/// <paramref name="length"/> must not be negative, and the memory that starts at <paramref name="src"/> must hold
+		/// at least <paramref name="length"/> elements.
+		/// </safety>
 		/// <param name="length">The number of elements in the span. Must be non-negative.</param>
 		/// <returns>A <see cref="Span{T}"/> of <paramref name="length"/> elements whose first element is
 		/// <paramref name="src"/>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Span<T> UnsafeSpan(int length)
+		public unsafe Span<T> UnsafeSpan(int length)
 		{
 			Debug.Assert(length >= 0, "length must be non-negative");
-			return MemoryMarshal.CreateSpan(ref src, length);
+			unsafe
+			{
+				// SAFETY: The caller guarantees that length elements start at src, as the safety contract requires.
+				return MemoryMarshal.CreateSpan(ref src, length);
+			}
 		}
 		/// <summary>
 		/// Returns a reference to the element at <paramref name="index"/> in the memory starting at <paramref name="src"/>,
 		/// without performing runtime bounds checks.
 		/// </summary>
+		/// <safety>
+		/// <paramref name="index"/> must not be negative, and the memory that starts at <paramref name="src"/> must hold
+		/// more than <paramref name="index"/> elements.
+		/// </safety>
 		/// <param name="index">The zero-based index of the element to reference.</param>
 		/// <returns>A reference to the element at the specified index.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public ref T Offset(int index)
+		public unsafe ref T Offset(int index)
 		{
 			Debug.Assert(index >= 0, "index must be non-negative");
-			return ref Unsafe.Add(ref src, index);
+			unsafe
+			{
+				// SAFETY: The caller guarantees that the memory from src holds more than index elements, as the safety
+				// contract requires.
+				return ref Unsafe.Add(ref src, index);
+			}
 		}
 	}
 }

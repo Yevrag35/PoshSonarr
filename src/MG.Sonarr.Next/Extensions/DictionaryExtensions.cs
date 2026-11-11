@@ -5,7 +5,7 @@ namespace MG.Sonarr.Next.Extensions;
 /// <summary>
 /// Provides extension methods for <see cref="Dictionary{TKey, TValue}"/>.
 /// </summary>
-public static class DictionaryExtensions
+internal static class DictionaryExtensions
 {
 	/// <summary>
 	/// Determines whether the dictionary contains the specified key, given as a span of characters.
@@ -19,7 +19,7 @@ public static class DictionaryExtensions
 	/// <param name="key">The key to look for.</param>
 	/// <returns><see langword="true"/> if <paramref name="dictionary"/> contains <paramref name="key"/>; otherwise,
 	/// <see langword="false"/>.</returns>
-	public static bool ContainsKey<T>(this Dictionary<string, T> dictionary, ReadOnlySpan<char> key)
+	internal static bool ContainsKey<T>(this Dictionary<string, T> dictionary, ReadOnlySpan<char> key)
 	{
 #if NET9_0_OR_GREATER
 		return dictionary.TryGetAlternateLookup(out Dictionary<string, T>.AlternateLookup<ReadOnlySpan<char>> lookup)
@@ -44,7 +44,7 @@ public static class DictionaryExtensions
 	/// <see langword="null"/> when <paramref name="dictionary"/> is <see langword="null"/>.
 	/// </returns>
 	[return: NotNullIfNotNull(nameof(dictionary))]
-	public static ReadOnlyDictionary<TKey, TValue>? ToReadOnly<TKey, TValue>(this Dictionary<TKey, TValue>? dictionary) where TKey : notnull
+	internal static ReadOnlyDictionary<TKey, TValue>? ToReadOnly<TKey, TValue>(this Dictionary<TKey, TValue>? dictionary) where TKey : notnull
 	{
 		if (dictionary is null)
 		{

@@ -17,7 +17,7 @@ namespace MG.Sonarr.Next.Json.Converters;
 /// Each method writes into the object that the writer has open.
 /// </para>
 /// </remarks>
-public static class Utf8JsonWriterExtensions
+internal static class Utf8JsonWriterExtensions
 {
 	/// <summary>
 	/// The longest buffer, in elements, that a formatting method allocates on the stack instead of renting.
@@ -663,7 +663,12 @@ public static class Utf8JsonWriterExtensions
 	{
 		if (propertyName.TryLastIndexOfAndNotEnd('.', out int index))
 		{
-			propertyName = propertyName.UnsafeSlice(index + 1);
+			unsafe
+			{
+				// SAFETY: TryLastIndexOfAndNotEnd returns true only for an index before the last character, so index + 1 is
+				// within propertyName.
+				propertyName = propertyName.UnsafeSlice(index + 1);
+			}
 		}
 
 		return propertyName;

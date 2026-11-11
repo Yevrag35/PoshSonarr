@@ -67,31 +67,35 @@ public sealed class EnumEqualityChecker<T> : EqualityChecker where T : unmanaged
 	/// </returns>
 	private bool AreValuesEqual(ref T x, ref T y)
 	{
-		if (_underlyingType.Equals(typeof(int)))
+		unsafe
 		{
-			return AreValuesEqual<int>(ref x, ref y);
-		}
-		else if (_underlyingType.Equals(typeof(long)))
-		{
-			return AreValuesEqual<long>(ref x, ref y);
-		}
-		else if (_underlyingType.Equals(typeof(byte)))
-		{
-			return AreValuesEqual<byte>(ref x, ref y);
-		}
-		else
-		{
-			return x.Equals(y);
+			// SAFETY: Each branch passes the underlying type that it just found _underlyingType to be.
+			if (_underlyingType.Equals(typeof(int)))
+			{
+				return AreValuesEqual<int>(ref x, ref y);
+			}
+			else if (_underlyingType.Equals(typeof(long)))
+			{
+				return AreValuesEqual<long>(ref x, ref y);
+			}
+			else if (_underlyingType.Equals(typeof(byte)))
+			{
+				return AreValuesEqual<byte>(ref x, ref y);
+			}
+			else
+			{
+				return x.Equals(y);
+			}
 		}
 	}
 
 	/// <summary>
 	/// Determines whether two enum values are equal, read in place as numbers of the specified type.
 	/// </summary>
-	/// <remarks>
-	/// The values are reinterpreted without a check, so <typeparamref name="TNum"/> must be the underlying type of
-	/// <typeparamref name="T"/>.
-	/// </remarks>
+	/// <safety>
+	/// <typeparamref name="TNum"/> must be the underlying type of <typeparamref name="T"/>, since the values are
+	/// reinterpreted as it without a check.
+	/// </safety>
 	/// <typeparam name="TNum">The enum's underlying type.</typeparam>
 	/// <param name="x">The first value.</param>
 	/// <param name="y">The second value.</param>
@@ -99,12 +103,17 @@ public sealed class EnumEqualityChecker<T> : EqualityChecker where T : unmanaged
 	/// <see langword="true"/> if <paramref name="x"/> and <paramref name="y"/> are the same number; otherwise,
 	/// <see langword="false"/>.
 	/// </returns>
-	private static bool AreValuesEqual<TNum>(ref T x, ref T y) where TNum : unmanaged, INumber<TNum>
+	private static unsafe bool AreValuesEqual<TNum>(ref T x, ref T y) where TNum : unmanaged, INumber<TNum>
 	{
-		ref readonly TNum xAsNum = ref Unsafe.As<T, TNum>(ref x);
-		ref readonly TNum yAsNum = ref Unsafe.As<T, TNum>(ref y);
+		unsafe
+		{
+			// SAFETY: The caller passes the underlying type of T as TNum, as the safety contract requires, so each
+			// reinterpretation reads exactly the bytes of its value.
+			ref readonly TNum xAsNum = ref Unsafe.As<T, TNum>(ref x);
+			ref readonly TNum yAsNum = ref Unsafe.As<T, TNum>(ref y);
 
-		return xAsNum.Equals(yAsNum);
+			return xAsNum.Equals(yAsNum);
+		}
 	}
 
 	/// <summary>

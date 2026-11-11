@@ -112,10 +112,15 @@ public sealed class SonarrResponseConverter : ByPolicyJsonConverter<ISonarrRespo
 		const string RECEIVED = "Received response -> ";
 		const int buffer_size = 256;
 
-		using SpanStringBuilder builder = new(stackalloc char[buffer_size]);
-		builder.Append(RECEIVED);
-		builder.Append(value.StatusCode.AsResponseString);
+		unsafe
+		{
+			// SAFETY: [SkipLocalsInit] leaves the stack buffer uninitialized, but only the characters that the appends
+			// wrote are read back, through AsSpan().
+			using SpanStringBuilder builder = new(stackalloc char[buffer_size]);
+			builder.Append(RECEIVED);
+			builder.Append(value.StatusCode.AsResponseString);
 
-		writer.WriteRawValue(builder.AsSpan(), skipInputValidation: true);
+			writer.WriteRawValue(builder.AsSpan(), skipInputValidation: true);
+		}
 	}
 }

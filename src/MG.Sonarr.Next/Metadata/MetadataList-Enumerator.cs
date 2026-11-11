@@ -92,7 +92,13 @@ public partial class MetadataList<T>
 			if ((uint)index < (uint)_list._list.Count)
 			{
 				_index = index;
-				_current = ListMarshal.GetRawArray(_list._list).Ref(index);
+				unsafe
+				{
+					// SAFETY: The check keeps index below the list's count, which List<T> keeps within its backing array, an
+					// exact T[], while no other thread changes it.
+					_current = ListMarshal.GetRawArray(_list._list).Ref(index);
+				}
+
 				return true;
 			}
 

@@ -149,7 +149,13 @@ internal sealed class ArrayPoolMemoryStream : Stream
 	{
 		if (_buffer is not null)
 		{
-			segment = ArraySliceMarshal.Create(_buffer, 0, _length);
+			unsafe
+			{
+				// SAFETY: Every write and SetLength makes room in _buffer before it raises _length, so _length never exceeds
+				// _buffer.Length while no other thread uses the stream.
+				segment = ArraySliceMarshal.Create(_buffer, 0, _length);
+			}
+
 			return true;
 		}
 
@@ -435,9 +441,14 @@ internal sealed class ArrayPoolMemoryStream : Stream
 
 	internal string ReadString(Encoding encoding)
 	{
-		return _length > 0 && _buffer is not null
-			? encoding.GetString(_buffer.AsUnsafeSpan(0, _length))
-			: string.Empty;
+		unsafe
+		{
+			// SAFETY: Every write and SetLength makes room in _buffer before it raises _length, so _length never exceeds
+			// _buffer.Length while no other thread uses the stream.
+			return _length > 0 && _buffer is not null
+				? encoding.GetString(_buffer.AsUnsafeSpan(0, _length))
+				: string.Empty;
+		}
 	}
 
 	/// <summary>

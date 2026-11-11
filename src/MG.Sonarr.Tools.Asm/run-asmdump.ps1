@@ -169,7 +169,7 @@ function Move-ToPrevious([string] $Current, [string] $Previous) {
 # builds are both named after it, so a project rename only needs this one line changed.
 $harnessName = 'MG.Sonarr.Tools.Asm'
 $harnessProj = Join-Path $PSScriptRoot "$harnessName.csproj"
-$exe = Join-Path $PSScriptRoot "bin\Release\net10.0\$harnessName.exe"
+$exe = Join-Path $PSScriptRoot "bin\Release\net11.0\$harnessName.exe"
 
 # The script sits in a project folder under src\, two levels below the repo root. Everything it
 # reaches outside that folder - the solution it builds and the .temp output dir - hangs off $repoRoot,

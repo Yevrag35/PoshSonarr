@@ -37,7 +37,14 @@ public ref struct FlagEnumerator<TEnum, TUnderlying>
 	internal FlagEnumerator(TEnum flags)
 	{
 		ValidateSizesMatch();
-		TUnderlying flagNum = Unsafe.As<TEnum, TUnderlying>(ref flags);
+		TUnderlying flagNum;
+		unsafe
+		{
+			// SAFETY: ValidateSizesMatch throws unless TEnum and TUnderlying are the same size, and both are unmanaged, so
+			// the reinterpretation reads exactly the bytes of flags and none of them is a reference.
+			flagNum = Unsafe.As<TEnum, TUnderlying>(ref flags);
+		}
+
 		_original = flagNum;
 		_flags = flagNum;
 
@@ -104,7 +111,13 @@ public ref struct FlagEnumerator<TEnum, TUnderlying>
 
 		TUnderlying flagNum = _flags;
 		TUnderlying currentBit = flagNum & -flagNum; // isolate the rightmost bit
-		_current = Unsafe.As<TUnderlying, TEnum>(ref currentBit);
+		unsafe
+		{
+			// SAFETY: Only the constructor leaves flags to enumerate, and its ValidateSizesMatch call throws unless TEnum
+			// and TUnderlying are the same size. Both are unmanaged, so the reinterpretation reads exactly the bytes of
+			// currentBit and none of them is a reference.
+			_current = Unsafe.As<TUnderlying, TEnum>(ref currentBit);
+		}
 		_flags &= ~currentBit;  // clear the rightmost bit
 		return true;
 	}

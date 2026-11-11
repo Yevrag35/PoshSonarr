@@ -96,7 +96,7 @@ internal static class EmptyNameDictionary
 		/// Thrown when <see cref="EmptyNameDictionary{T}"/> has no constructor that takes no parameters.
 		/// </exception>
 		[UnsafeAccessor(UnsafeAccessorKind.Constructor)]
-		private static extern EmptyNameDictionary<T> CreateInstance();
+		private static extern safe EmptyNameDictionary<T> CreateInstance();
 	}
 }
 
