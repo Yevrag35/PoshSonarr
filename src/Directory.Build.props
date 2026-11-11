@@ -42,6 +42,7 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<Features>runtime-async=on</Features>
 	</PropertyGroup>
 
 	<!--
