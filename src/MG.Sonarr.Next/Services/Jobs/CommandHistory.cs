@@ -7,6 +7,11 @@ namespace MG.Sonarr.Next.Services.Jobs;
 /// </summary>
 public interface ICommandHistory : IReadOnlyCollection<ICommand>
 {
+	///// <summary>
+	///// Gets the number of commands stored in the history.
+	///// </summary>
+	//int Count { get; }
+
 	/// <summary>
 	/// Gets or sets the command associated with the specified identifier.
 	/// </summary>
@@ -35,6 +40,26 @@ public interface ICommandHistory : IReadOnlyCollection<ICommand>
 	/// <param name="value">The command associated with <paramref name="id"/> when found; otherwise, <see langword="null"/>.</param>
 	/// <returns><see langword="true"/> when a command is found; otherwise, <see langword="false"/>.</returns>
 	bool TryGetValue(int id, [NotNullWhen(true)] out ICommand? value);
+
+	/// <summary>
+	/// Replaces the stored command that has the identifier of the specified command, when the history holds one.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// The method adds nothing when the history holds no command with that identifier, while the setter of
+	/// <see cref="this[int]"/> adds the command.
+	/// </para>
+	/// <para>
+	/// The replacement happens in one step, so no caller sees the history without a command that has that identifier,
+	/// as one could between a call to <see cref="Remove(int)"/> and a call to <see cref="Add(ICommand)"/>.
+	/// </para>
+	/// </remarks>
+	/// <param name="command">The command to store in place of the one that has its identifier.</param>
+	/// <returns>
+	/// <see langword="true"/> if the history held a command with the identifier of <paramref name="command"/> and now
+	/// holds <paramref name="command"/> in its place; otherwise, <see langword="false"/>.
+	/// </returns>
+	bool TryReplace([NotNullWhen(true)] ICommand? command);
 }
 
 /// <summary>
@@ -42,7 +67,9 @@ public interface ICommandHistory : IReadOnlyCollection<ICommand>
 /// </summary>
 file sealed class CommandHistory : ICommandHistory
 {
-	private readonly Dictionary<int, ICommand> _dict;
+	private static readonly ICommand s_empty = EmptyCommand.Default;
+	private readonly Dictionary<int, ICommand> _dict = [];
+	private readonly Lock _lock = new();
 
 	/// <summary>
 	/// Gets or sets the command associated with the specified identifier.
@@ -51,36 +78,56 @@ file sealed class CommandHistory : ICommandHistory
 	/// <value>The command associated with <paramref name="id"/>, or <see cref="EmptyCommand.Default"/> when no entry exists.</value>
 	public ICommand this[int id]
 	{
-		get => _dict.TryGetValue(id, out ICommand? command)
-			? command
-			: EmptyCommand.Default;
-		set => _dict[id] = value;
+		get
+		{
+			lock (_lock)
+			{
+				return _dict.TryGetValue(id, out ICommand? command)
+					? command
+					: s_empty;
+			}
+		}
+		set
+		{
+			lock (_lock)
+			{
+				_dict[id] = value;
+			}
+		}
 	}
 
 	/// <summary>
 	/// Gets the number of commands stored in the history.
 	/// </summary>
 	/// <value>The number of commands currently stored.</value>
-	public int Count => _dict.Count;
-
-	/// <summary>
-	/// Gets the identifiers of commands currently stored in the history.
-	/// </summary>
-	/// <value>A read-only collection of command identifiers.</value>
-	public IReadOnlyCollection<int> Ids => _dict.Keys;
+	public int Count
+	{
+		get
+		{
+			lock (_lock)
+			{
+				return _dict.Count;
+			}
+		}
+	}
 
 	/// <summary>
 	/// Initializes a new <see cref="CommandHistory"/> instance.
 	/// </summary>
-	public CommandHistory()
-	{
-		_dict = new();
-	}
+	public CommandHistory() { }
 
 	/// <inheritdoc cref="ICommandHistory.Add(ICommand)"/>
 	public bool Add([NotNullWhen(true)] ICommand? command)
 	{
-		return IsProperCommand(command) && _dict.TryAdd(command.Id, command);
+		if (!IsProperCommand(command))
+		{
+			return false;
+		}
+
+		lock (_lock)
+		{
+			return _dict.TryAdd(command.Id, command);
+		}
 	}
 
 	/// <summary>
@@ -90,7 +137,15 @@ file sealed class CommandHistory : ICommandHistory
 	/// <returns><see langword="true"/> when the command is present; otherwise, <see langword="false"/>.</returns>
 	public bool Contains([NotNullWhen(true)] ICommand? command)
 	{
-		return IsProperCommand(command) && _dict.ContainsKey(command.Id);
+		if (!IsProperCommand(command))
+		{
+			return false;
+		}
+
+		lock (_lock)
+		{
+			return _dict.ContainsKey(command.Id);
+		}
 	}
 
 	/// <summary>
@@ -100,34 +155,88 @@ file sealed class CommandHistory : ICommandHistory
 	/// <returns><see langword="true"/> when a matching command is present; otherwise, <see langword="false"/>.</returns>
 	public bool ContainsId(int id)
 	{
-		return IsProperId(in id) && _dict.ContainsKey(id);
+		if (!IsProperId(in id))
+		{
+			return false;
+		}
+
+		lock (_lock)
+		{
+			return _dict.ContainsKey(id);
+		}
 	}
 
 	/// <inheritdoc cref="ICommandHistory.Remove(int)"/>
 	public bool Remove(int id)
 	{
-		return IsProperId(in id) && _dict.Remove(id);
+		if (!IsProperId(in id))
+		{
+			return false;
+		}
+
+		lock (_lock)
+		{
+			return _dict.Remove(id);
+		}
 	}
 
 	/// <inheritdoc cref="ICommandHistory.TryGetValue(int, out ICommand)"/>
 	public bool TryGetValue(int id, [NotNullWhen(true)] out ICommand? value)
 	{
-		return _dict.TryGetValue(id, out value);
+		lock (_lock)
+		{
+			return _dict.TryGetValue(id, out value);
+		}
+	}
+
+	/// <inheritdoc cref="ICommandHistory.TryReplace(ICommand)"/>
+	public bool TryReplace([NotNullWhen(true)] ICommand? command)
+	{
+		bool result = false;
+
+		if (IsProperCommand(command))
+		{
+			lock (_lock)
+			{
+				ref ICommand entry = ref CollectionsMarshal.GetValueRefOrNullRef(_dict, command.Id);
+				if (!Unsafe.IsNullRef(in entry))
+				{
+					entry = command;
+					result = true;
+				}
+			}
+		}
+
+		return result;
 	}
 
 	/// <summary>
-	/// Returns an enumerator that iterates through the stored commands.
+	/// Returns an enumerator over the commands that the history holds when the method is called.
 	/// </summary>
-	/// <returns>An enumerator for the stored command values.</returns>
+	/// <remarks>
+	/// <para>
+	/// The method copies the commands to an array under the history's lock and returns an enumerator over the copy, so
+	/// the enumerator holds no lock. Other threads can change the history while a caller enumerates, and the enumerator
+	/// doesn't see their changes. The commands come in no particular order.
+	/// </para>
+	/// <para>
+	/// For an empty history, the method returns the enumerator of an empty array, which the runtime caches, so it
+	/// allocates nothing. Otherwise, it allocates the copy and its enumerator.
+	/// </para>
+	/// </remarks>
+	/// <returns>An enumerator over a copy of the stored commands.</returns>
 	public IEnumerator<ICommand> GetEnumerator()
 	{
-		return _dict.Values.GetEnumerator();
+		ICommand[] snapshot;
+		lock (_lock)
+		{
+			snapshot = _dict.Count == 0 ? [] : [.. _dict.Values];
+		}
+
+		return ((IEnumerable<ICommand>)snapshot).GetEnumerator();
 	}
 
-	/// <summary>
-	/// Returns an enumerator that iterates through the stored commands.
-	/// </summary>
-	/// <returns>An enumerator for the stored command values.</returns>
+	/// <inheritdoc cref="GetEnumerator()"/>
 	IEnumerator IEnumerable.GetEnumerator()
 	{
 		return this.GetEnumerator();
