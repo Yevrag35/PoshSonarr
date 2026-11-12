@@ -44,7 +44,8 @@ public interface IResponseReader
 	/// <param name="token">A token that cancels reading the response's body.</param>
 	/// <returns>A task that completes with the result of the request, which holds the deserialized value on success.</returns>
 	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled while the response's body is read.</exception>
-	Task<SonarrClientResult<T>> ReadResultAsync<T>(HttpCall call, object? targetObj = null, CancellationToken token = default);
+	Task<SonarrClientResult<T>> ReadResultAsync<T>(HttpCall call, object? targetObj = null, CancellationToken token = default)
+		where T : class;
 }
 
 /// <summary>
@@ -93,6 +94,7 @@ internal sealed class SonarrResponseReader : IResponseReader
 	}
 	/// <inheritdoc/>
 	public async Task<SonarrClientResult<T>> ReadResultAsync<T>(HttpCall call, object? targetObj = null, CancellationToken token = default)
+		where T : class
 	{
 		if (((IReadOnlyDictionary<string, object?>)call.Request.Options).ContainsKey(ErrorHandler.Is404))
 		{
@@ -106,15 +108,11 @@ internal sealed class SonarrResponseReader : IResponseReader
 
 		if (IsSuccessCode(call.Response.StatusCode, call.Method, out bool isIgnorable))
 		{
-			var oneOf = await this.ReadContentAsync<T>(call.Response, targetObj, token).ConfigureAwait(false);
+			ObjEither<SonarrErrorRecord, T> oneOf = await this.ReadContentAsync<T>(call.Response, targetObj, token).ConfigureAwait(false);
 
-			unsafe
-			{
-				// SAFETY: Both pointers are addresses of static methods, which the compiler matched to the pointer types.
-				return oneOf.Match(call,
-					f1: &ReadErrorFromOneOf<T>,
-					f2: &ReadContentFromOneOf);
-			}
+			return oneOf.TryGetT1(out SonarrErrorRecord? error, out T? value)
+				? ReadErrorFromOneOf<T>(error, call)
+				: ReadContentFromOneOf(value, call);
 		}
 
 		string? content = await call.Response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
@@ -185,7 +183,8 @@ internal sealed class SonarrResponseReader : IResponseReader
 	/// <param name="token">A token that cancels reading the body.</param>
 	/// <returns>A task that completes with the deserialized value, or with an error record when the body can't be read.</returns>
 	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled while the body is read.</exception>
-	private async Task<Either<SonarrErrorRecord, T>> ReadContentAsync<T>(HttpResponseMessage response, object? targetObj, CancellationToken token)
+	private async Task<ObjEither<SonarrErrorRecord, T>> ReadContentAsync<T>(HttpResponseMessage response, object? targetObj, CancellationToken token)
+		where T : class
 	{
 		try
 		{

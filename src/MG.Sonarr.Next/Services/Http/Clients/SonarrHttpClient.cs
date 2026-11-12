@@ -59,7 +59,8 @@ public partial interface ISonarrClient
 	/// <param name="path">The endpoint's path, relative to the API.</param>
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>The result of the request, which holds the deserialized value on success.</returns>
-	SonarrClientResult<T> SendGet<T>(string path, CancellationToken token = default);
+	SonarrClientResult<T> SendGet<T>(string path, CancellationToken token = default)
+		where T : class;
 	/// <summary>
 	/// Sends a POST request without a body to the specified endpoint and deserializes the response's body.
 	/// </summary>
@@ -67,7 +68,8 @@ public partial interface ISonarrClient
 	/// <param name="path">The endpoint's path, relative to the API.</param>
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>The result of the request, which holds the deserialized value on success.</returns>
-	SonarrClientResult<TOutput> SendPost<TOutput>(string path, CancellationToken token = default);
+	SonarrClientResult<TOutput> SendPost<TOutput>(string path, CancellationToken token = default)
+		where TOutput : class;
 	/// <summary>
 	/// Sends a POST request with the specified body to the specified endpoint.
 	/// </summary>
@@ -87,7 +89,8 @@ public partial interface ISonarrClient
 	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>The result of the request, which holds the deserialized value on success.</returns>
-	SonarrClientResult<TOutput> SendPost<TOutput>(string path, object body, CancellationToken token = default);
+	SonarrClientResult<TOutput> SendPost<TOutput>(string path, object body, CancellationToken token = default)
+		where TOutput : class;
 	/// <summary>
 	/// Sends a PUT request with the specified body to the specified endpoint.
 	/// </summary>
@@ -128,7 +131,8 @@ public partial interface ISonarrClient
 	/// <typeparam name="T">The type to deserialize the status as.</typeparam>
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>The result of the request, which holds the deserialized status on success.</returns>
-	SonarrClientResult<T> SendTest<T>(CancellationToken token = default);
+	SonarrClientResult<T> SendTest<T>(CancellationToken token = default)
+		where T : class;
 }
 
 /// <summary>
@@ -214,6 +218,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 
 	/// <inheritdoc/>
 	public SonarrClientResult<T> SendGet<T>(string path, CancellationToken token = default)
+		where T : class
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Get, path, _scopeFactory);
 
@@ -240,6 +245,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	}
 	/// <inheritdoc/>
 	public SonarrClientResult<TOutput> SendPost<TOutput>(string path, CancellationToken token = default)
+		where TOutput : class
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
 
@@ -247,6 +253,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	}
 	/// <inheritdoc/>
 	public SonarrClientResult<TOutput> SendPost<TOutput>(string path, object body, CancellationToken token = default)
+		where TOutput : class
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
 
@@ -282,6 +289,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	}
 	/// <inheritdoc/>
 	public SonarrClientResult<T> SendTest<T>(CancellationToken token = default)
+		where T : class
 	{
 		HttpResponseMessage? response = null;
 		using TestRequestMessage request = new(TEST_API, _scopeFactory);
@@ -372,6 +380,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>The result of the request, which holds the deserialized value on success.</returns>
 	private SonarrClientResult<T> SendResultRequest<T>(HttpRequestMessage request, string path, CancellationToken token)
+		where T : class
 	{
 		HttpResponseMessage? response = null;
 		_cmdletAccessor.AttachTo(request);

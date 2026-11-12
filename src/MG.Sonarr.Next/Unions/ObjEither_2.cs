@@ -127,6 +127,7 @@ public readonly partial struct ObjEither<T1, T2> : IUnion where T1 : class where
 	/// <exception cref="InvalidOperationException">Thrown when this instance is default.</exception>
 	public bool TryGetT1([NotNullWhen(true)] out T1? value, [NotNullWhen(false)] out T2? other)
 	{
+		bool result = false;
 		unsafe
 		{
 			// SAFETY: _index is 1 only when _value holds a T1 and 2 only when it holds a T2, as the constructors set them.
@@ -135,17 +136,22 @@ public readonly partial struct ObjEither<T1, T2> : IUnion where T1 : class where
 				case 1:
 					value = Unsafe.As<T1>(_value!);
 					other = null;
-					return true;
+					result = true;
+					break;
 
 				case 2:
 					value = null;
 					other = Unsafe.As<T2>(_value!);
-					return false;
+					break;
 
 				default:
-					return Exceptions.ThrowInvalidIndexException(out value, out other);
+					value = null;
+					other = null;
+					return Exceptions.ThrowInvalidIndexException();
 			}
 		}
+
+		return result;
 	}
 	/// <summary>
 	/// Try to get the stored value as <typeparamref name="T2"/>.
@@ -159,6 +165,7 @@ public readonly partial struct ObjEither<T1, T2> : IUnion where T1 : class where
 	/// <exception cref="InvalidOperationException">Thrown when this instance is default.</exception>
 	public bool TryGetT2([NotNullWhen(true)] out T2? value, [NotNullWhen(false)] out T1? other)
 	{
+		bool result = false;
 		unsafe
 		{
 			// SAFETY: _index is 1 only when _value holds a T1 and 2 only when it holds a T2, as the constructors set them.
@@ -167,17 +174,22 @@ public readonly partial struct ObjEither<T1, T2> : IUnion where T1 : class where
 				case 1:
 					other = Unsafe.As<T1>(_value)!;
 					value = null;
-					return false;
+					break;
 
 				case 2:
 					value = Unsafe.As<T2>(_value)!;
 					other = null;
-					return true;
+					result = true;
+					break;
 
 				default:
-					return Exceptions.ThrowInvalidIndexException(out other, out value);
+					value = null;
+					other = null;
+					return Exceptions.ThrowInvalidIndexException();
 			}
 		}
+
+		return result;
 	}
 
 	/// <summary>
@@ -199,16 +211,24 @@ public readonly partial struct ObjEither<T1, T2> : IUnion where T1 : class where
 file static class Exceptions
 {
 	/// <summary>
-	/// Throws an exception to indicate that the object does not have a valid index.
+	/// Throws the exception for an <see cref="ObjEither{T1, T2}"/> whose index names neither of its types.
 	/// </summary>
-	/// <typeparam name="T1">The type of the first possible value.</typeparam>
-	/// <typeparam name="T2">The type of the second possible value.</typeparam>
-	/// <param name="_">When this method is called, the value is not assigned.</param>
-	/// <param name="__">When this method is called, the value is not assigned.</param>
-	/// <returns>This method does not return a value; it always throws an exception.</returns>
-	/// <exception cref="InvalidOperationException">Thrown when the object does not have a valid index.</exception>
-	[DoesNotReturn, StackTraceHidden, DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
-	internal static bool ThrowInvalidIndexException<T1, T2>(out T1? _, out T2? __)
+	/// <remarks>
+	/// <para>
+	/// The method takes no type parameters and no arguments, so shared generic code that inlines
+	/// <see cref="ObjEither{T1, T2}.TryGetT1"/> or <see cref="ObjEither{T1, T2}.TryGetT2"/> calls it without a lookup in
+	/// its generic dictionary, and none of the caller's locals has its address taken. The callers set their
+	/// <see langword="out"/> values before the call for that reason.
+	/// </para>
+	/// <para>
+	/// It isn't marked <see cref="MethodImplOptions.NoInlining"/>, so the JIT reads its IL, finds that it never returns,
+	/// and moves the call off the caller's main path.
+	/// </para>
+	/// </remarks>
+	/// <returns>This method doesn't return; it always throws.</returns>
+	/// <exception cref="InvalidOperationException">Thrown when this method is called.</exception>
+	[DoesNotReturn, StackTraceHidden, DebuggerStepThrough]
+	internal static bool ThrowInvalidIndexException()
 	{
 		throw new InvalidOperationException($"{nameof(ObjEither<,>)} must have a valid index");
 	}

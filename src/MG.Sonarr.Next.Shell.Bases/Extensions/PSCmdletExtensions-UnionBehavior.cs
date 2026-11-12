@@ -21,7 +21,9 @@ public static partial class PSCmdletExtensions
 	/// <param name="outcome">The outcome of the API call.</param>
 	/// <exception cref="EmptyStructException">Thrown when <paramref name="outcome"/> is the default value, which holds
 	/// neither a success nor an error.</exception>
-	public static void WriteOutcome<TCmdlet, TSuccess>(this TCmdlet cmdlet, Either<TSuccess, SonarrErrorRecord> outcome) where TCmdlet : PSCmdlet
+	public static void WriteOutcome<TCmdlet, TSuccess>(this TCmdlet cmdlet, ObjEither<TSuccess, SonarrErrorRecord> outcome)
+		where TCmdlet : PSCmdlet
+		where TSuccess : class
 	{
 		WriteOutcome(cmdlet,
 			outcome,
@@ -56,8 +58,9 @@ public static partial class PSCmdletExtensions
 	/// neither a success nor an error.</exception>
 	public static void WriteOutcome<TCmdlet, TSuccess, TResetOnFail>(this TCmdlet cmdlet,
 		TResetOnFail resettable,
-		Either<TSuccess, SonarrErrorRecord> outcome)
+		ObjEither<TSuccess, SonarrErrorRecord> outcome)
 			where TCmdlet : PSCmdlet
+			where TSuccess : class
 			where TResetOnFail : IResettable
 	{
 		WriteOutcome(cmdlet,
@@ -88,9 +91,10 @@ public static partial class PSCmdletExtensions
 	/// <exception cref="EmptyStructException">Thrown when <paramref name="outcome"/> is the default value, which holds
 	/// neither a success nor an error.</exception>
 	public static void WriteOutcome<TCmdlet, TSuccess>(this TCmdlet cmdlet,
-		Either<TSuccess, SonarrErrorRecord> outcome,
+		ObjEither<TSuccess, SonarrErrorRecord> outcome,
 		Action<TCmdlet, SonarrErrorRecord> onFailure)
 			where TCmdlet : Cmdlet
+			where TSuccess : class
 	{
 		WriteOutcome(cmdlet,
 			outcome,
@@ -117,9 +121,10 @@ public static partial class PSCmdletExtensions
 	/// neither a success nor an error.</exception>
 	public static void WriteOutcome<TCmdlet, TSuccess, TState>(this TCmdlet cmdlet,
 		TState state,
-		Either<TSuccess, SonarrErrorRecord> outcome,
+		ObjEither<TSuccess, SonarrErrorRecord> outcome,
 		Action<TCmdlet, TState, SonarrErrorRecord> onFailure)
 			where TCmdlet : Cmdlet
+			where TSuccess : class
 	{
 		WriteOutcome(cmdlet,
 			state: state,
@@ -143,10 +148,12 @@ public static partial class PSCmdletExtensions
 	/// <exception cref="EmptyStructException">Thrown when <paramref name="outcome"/> is the default value, which holds
 	/// neither a success nor a failure.</exception>
 	public static void WriteOutcome<TCmdlet, TSuccess, TFailure>(this TCmdlet cmdlet,
-		Either<TSuccess, TFailure> outcome,
+		ObjEither<TSuccess, TFailure> outcome,
 		Action<TCmdlet, TSuccess> onSuccess,
 		Action<TCmdlet, TFailure> onFailure)
 			where TCmdlet : Cmdlet
+			where TSuccess : class
+			where TFailure : class
 	{
 		WriteOutcome(cmdlet,
 			state: (onSuccess, onFailure),
@@ -181,23 +188,26 @@ public static partial class PSCmdletExtensions
 	/// neither a success nor a failure.</exception>
 	public static void WriteOutcome<TCmdlet, TSuccess, TFailure, TState>(this TCmdlet cmdlet,
 		TState state,
-		Either<TSuccess, TFailure> outcome,
+		ObjEither<TSuccess, TFailure> outcome,
 		Action<TCmdlet, TState, TSuccess> onSuccess,
 		Action<TCmdlet, TState, TFailure> onFailure)
 			where TCmdlet : Cmdlet
+			where TSuccess : class
+			where TFailure : class
 	{
-		switch (outcome.Index)
+		if (outcome.IsNeither)
 		{
-			case 1:
-				onSuccess(cmdlet, state, outcome.AsT1!);
-				break;
+			throw new EmptyStructException(nameof(outcome), typeof(ObjEither<TSuccess, TFailure>), innerException: null);
+		}
 
-			case 2:
-				onFailure(cmdlet, state, outcome.AsT2!);
-				break;
-
-			default:
-				throw new EmptyStructException(nameof(outcome), typeof(Either<TSuccess, TFailure>), innerException: null);
+		// TryGetT1 reads the value by its index, where AsT1 and AsT2 would test its type.
+		if (outcome.TryGetT1(out TSuccess? success, out TFailure? failure))
+		{
+			onSuccess(cmdlet, state, success);
+		}
+		else
+		{
+			onFailure(cmdlet, state, failure);
 		}
 	}
 }

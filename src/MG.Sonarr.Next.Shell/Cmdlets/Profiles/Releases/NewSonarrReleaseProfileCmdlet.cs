@@ -261,7 +261,7 @@ public sealed class NewSonarrReleaseProfileCmdlet : SonarrMetadataCmdlet
 	/// <param name="body">The new profile's request body.</param>
 	private void CreateProfile(object body)
 	{
-		Either<ReleaseProfileObject, SonarrErrorRecord> response = this.SendPostRequest<ReleaseProfileObject>(this.Tag.UrlBase, body);
+		ObjEither<ReleaseProfileObject, SonarrErrorRecord> response = this.SendPostRequest<ReleaseProfileObject>(this.Tag.UrlBase, body);
 
 		this.WriteOutcome(response);
 	}

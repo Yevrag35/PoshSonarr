@@ -264,59 +264,6 @@ public readonly partial struct Either<T1, T2>
 	}
 
 	/// <summary>
-	/// Matches the current instance to one of the provided function pointers based on its type and returns the result.
-	/// </summary>
-	/// <remarks>
-	/// When the instance is default-initialized, the <see cref="EmptyStructException.StructType"/> of the exception
-	/// is the generic type definition, <c>Either&lt;,&gt;</c>, and not the constructed type that the other overloads
-	/// report.
-	/// </remarks>
-	/// <safety>
-	/// <paramref name="f1"/> and <paramref name="f2"/> must each be <see langword="null"/>, which throws, or point to a
-	/// method whose signature matches the pointer's type.
-	/// </safety>
-	/// <typeparam name="TOutput">The output type.</typeparam>
-	/// <typeparam name="TState">The state type.</typeparam>
-	/// <param name="state">The state to pass to the function pointer.</param>
-	/// <param name="f1">The function pointer to execute if the instance is of the first type.</param>
-	/// <param name="f2">The function pointer to execute if the instance is of the second type.</param>
-	/// <returns>The result of the executed function pointer.</returns>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="f1"/> or <paramref name="f2"/> is null.</exception>
-	/// <exception cref="EmptyStructException">Thrown when the instance is default-initialized.</exception>
-	public unsafe TOutput Match<TOutput, TState>(
-		TState state,
-		delegate*<T1, TState, TOutput> f1,
-		delegate*<T2, TState, TOutput> f2)
-		where TState : allows ref struct
-	{
-		// A call through a null pointer ends the process with an access violation that no catch sees.
-		if (f1 == null || f2 == null)
-		{
-			EitherThrowHelper.ThrowArgumentNull(f1 == null ? nameof(f1) : nameof(f2));
-		}
-
-		// The throw helpers aren't generic and name no constructed type, so shared code never looks up the type
-		// arguments. A lookup would keep the generic context alive, at the cost of a stack store on every call.
-		unsafe
-		{
-			// SAFETY: The check above keeps both pointers from being null, and the caller passes pointers to methods of
-			// their types, as the safety contract requires.
-			switch (_index)
-			{
-				case 1:
-					return f1(_first!, state);
-
-				case 2:
-					return f2(_second!, state);
-
-				default:
-					EitherThrowHelper.ThrowEmpty();
-					return default!;
-			}
-		}
-	}
-
-	/// <summary>
 	/// Matches the current instance to one of the provided actions based on its type, with state.
 	/// </summary>
 	/// <remarks>
@@ -451,36 +398,4 @@ public readonly partial struct Either<T1, T2>
 	/// </summary>
 	/// <param name="second">The value of the second type.</param>
 	public static implicit operator Either<T1, T2>(T2 second) => new(second);
-}
-
-/// <summary>
-/// Provides the throw helpers of <see cref="Either{T1, T2}"/> that its shared generic code calls without a lookup of
-/// its type arguments.
-/// </summary>
-file static class EitherThrowHelper
-{
-	/// <summary>
-	/// Throws an <see cref="ArgumentNullException"/> for the specified parameter.
-	/// </summary>
-	/// <param name="paramName">The name of the null parameter.</param>
-	/// <exception cref="ArgumentNullException">Thrown when this method is called.</exception>
-	[DoesNotReturn, StackTraceHidden]
-	internal static void ThrowArgumentNull(string paramName)
-	{
-		throw new ArgumentNullException(paramName);
-	}
-
-	/// <summary>
-	/// Throws an <see cref="EmptyStructException"/> for a default-initialized <see cref="Either{T1, T2}"/>.
-	/// </summary>
-	/// <remarks>
-	/// The exception names the generic type definition, because naming a constructed type would take the type
-	/// arguments that the caller's shared code would have to look up.
-	/// </remarks>
-	/// <exception cref="EmptyStructException">Thrown when this method is called.</exception>
-	[DoesNotReturn, StackTraceHidden]
-	internal static void ThrowEmpty()
-	{
-		throw new EmptyStructException(nameof(Either<,>), typeof(Either<,>), innerException: null);
-	}
 }

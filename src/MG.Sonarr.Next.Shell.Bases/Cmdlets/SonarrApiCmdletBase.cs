@@ -85,6 +85,7 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	///     A response object indicating the status code and any errors that may have occurred.
 	/// </returns>
 	protected SonarrClientResult<T> SendGetRequest<T>(string path, CancellationToken token = default)
+		where T : class
 	{
 		this.StartTimer();
 		return _client.SendGetAsync<T>(path, this.GetRequestToken(token)).GetAwaiter().GetResult();
@@ -99,6 +100,7 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
 	/// <returns>The result of the request, which holds the deserialized value on success.</returns>
 	protected SonarrClientResult<T> SendPostRequest<T>(string path, CancellationToken token = default)
+		where T : class
 	{
 		this.StartTimer();
 		return _client.SendPostAsync<T>(path, this.GetRequestToken(token)).GetAwaiter().GetResult();
@@ -124,7 +126,8 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
 	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
 	/// <returns>The deserialized value on success; otherwise, the error record that describes the failure.</returns>
-	protected Either<TOutput, SonarrErrorRecord> SendPostRequest<TOutput>(string path, object body, CancellationToken token = default)
+	protected ObjEither<TOutput, SonarrErrorRecord> SendPostRequest<TOutput>(string path, object body, CancellationToken token = default)
+		where TOutput : class
 	{
 		this.StartTimer();
 		SonarrClientResult<TOutput> response = _client.SendPostAsync<TOutput>(path, body, this.GetRequestToken(token)).GetAwaiter().GetResult();

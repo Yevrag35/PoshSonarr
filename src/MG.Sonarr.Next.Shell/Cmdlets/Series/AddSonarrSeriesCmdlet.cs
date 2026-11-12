@@ -228,7 +228,7 @@ public sealed class AddSonarrSeriesCmdlet : SonarrApiCmdletBase//, IDynamicParam
 			{
 				this.SerializeIfDebug(pso);
 
-				Either<SeriesObject, SonarrErrorRecord> response = this.SendPostRequest<SeriesObject>(this.Tag.UrlBase, pso);
+				ObjEither<SeriesObject, SonarrErrorRecord> response = this.SendPostRequest<SeriesObject>(this.Tag.UrlBase, pso);
 
 				// WriteOutcome resets the lookup result when the add fails, so commit it when the add succeeds, which
 				// takes out what OnSerializing wrote either way.
