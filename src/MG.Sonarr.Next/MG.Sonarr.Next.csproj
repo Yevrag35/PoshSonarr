@@ -74,9 +74,10 @@
 	<ItemGroup>
 		<ProjectReference Include="..\MG.Sonarr.Resources\MG.Sonarr.Resources.csproj" />
 		<!--
-			The generators run inside the compiler, so this reference loads the project as an analyzer and keeps its assembly out
-			of this project's references and output folder.
+			The analyzers and the generators run inside the compiler, so these references load the projects as analyzers and
+			keep their assemblies out of this project's references and output folder.
 		-->
+		<ProjectReference Include="..\MG.Sonarr.Next.Analyzers\MG.Sonarr.Next.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 		<ProjectReference Include="..\MG.Sonarr.Next.Generators\MG.Sonarr.Next.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
