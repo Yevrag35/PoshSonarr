@@ -27,6 +27,7 @@ internal static class ArraySliceMarshal
 	/// <param name="offset">The zero-based index in the array at which the slice begins. Must be non-negative and within the bounds of the array.</param>
 	/// <param name="length">The number of elements in the slice. Must be non-negative and not exceed the number of elements from offset to the end of the array.</param>
 	/// <returns>An <see cref="ArraySlice{T}"/> representing the specified segment of the array.</returns>
+	[SuppressMessage("Style", "IDE0380", Justification = "Skips the constructor's range checks, and the slice reads its elements without bounds checks, so an offset or length outside the array reads memory outside it.")]
 	public static unsafe ArraySlice<T> Create<T>(T[] array, int offset, int length)
 	{
 		Debug.Assert(array is not null, "Array cannot be null.");

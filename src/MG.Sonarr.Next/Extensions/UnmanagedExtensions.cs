@@ -85,6 +85,7 @@ internal static class UnmanagedExtensions
 		/// </safety>
 		/// <param name="index">The power of 10 to return.</param>
 		/// <returns>10 raised to <paramref name="index"/>, wrapped to the width of <typeparamref name="T"/>.</returns>
+		[SuppressMessage("Style", "IDE0380", Justification = "Skips the bounds check, so an index outside the 40-entry table reads memory outside it.")]
 		internal static unsafe T Get(int index)
 		{
 			unsafe

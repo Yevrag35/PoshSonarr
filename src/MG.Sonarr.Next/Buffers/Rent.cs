@@ -67,6 +67,7 @@ internal static class Rent
 	/// <typeparam name="T">The type of elements in the array.</typeparam>
 	/// <param name="array">The array to fill.</param>
 	[Conditional("DEBUG")]
+	[SuppressMessage("Style", "IDE0380", Justification = "Fills every byte of the array with junk, so an element type that is or holds a reference would get junk where its object references belong.")]
 	private static unsafe void Poison<T>(T[] array)
 	{
 		const byte POISON = 0xDD;

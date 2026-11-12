@@ -344,6 +344,7 @@ internal static class ListMarshal
 	/// <param name="list">The list whose backing array is wrapped. Cannot be null.</param>
 	/// <returns>An <see cref="ArraySlice{T}"/> spanning the elements of <paramref name="list"/> in order.</returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SuppressMessage("Style", "IDE0380", Justification = "Wraps the backing array without checking the list's count against it, and the slice reads its elements without bounds checks, so a count past the array's end reads memory outside it.")]
 	public static unsafe ArraySlice<T> GetArray<T>(List<T> list)
 	{
 		unsafe
@@ -366,6 +367,7 @@ internal static class ListMarshal
 	/// <param name="version">Outputs the current version of the list, which can be used to detect modifications.</param>
 	/// <returns>An <see cref="ArraySlice{T}"/> spanning the elements of <paramref name="list"/> in order.</returns>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SuppressMessage("Style", "IDE0380", Justification = "Wraps the backing array without checking the list's count against it, and the slice reads its elements without bounds checks, so a count past the array's end reads memory outside it.")]
 	public static unsafe ArraySlice<T> GetArray<T>(List<T> list, out int version)
 	{
 		version = View<T>.Version(list);
@@ -465,6 +467,7 @@ internal static class ListMarshal
 	/// <param name="list">The list whose count is to be set.</param>
 	/// <param name="size">The new size of the list.</param>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[SuppressMessage("Style", "IDE0380", Justification = "Skips the range check, and the spans and slices over the list trust its count, so a size past the backing array's end reads or writes memory outside it.")]
 	public static unsafe void SetCount<T>(List<T> list, int size)
 	{
 		Debug.Assert((uint)size <= (uint)View<T>.Items(list).Length, "The size being set should be from 0 to the array length.");

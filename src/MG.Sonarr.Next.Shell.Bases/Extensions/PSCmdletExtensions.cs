@@ -319,6 +319,7 @@ public static partial class PSCmdletExtensions
 	/// given yields none.</param>
 	/// <param name="resolution">The function that turns the bound value into a preference.</param>
 	/// <returns>The preference that applies to <paramref name="cmdlet"/>.</returns>
+	[SuppressMessage("Style", "IDE0380", Justification = "Calls the resolution pointer without a null check, so a null or mismatched pointer from a caller is called as if it were valid.")]
 	private static unsafe ActionPreference ResolveActionPreferenceFromPSCmdlet(
 		PSCmdlet cmdlet,
 		string parameterName,

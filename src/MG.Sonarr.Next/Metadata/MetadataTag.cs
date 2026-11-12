@@ -311,6 +311,7 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 		return builder.ToString();
 
 		// Requires a buffer of exactly urlBase.Length + 1 characters, which it fills without a bounds check.
+		[SuppressMessage("Style", "IDE0380", Justification = "Fills the buffer without bounds checks, so a buffer shorter than urlBase.Length + 1 characters is written past its end.")]
 		static unsafe void writeUrlBase(Span<char> buffer, string urlBase)
 		{
 			unsafe

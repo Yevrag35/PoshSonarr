@@ -44,6 +44,10 @@ dotnet_diagnostic.MA0046.severity = none
 
 dotnet_diagnostic.IDE0290.severity = none
 
+# IDE0380: Remove unnecessary 'unsafe' modifier. It ignores that the modifier makes a member's callers use an unsafe
+# block, so a member marked unsafe on purpose suppresses it with a justification of what its callers must guarantee.
+dotnet_diagnostic.IDE0380.severity = warning
+
 # Code-quality rules that catch bugs. Unlike the style rules, the build enforces these.
 # CA2007: Await with ConfigureAwait, since the cmdlets block on the HTTP client's tasks
 dotnet_diagnostic.CA2007.severity = warning

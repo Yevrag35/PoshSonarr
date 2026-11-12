@@ -317,6 +317,7 @@ internal ref struct SpanStringBuilder
 	/// <see cref="EnsureCapacity(pint)"/> leaves them.
 	/// </safety>
 	/// <param name="value">The span containing the characters to append.</param>
+	[SuppressMessage("Style", "IDE0380", Justification = "Skips the capacity check, so a value longer than the room after the current position is written past the buffer's end.")]
 	private unsafe void AppendCore(scoped ReadOnlySpan<char> value)
 	{
 		unsafe

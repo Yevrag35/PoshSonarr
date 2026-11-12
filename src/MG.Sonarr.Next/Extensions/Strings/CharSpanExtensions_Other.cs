@@ -56,6 +56,7 @@ internal static partial class CharSpanExtensions
 		/// <see langword="true"/> if the character at the specified index is found to be escaped;
 		/// otherwise, <see langword="false"/>.
 		/// </returns>
+		[SuppressMessage("Style", "IDE0380", Justification = "Skips the range check, so an empty span or an index past its end reads memory outside the span.")]
 		internal unsafe bool IsEscapedAtUnsafe(int index, char escapeChar = '\\')
 		{
 			unsafe

@@ -21,7 +21,7 @@ internal static class ArraySlice
 		if (values.IsEmpty)
 			return Empty<T>();
 
-		return new(values.ToArray(), 0, values.Length);
+		return unsafe( new(values.ToArray(), new ArraySlice<T>.CtorArgs(pint.Clamp(0), pint.Clamp(values.Length))));
 	}
 	/// <summary>
 	/// Returns an empty slice of the specified array element type.
@@ -138,6 +138,7 @@ internal readonly struct ArraySlice<T> : IReadOnlyCollection<T>
 	/// </safety>
 	/// <param name="array">The array to create the slice from. Cannot be null.</param>
 	/// <param name="args">A <see cref="CtorArgs"/> struct containing the offset and length for the slice.</param>
+	[SuppressMessage("Style", "IDE0380", Justification = "Skips the range checks, and the slice reads its elements without bounds checks, so an offset or length outside the array reads memory outside it.")]
 	internal unsafe ArraySlice(T[] array, CtorArgs args)
 	{
 		Debug.Assert(array is not null, "We're trusting you here...");

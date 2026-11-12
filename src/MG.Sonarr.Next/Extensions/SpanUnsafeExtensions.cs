@@ -34,6 +34,7 @@ internal static class SpanUnsafeExtensions
 		/// <param name="index">The zero-based index of the element to reference.</param>
 		/// <returns>A reference to the element at the specified index.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SuppressMessage("Style", "IDE0380", Justification = "Skips the bounds check, so an index outside the span reads memory outside it.")]
 		public unsafe ref readonly T Ref(int index = 0)
 		{
 			Debug.Assert((uint)index < (uint)source.Length, "index out of range");
@@ -63,6 +64,7 @@ internal static class SpanUnsafeExtensions
 		/// </safety>
 		/// <param name="destination">The destination span to copy to.</param>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SuppressMessage("Style", "IDE0380", Justification = "Skips the length check, so a destination shorter than the source is written past its end.")]
 		public unsafe void UnsafeCopy(Span<T> destination)
 		{
 			Debug.Assert(source.Length <= destination.Length, "The destination is too short to hold the source.");
@@ -83,6 +85,7 @@ internal static class SpanUnsafeExtensions
 		/// <param name="start">The zero-based index at which the slice begins. Must satisfy <c>0 &lt;= start &lt;= source.Length</c>.</param>
 		/// <returns>A <see cref="ReadOnlySpan{T}"/> equivalent to <c>source[start..]</c>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SuppressMessage("Style", "IDE0380", Justification = "Skips the range check, so a start outside the span reads memory outside it.")]
 		public unsafe ReadOnlySpan<T> UnsafeSlice(int start)
 		{
 			unsafe
@@ -104,6 +107,7 @@ internal static class SpanUnsafeExtensions
 		/// <param name="length">The number of elements in the slice. Must satisfy <c>start + length &lt;= source.Length</c>.</param>
 		/// <returns>A <see cref="ReadOnlySpan{T}"/> equivalent to <c>source[start..(start + length)]</c>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SuppressMessage("Style", "IDE0380", Justification = "Skips the range check, so a start or length outside the span reads memory outside it.")]
 		public unsafe ReadOnlySpan<T> UnsafeSlice(int start, int length)
 		{
 			unsafe
@@ -134,6 +138,7 @@ internal static class SpanUnsafeExtensions
 		/// <param name="length">The number of elements in the resulting slice.</param>
 		/// <returns>A <see cref="ReadOnlySpan{T}"/> starting at <paramref name="start"/> with <paramref name="length"/> elements.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SuppressMessage("Style", "IDE0380", Justification = "Skips the range check, so a start or length outside the span reads memory outside it.")]
 		private static unsafe ReadOnlySpan<T> SliceCore(ReadOnlySpan<T> span, int start, int length)
 		{
 			Debug.Assert((uint)start <= (uint)span.Length, "start index out of range");
@@ -164,6 +169,7 @@ internal static class SpanUnsafeExtensions
 		/// <param name="index">The zero-based index of the element to reference.</param>
 		/// <returns>A reference to the element at the specified index.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SuppressMessage("Style", "IDE0380", Justification = "Skips the bounds check, so an index outside the span reads or writes memory outside it.")]
 		public unsafe ref T Ref(int index = 0)
 		{
 			Debug.Assert((uint)index < (uint)span.Length, "index out of range");
@@ -183,6 +189,7 @@ internal static class SpanUnsafeExtensions
 		/// <param name="start">The zero-based index at which the slice begins. Must satisfy <c>0 &lt;= start &lt;= span.Length</c>.</param>
 		/// <returns>A <see cref="Span{T}"/> equivalent to <c>span[start..]</c>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SuppressMessage("Style", "IDE0380", Justification = "Skips the range check, so a start outside the span reads or writes memory outside it.")]
 		public unsafe Span<T> UnsafeSlice(int start)
 		{
 			unsafe
@@ -205,6 +212,7 @@ internal static class SpanUnsafeExtensions
 		/// <param name="length">The number of elements in the slice. Must satisfy <c>start + length &lt;= span.Length</c>.</param>
 		/// <returns>A <see cref="Span{T}"/> equivalent to <c>span[start..(start + length)]</c>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SuppressMessage("Style", "IDE0380", Justification = "Skips the range check, so a start or length outside the span reads or writes memory outside it.")]
 		public unsafe Span<T> UnsafeSlice(int start, int length)
 		{
 			unsafe
@@ -235,6 +243,7 @@ internal static class SpanUnsafeExtensions
 		/// <param name="length">The number of elements in the resulting slice.</param>
 		/// <returns>A <see cref="Span{T}"/> starting at <paramref name="start"/> with <paramref name="length"/> elements.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SuppressMessage("Style", "IDE0380", Justification = "Skips the range check, so a start or length outside the span reads or writes memory outside it.")]
 		private static unsafe Span<T> SliceMutableCore(Span<T> source, int start, int length)
 		{
 			Debug.Assert((uint)start <= (uint)source.Length, "start index out of range");
@@ -267,6 +276,7 @@ internal static class SpanUnsafeExtensions
 		/// <param name="index">The zero-based index at which the slice begins. Must satisfy <c>0 &lt;= index &lt;= array.Length</c>.</param>
 		/// <returns>A <see cref="Span{T}"/> equivalent to <c>array.AsSpan(index)</c>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SuppressMessage("Style", "IDE0380", Justification = "Skips the bounds and covariance checks, so an index outside the array reads or writes memory outside it, and a write into an array whose element type derives from T stores a value the array can't hold.")]
 		public unsafe Span<T> AsUnsafeSpan(int index)
 		{
 			unsafe
@@ -290,6 +300,7 @@ internal static class SpanUnsafeExtensions
 		/// <param name="length">The number of elements in the slice. Must satisfy <c>index + length &lt;= array.Length</c>.</param>
 		/// <returns>A <see cref="Span{T}"/> equivalent to <c>array.AsSpan(index, length)</c>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SuppressMessage("Style", "IDE0380", Justification = "Skips the bounds and covariance checks, so an index or length outside the array reads or writes memory outside it, and a write into an array whose element type derives from T stores a value the array can't hold.")]
 		public unsafe Span<T> AsUnsafeSpan(int index, int length)
 		{
 			Debug.Assert(array is not null, "array cannot be null");
@@ -316,6 +327,7 @@ internal static class SpanUnsafeExtensions
 		/// <param name="index">The zero-based index of the element to reference.</param>
 		/// <returns>A reference to the element at the specified index.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SuppressMessage("Style", "IDE0380", Justification = "Skips the bounds and covariance checks, so an index outside the array reads or writes memory outside it, and a write into an array whose element type derives from T stores a value the array can't hold.")]
 		public unsafe ref T Ref(int index = 0)
 		{
 			Debug.Assert(array is not null, "array cannot be null");
@@ -354,6 +366,7 @@ internal static class SpanUnsafeExtensions
 		/// <returns>A <see cref="Span{T}"/> of <paramref name="length"/> elements whose first element is
 		/// <paramref name="src"/>.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SuppressMessage("Style", "IDE0380", Justification = "A bare reference carries no length, so a length past the end of the memory reads or writes memory outside it.")]
 		public unsafe Span<T> UnsafeSpan(int length)
 		{
 			Debug.Assert(length >= 0, "length must be non-negative");
@@ -374,6 +387,7 @@ internal static class SpanUnsafeExtensions
 		/// <param name="index">The zero-based index of the element to reference.</param>
 		/// <returns>A reference to the element at the specified index.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[SuppressMessage("Style", "IDE0380", Justification = "A bare reference carries no length, so an index past the end of the memory reads or writes memory outside it.")]
 		public unsafe ref T Offset(int index)
 		{
 			Debug.Assert(index >= 0, "index must be non-negative");
