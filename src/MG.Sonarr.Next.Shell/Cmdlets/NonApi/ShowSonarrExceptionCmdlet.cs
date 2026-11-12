@@ -1,6 +1,5 @@
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Exceptions;
-using MG.Sonarr.Next.Extensions.PSO;
 using MG.Sonarr.Next.Extensions.Pwsh;
 using MG.Sonarr.Next.Models;
 using System.Collections;

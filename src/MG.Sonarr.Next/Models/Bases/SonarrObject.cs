@@ -1,4 +1,4 @@
-using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Pwsh;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.PSProperties;
@@ -30,17 +30,6 @@ public abstract class SonarrObject : PSObject,
 	/// The full name of <see cref="SonarrObject"/>, which <see cref="SetPSTypeName()"/> inserts.
 	/// </summary>
 	private const string TYPE_NAME = "MG.Sonarr.Next.Models.SonarrObject";
-
-	/// <summary>
-	/// Gets the value of the object's property with the specified name.
-	/// </summary>
-	/// <remarks>
-	/// The indexer reads the properties that PowerShell sees, not the object's C# members.
-	/// </remarks>
-	/// <param name="propertyName">The name of the property, matched without regard to case.</param>
-	/// <exception cref="ArgumentException">Thrown when <paramref name="propertyName"/> is null or empty.</exception>
-	/// <value>The value of the property, or <see langword="null"/> if the object has no such property.</value>
-	public object? this[string propertyName] => this.Properties[propertyName]?.Value;
 
 	/// <summary>
 	/// When overridden in a derived class, gets a value that indicates whether

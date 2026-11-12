@@ -1,4 +1,4 @@
-using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Pwsh;
 
 namespace MG.Sonarr.Next.Models.Releases;
 
