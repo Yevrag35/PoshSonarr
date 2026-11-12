@@ -13,6 +13,18 @@ internal static partial class CharSpanExtensions
 	extension(ReadOnlySpan<char> chars)
 	{
 		/// <summary>
+		/// Copies the characters of a <see cref="ReadOnlySpan{T}"/> to a target <see cref="Span{T}"/>.
+		/// </summary>
+		/// <param name="destination">The target span where characters will be copied.</param>
+		/// <param name="charsWritten">When this method returns, contains the number of characters written to the destination span.</param>
+		/// <exception cref="ArgumentException"/>
+		internal void CopyTo(Span<char> destination, out int charsWritten)
+		{
+			chars.CopyTo(destination);
+			charsWritten = chars.Length;
+		}
+
+		/// <summary>
 		/// Determines whether the specified span is enclosed by the given character.
 		/// </summary>
 		/// <param name="value">The character that should appear at the start and end of the span.</param>
@@ -102,6 +114,20 @@ internal static partial class CharSpanExtensions
 		}
 
 		/// <summary>
+		/// Determines whether the beginning of the <paramref name="chars"/> matches the specified <paramref name="value"/> when compared ordinally.
+		/// </summary>
+		/// <param name="value">The character to compare to the beginning of the source span.</param>
+		/// <returns>
+		///     <see langword="true"/> if <paramref name="value"/> matches the beginning of
+		///     <paramref name="chars"/>; otherwise, <see langword="false"/>.
+		/// </returns>
+		[DebuggerStepThrough]
+		internal bool StartsWith(char value)
+		{
+			return FirstCharEquals(chars, value);
+		}
+
+		/// <summary>
 		/// Attemps to copy the contents of this <see cref="ReadOnlySpan{T}"/> into a
 		/// <see cref="Span{T}"/> and advancing the given ref <see cref="int"/> the number
 		/// of characters that were copied, returning a value indicating whether or not the operation
@@ -127,38 +153,6 @@ internal static partial class CharSpanExtensions
 			}
 
 			return result;
-		}
-
-		/// <summary>
-		/// Determines whether the beginning of the <paramref name="chars"/> matches the specified <paramref name="value"/> when compared ordinally.
-		/// </summary>
-		/// <param name="value">The character to compare to the beginning of the source span.</param>
-		/// <returns>
-		///     <see langword="true"/> if <paramref name="value"/> matches the beginning of
-		///     <paramref name="chars"/>; otherwise, <see langword="false"/>.
-		/// </returns>
-		[DebuggerStepThrough]
-		internal bool StartsWith(char value)
-		{
-			return FirstCharEquals(chars, value);
-		}
-		/// <summary>
-		/// Determines whether the beginning of the <paramref name="chars"/> matches the specified <paramref name="value"/> when compared using the specified
-		/// <paramref name="comparisonType"/> option.
-		/// </summary>
-		/// <param name="value">The character to compare to the beginning of the source span.</param>
-		/// <param name="comparisonType">
-		///     One of the enumeration values that determines how the
-		///     <paramref name="chars"/> and <paramref name="value"/> are compared.
-		/// </param>
-		/// <returns>
-		///     <see langword="true"/> if <paramref name="value"/> matches the beginning of
-		///     <paramref name="chars"/>; otherwise, <see langword="false"/>.
-		/// </returns>
-		[DebuggerStepThrough]
-		internal bool StartsWith(char value, StringComparison comparisonType)
-		{
-			return chars.StartsWith(new ReadOnlySpan<char>(in value), comparisonType);
 		}
 
 		/// <summary>
