@@ -26,7 +26,7 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>
 	private const int DEFAULT_CAPACITY = 5;
 	private static readonly WildcardEqualityComparer s_comparer = new();
 
-	//private readonly int _capacity;
+	private readonly HashSet<Wildcard>.AlternateLookup<ReadOnlySpan<char>> _alternate;
 	private readonly HashSet<Wildcard> _set;
 
 	/// <summary>
@@ -69,14 +69,8 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>
 	private WildcardSet(int capacity)
 	{
 		_set = new(capacity, s_comparer);
-#if NET9_0_OR_GREATER
 		_alternate = _set.GetAlternateLookup<ReadOnlySpan<char>>();
 	}
-
-	private readonly HashSet<Wildcard>.AlternateLookup<ReadOnlySpan<char>> _alternate;
-#else
-    }
-#endif
 
 	/// <summary>
 	/// Adds a wildcard to the set.

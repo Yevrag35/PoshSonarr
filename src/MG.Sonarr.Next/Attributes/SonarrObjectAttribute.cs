@@ -8,7 +8,7 @@ namespace MG.Sonarr.Next.Attributes;
 ///     decorated with this attribute and create a corresponding JSON converter for
 ///     JSON serialization/deserialization as part of the Dependency Injection service collection creation.
 /// </remarks>
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false), ExcludeFromCodeCoverage]
 internal sealed class SonarrObjectAttribute : Attribute
 {
 }

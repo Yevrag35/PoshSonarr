@@ -12,7 +12,7 @@ namespace MG.Sonarr.Next.Buffers;
 /// Prefer passing by <see langword="ref"/>, or using the <c>using</c> statement directly on the constructed instance to keep lifetime clear.
 /// </remarks>
 /// <typeparam name="T">The type of elements in the buffer.</typeparam>
-[StructLayout(LayoutKind.Auto)]
+[StructLayout(LayoutKind.Auto), ExcludeFromCodeCoverage]
 [DebuggerDisplay("IsRented = {IsRented}, Length = {_length}, Capacity = {Capacity}")]
 internal struct PooledBuffer<T> : IDisposable
 {

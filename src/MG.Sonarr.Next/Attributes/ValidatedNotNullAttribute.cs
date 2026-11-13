@@ -4,7 +4,7 @@ namespace MG.Sonarr.Next.Attributes;
 /// An attribute for Codacy to recognize that decorated method parameters have been validated against
 /// being null.
 /// </summary>
-[AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
+[AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true), ExcludeFromCodeCoverage]
 public sealed class ValidatedNotNullAttribute : AnalysisAttribute
 {
 }

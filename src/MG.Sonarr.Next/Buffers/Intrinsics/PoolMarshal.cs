@@ -3,7 +3,7 @@ namespace MG.Sonarr.Next.Buffers.Intrinsics;
 /// <summary>
 /// Provides low-level operations for working with <see cref="PooledBuffer{T}"/> instances, including reference retrieval and resizing.
 /// </summary>
-[DebuggerStepThrough]
+[DebuggerStepThrough, ExcludeFromCodeCoverage]
 internal static class PoolMarshal
 {
 	/// <summary>

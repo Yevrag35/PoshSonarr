@@ -4,7 +4,7 @@ namespace MG.Sonarr.Next.Attributes;
 /// An attribute decorated on assemblies that contain SonarrObject derived classes meaning that they should be scanned
 /// for JSON serialization/deserialization converters on module load.
 /// </summary>
-[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false, Inherited = false), ExcludeFromCodeCoverage]
 public sealed class SonarrObjectConverterAssemblyAttribute : Attribute
 {
 }
