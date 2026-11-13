@@ -190,16 +190,18 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 			return;
 		}
 
-		IEnumerable<EpisodeObject> episodes = this.ParameterSetNameIsLike("ByEpisode*")
-			? this.GetEpisodesById<EpisodeObject>(_epIds)
+		List<EpisodeObject> episodes = this.ParameterSetNameIsLike("ByEpisode*")
+			? this.GetEpisodesById(_epIds)
 			: this.GetEpisodesBySeries(_seriesIds);
 
 		if (this.HasNotNullParameter(EpisodeIdentifier) && this.EpisodeIdentifier.Length > 0)
 		{
-			episodes = this.EpisodeIdentifier.FilterEpisodes(episodes);
+			this.WriteCollection(this.EpisodeIdentifier.FilterEpisodes(episodes));
 		}
-
-		this.WriteCollection(episodes);
+		else
+		{
+			this.WriteCollection(episodes);
+		}
 	}
 
 	/// <summary>
@@ -236,24 +238,26 @@ public sealed class GetSonarrEpisodeCmdlet : SonarrMetadataCmdlet
 	/// The method is an iterator, so each request goes out as the sequence is enumerated. When a request fails, the
 	/// method writes its error, unless the error is ignorable, and goes on to the next ID.
 	/// </remarks>
-	/// <typeparam name="T">The type that each episode is read as.</typeparam>
 	/// <param name="episodeIds">The IDs of the episodes to get.</param>
 	/// <returns>The episodes that were found, in the order of their IDs.</returns>
-	private IEnumerable<T> GetEpisodesById<T>(IEnumerable<int> episodeIds) where T : PSObject
+	private List<EpisodeObject> GetEpisodesById(SortedSet<int> episodeIds)
 	{
+		List<EpisodeObject> list = new(episodeIds.Count);
 		foreach (int id in episodeIds)
 		{
 			string url = this.Tag.GetUrlForId(id);
-			var response = this.SendGetRequest<T>(url);
+			var response = this.SendGetRequest<EpisodeObject>(url);
 			if (response.IsError)
 			{
 				this.WriteConditionalError(response.Error);
 			}
 			else
 			{
-				yield return response.Value;
+				list.Add(response.Value);
 			}
 		}
+
+		return list;
 	}
 	/// <summary>
 	/// Gets the episodes of each of the specified series, with a request for each series, and gives each episode the
