@@ -1,5 +1,8 @@
+using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.Config;
 using MG.Sonarr.Next.Models.DownloadClients;
+using MG.Sonarr.Next.Models.Episodes;
+using MG.Sonarr.Next.Models.Fields;
 using MG.Sonarr.Next.Models.Media;
 using MG.Sonarr.Next.Models.RemotePaths;
 using MG.Sonarr.Next.Models.Series;
@@ -227,6 +230,80 @@ public sealed class ObjectConverterTests
 			JsonElement field = Assert.Single(fields, f => f.GetProperty("name").GetString() == name);
 			return [.. field.GetProperty("value").EnumerateArray().Select(item => item.GetRawText())];
 		}
+	}
+
+	/// <summary>
+	/// A string that its property's span converter can't read, such as an air date that isn't a date, reads as the
+	/// string that Sonarr sent, which a model keeps in view rather than holding it back, and goes back to Sonarr as that
+	/// string.
+	/// </summary>
+	/// <param name="field">The JSON field's name.</param>
+	/// <param name="value">The string that Sonarr sent.</param>
+	/// <param name="model">The type to read the object as.</param>
+	[Theory]
+	[MemberData(nameof(UnreadableSpanValues))]
+	public void KeepsAStringThatItsSpanConverterCantReadAsItCame(string field, string value, Type model)
+	{
+		string body = $$"""{"id":1,"{{field}}":{{JsonSerializer.Serialize(value)}}}""";
+
+		PSObject read = Assert.IsAssignableFrom<PSObject>(JsonSerializer.Deserialize(body, model, ModuleServices.Json.ForDeserializing));
+		object? inView = read.Properties[char.ToUpperInvariant(field[0]) + field[1..]]?.Value;
+		string written = JsonSerializer.Serialize(read, read.GetType(), ModuleServices.Json.ForSerializing);
+
+		using JsonDocument document = JsonDocument.Parse(written);
+		Assert.Multiple(
+			() => Assert.Equal(value, Assert.IsType<string>(inView)),
+			() =>
+			{
+				Assert.True(document.RootElement.TryGetProperty(field, out JsonElement element), $"The body lacks '{field}': {written}");
+				Assert.Equal(JsonValueKind.String, element.ValueKind);
+				Assert.Equal(value, element.GetString());
+			});
+	}
+
+	public static TheoryData<string, string, Type> UnreadableSpanValues => new()
+	{
+		{ "airDate", "TBA", typeof(EpisodeObject) },
+		{ "firstAired", "TBA", typeof(SeriesObject) },
+		{ "airTime", "evenings", typeof(SeriesObject) },
+		{ "duration", "about an hour", typeof(PSObject) },
+	};
+
+	/// <summary>
+	/// An array that doesn't read as the type that its property's name gives, such as tags that hold strings or a
+	/// field's choices that hold numbers, reads as an array of objects, as an array under any other name does, so the
+	/// rest of the body still reads, the property keeps what Sonarr sent, the model knows that its tags aren't tag IDs,
+	/// and the array goes back to Sonarr as it came.
+	/// </summary>
+	[Fact]
+	public void KeepsAnArrayThatDoesntFitItsTypeAsItCame()
+	{
+		const string body = """
+			{
+				"id": 1,
+				"name": "Sandbox Flood",
+				"priority": 1,
+				"tags": ["anime", "4k"],
+				"fields": [
+					{ "order": 0, "name": "category", "type": "select", "value": 1, "selectOptions": [1, 2] }
+				]
+			}
+			""";
+
+		DownloadClientObject client = Deserialize<DownloadClientObject>(body);
+		FieldObject field = Assert.Single(Assert.IsAssignableFrom<IReadOnlyList<FieldObject>>(client.Properties["Fields"].Value));
+		string written = JsonSerializer.Serialize(client, ModuleServices.Json.ForSerializing);
+
+		using JsonDocument document = JsonDocument.Parse(written);
+		JsonElement root = document.RootElement;
+		Assert.Multiple(
+			() => Assert.Equal(["anime", "4k"], Assert.IsType<object[]>(client.Properties["Tags"].Value)),
+			() => Assert.False(((ITagPipeable)client).HasReadableTags),
+			() => Assert.Equal(1, client.Properties["Priority"].Value),
+			() => Assert.Equal([1, 2], Assert.IsType<object[]>(field.Properties["SelectOptions"].Value)),
+			() => Assert.Empty(field.SelectOptions),
+			() => Assert.Equal("""["anime","4k"]""", root.GetProperty("tags").GetRawText()),
+			() => Assert.Equal("[1,2]", root.GetProperty("fields")[0].GetProperty("selectOptions").GetRawText()));
 	}
 
 	private static T Deserialize<T>(string json)

@@ -77,7 +77,8 @@ public sealed class FieldObject : SonarrObject,
 	/// Gets the choices of a select field.
 	/// </summary>
 	/// <value>
-	/// The choices in the <c>SelectOptions</c> property, or an empty list when the field isn't a select field.
+	/// The choices in the <c>SelectOptions</c> property, or an empty list when the field isn't a select field or its
+	/// choices weren't read as select options.
 	/// </value>
 	public IReadOnlyList<SelectOptionObject> SelectOptions { get; private set; }
 	/// <summary>
@@ -126,7 +127,9 @@ public sealed class FieldObject : SonarrObject,
 	/// <remarks>
 	/// The method replaces every property that describes the field with a read-only one, which leaves <c>Value</c> as
 	/// the one writable property. It keeps the <c>SelectOptions</c> list in <see cref="SelectOptions"/>, or adds an
-	/// empty, read-only <c>SelectOptions</c> property when Sonarr sent none.
+	/// empty, read-only <c>SelectOptions</c> property when Sonarr sent none. A <c>SelectOptions</c> property whose
+	/// choices the JSON converter couldn't read as select options keeps them as Sonarr sent them, and
+	/// <see cref="SelectOptions"/> stays empty.
 	/// </remarks>
 	/// <param name="alreadyCalled"><see langword="true"/> if the object was deserialized before; otherwise,
 	/// <see langword="false"/>.</param>
@@ -148,7 +151,7 @@ public sealed class FieldObject : SonarrObject,
 		{
 			this.SelectOptions = list;
 		}
-		else
+		else if (this.Properties[nameof(SelectOptions)] is null)
 		{
 			var array = ImmutableArray<SelectOptionObject>.Empty;
 			this.Properties.Add(new ReadOnlyCollectionProperty<SelectOptionObject>(nameof(SelectOptions), array));

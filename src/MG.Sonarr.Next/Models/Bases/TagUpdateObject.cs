@@ -10,7 +10,9 @@ namespace MG.Sonarr.Next.Models;
 /// <para>
 /// The object can be piped as an <see cref="ITagPipeable"/> to the cmdlets that read and change tags. Its
 /// <see cref="Tags"/> is the set that the read-only <c>Tags</c> note property holds, so a change made to it in C#
-/// shows in PowerShell and in the next request body, while PowerShell can't replace the set.
+/// shows in PowerShell and in the next request body, while PowerShell can't replace the set. When the JSON converter
+/// couldn't read the <c>Tags</c> property as tag IDs, the property keeps what Sonarr sent, <see cref="Tags"/> holds
+/// none of it, and <see cref="HasReadableTags"/> is <see langword="false"/>.
 /// </para>
 /// <para>
 /// <see cref="Commit"/> and <see cref="Reset"/> are sealed. A derived model adds to them through
@@ -37,6 +39,20 @@ public
 	/// The snapshot of tag IDs that <see cref="Reset"/> puts back, or <see langword="null"/> if none was taken.
 	/// </summary>
 	private int[]? _originalTags;
+
+	/// <summary>
+	/// Gets a value that indicates whether <see cref="Tags"/> holds the object's tags.
+	/// </summary>
+	/// <remarks>
+	/// <see cref="OnDeserialized(bool)"/> sets it. A tag cmdlet acts on the object's tags only when it's
+	/// <see langword="true"/>.
+	/// </remarks>
+	/// <value>
+	/// <see langword="true"/> if the object's <c>Tags</c> property holds tag IDs, which <see cref="Tags"/> then holds,
+	/// or the object has no tags, which is the default; <see langword="false"/> if the property holds values that the
+	/// JSON converter couldn't read as tag IDs, such as strings.
+	/// </value>
+	public bool HasReadableTags { get; private set; } = true;
 
 	/// <summary>
 	/// Gets or sets a value that indicates whether a change to the object's tags must be saved with a request to Sonarr.
@@ -145,7 +161,8 @@ public
 	/// <remarks>
 	/// It sets <see cref="MustUpdateViaApi"/> to <see langword="true"/>, and when the object has a
 	/// <see cref="ReadOnlyTagsProperty"/> named <c>Tags</c>, sets <see cref="Tags"/> to the set it holds, which takes
-	/// the snapshot. A derived model's override calls it first.
+	/// the snapshot. When the object's <c>Tags</c> property holds a value that isn't null and isn't that set, it sets
+	/// <see cref="HasReadableTags"/> to <see langword="false"/>. A derived model's override calls it first.
 	/// </remarks>
 	/// <param name="alreadyCalled">
 	/// <see langword="true"/> if <see cref="SonarrObject.OnDeserialized()"/> has run on the object before; otherwise,
@@ -154,9 +171,15 @@ public
 	protected override void OnDeserialized(bool alreadyCalled)
 	{
 		this.MustUpdateViaApi = true;
-		if (this.Properties[Constants.Tags] is ReadOnlyTagsProperty tagsProp)
+		PSPropertyInfo? property = this.Properties[Constants.Tags];
+		if (property is ReadOnlyTagsProperty tagsProp)
 		{
 			this.Tags = tagsProp.Tags;
+			this.HasReadableTags = true;
+		}
+		else
+		{
+			this.HasReadableTags = property?.Value is null;
 		}
 	}
 

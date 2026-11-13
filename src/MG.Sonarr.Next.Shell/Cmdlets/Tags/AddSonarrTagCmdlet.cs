@@ -57,7 +57,8 @@ public sealed class AddSonarrTagCmdlet : SonarrMetadataCmdlet
 	/// <remarks>
 	/// The parameter takes pipeline input, and each object has to implement <see cref="ITagPipeable"/>. An object that
 	/// exists on the server needs an ID greater than zero, or the cmdlet writes an error and leaves it unchanged, while
-	/// one that doesn't exist there yet, such as a series lookup result, needs no ID.
+	/// one that doesn't exist there yet, such as a series lookup result, needs no ID. An object whose <c>Tags</c>
+	/// property holds values that weren't read as tag IDs gets an error too, and stays as it is.
 	/// </remarks>
 	/// <value>The objects that carry tags. The default is an empty array.</value>
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
@@ -147,15 +148,22 @@ public sealed class AddSonarrTagCmdlet : SonarrMetadataCmdlet
 	/// the path of its endpoint, and one that doesn't exist there yet by reference.
 	/// </summary>
 	/// <remarks>
-	/// An object that exists on the server but has no ID greater than zero gets an error and isn't collected, and the
-	/// cmdlet goes on to the next object.
+	/// An object whose tags weren't read as tag IDs, and one that exists on the server but has no ID greater than zero,
+	/// gets an error and isn't collected, and the cmdlet goes on to the next object.
 	/// </remarks>
 	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	protected override void Process(IServiceProvider provider)
 	{
 		foreach (ITagPipeable item in this.InputObject)
 		{
-			if (!item.MustUpdateViaApi)
+			if (!item.HasReadableTags)
+			{
+				this.WriteError(new ArgumentException(
+					"The object's Tags property holds values that aren't tag IDs, so the cmdlet can't add tags to it.",
+					nameof(this.InputObject))
+						.ToRecord(ErrorCategory.InvalidData, item));
+			}
+			else if (!item.MustUpdateViaApi)
 			{
 				_ = _unsaved.Add(item);
 			}

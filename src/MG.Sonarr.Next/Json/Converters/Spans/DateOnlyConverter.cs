@@ -10,7 +10,7 @@ namespace MG.Sonarr.Next.Json.Converters.Spans;
 public sealed class TimeOnlyConverter : SpanConverter<TimeOnly>
 {
 	/// <summary>
-	/// Converts a property's value into a <see cref="TimeOnly"/>.
+	/// Tries to convert a property's value into a <see cref="TimeOnly"/>.
 	/// </summary>
 	/// <remarks>
 	/// A value that holds only a time, such as <c>21:00</c>, is read as that time. A value that holds a date and a
@@ -19,21 +19,25 @@ public sealed class TimeOnlyConverter : SpanConverter<TimeOnly>
 	/// </remarks>
 	/// <param name="chars">The unescaped characters of the value.</param>
 	/// <param name="propertyName">The name of the property that the value belongs to, which isn't used.</param>
-	/// <param name="isNull">A value that indicates whether the JSON value is null, which isn't used.</param>
-	/// <returns>The parsed time, or midnight when the value doesn't parse.</returns>
-	public override TimeOnly ConvertSpan(Span<char> chars, ReadOnlySpan<char> propertyName, bool isNull)
+	/// <param name="value">When this method returns <see langword="true"/>, the parsed time; otherwise, midnight.</param>
+	/// <returns>
+	/// <see langword="true"/> if the value parsed as a time or as a date and time; otherwise, <see langword="false"/>.
+	/// </returns>
+	public override bool TryConvertSpan(Span<char> chars, ReadOnlySpan<char> propertyName, out TimeOnly value)
 	{
 		// TimeOnly takes only white-space styles, and returns false for AssumeUniversal.
-		if (TimeOnly.TryParse(chars, CultureInfo.InvariantCulture, DateTimeStyles.None, out TimeOnly @to))
+		if (TimeOnly.TryParse(chars, CultureInfo.InvariantCulture, DateTimeStyles.None, out value))
 		{
-			return @to;
+			return true;
 		}
 		else if (DateTimeOffset.TryParse(chars, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset tempOff))
 		{
-			return TimeOnly.FromDateTime(tempOff.UtcDateTime);
+			value = TimeOnly.FromDateTime(tempOff.UtcDateTime);
+			return true;
 		}
 
-		return default;
+		value = default;
+		return false;
 	}
 }
 
@@ -48,7 +52,7 @@ public sealed class TimeOnlyConverter : SpanConverter<TimeOnly>
 public sealed class DateOnlyConverter : SpanConverter<DateOnly>
 {
 	/// <summary>
-	/// Converts a property's value into a <see cref="DateOnly"/>.
+	/// Tries to convert a property's value into a <see cref="DateOnly"/>.
 	/// </summary>
 	/// <remarks>
 	/// A value that holds only a date, such as <c>2024-01-15</c>, is read as that date. A value that holds a date and
@@ -57,20 +61,26 @@ public sealed class DateOnlyConverter : SpanConverter<DateOnly>
 	/// </remarks>
 	/// <param name="chars">The unescaped characters of the value.</param>
 	/// <param name="propertyName">The name of the property that the value belongs to, which isn't used.</param>
-	/// <param name="isNull">A value that indicates whether the JSON value is null, which isn't used.</param>
-	/// <returns>The parsed date, or <see cref="DateOnly.MinValue"/> when the value doesn't parse.</returns>
-	public override DateOnly ConvertSpan(Span<char> chars, ReadOnlySpan<char> propertyName, bool isNull)
+	/// <param name="value">
+	/// When this method returns <see langword="true"/>, the parsed date; otherwise, <see cref="DateOnly.MinValue"/>.
+	/// </param>
+	/// <returns>
+	/// <see langword="true"/> if the value parsed as a date or as a date and time; otherwise, <see langword="false"/>.
+	/// </returns>
+	public override bool TryConvertSpan(Span<char> chars, ReadOnlySpan<char> propertyName, out DateOnly value)
 	{
 		// DateOnly takes only white-space styles, and returns false for AssumeUniversal.
-		if (DateOnly.TryParse(chars, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateOnly @do))
+		if (DateOnly.TryParse(chars, CultureInfo.InvariantCulture, DateTimeStyles.None, out value))
 		{
-			return @do;
+			return true;
 		}
 		else if (DateTimeOffset.TryParse(chars, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset tempOff))
 		{
-			return DateOnly.FromDateTime(tempOff.DateTime);
+			value = DateOnly.FromDateTime(tempOff.DateTime);
+			return true;
 		}
 
-		return DateOnly.MinValue;
+		value = default;
+		return false;
 	}
 }

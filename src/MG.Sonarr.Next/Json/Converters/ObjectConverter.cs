@@ -22,10 +22,11 @@ namespace MG.Sonarr.Next.Json.Converters;
 /// its first letter uppercased and then renamed by the model's map or else the global one. A numeric <c>id</c>
 /// becomes a read-only property. A string is read by the span converter registered for its property's name, or else
 /// as a number, a <see cref="Guid"/>, a <see cref="DateOnly"/>, a <see cref="DateTimeOffset"/>, or a
-/// <see cref="Version"/>, tried in that order, and otherwise stays a string. A nested object becomes a model when its
-/// property's name and its parent's type call for one, and a plain <see cref="PSObject"/> otherwise. An array becomes
-/// the type that the settings give its property's name, or else an array of objects, in which a string is read by its
-/// property's span converter too, when the property has one.
+/// <see cref="Version"/>, tried in that order, and otherwise stays a string, as it does when its span converter can't
+/// read it. A nested object becomes a model when its property's name and its parent's type call for one, and a plain
+/// <see cref="PSObject"/> otherwise. An array becomes the type that the settings give its property's name when it reads
+/// as that type, and otherwise an array of objects, in which a string is read by its property's span converter too,
+/// when the property has one.
 /// </para>
 /// <para>
 /// Sonarr writes its values with the invariant culture, so they're read with it, whatever the current culture. A
@@ -266,24 +267,69 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	/// Reads a JSON array as the type that the settings give its property, or else as an array of objects.
 	/// </summary>
 	/// <remarks>
+	/// <para>
+	/// An array that doesn't read as its property's type, such as tags that hold strings where the type takes tag IDs,
+	/// is read as an array of objects instead, so the property keeps what Sonarr sent and the rest of the response
+	/// still reads. A model that needs the property's type checks for it.
+	/// </para>
+	/// <para>
 	/// In an array of objects whose property has a span converter, such as a provider field's <c>Value</c>, each string
 	/// is read by that converter, as a string value of the property is, so a list of a field's settings keeps
 	/// <c>2024</c> a string, while its numbers stay numbers.
+	/// </para>
 	/// </remarks>
 	/// <param name="reader">The reader positioned at the start of the array.</param>
 	/// <param name="propertyName">The name of the property that the array belongs to.</param>
 	/// <param name="options">The serializer options that the array is read with.</param>
 	/// <returns>The array, as its property's type or as an array of objects.</returns>
+	/// <exception cref="JsonException">Thrown when the array can't be read as an array of objects.</exception>
 	private object? ConvertToEnumerable(ref Utf8JsonReader reader, string propertyName, JsonSerializerOptions options)
 	{
-		if (_config.ConvertProperties.TryGetValue(propertyName, out Type? convertTo))
+		if (_config.ConvertProperties.TryGetValue(propertyName, out Type? convertTo)
+			&&
+			TryDeserialize(ref reader, convertTo, options, out object? converted))
 		{
-			return JsonSerializer.Deserialize(ref reader, convertTo, options);
+			return converted;
 		}
 
 		return _config.SpanConverters.ContainsKey(propertyName)
 			? this.ReadArrayOfProperty(ref reader, propertyName, options)
 			: JsonSerializer.Deserialize<object[]>(ref reader, options);
+	}
+	/// <summary>
+	/// Tries to read a JSON array as the specified type, and leaves the reader where it was when the array doesn't read
+	/// as that type.
+	/// </summary>
+	/// <remarks>
+	/// The serializer reports a value that doesn't read as the type with a <see cref="JsonException"/>, and it may have
+	/// moved the reader by then, so the method keeps a copy of the reader from before the read and puts it back.
+	/// </remarks>
+	/// <param name="reader">
+	/// The reader positioned at the start of the array, and left at its end when the read succeeds.
+	/// </param>
+	/// <param name="type">The type to read the array as.</param>
+	/// <param name="options">The serializer options that the array is read with.</param>
+	/// <param name="value">
+	/// When this method returns <see langword="true"/>, the array as <paramref name="type"/>; otherwise,
+	/// <see langword="null"/>.
+	/// </param>
+	/// <returns>
+	/// <see langword="true"/> if the array read as <paramref name="type"/>; otherwise, <see langword="false"/>.
+	/// </returns>
+	private static bool TryDeserialize(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options, out object? value)
+	{
+		Utf8JsonReader start = reader;
+		try
+		{
+			value = JsonSerializer.Deserialize(ref reader, type, options);
+			return true;
+		}
+		catch (JsonException)
+		{
+			reader = start;
+			value = null;
+			return false;
+		}
 	}
 	/// <summary>
 	/// Reads a JSON array whose property has a span converter, reading each string in it through that converter and
@@ -633,9 +679,10 @@ public sealed class ObjectConverter : ByPolicyJsonConverter<object>
 	/// <remarks>
 	/// <para>
 	/// When the property is one to capitalize, the value's first letter is uppercased first, with the invariant
-	/// culture. Then the property's span converter reads the value, or else it's parsed as an <see cref="int"/>,
-	/// <see cref="long"/>, or <see cref="double"/>, or else as <see cref="ReadString(ReadOnlySpan{char}, string)"/>
-	/// parses it. An escaped value goes through the same steps once the reader unescapes it.
+	/// culture. Then the property's span converter reads the value, keeping it a string when it can't read it, or else
+	/// it's parsed as an <see cref="int"/>, <see cref="long"/>, or <see cref="double"/>, or else as
+	/// <see cref="ReadString(ReadOnlySpan{char}, string)"/> parses it. An escaped value goes through the same steps once
+	/// the reader unescapes it.
 	/// </para>
 	/// <para>
 	/// The characters are copied to the stack when the value is up to <see cref="MAX_STACKALLOC"/> bytes long, and to a

@@ -18,10 +18,11 @@ namespace MG.Sonarr.Next.Models.Series;
 /// pipes its <see cref="LanguageProfileId"/> and <see cref="QualityProfileId"/> as profiles.
 /// </para>
 /// <para>
-/// The <c>FirstAired</c> property is held back from PowerShell. <see cref="OnSerializing"/> writes it into a request
-/// body, and a commit or reset removes it again. A <c>ShortOverview</c> property shows the overview: an alias of
-/// <c>Overview</c> when it's 90 characters or fewer, or else a read-only copy cut after a word and ended with
-/// <c>...</c>.
+/// The <c>FirstAired</c> property is held back from PowerShell when it holds a date, which <see cref="OnSerializing"/>
+/// writes into a request body, and a commit or reset removes again. A first air date that wasn't read as a date stays
+/// in view, and goes back to Sonarr, as the text that Sonarr sent. A <c>ShortOverview</c> property shows the
+/// overview: an alias of <c>Overview</c> when it's 90 characters or fewer, or else a read-only copy cut after a word
+/// and ended with <c>...</c>.
 /// </para>
 /// <para>
 /// The JSON fields <c>imdbId</c> and <c>seasonFolder</c> become the properties <c>IMDbId</c> and
@@ -67,7 +68,7 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 	/// </summary>
 	private DateOnly _firstAired;
 	/// <summary>
-	/// Whether Sonarr sent a first air date, which <see cref="_firstAired"/> then holds.
+	/// Whether Sonarr sent a first air date that was read as a date, which <see cref="_firstAired"/> then holds.
 	/// </summary>
 	private bool _hasFirstAired;
 
@@ -163,7 +164,8 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 	}
 
 	/// <summary>
-	/// Holds the <c>FirstAired</c> property back from PowerShell, copies the title, and adds the short overview.
+	/// Holds the <c>FirstAired</c> property back from PowerShell when it's a date, copies the title, and adds the short
+	/// overview.
 	/// </summary>
 	/// <param name="alreadyCalled">
 	/// <see langword="true"/> if the object has been deserialized before; otherwise, <see langword="false"/>.
@@ -196,7 +198,7 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 		}
 	}
 	/// <summary>
-	/// Adds the <c>FirstAired</c> property back to the object before it's serialized, when Sonarr sent one.
+	/// Adds the <c>FirstAired</c> property back to the object before it's serialized, when the object held one back.
 	/// </summary>
 	public virtual void OnSerializing()
 	{
@@ -215,12 +217,12 @@ public class SeriesObject : TagUpdateObject<SeriesObject>,
 		base.OnReset();
 	}
 	/// <summary>
-	/// Removes the <c>FirstAired</c> property that <see cref="OnSerializing"/> added, when Sonarr sent a first air
-	/// date.
+	/// Removes the <c>FirstAired</c> property that <see cref="OnSerializing"/> added, when the object held a first air
+	/// date back.
 	/// </summary>
 	/// <remarks>
-	/// When Sonarr sent none, <see cref="OnSerializing"/> added nothing, so a property of that name that Sonarr sent
-	/// without a date stays.
+	/// When the object held none back, <see cref="OnSerializing"/> added nothing, so a property of that name that Sonarr
+	/// sent without a date stays.
 	/// </remarks>
 	private void RemoveFirstAired()
 	{

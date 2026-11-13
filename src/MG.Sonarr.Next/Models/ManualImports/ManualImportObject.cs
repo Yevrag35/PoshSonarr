@@ -221,9 +221,10 @@ public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
 	/// Puts the file's episodes in a read-only <c>Episodes</c> property and returns the set that it holds.
 	/// </summary>
 	/// <remarks>
-	/// The set that Sonarr sent is kept, and a file that Sonarr sent no set for gets an empty one. The property is
-	/// read-only either way, so PowerShell can't replace the set that <see cref="Episodes"/> holds and that the import
-	/// posts, and episodes are added to it through <see cref="Episodes"/>.
+	/// The set that Sonarr sent is kept, and a file that Sonarr sent no set for, or a list that the JSON converter
+	/// couldn't read as episodes, gets an empty one, since the import posts the IDs of the set's episodes. The property
+	/// is read-only either way, so PowerShell can't replace the set that <see cref="Episodes"/> holds and that the
+	/// import posts, and episodes are added to it through <see cref="Episodes"/>.
 	/// </remarks>
 	/// <returns>The set that the <c>Episodes</c> property holds.</returns>
 	private SortedSet<EpisodeObject> StoreEpisodes()

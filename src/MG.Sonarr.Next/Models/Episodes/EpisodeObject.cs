@@ -19,9 +19,10 @@ namespace MG.Sonarr.Next.Models.Episodes;
 /// </para>
 /// <para>
 /// The numbers and IDs are copies made when the object is deserialized, and don't follow a change that PowerShell
-/// makes to the properties afterward. The <c>AirDate</c> property is held back from PowerShell. When Sonarr sent one,
-/// <see cref="OnSerializing"/> writes it into a request body, and <see cref="Commit"/> and <see cref="Reset"/> remove
-/// it again.
+/// makes to the properties afterward. The <c>AirDate</c> property is held back from PowerShell when it holds a date,
+/// which <see cref="OnSerializing"/> writes into a request body, and <see cref="Commit"/> and <see cref="Reset"/>
+/// remove again. An air date that wasn't read as a date stays in view, and goes back to Sonarr, as the text that
+/// Sonarr sent.
 /// </para>
 /// <para>
 /// Episodes sort by series ID, then by season number, episode number, and absolute episode number.
@@ -53,7 +54,7 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 	/// </summary>
 	private DateOnly _airDate;
 	/// <summary>
-	/// Whether Sonarr sent an air date, which <see cref="_airDate"/> then holds.
+	/// Whether Sonarr sent an air date that was read as a date, which <see cref="_airDate"/> then holds.
 	/// </summary>
 	private bool _hasAirDate;
 	/// <summary>
@@ -195,7 +196,8 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 	}
 
 	/// <summary>
-	/// Holds the <c>AirDate</c> property back from PowerShell and copies the properties that the C# members keep.
+	/// Holds the <c>AirDate</c> property back from PowerShell when it's a date, and copies the properties that the C#
+	/// members keep.
 	/// </summary>
 	/// <param name="alreadyCalled">
 	/// <see langword="true"/> if the object has been deserialized before; otherwise, <see langword="false"/>.
@@ -262,7 +264,7 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 		base.Commit();
 	}
 	/// <summary>
-	/// Adds the <c>AirDate</c> property back to the object before it's serialized, when Sonarr sent one.
+	/// Adds the <c>AirDate</c> property back to the object before it's serialized, when the object held one back.
 	/// </summary>
 	public void OnSerializing()
 	{
@@ -295,11 +297,11 @@ public sealed class EpisodeObject : IdSonarrObject<EpisodeObject>,
 		return this.Properties[nameof(this.Series)]?.Value as SeriesObject;
 	}
 	/// <summary>
-	/// Removes the <c>AirDate</c> property that <see cref="OnSerializing"/> added, when Sonarr sent an air date.
+	/// Removes the <c>AirDate</c> property that <see cref="OnSerializing"/> added, when the object held an air date back.
 	/// </summary>
 	/// <remarks>
-	/// When Sonarr sent none, <see cref="OnSerializing"/> added nothing, so a property of that name, such as one that
-	/// Sonarr sent as <see langword="null"/>, stays.
+	/// When the object held none back, <see cref="OnSerializing"/> added nothing, so a property of that name, such as
+	/// one that Sonarr sent as <see langword="null"/> or as text that isn't a date, stays.
 	/// </remarks>
 	private void RemoveAirDate()
 	{
