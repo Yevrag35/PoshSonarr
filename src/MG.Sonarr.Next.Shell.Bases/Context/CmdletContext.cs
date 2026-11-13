@@ -68,11 +68,6 @@ public static class CmdletContextExtensions
 	/// <exception cref="ContextNotSetException">Thrown when the module has no connection.</exception>
 	internal static IServiceScope CreateScope<T>(this T cmdlet) where T : PSCmdlet, IIsRunning<T>, IScopeCmdlet<T>
 	{
-		//if (!T.IsRunningCommand(cmdlet))
-		//{
-		//    throw new InvalidOperationException("Don't execute me weird.");
-		//}
-
 		return SonarrContext.CreateScope().WithCmdlet(cmdlet);
 	}
 
@@ -320,7 +315,7 @@ file static class SonarrContext
 	/// <returns>Nothing, since the method always throws.</returns>
 	/// <exception cref="ContextNotSetException">Thrown always, with a <see cref="CmdletScopeNotReadyException"/> as its
 	/// inner exception.</exception>
-	[DoesNotReturn]
+	[DoesNotReturn, DebuggerStepThrough, StackTraceHidden]
 	private static T ThrowNotSet<T>()
 	{
 		throw new ContextNotSetException(new CmdletScopeNotReadyException());

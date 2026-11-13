@@ -61,9 +61,9 @@ internal readonly struct FnPtr<TResult> where TResult : allows ref struct
 	{
 		unsafe
 		{
-			// SAFETY: ThrowIfEmptyStruct throws when _ptr is null, and callers build every FnPtr from the address
-			// of a method with this signature.
-			FnPtr.ThrowIfEmptyStruct<TResult>(_ptr is null, nameof(_ptr));
+			// SAFETY: ThrowIf throws when _ptr is null, and callers build every FnPtr from the address of a method
+			// with this signature.
+			EmptyStructException.ThrowIf(_ptr is null, typeof(FnPtr<>));
 			return _ptr();
 		}
 	}
@@ -219,26 +219,13 @@ internal readonly struct FnPtr<T, TResult> where T : allows ref struct where TRe
 	{
 		unsafe
 		{
-			// SAFETY: ThrowIfEmptyStruct throws when _ptr is null, and callers build every FnPtr from the address
-			// of a method with this signature.
-			FnPtr.ThrowIfEmptyStruct<T, TResult>(_ptr is null, nameof(_ptr));
+			// SAFETY: ThrowIf throws when _ptr is null, and callers build every FnPtr from the address of a method
+			// with this signature.
+			EmptyStructException.ThrowIf(_ptr is null, typeof(FnPtr<,>));
 			return _ptr(arg);
 		}
 	}
 
-	/// <summary>
-	/// Invokes the function pointer with the specified argument and returns the result.
-	/// </summary>
-	/// <remarks>This operator provides a convenient syntax for invoking a function pointer using the right-shift
-	/// operator. It is equivalent to calling the function pointer directly with the specified argument.</remarks>
-	/// <param name="fnPtr">The function pointer to invoke. Must not be null.</param>
-	/// <param name="arg">The argument to pass to the function pointer.</param>
-	/// <returns>The result returned by the invoked function pointer.</returns>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static TResult operator >>(FnPtr<T, TResult> fnPtr, T arg)
-	{
-		return fnPtr.Invoke(arg);
-	}
 	/// <summary>
 	/// Implicitly converts a raw managed function pointer to a <see cref="FnPtr{T, TResult}"/> wrapper.
 	/// </summary>
@@ -362,9 +349,9 @@ internal readonly struct FnPtr<T1, T2, TResult>
 	{
 		unsafe
 		{
-			// SAFETY: ThrowIfEmptyStruct throws when _ptr is null, and callers build every FnPtr from the address
-			// of a method with this signature.
-			FnPtr.ThrowIfEmptyStruct<T1, T2, TResult>(_ptr is null, nameof(_ptr));
+			// SAFETY: ThrowIf throws when _ptr is null, and callers build every FnPtr from the address of a method
+			// with this signature.
+			EmptyStructException.ThrowIf(_ptr is null, typeof(FnPtr<,,>));
 			return _ptr(arg1, arg2);
 		}
 	}
@@ -494,9 +481,9 @@ internal readonly struct FnPtr<T1, T2, T3, TResult>
 	{
 		unsafe
 		{
-			// SAFETY: ThrowIfEmptyStruct throws when _ptr is null, and callers build every FnPtr from the address
-			// of a method with this signature.
-			FnPtr.ThrowIfEmptyStruct<T1, T2, T3, TResult>(_ptr is null, nameof(_ptr));
+			// SAFETY: ThrowIf throws when _ptr is null, and callers build every FnPtr from the address of a method
+			// with this signature.
+			EmptyStructException.ThrowIf(_ptr is null, typeof(FnPtr<,,,>));
 			return _ptr(arg0, arg1, arg2);
 		}
 	}
@@ -630,9 +617,9 @@ internal readonly struct FnPtr<T1, T2, T3, T4, TResult>
 	{
 		unsafe
 		{
-			// SAFETY: ThrowIfEmptyStruct throws when _ptr is null, and callers build every FnPtr from the address
-			// of a method with this signature.
-			FnPtr.ThrowIfEmptyStruct<T1, T2, T3, T4, TResult>(_ptr is null, nameof(_ptr));
+			// SAFETY: ThrowIf throws when _ptr is null, and callers build every FnPtr from the address of a method
+			// with this signature.
+			EmptyStructException.ThrowIf(_ptr is null, typeof(FnPtr<,,,,>));
 			return _ptr(arg1, arg2, arg3, arg4);
 		}
 	}

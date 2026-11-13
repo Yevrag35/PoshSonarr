@@ -12,6 +12,7 @@ namespace MG.Sonarr.Next.Shell.Build;
 /// <c>FormatsToProcess</c>, and <c>TypesToProcess</c>. Each list is sorted ordinally, so the manifest's order doesn't
 /// change from one build to the next.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public static class Module
 {
 	/// <summary>
