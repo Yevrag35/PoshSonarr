@@ -85,7 +85,6 @@ internal static class EpisodeIdentifierExtensions
 	/// <summary>
 	/// Creates an <see cref="ErrorRecord"/> from the given exception and argument.
 	/// </summary>
-	/// <typeparam name="T">The type of the argument.</typeparam>
 	/// <param name="exception">The exception to create the error record from.</param>
 	/// <param name="argument">The argument that caused the exception.</param>
 	/// <returns>An <see cref="ErrorRecord"/> representing the exception and argument.</returns>

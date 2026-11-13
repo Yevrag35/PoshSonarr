@@ -286,6 +286,19 @@ public static partial class PSCmdletExtensions
 	}
 
 	/// <summary>
+	/// Writes each element of the specified collection to the output stream as an object of its own.
+	/// </summary>
+	/// <param name="cmdlet">The cmdlet that writes the elements.</param>
+	/// <param name="collection">The collection whose elements are written.</param>
+	public static void WriteCollection(this Cmdlet cmdlet, ICollection collection)
+	{
+		if (collection.Count > 0)
+		{
+			cmdlet.WriteObject(collection, enumerateCollection: true);
+		}
+	}
+
+	/// <summary>
 	/// Represents a callback that turns a bound parameter's value into an <see cref="ActionPreference"/>.
 	/// </summary>
 	/// <remarks>
