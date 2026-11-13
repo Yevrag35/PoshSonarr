@@ -5,6 +5,7 @@ namespace MG.Sonarr.Next.Buffers;
 /// <summary>
 /// Provides static factory methods for creating <see cref="ArraySlice{T}"/> instances.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class ArraySlice
 {
 	/// <summary>

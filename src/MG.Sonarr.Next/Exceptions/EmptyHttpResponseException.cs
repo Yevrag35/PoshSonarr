@@ -3,6 +3,7 @@ namespace MG.Sonarr.Next.Exceptions;
 /// <summary>
 /// Represents an exception thrown when a successful HTTP response returns no expected content.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class EmptyHttpResponseException : PoshSonarrException, Services.Http.Requests.IHttpRequestUri
 {
 	private const string MSG = "An empty response was received when there should have been one.";

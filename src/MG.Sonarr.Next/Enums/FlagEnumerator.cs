@@ -11,7 +11,7 @@ namespace MG.Sonarr.Next.Enums;
 /// </remarks>
 /// <typeparam name="TEnum">The enum type to enumerate flags for.</typeparam>
 /// <typeparam name="TUnderlying">The underlying integer type used for bit operations.</typeparam>
-[StructLayout(LayoutKind.Auto), DebuggerStepThrough]
+[StructLayout(LayoutKind.Auto), DebuggerStepThrough ,ExcludeFromCodeCoverage]
 public ref struct FlagEnumerator<TEnum, TUnderlying>
 	where TEnum : unmanaged, Enum
 	where TUnderlying : unmanaged, IBinaryInteger<TUnderlying>

@@ -27,7 +27,7 @@ namespace MG.Sonarr.Next.Numbers;
 /// </para>
 /// </remarks>
 [DebuggerStepThrough, DebuggerDisplay("{_value,nq}")]
-[SuppressMessage("Style", "IDE0023"), SuppressMessage("Style", "IDE0024")]
+[SuppressMessage("Style", "IDE0023"), SuppressMessage("Style", "IDE0024"), ExcludeFromCodeCoverage]
 public readonly struct PInt32 : IComparable<PInt32>, IEquatable<PInt32>, ISpanFormattable
 {
 	/// <summary>

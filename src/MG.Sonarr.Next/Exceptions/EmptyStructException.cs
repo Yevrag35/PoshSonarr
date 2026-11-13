@@ -29,6 +29,7 @@ public sealed class EmptyStructException : PoshSonarrException
 	/// <param name="innerException">
 	///     <inheritdoc cref="Exception(string, Exception)" path="/param[last()]"/>
 	/// </param>
+	[ExcludeFromCodeCoverage]
 	public EmptyStructException(string? objectName, Type? structType, Exception? innerException)
 		: this(GetMessage(objectName, structType), objectName, structType, innerException)
 	{
@@ -48,6 +49,7 @@ public sealed class EmptyStructException : PoshSonarrException
 	/// <param name="innerException">
 	///     <inheritdoc cref="Exception(string, Exception)" path="/param[last()]"/>
 	/// </param>
+	[ExcludeFromCodeCoverage]
 	public EmptyStructException(string? message, string? objectName, Type? structType, Exception? innerException)
 		: base(message, innerException)
 	{

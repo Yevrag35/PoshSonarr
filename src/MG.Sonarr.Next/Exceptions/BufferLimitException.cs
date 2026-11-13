@@ -15,9 +15,14 @@ public sealed class BufferLimitException : InvalidOperationException
 	/// <param name="maxLength">The maximum allowed buffer length.</param>
 	/// <param name="previousLength">The buffer length before the requested operation.</param>
 	/// <param name="requestedLength">The requested buffer length that exceeds the maximum.</param>
-	/// <param name="message">The message that describes the error.</param>
+	/// <param name="message">
+	/// A composite format string for the message, whose <c>{0}</c>, <c>{1}</c>, and <c>{2}</c> take
+	/// <paramref name="maxLength"/>, <paramref name="previousLength"/>, and <paramref name="requestedLength"/>, or
+	/// <see langword="null"/>, empty, or whitespace for the default message.
+	/// </param>
+	[ExcludeFromCodeCoverage]
 	public BufferLimitException(long maxLength, long previousLength, long requestedLength, string? message = null)
-		: base(message ?? string.Format(CultureInfo.CurrentCulture, GetMessage(message), maxLength, previousLength, requestedLength))
+		: base(string.Format(CultureInfo.CurrentCulture, GetMessage(message), maxLength, previousLength, requestedLength))
 	{
 	}
 

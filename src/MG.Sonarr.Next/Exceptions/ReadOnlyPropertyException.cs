@@ -3,6 +3,7 @@ namespace MG.Sonarr.Next.Exceptions;
 /// <summary>
 /// Represents an exception thrown when attempting to set a read-only property.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class ReadOnlyPropertyException : PoshSonarrException
 {
 	private const string MSG = "Unable to set the property value because '{0}' is marked as read-only.";

@@ -3,6 +3,7 @@ namespace MG.Sonarr.Next.Exceptions;
 /// <summary>
 /// Represents an exception thrown when a Sonarr object has an unexpected or malformed shape.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class MalformedSonarrObjectException : PoshSonarrException
 {
 	/// <summary>
