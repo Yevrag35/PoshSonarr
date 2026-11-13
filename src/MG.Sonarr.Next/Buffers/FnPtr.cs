@@ -22,7 +22,14 @@ internal readonly struct FnPtr<TResult> where TResult : allows ref struct
 	public bool IsValid
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get { unsafe { return _ptr is not null; } }
+		get
+		{
+			unsafe
+			{
+				// SAFETY: Comparing the pointer with null reads only its address and calls nothing through it.
+				return _ptr is not null;
+			}
+		}
 	}
 #pragma warning restore format
 	/// <summary>
@@ -38,6 +45,7 @@ internal readonly struct FnPtr<TResult> where TResult : allows ref struct
 		FnPtr(delegate* managed<TResult> ptr)
 	{
 		unsafe {
+			// SAFETY: The null check and the store read only the pointer's address and call nothing through it.
 			ArgumentNullException.ThrowIfNull(ptr);
 			_ptr = ptr;
 		}
@@ -53,6 +61,8 @@ internal readonly struct FnPtr<TResult> where TResult : allows ref struct
 	{
 		unsafe
 		{
+			// SAFETY: ThrowIfEmptyStruct throws when _ptr is null, and callers build every FnPtr from the address
+			// of a method with this signature.
 			FnPtr.ThrowIfEmptyStruct<TResult>(_ptr is null, nameof(_ptr));
 			return _ptr();
 		}
@@ -82,7 +92,11 @@ internal readonly struct FnPtr<TResult> where TResult : allows ref struct
 #endif
 		implicit operator FnPtr<TResult>(delegate* managed<TResult> ptr)
 	{
-		unsafe { return new(ptr); }
+		unsafe
+		{
+			// SAFETY: The constructor only checks the pointer for null and stores it, and calls nothing through it.
+			return new(ptr);
+		}
 	}
 
 	/// <summary>
@@ -94,7 +108,11 @@ internal readonly struct FnPtr<TResult> where TResult : allows ref struct
 #endif
 		implicit operator delegate* managed<TResult>(FnPtr<TResult> ptr)
 	{
-		unsafe { return ptr._ptr; }
+		unsafe
+		{
+			// SAFETY: Returning the pointer copies its address and calls nothing through it.
+			return ptr._ptr;
+		}
 	}
 
 #pragma warning disable format
@@ -111,7 +129,11 @@ internal readonly struct FnPtr<TResult> where TResult : allows ref struct
 	{
 		const string format = "&{{{0}}} () -> {1}";
 		object value;
-		unsafe { value = this.IsValid ? (nint)_ptr : "<invalid>"; }
+		unsafe
+		{
+			// SAFETY: The cast to nint copies the pointer's address for display and calls nothing through it.
+			value = this.IsValid ? (nint)_ptr : "<invalid>";
+		}
 
 		return string.Format(CultureInfo.CurrentCulture, format, value, typeof(TResult));
 	}
@@ -140,7 +162,14 @@ internal readonly struct FnPtr<T, TResult> where T : allows ref struct where TRe
 	public bool IsValid
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get { unsafe { return _ptr is not null; } }
+		get
+		{
+			unsafe
+			{
+				// SAFETY: Comparing the pointer with null reads only its address and calls nothing through it.
+				return _ptr is not null;
+			}
+		}
 	}
 #pragma warning restore format
 	/// <summary>
@@ -152,6 +181,8 @@ internal readonly struct FnPtr<T, TResult> where T : allows ref struct where TRe
 	{
 		unsafe
 		{
+			// SAFETY: The cast and the null check call nothing through the pointer. The cast can't check what the
+			// address points to, so a caller passes the address of a method that takes a T and returns a TResult.
 			_ptr = (delegate* managed<T, TResult>)ptr;
 			ArgumentNullException.ThrowIfNull(_ptr, nameof(ptr));
 		}
@@ -171,6 +202,7 @@ internal readonly struct FnPtr<T, TResult> where T : allows ref struct where TRe
 	{
 		unsafe
 		{
+			// SAFETY: The null check and the store read only the pointer's address and call nothing through it.
 			ArgumentNullException.ThrowIfNull(ptr);
 			_ptr = ptr;
 		}
@@ -187,6 +219,8 @@ internal readonly struct FnPtr<T, TResult> where T : allows ref struct where TRe
 	{
 		unsafe
 		{
+			// SAFETY: ThrowIfEmptyStruct throws when _ptr is null, and callers build every FnPtr from the address
+			// of a method with this signature.
 			FnPtr.ThrowIfEmptyStruct<T, TResult>(_ptr is null, nameof(_ptr));
 			return _ptr(arg);
 		}
@@ -215,7 +249,11 @@ internal readonly struct FnPtr<T, TResult> where T : allows ref struct where TRe
 #endif
 		implicit operator FnPtr<T, TResult>(delegate* managed<T, TResult> ptr)
 	{
-		unsafe { return new(ptr); }
+		unsafe
+		{
+			// SAFETY: The constructor only checks the pointer for null and stores it, and calls nothing through it.
+			return new(ptr);
+		}
 	}
 	/// <summary>
 	/// Implicitly converts a <see cref="FnPtr{T, TResult}"/> wrapper to a raw managed function pointer.
@@ -226,7 +264,11 @@ internal readonly struct FnPtr<T, TResult> where T : allows ref struct where TRe
 #endif
 		implicit operator delegate* managed<T, TResult>(FnPtr<T, TResult> ptr)
 	{
-		unsafe { return ptr._ptr; }
+		unsafe
+		{
+			// SAFETY: Returning the pointer copies its address and calls nothing through it.
+			return ptr._ptr;
+		}
 	}
 
 #pragma warning disable format
@@ -242,7 +284,11 @@ internal readonly struct FnPtr<T, TResult> where T : allows ref struct where TRe
 	{
 		const string format = "&{{{0}}} ({1} x) -> {2}";
 		object value;
-		unsafe { value = this.IsValid ? (nint)_ptr : "<invalid>"; }
+		unsafe
+		{
+			// SAFETY: The cast to nint copies the pointer's address for display and calls nothing through it.
+			value = this.IsValid ? (nint)_ptr : "<invalid>";
+		}
 
 		return string.Format(CultureInfo.CurrentCulture, format, value, typeof(T), typeof(TResult));
 	}
@@ -275,7 +321,14 @@ internal readonly struct FnPtr<T1, T2, TResult>
 	public bool IsValid
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get { unsafe { return _ptr is not null; } }
+		get
+		{
+			unsafe
+			{
+				// SAFETY: Comparing the pointer with null reads only its address and calls nothing through it.
+				return _ptr is not null;
+			}
+		}
 	}
 #pragma warning restore format
 	/// <summary>
@@ -292,6 +345,7 @@ internal readonly struct FnPtr<T1, T2, TResult>
 	{
 		unsafe
 		{
+			// SAFETY: The null check and the store read only the pointer's address and call nothing through it.
 			ArgumentNullException.ThrowIfNull(ptr);
 			_ptr = ptr;
 		}
@@ -308,6 +362,8 @@ internal readonly struct FnPtr<T1, T2, TResult>
 	{
 		unsafe
 		{
+			// SAFETY: ThrowIfEmptyStruct throws when _ptr is null, and callers build every FnPtr from the address
+			// of a method with this signature.
 			FnPtr.ThrowIfEmptyStruct<T1, T2, TResult>(_ptr is null, nameof(_ptr));
 			return _ptr(arg1, arg2);
 		}
@@ -323,7 +379,11 @@ internal readonly struct FnPtr<T1, T2, TResult>
 #endif
 		implicit operator FnPtr<T1, T2, TResult>(delegate* managed<T1, T2, TResult> ptr)
 	{
-		unsafe { return new(ptr); }
+		unsafe
+		{
+			// SAFETY: The constructor only checks the pointer for null and stores it, and calls nothing through it.
+			return new(ptr);
+		}
 	}
 	/// <summary>
 	/// Implicitly converts a <see cref="FnPtr{T1, T2, TOut}"/> wrapper to a raw managed function pointer.
@@ -334,7 +394,11 @@ internal readonly struct FnPtr<T1, T2, TResult>
 #endif
 		implicit operator delegate* managed<T1, T2, TResult>(FnPtr<T1, T2, TResult> ptr)
 	{
-		unsafe { return ptr._ptr; }
+		unsafe
+		{
+			// SAFETY: Returning the pointer copies its address and calls nothing through it.
+			return ptr._ptr;
+		}
 	}
 
 #pragma warning disable format
@@ -350,7 +414,11 @@ internal readonly struct FnPtr<T1, T2, TResult>
 	{
 		const string format = "&{{{0}}} ({1} x1, {2} x2) -> {3}";
 		object value;
-		unsafe { value = this.IsValid ? (nint)_ptr : "<invalid>"; }
+		unsafe
+		{
+			// SAFETY: The cast to nint copies the pointer's address for display and calls nothing through it.
+			value = this.IsValid ? (nint)_ptr : "<invalid>";
+		}
 
 		return string.Format(CultureInfo.CurrentCulture, format, value, typeof(T1), typeof(T2), typeof(TResult));
 	}
@@ -384,7 +452,14 @@ internal readonly struct FnPtr<T1, T2, T3, TResult>
 	public bool IsValid
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get { unsafe { return _ptr is not null; } }
+		get
+		{
+			unsafe
+			{
+				// SAFETY: Comparing the pointer with null reads only its address and calls nothing through it.
+				return _ptr is not null;
+			}
+		}
 	}
 #pragma warning restore format
 	/// <summary>
@@ -401,6 +476,7 @@ internal readonly struct FnPtr<T1, T2, T3, TResult>
 	{
 		unsafe
 		{
+			// SAFETY: The null check and the store read only the pointer's address and call nothing through it.
 			ArgumentNullException.ThrowIfNull(ptr);
 			_ptr = ptr;
 		}
@@ -418,6 +494,8 @@ internal readonly struct FnPtr<T1, T2, T3, TResult>
 	{
 		unsafe
 		{
+			// SAFETY: ThrowIfEmptyStruct throws when _ptr is null, and callers build every FnPtr from the address
+			// of a method with this signature.
 			FnPtr.ThrowIfEmptyStruct<T1, T2, T3, TResult>(_ptr is null, nameof(_ptr));
 			return _ptr(arg0, arg1, arg2);
 		}
@@ -433,7 +511,11 @@ internal readonly struct FnPtr<T1, T2, T3, TResult>
 #endif
 		implicit operator FnPtr<T1, T2, T3, TResult>(delegate* managed<T1, T2, T3, TResult> ptr)
 	{
-		unsafe { return new(ptr); }
+		unsafe
+		{
+			// SAFETY: The constructor only checks the pointer for null and stores it, and calls nothing through it.
+			return new(ptr);
+		}
 	}
 	/// <summary>
 	/// Implicitly converts a <see cref="FnPtr{T1, T2, T3, TOut}"/> wrapper to a raw managed function pointer.
@@ -445,7 +527,11 @@ internal readonly struct FnPtr<T1, T2, T3, TResult>
 #endif
 		implicit operator delegate* managed<T1, T2, T3, TResult>(FnPtr<T1, T2, T3, TResult> ptr)
 	{
-		unsafe { return ptr._ptr; }
+		unsafe
+		{
+			// SAFETY: Returning the pointer copies its address and calls nothing through it.
+			return ptr._ptr;
+		}
 	}
 
 #pragma warning disable format
@@ -461,7 +547,11 @@ internal readonly struct FnPtr<T1, T2, T3, TResult>
 	{
 		const string format = "&{{{0}}} ({1} x1, {2} x2, {3} x3) -> {4}";
 		object value;
-		unsafe { value = this.IsValid ? (nint)_ptr : "<invalid>"; }
+		unsafe
+		{
+			// SAFETY: The cast to nint copies the pointer's address for display and calls nothing through it.
+			value = this.IsValid ? (nint)_ptr : "<invalid>";
+		}
 
 		return string.Format(CultureInfo.CurrentCulture, format, value, typeof(T1), typeof(T2), typeof(T3), typeof(TResult));
 	}
@@ -497,7 +587,14 @@ internal readonly struct FnPtr<T1, T2, T3, T4, TResult>
 	public bool IsValid
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		get { unsafe { return _ptr is not null; } }
+		get
+		{
+			unsafe
+			{
+				// SAFETY: Comparing the pointer with null reads only its address and calls nothing through it.
+				return _ptr is not null;
+			}
+		}
 	}
 #pragma warning restore format
 	/// <summary>
@@ -514,6 +611,7 @@ internal readonly struct FnPtr<T1, T2, T3, T4, TResult>
 	{
 		unsafe
 		{
+			// SAFETY: The null check and the store read only the pointer's address and call nothing through it.
 			ArgumentNullException.ThrowIfNull(ptr);
 			_ptr = ptr;
 		}
@@ -532,6 +630,8 @@ internal readonly struct FnPtr<T1, T2, T3, T4, TResult>
 	{
 		unsafe
 		{
+			// SAFETY: ThrowIfEmptyStruct throws when _ptr is null, and callers build every FnPtr from the address
+			// of a method with this signature.
 			FnPtr.ThrowIfEmptyStruct<T1, T2, T3, T4, TResult>(_ptr is null, nameof(_ptr));
 			return _ptr(arg1, arg2, arg3, arg4);
 		}
@@ -547,7 +647,11 @@ internal readonly struct FnPtr<T1, T2, T3, T4, TResult>
 #endif
 		implicit operator FnPtr<T1, T2, T3, T4, TResult>(delegate* managed<T1, T2, T3, T4, TResult> ptr)
 	{
-		unsafe { return new(ptr); }
+		unsafe
+		{
+			// SAFETY: The constructor only checks the pointer for null and stores it, and calls nothing through it.
+			return new(ptr);
+		}
 	}
 	/// <summary>
 	/// Implicitly converts a <see cref="FnPtr{T1, T2, T3, T4, TResult}"/> wrapper to a raw managed function pointer.
@@ -559,7 +663,11 @@ internal readonly struct FnPtr<T1, T2, T3, T4, TResult>
 #endif
 		implicit operator delegate* managed<T1, T2, T3, T4, TResult>(FnPtr<T1, T2, T3, T4, TResult> ptr)
 	{
-		unsafe { return ptr._ptr; }
+		unsafe
+		{
+			// SAFETY: Returning the pointer copies its address and calls nothing through it.
+			return ptr._ptr;
+		}
 	}
 #pragma warning disable format
 	/// <summary>
@@ -574,7 +682,11 @@ internal readonly struct FnPtr<T1, T2, T3, T4, TResult>
 	{
 		const string format = "&{{{0}}} ({1} x1, {2} x2, {3} x3, {4} x4) -> {5}";
 		object value;
-		unsafe { value = this.IsValid ? (nint)_ptr : "<invalid>"; }
+		unsafe
+		{
+			// SAFETY: The cast to nint copies the pointer's address for display and calls nothing through it.
+			value = this.IsValid ? (nint)_ptr : "<invalid>";
+		}
 
 		return string.Format(CultureInfo.CurrentCulture, format, value, typeof(T1), typeof(T2), typeof(T3), typeof(T4), typeof(TResult));
 	}

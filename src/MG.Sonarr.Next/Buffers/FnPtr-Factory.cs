@@ -24,7 +24,11 @@ internal static class FnPtr
 #endif
 		FnPtr<TResult> Create<TResult>(delegate* managed<TResult> ptr)
 	{
-		unsafe { return new(ptr); }
+		unsafe
+		{
+			// SAFETY: The constructor only checks the pointer for null and stores it, and calls nothing through it.
+			return new(ptr);
+		}
 	}
 
 	/// <summary>
@@ -42,7 +46,11 @@ internal static class FnPtr
 		FnPtr<T, TResult> Create<T, TResult>(delegate* managed<T, TResult> ptr)
 		where T : allows ref struct
 	{
-		unsafe { return new(ptr); }
+		unsafe
+		{
+			// SAFETY: The constructor only checks the pointer for null and stores it, and calls nothing through it.
+			return new(ptr);
+		}
 	}
 
 	/// <summary>
@@ -62,7 +70,11 @@ internal static class FnPtr
 		where T1 : allows ref struct
 		where T2 : allows ref struct
 	{
-		unsafe { return new(ptr); }
+		unsafe
+		{
+			// SAFETY: The constructor only checks the pointer for null and stores it, and calls nothing through it.
+			return new(ptr);
+		}
 	}
 
 	/// <summary>
@@ -77,6 +89,7 @@ internal static class FnPtr
 	{
 		unsafe
 		{
+			// SAFETY: The conversion copies the wrapper's pointer, and ThrowIfNull only compares it with null.
 			delegate* managed<TResult> raw = ptr;
 			ArgumentNullException.ThrowIfNull(raw, paramName);
 		}
@@ -95,6 +108,7 @@ internal static class FnPtr
 	{
 		unsafe
 		{
+			// SAFETY: The conversion copies the wrapper's pointer, and ThrowIfNull only compares it with null.
 			delegate* managed<T, TResult> raw = ptr;
 			ArgumentNullException.ThrowIfNull(raw, paramName);
 		}
@@ -115,6 +129,7 @@ internal static class FnPtr
 	{
 		unsafe
 		{
+			// SAFETY: The conversion copies the wrapper's pointer, and ThrowIfNull only compares it with null.
 			delegate* managed<T1, T2, TResult> raw = ptr;
 			ArgumentNullException.ThrowIfNull(raw, paramName);
 		}
@@ -137,6 +152,7 @@ internal static class FnPtr
 	{
 		unsafe
 		{
+			// SAFETY: The conversion copies the wrapper's pointer, and ThrowIfNull only compares it with null.
 			delegate* managed<T1, T2, T3, TResult> raw = ptr;
 			ArgumentNullException.ThrowIfNull(raw, paramName);
 		}
@@ -162,6 +178,7 @@ internal static class FnPtr
 	{
 		unsafe
 		{
+			// SAFETY: The conversion copies the wrapper's pointer, and ThrowIfNull only compares it with null.
 			delegate* managed<T1, T2, T3, T4, TResult> raw = ptr;
 			ArgumentNullException.ThrowIfNull(raw, paramName);
 		}
