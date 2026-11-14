@@ -17,8 +17,6 @@ public sealed class AuthHandlerTests
 	/// </summary>
 	public enum LoginFault
 	{
-		/// <summary>Sonarr turns the password away, and sends the login back to its login page with <c>loginFailed=true</c>.</summary>
-		WrongPassword,
 		/// <summary>Sonarr takes the login but sets no cookie, so the URL base that it redirects to sends the login on to the login page.</summary>
 		CookieNotSet,
 		/// <summary>Sonarr takes the login and sets its cookie, but sends every download to its login page all the same.</summary>
@@ -95,13 +93,63 @@ public sealed class AuthHandlerTests
 	public static TheoryData<string> LongPasswords => [new string('ü', 200)];
 
 	/// <summary>
-	/// A forms download whose login Sonarr doesn't take, or whose request Sonarr sends to its login page again after a new
-	/// login, fails with the category <see cref="ErrorCategory.AuthenticationError"/> and the status 401, though each of
-	/// those requests ends on the login page's 200 OK, and saves nothing.
+	/// A download whose password the server doesn't take, a Basic server with a 401 and a forms server by sending the
+	/// login back to its login page with <c>loginFailed=true</c>, fails with the category
+	/// <see cref="ErrorCategory.AuthenticationError"/> and the status 401, says in the same words under both that the user
+	/// name or password is incorrect, and saves nothing.
+	/// </summary>
+	/// <param name="authType">The server's authentication type.</param>
+	[Theory]
+	[InlineData(SonarrAuthType.Basic)]
+	[InlineData(SonarrAuthType.Forms)]
+	public async Task FailsADownloadWhosePasswordIsWrong(SonarrAuthType authType)
+	{
+		LoginSonarr server = new(authType);
+		using ServiceProvider provider = server.Build();
+
+		DownloadOutcome outcome = await DownloadAsync(provider, ClientCalls.DOWNLOAD_PATH, new NetworkCredential(LoginSonarr.USER_NAME, "wrong"));
+
+		AssertUnauthorized(outcome);
+		Assert.Equal("The username or password is incorrect.", outcome.Result.Error?.Exception.InnerException?.Message);
+	}
+
+	/// <summary>
+	/// A download with credentials, under a connection whose test stored Basic, None, or External, to a server whose
+	/// authentication has changed to forms since, which sends the download to its login page, fails with the category
+	/// <see cref="ErrorCategory.AuthenticationError"/> and the status 401, though it ends on the login page's 200 OK, says
+	/// that the server's authentication has changed, and saves nothing. The handler sends the download's credentials in an
+	/// <c>Authorization</c> header under Basic, and none under None or External.
+	/// </summary>
+	/// <param name="storedType">The authentication type that the connection's test stored.</param>
+	[Theory]
+	[InlineData(SonarrAuthType.Basic)]
+	[InlineData(SonarrAuthType.None)]
+	[InlineData(SonarrAuthType.External)]
+	public async Task FailsADownloadOnceTheServersAuthenticationChangesToForms(SonarrAuthType storedType)
+	{
+		LoginSonarr server = new(SonarrAuthType.Forms);
+		using ServiceProvider provider = server.Build();
+		server.Settings.AuthType = storedType;
+
+		DownloadOutcome outcome = await DownloadAsync(provider, ClientCalls.DOWNLOAD_PATH, new NetworkCredential(LoginSonarr.USER_NAME, server.Password));
+
+		AssertUnauthorized(outcome);
+		Assert.StartsWith(
+			"The Sonarr server sent the request to its login page, so its authentication has changed since the connection was made.",
+			outcome.Result.Error?.Exception.InnerException?.Message);
+
+		string authorization = storedType == SonarrAuthType.Basic ? " with Authorization" : string.Empty;
+		Assert.Equal([$"GET /backup/manual/sonarr_backup.zip{authorization}"], server.Received.ToArray());
+	}
+
+	/// <summary>
+	/// A forms download whose login gets no cookie, so that Sonarr sends the login on to its login page, or whose request
+	/// Sonarr sends to its login page again after a new login, fails with the category
+	/// <see cref="ErrorCategory.AuthenticationError"/> and the status 401, though each of those requests ends on the login
+	/// page's 200 OK, and saves nothing.
 	/// </summary>
 	/// <param name="fault">How the login fails.</param>
 	[Theory]
-	[InlineData(LoginFault.WrongPassword)]
 	[InlineData(LoginFault.CookieNotSet)]
 	[InlineData(LoginFault.CookieNotHonored)]
 	public async Task FailsAFormsDownloadWhoseLoginDoesNotHold(LoginFault fault)
@@ -113,9 +161,8 @@ public sealed class AuthHandlerTests
 		};
 
 		using ServiceProvider provider = server.Build();
-		NetworkCredential credentials = new(LoginSonarr.USER_NAME, fault == LoginFault.WrongPassword ? "wrong" : server.Password);
 
-		DownloadOutcome outcome = await DownloadAsync(provider, ClientCalls.DOWNLOAD_PATH, credentials);
+		DownloadOutcome outcome = await DownloadAsync(provider, ClientCalls.DOWNLOAD_PATH, new NetworkCredential(LoginSonarr.USER_NAME, server.Password));
 
 		AssertUnauthorized(outcome);
 	}

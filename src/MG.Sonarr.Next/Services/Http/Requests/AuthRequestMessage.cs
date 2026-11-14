@@ -26,11 +26,6 @@ internal sealed class AuthedRequestMessage : SonarrRequestMessage
 	/// </summary>
 	/// <value>Always <see langword="false"/>.</value>
 	public override bool IsTest => false;
-	/// <summary>
-	/// Gets a value that indicates whether the request can authenticate with a login cookie.
-	/// </summary>
-	/// <value>Always <see langword="true"/>.</value>
-	public override bool CanUseCookieAuthentication => true;
 
 	/// <summary>
 	/// Initializes a new <see cref="AuthedRequestMessage"/> instance with the specified HTTP method, URL, credentials,

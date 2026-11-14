@@ -14,11 +14,7 @@ internal sealed class TestRequestMessage : SonarrRequestMessage
 	/// </summary>
 	/// <value>Always <see langword="true"/>.</value>
 	public override bool IsTest => true;
-	/// <summary>
-	/// Gets a value that indicates whether the request can authenticate with a login cookie.
-	/// </summary>
-	/// <value>Always <see langword="false"/>; the request authenticates with the API key.</value>
-	public override bool CanUseCookieAuthentication => false;
+
 	/// <summary>
 	/// Initializes a new <see cref="TestRequestMessage"/> instance with the specified URL and scope factory.
 	/// </summary>

@@ -11,18 +11,25 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// </summary>
 /// <remarks>
 /// <para>The handler reads <see cref="IConnectionSettings.AuthType"/> once, when its chain is built. For
-/// <see cref="SonarrAuthType.None"/> and <see cref="SonarrAuthType.External"/>, it passes every request through
-/// unchanged. For <see cref="SonarrAuthType.Basic"/> and <see cref="SonarrAuthType.Forms"/>, it takes the credentials
-/// from the request, which <see cref="Clients.ISonarrDownloadClient"/> sends when a download is given a
+/// <see cref="SonarrAuthType.None"/> and <see cref="SonarrAuthType.External"/>, it sends every request unchanged. For
+/// <see cref="SonarrAuthType.Basic"/> and <see cref="SonarrAuthType.Forms"/>, it takes the credentials from the
+/// request, which <see cref="Clients.ISonarrDownloadClient"/> sends when a download is given a
 /// <see cref="NetworkCredential"/>.</para>
-/// <para>A request without credentials goes out as it is, since Sonarr serves a client without a login when its
-/// authentication isn't required for the client's address. When Sonarr answers it with a 401 or sends it to the login
-/// page, the handler fails it with a <see cref="SonarrHttpException"/> whose status is 401.</para>
-/// <para>For Basic authentication, the handler adds an <c>Authorization: Basic</c> header. For forms authentication, it
-/// posts the credentials to the login page under the URL base, and the primary handler keeps the login's cookie in the
-/// connection's shared <see cref="CookieContainer"/>, which adds it to every later request. The handler logs in only
-/// when the container holds no cookie for the request's URL, and when Sonarr answers a request with a 401 or sends it
-/// to the login page, it logs in again and resends the request once, to its original URL.</para>
+/// <para>Under Basic or forms authentication, a request without credentials goes out as it is, since Sonarr serves a
+/// client without a login when its authentication isn't required for the client's address. When Sonarr answers it with a
+/// 401 or sends it to the login page, the handler fails it with a <see cref="SonarrHttpException"/> whose status is
+/// 401.</para>
+/// <para>For Basic authentication, the handler adds an <c>Authorization: Basic</c> header. Sonarr answers a user name or
+/// password that it doesn't take with a 401, and the handler fails such a request with the message that a forms login
+/// with wrong credentials gives. For forms authentication, it posts the credentials to the login page under the URL
+/// base, and the primary handler keeps the login's cookie in the connection's shared <see cref="CookieContainer"/>,
+/// which adds it to every later request. The handler logs in only when the container holds no cookie for the request's
+/// URL, and when Sonarr answers a request with a 401 or sends it to the login page, it logs in again and resends the
+/// request once, to its original URL.</para>
+/// <para>Sonarr sends a request to its login page only under forms authentication, so one that lands there under None or
+/// External, or with Basic credentials, means that Sonarr's authentication changed after the connection's test stored
+/// the type. The handler fails such a request with the status 401 and a message that says to connect again, rather than
+/// let the login page, which answers with a success, reach the file.</para>
 /// <para>The login page's URL spells the URL base as <see cref="IConnectionSettings.ServerUrlBase"/> does when the two
 /// match without regard to case, as the download client spells its URLs, so the login's cookie, whose path is the URL
 /// base, goes back with the downloads.</para>
@@ -31,6 +38,17 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// </remarks>
 public sealed class AuthHandler : DelegatingHandler
 {
+	/// <summary>
+	/// The message of the error that a user name or password that Sonarr didn't take gives, under Basic and forms
+	/// authentication alike.
+	/// </summary>
+	private const string INCORRECT_CREDENTIALS = "The username or password is incorrect.";
+	/// <summary>
+	/// The message of the error that a request gives when Sonarr sends it to its login page, though the authentication type
+	/// that the connection's test stored isn't forms, which means that Sonarr's authentication has changed since.
+	/// </summary>
+	private const string AUTHENTICATION_CHANGED = "The Sonarr server sent the request to its login page, so its authentication has changed since the connection was made. Run 'Connect-SonarrInstance' again to use its current authentication.";
+
 	private readonly SonarrAuthType _authType;
 	private readonly CookieContainer _cookies;
 	private readonly Uri _loginUrl;
@@ -61,9 +79,10 @@ public sealed class AuthHandler : DelegatingHandler
 	/// <param name="request">The HTTP request message to send.</param>
 	/// <param name="cancellationToken">A token that cancels the operation.</param>
 	/// <returns>The HTTP response message from the inner handler.</returns>
-	/// <exception cref="SonarrHttpException">Thrown when Sonarr answers a request without credentials with a 401 or its
-	/// login page, when a forms login fails, or when Sonarr sends the request to its login page again after a new
-	/// login.</exception>
+	/// <exception cref="SonarrHttpException">Thrown when Sonarr answers a request without credentials under Basic or forms
+	/// authentication, or one with Basic credentials, with a 401 or its login page, when it sends a request to its login
+	/// page under None or External authentication, when a forms login fails, or when Sonarr turns a request away again
+	/// after a new login.</exception>
 	protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
 	{
 		return this.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
@@ -78,14 +97,15 @@ public sealed class AuthHandler : DelegatingHandler
 	/// <param name="request">The HTTP request message to send.</param>
 	/// <param name="cancellationToken">A token that cancels the operation.</param>
 	/// <returns>A task that completes with the HTTP response message from the inner handler.</returns>
-	/// <exception cref="SonarrHttpException">Thrown when Sonarr answers a request without credentials with a 401 or its
-	/// login page, when a forms login fails, or when Sonarr sends the request to its login page again after a new
-	/// login.</exception>
+	/// <exception cref="SonarrHttpException">Thrown when Sonarr answers a request without credentials under Basic or forms
+	/// authentication, or one with Basic credentials, with a 401 or its login page, when it sends a request to its login
+	/// page under None or External authentication, when a forms login fails, or when Sonarr turns a request away again
+	/// after a new login.</exception>
 	protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
 	{
 		if (_authType is not (SonarrAuthType.Basic or SonarrAuthType.Forms))
 		{
-			return base.SendAsync(request, cancellationToken);
+			return this.SendWithoutLoginAsync(request, cancellationToken);
 		}
 
 		NetworkCredential? credentials = (request as AuthedRequestMessage)?.Credentials;
@@ -94,13 +114,9 @@ public sealed class AuthHandler : DelegatingHandler
 			return this.SendWithoutCredentialsAsync(request, cancellationToken);
 		}
 
-		if (_authType == SonarrAuthType.Basic)
-		{
-			SetBasicHeader(request, credentials);
-			return base.SendAsync(request, cancellationToken);
-		}
-
-		return this.SendWithFormsLoginAsync(request, credentials, cancellationToken);
+		return _authType == SonarrAuthType.Basic
+			? this.SendWithBasicAsync(request, credentials, cancellationToken)
+			: this.SendWithFormsLoginAsync(request, credentials, cancellationToken);
 	}
 
 	/// <summary>
@@ -120,7 +136,7 @@ public sealed class AuthHandler : DelegatingHandler
 	private async Task<HttpResponseMessage> SendWithoutCredentialsAsync(HttpRequestMessage request, CancellationToken token)
 	{
 		HttpResponseMessage response = await base.SendAsync(request, token).ConfigureAwait(false);
-		if (!this.IsLoginPage(response))
+		if (!this.IsTurnedAway(response))
 		{
 			return response;
 		}
@@ -134,16 +150,60 @@ public sealed class AuthHandler : DelegatingHandler
 	}
 
 	/// <summary>
+	/// Sends a request to the inner handler as it is, for a server whose authentication takes no login from the module,
+	/// and fails it when Sonarr sends it to its login page.
+	/// </summary>
+	/// <remarks>
+	/// <para>Under <see cref="SonarrAuthType.None"/>, Sonarr serves every request, and under
+	/// <see cref="SonarrAuthType.External"/>, a reverse proxy in front of it authenticates the client. Sonarr sends a
+	/// request to its login page only under forms authentication, so a request that lands there means that Sonarr's
+	/// authentication changed after the connection's test stored the type. The method fails such a request with a message
+	/// that says to connect again, so the login page, which answers with a success, never reaches the file.</para>
+	/// <para>A 401 goes back as it is, since under <see cref="SonarrAuthType.External"/> it can come from the reverse
+	/// proxy, which a new connection doesn't get past.</para>
+	/// </remarks>
+	/// <param name="request">The HTTP request message to send.</param>
+	/// <param name="token">A token that cancels the operation.</param>
+	/// <returns>A task that completes with the HTTP response message from the inner handler.</returns>
+	/// <exception cref="SonarrHttpException">Thrown when Sonarr sends the request to its login page.</exception>
+	private async Task<HttpResponseMessage> SendWithoutLoginAsync(HttpRequestMessage request, CancellationToken token)
+	{
+		HttpResponseMessage response = await base.SendAsync(request, token).ConfigureAwait(false);
+		if (!this.IsLoginPage(response))
+		{
+			return response;
+		}
+
+		SonarrHttpException ex = CreateUnauthorized(request, response, AUTHENTICATION_CHANGED);
+		response.Dispose();
+		throw ex;
+	}
+
+	/// <summary>
 	/// Determines whether a response means that Sonarr turned the request away for want of a login.
 	/// </summary>
 	/// <param name="response">The HTTP response message to check.</param>
 	/// <returns><see langword="true"/> if the response's status is 401 Unauthorized, or if its request ended up at the
-	/// login page's path, compared ordinally and ignoring case; otherwise, <see langword="false"/>.</returns>
+	/// login page; otherwise, <see langword="false"/>.</returns>
+	private bool IsTurnedAway(HttpResponseMessage response)
+	{
+		return response.StatusCode == HttpStatusCode.Unauthorized || this.IsLoginPage(response);
+	}
+
+	/// <summary>
+	/// Determines whether a response's request ended up at Sonarr's login page.
+	/// </summary>
+	/// <remarks>
+	/// The primary handler follows redirects, so a request that Sonarr sends to its login page ends with the page's own
+	/// response, and with the page's URL as its URL.
+	/// </remarks>
+	/// <param name="response">The HTTP response message to check.</param>
+	/// <returns><see langword="true"/> if the path of the response's request is the login page's path, compared ordinally
+	/// and ignoring case; otherwise, <see langword="false"/>.</returns>
 	private bool IsLoginPage(HttpResponseMessage response)
 	{
-		return response.StatusCode == HttpStatusCode.Unauthorized
-			|| (response.RequestMessage?.RequestUri is Uri landedOn
-				&& landedOn.AbsolutePath.Equals(_loginUrl.AbsolutePath, StringComparison.OrdinalIgnoreCase));
+		return response.RequestMessage?.RequestUri is Uri landedOn
+			&& landedOn.AbsolutePath.Equals(_loginUrl.AbsolutePath, StringComparison.OrdinalIgnoreCase);
 	}
 
 	/// <summary>
@@ -169,6 +229,43 @@ public sealed class AuthHandler : DelegatingHandler
 	#region BASIC AUTH
 	private const string BASIC = "Basic";
 	private const int MAX_STACKALLOC = 256;
+
+	/// <summary>
+	/// Sends a request to the inner handler with the specified credentials in its <c>Authorization: Basic</c> header, and
+	/// fails it when Sonarr doesn't take them or sends it to its login page.
+	/// </summary>
+	/// <remarks>
+	/// <para>Sonarr answers a request whose user name or password it doesn't take with a 401, and the method fails such a
+	/// request with the message that a forms login with the wrong credentials gives.</para>
+	/// <para>Sonarr sends a request to its login page only under forms authentication, so a request that lands there means
+	/// that the server's authentication changed after the connection's test stored it. The method fails such a request
+	/// with a message that says to connect again, so the login page, which answers with a success, never reaches the
+	/// file.</para>
+	/// </remarks>
+	/// <param name="request">The HTTP request message to send.</param>
+	/// <param name="credentials">The credentials to send.</param>
+	/// <param name="token">A token that cancels the operation.</param>
+	/// <returns>A task that completes with the HTTP response message from the inner handler.</returns>
+	/// <exception cref="SonarrHttpException">Thrown when Sonarr answers the request with a 401 or its login
+	/// page.</exception>
+	private async Task<HttpResponseMessage> SendWithBasicAsync(HttpRequestMessage request, NetworkCredential credentials, CancellationToken token)
+	{
+		SetBasicHeader(request, credentials);
+
+		HttpResponseMessage response = await base.SendAsync(request, token).ConfigureAwait(false);
+		if (!this.IsTurnedAway(response))
+		{
+			return response;
+		}
+
+		string message = response.StatusCode == HttpStatusCode.Unauthorized
+			? INCORRECT_CREDENTIALS
+			: AUTHENTICATION_CHANGED;
+
+		SonarrHttpException ex = CreateUnauthorized(request, response, message);
+		response.Dispose();
+		throw ex;
+	}
 
 	/// <summary>
 	/// Sets a request's <c>Authorization</c> header to Basic, with the specified credentials' user name and password
@@ -244,7 +341,7 @@ public sealed class AuthHandler : DelegatingHandler
 		}
 
 		HttpResponseMessage response = await base.SendAsync(request, token).ConfigureAwait(false);
-		if (!this.IsLoginPage(response))
+		if (!this.IsTurnedAway(response))
 		{
 			return response;
 		}
@@ -256,7 +353,7 @@ public sealed class AuthHandler : DelegatingHandler
 		request.RequestUri = requestUri;
 
 		response = await base.SendAsync(request, token).ConfigureAwait(false);
-		if (this.IsLoginPage(response))
+		if (this.IsTurnedAway(response))
 		{
 			SonarrHttpException ex = CreateUnauthorized(request, response,
 				"The Sonarr server sent the request to its login page again after a login.");
@@ -304,7 +401,7 @@ public sealed class AuthHandler : DelegatingHandler
 
 		if (response.RequestMessage?.RequestUri?.Query.Contains(LOGIN_FAILED, StringComparison.OrdinalIgnoreCase) ?? false)
 		{
-			throw CreateUnauthorized(request, response, "The username or password is incorrect.");
+			throw CreateUnauthorized(request, response, INCORRECT_CREDENTIALS);
 		}
 
 		if (!response.IsSuccessStatusCode)
