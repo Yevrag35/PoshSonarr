@@ -1,4 +1,3 @@
-using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.PSProperties;
 using MG.Sonarr.Next.Reflection;
@@ -28,40 +27,29 @@ static partial class PSOExtensions
 		}
 
 		/// <summary>
-		/// Adds a writable property with a type selected from the runtime value.
+		/// Adds a writable note property that holds the specified value, of a kind that suits the value.
 		/// </summary>
+		/// <remarks>
+		/// <para>An <see cref="int"/> gets a <see cref="NumberNoteProperty{T}"/> and a string a
+		/// <see cref="StringNoteProperty"/>, the kinds that the JSON converter gives them, and any other value,
+		/// <see langword="null"/> included, a <see cref="PSNoteProperty"/>.</para>
+		/// <para>When <typeparamref name="T"/> is a value type, the JIT picks the kind while it compiles the method for that
+		/// type, so an <see cref="int"/> goes into its property without being boxed.</para>
+		/// </remarks>
+		/// <typeparam name="T">The type of the value.</typeparam>
 		/// <param name="propertyName">The property name.</param>
 		/// <param name="value">The value to assign.</param>
 		/// <exception cref="System.ArgumentException">Thrown when <paramref name="propertyName"/> is null or empty.</exception>
-		internal void AddProperty(string propertyName, object? value)
+		internal void AddProperty<T>(string propertyName, T value)
 		{
-			ArgumentException.ThrowIfNullOrEmpty(propertyName);
-			switch (value)
+			PSPropertyInfo property = value switch
 			{
-				case int intValue:
-					pso.Properties.Add(NumberProperty.Create(propertyName, intValue));
-					break;
+				int number => new NumberNoteProperty<int>(propertyName, number),
+				string text => new StringNoteProperty(propertyName, text),
+				_ => new PSNoteProperty(propertyName, value),
+			};
 
-				case long longValue:
-					pso.Properties.Add(NumberProperty.Create(propertyName, longValue));
-					break;
-
-				case double dubValue:
-					pso.Properties.Add(NumberProperty.Create(propertyName, dubValue));
-					break;
-
-				case string strValue:
-					pso.Properties.Add(new StringNoteProperty(propertyName, strValue));
-					break;
-
-				case MetadataTag tag:
-					pso.Properties.Add(new MetadataProperty(tag));
-					break;
-
-				default:
-					pso.Properties.Add(new PSNoteProperty(propertyName, value));
-					break;
-			}
+			pso.Properties.Add(property);
 		}
 		/// <summary>
 		/// Adds a read-only property with the specified name and value to the given <see cref="PSObject"/> instance.

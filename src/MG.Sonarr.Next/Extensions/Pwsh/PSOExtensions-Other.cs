@@ -1,3 +1,5 @@
+using MG.Sonarr.Next.PSProperties;
+
 namespace MG.Sonarr.Next.Extensions.Pwsh;
 
 static partial class PSOExtensions
@@ -118,12 +120,15 @@ static partial class PSOExtensions
 		/// as that type.
 		/// </summary>
 		/// <remarks>
-		/// <para>A value of type <typeparamref name="T"/> reads as itself. The JSON converter reads a whole number as an
-		/// <see cref="int"/> when it fits and as a <see cref="long"/> otherwise, so an <see cref="int"/> also reads as a
-		/// <see cref="long"/>, and either one as a <see cref="double"/> or a <see cref="decimal"/>, or as the nullable form of
-		/// any of them. No other value converts, and the read throws no exception.</para>
+		/// <para>A value reads only as a type that it already is, such as its own type or an interface that it implements,
+		/// and the read converts nothing. A whole number, which the JSON converter reads as an <see cref="int"/>, or as a
+		/// <see cref="long"/> when it doesn't fit an <see cref="int"/>, doesn't read as a <see cref="double"/>. The read
+		/// throws no exception.</para>
 		/// <para>A <see langword="null"/> value reads only as a type that can hold it, so it fails for a value type that
 		/// isn't nullable.</para>
+		/// <para>When <typeparamref name="T"/> is a value type, a property that holds a <typeparamref name="T"/>, such as a
+		/// number or a date that the JSON converter read, gives up its value through the property's typed getter, so the
+		/// read doesn't box it.</para>
 		/// </remarks>
 		/// <typeparam name="T">The type to read the value as.</typeparam>
 		/// <param name="propertyName">The name of the property.</param>
@@ -134,9 +139,36 @@ static partial class PSOExtensions
 		[DebuggerStepThrough]
 		internal bool TryGetProperty<T>(string propertyName, [MaybeNull] out T value)
 		{
-			value = default;
-			PSMemberInfo? prop = pso?.Properties[propertyName];
-			return prop is not null && TryRead(prop.Value, out value);
+			PSPropertyInfo? prop = pso?.Properties[propertyName];
+			// A reference type isn't boxed, and in shared code each of these checks would cost a dictionary lookup.
+			if (typeof(T).IsValueType)
+			{
+				switch (prop)
+				{
+					case WritableProperty<T> writable:
+						value = writable.GetValue();
+						return true;
+
+					case ReadOnlyProperty<T> readOnly:
+						value = readOnly.GetValue();
+						return true;
+				}
+			}
+
+			switch (prop?.Value)
+			{
+				case T read:
+					value = read;
+					return true;
+
+				case null:
+					value = default;
+					return prop is not null && default(T) is null;
+
+				default:
+					value = default;
+					return false;
+			}
 		}
 	}
 
@@ -163,77 +195,5 @@ static partial class PSOExtensions
 		}
 
 		return list;
-	}
-
-	/// <summary>
-	/// Reads a property's value as <typeparamref name="T"/>, widening the integers that the JSON converter produces.
-	/// </summary>
-	/// <typeparam name="T">The type to read the value as.</typeparam>
-	/// <param name="obj">The property's value.</param>
-	/// <param name="tVal">When this method returns <see langword="true"/>, the value as <typeparamref name="T"/>;
-	/// otherwise, the default value of <typeparamref name="T"/>.</param>
-	/// <returns><see langword="true"/> if <paramref name="obj"/> reads as <typeparamref name="T"/>; otherwise,
-	/// <see langword="false"/>.</returns>
-	private static bool TryRead<T>(object? obj, [MaybeNull] out T tVal)
-	{
-		switch (obj)
-		{
-			case T value:
-				tVal = value;
-				return true;
-
-			case null:
-				tVal = default;
-				return !typeof(T).IsValueType;
-
-			case int intValue:
-				return TryWiden(intValue, out tVal);
-
-			case long longValue:
-				return TryWiden(longValue, out tVal);
-
-			default:
-				tVal = default;
-				return false;
-		}
-	}
-
-	/// <summary>
-	/// Widens an integer to <typeparamref name="T"/> when <typeparamref name="T"/> is <see cref="long"/>,
-	/// <see cref="double"/>, or <see cref="decimal"/>, or the nullable form of one.
-	/// </summary>
-	/// <typeparam name="T">The type to widen the integer to.</typeparam>
-	/// <param name="number">The integer, which is an <see cref="int"/> or a <see cref="long"/> before it's passed.</param>
-	/// <param name="tVal">When this method returns <see langword="true"/>, the widened value; otherwise, the default value
-	/// of <typeparamref name="T"/>.</param>
-	/// <returns><see langword="true"/> if <typeparamref name="T"/> is one of the wider types; otherwise,
-	/// <see langword="false"/>.</returns>
-	private static bool TryWiden<T>(long number, [MaybeNull] out T tVal)
-	{
-		if (!typeof(T).IsValueType && Nullable.GetUnderlyingType(typeof(T)) is null)
-		{
-			tVal = default;
-			return false;
-		}
-
-		if (typeof(T) == typeof(long) || typeof(T) == typeof(long?))
-		{
-			tVal = (T)(object)number;
-		}
-		else if (typeof(T) == typeof(double) || typeof(T) == typeof(double?))
-		{
-			tVal = (T)(object)(double)number;
-		}
-		else if (typeof(T) == typeof(decimal) || typeof(T) == typeof(decimal?))
-		{
-			tVal = (T)(object)(decimal)number;
-		}
-		else
-		{
-			tVal = default;
-			return false;
-		}
-
-		return true;
 	}
 }

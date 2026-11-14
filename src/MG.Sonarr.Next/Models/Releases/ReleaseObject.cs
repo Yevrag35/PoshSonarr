@@ -155,12 +155,12 @@ public sealed class ReleaseObject : SonarrObject,
 			this.IndexerId = indexerId;
 		}
 
-		if (this.TryGetProperty("AgeMinutes", out double value))
+		if (this.TryGetAge("AgeMinutes", out double minutes))
 		{
-			_ageMinutes = value;
+			_ageMinutes = minutes;
 		}
 
-		if (this.TryGetProperty("AgeHours", out double hours))
+		if (this.TryGetAge("AgeHours", out double hours))
 		{
 			_ageHours = hours;
 		}
@@ -226,6 +226,38 @@ public sealed class ReleaseObject : SonarrObject,
 	{
 		this.Properties.RemoveMany("AgeHours", "AgeMinutes");
 		this.ReplaceStructProperty(nameof(this.Age), this.Age);
+	}
+	/// <summary>
+	/// Gets the value of the <c>AgeHours</c> or <c>AgeMinutes</c> property as a <see cref="double"/>.
+	/// </summary>
+	/// <remarks>
+	/// Sonarr's ages are doubles, but the JSON converter reads one that's a whole number as an <see cref="int"/>, or as a
+	/// <see cref="long"/> when it doesn't fit an <see cref="int"/>, so the method reads any of the three.
+	/// </remarks>
+	/// <param name="propertyName">The name of the age property.</param>
+	/// <param name="age">When this method returns <see langword="true"/>, the property's value; otherwise, 0.</param>
+	/// <returns><see langword="true"/> if the release has the property and it holds a number; otherwise,
+	/// <see langword="false"/>.</returns>
+	private bool TryGetAge(string propertyName, out double age)
+	{
+		switch (this.Properties[propertyName]?.Value)
+		{
+			case double fraction:
+				age = fraction;
+				return true;
+
+			case int whole:
+				age = whole;
+				return true;
+
+			case long whole:
+				age = whole;
+				return true;
+
+			default:
+				age = 0d;
+				return false;
+		}
 	}
 
 	/// <summary>
