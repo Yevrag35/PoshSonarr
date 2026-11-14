@@ -6,6 +6,7 @@ namespace MG.Sonarr.Next.Enums;
 /// <remarks>These methods are intended for use with enumeration types that represent bit fields, typically those
 /// marked with the <see cref="FlagsAttribute"/>. They enable efficient iteration over each flag that is set in a given enumeration
 /// value, supporting various underlying integral types.</remarks>
+[SharedCode]
 [ExcludeFromCodeCoverage]
 public static class FlagEnumerationExtensions
 {

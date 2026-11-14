@@ -8,6 +8,7 @@ namespace MG.Sonarr.Next.Unions;
 /// </remarks>
 /// <typeparam name="T1">The first type.</typeparam>
 /// <typeparam name="T2">The second type.</typeparam>
+[SharedCode]
 [StructLayout(LayoutKind.Auto)]
 [DebuggerDisplay(@"\{Index = {Index}\}"), ExcludeFromCodeCoverage]
 internal readonly ref struct RefEither<T1, T2> where T1 : allows ref struct where T2 : allows ref struct

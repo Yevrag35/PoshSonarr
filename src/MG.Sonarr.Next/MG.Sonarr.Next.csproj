@@ -42,6 +42,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Using Include="MG.Sonarr.Next.Attributes.SharedCodeAttribute" Alias="SharedCodeAttribute" />
 		<Using Include="MG.Sonarr.Next.Buffers" />
 		<Using Include="MG.Sonarr.Next.Exceptions" />
 		<Using Include="MG.Sonarr.Next.Extensions" />

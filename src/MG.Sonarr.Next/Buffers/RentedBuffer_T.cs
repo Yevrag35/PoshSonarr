@@ -4,6 +4,7 @@ namespace MG.Sonarr.Next.Buffers;
 /// Represents a rented buffer of type <typeparamref name="T"/>, providing access to its underlying span and handling disposal to return it to the pool.
 /// </summary>
 /// <typeparam name="T">The type of elements in the buffer.</typeparam>
+[SharedCode]
 [StructLayout(LayoutKind.Auto), DebuggerDisplay(@"\{{_span}\} IsRented = {_state.IsRented}, Length = {_length}")]
 [CollectionBuilder(typeof(RentedBuffer), nameof(RentedBuffer.Create)), DebuggerStepThrough, ExcludeFromCodeCoverage]
 internal ref partial struct RentedBuffer<T> : IDisposable

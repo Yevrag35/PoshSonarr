@@ -15,6 +15,7 @@ namespace MG.Sonarr.Next.Json.Naming;
 /// run holds an uppercase letter outside ASCII, such as <c>Été</c>, which it leaves as it is.
 /// </para>
 /// </remarks>
+[SharedCode]
 [ExcludeFromCodeCoverage]
 public sealed class JsonSpanCamelCaseNamingPolicy : JsonNamingPolicy
 {

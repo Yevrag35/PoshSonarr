@@ -5,6 +5,7 @@ namespace MG.Sonarr.Next.Buffers;
 /// <summary>
 /// Provides static factory methods for creating <see cref="ArraySlice{T}"/> instances.
 /// </summary>
+[SharedCode]
 [ExcludeFromCodeCoverage]
 internal static class ArraySlice
 {
@@ -48,6 +49,7 @@ internal static class ArraySlice
 /// the cost of allocation or copying. <see cref="ArraySlice{T}"/> is a value type and is intended for performance-critical code. It
 /// is not thread-safe if the underlying array is modified concurrently.</remarks>
 /// <typeparam name="T">The type of elements contained in the array slice.</typeparam>
+[SharedCode]
 [DebuggerDisplay("Length = {Length}")]
 [CollectionBuilder(typeof(ArraySlice), nameof(ArraySlice.Create)), ExcludeFromCodeCoverage]
 internal readonly struct ArraySlice<T> : IReadOnlyCollection<T>

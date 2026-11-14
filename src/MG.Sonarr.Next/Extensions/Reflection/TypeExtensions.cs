@@ -3,6 +3,7 @@ namespace MG.Sonarr.Next.Extensions.Reflection;
 /// <summary>
 /// Custom extensions for the <see cref="Type"/> class.
 /// </summary>
+[SharedCode]
 [ExcludeFromCodeCoverage]
 internal static class TypeExtensions
 {

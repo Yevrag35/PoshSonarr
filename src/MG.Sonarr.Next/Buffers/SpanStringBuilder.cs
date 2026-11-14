@@ -19,6 +19,7 @@ namespace MG.Sonarr.Next.Buffers;
 /// they grow the buffer, and <see cref="Insert(int, ReadOnlySpan{char})"/> asserts it on every call. A Debug build also fills
 /// an array that goes back to the pool with <c>'\uDDDD'</c> characters, unless <see cref="ClearOnDispose"/> is set.</para>
 /// </remarks>
+[SharedCode]
 [DebuggerDisplay("{ToString(),nq}")]
 [StructLayout(LayoutKind.Auto), DebuggerStepThrough, ExcludeFromCodeCoverage]
 internal ref struct SpanStringBuilder

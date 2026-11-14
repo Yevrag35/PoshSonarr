@@ -3,6 +3,7 @@ namespace MG.Sonarr.Next.Extensions;
 /// <summary>
 /// Provides extension methods for integer values.
 /// </summary>
+[SharedCode]
 [ExcludeFromCodeCoverage]
 internal static class UnmanagedExtensions
 {

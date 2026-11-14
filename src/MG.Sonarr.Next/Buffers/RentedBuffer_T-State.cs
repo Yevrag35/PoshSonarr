@@ -1,5 +1,7 @@
 namespace MG.Sonarr.Next.Buffers;
 
+[SharedCode]
+[ExcludeFromCodeCoverage]
 file static class RentedBufferConstants
 {
 	internal const byte None = 0x0;

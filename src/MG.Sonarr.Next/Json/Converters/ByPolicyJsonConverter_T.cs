@@ -11,6 +11,7 @@ namespace MG.Sonarr.Next.Json.Converters;
 /// from this class, so every request body names its properties the same way.
 /// </remarks>
 /// <typeparam name="T">The type that the converter writes.</typeparam>
+[SharedCode]
 [ExcludeFromCodeCoverage]
 public abstract class ByPolicyJsonConverter<T> : JsonConverter<T>
 {

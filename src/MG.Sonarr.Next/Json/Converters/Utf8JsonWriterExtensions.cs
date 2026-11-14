@@ -17,6 +17,7 @@ namespace MG.Sonarr.Next.Json.Converters;
 /// Each method writes into the object that the writer has open.
 /// </para>
 /// </remarks>
+[SharedCode]
 [ExcludeFromCodeCoverage]
 internal static class Utf8JsonWriterExtensions
 {

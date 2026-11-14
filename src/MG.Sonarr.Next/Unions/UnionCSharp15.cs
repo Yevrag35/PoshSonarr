@@ -8,6 +8,7 @@ namespace System.Runtime.CompilerServices;
 /// <summary>
 /// Forwards to <see cref="IUnion"/> for non-NET11 projects.
 /// </summary>
+[SharedCode]
 public interface IUnion
 {
 	/// <summary>
@@ -31,6 +32,7 @@ public interface IUnion
 /// </para>
 /// </remarks>
 /// <seealso cref="IUnion" />
+[SharedCode]
 [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false, Inherited = false), ExcludeFromCodeCoverage]
 internal sealed class UnionAttribute : Attribute
 {

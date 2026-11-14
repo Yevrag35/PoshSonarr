@@ -11,6 +11,7 @@ namespace MG.Sonarr.Next.Json.Naming;
 /// the provided <see cref="JsonSerializerOptions"/>, this class enables the conversion of property names
 /// (typically to a format like camelCase) with minimal allocations by leveraging span-based operations.
 /// </remarks>
+[SharedCode]
 [DebuggerDisplay(@"\{HasPolicy = {HasPolicy}, IsSpanPolicy = {IsSpanPolicy}, Policy = {Policy}\}")]
 [ExcludeFromCodeCoverage]
 public sealed class WorkingNamingPolicy : JsonNamingPolicy

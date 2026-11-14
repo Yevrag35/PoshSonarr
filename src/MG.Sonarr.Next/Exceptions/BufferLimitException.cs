@@ -3,6 +3,7 @@ namespace MG.Sonarr.Next.Exceptions;
 /// <summary>
 /// Thrown when a buffer growth operation exceeds a configured or runtime-defined maximum buffer length.
 /// </summary>
+[SharedCode]
 [DebuggerStepThrough, ExcludeFromCodeCoverage]
 public sealed class BufferLimitException : InvalidOperationException
 {

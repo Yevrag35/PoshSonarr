@@ -5,6 +5,7 @@ namespace MG.Sonarr.Next.Exceptions;
 /// <summary>
 /// Represents an exception thrown when a struct is empty (<see langword="default"/>) and unusable.
 /// </summary>
+[SharedCode]
 [ExcludeFromCodeCoverage]
 public sealed class EmptyStructException : PoshSonarrException
 {
