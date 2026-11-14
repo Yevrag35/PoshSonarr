@@ -25,7 +25,6 @@ internal static partial class PSOExtensions
 		internal object? this[string propertyName]
 		{
 			get => pso.Properties[propertyName]?.Value;
-			set => pso.Properties[propertyName]?.Value = value;
 		}
 	}
 }

@@ -173,7 +173,8 @@ public abstract class SonarrObject : PSObject,
 		}
 
 		MetadataTag tagToUse = this.GetTag(resolver, MetadataTag.Empty);
-		this.AddOrUpdate(MetadataProperty.Empty.Name, replaceReadOnly: true, tagToUse, static (name, tag) => new MetadataProperty(tag));
+		this.Properties.Remove(MetadataProperty.Empty.Name);
+		this.Properties.Add(new MetadataProperty(tagToUse));
 	}
 
 	/// <summary>

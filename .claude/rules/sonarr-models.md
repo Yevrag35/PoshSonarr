@@ -69,7 +69,7 @@ Declared in `src/MG.Sonarr.Next/Json/ISerializableNames.cs`. Every model impleme
 - `GetSerializedNames()` maps a note property's name back to the field's name for a request body.
 - `GetPropertiesToCapitalize()` names the string properties whose values get an uppercase first letter, such as `CommandObject`'s `Status`.
 
-A model keeps them in static fields: a `Lazy<JsonNameHolder>` from `JsonNameHolder.FromSingleNamePair` or `FromDeserializationNamePairs`, which builds both maps from the deserialization pairs, and a `HashSet<string>` or `OneStringSet` of the properties to capitalize. A model's own maps win over the renames that apply to every model, such as `Monitored` to `IsMonitored`, which `EnumerateGlobalReplaceNames` in `src/MG.Sonarr.Next/Json/SonarrJsonOptions.cs` lists.
+A model keeps them in static fields: a `Lazy<JsonNameHolder>` from `JsonNameHolder.FromSingleNamePair` or `FromDeserializationNamePairs`, which builds both maps from the deserialization pairs, and a `HashSet<string>` of the properties to capitalize. A model's own maps win over the renames that apply to every model, such as `Monitored` to `IsMonitored`, which `EnumerateGlobalReplaceNames` in `src/MG.Sonarr.Next/Json/SonarrJsonOptions.cs` lists.
 
 A model derived from another declares the interface again for itself, as in `AddSeriesObject : SeriesObject, ISerializableNames<AddSeriesObject>`. The compiler then forwards each member to the base class's public static method of the same name, so `AddSeriesObject` uses `SeriesObject`'s maps, and a member that the base class doesn't declare keeps the empty default, as `NoKeyHostObject`'s two name maps do (measured 2026-10-25 with `Type.GetInterfaceMap`, on a build from the .NET SDK 10.0.403).
 

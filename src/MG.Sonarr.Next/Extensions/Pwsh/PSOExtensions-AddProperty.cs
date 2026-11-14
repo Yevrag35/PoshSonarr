@@ -66,12 +66,9 @@ static partial class PSOExtensions
 		/// <summary>
 		/// Adds a read-only property with the specified name and value to the given <see cref="PSObject"/> instance.
 		/// </summary>
-		/// <remarks>The property added is read-only and cannot be modified after creation. The method
-		/// selects an appropriate property type based on the value's type, supporting common types such as <see
-		/// langword="int"/>, <see langword="long"/>, <see langword="double"/>, <see langword="string"/>, and <see
-		/// cref="MetadataTag"/>. For other types, and for <see langword="null"/>, a generic read-only property is used. A
-		/// <see cref="MetadataTag"/> value always becomes the object's <c>MetadataTag</c> property, whatever
-		/// <paramref name="propertyName"/> says.</remarks>
+		/// <remarks>The property added is read-only and cannot be modified after creation. A <see langword="string"/> value
+		/// gets a read-only string property, and any other value, <see langword="null"/> included, a generic read-only
+		/// property.</remarks>
 		/// <param name="propertyName">The name of the property to add. Cannot be null or empty.</param>
 		/// <param name="value">The value to assign to the property. The property's type will be determined based on the runtime type of
 		/// this value.</param>
@@ -80,24 +77,8 @@ static partial class PSOExtensions
 			ArgumentException.ThrowIfNullOrEmpty(propertyName);
 			switch (value)
 			{
-				case int intValue:
-					pso.Properties.Add(ReadOnlyNumberProperty.Create(propertyName, intValue));
-					break;
-
-				case long longValue:
-					pso.Properties.Add(ReadOnlyNumberProperty.Create(propertyName, longValue));
-					break;
-
-				case double dubValue:
-					pso.Properties.Add(ReadOnlyNumberProperty.Create(propertyName, dubValue));
-					break;
-
 				case string strValue:
 					pso.Properties.Add(new ReadOnlyStringProperty(propertyName, strValue));
-					break;
-
-				case MetadataTag tag:
-					pso.Properties.Add(new MetadataProperty(tag));
 					break;
 
 				default:
@@ -226,10 +207,9 @@ static partial class PSOExtensions
 		/// Updates the specified property value, adding the property when it does not exist.
 		/// </summary>
 		/// <param name="value">The value to assign.</param>
-		/// <param name="replaceReadOnly"><see langword="true"/> to replace a read-only property; otherwise, <see langword="false"/>.</param>
 		/// <param name="propertyName">The property name, which defaults to the calling member's name.</param>
-		/// <exception cref="ReadOnlyPropertyException">Thrown when the property is read-only and <paramref name="replaceReadOnly"/> is false.</exception>
-		internal void UpdateProperty(object? value, bool replaceReadOnly = false, [CallerMemberName] string propertyName = "")
+		/// <exception cref="ReadOnlyPropertyException">Thrown when the property is read-only.</exception>
+		internal void UpdateProperty(object? value, [CallerMemberName] string propertyName = "")
 		{
 			PSPropertyInfo? rawProperty = pso.Properties[propertyName];
 			if (rawProperty is null)
@@ -240,14 +220,7 @@ static partial class PSOExtensions
 
 			if (!rawProperty.IsSettable)
 			{
-				if (!replaceReadOnly)
-				{
-					throw new ReadOnlyPropertyException(propertyName);
-				}
-
-				pso.Properties.Remove(propertyName);
-				AddReadOnlyProperty(pso, propertyName, value);
-				return;
+				throw new ReadOnlyPropertyException(propertyName);
 			}
 
 			rawProperty.Value = value;
@@ -382,22 +355,9 @@ static partial class PSOExtensions
 	/// <typeparam name="T">The Sonarr object type.</typeparam>
 	/// <param name="pso">The object whose properties are updated.</param>
 	/// <param name="expressions">The member expressions that identify properties to update from current values.</param>
-	[DebuggerStepThrough]
-	internal static void UpdateProperty<T>(this T pso, params ReadOnlySpan<Expression<Func<T, object?>>> expressions)
-		where T : SonarrObject
-	{
-		UpdateProperty(pso, replaceReadOnly: false, expressions);
-	}
-
-	/// <summary>
-	/// Updates multiple properties on a Sonarr object by using member expressions.
-	/// </summary>
-	/// <typeparam name="T">The Sonarr object type.</typeparam>
-	/// <param name="pso">The object whose properties are updated.</param>
-	/// <param name="replaceReadOnly"><see langword="true"/> to replace read-only properties; otherwise, <see langword="false"/>.</param>
-	/// <param name="expressions">The member expressions that identify properties to update from current values.</param>
 	/// <exception cref="System.InvalidOperationException">Thrown when an expression does not represent a readable member.</exception>
-	internal static void UpdateProperty<T>(this T pso, bool replaceReadOnly, params ReadOnlySpan<Expression<Func<T, object?>>> expressions)
+	/// <exception cref="ReadOnlyPropertyException">Thrown when a property that an expression names is read-only.</exception>
+	internal static void UpdateProperty<T>(this T pso, params ReadOnlySpan<Expression<Func<T, object?>>> expressions)
 		where T : SonarrObject
 	{
 		foreach (var exp in expressions)
@@ -408,7 +368,7 @@ static partial class PSOExtensions
 				throw new InvalidOperationException("The expression does not represent a readable member.");
 			}
 
-			UpdateProperty(pso, info.GetValue(pso), replaceReadOnly, info.MemberName);
+			UpdateProperty(pso, info.GetValue(pso), info.MemberName);
 		}
 	}
 }
