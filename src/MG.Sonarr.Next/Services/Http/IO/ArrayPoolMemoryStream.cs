@@ -23,14 +23,11 @@ namespace MG.Sonarr.Next.Services.Http.IO;
 internal sealed class ArrayPoolMemoryStream : Stream
 {
 	private const int DEFAULT_INITIAL_CAPACITY = 8192;
-	//private const int RETIRED_FLAG = 1 << 30;
-	//private const int VIEW_COUNT_MASK = RETIRED_FLAG - 1;
 
 	private readonly ArrayPool<byte> _pool;
 	private byte[]? _buffer;              // null => disposed
 	private int _length;
 	private int _position;
-	//private int _viewState;               // RETIRED_FLAG bit | active view count
 
 	/// <summary>
 	/// Occurs when the stream is disposed, allowing subscribers to be notified before the underlying buffer is returned to the pool.
@@ -59,13 +56,6 @@ internal sealed class ArrayPoolMemoryStream : Stream
 	/// Default is <see langword="false"/>.
 	/// </summary>
 	public bool ClearOnReturn { get; set; }
-
-	///// <summary>
-	///// Gets the number of active views, created by <see cref="CreateView()"/> and its overloads, that hold a lease on the
-	///// stream's buffer.
-	///// </summary>
-	///// <value>The number of views that haven't been disposed.</value>
-	//public int ActiveViewCount => Volatile.Read(ref _viewState) & VIEW_COUNT_MASK;
 
 	/// <summary>
 	/// The current capacity of the underlying rented buffer.
@@ -162,161 +152,6 @@ internal sealed class ArrayPoolMemoryStream : Stream
 		segment = [];
 		return false;
 	}
-
-	///// <summary>
-	///// Creates a read-only, independently-seekable view over this stream's buffer.
-	///// </summary>
-	///// <remarks>
-	///// <para>Each view has its own <see cref="Stream.Position"/> so multiple consumers can
-	///// read from the same data without interfering with each other.</para>
-	///// <para>Each view holds a lease on the pooled buffer: after <see cref="Retire"/> is called,
-	///// the buffer is returned to the pool only once every view has been disposed. Do not create
-	///// views over a stream that is still being written - growth would swap the buffer out from
-	///// under them.</para>
-	///// <para><b>Threading:</b> View creation, view disposal, <see cref="Retire"/>, and
-	///// <see cref="Stream.Dispose()"/> are thread-safe relative to each other.</para>
-	///// </remarks>
-	///// <returns>A new <see cref="Stream"/> that reads from the same buffer with an independent position.</returns>
-	///// <exception cref="ObjectDisposedException">Thrown when the stream is disposed or retired.</exception>
-	//public Stream CreateView()
-	//{
-	//	return this.CreateView(companion: null);
-	//}
-
-	///// <summary>
-	///// Creates a read-only, independently-seekable view over this stream's buffer that disposes the specified companion along with itself.
-	///// </summary>
-	///// <remarks>
-	///// <para>The view takes ownership of <paramref name="companion"/> and disposes it exactly once, when the view itself is first disposed.
-	///// That holds even when a <see cref="Stream.Dispose()"/> of this stream has already invalidated the view. Use the companion for whatever
-	///// must last exactly as long as the view, such as a cache lease that keeps this stream from being retired while the view reads it.</para>
-	///// <para>Ownership passes only when a view is created. When this method throws, the caller still owns <paramref name="companion"/>.</para>
-	///// <para>See <see cref="CreateView()"/> for the view's lease on the pooled buffer and the threading guarantees.</para>
-	///// </remarks>
-	///// <param name="companion">The object the view disposes when it is disposed, or <see langword="null"/> for none.</param>
-	///// <returns>A new <see cref="Stream"/> that reads from the same buffer with an independent position.</returns>
-	///// <exception cref="ObjectDisposedException">Thrown when the stream is disposed or retired.</exception>
-	//public Stream CreateView(IDisposable? companion)
-	//{
-	//	ObjectDisposedException.ThrowIf(!this.TryCreateView(companion, out Stream? view), this);
-
-	//	return view;
-	//}
-
-	///// <summary>
-	///// Attempts to create a read-only, independently-seekable view over this stream's buffer.
-	///// </summary>
-	///// <remarks>
-	///// <para>This is the non-throwing counterpart of <see cref="CreateView()"/> for callers racing
-	///// against <see cref="Retire"/> (e.g., a cache entry being evicted concurrently); see that
-	///// method for the lease semantics.</para>
-	///// </remarks>
-	///// <param name="view">When this method returns <see langword="true"/>, contains the new view; otherwise, <see langword="null"/>.</param>
-	///// <returns><see langword="true"/> when a view was created; <see langword="false"/> when the stream is disposed or retired.</returns>
-	//public bool TryCreateView([NotNullWhen(true)] out Stream? view)
-	//{
-	//	return this.TryCreateView(companion: null, out view);
-	//}
-
-	///// <summary>
-	///// Attempts to create a read-only, independently-seekable view over this stream's buffer that disposes the specified companion along
-	///// with itself.
-	///// </summary>
-	///// <remarks>
-	///// <para>This is the non-throwing counterpart of <see cref="CreateView(IDisposable)"/>; see that method for how the view owns
-	///// <paramref name="companion"/>. When this method returns <see langword="false"/>, no view took ownership, and the caller still owns
-	///// <paramref name="companion"/>.</para>
-	///// </remarks>
-	///// <param name="companion">The object the view disposes when it is disposed, or <see langword="null"/> for none.</param>
-	///// <param name="view">When this method returns <see langword="true"/>, contains the new view; otherwise, <see langword="null"/>.</param>
-	///// <returns><see langword="true"/> when a view was created; <see langword="false"/> when the stream is disposed or retired.</returns>
-	//public bool TryCreateView(IDisposable? companion, [NotNullWhen(true)] out Stream? view)
-	//{
-	//	if (!this.TryAcquireViewLease())
-	//	{
-	//		view = null;
-	//		return false;
-	//	}
-
-	//	ArrayPoolMemoryStreamView typedView = new(this, companion);
-	//	this.Disposed += typedView.OnSourceDisposed;
-	//	view = typedView;
-	//	return true;
-	//}
-
-	///// <summary>
-	///// Atomically takes one view lease, failing when the stream is already retired or disposed.
-	///// </summary>
-	///// <returns><see langword="true"/> when the active view count was incremented; otherwise, <see langword="false"/>.</returns>
-	//private bool TryAcquireViewLease()
-	//{
-	//	int state = Volatile.Read(ref _viewState);
-	//	while ((state & RETIRED_FLAG) == 0 && _buffer is not null)
-	//	{
-	//		int witnessed = Interlocked.CompareExchange(ref _viewState, state + 1, state);
-	//		if (witnessed == state)
-	//			return true;
-
-	//		state = witnessed;
-	//	}
-
-	//	return false;
-	//}
-
-	///// <summary>
-	///// Marks the stream as retired: no new views can be created, and the pooled buffer is returned
-	///// once the last active view is disposed - immediately when no views exist.
-	///// </summary>
-	///// <remarks>
-	///// <para>Use this when ownership rests with a component (such as a cache) that can revoke the
-	///// entry while readers may still hold views. Unlike <see cref="Stream.Dispose()"/>, retiring
-	///// never invalidates an active view, so a reader mid-stream is unaffected.</para>
-	///// <para>This method is idempotent and thread-safe.</para>
-	///// </remarks>
-	//public void Retire()
-	//{
-	//	int state = Volatile.Read(ref _viewState);
-	//	while (true)
-	//	{
-	//		if ((state & RETIRED_FLAG) != 0)
-	//			return;
-
-	//		int witnessed = Interlocked.CompareExchange(ref _viewState, state | RETIRED_FLAG, state);
-	//		if (witnessed == state)
-	//			break;
-
-	//		state = witnessed;
-	//	}
-
-	//	if ((state & VIEW_COUNT_MASK) == 0)
-	//		this.Dispose();
-	//}
-
-	///// <summary>
-	///// Releases one view lease, disposing the stream when it is retired and this was the last lease.
-	///// </summary>
-	//internal void ReleaseView()
-	//{
-	//	int state = Volatile.Read(ref _viewState);
-	//	while (true)
-	//	{
-	//		Debug.Assert((state & VIEW_COUNT_MASK) != 0, "Unbalanced view lease release.");
-	//		if ((state & VIEW_COUNT_MASK) == 0)
-	//			return;
-
-	//		int newState = state - 1;
-	//		int witnessed = Interlocked.CompareExchange(ref _viewState, newState, state);
-	//		if (witnessed == state)
-	//		{
-	//			if (newState == RETIRED_FLAG)
-	//				this.Dispose();
-
-	//			return;
-	//		}
-
-	//		state = witnessed;
-	//	}
-	//}
 
 	/// <summary>
 	/// Returns the populated contents of the stream as a span over the underlying buffer.
@@ -418,8 +253,10 @@ internal sealed class ArrayPoolMemoryStream : Stream
 	/// <inheritdoc/>
 	public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
 	{
-		if (cancellationToken.IsCancellationRequested)
-			return ValueTask.FromCanceled<int>(cancellationToken);
+		if (IsTokenCancelled<int>(cancellationToken, out var cancelled))
+		{
+			return cancelled;
+		}
 
 		try
 		{
@@ -475,7 +312,9 @@ internal sealed class ArrayPoolMemoryStream : Stream
 		};
 
 		if (offset > int.MaxValue)
+		{
 			throw new ArgumentOutOfRangeException(nameof(offset), "The offset must be less than 2^31-1.");
+		}
 
 		long newPos = start + offset;
 
@@ -492,7 +331,9 @@ internal sealed class ArrayPoolMemoryStream : Stream
 	{
 		this.EnsureNotDisposed();
 		if (value < 0 || value > int.MaxValue)
+		{
 			throw new ArgumentOutOfRangeException(nameof(value));
+		}
 
 		int newLength = (int)value;
 		this.EnsureCapacity(newLength);
@@ -504,7 +345,9 @@ internal sealed class ArrayPoolMemoryStream : Stream
 
 		_length = newLength;
 		if (_position > _length)
+		{
 			_position = _length;
+		}
 	}
 
 	/// <inheritdoc/>
@@ -525,8 +368,10 @@ internal sealed class ArrayPoolMemoryStream : Stream
 	/// <inheritdoc/>
 	public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
 	{
-		if (cancellationToken.IsCancellationRequested)
-			return ValueTask.FromCanceled(cancellationToken);
+		if (IsTokenCancelled(cancellationToken, out var cancelled))
+		{
+			return cancelled;
+		}
 
 		try
 		{
@@ -552,8 +397,7 @@ internal sealed class ArrayPoolMemoryStream : Stream
 		int b = -1;
 		if (_position < _length)
 		{
-			b = _buffer![_position];
-			_position++;
+			b = _buffer[_position++];
 		}
 
 		return b;
@@ -570,10 +414,11 @@ internal sealed class ArrayPoolMemoryStream : Stream
 		this.EnsureNotDisposed();
 		this.EnsureCapacityForAppend(1);
 		this.ClearGapBeforePosition();
-		_buffer![_position] = value;
-		_position++;
+		_buffer[_position++] = value;
 		if (_position > _length)
+		{
 			_length = _position;
+		}
 	}
 
 	/// <summary>
@@ -597,10 +442,12 @@ internal sealed class ArrayPoolMemoryStream : Stream
 	{
 		this.EnsureCapacityForAppend(source.Length);
 		this.ClearGapBeforePosition();
-		source.CopyTo(new Span<byte>(_buffer!, _position, source.Length));
+		source.CopyTo(new Span<byte>(_buffer, _position, source.Length));
 		_position += source.Length;
 		if (_position > _length)
+		{
 			_length = _position;
+		}
 	}
 
 	/// <summary>
@@ -614,14 +461,19 @@ internal sealed class ArrayPoolMemoryStream : Stream
 	private void ClearGapBeforePosition()
 	{
 		if (_position > _length)
+		{
 			Array.Clear(_buffer!, _length, _position - _length);
+		}
 	}
 
 	private void EnsureCapacityForAppend(int appendCount)
 	{
 		long required = (long)_position + appendCount;
 		if (required > int.MaxValue)
+		{
 			throw new IOException("Stream too large.");
+		}
+
 		this.EnsureCapacity((int)required);
 	}
 
@@ -635,17 +487,12 @@ internal sealed class ArrayPoolMemoryStream : Stream
 		byte[]? buf = _buffer;
 		ObjectDisposedException.ThrowIf(buf is null, this);
 
-		if (buf.Length >= minCapacity)
-			return;
-
-		//Debug.Assert((Volatile.Read(ref _viewState) & VIEW_COUNT_MASK) == 0,
-		//	"Growing the stream would return a buffer that active views still read.");
+		if (buf.Length >= minCapacity) return;
 
 		// Growth policy: double until sufficient, capping at int.MaxValue
 		int newCapacity = buf.Length;
 
-		if (newCapacity == 0)
-			newCapacity = 1;
+		if (newCapacity == 0) newCapacity = 1;
 
 		while (newCapacity < minCapacity)
 		{
@@ -661,11 +508,15 @@ internal sealed class ArrayPoolMemoryStream : Stream
 
 		byte[] newBuf = _pool.Rent(newCapacity);
 		if (_length > 0)
+		{
 			Buffer.BlockCopy(buf, 0, newBuf, 0, _length);
+		}
 
 		// Return old buffer immediately
 		if (this.ClearOnReturn)
+		{
 			Array.Clear(buf, 0, Math.Min(buf.Length, _length));
+		}
 
 		_pool.Return(buf, this.ClearOnReturn);
 
@@ -689,7 +540,9 @@ internal sealed class ArrayPoolMemoryStream : Stream
 		this.Disposed?.Invoke();
 
 		if (this.ClearOnReturn)
+		{
 			Array.Clear(buf, 0, Math.Min(buf.Length, _length));
+		}
 
 		_pool.Return(buf, this.ClearOnReturn);
 	}
@@ -704,17 +557,44 @@ internal sealed class ArrayPoolMemoryStream : Stream
 		ObjectDisposedException.ThrowIf(_buffer is null, this);
 	}
 
+	/// <summary>
+	/// Checks if the provided <see cref="CancellationToken"/> has been canceled and returns a canceled <see cref="ValueTask"/> if it has.
+	/// </summary>
+	/// <param name="token">The cancellation token to check.</param>
+	/// <param name="cancelledResult">The canceled <see cref="ValueTask"/> if the token is canceled.</param>
+	/// <returns>True if the token is canceled; otherwise, false.</returns>
 	[DebuggerStepThrough]
-	private static void ValidateReadArgs(byte[] buffer, int offset, int count)
+	private static bool IsTokenCancelled(CancellationToken token, out ValueTask cancelledResult)
 	{
-		ArgumentNullException.ThrowIfNull(buffer);
+		if (token.IsCancellationRequested)
+		{
+			cancelledResult = ValueTask.FromCanceled(token);
+			return true;
+		}
 
-		if ((uint)offset > buffer.Length)
-			throw new ArgumentOutOfRangeException(nameof(offset));
-
-		if ((uint)count > buffer.Length - offset)
-			throw new ArgumentOutOfRangeException(nameof(count));
+		cancelledResult = default;
+		return false;
 	}
+	/// <summary>
+	/// Checks if the provided <see cref="CancellationToken"/> has been canceled and returns a canceled <see cref="ValueTask{T}"/> if it has.
+	/// </summary>
+	/// <typeparam name="T">The type of the result.</typeparam>
+	/// <param name="token">The cancellation token to check.</param>
+	/// <param name="cancelledResult">The canceled <see cref="ValueTask{T}"/> if the token is canceled.</param>
+	/// <returns>True if the token is canceled; otherwise, false.</returns>
+	[DebuggerStepThrough]
+	private static bool IsTokenCancelled<T>(CancellationToken token, out ValueTask<T> cancelledResult)
+	{
+		if (token.IsCancellationRequested)
+		{
+			cancelledResult = ValueTask.FromCanceled<T>(token);
+			return true;
+		}
+
+		cancelledResult = default;
+		return false;
+	}
+
 	/// <summary>
 	/// Throws an <see cref="ArgumentOutOfRangeException"/> when a range doesn't lie within the stream's contents.
 	/// </summary>
@@ -725,23 +605,22 @@ internal sealed class ArrayPoolMemoryStream : Stream
 	[DebuggerStepThrough]
 	private static void ValidateContentsRange(int start, int length, int contentLength)
 	{
-		if ((uint)start > (uint)contentLength)
-			throw new ArgumentOutOfRangeException(nameof(start));
-
-		if ((uint)length > (uint)(contentLength - start))
-			throw new ArgumentOutOfRangeException(nameof(length));
+		ThrowHelper.ThrowIfNegativeOrGreaterThan(start, (uint)contentLength);
+		ThrowHelper.ThrowIfNegativeOrGreaterThan(length, (uint)(contentLength - start));
+	}
+	[DebuggerStepThrough]
+	private static void ValidateReadArgs(byte[] buffer, int offset, int count)
+	{
+		ArgumentNullException.ThrowIfNull(buffer);
+		ThrowHelper.ThrowIfNegativeOrGreaterThan(offset, (uint)buffer.Length);
+		ThrowHelper.ThrowIfNegativeOrGreaterThan(count, (uint)(buffer.Length - offset));
 	}
 	[DebuggerStepThrough]
 	private static void ValidateWriteArgs(byte[] buffer, int offset, int count)
 	{
-		if (buffer is null)
-			throw new ArgumentNullException(nameof(buffer));
-
-		if ((uint)offset > buffer.Length)
-			throw new ArgumentOutOfRangeException(nameof(offset));
-
-		if ((uint)count > buffer.Length - offset)
-			throw new ArgumentOutOfRangeException(nameof(count));
+		ArgumentNullException.ThrowIfNull(buffer);
+		ThrowHelper.ThrowIfNegativeOrGreaterThan(offset, (uint)buffer.Length);
+		ThrowHelper.ThrowIfNegativeOrGreaterThan(count, (uint)(buffer.Length - offset));
 	}
 }
 
