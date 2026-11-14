@@ -101,12 +101,13 @@ public partial interface ISonarrClient
 	SonarrClientResult SendPut(string path, object body, CancellationToken token = default);
 	/// <summary>
 	/// Checks the connection's URL and API key by requesting the server's status, and stores the server's authentication
-	/// type in the connection's settings.
+	/// type and URL base in the connection's settings.
 	/// </summary>
 	/// <remarks>
 	/// On success, <see cref="IConnectionSettings.AuthType"/> takes the authentication type that the status names, or
-	/// <see cref="SonarrAuthType.None"/> when the status names none that the module knows. On failure, the settings stay
-	/// unchanged.
+	/// <see cref="SonarrAuthType.None"/> when the status names none that the module knows, and
+	/// <see cref="IConnectionSettings.ServerUrlBase"/> takes the URL base that the status reports, or
+	/// <see langword="null"/> when it reports none. On failure, the settings stay unchanged.
 	/// </remarks>
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>The result of the request.</returns>
@@ -182,7 +183,8 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	/// </summary>
 	private readonly IServiceScopeFactory _scopeFactory;
 	/// <summary>
-	/// The connection's settings, which <see cref="SendTest(CancellationToken)"/> stores the authentication type in.
+	/// The connection's settings, which <see cref="SendTest(CancellationToken)"/> stores the authentication type and the
+	/// server's URL base in.
 	/// </summary>
 	private readonly IConnectionSettings _settings;
 
@@ -283,6 +285,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		{
 			_settings.AuthType = result.Value.TryGetAuthType(out SonarrAuthType parsedAuth)
 				? parsedAuth : SonarrAuthType.None;
+			_settings.ServerUrlBase = result.Value.UrlBase;
 		}
 
 		return result;

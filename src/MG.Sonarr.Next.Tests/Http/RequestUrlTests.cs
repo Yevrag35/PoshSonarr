@@ -136,16 +136,20 @@ public sealed class RequestUrlTests
 	}
 
 	/// <summary>
-	/// A download goes to the connection's scheme and server, then its URL base, then the download URL, unless the URL
-	/// starts with the URL base already, in any case and as whole segments, as a log file's URL from Sonarr does. An
-	/// absolute URL goes out as it is.
+	/// A download goes to the connection's scheme and server, then its URL base, then the download URL, and a URL that
+	/// starts with the URL base already, in any case and as whole segments, as a log file's URL from Sonarr does, gets
+	/// the URL base in place of its own spelling. The URL base is spelled as the server's status reported it when the two
+	/// match without regard to case, and as the connection's URL has it otherwise, as for a server behind a reverse proxy
+	/// that maps one path to another. An absolute URL goes out as it is.
 	/// </summary>
 	/// <param name="serviceUri">The URL that the connection names.</param>
+	/// <param name="serverUrlBase">The URL base that the server's status reported, or <see langword="null"/> for
+	/// none.</param>
 	/// <param name="url">The download URL that Sonarr gave.</param>
 	/// <param name="expected">The URL that the download goes to.</param>
 	[Theory]
 	[MemberData(nameof(DownloadUrls))]
-	public async Task DownloadsAFileFromItsUrlBaseAndDownloadUrl(string serviceUri, string url, string expected)
+	public async Task DownloadsAFileFromItsUrlBaseAndDownloadUrl(string serviceUri, string? serverUrlBase, string url, string expected)
 	{
 		ConcurrentQueue<string> received = new();
 		FakeSonarr sonarr = new("downloads", new ProbeLog(), (request, _) =>
@@ -157,6 +161,7 @@ public sealed class RequestUrlTests
 				Content = new ByteArrayContent([1, 2, 3]),
 			});
 		}, serviceUri: new Uri(serviceUri));
+		sonarr.Settings.ServerUrlBase = serverUrlBase;
 
 		CancellationToken token = TestContext.Current.CancellationToken;
 		DirectoryInfo folder = Directory.CreateTempSubdirectory("PoshSonarr.Tests.");
@@ -179,15 +184,20 @@ public sealed class RequestUrlTests
 		}
 	}
 
-	public static TheoryData<string, string, string> DownloadUrls => new()
+	public static TheoryData<string, string?, string, string> DownloadUrls => new()
 	{
-		{ "http://sonarr.test:8989/", "/backup/manual/sonarr_backup.zip", "http://sonarr.test:8989/backup/manual/sonarr_backup.zip" },
-		{ "http://sonarr.test:8989/sonarr/", "/backup/manual/sonarr_backup.zip", "http://sonarr.test:8989/sonarr/backup/manual/sonarr_backup.zip" },
-		{ "http://sonarr.test:8989/sonarr", "backup/manual/sonarr_backup.zip", "http://sonarr.test:8989/sonarr/backup/manual/sonarr_backup.zip" },
-		{ "http://sonarr.test:8989/sonarr/", "/sonarr/logfile/sonarr.txt", "http://sonarr.test:8989/sonarr/logfile/sonarr.txt" },
-		{ "http://sonarr.test:8989/Sonarr/", "/sonarr/logfile/sonarr.txt", "http://sonarr.test:8989/sonarr/logfile/sonarr.txt" },
-		{ "http://sonarr.test:8989/son/", "/sonarr/logfile/sonarr.txt", "http://sonarr.test:8989/son/sonarr/logfile/sonarr.txt" },
-		{ "http://sonarr.test:8989/sonarr/", "http://files.test:9000/backup.zip", "http://files.test:9000/backup.zip" },
+		{ "http://sonarr.test:8989/", null, "/backup/manual/sonarr_backup.zip", "http://sonarr.test:8989/backup/manual/sonarr_backup.zip" },
+		{ "http://sonarr.test:8989/sonarr/", null, "/backup/manual/sonarr_backup.zip", "http://sonarr.test:8989/sonarr/backup/manual/sonarr_backup.zip" },
+		{ "http://sonarr.test:8989/sonarr", null, "backup/manual/sonarr_backup.zip", "http://sonarr.test:8989/sonarr/backup/manual/sonarr_backup.zip" },
+		{ "http://sonarr.test:8989/sonarr/", null, "/sonarr/logfile/sonarr.txt", "http://sonarr.test:8989/sonarr/logfile/sonarr.txt" },
+		{ "http://sonarr.test:8989/Sonarr/", null, "/sonarr/logfile/sonarr.txt", "http://sonarr.test:8989/Sonarr/logfile/sonarr.txt" },
+		{ "http://sonarr.test:8989/son/", null, "/sonarr/logfile/sonarr.txt", "http://sonarr.test:8989/son/sonarr/logfile/sonarr.txt" },
+		{ "http://sonarr.test:8989/sonarr/", null, "http://files.test:9000/backup.zip", "http://files.test:9000/backup.zip" },
+		{ "http://sonarr.test:8989/Sonarr/", "/sonarr", "/backup/manual/sonarr_backup.zip", "http://sonarr.test:8989/sonarr/backup/manual/sonarr_backup.zip" },
+		{ "http://sonarr.test:8989/Sonarr/", "/sonarr", "/sonarr/logfile/sonarr.txt", "http://sonarr.test:8989/sonarr/logfile/sonarr.txt" },
+		{ "http://sonarr.test:8989/sonarr/", "/Sonarr", "/SONARR/logfile/sonarr.txt", "http://sonarr.test:8989/Sonarr/logfile/sonarr.txt" },
+		{ "http://sonarr.test:8989/tv/", "/sonarr", "/backup/manual/sonarr_backup.zip", "http://sonarr.test:8989/tv/backup/manual/sonarr_backup.zip" },
+		{ "http://sonarr.test:8989/", "", "/backup/manual/sonarr_backup.zip", "http://sonarr.test:8989/backup/manual/sonarr_backup.zip" },
 	};
 
 	/// <summary>

@@ -48,6 +48,17 @@ public sealed class SystemStatusObject : SonarrObject,
 	/// A backslash when the server runs on Windows; otherwise, a forward slash.
 	/// </value>
 	public char DirectorySeparator => this.GetValue<bool>("IsWindows") ? '\\' : '/';
+	/// <summary>
+	/// Gets the URL base that the server reports.
+	/// </summary>
+	/// <remarks>
+	/// It reads the <c>UrlBase</c> property.
+	/// </remarks>
+	/// <value>
+	/// The server's URL base, such as <c>/sonarr</c>, an empty string for a server without one, or
+	/// <see langword="null"/> when the property is missing.
+	/// </value>
+	public string? UrlBase => this.GetValue<string>();
 
 	/// <summary>
 	/// Initializes a new <see cref="SystemStatusObject"/> instance with no properties.

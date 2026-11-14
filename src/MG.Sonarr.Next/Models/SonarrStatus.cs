@@ -12,6 +12,14 @@ public sealed class SonarrStatus
 	/// </summary>
 	/// <value>The name of the server's authentication method, such as <c>forms</c>, or <see langword="null"/>.</value>
 	public string? Authentication { get; set; }
+	/// <summary>
+	/// Gets or sets the URL base that the server reports.
+	/// </summary>
+	/// <value>
+	/// The server's URL base, such as <c>/sonarr</c>, an empty string for a server without one, or
+	/// <see langword="null"/>.
+	/// </value>
+	public string? UrlBase { get; set; }
 
 	/// <summary>
 	/// Parses <see cref="Authentication"/> as a <see cref="SonarrAuthType"/>, without regard to case.

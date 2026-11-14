@@ -14,8 +14,8 @@ namespace MG.Sonarr.Next.Shell.Settings;
 /// change after that reaches a handler only once the chain is built again.
 /// </para>
 /// <para>
-/// The instance isn't thread-safe. A connection, which every runspace shares, writes only
-/// <see cref="AuthType"/> after it's built.
+/// The instance isn't thread-safe. A connection, which every runspace shares, writes only <see cref="AuthType"/> and
+/// <see cref="ServerUrlBase"/> after it's built, while its test runs.
 /// </para>
 /// </remarks>
 public sealed class ConnectionSettings : IConnectionSettings
@@ -49,6 +49,17 @@ public sealed class ConnectionSettings : IConnectionSettings
 	/// <value><see langword="true"/> to prefix paths with <c>/v3</c> instead of <c>/api/v3</c>; otherwise,
 	/// <see langword="false"/>. The default is <see langword="false"/>.</value>
 	public bool NoApiInPath { get; set; }
+	/// <summary>
+	/// Gets or sets the URL base that the Sonarr server's status reports.
+	/// </summary>
+	/// <remarks>
+	/// The connection's test stores it, and downloads, with the forms login that they need, spell the URL base as the
+	/// server does when it matches the path of <see cref="ServiceUri"/> without regard to case, so the login's cookie
+	/// goes back with them.
+	/// </remarks>
+	/// <value>The server's URL base, such as <c>/sonarr</c>, an empty string for a server without one, or
+	/// <see langword="null"/> until the test stores it.</value>
+	public string? ServerUrlBase { get; set; }
 	/// <summary>
 	/// Gets or sets the base URL of the Sonarr server.
 	/// </summary>

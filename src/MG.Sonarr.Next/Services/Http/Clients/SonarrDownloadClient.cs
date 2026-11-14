@@ -10,8 +10,10 @@ namespace MG.Sonarr.Next.Services.Http.Clients;
 /// </summary>
 /// <remarks>
 /// <para>
-/// A relative download URL gets the connection's URL base in front of it, unless it starts with the base already, in
-/// any case. An absolute URL goes out unchanged.
+/// A relative download URL gets the connection's URL base in front of it, and one that starts with the base already, in
+/// any case, gets the base in place of its own spelling. The base is spelled as the server's status reported it, when the
+/// two match without regard to case, so the cookie of a forms login, which Sonarr scopes to the base, goes back with
+/// every download. An absolute URL goes out unchanged.
 /// </para>
 /// <para>
 /// A response whose status isn't a success gives an error result, and nothing is written, since the body of such a
@@ -34,7 +36,8 @@ public interface ISonarrDownloadClient
 	/// Downloads the file at the specified URL to the specified path asynchronously.
 	/// </summary>
 	/// <remarks>
-	/// A server whose authentication needs credentials fails the download, since this overload sends none.
+	/// The overload sends no credentials, so the download fails when the server's authentication turns it away, with a 401
+	/// or with its login page, and succeeds when the server serves the client without a login.
 	/// </remarks>
 	/// <param name="url">The download URL that Sonarr gave, relative to the server or absolute.</param>
 	/// <param name="path">The path of the file to write, which the method creates or overwrites.</param>
@@ -51,11 +54,13 @@ public interface ISonarrDownloadClient
 	/// <remarks>
 	/// The credentials go out only when the server's authentication type, which the connection test stored, needs them:
 	/// in an <c>Authorization: Basic</c> header for Basic authentication, or in a login to the server's login page for
-	/// forms authentication.
+	/// forms authentication. Without them, the download goes out as the other overload's does.
 	/// </remarks>
 	/// <param name="url">The download URL that Sonarr gave, relative to the server or absolute.</param>
 	/// <param name="path">The path of the file to write, which the method creates or overwrites.</param>
-	/// <param name="credential">The credentials to authenticate with, or <see langword="null"/> to send none.</param>
+	/// <param name="credential">
+	/// The credentials to authenticate with, whose user name goes out as it is, or <see langword="null"/> to send none.
+	/// </param>
 	/// <param name="token">A token that cancels the download.</param>
 	/// <returns>
 	/// A task that completes with a result that holds <paramref name="path"/> once the file is written, or an error when the
@@ -80,8 +85,8 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 	private const string NO_FILE_MESSAGE = "The Sonarr server didn't return the file.";
 
 	/// <summary>
-	/// The connection's URL base, with its leading slash and without its trailing one, or an empty string when the
-	/// connection has none.
+	/// The connection's URL base, spelled as the server spells it when the two match without regard to case, with its
+	/// leading slash and without its trailing one, or an empty string when the connection has none.
 	/// </summary>
 	private readonly string _basePath;
 	/// <summary>
@@ -102,12 +107,14 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 	/// services.
 	/// </summary>
 	/// <param name="client">The typed client that sends the download requests.</param>
-	/// <param name="settings">The connection's settings, whose service URI gives the URL base.</param>
+	/// <param name="settings">
+	/// The connection's settings, whose service URI gives the URL base, and whose server URL base gives its spelling.
+	/// </param>
 	/// <param name="cmdletAccessor">The accessor of the resolving scope, which holds the scope's cmdlet.</param>
 	/// <param name="scopeFactory">The factory that each request message opens its scope from.</param>
 	public SonarrDownloadClient(HttpClient client, IConnectionSettings settings, ApiCmdletAccessor cmdletAccessor, IServiceScopeFactory scopeFactory)
 	{
-		_basePath = settings.ServiceUri.AbsolutePath.TrimEnd('/');
+		_basePath = settings.GetUrlBase();
 		_client = client;
 		_cmdletAccessor = cmdletAccessor;
 		_scopeFactory = scopeFactory;
@@ -129,12 +136,15 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 	}
 
 	/// <summary>
-	/// Puts the URL base in front of the specified download URL, unless the URL starts with it already.
+	/// Puts the URL base in front of the specified download URL, or in place of the URL's own spelling of it when the URL
+	/// starts with it already.
 	/// </summary>
 	/// <remarks>
-	/// Sonarr gives a backup's path without the URL base, and a log file's download URL with it. The URL that this method
-	/// returns is rooted, so combining it with the base address keeps only the address's scheme and server. An absolute
-	/// URL comes back unchanged.
+	/// Sonarr gives a backup's path without the URL base, and a log file's download URL with it, spelled its own way. The
+	/// URL that this method returns spells the base as <see cref="_basePath"/> does, as the login that a forms server
+	/// needs does too, so the login's cookie, whose path is the base, goes back with the download. The URL is rooted, so
+	/// combining it with the base address keeps only the address's scheme and server. An absolute URL comes back
+	/// unchanged.
 	/// </remarks>
 	/// <param name="url">The download URL that Sonarr or the user gave.</param>
 	/// <returns>The URL to request.</returns>
@@ -147,8 +157,10 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 
 		ReadOnlySpan<char> path = url.AsSpan().TrimStart('/');
 
+		// The segments of the base are its length less its leading slash, and what follows them starts with a slash or is
+		// empty.
 		return IsUnderBase(path, _basePath)
-			? string.Concat("/", path)
+			? string.Concat(_basePath, path[(_basePath.Length - 1)..])
 			: string.Concat(_basePath, "/", path);
 	}
 
@@ -168,7 +180,7 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 			return false;
 		}
 
-		// Sonarr v3 lowercases the URL base in the URLs that it gives, and the connection's URL has the case the user typed.
+		// Sonarr v3 lowercases the URL base in the URLs that it gives, and a URL that a user typed has the case they typed.
 		ReadOnlySpan<char> baseSegments = basePath[1..];
 		return path.StartsWith(baseSegments, StringComparison.OrdinalIgnoreCase)
 			&& (path.Length == baseSegments.Length || path[baseSegments.Length] == '/');

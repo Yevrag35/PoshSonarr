@@ -139,6 +139,15 @@ Measured 2026-11-06 on PowerShell 7.6.9 with a throwaway `Add-Type` cmdlet whose
 - **Command-line binding never reads a property.** With no arguments, with named, positional, and splatted arguments, with the switch, and with a `$PSDefaultParameterValues` entry, the binder called only the setters of the parameters it bound. No getter ran before `BeginProcessing`, and none ran for a parameter that stayed unbound.
 - **Pipeline binding reads the pipeline parameter's property once.** After `BeginProcessing`, before the first piped object binds, the binder reads the property to back up its default. Before each later object, it sets the property back to that value and then binds the object, so the setter runs twice for each object after the first.
 
+## Credentials
+
+Measured 2026-11-14 on PowerShell 7.7.0, with `[pscredential]` objects built in script and the module's Debug build, whose `Save-SonarrBackup -Credential` carries a validation attribute.
+
+- **`PSCredential.Password` doesn't copy.** It returns the `SecureString` that the credential was built with, the same instance on every call. A `NetworkCredential` built from a `SecureString` keeps a copy of it, and its `SecurePassword` returns a new copy on each call, which the caller has to dispose, while its `Password` returns a new string on each call (measured on .NET 11.0.0).
+- **`GetNetworkCredential()` splits the user name.** It caches its result, and it splits a user name into `UserName` and `Domain` at a backslash, as `DOM\mike` gives `mike` and `DOM`, and at an `@` with no dot after it, as `mike@home` gives `mike` and `home`, while `mike@example.com` stays whole.
+- **`[pscredential]::Empty`** has a `null` user name and password, and its `GetNetworkCredential()` returns `null`. The constructor turns away an empty user name, and takes one that's only white space and an empty password.
+- **A validation attribute on a `[pscredential]` parameter** receives the credential itself, and a `ValidationMetadataException` from it fails the binding with a `ParameterBindingValidationException`, whose message names the parameter and gives the exception's message.
+
 ## What it means for PoshSonarr
 
 - A pipeline parameter typed as a pipeable interface, such as `ISeriesPipeable[]`, takes exactly the objects that implement it, so a hashtable, a projection, or a deserialized copy fails with `InputObjectNotBound`, one object at a time.
@@ -159,6 +168,7 @@ Measured 2026-11-06 on PowerShell 7.6.9 with a throwaway `Add-Type` cmdlet whose
 - A validation attribute that tests its argument for `IDictionary` gets the dictionary itself only on an `[IDictionary]` or `[hashtable]` parameter. On an `[object]` parameter it unwraps a `PSObject` argument before the test, and on an array parameter it tests each element, or those dictionaries pass unchecked.
 - A validation attribute that calls a method through reflection passes `BindingFlags.DoNotWrapExceptions` or unwraps the `TargetInvocationException`, so the error shows the message of the exception that the method threw.
 - `GetDynamicParameters` alone can't validate a dynamic parameter against a positional argument. Check it again in `BeginProcessing`, against the final values.
+- A credential that logs in to Sonarr goes out with `PSCredential.UserName` as it is, through `ToLoginCredential()`, never with `GetNetworkCredential().UserName`, since a Sonarr user name can hold a backslash or an `@`. A check of a credential's password reads `PSCredential.Password`, which costs nothing, rather than a `NetworkCredential`'s, which copies the password on every read.
 - To make two parameters exclude each other through parameter sets, give each set a twin in which one parameter takes the other's place, and make it mandatory in the twins. Left optional there, it leaves the binder two sets for every call that names neither parameter, and every such call that the default set doesn't settle fails. Twin sets also turn a call that names one of two mandatory parameters from a prompt for the other into an `AmbiguousParameterSet` error, which names no parameter, so the help says which parameters exclude each other.
 - Match parameter sets by name, in tests and anywhere else, and not by the order in which `Get-Command` lists them after the default set.
 - Give each positional parameter in a set a position of its own, because nothing reports a clash, and the syntax drops one of the two. A parameter that belongs in every set, such as a `-Name` beside an explicit-ID set's `-Id`, takes one `[Parameter]` attribute per set instead, with the next free position in a set where another parameter holds position 0.
