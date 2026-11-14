@@ -16,7 +16,7 @@ namespace MG.Sonarr.Next.Unions;
 /// </remarks>
 /// <typeparam name="T1">The first reference type that can be stored in the union.</typeparam>
 /// <typeparam name="T2">The second reference type that can be stored in the union.</typeparam>
-[Union, StructLayout(LayoutKind.Auto), DebuggerDisplay(@"\{Index = {_index}, Value = {_value}\}"), DebuggerStepThrough]
+[Union, StructLayout(LayoutKind.Auto), DebuggerDisplay(@"\{Index = {_index}, Value = {_value}\}"), DebuggerStepThrough, ExcludeFromCodeCoverage]
 public readonly partial struct ObjEither<T1, T2> : IUnion where T1 : class where T2 : class // Size = 16
 {
 	private readonly object? _value;
@@ -208,6 +208,7 @@ public readonly partial struct ObjEither<T1, T2> : IUnion where T1 : class where
 	public static implicit operator ObjEither<T1, T2>(T2 value) => new(value);
 }
 
+[ExcludeFromCodeCoverage]
 file static class Exceptions
 {
 	/// <summary>

@@ -7,7 +7,7 @@ namespace MG.Sonarr.Next.Unions;
 /// <see cref="ObjEither{T1, T2}"/> instances. 
 /// These methods are intended to simplify common tasks when handling union values that may represent one of
 /// two reference types or neither.</remarks>
-[DebuggerStepThrough]
+[DebuggerStepThrough, ExcludeFromCodeCoverage]
 public static class ObjEither
 {
 	/// <summary>

@@ -12,6 +12,7 @@ namespace MG.Sonarr.Next.Json.Naming;
 /// (typically to a format like camelCase) with minimal allocations by leveraging span-based operations.
 /// </remarks>
 [DebuggerDisplay(@"\{HasPolicy = {HasPolicy}, IsSpanPolicy = {IsSpanPolicy}, Policy = {Policy}\}")]
+[ExcludeFromCodeCoverage]
 public sealed class WorkingNamingPolicy : JsonNamingPolicy
 {
 	private const int MAX_STACKALLOC = 128;

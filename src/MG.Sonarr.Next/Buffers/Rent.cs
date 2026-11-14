@@ -7,7 +7,7 @@ namespace MG.Sonarr.Next.Buffers;
 /// cref="System.Buffers.ArrayPool{T}"/>. Renting and returning arrays can help reduce memory allocations and improve
 /// performance in scenarios where temporary arrays are frequently needed. Arrays obtained from the pool are not
 /// guaranteed to be zero-initialized. Callers should clear the array if required before use.</remarks>
-[DebuggerStepThrough]
+[DebuggerStepThrough, ExcludeFromCodeCoverage]
 internal static class Rent
 {
 	/// <summary>

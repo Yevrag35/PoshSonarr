@@ -13,7 +13,7 @@ namespace MG.Sonarr.Next.Extensions;
 /// <para><b>Performance:</b> Every member is decorated with <see cref="MethodImplOptions.AggressiveInlining"/>
 /// to keep hot-path call stacks clean.</para>
 /// </remarks>
-[DebuggerStepThrough]
+[DebuggerStepThrough, ExcludeFromCodeCoverage]
 internal static class SpanUnsafeExtensions
 {
 	/// <summary>

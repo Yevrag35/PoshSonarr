@@ -5,6 +5,7 @@ namespace MG.Sonarr.Next.Extensions;
 /// <summary>
 /// Provides extension members for collection types.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class CollectionExtensions
 {
 	/// <summary>

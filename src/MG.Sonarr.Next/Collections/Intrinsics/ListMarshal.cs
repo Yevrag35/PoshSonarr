@@ -11,6 +11,7 @@ namespace MG.Sonarr.Next.Collections.Intrinsics;
 /// structure of <see cref="List{T}"/> and may not be compatible with future versions of .NET if the implementation changes. Use with
 /// caution, as improper use can lead to undefined behavior or runtime exceptions. This class is primarily intended for
 /// advanced scenarios where performance is critical and the risks are understood.</remarks>
+[ExcludeFromCodeCoverage]
 internal static class ListMarshal
 {
 	/// <summary>

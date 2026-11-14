@@ -49,7 +49,7 @@ internal static class ArraySlice
 /// is not thread-safe if the underlying array is modified concurrently.</remarks>
 /// <typeparam name="T">The type of elements contained in the array slice.</typeparam>
 [DebuggerDisplay("Length = {Length}")]
-[CollectionBuilder(typeof(ArraySlice), nameof(ArraySlice.Create))]
+[CollectionBuilder(typeof(ArraySlice), nameof(ArraySlice.Create)), ExcludeFromCodeCoverage]
 internal readonly struct ArraySlice<T> : IReadOnlyCollection<T>
 {
 	[StructLayout(LayoutKind.Auto)]

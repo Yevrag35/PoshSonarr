@@ -3,7 +3,7 @@ namespace MG.Sonarr.Next.Guarding;
 /// <summary>
 /// A <see langword="static"/> class that provides methods for throwing exceptions with messages that are formatted.
 /// </summary>
-[DebuggerStepThrough]
+[DebuggerStepThrough, ExcludeFromCodeCoverage]
 internal static partial class ThrowHelper
 {
 	/// <summary>

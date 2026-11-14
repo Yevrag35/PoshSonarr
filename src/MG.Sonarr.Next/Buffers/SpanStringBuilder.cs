@@ -20,7 +20,7 @@ namespace MG.Sonarr.Next.Buffers;
 /// an array that goes back to the pool with <c>'\uDDDD'</c> characters, unless <see cref="ClearOnDispose"/> is set.</para>
 /// </remarks>
 [DebuggerDisplay("{ToString(),nq}")]
-[StructLayout(LayoutKind.Auto), DebuggerStepThrough]
+[StructLayout(LayoutKind.Auto), DebuggerStepThrough, ExcludeFromCodeCoverage]
 internal ref struct SpanStringBuilder
 {
 	/// <summary>

@@ -8,7 +8,7 @@ namespace MG.Sonarr.Next.Buffers;
 /// wrappers around C# function pointers (<c>delegate*</c>). These wrappers provide an API-friendly <c>Invoke</c>
 /// method and implicit conversions to simplify call sites while keeping the underlying call via an unmanaged-like pointer.
 /// </remarks>
-[DebuggerStepThrough, SuppressMessage("Design", "MA0131", Justification = "Analyzer doesn't recognize that pointers have their own overload for ThrowIfNull.")]
+[DebuggerStepThrough, ExcludeFromCodeCoverage, SuppressMessage("Design", "MA0131", Justification = "Analyzer doesn't recognize that pointers have their own overload for ThrowIfNull.")]
 internal static class FnPtr
 {
 	/// <summary>

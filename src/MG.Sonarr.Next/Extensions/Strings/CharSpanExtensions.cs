@@ -4,6 +4,7 @@ namespace MG.Sonarr.Next.Extensions.Strings;
 /// Custom extension methods for <see cref="Span{T}"/> and <see cref="ReadOnlySpan{T}"/> instances
 /// of type <see cref="char"/>.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static partial class CharSpanExtensions
 {
 	/// <summary>

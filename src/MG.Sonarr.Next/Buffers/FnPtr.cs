@@ -4,7 +4,7 @@ namespace MG.Sonarr.Next.Buffers;
 /// A lightweight wrapper around a managed function pointer that returns <typeparamref name="TResult"/>.
 /// </summary>
 /// <typeparam name="TResult">The return type of the pointer.</typeparam>
-[StructLayout(LayoutKind.Auto), DebuggerStepThrough, DebuggerDisplay("{ToString(),nq}")]
+[StructLayout(LayoutKind.Auto), DebuggerStepThrough, DebuggerDisplay("{ToString(),nq}"), ExcludeFromCodeCoverage]
 [SuppressMessage("Design", "MA0131", Justification = "Analyzer doesn't recognize that pointers have their own overload for ThrowIfNull.")]
 internal readonly struct FnPtr<TResult> where TResult : allows ref struct
 {
@@ -145,7 +145,7 @@ internal readonly struct FnPtr<TResult> where TResult : allows ref struct
 /// </summary>
 /// <typeparam name="T">The input parameter type. Constrained to <see langword="ref"/>-like types via <c>allows ref struct</c>.</typeparam>
 /// <typeparam name="TResult">The return type of the pointer.</typeparam>
-[StructLayout(LayoutKind.Auto), DebuggerStepThrough, DebuggerDisplay("{ToString(),nq}")]
+[StructLayout(LayoutKind.Auto), DebuggerStepThrough, DebuggerDisplay("{ToString(),nq}"), ExcludeFromCodeCoverage]
 [SuppressMessage("Design", "MA0131", Justification = "Analyzer doesn't recognize that pointers have their own overload for ThrowIfNull.")]
 internal readonly struct FnPtr<T, TResult> where T : allows ref struct where TResult : allows ref struct
 {
@@ -288,7 +288,7 @@ internal readonly struct FnPtr<T, TResult> where T : allows ref struct where TRe
 /// <typeparam name="T1">The first input parameter type. Constrained to <see langword="ref"/>-like types via <c>allows ref struct</c>.</typeparam>
 /// <typeparam name="T2">The second input parameter type. Constrained to <see langword="ref"/>-like types via <c>allows ref struct</c>.</typeparam>
 /// <typeparam name="TResult">The return type of the pointer.</typeparam>
-[StructLayout(LayoutKind.Auto), DebuggerStepThrough, DebuggerDisplay("{ToString(),nq}")]
+[StructLayout(LayoutKind.Auto), DebuggerStepThrough, DebuggerDisplay("{ToString(),nq}"), ExcludeFromCodeCoverage]
 [SuppressMessage("Design", "MA0131", Justification = "Analyzer doesn't recognize that pointers have their own overload for ThrowIfNull.")]
 internal readonly struct FnPtr<T1, T2, TResult>
 	where T1 : allows ref struct
@@ -419,7 +419,7 @@ internal readonly struct FnPtr<T1, T2, TResult>
 /// <typeparam name="T2">The second input parameter type. Constrained to <see langword="ref"/>-like types via <c>allows ref struct</c>.</typeparam>
 /// <typeparam name="T3">The third input parameter type. Constrained to <see langword="ref"/>-like types via <c>allows ref struct</c>.</typeparam>
 /// <typeparam name="TResult">The return type of the pointer.</typeparam>
-[StructLayout(LayoutKind.Auto), DebuggerStepThrough, DebuggerDisplay("{ToString(),nq}")]
+[StructLayout(LayoutKind.Auto), DebuggerStepThrough, DebuggerDisplay("{ToString(),nq}"), ExcludeFromCodeCoverage]
 [SuppressMessage("Design", "MA0131", Justification = "Analyzer doesn't recognize that pointers have their own overload for ThrowIfNull.")]
 internal readonly struct FnPtr<T1, T2, T3, TResult>
 	where T1 : allows ref struct
@@ -553,7 +553,7 @@ internal readonly struct FnPtr<T1, T2, T3, TResult>
 /// <typeparam name="T3">The third input parameter type. Constrained to <see langword="ref"/>-like types via <c>allows ref struct</c>.</typeparam>
 /// <typeparam name="T4">The fourth input parameter type. Constrained to <see langword="ref"/>-like types via <c>allows ref struct</c>.</typeparam>
 /// <typeparam name="TResult">The return type of the pointer.</typeparam>
-[StructLayout(LayoutKind.Auto), DebuggerStepThrough, DebuggerDisplay("{ToString(),nq}")]
+[StructLayout(LayoutKind.Auto), DebuggerStepThrough, DebuggerDisplay("{ToString(),nq}"), ExcludeFromCodeCoverage]
 [SuppressMessage("Design", "MA0131", Justification = "Analyzer doesn't recognize that pointers have their own overload for ThrowIfNull.")]
 internal readonly struct FnPtr<T1, T2, T3, T4, TResult>
 	where T1 : allows ref struct

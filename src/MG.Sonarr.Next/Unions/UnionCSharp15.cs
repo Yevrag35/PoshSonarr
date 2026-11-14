@@ -31,7 +31,7 @@ public interface IUnion
 /// </para>
 /// </remarks>
 /// <seealso cref="IUnion" />
-[AttributeUsage(AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Struct, AllowMultiple = false, Inherited = false), ExcludeFromCodeCoverage]
 internal sealed class UnionAttribute : Attribute
 {
 }
