@@ -68,7 +68,7 @@ public sealed class TestSonarrResourceCmdlet : TimedCmdlet
 		foreach (ITestPipeable testable in this.InputObject)
 		{
 			this.StartTimer();
-			SonarrClientResult response = this.SendSingleTest(testable, this.StoppingToken);
+			SonarrClientResult response = this.SendSingleTest(testable, this.PipelineStopToken);
 			var obj = new
 			{
 				testable.Id,

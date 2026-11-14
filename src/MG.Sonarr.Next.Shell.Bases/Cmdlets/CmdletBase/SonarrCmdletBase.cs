@@ -35,10 +35,6 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 	private bool _isInitialized;
 	private bool _isStopped;
 	private IServiceScope? _scope;
-	// Never disposed: StopProcessing cancels it on another thread, which Dispose would race, and a source whose
-	// WaitHandle nothing reads holds nothing that needs disposing.
-	//TODO: Newer PowerShell versions have a PipelineStopToken property - replace this with that.
-	private readonly CancellationTokenSource _stopping = new();
 
 	/// <summary>
 	/// Gets a value that indicates whether <see cref="BeginProcessing"/> has created the cmdlet's scope.
@@ -73,16 +69,6 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 	/// <see cref="End(IServiceProvider)"/> runs; otherwise, <see langword="false"/>.
 	/// </value>
 	protected bool IsStopped => _isStopped;
-
-	/// <summary>
-	/// Gets a token that is canceled when the pipeline is stopped, as Ctrl+C stops it.
-	/// </summary>
-	/// <remarks>
-	/// <see cref="StopProcessing"/> cancels it on another thread, so a request or a wait that takes it ends as soon as
-	/// the pipeline is stopped rather than when it would have finished. The <c>Send*Request</c> helpers of
-	/// <see cref="SonarrApiCmdletBase"/> send with it unless they're given a token of their own.
-	/// </remarks>
-	protected CancellationToken StoppingToken => _stopping.Token;
 
 	/// <summary>
 	/// When overridden in a derived class, gets a value that indicates whether the cmdlet captures its Debug

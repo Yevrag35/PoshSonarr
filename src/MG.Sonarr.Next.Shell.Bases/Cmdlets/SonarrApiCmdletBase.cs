@@ -20,7 +20,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets;
 /// <para>
 /// The helpers don't throw for a failed request. The result carries the error record instead, and the cmdlet decides
 /// whether to write it. Unless a caller passes a token that can be canceled, a helper sends with
-/// <see cref="SonarrCmdletBase.StoppingToken"/>, so stopping the pipeline, as Ctrl+C does, ends a request in flight,
+/// <see cref="Cmdlet.PipelineStopToken"/>, so stopping the pipeline, as Ctrl+C does, ends a request in flight,
 /// and its result reports the error with the category <see cref="ErrorCategory.OperationStopped"/>.
 /// </para>
 /// </remarks>
@@ -47,13 +47,13 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 
 	/// <summary>
 	/// Gets the token that a request sends with: the specified one when it can be canceled, and
-	/// <see cref="SonarrCmdletBase.StoppingToken"/> otherwise, so that stopping the pipeline ends the request.
+	/// <see cref="Cmdlet.PipelineStopToken"/> otherwise, so that stopping the pipeline ends the request.
 	/// </summary>
 	/// <param name="token">The token that the caller passed, or <see langword="default"/>.</param>
 	/// <returns>The token to send the request with.</returns>
 	private CancellationToken GetRequestToken(CancellationToken token)
 	{
-		return token.CanBeCanceled ? token : this.StoppingToken;
+		return token.CanBeCanceled ? token : this.PipelineStopToken;
 	}
 
 	/// <summary>
