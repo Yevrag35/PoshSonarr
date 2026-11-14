@@ -37,14 +37,6 @@ public sealed class DiskspaceObject : SonarrObject,
 	private static readonly string _typeName = typeof(DiskspaceObject).GetName();
 
 	/// <summary>
-	/// Gets the drive's free space.
-	/// </summary>
-	/// <remarks>
-	/// It's a copy of the <c>FreeSpace</c> property, taken while the drive is deserialized.
-	/// </remarks>
-	/// <value>The free space, or 0 bytes when Sonarr sends none.</value>
-	public Size FreeSpace { get; private set; }
-	/// <summary>
 	/// Gets the drive's path.
 	/// </summary>
 	/// <remarks>
@@ -52,14 +44,6 @@ public sealed class DiskspaceObject : SonarrObject,
 	/// </remarks>
 	/// <value>The path of the drive's mount point, or an empty string when Sonarr sends none.</value>
 	public string Path { get; private set; } = string.Empty;
-	/// <summary>
-	/// Gets the drive's total space.
-	/// </summary>
-	/// <remarks>
-	/// It's a copy of the <c>TotalSpace</c> property, taken while the drive is deserialized.
-	/// </remarks>
-	/// <value>The total space, or 0 bytes when Sonarr sends none.</value>
-	public Size TotalSpace { get; private set; }
 
 	/// <summary>
 	/// Initializes a new <see cref="DiskspaceObject"/> instance with no properties.
@@ -97,7 +81,7 @@ public sealed class DiskspaceObject : SonarrObject,
 	/// </summary>
 	/// <remarks>
 	/// It runs the base's deserialization, adds an empty <c>Label</c> property when the drive has none, and copies
-	/// the drive's path and sizes into <see cref="Path"/>, <see cref="FreeSpace"/>, and <see cref="TotalSpace"/>.
+	/// the drive's path into <see cref="Path"/>.
 	/// </remarks>
 	public override void OnDeserialized()
 	{
@@ -111,16 +95,6 @@ public sealed class DiskspaceObject : SonarrObject,
 		if (this.TryGetNonNullProperty(nameof(this.Path), out string? path))
 		{
 			this.Path = path;
-		}
-
-		if (this.TryGetProperty(nameof(this.FreeSpace), out long fs))
-		{
-			this.FreeSpace = new Size(in fs);
-		}
-
-		if (this.TryGetProperty(nameof(this.TotalSpace), out long ts))
-		{
-			this.TotalSpace = new Size(in ts);
 		}
 	}
 	/// <summary>
