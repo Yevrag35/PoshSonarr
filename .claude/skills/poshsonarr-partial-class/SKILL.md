@@ -22,7 +22,7 @@ PoshSonarr splits a large C# type by concern into a main file, `TypeName.cs`, an
 
 ## What the main file holds
 
-- The type's doc comment and attributes, such as `[StructLayout]` and `[DebuggerDisplay]`, its base class and interfaces, and a generic type's constraints. Because a concern file declares the type with only its modifiers and type parameters, as in `public readonly partial struct Wildcard` or `internal sealed partial class SonarrHttpClient`, the interfaces that its members implement appear only in the main file. `Wildcard-Parsing.cs` implements `ISpanParsable<Wildcard>`, for one, and only `Wildcard.cs` lists it.
+- The type's doc comment and attributes, such as `[StructLayout]` and `[DebuggerDisplay]`, its base class and interfaces, and a generic type's constraints. Because a concern file declares the type with only its modifiers and type parameters, as in `public readonly partial struct Wildcard` or `internal sealed partial class SonarrHttpClient`, the interfaces that its members implement appear only in the main file. `Wildcard-EqualityAndOperators.cs` implements `IEquatable<Wildcard>`, for one, and only `Wildcard.cs` lists it.
 - The type's fields and constructors, static ones included, such as the services that `SonarrHttpClient` takes in its constructor, along with the constants and static fields that the concern files share, such as `Wildcard`'s `DEFAULT_COMPARISON`. Look there for an existing field before you add one, and add new fields and constructors there.
 - Other types that go with the main type, such as `SonarrClientDependencyInjection`, which registers `SonarrHttpClient`, in `SonarrHttpClient.cs`.
 

@@ -32,8 +32,6 @@ public sealed class SearchSonarrReleaseCmdlet : SonarrApiCmdletBase
 	private const string ByEpisodeInput = "ByEpisodeInput";
 	private const string BySeriesId = "BySeriesId";
 	private const string BySeriesInput = "BySeriesInput";
-	private static readonly Wildcard _byEpisodeWildcard = Wildcard
-		.ParseAs(WildcardMatchType.StartsWith, ByEpisodeId.AsSpan(0, ByEpisodeId.Length - 2));
 
 	private QueryCol _queryParams = null!;
 	/// <summary>
@@ -169,7 +167,7 @@ public sealed class SearchSonarrReleaseCmdlet : SonarrApiCmdletBase
 	/// <returns>The release endpoint's path, relative to the API, with the query.</returns>
 	private string GetUrl()
 	{
-		if (this.ParameterSetNameIsLike(_byEpisodeWildcard))
+		if (this.ParameterSetNameIsLike("ByEpisode*"))
 		{
 			_queryParams.Add(Constants.EpisodeId, this.EpisodeId);
 		}

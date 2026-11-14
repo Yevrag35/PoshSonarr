@@ -13,7 +13,7 @@ namespace MG.Sonarr.Next.Strings;
 ///         <c>[</c>, <c>]</c>, and the backtick as themselves, so a name that holds them needs no escaping.
 ///     </para>
 ///     <para>
-///         <see cref="IsMatch(string?)"/> and <see cref="IsMatch(ReadOnlySpan{char})"/> compare with
+///         <see cref="IsMatch(string?)"/> compares with
 ///         <see cref="StringComparison.OrdinalIgnoreCase"/>, the same in every culture, where
 ///         <see cref="System.Management.Automation.WildcardPattern"/> with
 ///         <see cref="System.Management.Automation.WildcardOptions.IgnoreCase"/> folds case with the current culture. So
@@ -28,16 +28,12 @@ namespace MG.Sonarr.Next.Strings;
 ///     </para>
 /// </remarks>
 [DebuggerDisplay("{GetDebuggerString(),nq}")]
-public readonly partial struct Wildcard : // 16 bytes
-	IEnumerable<char>,
-	IEquatable<string>, IEquatable<Wildcard>,
-	ISpanFormattable, ISpanParsable<Wildcard>,
-	IUtf8SpanFormattable, IUtf8SpanParsable<Wildcard>
+public readonly partial struct Wildcard : IEquatable<Wildcard> // 16 bytes
 {
 	// -- Other partial file locations:
 	//
 	// Formatting methods -> ./Wildcard-Formatting.cs
-	// Equality methods/Equality operators/Explicit and Implicit operator -> ./Wildcard-EqualityAndOperators.cs
+	// Equality methods/Explicit and Implicit operators -> ./Wildcard-EqualityAndOperators.cs
 	// Main Methods -> ./Wildcard-Methods.cs
 	// Parsing methods -> ./Wildcard-Parsing.cs
 	// --------------------------------
@@ -51,7 +47,6 @@ public readonly partial struct Wildcard : // 16 bytes
 	// -- PRIVATE FIELDS
 
 	private const StringComparison DEFAULT_COMPARISON = StringComparison.OrdinalIgnoreCase;
-	private const int MAX_STACKALLOC = 256;
 	private const string ALL_STRING = "*";
 	private static readonly SearchValues<char> s_wildcardChars = SearchValues.Create(['*', '?']);
 
@@ -72,26 +67,13 @@ public readonly partial struct Wildcard : // 16 bytes
 	public static readonly Wildcard Empty = new(isAll: false);
 
 	/// <summary>
-	/// Gets the <see cref="char"/> object at the specified position in the current <see cref="Wildcard"/>
-	/// object.
-	/// </summary>
-	/// <param name="index">The position in the current string.</param>
-	/// <exception cref="IndexOutOfRangeException">
-	/// Thrown when <paramref name="index"/> is less than zero or not less than <see cref="Length"/>, as
-	/// <see cref="string"/>'s indexer throws.
-	/// </exception>
-	/// <value>The character at the specified index.</value>
-	/// <exception cref="NullReferenceException">The underlying pattern is <see langword="null"/>.</exception>
-	public char this[int index] => _pattern![index];
-
-	/// <summary>
 	/// Indicates whether the <see cref="Wildcard"/> contains any wildcard characters ('?' or '*') in
 	/// the string.
 	/// </summary>
 	/// <remarks>
-	///     If <see langword="false"/>, the <see cref="IsMatch(ReadOnlySpan{char})"/> and
-	///     <see cref="IsMatch(string?)"/> methods compare the whole input with the pattern, as
-	///     <see cref="Equals(ReadOnlySpan{char})"/> does.
+	///     If <see langword="false"/>, <see cref="IsMatch(string?)"/> compares the whole input with the pattern, as
+	///     <see cref="Equals(ReadOnlySpan{char}, StringComparison)"/> does under
+	///     <see cref="StringComparison.OrdinalIgnoreCase"/>.
 	/// </remarks>
 	/// <value>
 	/// <see langword="true"/> if the string contains at least one wildcard character; otherwise,
@@ -112,11 +94,6 @@ public readonly partial struct Wildcard : // 16 bytes
 	/// <value><see langword="true"/> when the instance is empty; otherwise, <see langword="false"/>.</value>
 	[MemberNotNullWhen(false, nameof(_pattern))]
 	public bool IsEmpty => _state.Length == 0;
-	/// <summary>
-	/// Gets the number of characters in the current <see cref="Wildcard"/> pattern.
-	/// </summary>
-	/// <value>The number of characters in the wildcard pattern.</value>
-	public int Length => _state.Length;
 	/// <summary>
 	/// Gets the match type that this <see cref="Wildcard"/> instance will follow when comparing its pattern against input.
 	/// </summary>
@@ -163,17 +140,6 @@ public readonly partial struct Wildcard : // 16 bytes
 		int length = 0;
 		_pattern = ConstructPattern(pattern, matchType, ref length);
 		_state = new(length, matchType);
-	}
-
-	/// <summary>
-	/// Initializes a new <see cref="Wildcard"/> instance with the specified pattern and match type.
-	/// </summary>
-	/// <param name="pattern">The pattern text.</param>
-	/// <param name="matchType">The match type to assign to the instance.</param>
-	private Wildcard(ReadOnlySpan<char> pattern, WildcardMatchType matchType)
-	{
-		_pattern = pattern.ToString();
-		_state = new(_pattern.Length, matchType);
 	}
 
 	/// <summary>

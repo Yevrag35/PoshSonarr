@@ -5,19 +5,6 @@ public readonly partial struct Wildcard
 	// EQUALITY
 	/// <summary>
 	/// Determines whether the current <see cref="Wildcard"/> instance is equal to the specified span of characters,
-	/// using a case-insensitive comparison.
-	/// </summary>
-	/// <param name="other">The span of characters to compare with the current instance.</param>
-	/// <returns>
-	/// <see langword="true"/> if the specified span of characters is equal to the current instance; otherwise, <see langword="false"/>.
-	/// </returns>
-	[DebuggerStepThrough]
-	public bool Equals(ReadOnlySpan<char> other)
-	{
-		return this.Equals(other, DEFAULT_COMPARISON);
-	}
-	/// <summary>
-	/// Determines whether the current <see cref="Wildcard"/> instance is equal to the specified span of characters,
 	/// using the specified string comparison option.
 	/// </summary>
 	/// <param name="other">The span of characters to compare with the current instance.</param>
@@ -28,19 +15,6 @@ public readonly partial struct Wildcard
 	public bool Equals(ReadOnlySpan<char> other, StringComparison comparisonType)
 	{
 		return other.Equals(_pattern, comparisonType);
-	}
-	/// <summary>
-	/// Determines whether the current <see cref="Wildcard"/> instance is equal to the specified string,
-	/// using a case-insensitive comparison.
-	/// </summary>
-	/// <param name="other">The string to compare with the current instance.</param>
-	/// <returns>
-	/// <see langword="true"/> if the specified string is equal to the current instance, ignoring case; otherwise, <see langword="false"/>.
-	/// </returns>
-	[DebuggerStepThrough]
-	public bool Equals(string? other)
-	{
-		return this.Equals(other, DEFAULT_COMPARISON);
 	}
 	/// <summary>
 	/// Determines whether the current <see cref="Wildcard"/> instance is equal to the specified string,
@@ -151,83 +125,5 @@ public readonly partial struct Wildcard
 	public static explicit operator string(Wildcard pattern)
 	{
 		return pattern.ToString();
-	}
-	/// <summary>
-	/// Implicitly converts a <see cref="Wildcard"/> instance to a <see cref="ReadOnlySpan{T}"/> of <see cref="char"/> values.
-	/// </summary>
-	/// <param name="pattern">The <see cref="Wildcard"/> instance to convert.</param>
-	/// <returns>A <see cref="ReadOnlySpan{T}"/> of <see cref="char"/> values that represents the specified <see cref="Wildcard"/> instance.</returns>
-	[DebuggerStepThrough]
-	public static implicit operator ReadOnlySpan<char>(Wildcard pattern)
-	{
-		return pattern.AsSpan();
-	}
-
-	/// <summary>
-	/// Determines whether two <see cref="Wildcard"/> instances are equal.
-	/// </summary>
-	/// <param name="x">The first <see cref="Wildcard"/> instance to compare.</param>
-	/// <param name="y">The second <see cref="Wildcard"/> instance to compare.</param>
-	/// <returns><see langword="true"/> if the two <see cref="Wildcard"/> instances are equal; otherwise, <see langword="false"/>.</returns>
-	[DebuggerStepThrough]
-	public static bool operator ==(Wildcard x, Wildcard y)
-	{
-		return x.Equals(y);
-	}
-	/// <summary>
-	/// Determines whether two <see cref="Wildcard"/> instances are not equal.
-	/// </summary>
-	/// <param name="x">The first <see cref="Wildcard"/> instance to compare.</param>
-	/// <param name="y">The second <see cref="Wildcard"/> instance to compare.</param>
-	/// <returns><see langword="true"/> if the two <see cref="Wildcard"/> instances are not equal; otherwise, <see langword="false"/>.</returns>
-	[DebuggerStepThrough]
-	public static bool operator !=(Wildcard x, Wildcard y)
-	{
-		return !(x == y);
-	}
-
-	/// <summary>
-	/// Determines whether a <see cref="Wildcard"/> instance's pattern is equal to a string, using a case-insensitive
-	/// comparison.
-	/// </summary>
-	/// <param name="x">The <see cref="Wildcard"/> instance to compare.</param>
-	/// <param name="y">The string to compare.</param>
-	/// <returns><see langword="true"/> if the pattern of <paramref name="x"/> equals <paramref name="y"/>; otherwise, <see langword="false"/>.</returns>
-	public static bool operator ==(Wildcard x, string? y)
-	{
-		return x.Equals(y);
-	}
-	/// <summary>
-	/// Determines whether a <see cref="Wildcard"/> instance's pattern is not equal to a string, using a
-	/// case-insensitive comparison.
-	/// </summary>
-	/// <param name="x">The <see cref="Wildcard"/> instance to compare.</param>
-	/// <param name="y">The string to compare.</param>
-	/// <returns><see langword="true"/> if the pattern of <paramref name="x"/> doesn't equal <paramref name="y"/>; otherwise, <see langword="false"/>.</returns>
-	public static bool operator !=(Wildcard x, string? y)
-	{
-		return !(x == y);
-	}
-	/// <summary>
-	/// Determines whether a string is equal to a <see cref="Wildcard"/> instance's pattern, using a case-insensitive
-	/// comparison.
-	/// </summary>
-	/// <param name="x">The string to compare.</param>
-	/// <param name="y">The <see cref="Wildcard"/> instance to compare.</param>
-	/// <returns><see langword="true"/> if <paramref name="x"/> equals the pattern of <paramref name="y"/>; otherwise, <see langword="false"/>.</returns>
-	public static bool operator ==(string? x, Wildcard y)
-	{
-		return y.Equals(x);
-	}
-	/// <summary>
-	/// Determines whether a string is not equal to a <see cref="Wildcard"/> instance's pattern, using a
-	/// case-insensitive comparison.
-	/// </summary>
-	/// <param name="x">The string to compare.</param>
-	/// <param name="y">The <see cref="Wildcard"/> instance to compare.</param>
-	/// <returns><see langword="true"/> if <paramref name="x"/> doesn't equal the pattern of <paramref name="y"/>; otherwise, <see langword="false"/>.</returns>
-	public static bool operator !=(string? x, Wildcard y)
-	{
-		return !(x == y);
 	}
 }

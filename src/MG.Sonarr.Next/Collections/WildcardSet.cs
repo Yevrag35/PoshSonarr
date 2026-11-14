@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.Collections;
 ///     </para>
 ///     <para>
 ///         Empty text is a name that matches nothing: every member that adds it adds <see cref="Wildcard.Empty"/>, which
-///         <see cref="IsAnyMatch(ReadOnlySpan{char})"/> never matches, so a set of empty names isn't empty and matches no
+///         <see cref="IsAnyMatch(string)"/> never matches, so a set of empty names isn't empty and matches no
 ///         input. Only a <see langword="null"/> string adds nothing. Text of white space alone is an exact pattern,
 ///         which matches only the same white space.
 ///     </para>
@@ -167,25 +167,6 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>
 	/// <summary>
 	/// Determines if any of the <see cref="Wildcard"/> objects in the current set match the provided value.
 	/// </summary>
-	/// <param name="value">The read-only span of characters to match against.</param>
-	/// <returns>
-	/// <see langword="true"/> if any of the <see cref="Wildcard"/> objects in the current set match the provided value;
-	/// otherwise, <see langword="false"/>.
-	/// </returns>
-	public bool IsAnyMatch(ReadOnlySpan<char> value)
-	{
-		foreach (Wildcard wildcard in _set)
-		{
-			if (wildcard.IsMatch(value))
-				return true;
-		}
-
-		return false;
-	}
-
-	/// <summary>
-	/// Determines if any of the <see cref="Wildcard"/> objects in the current set match the provided value.
-	/// </summary>
 	/// <param name="value">The string to match against.</param>
 	/// <returns>
 	/// <see langword="true"/> if any of the <see cref="Wildcard"/> objects in the current set match the provided value;
@@ -201,35 +182,6 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>
 		}
 
 		return false;
-	}
-
-	/// <summary>
-	/// Removes the specified wildcard from the set if it exists.
-	/// </summary>
-	/// <param name="value">The wildcard to remove from the set. Cannot be null.</param>
-	/// <returns><see langword="true"/> if the wildcard was successfully removed; otherwise, <see langword="false"/>.</returns>
-	public bool Remove(Wildcard value)
-	{
-		return _set.Remove(value);
-	}
-
-	/// <summary>
-	/// Modifies the current <see cref="WildcardSet"/> object to contain only the elements that are present in itself,
-	/// the specified collection, or both.
-	/// </summary>
-	/// <param name="other">The collection to compare to the current <see cref="WildcardSet"/> object.</param>
-	/// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
-	public void UnionWith(IEnumerable<Wildcard> other)
-	{
-		ArgumentNullException.ThrowIfNull(other);
-		if (other is WildcardSet wcSet)
-		{
-			_set.UnionWith(wcSet._set);
-		}
-		else
-		{
-			_set.UnionWith(other);
-		}
 	}
 
 	/// <summary>
@@ -267,7 +219,7 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>
 		return this.GetEnumerator();
 	}
 	/// <inheritdoc/>
-	[DebuggerStepThrough]
+	[DebuggerStepThrough, ExcludeFromCodeCoverage]
 	IEnumerator IEnumerable.GetEnumerator()
 	{
 		return this.GetEnumerator();
@@ -309,6 +261,7 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>
 		/// </summary>
 		/// <value>The current wildcard element.</value>
 		public readonly Wildcard Current => _current;
+		[ExcludeFromCodeCoverage]
 		readonly object? IEnumerator.Current => this.Current;
 
 		/// <summary>
@@ -340,6 +293,7 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>
 		/// <exception cref="InvalidOperationException">
 		/// Thrown when the set changed after the enumerator was created, as <see cref="HashSet{T}"/>'s enumerator throws.
 		/// </exception>
+		[ExcludeFromCodeCoverage]
 		void IEnumerator.Reset()
 		{
 			ResetInPlace(ref _enumerator);
@@ -351,6 +305,7 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>
 		/// </summary>
 		/// <typeparam name="TEnumerator">The enumerator's type.</typeparam>
 		/// <param name="enumerator">The enumerator to reset.</param>
+		[ExcludeFromCodeCoverage]
 		private static void ResetInPlace<TEnumerator>(ref TEnumerator enumerator) where TEnumerator : struct, IEnumerator
 		{
 			enumerator.Reset();
@@ -360,8 +315,7 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>
 	/// <summary>
 	/// Provides wildcard equality and hash code semantics for set storage and alternate lookups.
 	/// </summary>
-	private sealed class WildcardEqualityComparer : IEqualityComparer<Wildcard>, IAlternateEqualityComparer<ReadOnlySpan<char>, Wildcard>,
-		IAlternateEqualityComparer<string, Wildcard>
+	private sealed class WildcardEqualityComparer : IEqualityComparer<Wildcard>, IAlternateEqualityComparer<ReadOnlySpan<char>, Wildcard>
 	{
 		/// <summary>
 		/// Creates a wildcard from the specified read-only span of characters.
@@ -369,15 +323,6 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>
 		/// <param name="alternate">The read-only span of characters to create the wildcard from.</param>
 		/// <returns>A new wildcard created from the specified span.</returns>
 		public Wildcard Create(ReadOnlySpan<char> alternate)
-		{
-			return Wildcard.Parse(alternate);
-		}
-		/// <summary>
-		/// Creates a wildcard from the specified string.
-		/// </summary>
-		/// <param name="alternate">The string to create the wildcard from.</param>
-		/// <returns>A new wildcard created from the specified string.</returns>
-		public Wildcard Create(string alternate)
 		{
 			return Wildcard.Parse(alternate);
 		}
@@ -389,16 +334,6 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>
 		/// <param name="other">The wildcard to compare.</param>
 		/// <returns><see langword="true"/> if the specified span and wildcard are equal; otherwise, <see langword="false"/>.</returns>
 		public bool Equals(ReadOnlySpan<char> alternate, Wildcard other)
-		{
-			return other.Equals(alternate, StringComparison.OrdinalIgnoreCase);
-		}
-		/// <summary>
-		/// Determines whether the specified string and wildcard are equal.
-		/// </summary>
-		/// <param name="alternate">The string to compare.</param>
-		/// <param name="other">The wildcard to compare.</param>
-		/// <returns><see langword="true"/> if the specified string and wildcard are equal; otherwise, <see langword="false"/>.</returns>
-		public bool Equals(string alternate, Wildcard other)
 		{
 			return other.Equals(alternate, StringComparison.OrdinalIgnoreCase);
 		}
@@ -424,22 +359,13 @@ public sealed class WildcardSet : IReadOnlyCollection<Wildcard>
 		}
 
 		/// <summary>
-		/// Returns a hash code for the specified string.
-		/// </summary>
-		/// <param name="alternate">The string for which a hash code is to be returned.</param>
-		/// <returns>A hash code for the specified string.</returns>
-		public int GetHashCode([DisallowNull] string alternate)
-		{
-			return alternate.GetHashCode(StringComparison.OrdinalIgnoreCase);
-		}
-		/// <summary>
 		/// Returns a hash code for the specified wildcard's pattern, ignoring case.
 		/// </summary>
 		/// <remarks>
-		/// A pattern hashes as its text does in <see cref="GetHashCode(ReadOnlySpan{char})"/> and
-		/// <see cref="GetHashCode(string)"/>, so text that equals a wildcard has the wildcard's hash code, as
-		/// <see cref="IAlternateEqualityComparer{TAlternate, T}"/> requires. Two wildcards that
-		/// <see cref="Equals(Wildcard, Wildcard)"/> finds equal have text that's equal ignoring case, so they hash alike too.
+		/// A pattern hashes as its text does in <see cref="GetHashCode(ReadOnlySpan{char})"/>, so text that equals a
+		/// wildcard has the wildcard's hash code, as <see cref="IAlternateEqualityComparer{TAlternate, T}"/> requires. Two
+		/// wildcards that <see cref="Equals(Wildcard, Wildcard)"/> finds equal have text that's equal ignoring case, so they
+		/// hash alike too.
 		/// </remarks>
 		/// <param name="obj">The wildcard for which a hash code is to be returned.</param>
 		/// <returns>A hash code for the specified wildcard.</returns>
