@@ -1,56 +1,110 @@
-﻿using System.Numerics;
-
 namespace MG.Sonarr.Next.Extensions;
 
-public static class UnmanagedExtensions
+/// <summary>
+/// Provides extension methods for integer values.
+/// </summary>
+[SharedCode]
+[ExcludeFromCodeCoverage]
+internal static class UnmanagedExtensions
 {
 	/// <summary>
-	/// Returns the length of how many <see cref="char"/> elements make 
-	/// up <typeparamref name="T"/> value if it were formatted as a 
-	/// <see cref="string"/> instance without actually converting it.
+	/// Provides extension methods that measure the decimal form of an integer value.
 	/// </summary>
-	/// <typeparam name="T">The type of value.</typeparam>
-	/// <param name="n">The value whose length will be calculated.</param>
-	/// <returns>
-	///     The number of characters <paramref name="n"/> would consist of if converted to its default
-	///     <see cref="string"/> equivalent.
-	/// </returns>
-	[DebuggerStepThrough]
-	public static int GetLength<T>(this T n) where T : unmanaged, INumber<T>
+	/// <typeparam name="T">
+	/// The integer type, which can be any signed or unsigned type that implements <see cref="IBinaryInteger{T}"/>.
+	/// </typeparam>
+	/// <param name="value">The value to measure.</param>
+	extension<T>(T value) where T : unmanaged, IBinaryInteger<T>, IMinMaxValue<T>
 	{
-		if (T.IsZero(n))
+		/// <summary>Returns the number of UTF‑16 characters required to format the value in decimal.</summary>
+		/// <remarks>Works for any signed or unsigned integer type that implements <see cref="IBinaryInteger{T}"/>.</remarks>
+		/// <returns>
+		/// The number of decimal digits in <paramref name="value"/>, plus one for the sign when it's negative.
+		/// </returns>
+		internal int GetLength()
 		{
-			return 1;
+			// Fast‑track zero and +1 - these dominate in many counters/state machines.
+			if (T.IsZero(value) || T.One.Equals(value))
+				return 1;
+
+			// Track negativity.  We need it only for the sign char.
+			// (-x)  -> negativeSign = 1,  absValue = ~x + 1
+			// ( x)  -> negativeSign = 0,  absValue =  x
+			bool isNegative = T.IsNegative(value);
+			int negativeSign;
+			unsafe
+			{
+				// SAFETY: bool and byte are both one byte wide, so the reinterpretation reads only the byte of isNegative.
+				negativeSign = Unsafe.As<bool, byte>(ref isNegative);
+			}
+
+			T absValue = isNegative
+					   ? T.MinValue.Equals(value) ? T.MaxValue : T.Abs(value)
+					   : value;
+
+			// ---------------------------------------------------------------------
+			// core digit-count - overflow-free for every unmanaged IBinaryInteger up to 128-bit (Int128/UInt128, the widest the constraint admits)
+			// ---------------------------------------------------------------------
+
+			// log2(x) ≈ bitLength - 1;  Digits ≈ ceil(log10(x))
+			// A very good integer approximation: digits = ((bitLen * 1233) >> 12) + 1
+			//   1233 / 2^12  ≈ 0.30103  (log10(2))
+			int bitLen = absValue.GetShortestBitLength();
+			int digits = (bitLen * 1233 >> 12) + 1;
+
+			// Correct the occasional +1 error without branching.
+			// If absValue < 10^(digits-1) we must subtract 1.
+			// 10^(digits-1) is read from the per-T Pow10 table (built once in its static
+			// constructor), so this correction costs just one comparison.
+			T lookup;
+			unsafe
+			{
+				// SAFETY: absValue is at least 1, so bitLen is at least 1, and T is at most 128 bits wide, as Int128 and
+				// UInt128, the widest integer types in .NET, are. So digits - 1 is from 0 to 38, within the table.
+				lookup = Pow10<T>.Get(digits - 1);
+			}
+
+			if (lookup > absValue)
+				digits--;
+
+			return digits + negativeSign;
 		}
-
-		int length = 1;
-		// For negative numbers, add one to count for the '-' sign.
-		if (T.IsNegative(n))
-		{
-			length++;
-			n = T.Abs(n);
-		}
-
-		// Compute floor of log base 10 of the number.
-		int flooredLogBase10 = (int)Math
-			.Floor(
-				Math.Log10(
-					double.CreateChecked(n)));
-
-		// Add the number of digits in the absolute value of the number.
-		length += flooredLogBase10;
-
-		return length;
 	}
 
-	[DebuggerStepThrough]
-	public static int GetMaxLength<T>(this T n) where T : unmanaged, INumber<T>
+	// -------------------------------------------------------------------------
+	// Precomputed 10^n lookup so the digit-count correction needs no runtime
+	// exponentiation. Built once per T in the static constructor below.
+	// -------------------------------------------------------------------------
+	private static class Pow10<T> where T : unmanaged, IBinaryInteger<T>
 	{
-		return LengthConstants.GetMaxLength(in n);
-	}
-	[DebuggerStepThrough]
-	public static int GetRefMaxLength<T>(this ref T n) where T : unmanaged, INumber<T>
-	{
-		return LengthConstants.GetMaxLength(ref n);
+		private static readonly T[] s_table;
+
+		/// <summary>
+		/// Returns 10 raised to the specified power, without a bounds check.
+		/// </summary>
+		/// <safety>
+		/// <paramref name="index"/> must be from 0 to 39.
+		/// </safety>
+		/// <param name="index">The power of 10 to return.</param>
+		/// <returns>10 raised to <paramref name="index"/>, wrapped to the width of <typeparamref name="T"/>.</returns>
+		[SuppressMessage("Style", "IDE0380", Justification = "Skips the bounds check, so an index outside the 40-entry table reads memory outside it.")]
+		internal static unsafe T Get(int index)
+		{
+			unsafe
+			{
+				// SAFETY: The caller keeps index within the 40-entry table, as the safety contract requires.
+				return s_table.Ref(index);
+			}
+		}
+
+		static Pow10()
+		{
+			s_table = new T[40];   // 10^0..10^39; for 128-bit T only indices 0..38 are read, overflowed top entries are never indexed
+			s_table[0] = T.One;
+			for (int i = 1; i < s_table.Length; i++)
+			{
+				s_table[i] = s_table[i - 1] * T.CreateTruncating(10);
+			}
+		}
 	}
 }

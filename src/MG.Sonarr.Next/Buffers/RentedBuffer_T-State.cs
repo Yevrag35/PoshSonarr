@@ -1,5 +1,7 @@
-﻿namespace MG.Sonarr.Next.Buffers;
+namespace MG.Sonarr.Next.Buffers;
 
+[SharedCode]
+[ExcludeFromCodeCoverage]
 file static class RentedBufferConstants
 {
 	internal const byte None = 0x0;
@@ -7,7 +9,7 @@ file static class RentedBufferConstants
 	internal const byte ClearBit = 0x2;
 }
 
-public ref partial struct RentedBuffer<T>
+internal ref partial struct RentedBuffer<T>
 {
 	/// <summary>
 	/// Represents the state of a rented buffer, including flags for its rental status and whether it should be cleared on
@@ -41,7 +43,11 @@ public ref partial struct RentedBuffer<T>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static ushort Mask(bool value, [ConstantExpected] byte bit)
 		{
-			return (ushort)((-Unsafe.As<bool, byte>(ref value)) & bit);
+			unsafe
+			{
+				// SAFETY: bool and byte are both one byte wide, so the reinterpretation reads only the byte of value.
+				return (ushort)((-Unsafe.As<bool, byte>(ref value)) & bit);
+			}
 		}
 	}
 }

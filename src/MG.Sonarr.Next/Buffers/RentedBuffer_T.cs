@@ -1,22 +1,18 @@
-using System.Buffers;
-
 namespace MG.Sonarr.Next.Buffers;
 
 /// <summary>
 /// Represents a rented buffer of type <typeparamref name="T"/>, providing access to its underlying span and handling disposal to return it to the pool.
 /// </summary>
 /// <typeparam name="T">The type of elements in the buffer.</typeparam>
-[StructLayout(LayoutKind.Auto)]
-[DebuggerDisplay(@"\{{_span}\} IsRented = {_state.IsRented}, Length = {_length}")]
-[CollectionBuilder(typeof(RentedBuffer), nameof(RentedBuffer.Create))]
-public ref partial struct RentedBuffer<T> : IDisposable
+[SharedCode]
+[StructLayout(LayoutKind.Auto), DebuggerDisplay(@"\{{_span}\} IsRented = {_state.IsRented}, Length = {_length}")]
+[CollectionBuilder(typeof(RentedBuffer), nameof(RentedBuffer.Create)), DebuggerStepThrough, ExcludeFromCodeCoverage]
+internal ref partial struct RentedBuffer<T> : IDisposable
 {
 	private T[]? _array;
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	private int _length;
 	private State _state;
-
-	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	private Span<T> _span;
 
 	/// <summary>
@@ -26,27 +22,57 @@ public ref partial struct RentedBuffer<T> : IDisposable
 	/// The index must be within the bounds of the minimum length and not the capacity of the buffer.
 	/// </remarks>
 	/// <param name="index">The zero-based index of the element to get.</param>
-	/// <returns>A reference to the element of type <typeparamref name="T"/> at the specified index in the buffer.</returns>
-	/// <exception cref="IndexOutOfRangeException"/>
-	public readonly ref T this[int index] => ref _span[index];
+	/// <returns>A reference to the element of type <typeparamref name="T"/> at the specified index in the buffer.
+	/// An invalid index will return a <see langword="null"/> reference.</returns>
+	public readonly ref T this[int index]
+	{
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get
+		{
+			ref T ret = ref Unsafe.NullRef<T>();
+			if ((uint)index < (uint)_length)
+			{
+				unsafe
+				{
+					// SAFETY: _length always equals _span.Length, so the check keeps index within _span.
+					ret = ref _span.Ref(index);
+				}
+			}
+
+			return ref ret;
+		}
+	}
 
 	/// <summary>
 	/// Gets the span of elements in the rented buffer.
 	/// </summary>
-	public readonly Span<T> Span => _span;
+	public readonly Span<T> Span
+	{
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		get => _span;
+	}
 	/// <summary>
 	/// The number of elements that the buffer can store.
 	/// </summary>
 	public readonly int Capacity => _state.IsRented ? _array!.Length : _span.Length;
-	/// <summary>
-	/// Gets or sets whether the buffer should be cleared if the buffer has been rented from the <see cref="ArrayPool{T}"/>
-	/// when this instance is disposed.
-	/// </summary>
-	public bool ClearOnDispose
+    /// <summary>
+    /// Gets or sets whether the buffer should be cleared if the buffer has been rented from the <see cref="ArrayPool{T}"/>
+    /// when this instance is disposed.
+    /// </summary>
+    /// <remarks>
+    /// If <typeparamref name="T"/> is a reference type or contains references, this property does <strong>not</strong> need to be set
+    /// to <see langword="true"/> as those types are cleared regardless of this value.
+    /// </remarks>
+    public bool ClearOnDispose
 	{
 		readonly get => _state.ClearOnDispose;
 		set => _state.ClearOnDispose = value;
 	}
+	/// <summary>
+	/// Indicates whether this <see cref="RentedBuffer{T}"/> instance is default-initialized.
+	/// </summary>
+	[DebuggerBrowsable(DebuggerBrowsableState.Never), System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+	public readonly bool IsDefault => this.IsDefaultOrEmpty;
 	/// <summary>
 	/// Indicates whether this <see cref="RentedBuffer{T}"/> instance is empty or default-initialized.
 	/// </summary>
@@ -63,8 +89,6 @@ public ref partial struct RentedBuffer<T> : IDisposable
 	/// This value will always be less than or equal to the capacity of the buffer.
 	/// </remarks>
 	public readonly int Length => _length;
-	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	public readonly int Count => _length;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="RentedBuffer{T}"/> with the specified minimum length.
@@ -81,6 +105,7 @@ public ref partial struct RentedBuffer<T> : IDisposable
 	/// or just the minimum length.
 	/// </summary>
 	/// <param name="minimumLength">The minimum length of the buffer to rent.</param>
+	/// <param name="useEntireCapacity">When <see langword="true"/>, the buffer's logical length spans the full rented array; otherwise it is limited to <paramref name="minimumLength"/>.</param>
 	/// <exception cref="ArgumentOutOfRangeException"><paramref name="minimumLength"/> is negative.</exception>
 	[DebuggerStepThrough]
 	public RentedBuffer(int minimumLength, bool useEntireCapacity)
@@ -92,6 +117,7 @@ public ref partial struct RentedBuffer<T> : IDisposable
 	/// </summary>
 	/// <param name="minimumLength">The minimum length of the buffer to rent.</param>
 	/// <param name="preValidated">Indicates that <paramref name="minimumLength"/> has been pre-guarded against being null or zero.</param>
+	/// <param name="useEntireCapacity">When <see langword="true"/>, the buffer's logical length spans the full rented array; otherwise it is limited to <paramref name="minimumLength"/>.</param>
 	internal RentedBuffer(bool preValidated, int minimumLength, bool useEntireCapacity)
 	{
 		if (!preValidated)
@@ -107,14 +133,26 @@ public ref partial struct RentedBuffer<T> : IDisposable
 			}
 		}
 
-		T[] array = ArrayPool<T>.Shared.Rent(minimumLength);
+		T[] array = Rent.Array<T>(minimumLength);
 		_state = new() { IsRented = true };
 		int length = useEntireCapacity ? array.Length : minimumLength;
 		_length = length;
 		_array = array;
-		_span = array.AsSpan(0, length);
+		unsafe
+		{
+			// SAFETY: Rent.Array returns at least minimumLength elements, so length fits in array either way, and the pool
+			// rents exactly a T[].
+			_span = array.AsUnsafeSpan(0, length);
+		}
 	}
-	internal RentedBuffer(Span<T> nonRentedBuffer)
+	/// <summary>
+	/// Initializes a new instance of the RentedBuffer class using the specified span as the underlying buffer.
+	/// </summary>
+	/// <remarks>This constructor is intended for scenarios where a buffer is provided directly rather than rented
+	/// from a pool. The buffer is not managed by the RentedBuffer instance and will not be disposed or returned when the
+	/// instance is released.</remarks>
+	/// <param name="nonRentedBuffer">A span of elements to use as the buffer. The buffer is not rented and will not be returned to a pool.</param>
+	public RentedBuffer(Span<T> nonRentedBuffer)
 	{
 		_state = new();
 		_length = nonRentedBuffer.Length;
@@ -125,10 +163,11 @@ public ref partial struct RentedBuffer<T> : IDisposable
 	/// Initializes a new instance of the <see cref="RentedBuffer{T}"/> with the specified values.
 	/// </summary>
 	/// <param name="values">The values to copy into the buffer.</param>
+	/// <param name="useEntireCapacity">When <see langword="true"/>, the buffer's logical length spans the full rented array; otherwise it is limited to the number of copied values.</param>
 	[DebuggerStepThrough]
 	internal RentedBuffer(scoped ReadOnlySpan<T> values, bool useEntireCapacity)
 	{
-		T[] array = ArrayPool<T>.Shared.Rent(values.Length);
+		T[] array = Rent.Array<T>(values.Length);
 		values.CopyTo(array);
 		int length = useEntireCapacity ? array.Length : values.Length;
 		_array = array;
@@ -144,12 +183,24 @@ public ref partial struct RentedBuffer<T> : IDisposable
 	{
 		T[]? array = _array;
 		State state = _state;
-		Debug.Assert(!_span.IsEmpty);
 		this = default;
 
-		if (state.IsRented)
+		if (isRented(state.IsRented, array))
 		{
-			ArrayHelper.ReturnToPool(array, this.ClearOnDispose);
+			Rent.Return(array, clearArray: state.ClearOnDispose);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static bool isRented(bool isRented, T[]? array)
+		{
+			arrayIsNullWhenItShouldBe(array, isRented);
+			return isRented;
+		}
+
+		[Conditional("DEBUG")]
+		static void arrayIsNullWhenItShouldBe(T[]? array, bool rented)
+		{
+			Debug.Assert(rented || array is null, "The rented array should BE null when the state indicates it is not rented.");
 		}
 	}
 	/// <summary>
@@ -173,10 +224,19 @@ public ref partial struct RentedBuffer<T> : IDisposable
 	/// <returns>
 	/// The capacity of the buffer after resizing, which may be greater than or equal to the specified <paramref name="newMinimumCapacity"/>.
 	/// </returns>
-	/// <exception cref="ArgumentOutOfRangeException"><paramref name="newMinimumCapacity"/> is less than the current <see cref="Length"/>.</exception>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="newMinimumCapacity"/> is zero or negative, or less
+	/// than the current <see cref="Length"/>.</exception>
+	[MethodImpl(MethodImplOptions.NoInlining)]
 	public int Resize(int newMinimumCapacity)
 	{
+		return this.ResizeInline(newMinimumCapacity);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal int ResizeInline(int newMinimumCapacity)
+	{
 		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(newMinimumCapacity);
+		ArgumentOutOfRangeException.ThrowIfLessThan(newMinimumCapacity, _length);
 
 		int cap = this.Capacity;
 		if ((uint)newMinimumCapacity <= (uint)cap && _state.IsRented) // If we are under the current capacity, we don't need to resize.
@@ -186,13 +246,19 @@ public ref partial struct RentedBuffer<T> : IDisposable
 			return cap;
 		}
 
-		T[] newArray = ArrayPool<T>.Shared.Rent(newMinimumCapacity);
-		_span.CopyTo(newArray);
+		T[] newArray = Rent.Array<T>(newMinimumCapacity);
+		unsafe
+		{
+			// SAFETY: 0 is within every array, and the pool rents exactly a T[] of at least newMinimumCapacity elements,
+			// which the check above keeps at least _length, the length of _span, so the copy fits.
+			var newSpan = newArray.AsUnsafeSpan(0);
+			_span.UnsafeCopy(newSpan);
+		}
 
 		if (_state.IsRented)
 		{
 			T[] oldArray = _array!;
-			ArrayHelper.ReturnToPool(oldArray, this.ClearOnDispose);
+			Rent.Return(oldArray, _state.ClearOnDispose);
 		}
 
 		_state.IsRented = true;
@@ -283,23 +349,31 @@ public ref partial struct RentedBuffer<T> : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Returns a read-only view over the populated region of the buffer.
+	/// </summary>
+	/// <returns>A <see cref="ReadOnlySpan{T}"/> spanning the buffer's logical length.</returns>
+	public readonly ReadOnlySpan<T> AsSpan()
+	{
+		return _span;
+	}
+
 	private const string EMPTY_TOSTRING = "{IsEmpty = true}";
 
 	/// <summary>
 	/// Enumerates the elements of a <see cref="RentedBuffer{T}"/>.
 	/// </summary>
-	[DebuggerStepThrough]
-	[StructLayout(LayoutKind.Sequential)]
+	[DebuggerStepThrough, StructLayout(LayoutKind.Auto)]
 	public ref struct Enumerator
 	{
 		private readonly ReadOnlySpan<T> _span;
-		private readonly uint _length;
-		private NIndex _index;
+		private readonly int _length;
+		private int _index;
 
 		/// <summary>
 		/// Gets the current element in the collection.
 		/// </summary>
-		public readonly ref readonly T Current => ref _index.GetItemRef(_span);
+		public readonly ref readonly T Current => ref _span[_index];
 
 		/// <summary>
 		/// Initializes the enumerator with the specified array.
@@ -308,8 +382,8 @@ public ref partial struct RentedBuffer<T> : IDisposable
 		internal Enumerator(ReadOnlySpan<T> array)
 		{
 			_span = array;
-			_index = NIndex.MinValue;
-			_length = (uint)array.Length;
+			_index = -1;
+			_length = array.Length;
 		}
 		/// <summary>
 		/// Advances the enumerator to the next element of the collection.
@@ -320,8 +394,8 @@ public ref partial struct RentedBuffer<T> : IDisposable
 		/// </returns>
 		public bool MoveNext()
 		{
-			NIndex next = _index.Increment();
-			if (next >= _length)
+			int next = _index + 1;
+			if ((uint)next >= (uint)_length)
 			{
 				_index = _length;
 				return false;
@@ -335,7 +409,7 @@ public ref partial struct RentedBuffer<T> : IDisposable
 		/// </summary>
 		public void Reset()
 		{
-			_index = NIndex.MinValue;
+			_index = -1;
 		}
 	}
 }

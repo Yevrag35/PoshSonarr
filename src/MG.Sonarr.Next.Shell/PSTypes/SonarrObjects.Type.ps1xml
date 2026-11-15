@@ -1,16 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8" ?> 
+<?xml version="1.0" encoding="utf-8" ?> 
 <Types>
-	<Type>
-		<Name>MG.Sonarr.Next.Models.Config.NamingConfigObject</Name>
-		<Members>
-			<ScriptProperty>
-				<Name>SeparatorLength</Name>
-				<GetScriptBlock>
-					$this.Separator.Length
-				</GetScriptBlock>
-			</ScriptProperty>
-		</Members>
-	</Type>
 	<Type>
 		<Name>MG.Sonarr.Next.Models.Episodes.EpisodeObject</Name>
 		<Members>
@@ -55,42 +44,42 @@
 		</Members>
 	</Type>
 	<Type>
-		<Name>MG.Sonarr.Next.Models.System.Diskspace</Name>
+		<Name>MG.Sonarr.Next.Models.System.DiskspaceObject</Name>
 		<Members>
 			<ScriptProperty>
 				<Name>FreeSpaceInGB</Name>
 				<GetScriptBlock>
-					$this.psobject.FreeSpace.InGB
+					[System.Math]::Round([double] $this.FreeSpace / 1GB, 2, [System.MidpointRounding]::AwayFromZero)
 				</GetScriptBlock>
 			</ScriptProperty>
 			<ScriptProperty>
 				<Name>FreeSpaceInMB</Name>
 				<GetScriptBlock>
-					$this.psobject.FreeSpace.InMB
+					[System.Math]::Round([double] $this.FreeSpace / 1MB, 2, [System.MidpointRounding]::AwayFromZero)
 				</GetScriptBlock>
 			</ScriptProperty>
 			<ScriptProperty>
 				<Name>FreeSpaceInTB</Name>
 				<GetScriptBlock>
-					$this.psobject.FreeSpace.InTB
+					[System.Math]::Round([double] $this.FreeSpace / 1TB, 2, [System.MidpointRounding]::AwayFromZero)
 				</GetScriptBlock>
 			</ScriptProperty>
 			<ScriptProperty>
 				<Name>TotalSpaceInGB</Name>
 				<GetScriptBlock>
-					$this.psobject.TotalSpace.InGB
+					[System.Math]::Round([double] $this.TotalSpace / 1GB, 2, [System.MidpointRounding]::AwayFromZero)
 				</GetScriptBlock>
 			</ScriptProperty>
 			<ScriptProperty>
 				<Name>TotalSpaceInMB</Name>
 				<GetScriptBlock>
-					$this.psobject.TotalSpace.InMB
+					[System.Math]::Round([double] $this.TotalSpace / 1MB, 2, [System.MidpointRounding]::AwayFromZero)
 				</GetScriptBlock>
 			</ScriptProperty>
 			<ScriptProperty>
 				<Name>TotalSpaceInTB</Name>
 				<GetScriptBlock>
-					$this.psobject.TotalSpace.InTB
+					[System.Math]::Round([double] $this.TotalSpace / 1TB, 2, [System.MidpointRounding]::AwayFromZero)
 				</GetScriptBlock>
 			</ScriptProperty>
 		</Members>

@@ -1,98 +1,149 @@
-using MG.Sonarr.Next.Extensions.Strings;
-
 namespace MG.Sonarr.Next.Models.Episodes;
 
 /// <summary>
-/// Represents a range of episode numbers, including support for single episodes and matching all episodes.
+/// Represents an inclusive range of episode numbers, which can be a single episode or every episode.
 /// </summary>
-/// <remarks>An episode range can specify a single episode, a contiguous range of episodes, or all
-/// episodes. If the range matches all episodes, both <see cref="Start"/> and <see cref="End"/> are set to 0. Use
-/// <see cref="IsSingle"/> to determine if the range represents a single episode, and <see cref="AllMatch"/> to
-/// check if all episodes are included. The range is inclusive of both <see cref="Start"/> and <see
-/// cref="End"/>.</remarks>
+/// <remarks>
+/// <para>
+/// A range made from its first and last episode numbers matches each episode number from the first to the last, both
+/// included, so it's a single episode when the two are the same. A range can start at 0, and it then includes episode
+/// 0. <see cref="All"/>, the range from 0 to <see cref="MG.Sonarr.Next.Numbers.PInt32.MaxValue"/>, matches every
+/// episode.
+/// </para>
+/// <para>
+/// The <see langword="default"/> range matches no episodes and isn't valid, so a range that was never made from
+/// episode numbers can't widen a match.
+/// </para>
+/// </remarks>
 [StructLayout(LayoutKind.Auto)]
 public readonly struct EpisodeRange
 {
 	/// <summary>
-	/// Gets the inclusive starting episode number of the range.
+	/// Whether the range was made from episode numbers, which the <see langword="default"/> range wasn't.
 	/// </summary>
-	public int Start { get; }
-	/// <summary>
-	/// Gets the inclusive ending episode number of the range.
-	/// </summary>
-	public int End { get; }
-	/// <summary>
-	/// Indicates whether the range matches all episodes.
-	/// </summary>
-	public bool AllMatch => this.Start == 0;
-	/// <summary>
-	/// Indicates whether the range represents a single episode.
-	/// </summary>
-	public bool IsSingle => !this.AllMatch && this.Start == this.End;
+	private readonly bool _isSet;
 
 	/// <summary>
-	/// Initializes a new instance of the EpisodeRange class with the specified start and end episode numbers.
+	/// Gets the range that matches every episode.
 	/// </summary>
-	/// <remarks>If <paramref name="end"/> is less than <paramref name="start"/>, an
-	/// ArgumentOutOfRangeException is thrown. Negative values for either parameter are automatically set to
-	/// zero.</remarks>
-	/// <param name="start">The zero-based index of the first episode in the range. If less than zero, the value is set to zero.</param>
-	/// <param name="end">The zero-based index of the last episode in the range. Must be greater than or equal to <paramref
-	/// name="start"/>. If less than zero, the value is set to zero.</param>
+	/// <value>The range from 0 to <see cref="MG.Sonarr.Next.Numbers.PInt32.MaxValue"/>.</value>
+	public static EpisodeRange All => new(0, pint.MaxValue);
+
+	/// <summary>
+	/// Gets the first episode number in the range.
+	/// </summary>
+	/// <value>The first episode number in the range, or 0 for the <see langword="default"/> range.</value>
+	public pint Start { get; }
+	/// <summary>
+	/// Gets the last episode number in the range.
+	/// </summary>
+	/// <value>The last episode number in the range, or 0 for the <see langword="default"/> range.</value>
+	public pint End { get; }
+	/// <summary>
+	/// Gets a value that indicates whether the range matches every episode.
+	/// </summary>
+	/// <value>
+	/// <see langword="true"/> if the range runs from 0 to <see cref="MG.Sonarr.Next.Numbers.PInt32.MaxValue"/>, as
+	/// <see cref="All"/> does; otherwise, <see langword="false"/>.
+	/// </value>
+	public bool AllMatch => _isSet && this.Start == 0 && this.End == pint.MaxValue;
+	/// <summary>
+	/// Gets a value that indicates whether the range is a single episode.
+	/// </summary>
+	/// <value>
+	/// <see langword="true"/> if the range was made from two episode numbers that are the same; otherwise,
+	/// <see langword="false"/>, as for the <see langword="default"/> range.
+	/// </value>
+	public bool IsSingle => _isSet && this.Start == this.End;
+	/// <summary>
+	/// Gets a value that indicates whether the range was made from episode numbers.
+	/// </summary>
+	/// <value>
+	/// <see langword="true"/> if a constructor or <see cref="All"/> made the range; otherwise, <see langword="false"/>
+	/// for the <see langword="default"/> range.
+	/// </value>
+	internal bool IsSet => _isSet;
+
+	/// <summary>
+	/// Initializes a new <see cref="EpisodeRange"/> instance from its first and last episode numbers.
+	/// </summary>
+	/// <remarks>
+	/// The range keeps an <paramref name="end"/> less than <paramref name="start"/>, and <see cref="IsValid"/>
+	/// reports such a range.
+	/// </remarks>
+	/// <param name="start">The first episode number in the range, 0 or greater.</param>
+	/// <param name="end">The last episode number in the range, 0 or greater.</param>
+	/// <exception cref="ArgumentOutOfRangeException">
+	/// Thrown when <paramref name="start"/> or <paramref name="end"/> is negative.
+	/// </exception>
 	public EpisodeRange(int start, int end)
 	{
-		this.Start = start < 0 ? 0 : start;
-		this.End = end < 0 ? 0 : end;
+		ArgumentOutOfRangeException.ThrowIfNegative(start);
+		ArgumentOutOfRangeException.ThrowIfNegative(end);
+		_isSet = true;
+		this.Start = new pint(start, true);
+		this.End = new pint(end, true);
 	}
 
+	/// <summary>
+	/// Determines whether an episode number is in the range.
+	/// </summary>
+	/// <param name="episodeNumber">The episode number to test.</param>
+	/// <returns>
+	/// <see langword="true"/> if <paramref name="episodeNumber"/> is between <see cref="Start"/> and
+	/// <see cref="End"/>, inclusive; otherwise, <see langword="false"/>, as it always is for the
+	/// <see langword="default"/> range and for one that ends before it starts.
+	/// </returns>
 	public bool IsInRange(int episodeNumber)
 	{
-		if (this.AllMatch)
-		{
-			return true;
-		}
-
-		return this.IsSingle
-			? episodeNumber == this.Start
-			: episodeNumber >= this.Start && episodeNumber <= this.End;
+		return _isSet && episodeNumber >= this.Start && episodeNumber <= this.End;
 	}
+	/// <summary>
+	/// Determines whether the range was made from episode numbers and doesn't end before it starts.
+	/// </summary>
+	/// <returns>
+	/// <see langword="true"/> if the range isn't the <see langword="default"/> one and <see cref="End"/> is greater
+	/// than or equal to <see cref="Start"/>; otherwise, <see langword="false"/>.
+	/// </returns>
 	public bool IsValid()
 	{
-		return this.End >= this.Start;
+		return _isSet && this.End >= this.Start;
 	}
 
+	/// <summary>
+	/// Returns a string that describes the range.
+	/// </summary>
+	/// <returns>
+	/// <c>All Match</c> if the range matches every episode, <c>No Match</c> for the <see langword="default"/> range,
+	/// and otherwise the range in the form <c>Start = 1;End = 5</c>.
+	/// </returns>
 	[SuppressMessage("Style", "IDE0009:Member access should be qualified.", Justification = "Used in nameof()")]
 	public override string ToString()
 	{
+		const string START = "Start";
+		const string END = "End";
+		const int max_length = 5 + 3 + 8 + (LengthConstants.INT_MAX * 2);
+
 		if (this.AllMatch)
 		{
 			return "All Match";
 		}
+		else if (!_isSet)
+		{
+			return "No Match";
+		}
 
-		ReadOnlySpan<char> startName = nameof(Start);
-		ReadOnlySpan<char> endName = nameof(End);
-
-		int length = startName.Length + endName.Length
-			+ 8
-			+ (LengthConstants.INT_MAX * 2);
-
-		Span<char> span = stackalloc char[length];
 		ReadOnlySpan<char> separator = [' ', '=', ' '];
 
-		int position = 0;
-		startName.CopyToSlice(span, ref position);
-		separator.CopyToSlice(span, ref position);
+		using SpanStringBuilder builder = new(stackalloc char[max_length]);
+		builder.Append(START);
+		builder.Append(separator);
+		builder.Append(this.Start, LengthConstants.INT_MAX);
+		builder.Append(';');
+		builder.Append(END);
+		builder.Append(separator);
+		builder.Append(this.End, LengthConstants.INT_MAX);
 
-		_ = this.Start.TryFormat(span.Slice(position), out int written);
-		position += written;
-
-		span[position++] = ';';
-		endName.CopyToSlice(span, ref position);
-		separator.CopyToSlice(span, ref position);
-
-		_ = this.End.TryFormat(span.Slice(position), out written);
-		position += written;
-
-		return new string(span.Slice(0, position));
+		return builder.ToString();
 	}
 }

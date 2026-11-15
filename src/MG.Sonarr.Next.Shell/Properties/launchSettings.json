@@ -1,19 +1,14 @@
 {
-  "profiles": {
-    "Pwsh7": {
-      "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
-      "commandLineArgs": "-NoExit -File \"Debug.ps1\""
-    },
-    "Pwsh7-Local": {
-      "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
-      "commandLineArgs": "-NoExit -File \"Debug.ps1\" -ConfigJson \"debugging.json\""
-    },
-    "Pwsh-Preview": {
-      "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\PowerShell\\7-preview\\pwsh.exe",
-      "commandLineArgs": "-NoExit -File \"Debug.ps1\""
-    }
-  }
+	"profiles": {
+		"Pwsh7": {
+			"commandName": "Executable",
+			"executablePath": "%PROGRAMFILES%\\PowerShell\\7\\pwsh.exe",
+			"commandLineArgs": "-NoExit -File \"Debug.ps1\""
+		},
+		"Pwsh-Preview": {
+			"commandName": "Executable",
+			"executablePath": "%PROGRAMFILES%\\PowerShell\\7-preview\\pwsh.exe",
+			"commandLineArgs": "-NoExit -File \"Debug.ps1\""
+		}
+	}
 }

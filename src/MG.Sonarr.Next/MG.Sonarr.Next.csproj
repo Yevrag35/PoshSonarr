@@ -1,73 +1,84 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-	<LangVersion>preview</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-	<RootNamespace>MG.Sonarr.Next</RootNamespace>
-	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<Version>2.0.0</Version>
-	<AssemblyVersion>2.0.0</AssemblyVersion>
-	<FileVersion>2.0.0</FileVersion>
-	<Authors>Mike Garvey</Authors>
-	<Company>Yevrag35, LLC.</Company>
-	<Product>PoshSonarr Services Library .NET 10</Product>
-	<Description>The service library for the PoshSonarr PowerShell module.</Description>
-	<Copyright>Copyright © 2018-2025 Yevrag35, LLC.</Copyright>
-	<PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
-	<PackageProjectUrl>https://github.com/Yevrag35/PoshSonarr</PackageProjectUrl>
-	<RepositoryUrl>https://github.com/Yevrag35/PoshSonarr</RepositoryUrl>
-	<RepositoryType>Git</RepositoryType>
-  </PropertyGroup>
+	<PropertyGroup>
+		<RootNamespace>MG.Sonarr.Next</RootNamespace>
+		<Product>PoshSonarr Services Library .NET 11</Product>
+		<Description>The service library for the PoshSonarr PowerShell module.</Description>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<NoWarn>1701;1702;CS8981</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<NoWarn>1701;1702;CS8981</NoWarn>
+	</PropertyGroup>
 
 	<ItemGroup>
-		<InternalsVisibleTo Include="MG.Sonarr.Next.Shell;MG.Sonarr.Next.Shell.Bases" />
-		<AssemblyAttribute Include="MG.Sonarr.Next.Attributes.SonarrObjectConverterAssemblyAttribute" />
+		<InternalsVisibleTo Include="MG.Sonarr.Next.Shell;MG.Sonarr.Next.Shell.Bases;MG.Sonarr.Next.Tests" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
-		<PackageReference Include="Microsoft.PowerShell.Commands.Utility" Version="7.6.0-preview.5" />
-		<PackageReference Include="System.Management.Automation" Version="7.6.0-preview.5" />
-	</ItemGroup>
-
-  <ItemGroup>
-	<Compile Update="**\*-*.cs">
-		<DependentUpon>$([System.Text.RegularExpressions.Regex]::Replace('$([System.String]::Copy(%(Filename)))', '^(.+)\-.+$', '$1.cs'))</DependentUpon>
-	</Compile>
-  </ItemGroup>
-
-	<ItemGroup>
-		<Compile Remove="Json\Converters\Spans\UtcTimeToLocalConverter.cs" />
-		<None Include="Json\Converters\Spans\UtcTimeToLocalConverter.cs" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+		<PackageReference Include="Microsoft.Extensions.Http" />
+		<!--
+			PowerShell supplies these assemblies itself, so these references exclude the packages' runtime and native assets. NuGet
+			applies the exclusion to the packages they depend on as well, and to every project that references this one, so no
+			part of PowerShell is copied into the module's folder.
+		-->
+		<PackageReference Include="Microsoft.PowerShell.Commands.Utility" ExcludeAssets="runtime;native" />
+		<PackageReference Include="System.Management.Automation" ExcludeAssets="runtime;native" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<Compile Update="**\*-*.cs">
+			<DependentUpon>$([System.Text.RegularExpressions.Regex]::Replace('$([System.String]::Copy(%(Filename)))', '^(.+)\-.+$', '$1.cs'))</DependentUpon>
+		</Compile>
+		<Compile Update="Metadata\MetadataList-Enumerator.cs">
+			<DependentUpon>MetadataList_T.cs</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="MG.Sonarr.Next.Attributes.SharedCodeAttribute" Alias="SharedCodeAttribute" />
+		<Using Include="MG.Sonarr.Next.Buffers" />
 		<Using Include="MG.Sonarr.Next.Exceptions" />
+		<Using Include="MG.Sonarr.Next.Extensions" />
+		<Using Include="MG.Sonarr.Next.Numbers.PInt32" Alias="pint" />
+		<Using Include="MG.Sonarr.Resources" />
+		<Using Include="Microsoft.Extensions.DependencyInjection" />
+		<Using Include="System.Buffers" />
+		<Using Include="System.Collections" />
+		<Using Include="System.Collections.Concurrent" />
+		<Using Include="System.Collections.Frozen" />
+		<Using Include="System.Collections.Immutable" />
 		<Using Include="System.Diagnostics" />
 		<Using Include="System.Diagnostics.CodeAnalysis" />
-		<Using Include="System.Globalization" />
-		<Using Include="System.Linq.Expressions" />
+		<Using Include="System.IO" />
+		<Using Include="System.Management.Automation" />
+		<Using Include="System.Net" />
+		<Using Include="System.Net.Http" />
+		<Using Include="System.Net.Http.Headers" />
+		<Using Include="System.Net.Http.Json" />
+		<Using Include="System.Numerics" />
+		<Using Include="System.Reflection" />
 		<Using Include="System.Runtime.CompilerServices" />
 		<Using Include="System.Runtime.InteropServices" />
+		<Using Include="System.Text" />
 		<Using Include="System.Text.Json" />
+		<Using Include="System.Text.Json.Nodes" />
+		<Using Include="System.Text.Json.Serialization" />
 	</ItemGroup>
-
+	
 	<ItemGroup>
-	  <Folder Include="Services\Time\" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\MG.Sonarr.Next.Standard\MG.Sonarr.Next.Standard.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Compile Update="Metadata\MetadataList-Enumerator.cs">
-	    <DependentUpon>MetadataList_T.cs</DependentUpon>
-	  </Compile>
+		<ProjectReference Include="..\MG.Sonarr.Resources\MG.Sonarr.Resources.csproj" />
+		<!--
+			The analyzers and the generators run inside the compiler, so these references load the projects as analyzers and
+			keep their assemblies out of this project's references and output folder.
+		-->
+		<ProjectReference Include="..\MG.Sonarr.Next.Analyzers\MG.Sonarr.Next.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="..\MG.Sonarr.Next.Generators\MG.Sonarr.Next.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 </Project>

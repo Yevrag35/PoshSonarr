@@ -1,0 +1,25 @@
+<Project>
+	<PropertyGroup>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+	<ItemGroup>
+		<!--
+			An analyzer or generator built against a newer Roslyn than the compiler that loads it fails to load (CS9057), so this
+			stays at or below the compiler version in the .NET SDK and in Visual Studio.
+		-->
+		<PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
+		<!-- The property-based tests are written against the 5.x API. -->
+		<PackageVersion Include="CsCheck" Version="5.0.1" />
+		<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="11.0.0" />
+		<PackageVersion Include="Microsoft.Extensions.Http" Version="11.0.0" />
+		<!-- Requires System.Management.Automation at its own version or later, so the two move together. -->
+		<PackageVersion Include="Microsoft.PowerShell.Commands.Utility" Version="7.7.0" />
+		<PackageVersion Include="System.Management.Automation" Version="7.7.0" />
+		<!--
+			A metapackage that brings xUnit.net's runner on Microsoft.Testing.Platform v2, so the test projects need no
+			Microsoft.NET.Test.Sdk or xunit.runner.visualstudio, which run tests through VSTest, and the root global.json runs dotnet
+			test on Microsoft.Testing.Platform instead.
+		-->
+		<PackageVersion Include="xunit.v3" Version="4.0.2" />
+	</ItemGroup>
+</Project>

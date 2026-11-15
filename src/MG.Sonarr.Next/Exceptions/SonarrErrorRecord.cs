@@ -1,8 +1,6 @@
 using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions;
 using MG.Sonarr.Next.Extensions.Reflection;
-using System.Management.Automation;
-using System.Net;
+using MG.Sonarr.Next.Services.Http.Requests;
 
 namespace MG.Sonarr.Next.Exceptions;
 
@@ -12,41 +10,78 @@ namespace MG.Sonarr.Next.Exceptions;
 /// <inheritdoc cref="ErrorRecord"/>
 public sealed class SonarrErrorRecord : ErrorRecord, IHttpRequestUri
 {
-	readonly IReadOnlyDictionary<string, string> _headers;
+	private readonly IReadOnlyDictionary<string, string> _headers;
 
 	/// <inheritdoc cref="SonarrHttpException.Headers"/>
+	/// <value>The HTTP headers associated with the error.</value>
 	public IReadOnlyDictionary<string, string> Headers => _headers;
 
 	/// <inheritdoc cref="ErrorDetails.Message"/>
+	/// <value>The error message text.</value>
 	public string Message => this.ErrorDetails?.Message ?? this.Exception.Message;
 	/// <summary>
 	/// Indicates whether this error record can be written through <see cref="Cmdlet.WriteError(ErrorRecord)"/> conditionally. If <see langword="true"/>, this record should only be optionally
 	/// written to the error stream.
 	/// </summary>
+	/// <value><see langword="true"/> when the error can be ignored; otherwise, <see langword="false"/>.</value>
 	public bool IsIgnorable { get; }
 
 	/// <inheritdoc cref="SonarrHttpException.StatusCode"/>
+	/// <value>The HTTP status code when available.</value>
 	public HttpStatusCode? StatusCode { get; }
 
 	/// <inheritdoc cref="SonarrHttpException.ReasonPhrase"/>
+	/// <value>The HTTP reason phrase when available.</value>
 	public string? ReasonPhrase { get; }
 
 	/// <inheritdoc cref="SonarrHttpException.RequestUri"/>
+	/// <value>The request URI string when available.</value>
 	public string? RequestUri { get; internal set; }
 
+	/// <summary>
+	/// Initializes a new <see cref="SonarrErrorRecord"/> instance from a Sonarr HTTP exception.
+	/// </summary>
+	/// <param name="exception">The Sonarr HTTP exception.</param>
+	/// <param name="response">The HTTP response associated with the exception.</param>
 	public SonarrErrorRecord(SonarrHttpException exception, HttpResponseMessage? response)
 		: this(exception, response, (object?)null)
 	{
 	}
+
+	/// <summary>
+	/// Initializes a new <see cref="SonarrErrorRecord"/> instance from a Sonarr HTTP exception.
+	/// </summary>
+	/// <param name="exception">The Sonarr HTTP exception.</param>
+	/// <param name="response">The HTTP response associated with the exception.</param>
+	/// <param name="targetObj">The target object associated with the error.</param>
+	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="exception"/> is null.</exception>
 	public SonarrErrorRecord(SonarrHttpException exception, HttpResponseMessage? response, object? targetObj)
-		: base(exception, exception.GetTypeName(), GetCategoryFromStatusCode(exception.StatusCode, out bool isIgnorable), targetObj)
+		: this(exception, response, GetCategoryFromStatusCode(exception.StatusCode), targetObj)
+	{
+	}
+
+	/// <summary>
+	/// Initializes a new <see cref="SonarrErrorRecord"/> instance from a Sonarr HTTP exception, with the specified error
+	/// category.
+	/// </summary>
+	/// <remarks>
+	/// The record takes its status code and headers from <paramref name="exception"/>, and its URL from the request of
+	/// <paramref name="response"/>, or else from <paramref name="exception"/>. It's ignorable when the status code is 404.
+	/// </remarks>
+	/// <param name="exception">The Sonarr HTTP exception.</param>
+	/// <param name="response">The HTTP response associated with the exception, or <see langword="null"/> when there was none.</param>
+	/// <param name="category">The category of the error.</param>
+	/// <param name="targetObj">The target object associated with the error.</param>
+	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="exception"/> is null.</exception>
+	internal SonarrErrorRecord(SonarrHttpException exception, HttpResponseMessage? response, ErrorCategory category, object? targetObj)
+		: base(exception, exception.GetTypeName(), category, targetObj)
 	{
 		ArgumentNullException.ThrowIfNull(exception);
 
 		this.StatusCode = exception.StatusCode;
 		this.ReasonPhrase = response?.ReasonPhrase;
 		_headers = exception.Headers;
-		this.IsIgnorable = isIgnorable;
+		this.IsIgnorable = exception.StatusCode == HttpStatusCode.NotFound;
 
 		this.ErrorDetails = new ErrorDetails(GetMessage(exception, response, out string? requestUri))
 		{
@@ -59,15 +94,34 @@ public sealed class SonarrErrorRecord : ErrorRecord, IHttpRequestUri
 		this.CategoryInfo.Reason = this.ReasonPhrase;
 		this.CategoryInfo.TargetType = targetObj?.GetType().GetName();
 	}
+
+	/// <summary>
+	/// Initializes a new <see cref="SonarrErrorRecord"/> instance from a Sonarr HTTP exception.
+	/// </summary>
+	/// <param name="response">The Sonarr HTTP exception.</param>
 	public SonarrErrorRecord(SonarrHttpException response)
 		: this(exception: response, response: response?.Response, (object?)null)
 	{
 	}
+
+	/// <summary>
+	/// Initializes a new <see cref="SonarrErrorRecord"/> instance from a Sonarr HTTP exception.
+	/// </summary>
+	/// <param name="response">The Sonarr HTTP exception.</param>
+	/// <param name="targetObj">The target object associated with the error.</param>
 	public SonarrErrorRecord(SonarrHttpException response, object? targetObj)
 		: this(exception: response, response: response?.Response, targetObj)
 	{
 	}
 
+	/// <summary>
+	/// Initializes a new <see cref="SonarrErrorRecord"/> instance from a standard exception.
+	/// </summary>
+	/// <param name="normalEx">The exception to wrap.</param>
+	/// <param name="errorId">The error identifier.</param>
+	/// <param name="category">The error category.</param>
+	/// <param name="targetObj">The target object associated with the error.</param>
+	/// <param name="isIgnoreable"><see langword="true"/> when the error can be ignored; otherwise, <see langword="false"/>.</param>
 	public SonarrErrorRecord(Exception normalEx, string errorId, ErrorCategory category, object? targetObj, bool isIgnoreable = false)
 		: base(exception: normalEx, errorId, category, targetObj)
 	{
@@ -75,19 +129,26 @@ public sealed class SonarrErrorRecord : ErrorRecord, IHttpRequestUri
 		this.IsIgnorable = isIgnoreable;
 	}
 
+	/// <summary>
+	/// Initializes a new <see cref="SonarrErrorRecord"/> instance by wrapping an existing error record.
+	/// </summary>
+	/// <param name="wraps">The error record to wrap.</param>
 	public SonarrErrorRecord(ErrorRecord wraps)
 		: base(wraps, wraps?.Exception)
 	{
 		_headers = EmptyNameDictionary.Empty<string>();
 	}
 
-	private static ErrorCategory GetCategoryFromStatusCode(HttpStatusCode? statusCode, out bool isIgnorable)
+	/// <summary>
+	/// Gets a PowerShell error category from an HTTP status code.
+	/// </summary>
+	/// <param name="statusCode">The HTTP status code.</param>
+	/// <returns>The mapped PowerShell error category.</returns>
+	private static ErrorCategory GetCategoryFromStatusCode(HttpStatusCode? statusCode)
 	{
-		isIgnorable = false;
 		switch (statusCode)
 		{
 			case HttpStatusCode.NotFound:
-				isIgnorable = true;
 				return ErrorCategory.ObjectNotFound;
 
 			case HttpStatusCode.Unauthorized:
@@ -119,21 +180,21 @@ public sealed class SonarrErrorRecord : ErrorRecord, IHttpRequestUri
 		}
 	}
 
-	private static IReadOnlyDictionary<string, string> ParseResponseHeaders(HttpResponseMessage response)
+	/// <summary>
+	/// Builds the error message and resolves the request URI.
+	/// </summary>
+	/// <remarks>
+	/// The URL comes from the request of <paramref name="response"/>, or else from <paramref name="exception"/>, which
+	/// knows the request's URL even when no response arrived. A message with a URL starts with it, followed by
+	/// <c> - </c>.
+	/// </remarks>
+	/// <param name="exception">The exception providing base message text.</param>
+	/// <param name="response">The HTTP response associated with the exception.</param>
+	/// <param name="requestUri">The resolved request URI string.</param>
+	/// <returns>The formatted error message.</returns>
+	private static string GetMessage(SonarrHttpException exception, HttpResponseMessage? response, out string? requestUri)
 	{
-		var headers = response.Headers;
-		Dictionary<string, string> dict = new();
-		foreach (var header in headers)
-		{
-			_ = dict.TryAdd(header.Key, string.Join(Environment.NewLine, header.Value));
-		}
-
-		return dict;
-	}
-
-	private static string GetMessage(Exception exception, HttpResponseMessage? response, out string? requestUri)
-	{
-		requestUri = response?.RequestMessage?.RequestUri?.ToString();
+		requestUri = response?.RequestMessage?.RequestUri?.ToString() ?? exception.RequestUri;
 		if (string.IsNullOrWhiteSpace(requestUri))
 		{
 			return exception.Message;
@@ -147,7 +208,7 @@ public sealed class SonarrErrorRecord : ErrorRecord, IHttpRequestUri
 				state.requestUri.CopyTo(chars);
 				int position = state.requestUri.Length;
 
-				ReadOnlySpan<char> separator = stackalloc char[3] { ' ', '-', ' ' };
+				ReadOnlySpan<char> separator = [' ', '-', ' '];
 				separator.CopyTo(chars.Slice(position));
 				position += separator.Length;
 

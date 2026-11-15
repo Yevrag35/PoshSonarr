@@ -1,0 +1,1 @@
+%USERPROFILE%/.claude/skills/csharp-xml-docs/references/style-guide.md

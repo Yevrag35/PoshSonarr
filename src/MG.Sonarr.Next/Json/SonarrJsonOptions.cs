@@ -1,39 +1,64 @@
-using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions;
-using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json.Converters;
 using MG.Sonarr.Next.Json.Converters.Spans;
 using MG.Sonarr.Next.Json.Modifiers;
+using MG.Sonarr.Next.Json.Naming;
 using MG.Sonarr.Next.Metadata;
-using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Models.Fields;
 using MG.Sonarr.Next.Models.ManualImports;
-using MG.Sonarr.Next.Reflection;
-using MG.Sonarr.Resources;
-using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Immutable;
-using System.Reflection;
 using System.Text.Encodings.Web;
-using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
 namespace MG.Sonarr.Next.Json;
 
+/// <summary>
+/// Exposes configured JSON serializer option sets used by Sonarr operations.
+/// </summary>
 public interface ISonarrJsonOptions
 {
+	/// <summary>
+	/// Gets options used for debug-friendly JSON output.
+	/// </summary>
+	/// <remarks>
+	/// They match <see cref="ForSerializing"/> in everything but indentation, so an object written with them reads as the
+	/// body that a request sends.
+	/// </remarks>
+	/// <value>The serializer options for debugging output.</value>
 	JsonSerializerOptions ForDebugging { get; }
+
+	/// <summary>
+	/// Gets options used for JSON deserialization.
+	/// </summary>
+	/// <value>The serializer options for deserialization.</value>
 	JsonSerializerOptions ForDeserializing { get; }
+
+	/// <summary>
+	/// Gets options used for JSON serialization.
+	/// </summary>
+	/// <value>The serializer options for serialization.</value>
 	JsonSerializerOptions ForSerializing { get; }
 }
 
+/// <summary>
+/// Represents the default implementation of <see cref="ISonarrJsonOptions"/>.
+/// </summary>
 internal sealed class SonarrJsonOptions : ISonarrJsonOptions
 {
+	/// <inheritdoc cref="ISonarrJsonOptions.ForDebugging"/>
 	public JsonSerializerOptions ForDebugging { get; }
+
+	/// <inheritdoc cref="ISonarrJsonOptions.ForDeserializing"/>
 	public JsonSerializerOptions ForDeserializing { get; }
+
+	/// <inheritdoc cref="ISonarrJsonOptions.ForSerializing"/>
 	public JsonSerializerOptions ForSerializing { get; }
 
+	/// <summary>
+	/// Initializes a new <see cref="SonarrJsonOptions"/> instance.
+	/// </summary>
+	/// <param name="setupDeserializer">The callback that configures deserialization options.</param>
+	/// <exception cref="System.ArgumentNullException">Thrown when <paramref name="setupDeserializer"/> is null.</exception>
 	public SonarrJsonOptions(Action<JsonSerializerOptions> setupDeserializer)
 	{
 		ArgumentNullException.ThrowIfNull(setupDeserializer);
@@ -52,42 +77,28 @@ internal sealed class SonarrJsonOptions : ISonarrJsonOptions
 		this.ForDebugging = new(this.ForDeserializing)
 		{
 			Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+			DictionaryKeyPolicy = JsonNamingPolicy.CamelCase,
 			PropertyNameCaseInsensitive = true,
 			WriteIndented = true,
 		};
 	}
-
-	[Obsolete("Complete rework", error: true)]
-	internal static void ApplyCamelCasing(Span<char> chars)
-	{
-		for (int i = 0; i < chars.Length; i++)
-		{
-			if (i == 1 && !char.IsUpper(chars[i]))
-			{
-				break;
-			}
-
-			bool hasNext = (i + 1 < chars.Length);
-
-			// Stop when next char is already lowercase.
-			if (i > 0 && hasNext && !char.IsUpper(chars[i + 1]))
-			{
-				// If the next char is a space, lowercase current char before exiting.
-				if (chars[i + 1] == ' ')
-				{
-					chars[i] = char.ToLowerInvariant(chars[i]);
-				}
-
-				break;
-			}
-
-			chars[i] = char.ToLowerInvariant(chars[i]);
-		}
-	}
 }
 
+/// <summary>
+/// Provides dependency injection registrations for Sonarr JSON services.
+/// </summary>
 public static class SonarrJsonDependencyInjection
 {
+	/// <summary>
+	/// Adds Sonarr JSON options services to the specified service collection.
+	/// </summary>
+	/// <remarks>
+	/// The callback runs before the module's converters are built, so they write property names with the
+	/// <see cref="JsonSerializerOptions.PropertyNamingPolicy"/> that it sets, as System.Text.Json's own converters do.
+	/// </remarks>
+	/// <param name="services">The service collection to update.</param>
+	/// <param name="configureOptions">The callback that configures serializer options.</param>
+	/// <returns>The same <see cref="IServiceCollection"/> instance so additional calls can be chained.</returns>
 	public static IServiceCollection AddSonarrJsonOptions(this IServiceCollection services, Action<IServiceProvider, JsonSerializerOptions> configureOptions)
 	{
 		return services.AddSingleton<ISonarrJsonOptions>(provider =>
@@ -103,26 +114,35 @@ public static class SonarrJsonDependencyInjection
 					}
 				};
 
-				AddAllConverters(provider, options);
-
+				// The converters' naming policy reads PropertyNamingPolicy when it's built, so the callback that sets it
+				// runs first.
 				configureOptions(provider, options);
+
+				AddAllConverters(provider, options);
 			}
 
 			return new SonarrJsonOptions(newAction);
 		});
 	}
 
+	/// <summary>
+	/// Adds all Sonarr JSON converters to the specified serializer options.
+	/// </summary>
+	/// <param name="provider">The service provider used to resolve dependencies.</param>
+	/// <param name="options">The serializer options to update.</param>
 	private static void AddAllConverters(IServiceProvider provider, JsonSerializerOptions options)
 	{
 		IMetadataResolver resolver = provider.GetRequiredService<IMetadataResolver>();
+		WorkingNamingPolicy policy = new(options);
 
-		DateOnlyConverter doSpanConverter = new();
-		TimeOnlyConverter timeConverter = new();
-		TimeSpanConverter timeSpanConverter = new();
-		AlwaysStringConverter alwaysStringConverter = new();
-
-		ObjectConverter objCon = new(resolver, config =>
+		ObjectConverter objCon = new(resolver, policy, config =>
 		{
+			DateOnlyConverter doSpanConverter = new();
+			TimeOnlyConverter timeConverter = new();
+			TimeSpanConverter timeSpanConverter = new();
+			AlwaysStringConverter alwaysStringConverter = new();
+			AlwaysStringConverter exactStringConverter = new(trim: false);
+
 			config.AddConvertProperties(EnumerateConverterProperties())
 				  .AddGlobalReplaceNames(EnumerateGlobalReplaceNames())
 				  .AddIgnoreProperties(EnumerateIgnoreProperties())
@@ -138,52 +158,96 @@ public static class SonarrJsonDependencyInjection
 						new("CleanTitle", alwaysStringConverter),
 						new("SortTitle", alwaysStringConverter),
 						new("Title", alwaysStringConverter),
-						new("TorrentInfoHash", alwaysStringConverter)
+						new("TorrentInfoHash", alwaysStringConverter),
+						new("Label", alwaysStringConverter),
+						// Keyed by the names that EnumerateGlobalReplaceNames gives these properties.
+						new("CHMODFolder", alwaysStringConverter),
+						new("CHOWNGroup", alwaysStringConverter),
+						// Keyed by the name that RemotePathObject gives Sonarr's host, such as 192.168.1.10.
+						new("HostName", alwaysStringConverter),
+						// Credentials go back to Sonarr exactly as they came, whitespace included.
+						new("Username", exactStringConverter),
+						new("Password", exactStringConverter),
+						new("PasswordConfirmation", exactStringConverter),
+						new("SslCertPassword", exactStringConverter),
+						new("ProxyUsername", exactStringConverter),
+						new("ProxyPassword", exactStringConverter),
+						// A release's identifier, which a grab sends back as it came.
+						new("Guid", exactStringConverter),
+						// A resource's name, which a PUT sends back, and which Sonarr turns away as a number, such as a
+						// download client named 2024, or a manual import's file named 01, which the inference would read as 1.
+						new("Name", exactStringConverter),
+						// A field's placeholder and a select option's hint, which a provider's schema sends back, and
+						// which Sonarr turns away as a number.
+						new("Hint", exactStringConverter),
+						new("Placeholder", exactStringConverter),
+						// A provider field's setting, which a PUT of the provider sends back for every field, such as a
+						// download client's category of 0123, which the inference would send back as 123. A list of
+						// settings, such as Flood's tags, keeps each of its strings as it came too.
+						new("Value", exactStringConverter),
+						// Text that Sonarr takes from a show's title or its metadata, which an update or an add of the
+						// series sends back, and which Sonarr turns away as a number, such as the slug and folder of a
+						// show named 24 or 1883, and an alternate title's comment from the scene mappings.
+						new("TitleSlug", exactStringConverter),
+						new("Folder", exactStringConverter),
+						new("Network", exactStringConverter),
+						new("Overview", exactStringConverter),
+						new("Comment", exactStringConverter),
+						// A release's group, such as 126811, which a manual import posts back, and the group and name of
+						// the release behind an episode's file, which an update of the episode sends back.
+						new("ReleaseGroup", exactStringConverter),
+						new("SceneName", exactStringConverter),
+						// The languages that a file's audio and subtitle streams are tagged with, joined by /, which an
+						// update of an episode sends back with the episode's file. Sonarr copies them from the file's
+						// tags, which can hold any text.
+						new("AudioLanguages", exactStringConverter),
+						new("Subtitles", exactStringConverter),
+						// Settings that a person types, which a PUT of the host config, the naming config, the media
+						// management settings, or a remote path mapping sends back, kept exactly, since a colon
+						// replacement such as " - " relies on its spaces. A path or URL is among them when Sonarr checks
+						// its form only while a feature uses it, or never.
+						new("AllowedHosts", exactStringConverter),
+						new("ApplicationUrl", exactStringConverter),
+						new("BackupFolder", exactStringConverter),
+						new("BindAddress", exactStringConverter),
+						new("Branch", exactStringConverter),
+						new("InstanceName", exactStringConverter),
+						new("ProxyBypassFilter", exactStringConverter),
+						new("ProxyHostname", exactStringConverter),
+						new("SslCertPath", exactStringConverter),
+						new("TrustedNetworks", exactStringConverter),
+						new("UpdateScriptPath", exactStringConverter),
+						new("AnimeEpisodeFormat", exactStringConverter),
+						new("CustomColonReplacementFormat", exactStringConverter),
+						new("DailyEpisodeFormat", exactStringConverter),
+						new("SeasonFolderFormat", exactStringConverter),
+						new("SeriesFolderFormat", exactStringConverter),
+						new("SpecialsFolderFormat", exactStringConverter),
+						new("StandardEpisodeFormat", exactStringConverter),
+						new("ExtraFileExtensions", exactStringConverter),
+						new("ScriptImportPath", exactStringConverter),
+						new("RemotePath", exactStringConverter)
 				  );
 		});
 
 		options.Converters.AddMany(
 			objCon,
-			new PostCommandWriter(),
-			new SonarrResponseConverter(),
+			new PostCommandWriter(policy),
+			new SonarrResponseConverter(policy),
 			new ImmutableArrayConverter<FieldObject>(),
 			new ImmutableArrayConverter<ManualImportObject>(),
 			new ImmutableArrayConverter<SelectOptionObject>());
 
-		List<JsonConverter> sonarrConverters = ConstructSonarrObjectConverters(objCon);
-		ThrowIfMissingConverters(sonarrConverters.Count == 0, sonarrConverters);
-
-		options.Converters.AddMany(CollectionsMarshal.AsSpan(sonarrConverters));
+		// SonarrObjectConverterGenerator, in MG.Sonarr.Next.Generators, lists a converter for each model class marked
+		// [SonarrObject] and fails the build for a marked class that the converter can't take. With no class to list,
+		// it generates no SonarrObjectConverters, so this line doesn't compile.
+		options.Converters.AddMany(SonarrObjectConverters.Create(objCon));
 	}
 
-	private static List<JsonConverter> ConstructSonarrObjectConverters(ObjectConverter converter)
-	{
-		List<JsonConverter> output = new(10);
-		Type genericClassType = typeof(SonarrObjectConverter<>);
-		object[] ctorArgs = [converter];
-		Type[] typeParams = new Type[1];
-
-		IEnumerable<Type> types = GetSonarrObjectTypes();
-
-		foreach (Type resolvedConverterType in types)
-		{
-			typeParams[0] = resolvedConverterType;
-			JsonConverter constructed = ConstructConverter(genericClassType, typeParams, ctorArgs);
-			output.Add(constructed);
-		}
-
-		return output;
-	}
-
-	private static JsonConverter ConstructConverter(Type genericClassType, Type[] typeParams, object[] activatorArgs)
-	{
-		Type constructedClassType = genericClassType.MakeGenericType(typeParams);
-		JsonConverter constructed = (JsonConverter?)Activator.CreateInstance(constructedClassType, activatorArgs)
-			?? throw new InvalidOperationException($"Unable to construct {constructedClassType.GetName()}.");
-
-		return constructed;
-	}
-
+	/// <summary>
+	/// Enumerates property-type pairs that use converter-specific property handling.
+	/// </summary>
+	/// <returns>The configured converter property mappings.</returns>
 	private static KeyValuePair<string, Type>[] EnumerateConverterProperties()
 	{
 		return [
@@ -200,6 +264,11 @@ public static class SonarrJsonDependencyInjection
 			 new("Tags", typeof(SortedSet<int>)),
 		 ];
 	}
+
+	/// <summary>
+	/// Enumerates global property name replacements used during object conversion.
+	/// </summary>
+	/// <returns>The configured replacement mappings.</returns>
 	private static KeyValuePair<string, string>[] EnumerateGlobalReplaceNames()
 	{
 		return [
@@ -209,46 +278,17 @@ public static class SonarrJsonDependencyInjection
 			 new("TvdbId", "TVDbId"),
 		 ];
 	}
+
+	/// <summary>
+	/// Enumerates property names ignored by object conversion.
+	/// </summary>
+	/// <returns>The ignored property names.</returns>
 	private static string[] EnumerateIgnoreProperties()
 	{
-		return [
-			Constants.META_PROPERTY_NAME,
-			 Constants.PROPERTY_SHORT_OVERVIEW,
-		 ];
-	}
-
-	private static IEnumerable<Type> GetSonarrObjectTypes()
-	{
-		Assembly[] assemblies = AssemblyLoader.GetAppDomainAssemblies(AppDomain.CurrentDomain);
-
-		return assemblies
-			.Where(ass => !ass.IsDynamic
-						&& ass.IsDefined(
-								typeof(SonarrObjectConverterAssemblyAttribute),
-								inherit: false))
-
-			.SelectMany(ass => ass.GetExportedTypes()
-								  .Where(t => t.IsClass
-											  &&
-											  !t.IsAbstract
-											  &&
-											  t.IsDefined(
-												  typeof(SonarrObjectAttribute),
-												  inherit: false)
-											  &&
-											  typeof(SonarrObject).IsAssignableFrom(t)));
-	}
-
-	/// <exception cref="ModuleStartupException"></exception>
-	private static void ThrowIfMissingConverters([DoesNotReturnIf(true)] bool condition, List<JsonConverter> offender, [CallerArgumentExpression(nameof(offender))] string? paramName = null)
-	{
-		if (condition)
-		{
-			ArgumentOutOfRangeException countEx = new(paramName, offender.Count, "Expected one or more converters in the list.");
-			throw new ModuleStartupException(
-				message: ExMessages.Startup_Exception_NoConvertersConstructed,
-				offendingType: typeof(SonarrJsonDependencyInjection),
-				innerException: countEx);
-		}
+		return
+		[
+			Constants.MetaPropertyName,
+			Constants.Property_ShortOverview,
+		];
 	}
 }

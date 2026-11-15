@@ -1,11 +1,13 @@
-﻿using MG.Sonarr.Next.Unions;
+using MG.Sonarr.Next.Unions;
 
 namespace MG.Sonarr.Next.Buffers;
 
 /// <summary>
 /// Provides methods for creating and managing rented buffers using the shared <see cref="ArrayPool{T}"/>.
 /// </summary>
-public static class RentedBuffer
+[SharedCode]
+[DebuggerStepThrough, ExcludeFromCodeCoverage]
+internal static class RentedBuffer
 {
 	/// <summary>
 	/// Creates a <see cref="RentedBuffer{T}"/> initialized with the specified values.
@@ -36,6 +38,12 @@ public static class RentedBuffer
 	{
 		return Rent<T>(minimumLength, useEntireCapacity: false);
 	}
+	/// <summary>
+	/// Creates a <see cref="RentedBuffer{T}"/> that wraps an existing span without renting from the pool.
+	/// </summary>
+	/// <typeparam name="T"><inheritdoc cref="RentedBuffer{T}" path="/typeparam[1]"/></typeparam>
+	/// <param name="span">The span to wrap. The returned buffer references this storage and is never returned to a pool.</param>
+	/// <returns>A <see cref="RentedBuffer{T}"/> backed by <paramref name="span"/>.</returns>
 	public static RentedBuffer<T> RentSpan<T>(Span<T> span)
 	{
 		return new(span);
@@ -59,39 +67,21 @@ public static class RentedBuffer
 		return new(minimumLength: minimumLength, preValidated: true, useEntireCapacity: useEntireCapacity);
 	}
 	/// <summary>
-	/// Rents a buffer with at least the specified minimum length, updating the provided buffer reference.
-	/// </summary>
-	/// <typeparam name="T">The type of elements in the buffer.</typeparam>
-	/// <param name="minimumLength">The minimum length of the rented buffer.</param>
-	/// <param name="buffer">The buffer reference to update.</param>
-	/// <returns>A span containing the rented buffer up to the specified length.</returns>
-	/// <exception cref="ArgumentOutOfRangeException"><paramref name="minimumLength"/> is negative.</exception>
-	public static Span<T> Rent<T>(int minimumLength, ref RentedBuffer<T> buffer)
-	{
-		ArgumentOutOfRangeException.ThrowIfNegative(minimumLength);
-		if (minimumLength == 0)
-		{
-			buffer = Empty<T>();
-			return [];
-		}
-
-		buffer = new(minimumLength: minimumLength, preValidated: true, useEntireCapacity: false);
-		return buffer.Span;
-	}
-	/// <summary>
 	/// Rents a buffer with either the specified span or an <see cref="int"/> length that will be rented from <see cref="ArrayPool{T}"/>.
 	/// </summary>
 	/// <typeparam name="T">The type of elements in the buffer.</typeparam>
 	/// <param name="either">A discriminated union of either a span or an integer length.</param>
 	/// <returns>A <see cref="RentedBuffer{T}"/> with either a backing <see cref="Span{T}"/> or a rented array buffer, 
 	/// depending on what was provided in <paramref name="either"/>.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static RentedBuffer<T> Rent<T>(RefEither<Span<T>, int> either)
 	{
-		return either.Index switch
+		return either.IsT1 ? new(either.AsT1) : rentFromLength(either.AsT2);
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static RentedBuffer<T> rentFromLength(int length)
 		{
-			1 => new(either.AsT1),
-			2 when either.AsT2 > 0 => new(preValidated: true, minimumLength: either.AsT2, useEntireCapacity: true),
-			_ => Empty<T>(),
-		};
+			return Rent<T>(length, useEntireCapacity: false);
+		}
 	}
 }

@@ -16,19 +16,14 @@ In addition to this, I am making the executive decision to only write the NEXT v
 To get started, connect to Sonarr with "Connect-SonarrInstance" _(Connect-Sonarr)_ cmdlet:
 
 ```powershell
-# By Server and Port -- (8989 is the default port)
-Connect-Sonarr -Server "MEDIASERVER" -ApiKey "xxxxxxxxxxxxxxxx"
+# By URL -- (Sonarr's default port is 8989)
+Connect-Sonarr -Url "http://MEDIASERVER:8989" -ApiKey "xxxxxxxxxxxxxxxx"
 
-   Version Authentication Url                        StartupPath
-   ------- -------------- ---                        -----------
-2.0.0.5322      forms      http://MEDIASERVER:8989/   C:\ProgramData\NzbDrone\bin
+# The cmdlet writes nothing unless you add "-PassThru", which writes the server's status.
+Connect-Sonarr -Url "https://sonarr-api.cloud.com" -ApiKey "xxxxxxxxxxxx" -PassThru
 
-# By explicit URL
-Connect-Sonarr -Url "https://sonarr-api.cloud.com" -ApiKey "xxxxxxxxxxxx"
-
-# If you have a reverse proxy that strips away the "/api" path, use the "-NoApiPrefix" switch.
-
-Connect-Sonarr -Url "http://sonarr:8989/sonarr" ...
+# If you have a reverse proxy that strips away the "/api" path, use the "-NoApiInPath" switch (alias "-NoApiPrefix").
+Connect-Sonarr -Url "http://sonarr:8989/sonarr" -ApiKey "xxxxxxxxxxxx" -NoApiInPath
 ```
 
 [See the wiki](https://github.com/Yevrag35/PoshSonarr/wiki) for more information about reverse proxy situations.
@@ -41,8 +36,11 @@ $series = Get-SonarrSeries -Name 24
 $series.Seasons[2].Monitored = $false
 $series | Update-SonarrSeries
 
-# Search for a particular series and add it to Sonarr
-Search-SonarrSeries "The X-Files" | Add-SonarrSeries -RootFolderPath "\\NAS\Shows" -IgnoreEpisodesWithFiles -SearchForMissingEpisodes -UseSeasonFolders
+# Search for a particular series and add the best match to Sonarr
+$qualityProfile = Get-SonarrQualityProfile -Name "HD-1080p"
+Search-SonarrSeries "The X-Files" |
+	Select-Object -First 1 |
+	Add-SonarrSeries -RootFolderPath "\\NAS\Shows" -QualityProfileId $qualityProfile.Id -SearchForMissingEpisodes IgnoreWithEpisodes -UseSeasonFolders
 ```
 
 ---
@@ -54,73 +52,80 @@ The following is the list of the working cmdlets:
 1. Add-SonarrRelease
 1. Add-SonarrSeries
 1. Add-SonarrTag
-1. Clear-SonarrLog
+1. Clear-SonarrTag
 1. [Connect-SonarrInstance](https://github.com/Yevrag35/PoshSonarr/wiki/Connect-SonarrInstance) - _(Connect-Sonarr)_
+1. Disconnect-SonarrInstance - _(Disconnect-Sonarr)_
+1. Edit-SonarrManualImport
 1. [Get-SonarrBackup](https://github.com/Yevrag35/PoshSonarr/wiki/Get-SonarrBackup)
 1. Get-SonarrCalendar
-1. Get-SonarrCommand - _(Get-SonarrJob)_
+1. Get-SonarrCommand
+1. Get-SonarrCommandHistory
 1. Get-SonarrDelayProfile
 1. Get-SonarrDiskspace
 1. Get-SonarrDownloadClient
+1. Get-SonarrDownloadClientConfig
+1. Get-SonarrDownloadClientSchema
 1. Get-SonarrEpisode
 1. Get-SonarrEpisodeFile
 1. Get-SonarrHistory
-1. Get-SonarrHostConfig
+1. Get-SonarrHostConfig - _(Get-SonarrHost)_
+1. Get-SonarrIndexer
+1. Get-SonarrLanguageProfile
 1. Get-SonarrLog
 1. Get-SonarrLogFile
-1. Get-SonarrMapping
+1. Get-SonarrManualImport
 1. Get-SonarrMediaManagement
-1. Get-SonarrMetadata
-1. Get-SonarrNotification - _(Get-SonarrConnection)_
+1. Get-SonarrNamingConfig
+1. Get-SonarrNotification
+1. Get-SonarrNotificationSchema
+1. Get-SonarrObjectProperty - _(Get-SonarrObjectProperties/Get-SonarrProperties)_
+1. Get-SonarrQualityDefinition - _(Get-SonarrQuality)_
 1. Get-SonarrQualityProfile - _(Get-SonarrProfile)_
-1. Get-SonarrQueue
-1. Get-SonarrRelease - * _renamed to Search-SonarrRelease (left behind as alias...)_
-1. Get-SonarrRestriction
+1. Get-SonarrReleaseProfile
+1. Get-SonarrRemotePathMapping - _(Get-SonarrRemoteMapping/Get-SonarrRemotePath)_
 1. Get-SonarrRootFolder
 1. Get-SonarrSeries
 1. Get-SonarrStatus
 1. Get-SonarrTag
-1. Get-SonarrUpdate
 1. Get-SonarrWantedMissing
-1. Invoke-SonarrBackup - _(Backup-Sonarr)_
-1. Invoke-SonarrEpisodeSearch
+1. Invoke-SonarrManualImport
+1. Invoke-SonarrRename - _(Rename-SonarrEpisodeFile)_
 1. Invoke-SonarrRssSync
-1. Invoke-SonarrSeasonSearch
-1. Invoke-SonarrSeriesRefresh
-1. Invoke-SonarrSeriesRescan
-1. Invoke-SonarrSeriesSearch
 1. New-SonarrDelayProfile
-1. New-SonarrMapping
-1. New-SonarrPlexNotification - _(New-PlexNotification)_
-1. New-SonarrQualityProfile - _(New-SonarrProfile)_
-1. New-SonarrReleasePush
-1. New-SonarrRestriction
+1. New-SonarrDownloadClient
+1. New-SonarrReleaseProfile
+1. New-SonarrRemotePathMapping - _(New-SonarrRemoteMapping/New-SonarrRemotePath)_
+1. New-SonarrRootFolder
 1. New-SonarrTag
-1. Register-SonarrRootFolder _(New-SonarrRootFolder)_
-1. Remove-SonarrEpisodeFile
-1. Remove-SonarrMapping
-1. Remove-SonarrQualityProfile - _(Remove-SonarrProfile)_
-1. Remove-SonarrQueueItem
-1. Remove-SonarrRestriction
+1. Remove-SonarrBackup - _(Delete-SonarrBackup)_
+1. Remove-SonarrDelayProfile
+1. Remove-SonarrDownloadClient
+1. Remove-SonarrEpisodeFile - _(Delete-SonarrEpisodeFile)_
+1. Remove-SonarrIndexer
+1. Remove-SonarrNotification
+1. Remove-SonarrReleaseProfile
+1. Remove-SonarrRemotePathMapping
 1. Remove-SonarrRootFolder
-1. Remove-SonarrSeries
-1. Remove-SonarrTag
-1. Rename-SonarrTag - _* (was Set-SonarrTag)_
+1. Remove-SonarrSeries - _(Delete-SonarrSeries)_
+1. Remove-SonarrTag - _(Delete-SonarrTag)_
+1. Rename-SonarrTag
 1. Restart-SonarrInstance - _(Restart-Sonarr)_
-1. Save-SonarrLogFile
-1. Search-SonarrDirectory
+1. Save-SonarrBackup - _(Download-SonarrBackup)_
+1. Save-SonarrLogFile - _(Download-SonarrLogFile)_
 1. Search-SonarrRelease
 1. Search-SonarrSeries
-1. Set-SonarrDelayProfile
-1. Set-SonarrEpisode
-1. Set-SonarrHostConfig
-1. Set-SonarrMapping
-1. Set-SonarrRestriction
-1. Set-SonarrSeries - _* (was Update-SonarrSeries)_
-1. Set-SonarrTag - _* (renamed to Rename-SonarrTag; left behind as alias)_
+1. Show-SonarrException - _(Show-SonarrError)_
+1. Test-SonarrHost - _(Test-Sonarr)_
+1. Test-SonarrRename
+1. Test-SonarrResource
+1. Update-SonarrDelayProfile
 1. Update-SonarrDownloadClient
+1. Update-SonarrEpisode
+1. Update-SonarrHostConfig - _(Set-SonarrHost/Set-SonarrHostConfig/Update-SonarrHost)_
+1. Update-SonarrIndexer - _(Set-SonarrIndexer)_
 1. Update-SonarrMediaManagement
-1. Update-SonarrMetadata
-1. Update-SonarrQualityProfile _(Set-SonarrQualityProfile/Update-SonarrProfile/Set-SonarrProfile)_
-1. Update-SonarrRestriction
-1. Update-SonarrSeries - _* (renamed to Set-SonarrSeries; left behind as alias)_
+1. Update-SonarrNamingConfig
+1. Update-SonarrNotification
+1. Update-SonarrReleaseProfile
+1. Update-SonarrRemotePathMapping - _(Set-SonarrRemoteMapping/Set-SonarrRemotePathMapping/Update-SonarrRemoteMapping)_
+1. Update-SonarrSeries - _(Set-SonarrSeries)_
