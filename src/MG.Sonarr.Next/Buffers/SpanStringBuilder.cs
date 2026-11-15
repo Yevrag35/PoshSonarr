@@ -19,8 +19,9 @@ namespace MG.Sonarr.Next.Buffers;
 /// they grow the buffer, and <see cref="Insert(int, ReadOnlySpan{char})"/> asserts it on every call. A Debug build also fills
 /// an array that goes back to the pool with <c>'\uDDDD'</c> characters, unless <see cref="ClearOnDispose"/> is set.</para>
 /// </remarks>
+[SharedCode]
 [DebuggerDisplay("{ToString(),nq}")]
-[StructLayout(LayoutKind.Auto), DebuggerStepThrough]
+[StructLayout(LayoutKind.Auto), DebuggerStepThrough, ExcludeFromCodeCoverage]
 internal ref struct SpanStringBuilder
 {
 	/// <summary>
@@ -317,6 +318,7 @@ internal ref struct SpanStringBuilder
 	/// <see cref="EnsureCapacity(pint)"/> leaves them.
 	/// </safety>
 	/// <param name="value">The span containing the characters to append.</param>
+	[SuppressMessage("Style", "IDE0380", Justification = "Skips the capacity check, so a value longer than the room after the current position is written past the buffer's end.")]
 	private unsafe void AppendCore(scoped ReadOnlySpan<char> value)
 	{
 		unsafe

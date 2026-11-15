@@ -1,5 +1,5 @@
 using MG.Sonarr.Next.Attributes;
-using MG.Sonarr.Next.Extensions.PSO;
+using MG.Sonarr.Next.Extensions.Pwsh;
 using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Metadata;
@@ -57,7 +57,7 @@ public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
 	/// <summary>
 	/// The full name of the class, which <see cref="SetPSTypeName"/> inserts into the object's type names.
 	/// </summary>
-	private static readonly string _typeName = typeof(ManualImportObject).GetName();
+	private static readonly string s_typeName = typeof(ManualImportObject).GetName();
 
 	/// <summary>
 	/// Gets the episodes that the file is imported as.
@@ -178,7 +178,7 @@ public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
 	private void StoreAndReplaceName()
 	{
 		string name = nameof(this.Name);
-		if (this.Properties[name] is null)
+		if (this[name] is null)
 		{
 			this.Properties.Add(new ReadOnlyStringProperty(name, value: null));
 			return;
@@ -221,9 +221,10 @@ public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
 	/// Puts the file's episodes in a read-only <c>Episodes</c> property and returns the set that it holds.
 	/// </summary>
 	/// <remarks>
-	/// The set that Sonarr sent is kept, and a file that Sonarr sent no set for gets an empty one. The property is
-	/// read-only either way, so PowerShell can't replace the set that <see cref="Episodes"/> holds and that the import
-	/// posts, and episodes are added to it through <see cref="Episodes"/>.
+	/// The set that Sonarr sent is kept, and a file that Sonarr sent no set for, or a list that the JSON converter
+	/// couldn't read as episodes, gets an empty one, since the import posts the IDs of the set's episodes. The property
+	/// is read-only either way, so PowerShell can't replace the set that <see cref="Episodes"/> holds and that the
+	/// import posts, and episodes are added to it through <see cref="Episodes"/>.
 	/// </remarks>
 	/// <returns>The set that the <c>Episodes</c> property holds.</returns>
 	private SortedSet<EpisodeObject> StoreEpisodes()
@@ -238,7 +239,7 @@ public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
 
 		// Adding a property stores a copy of it, which holds a copy of the set, so the set is read from the property
 		// that the object holds.
-		return (SortedSet<EpisodeObject>)this.Properties[EPISODES]!.Value!;
+		return (SortedSet<EpisodeObject>)this[EPISODES]!;
 	}
 	/// <summary>
 	/// Gets the member with the specified name from a collection, adding one when the collection has none.
@@ -273,7 +274,7 @@ public sealed class ManualImportObject : IdSonarrObject<ManualImportObject>,
 	protected override void SetPSTypeName()
 	{
 		base.SetPSTypeName();
-		this.TypeNames.Insert(0, _typeName);
+		this.TypeNames.Insert(0, s_typeName);
 	}
 }
 

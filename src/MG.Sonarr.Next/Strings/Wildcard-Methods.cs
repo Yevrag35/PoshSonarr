@@ -11,57 +11,6 @@ public readonly partial struct Wildcard
 	{
 		return _pattern.AsSpan();
 	}
-	/// <summary>
-	/// Creates a new read-only span over a portion of the <see cref="Wildcard"/> object from a specified
-	/// position to the end of the string.
-	/// </summary>
-	/// <param name="start">The zero-based index at which to begin this slice.</param>
-	/// <returns>The read-only span representation of the <see cref="Wildcard"/>.</returns>
-	/// <inheritdoc cref="MemoryExtensions.AsSpan(string?, int)" path="/exception[1]"/>
-	[DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public ReadOnlySpan<char> AsSpan(int start)
-	{
-		return _pattern.AsSpan(start);
-	}
-	/// <summary>
-	/// Creates a new read-only span over a portion of the <see cref="Wildcard"/> object from a specified
-	/// position for a specified number of characters.
-	/// </summary>
-	/// <param name="start">The zero-based index at which to begin this slice.</param>
-	/// <param name="length">The desired length for the slice.</param>
-	/// <returns>The read-only span representation of the <see cref="Wildcard"/>.</returns>
-	/// <inheritdoc cref="MemoryExtensions.AsSpan(string?, int, int)" path="/exception"/>
-	[DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public ReadOnlySpan<char> AsSpan(int start, int length)
-	{
-		return _pattern.AsSpan(start, length);
-	}
-
-	/// <summary>
-	/// Returns an enumerator that iterates through this <see cref="Wildcard"/> instance's <see cref="char"/> elements.
-	/// </summary>
-	/// <returns>
-	/// An enumerator that can be used to iterate through the <see cref="Wildcard"/> instance's <see cref="char"/> elements.
-	/// </returns>
-	[DebuggerStepThrough]
-	public Enumerator GetEnumerator()
-	{
-		return new(this);
-	}
-	/// <inheritdoc/>
-	[DebuggerStepThrough]
-	IEnumerator<char> IEnumerable<char>.GetEnumerator()
-	{
-		return _pattern is not null
-			? _pattern.GetEnumerator()
-			: string.Empty.GetEnumerator();
-	}
-	/// <inheritdoc/>
-	[DebuggerStepThrough]
-	IEnumerator IEnumerable.GetEnumerator()
-	{
-		return ((IEnumerable<char>)this).GetEnumerator();
-	}
 
 	// MATCHING
 
@@ -85,26 +34,6 @@ public readonly partial struct Wildcard
 	public bool IsMatch(string? input)
 	{
 		return this.IsMatch(input.AsSpan(), DEFAULT_COMPARISON);
-	}
-	/// <summary>
-	/// Determines if the specified <see cref="char"/> span matches the current 
-	/// <see cref="Wildcard"/> object based on traditional wildcard pattern rules.
-	/// </summary>
-	/// <remarks>
-	///     Traditional pattern matching includes:
-	///     <para>
-	///         <code>* - 0 or more of any character.<br/>
-	///     ? - exactly 1 of any character.</code>
-	///     </para>
-	/// </remarks>
-	/// <param name="input">The string to pattern match.</param>
-	/// <returns>
-	///     <see langword="true"/> if <paramref name="input"/> matches the <see cref="Wildcard"/> pattern;
-	///     otherwise, <see langword="false"/>.
-	/// </returns>
-	public readonly bool IsMatch(ReadOnlySpan<char> input)
-	{
-		return this.IsMatch(input, DEFAULT_COMPARISON);
 	}
 	/// <summary>
 	/// Determines if the specified <see cref="char"/> span matches the current
@@ -437,72 +366,5 @@ public readonly partial struct Wildcard
 
 		matchType = default;
 		return false;
-	}
-
-	// ENUMERATOR
-
-	/// <summary>
-	/// Provides an enumerator over the <see cref="char"/> elements of a <see cref="Wildcard"/> instance's pattern.
-	/// </summary>
-	/// <remarks>
-	///     The enumerator reads the pattern's characters in place, without copying them, and is returned by
-	///     <see cref="GetEnumerator"/> for use in a <see langword="foreach"/> loop.
-	/// </remarks>
-	[StructLayout(LayoutKind.Auto)]
-	public ref struct Enumerator
-	{
-		private int _index;
-		private readonly int _length;
-		private char _current;
-		private readonly ref char _start;
-
-		/// <summary>
-		/// Gets the character at the enumerator's current position.
-		/// </summary>
-		/// <value>
-		///     The current character, or the default <see cref="char"/> before the first call to
-		///     <see cref="MoveNext"/>.
-		/// </value>
-		public readonly char Current => _current;
-
-		internal Enumerator(Wildcard wildcard)
-		{
-			_index = -1;
-			_length = wildcard._state.Length;
-			unsafe
-			{
-				// SAFETY: MoveNext reads through _start only at an index below _length, the length of the pattern that it
-				// begins, so the reference of an empty pattern is never read, and nothing writes through it.
-				_start = ref MemoryMarshal.GetReference<char>(wildcard);
-			}
-
-			_current = default;
-		}
-
-		/// <summary>
-		/// Advances the enumerator to the next character of the pattern.
-		/// </summary>
-		/// <returns>
-		///     <see langword="true"/> if the enumerator advanced to the next character; otherwise,
-		///     <see langword="false"/> if it has passed the end of the pattern.
-		/// </returns>
-		public bool MoveNext()
-		{
-			int newIndex = _index + 1;
-			if ((uint)newIndex < (uint)_length)
-			{
-				_index = newIndex;
-				unsafe
-				{
-					// SAFETY: The check keeps _index below _length, the length of the pattern that _start begins.
-					_current = Unsafe.Add(ref _start, _index);
-				}
-
-				return true;
-			}
-
-			_index = _length;
-			return false;
-		}
 	}
 }

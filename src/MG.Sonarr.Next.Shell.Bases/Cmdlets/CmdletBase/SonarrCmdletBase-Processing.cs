@@ -5,7 +5,7 @@ using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets;
 
-public partial class SonarrCmdletBase
+partial class SonarrCmdletBase
 {
 	// PRE-PROCESSING
 	/// <summary>
@@ -20,14 +20,12 @@ public partial class SonarrCmdletBase
 	[DebuggerStepThrough]
 	private void StoreDebugPreference(bool wantsCapture)
 	{
-		if (!wantsCapture)
+		if (wantsCapture)
 		{
-			return;
+			this.DebugPreference = this.GetActionPreferenceFromSwitch(
+				parameterName: PSConstants.Debug,
+				variableName: PSConstants.DebugPreference);
 		}
-
-		this.DebugPreference = this.GetActionPreferenceFromSwitch(
-			parameterName: PSConstants.Debug,
-			variableName: PSConstants.DebugPreference);
 	}
 	/// <summary>
 	/// Stores the cmdlet's Verbose preference in <see cref="VerbosePreference"/>, from its <c>-Verbose</c> switch or,
@@ -41,14 +39,12 @@ public partial class SonarrCmdletBase
 	[DebuggerStepThrough]
 	private void StoreVerbosePreference(bool wantsCapture)
 	{
-		if (!wantsCapture)
+		if (wantsCapture)
 		{
-			return;
+			this.VerbosePreference = this.GetActionPreferenceFromSwitch(
+				parameterName: PSConstants.Verbose,
+				variableName: PSConstants.VerbosePreference);
 		}
-
-		this.VerbosePreference = this.GetActionPreferenceFromSwitch(
-			parameterName: PSConstants.Verbose,
-			variableName: PSConstants.VerbosePreference);
 	}
 
 	/// <inheritdoc cref="Cmdlet.BeginProcessing" path="/*[not(self::summary) and not(self::remarks)]"/>
@@ -132,7 +128,7 @@ public partial class SonarrCmdletBase
 	/// </para>
 	/// <para>Default implementation in the base class just returns.</para>
 	/// </remarks>
-	/// <inheritdoc cref="SonarrCmdletBase" path="/provider"/>
+	/// <param name="provider">The scoped service provider for use by derived cmdlets.</param>
 	[DebuggerStepThrough]
 	protected virtual void Begin(IServiceProvider provider)
 	{
@@ -188,7 +184,7 @@ public partial class SonarrCmdletBase
 	/// </para>
 	/// <para>Default implementation in the base class just returns.</para>
 	/// </remarks>
-	/// <inheritdoc cref="SonarrCmdletBase" path="/provider"/>
+	/// <param name="provider">The scoped service provider for use by derived cmdlets.</param>
 	[DebuggerStepThrough]
 	protected virtual void Process(IServiceProvider provider)
 	{
@@ -245,7 +241,7 @@ public partial class SonarrCmdletBase
 	/// </para>
 	/// <para>Default implementation in the base class just returns.</para>
 	/// </remarks>
-	/// <inheritdoc cref="SonarrCmdletBase" path="/provider"/>
+	/// <param name="provider">The scoped service provider for use by derived cmdlets.</param>
 	[DebuggerStepThrough]
 	protected virtual void End(IServiceProvider provider)
 	{
@@ -253,8 +249,7 @@ public partial class SonarrCmdletBase
 	}
 
 	/// <summary>
-	/// Cancels <see cref="StoppingToken"/> when the pipeline is stopped, and then runs
-	/// <see cref="Stop(IServiceProvider)"/> if the cmdlet has a scope.
+	/// Runs <see cref="Stop(IServiceProvider)"/> when the pipeline is stopped, if the cmdlet has a scope.
 	/// </summary>
 	/// <remarks>
 	/// <para>
@@ -262,26 +257,23 @@ public partial class SonarrCmdletBase
 	/// <see cref="Stop(IServiceProvider)"/> method.
 	/// </para>
 	/// <para>
+	/// PowerShell cancels <see cref="Cmdlet.PipelineStopToken"/> before it calls the method, which ends a request or a
+	/// wait that took the token, such as a request that a <c>Send*Request</c> helper of
+	/// <see cref="SonarrApiCmdletBase"/> sends without a token of its own.
+	/// </para>
+	/// <para>
 	/// PowerShell calls it on another thread while <see cref="BeginProcessing"/>, <see cref="ProcessRecord"/>, or
-	/// <see cref="EndProcessing"/> can still be using the scope's services, so it only signals: canceling the token
-	/// ends a request in flight, and it neither creates nor disposes a scope, since <see cref="Dispose()"/> disposes
-	/// the scope on the pipeline thread once the pipeline ends. Whatever it throws is lost, as is any error it would
-	/// report, so it reports none.
+	/// <see cref="EndProcessing"/> can still be using the scope's services, so it only signals, and it neither creates
+	/// nor disposes a scope, since <see cref="Dispose()"/> disposes the scope on the pipeline thread once the pipeline
+	/// ends. Whatever it throws is lost, as is any error it would report, so it reports none.
 	/// </para>
 	/// </remarks>
 	[DebuggerStepThrough]
 	protected sealed override void StopProcessing()
 	{
-		try
+		if (_scope is { } scope && !_disposed)
 		{
-			_stopping.Cancel();
-		}
-		finally
-		{
-			if (_scope is { } scope && !_disposed)
-			{
-				this.Stop(scope.ServiceProvider);
-			}
+			this.Stop(scope.ServiceProvider);
 		}
 	}
 	/// <summary>
@@ -293,6 +285,10 @@ public partial class SonarrCmdletBase
 	/// It runs on another thread while <see cref="Begin(IServiceProvider)"/>, <see cref="Process(IServiceProvider)"/>,
 	/// or <see cref="End(IServiceProvider)"/> can still be running, and while the pipeline thread can be disposing the
 	/// scope, so it only signals. Whatever it throws is lost.
+	/// </para>
+	/// <para>
+	/// PowerShell has already canceled <see cref="Cmdlet.PipelineStopToken"/> when it runs, so code that took that token
+	/// needs no signal from it.
 	/// </para>
 	/// <para>Default implementation in the base class just returns.</para>
 	/// </remarks>

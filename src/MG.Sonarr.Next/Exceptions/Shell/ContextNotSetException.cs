@@ -3,6 +3,7 @@ namespace MG.Sonarr.Next.Exceptions.Shell;
 /// <summary>
 /// Represents an exception that is thrown when the Sonarr context is not set, indicating that a connection to a Sonarr instance has not been established.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class ContextNotSetException : PoshSonarrException
 {
 	private const string DEF_MSG = "The Sonarr context is not set. First run 'Connect-SonarrInstance' to connect to an instance.";

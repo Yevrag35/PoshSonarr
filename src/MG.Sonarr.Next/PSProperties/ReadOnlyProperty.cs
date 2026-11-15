@@ -174,6 +174,18 @@ public abstract class ReadOnlyProperty<T> : ReadOnlyProperty
 	}
 
 	/// <summary>
+	/// Gets the property's value as a <typeparamref name="T"/>.
+	/// </summary>
+	/// <remarks>
+	/// Unlike <see cref="Value"/>, the method returns a value type without boxing it.
+	/// </remarks>
+	/// <returns>The property's value.</returns>
+	internal T? GetValue()
+	{
+		return this.ValueAsT;
+	}
+
+	/// <summary>
 	/// Copies the text of the property's value, without leading or trailing white space, into a span.
 	/// </summary>
 	/// <param name="span">The span to write the text into.</param>

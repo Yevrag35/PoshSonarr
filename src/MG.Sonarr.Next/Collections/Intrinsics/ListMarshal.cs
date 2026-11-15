@@ -11,6 +11,8 @@ namespace MG.Sonarr.Next.Collections.Intrinsics;
 /// structure of <see cref="List{T}"/> and may not be compatible with future versions of .NET if the implementation changes. Use with
 /// caution, as improper use can lead to undefined behavior or runtime exceptions. This class is primarily intended for
 /// advanced scenarios where performance is critical and the risks are understood.</remarks>
+[SharedCode]
+[ExcludeFromCodeCoverage]
 internal static class ListMarshal
 {
 	/// <summary>
@@ -69,7 +71,7 @@ internal static class ListMarshal
 	/// <param name="values">The elements to convert and append to <paramref name="list"/>.</param>
 	/// <exception cref="OverflowException">Thrown when appending <paramref name="values"/> would raise the count of
 	/// <paramref name="list"/> past <see cref="int.MaxValue"/>.</exception>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining), ExcludeFromCodeCoverage]
 	public static void AddRange<T, TOther>(List<T> list, FnPtr<TOther, T> conversion, params ReadOnlySpan<TOther> values)
 	{
 		Assert.NotNull(list);
@@ -144,7 +146,7 @@ internal static class ListMarshal
 	/// <param name="size">The current count of <paramref name="list"/>.</param>
 	/// <exception cref="OverflowException">Thrown when <paramref name="size"/> plus <paramref name="count"/> exceeds
 	/// <see cref="int.MaxValue"/>.</exception>
-	[MethodImpl(MethodImplOptions.NoInlining)]
+	[MethodImpl(MethodImplOptions.NoInlining), ExcludeFromCodeCoverage]
 	private static void CheckAndGrow<T>(List<T> list, int count, int size)
 	{
 		int newCount = checked(size + count);
@@ -162,7 +164,7 @@ internal static class ListMarshal
 	/// <param name="list">The list whose count and modification version are updated.</param>
 	/// <param name="size">The count of <paramref name="list"/> as it stood before the reservation.</param>
 	/// <param name="count">The number of reserved slots to publish.</param>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining), ExcludeFromCodeCoverage]
 	private static void CommitTail<T>(List<T> list, int size, int count)
 	{
 		View<T>.Size(list) = size + count;
@@ -201,7 +203,7 @@ internal static class ListMarshal
 	/// <typeparam name="T">The type of elements in the list.</typeparam>
 	/// <param name="list">The list whose elements are to be represented as a read-only span. Cannot be null.</param>
 	/// <returns>A read-only span containing the elements of the list in order.</returns>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining), ExcludeFromCodeCoverage]
 	public static Span<T> AsSpan<T>(List<T> list)
 	{
 		int size = View<T>.Size(list);
@@ -254,6 +256,7 @@ internal static class ListMarshal
 	/// <typeparam name="T">The type of elements in the list.</typeparam>
 	/// <param name="values">The elements to copy into the new list, in order. May be empty.</param>
 	/// <returns>A new <see cref="List{T}"/> containing the elements of <paramref name="values"/>.</returns>
+	[ExcludeFromCodeCoverage]
 	public static List<T> Create<T>(params ReadOnlySpan<T> values)
 	{
 		List<T> list = new(values.Length);
@@ -302,7 +305,7 @@ internal static class ListMarshal
 	/// returned empty with the requested capacity reserved.</param>
 	/// <returns>A new <see cref="List{T}"/> containing the elements of <paramref name="values"/>, with room for at least
 	/// <paramref name="capacity"/> elements.</returns>
-	[SuppressMessage("Style", "IDE0028")]
+	[SuppressMessage("Style", "IDE0028"), ExcludeFromCodeCoverage]
 	public static List<T> CreateWithCapacity<T>(int capacity, params ReadOnlySpan<T> values)
 	{
 		List<T> list = new();
@@ -343,7 +346,8 @@ internal static class ListMarshal
 	/// <typeparam name="T">The type of elements in the list.</typeparam>
 	/// <param name="list">The list whose backing array is wrapped. Cannot be null.</param>
 	/// <returns>An <see cref="ArraySlice{T}"/> spanning the elements of <paramref name="list"/> in order.</returns>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining), ExcludeFromCodeCoverage]
+	[SuppressMessage("Style", "IDE0380", Justification = "Wraps the backing array without checking the list's count against it, and the slice reads its elements without bounds checks, so a count past the array's end reads memory outside it.")]
 	public static unsafe ArraySlice<T> GetArray<T>(List<T> list)
 	{
 		unsafe
@@ -365,7 +369,8 @@ internal static class ListMarshal
 	/// <param name="list">The list whose backing array is wrapped. Cannot be null.</param>
 	/// <param name="version">Outputs the current version of the list, which can be used to detect modifications.</param>
 	/// <returns>An <see cref="ArraySlice{T}"/> spanning the elements of <paramref name="list"/> in order.</returns>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining), ExcludeFromCodeCoverage]
+	[SuppressMessage("Style", "IDE0380", Justification = "Wraps the backing array without checking the list's count against it, and the slice reads its elements without bounds checks, so a count past the array's end reads memory outside it.")]
 	public static unsafe ArraySlice<T> GetArray<T>(List<T> list, out int version)
 	{
 		version = View<T>.Version(list);
@@ -382,7 +387,7 @@ internal static class ListMarshal
 	/// <typeparam name="T">The type of elements in the list.</typeparam>
 	/// <param name="list">The list whose raw backing array is to be returned.</param>
 	/// <returns>The raw backing array of the specified list.</returns>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining), ExcludeFromCodeCoverage]
 	internal static T[] GetRawArray<T>(List<T> list)
 	{
 		return View<T>.Items(list);
@@ -395,7 +400,7 @@ internal static class ListMarshal
 	/// <param name="source">The list to validate.</param>
 	/// <param name="expectedVersion">The expected version of the list.</param>
 	/// <exception cref="InvalidOperationException">Thrown when the list's version does not match the expected version.</exception>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining), ExcludeFromCodeCoverage]
 	public static void ValidateVersion<T>(List<T> source, int expectedVersion)
 	{
 		int version = View<T>.Version(source);
@@ -411,38 +416,12 @@ internal static class ListMarshal
 	/// <param name="expected">The version that the caller expected to observe.</param>
 	/// <param name="actual">The version currently stored by the list.</param>
 	/// <exception cref="InvalidOperationException">Thrown unconditionally.</exception>
-	[DoesNotReturn, DebuggerStepThrough, StackTraceHidden, MethodImpl(MethodImplOptions.NoInlining)]
+	[DoesNotReturn, DebuggerStepThrough, StackTraceHidden, MethodImpl(MethodImplOptions.NoInlining), ExcludeFromCodeCoverage]
 	private static void ThrowInvalidVersion(int expected, int actual)
 	{
 		throw new InvalidOperationException(
 			message: $"Collection was modified; expected version {expected}, but found {actual}.");
 	}
-
-	///// <summary>
-	///// Returns a tuple containing references to the first elements of two lists, allowing for direct manipulation of their underlying arrays.
-	///// </summary>
-	///// <remarks>
-	///// This method ensures that the target list has sufficient capacity to hold the specified count of elements.
-	///// </remarks>
-	///// <typeparam name="T">The type of elements in the source list.</typeparam>
-	///// <typeparam name="TOther">The type of elements in the target list.</typeparam>
-	///// <param name="source">The source list.</param>
-	///// <param name="target">The target list.</param>
-	///// <param name="count">The number of elements to consider.</param>
-	///// <returns>A tuple containing references to the first elements of the source and target lists.</returns>
-	//[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	//internal static ByRefTuple<T, TOther> GetTwoArrayFirstRef<T, TOther>(List<T> source, List<TOther> target, int count)
-	//{
-	//	Debug.Assert(count == source.Count, "The count is intended to match the source list count.");
-	//	if (target.Capacity < count)
-	//	{
-	//		_ = target.EnsureCapacity(count);
-	//	}
-
-	//	ref T fOfT = ref MemoryMarshal.GetArrayDataReference(View<T>.Items(source));
-	//	ref TOther fOfTOther = ref MemoryMarshal.GetArrayDataReference(View<TOther>.Items(target));
-	//	return new(ref fOfT, ref fOfTOther);
-	//}
 
 	/// <summary>
 	/// Sets the count of the specified list to the provided size. This method directly modifies the internal size field of the list, which can lead to undefined behavior if not used carefully.
@@ -464,7 +443,8 @@ internal static class ListMarshal
 	/// <typeparam name="T">The type of elements in the list.</typeparam>
 	/// <param name="list">The list whose count is to be set.</param>
 	/// <param name="size">The new size of the list.</param>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	[MethodImpl(MethodImplOptions.AggressiveInlining), ExcludeFromCodeCoverage]
+	[SuppressMessage("Style", "IDE0380", Justification = "Skips the range check, and the spans and slices over the list trust its count, so a size past the backing array's end reads or writes memory outside it.")]
 	public static unsafe void SetCount<T>(List<T> list, int size)
 	{
 		Debug.Assert((uint)size <= (uint)View<T>.Items(list).Length, "The size being set should be from 0 to the array length.");
@@ -478,6 +458,7 @@ internal static class ListMarshal
 	/// This class is intended for advanced scenarios where direct manipulation of the list's internal state is required.
 	/// </remarks>
 	/// <typeparam name="T">The type of elements in the list.</typeparam>
+	[ExcludeFromCodeCoverage, DebuggerStepThrough]
 	private static class View<T>
 	{
 		///// <summary>
@@ -542,6 +523,7 @@ internal static class ListMarshal
 			void Grow(List<T> list, int capacity);
 	}
 
+	[ExcludeFromCodeCoverage, DebuggerStepThrough]
 	private static class Assert
 	{
 		[Conditional("DEBUG")]

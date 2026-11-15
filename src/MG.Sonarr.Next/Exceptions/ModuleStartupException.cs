@@ -3,7 +3,7 @@ namespace MG.Sonarr.Next.Exceptions;
 /// <summary>
 /// Represents an exception thrown during module startup configuration.
 /// </summary>
-[DebuggerStepThrough]
+[DebuggerStepThrough, ExcludeFromCodeCoverage]
 public sealed class ModuleStartupException : Exception
 {
 	/// <summary>

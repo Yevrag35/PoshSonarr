@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.Services.Http.Requests;
 ///     <see cref="OriginalRequestUri"/> keeps the URL as the caller passed it.
 /// </para>
 /// </remarks>
-public abstract class SonarrRequestMessage : HttpRequestMessage, IHttpRequestDetails
+internal abstract class SonarrRequestMessage : HttpRequestMessage, IHttpRequestDetails
 {
 	private bool _disposed;
 	private readonly IServiceScope _scope;
@@ -52,15 +52,6 @@ public abstract class SonarrRequestMessage : HttpRequestMessage, IHttpRequestDet
 	///     <see cref="OriginalRequestUri"/> when it's <see langword="null"/>.
 	/// </value>
 	public string RequestUrl => this.RequestUri?.ToString() ?? this.OriginalRequestUri;
-	/// <summary>
-	/// When overridden in a derived class, gets a value that indicates whether the request can authenticate with a
-	/// login cookie.
-	/// </summary>
-	/// <value>
-	///     <see langword="true"/> if the request can carry the cookie from a forms login; otherwise,
-	///     <see langword="false"/>.
-	/// </value>
-	public abstract bool CanUseCookieAuthentication { get; }
 
 	/// <summary>
 	/// Initializes a new <see cref="SonarrRequestMessage"/> instance with the specified HTTP method, URL string, and

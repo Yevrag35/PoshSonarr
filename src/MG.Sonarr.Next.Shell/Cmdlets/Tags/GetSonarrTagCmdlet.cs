@@ -49,7 +49,8 @@ public sealed class GetSonarrTagCmdlet : SonarrMetadataCmdlet
 	/// <remarks>
 	/// The parameter takes pipeline input, and each object has to implement <see cref="ITagPipeable"/>. The cmdlet reads
 	/// only the object's tags, so the object needs no ID, and one that doesn't exist on the server yet, such as a series
-	/// lookup result, passes too. An object without tags adds none.
+	/// lookup result, passes too. An object without tags adds none, and one whose <c>Tags</c> property holds values that
+	/// weren't read as tag IDs gets an error and adds none.
 	/// </remarks>
 	/// <value>The objects that carry tags. The default is an empty array.</value>
 	[Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = PSConstants.PSetPipeline)]
@@ -116,13 +117,28 @@ public sealed class GetSonarrTagCmdlet : SonarrMetadataCmdlet
 	/// <summary>
 	/// Adds the IDs of the tags that the piped objects carry, those greater than zero, to the IDs to get.
 	/// </summary>
+	/// <remarks>
+	/// An object whose tags weren't read as tag IDs gets an error, and the cmdlet goes on to the next object.
+	/// </remarks>
 	/// <param name="provider">The cmdlet's scoped service provider.</param>
 	protected override void Process(IServiceProvider provider)
 	{
 		if (this.HasParameter(this.InputObject))
 		{
-			_ids.UnionWith(this.InputObject.SelectMany(x => x.Tags)
-										   .Where(x => x > 0));
+			foreach (ITagPipeable item in this.InputObject)
+			{
+				if (item.HasReadableTags)
+				{
+					_ids.UnionWith(item.Tags.Where(x => x > 0));
+				}
+				else
+				{
+					this.WriteError(new ArgumentException(
+						"The object's Tags property holds values that aren't tag IDs, so the cmdlet can't get its tags.",
+						nameof(this.InputObject))
+							.ToRecord(ErrorCategory.InvalidData, item));
+				}
+			}
 		}
 	}
 	/// <summary>

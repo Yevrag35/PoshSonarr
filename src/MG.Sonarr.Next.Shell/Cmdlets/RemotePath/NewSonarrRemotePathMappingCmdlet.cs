@@ -179,12 +179,11 @@ public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 		};
 
 		this.SerializeIfDebug(newMap, includeType: false);
-		if (!this.ShouldProcess(this.Tag.UrlBase, "Creating Remote Path Mapping"))
-		{
-			return;
-		}
 
-		this.SendNewRequest(newMap, this.Tag);
+		if (this.ShouldProcess(this.Tag.UrlBase, "Creating Remote Path Mapping"))
+		{
+			this.SendNewRequest(newMap, this.Tag);
+		}
 	}
 
 	/// <summary>
@@ -259,8 +258,8 @@ public sealed class NewSonarrRemotePathMappingCmdlet : SonarrMetadataCmdlet
 	/// <param name="tag">The metadata tag of the remote path mapping endpoint.</param>
 	private void SendNewRequest(RemotePathBody body, MetadataTag tag)
 	{
-		var oneOf = this.SendPostRequest<RemotePathObject>(tag.UrlBase, body);
-		if (oneOf.TryGetT2(out var error, out var remotePath))
+		if (this.SendPostRequest<RemotePathObject>(tag.UrlBase, body)
+				.TryGetT2(out var error, out var remotePath))
 		{
 			this.WriteError(error);
 		}

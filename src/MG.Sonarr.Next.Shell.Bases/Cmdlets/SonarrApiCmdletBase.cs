@@ -20,7 +20,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets;
 /// <para>
 /// The helpers don't throw for a failed request. The result carries the error record instead, and the cmdlet decides
 /// whether to write it. Unless a caller passes a token that can be canceled, a helper sends with
-/// <see cref="SonarrCmdletBase.StoppingToken"/>, so stopping the pipeline, as Ctrl+C does, ends a request in flight,
+/// <see cref="Cmdlet.PipelineStopToken"/>, so stopping the pipeline, as Ctrl+C does, ends a request in flight,
 /// and its result reports the error with the category <see cref="ErrorCategory.OperationStopped"/>.
 /// </para>
 /// </remarks>
@@ -47,13 +47,13 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 
 	/// <summary>
 	/// Gets the token that a request sends with: the specified one when it can be canceled, and
-	/// <see cref="SonarrCmdletBase.StoppingToken"/> otherwise, so that stopping the pipeline ends the request.
+	/// <see cref="Cmdlet.PipelineStopToken"/> otherwise, so that stopping the pipeline ends the request.
 	/// </summary>
 	/// <param name="token">The token that the caller passed, or <see langword="default"/>.</param>
 	/// <returns>The token to send the request with.</returns>
 	private CancellationToken GetRequestToken(CancellationToken token)
 	{
-		return token.CanBeCanceled ? token : this.StoppingToken;
+		return token.CanBeCanceled ? token : this.PipelineStopToken;
 	}
 
 	/// <summary>
@@ -85,6 +85,7 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	///     A response object indicating the status code and any errors that may have occurred.
 	/// </returns>
 	protected SonarrClientResult<T> SendGetRequest<T>(string path, CancellationToken token = default)
+		where T : class
 	{
 		this.StartTimer();
 		return _client.SendGetAsync<T>(path, this.GetRequestToken(token)).GetAwaiter().GetResult();
@@ -99,6 +100,7 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
 	/// <returns>The result of the request, which holds the deserialized value on success.</returns>
 	protected SonarrClientResult<T> SendPostRequest<T>(string path, CancellationToken token = default)
+		where T : class
 	{
 		this.StartTimer();
 		return _client.SendPostAsync<T>(path, this.GetRequestToken(token)).GetAwaiter().GetResult();
@@ -124,7 +126,8 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
 	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
 	/// <returns>The deserialized value on success; otherwise, the error record that describes the failure.</returns>
-	protected Either<TOutput, SonarrErrorRecord> SendPostRequest<TOutput>(string path, object body, CancellationToken token = default)
+	protected ObjEither<TOutput, SonarrErrorRecord> SendPostRequest<TOutput>(string path, object body, CancellationToken token = default)
+		where TOutput : class
 	{
 		this.StartTimer();
 		SonarrClientResult<TOutput> response = _client.SendPostAsync<TOutput>(path, body, this.GetRequestToken(token)).GetAwaiter().GetResult();

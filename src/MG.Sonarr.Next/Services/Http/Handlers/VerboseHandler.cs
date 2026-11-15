@@ -16,7 +16,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// that works off the pipeline thread.</para>
 /// <para>The handler keeps no per-request state, so one instance can serve concurrent requests.</para>
 /// </remarks>
-public sealed class VerboseHandler : DelegatingHandler
+internal sealed class VerboseHandler : DelegatingHandler
 {
 	private readonly JsonSerializerOptions _options;
 	private readonly IServiceScopeFactory _scopeFactory;

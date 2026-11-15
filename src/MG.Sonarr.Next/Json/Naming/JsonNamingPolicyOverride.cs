@@ -15,7 +15,8 @@ namespace MG.Sonarr.Next.Json.Naming;
 /// its lifetime is strictly limited to the stack, preventing accidental storage on the heap.
 /// </para>
 /// </remarks>
-[StructLayout(LayoutKind.Auto)]
+[SharedCode]
+[StructLayout(LayoutKind.Auto), ExcludeFromCodeCoverage]
 [DebuggerDisplay(@"\{HasPolicy = {HasPolicy}, IsSpanPolicy = {IsSpanPolicy}, Policy = {Policy}\}")]
 public readonly ref struct JsonNamingPolicyOverride
 {

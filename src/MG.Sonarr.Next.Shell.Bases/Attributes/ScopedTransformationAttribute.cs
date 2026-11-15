@@ -87,5 +87,3 @@ public abstract class ScopedTransformationAttribute : ArgumentTransformationAttr
 	/// <returns>The value that the binder binds in place of <paramref name="inputData"/>.</returns>
 	protected abstract object? TransformCore([DisallowNull] object inputData, Type inputType, EngineIntrinsics engineIntrinsics, IServiceProvider provider);
 }
-
-

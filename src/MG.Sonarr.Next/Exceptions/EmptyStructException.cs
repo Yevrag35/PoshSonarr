@@ -5,6 +5,8 @@ namespace MG.Sonarr.Next.Exceptions;
 /// <summary>
 /// Represents an exception thrown when a struct is empty (<see langword="default"/>) and unusable.
 /// </summary>
+[SharedCode]
+[ExcludeFromCodeCoverage]
 public sealed class EmptyStructException : PoshSonarrException
 {
 	/// <summary>
@@ -29,6 +31,7 @@ public sealed class EmptyStructException : PoshSonarrException
 	/// <param name="innerException">
 	///     <inheritdoc cref="Exception(string, Exception)" path="/param[last()]"/>
 	/// </param>
+	[ExcludeFromCodeCoverage]
 	public EmptyStructException(string? objectName, Type? structType, Exception? innerException)
 		: this(GetMessage(objectName, structType), objectName, structType, innerException)
 	{
@@ -48,6 +51,7 @@ public sealed class EmptyStructException : PoshSonarrException
 	/// <param name="innerException">
 	///     <inheritdoc cref="Exception(string, Exception)" path="/param[last()]"/>
 	/// </param>
+	[ExcludeFromCodeCoverage]
 	public EmptyStructException(string? message, string? objectName, Type? structType, Exception? innerException)
 		: base(message, innerException)
 	{

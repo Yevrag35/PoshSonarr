@@ -30,6 +30,7 @@ public sealed class InvalidEpisodeIdFormatException : PoshSonarrException
 	/// <param name="innerException">
 	/// The exception that is the cause of this one, or <see langword="null"/> when there is none.
 	/// </param>
+	[ExcludeFromCodeCoverage]
 	public InvalidEpisodeIdFormatException(IReadOnlyList<IEpisodeIdentifier>? identifiers, Exception? innerException)
 		: base(GetMessage(identifiers), innerException)
 	{

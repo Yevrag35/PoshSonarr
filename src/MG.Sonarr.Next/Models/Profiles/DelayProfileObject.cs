@@ -63,7 +63,10 @@ public sealed class DelayProfileObject : TagUpdateObject<DelayProfileObject>,
 	/// <summary>
 	/// The names of the string properties whose values get an uppercase first letter.
 	/// </summary>
-	private static readonly OneStringSet _capitalSet = new("PreferredProtocol");
+	private static readonly HashSet<string> _capitalSet = new(1, StringComparer.OrdinalIgnoreCase)
+	{
+		"PreferredProtocol"
+	};
 	/// <summary>
 	/// The JSON name maps, built the first time they're read.
 	/// </summary>

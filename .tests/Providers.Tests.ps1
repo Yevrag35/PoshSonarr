@@ -1,10 +1,10 @@
 #Requires -Version 7.6
 #Requires -Modules @{ ModuleName = 'Pester'; ModuleVersion = '6.2.0'; MaximumVersion = '6.99.99' }
 
-# Download clients, indexers, and notifications, which Sonarr calls providers, and the templates that new download
-# clients and notifications are created from. The baseline has no providers, so each test of a provider works on one of
-# its own, which it creates through the API unless it tests New-SonarrDownloadClient, so a broken cmdlet fails only its
-# own tests. Every provider is created disabled: Sonarr runs a provider's connection test, and validates its settings,
+# Download clients, indexers, and notifications, which Sonarr calls providers, the templates that new download clients
+# and notifications are created from, and Sonarr's test of a provider's settings. The baseline has no providers, so each
+# test of a provider works on one of its own, which it creates through the API unless it tests New-SonarrDownloadClient,
+# so a broken cmdlet fails only its own tests. Every provider is created disabled: Sonarr runs a provider's connection test, and validates its settings,
 # only when it saves an enabled one, so a disabled provider needs no service behind it. A download client comes from the
 # Transmission template, which is disabled, as every download client template is. An indexer comes from the Newznab
 # template with enableRss, enableAutomaticSearch, and enableInteractiveSearch off, since Sonarr counts an indexer with
@@ -26,7 +26,8 @@ BeforeAll {
 	}
 
 	# Creates a disabled provider through the API, from the template that GET <path>/schema returns for its kind, with
-	# the name that -Name gives, or one from New-TestName, and returns it as the API returned it.
+	# the name that -Name gives, or one from New-TestName, and the values that -Fields gives its fields, and returns it as
+	# the API returned it.
 	function New-TestProvider {
 		param (
 			[Parameter(Mandatory = $true)]
@@ -34,11 +35,23 @@ BeforeAll {
 			[string] $Path,
 
 			[Parameter(Mandatory = $false)]
-			[string] $Name = (New-TestName)
+			[string] $Name = (New-TestName),
+
+			# Values for the template's fields, by field name, such as @{ url = 'https://skyhook.sonarr.tv/hooks/pester' }.
+			[Parameter(Mandatory = $false)]
+			[hashtable] $Fields = @{}
 		)
 
 		$body = (Invoke-SandboxApi "$Path/schema" -ExpectStatus 200).Body | Where-Object implementation -CEQ $templateNames[$Path]
 		$body.name = $Name
+		foreach ($fieldName in $Fields.Keys) {
+			$field = $body.fields | Where-Object name -CEQ $fieldName
+			if ($null -eq $field) {
+				throw "The $($templateNames[$Path]) template has no field named '$fieldName'."
+			}
+			# Sonarr leaves a field's value out of a template when it's null, as a webhook's URL is.
+			$field | Add-Member -NotePropertyName value -NotePropertyValue $Fields[$fieldName] -Force
+		}
 		switch ($Path) {
 			'downloadclient' {
 				$body.enable = $false
@@ -330,6 +343,13 @@ Describe 'Remove-SonarrDownloadClient' {
 
 		(Invoke-SandboxApi "downloadclient/$($client.id)").StatusCode | Should -Be 404
 	}
+
+	It 'is in the CanPipeTo list of the #download_client tag' {
+		$item = Get-SonarrDownloadClient -Id $client.id -ErrorAction Stop
+
+		$item.MetadataTag.Value | Should -BeExactly '#download_client'
+		$item.MetadataTag.CanPipeTo | Should -Contain 'Remove-SonarrDownloadClient'
+	}
 }
 
 Describe 'Get-SonarrIndexer' {
@@ -585,5 +605,102 @@ Describe 'Remove-SonarrNotification' {
 			Should -BeNullOrEmpty
 
 		(Invoke-SandboxApi "notification/$($notification.id)").StatusCode | Should -Be 404
+	}
+}
+
+# Sonarr validates the settings of a provider that's posted to the /test path under its endpoint, and runs the provider's
+# connection test, whether or not the provider is enabled, and saves nothing. A webhook's test posts to the webhook's URL,
+# and the sandbox's mock metadata service answers every request to a path under https://skyhook.sonarr.tv/hooks/ with a
+# 200, and a path that it doesn't serve with a 404. Nothing in the sandbox answers as a download client or an indexer, so
+# Sonarr fails their tests.
+Describe 'Test-SonarrResource' {
+	BeforeAll {
+		$hookUrl = 'https://skyhook.sonarr.tv/hooks/pester'
+		$missingUrl = 'https://skyhook.sonarr.tv/missing/'
+	}
+
+	Context 'a webhook notification' {
+		BeforeEach {
+			$name = New-TestName
+		}
+		AfterEach {
+			Remove-TestProvider notification $name
+		}
+
+		It 'passes a disabled one whose URL answers with a 200, and writes its ID and tag without an error' {
+			$notification = New-TestProvider notification -Name $name -Fields @{ url = $hookUrl }
+			Test-TriggerOn $notification | Should -BeFalse -Because 'the notification is created disabled'
+
+			$results = @(Get-SonarrNotification -Id $notification.id -ErrorAction Stop | Test-SonarrResource -ErrorAction Stop)
+
+			$results | Should -HaveCount 1
+			$results[0].Id | Should -Be $notification.id
+			$results[0].IsSuccess | Should -BeTrue
+			$results[0].Type | Should -BeExactly '#notification'
+			$results[0].Error | Should -BeNullOrEmpty
+			$stored = (Invoke-SandboxApi "notification/$($notification.id)" -ExpectStatus 200).Body
+			Get-ChangedField $notification $stored | Should -BeNullOrEmpty
+		}
+
+		It 'fails one whose URL answers with a 404, with Sonarr''s validation failure as its Error, and writes no error' {
+			$notification = New-TestProvider notification -Name $name -Fields @{ url = $missingUrl }
+
+			$results = @(Get-SonarrNotification -Id $notification.id -ErrorAction Stop |
+				Test-SonarrResource -ErrorAction SilentlyContinue -ErrorVariable testErrors)
+
+			$testErrors | Should -BeNullOrEmpty
+			$results | Should -HaveCount 1
+			$results[0].Id | Should -Be $notification.id
+			$results[0].IsSuccess | Should -BeFalse
+			$results[0].Type | Should -BeExactly '#notification'
+			$results[0].Error | Should -BeOfType ([MG.Sonarr.Next.Exceptions.SonarrHttpException])
+			$results[0].Error.StatusCode | Should -Be ([System.Net.HttpStatusCode]::BadRequest)
+			$results[0].Error.RequestUri | Should -BeLike '*/api/v3/notification/test'
+			# Sonarr's validation failure, for the webhook's URL, says that the post to the URL got a 404.
+			$results[0].Error.ExtendedInfo | Should -HaveCount 1
+			$results[0].Error.ExtendedInfo[0].PropertyName | Should -BeExactly 'Url'
+			$results[0].Error.Message | Should -Match ('404.*' + [regex]::Escape($missingUrl))
+		}
+	}
+
+	Context 'a download client, an indexer, and a notification' {
+		BeforeAll {
+			# Sonarr requires a provider's name to be unique only among providers of its kind.
+			$name = New-TestName
+			$client = New-TestProvider downloadclient -Name $name
+			$indexer = New-TestProvider indexer -Name $name
+			$notification = New-TestProvider notification -Name $name -Fields @{ url = $hookUrl }
+			$items = @(
+				Get-SonarrDownloadClient -Id $client.id -ErrorAction Stop
+				Get-SonarrIndexer -Id $indexer.id -ErrorAction Stop
+				Get-SonarrNotification -Id $notification.id -ErrorAction Stop
+			)
+		}
+		AfterAll {
+			foreach ($path in $templateNames.Keys) {
+				Remove-TestProvider $path $name
+			}
+		}
+
+		It 'tests each provider in -InputObject, in order, at the /test path under its own endpoint' {
+			$results = @(Test-SonarrResource -InputObject $items -ErrorAction Stop)
+
+			$results | Should -HaveCount 3
+			$results.Id | Should -Be @($client.id, $indexer.id, $notification.id)
+			$results.Type | Should -BeExactly @('#download_client', '#indexer', '#notification')
+			# Sonarr fails the download client's and the indexer's tests, and each failure names the path that the cmdlet
+			# posted to.
+			$results[0].IsSuccess | Should -BeFalse
+			$results[0].Error.RequestUri | Should -BeLike '*/api/v3/downloadclient/test'
+			$results[1].IsSuccess | Should -BeFalse
+			$results[1].Error.RequestUri | Should -BeLike '*/api/v3/indexer/test'
+			$results[2].IsSuccess | Should -BeTrue
+		}
+
+		It 'is in the CanPipeTo list of the tag of each kind of provider that it tests' {
+			foreach ($item in $items) {
+				$item.MetadataTag.CanPipeTo | Should -Contain 'Test-SonarrResource' -Because "Test-SonarrResource tests the providers tagged $($item.MetadataTag.Value)"
+			}
+		}
 	}
 }

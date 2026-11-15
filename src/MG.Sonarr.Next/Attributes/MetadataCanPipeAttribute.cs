@@ -6,7 +6,7 @@ namespace MG.Sonarr.Next.Attributes;
 /// An attribute for a Sonarr <see cref="PSCmdlet"/> class indicating the specified <see cref="MetadataTag"/>
 /// should have the decorated cmdlet's name to the tag's <see cref="MetadataTag.CanPipeTo"/> set.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false), ExcludeFromCodeCoverage]
 public sealed class MetadataCanPipeAttribute : Attribute
 {
 	/// <summary>

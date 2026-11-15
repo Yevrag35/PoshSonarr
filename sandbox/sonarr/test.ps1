@@ -8,8 +8,9 @@
 	Checks that the running sandbox is the one that start.ps1 sets up, through raw HTTP requests to
 	its API rather than through PoshSonarr. In order, it checks Sonarr's identity, that a request
 	without the key or with a wrong one gets a 401, the update lock, the baseline tag and root
-	folder, the seeded series and their episodes, lookups through the mock metadata service,
-	wanted/missing and the calendar, and that adding a show the mock lacks fails. Then it takes a tag
+	folder, the seeded series and their episodes, lookups through the mock metadata service, that
+	the mock answers a webhook's post from inside Sonarr's container, wanted/missing and the
+	calendar, and that adding a show the mock lacks fails. Then it takes a tag
 	and Sandbox Lookup Show through a round trip each, adding, reading, changing, and deleting them,
 	and last it checks the user that Sonarr runs as, the address that its port is published on, and
 	the owner of /tv-temp, the folder that tests add as a root folder.
@@ -222,6 +223,15 @@ Invoke-CheckGroup 'Mock lookup' {
 	Write-CheckResult 'sandbox finds all four shows' (($ids -join ',') -eq '9000001,9000002,9000003,9000004') "TVDB IDs $($ids -join ', ')"
 	$hostConfig = (Invoke-SandboxApi config/host -ExpectStatus 200).Body
 	Write-CheckResult 'certificateValidation is disabledForLocalAddresses' ($hostConfig.certificateValidation -eq 'disabledForLocalAddresses') $hostConfig.certificateValidation
+}
+
+Invoke-CheckGroup 'Mock webhook' {
+
+	# The post goes from Sonarr's container, where the mock's name resolves, as a webhook's test does. curl doesn't
+	# trust the mock's self-signed certificate, which Sonarr accepts through certificateValidation, so --insecure skips
+	# curl's check of it.
+	$status = (Invoke-SandboxCompose exec -T sonarr curl --silent --insecure --output /dev/null --write-out '%{http_code}' --header 'Content-Type: application/json' --data '{}' https://skyhook.sonarr.tv/hooks/test) -join ' '
+	Write-CheckResult 'a POST to https://skyhook.sonarr.tv/hooks/test from inside Sonarr''s container returns 200' ($status -eq '200') $status
 }
 
 # These run before the round trips, which add Sandbox Lookup Show and its two aired episodes for a

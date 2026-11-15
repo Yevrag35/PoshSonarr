@@ -55,7 +55,7 @@ public sealed class SonarrHttpException : PoshSonarrException, IHttpRequestUri
 	/// </summary>
 	/// <param name="request">The failed request.</param>
 	/// <param name="response">The HTTP response, or <see langword="null"/>.</param>
-	[DebuggerStepThrough]
+	[DebuggerStepThrough, ExcludeFromCodeCoverage]
 	public SonarrHttpException(HttpRequestMessage request, HttpResponseMessage? response)
 		: this(request, response, ErrorCollection.Empty, null)
 	{
@@ -67,7 +67,7 @@ public sealed class SonarrHttpException : PoshSonarrException, IHttpRequestUri
 	/// <param name="request">The failed request.</param>
 	/// <param name="response">The HTTP response, or <see langword="null"/>.</param>
 	/// <param name="errors">The parsed server errors.</param>
-	[DebuggerStepThrough]
+	[DebuggerStepThrough, ExcludeFromCodeCoverage]
 	public SonarrHttpException(HttpRequestMessage request, HttpResponseMessage? response, IErrorCollection errors)
 		: this(request, response, errors, null)
 	{
@@ -80,6 +80,7 @@ public sealed class SonarrHttpException : PoshSonarrException, IHttpRequestUri
 	/// <param name="response">The HTTP response, or <see langword="null"/>.</param>
 	/// <param name="errors">The parsed server errors.</param>
 	/// <param name="innerException">The exception that caused the current exception.</param>
+	[ExcludeFromCodeCoverage]
 	public SonarrHttpException(HttpRequestMessage request, HttpResponseMessage? response, IErrorCollection errors, Exception? innerException)
 		: base(GetMessage(request, response, innerException, errors, out string? reqUri), innerException)
 	{

@@ -194,6 +194,9 @@ internal sealed class TestConnectionSettings : IConnectionSettings
 	public bool NoApiInPath { get; }
 
 	/// <inheritdoc/>
+	public string? ServerUrlBase { get; set; }
+
+	/// <inheritdoc/>
 	public Uri ServiceUri { get; }
 
 	/// <inheritdoc/>

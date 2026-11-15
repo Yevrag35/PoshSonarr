@@ -26,6 +26,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Systems;
 [Cmdlet(VerbsDiagnostic.Test, "SonarrResource")]
 [MetadataCanPipe(Tag = Meta.DownloadClient)]
 [MetadataCanPipe(Tag = Meta.Indexer)]
+[MetadataCanPipe(Tag = Meta.Notification)]
 public sealed class TestSonarrResourceCmdlet : TimedCmdlet
 {
 	private const string TEST = "/test";
@@ -67,7 +68,7 @@ public sealed class TestSonarrResourceCmdlet : TimedCmdlet
 		foreach (ITestPipeable testable in this.InputObject)
 		{
 			this.StartTimer();
-			SonarrClientResult response = this.SendSingleTest(testable, this.StoppingToken);
+			SonarrClientResult response = this.SendSingleTest(testable, this.PipelineStopToken);
 			var obj = new
 			{
 				testable.Id,

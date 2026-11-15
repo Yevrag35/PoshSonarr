@@ -5,7 +5,7 @@ using MG.Sonarr.Next.Services.Http.Requests;
 
 namespace MG.Sonarr.Next.Services.Http.Clients;
 
-public partial interface ISonarrClient
+partial interface ISonarrClient
 {
 	/// <summary>
 	/// Sends a DELETE request to the specified endpoint asynchronously.
@@ -25,7 +25,8 @@ public partial interface ISonarrClient
 	/// <param name="path">The endpoint's path, relative to the API.</param>
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>A task that completes with the result of the request, which holds the deserialized value on success.</returns>
-	Task<SonarrClientResult<T>> SendGetAsync<T>(string path, CancellationToken token = default);
+	Task<SonarrClientResult<T>> SendGetAsync<T>(string path, CancellationToken token = default)
+		where T : class;
 	/// <summary>
 	/// Sends a HEAD request to the server's <c>/ping</c> endpoint asynchronously.
 	/// </summary>
@@ -54,7 +55,8 @@ public partial interface ISonarrClient
 	/// <param name="path">The endpoint's path, relative to the API.</param>
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>A task that completes with the result of the request, which holds the deserialized value on success.</returns>
-	Task<SonarrClientResult<T>> SendPostAsync<T>(string path, CancellationToken token = default);
+	Task<SonarrClientResult<T>> SendPostAsync<T>(string path, CancellationToken token = default)
+		where T : class;
 	/// <summary>
 	/// Sends a POST request with the specified body to the specified endpoint asynchronously.
 	/// </summary>
@@ -75,7 +77,8 @@ public partial interface ISonarrClient
 	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>A task that completes with the result of the request, which holds the deserialized value on success.</returns>
-	Task<SonarrClientResult<TOutput>> SendPostAsync<TOutput>(string path, object body, CancellationToken token = default);
+	Task<SonarrClientResult<TOutput>> SendPostAsync<TOutput>(string path, object body, CancellationToken token = default)
+		where TOutput : class;
 	/// <summary>
 	/// Sends a PUT request with the specified body to the specified endpoint asynchronously.
 	/// </summary>
@@ -86,7 +89,7 @@ public partial interface ISonarrClient
 	Task<SonarrClientResult> SendPutAsync(string path, object body, CancellationToken token = default);
 }
 
-internal sealed partial class SonarrHttpClient
+partial class SonarrHttpClient
 {
 	/// <inheritdoc/>
 	public async Task<SonarrClientResult> SendDeleteAsync(string path, CancellationToken token = default)
@@ -97,6 +100,7 @@ internal sealed partial class SonarrHttpClient
 	}
 	/// <inheritdoc/>
 	public async Task<SonarrClientResult<T>> SendGetAsync<T>(string path, CancellationToken token = default)
+		where T : class
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Get, path, _scopeFactory);
 
@@ -171,6 +175,7 @@ internal sealed partial class SonarrHttpClient
 	}
 	/// <inheritdoc/>
 	public async Task<SonarrClientResult<T>> SendPostAsync<T>(string path, CancellationToken token = default)
+		where T : class
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
 
@@ -186,6 +191,7 @@ internal sealed partial class SonarrHttpClient
 	}
 	/// <inheritdoc/>
 	public async Task<SonarrClientResult<TOutput>> SendPostAsync<TOutput>(string path, object body, CancellationToken token = default)
+		where TOutput : class
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
 
@@ -262,6 +268,7 @@ internal sealed partial class SonarrHttpClient
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>A task that completes with the result of the request, which holds the deserialized value on success.</returns>
 	private async Task<SonarrClientResult<T>> SendResultRequestAsync<T>(HttpRequestMessage request, string path, CancellationToken token)
+		where T : class
 	{
 		HttpResponseMessage? response = null;
 		_cmdletAccessor.AttachTo(request);

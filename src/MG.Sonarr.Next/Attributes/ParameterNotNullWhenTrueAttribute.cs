@@ -7,7 +7,7 @@ namespace MG.Sonarr.Next.Attributes;
 /// <remarks>
 ///     This attribute has no effect on the complier or C# analyzers.
 /// </remarks>
-[AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
+[AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true), ExcludeFromCodeCoverage]
 public sealed class ParameterNotNullWhenTrueAttribute : AnalysisAttribute
 {
 	/// <summary>

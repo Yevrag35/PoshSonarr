@@ -1,6 +1,6 @@
 ---
 name: poshsonarr-performance
-description: Performance-first, allocation-aware design rules for PoshSonarr's C# code. Covers which code is hot in a cmdlet's run and which is cold, choosing between `SpanStringBuilder`, `RentedBuffer<T>`, `PooledBuffer<T>`, `Rent.Array`, and `ArrayPoolMemoryStream`, the `RefEither` ternary that stack-allocates up to `MAX_STACKALLOC` and rents beyond it, the unchecked members of `SpanUnsafeExtensions` (`Ref`, `Offset`, `UnsafeSlice`, `UnsafeSpan`, `AsUnsafeSpan`, `UnsafeCopy`), `PoolMarshal`, `ArraySliceMarshal`, and `ListMarshal`, which members are marked `unsafe` under C#'s updated memory safety rules and the `unsafe` blocks with `// SAFETY:` comments and `/// <safety>` contracts that go with them, migrating raw `Unsafe.Add`, `MemoryMarshal.GetReference`, `GetArrayDataReference`, and `CreateSpan` calls and the sites that keep them, writing span loops that RyuJIT compiles well (hoisted base refs, `nuint` indexes, `MethodImpl` inlining trade-offs), and `ConfigureAwait(false)` and lock-or-concurrent-collection choices. Use it whenever you write or change code that runs per object, per JSON value, per wildcard match, per piped input object, or per request, such as the JSON converters, `Wildcard` and `WildcardSet`, the PowerShell property classes, the query and path builders, and the HTTP handlers, whenever you'd add a `List<T>`, `string.Format`, string concatenation in a loop, or a LINQ chain to that code, size a `stackalloc`, or rent a buffer, whenever you reach for unchecked element access or a `*Marshal` type or write an `unsafe` block, and before you replace pooled, span-based, or unsafe code with a simpler allocating equivalent. Skip it for cold code such as connecting, error formatting, argument completers, and the build scripts.
+description: Performance-first, allocation-aware design rules for PoshSonarr's C# code. Covers which code is hot and which is cold; choosing a buffer (`SpanStringBuilder`, `RentedBuffer<T>`, `PooledBuffer<T>`, `Rent.Array`, `ArrayPoolMemoryStream`, and the `MAX_STACKALLOC` ternary); unchecked access through `SpanUnsafeExtensions` and the `*Marshal` types instead of raw `Unsafe` and `MemoryMarshal` calls; `unsafe` marks, `// SAFETY:` comments, and `/// <safety>` contracts; span loops and inlining that RyuJIT compiles well; and `ConfigureAwait(false)` and lock-or-concurrent-collection choices. Use it whenever you write or change code that runs per object, per JSON value, per wildcard match, per piped input object, or per request, such as the JSON converters, `Wildcard` and `WildcardSet`, the PowerShell property classes, the query and path builders, and the HTTP handlers, whenever you'd add a `List<T>`, `string.Format`, string concatenation in a loop, or a LINQ chain to that code, size a `stackalloc`, or rent a buffer, whenever you reach for unchecked element access or a `*Marshal` type or write an `unsafe` block, and before you replace pooled, span-based, or unsafe code with a simpler allocating equivalent. Skip it for cold code such as connecting, error formatting, argument completers, and the build scripts.
 ---
 
 # Performance-first design in PoshSonarr
@@ -13,216 +13,27 @@ Assume that an unusual or complex pattern is intentional and performance-motivat
 
 A cmdlet usually spends most of its run waiting on Sonarr, so the code worth optimizing is the code that repeats inside a run:
 
-- converting each value of a JSON response into a model and its PowerShell properties
-- matching wildcards against every result
+- converting each value of a JSON response into a model and its PowerShell properties, in the converters and naming policies under `src/MG.Sonarr.Next/Json/` and the property classes under `src/MG.Sonarr.Next/PSProperties/`
+- matching wildcards against every result, in `Wildcard` and `WildcardSet`
 - handling each object piped into `Process`
-- once per request, building its path and query string and buffering its body
+- once per request, building its path and query string and buffering its body, in the query and path builders and the HTTP handlers under `src/MG.Sonarr.Next/Services/Http/`
 
-Connecting is cold: `Connect-SonarrInstance` builds the service provider and the JSON options, reflecting over the model types the first time. So are error formatting, argument completers, and the build scripts. Keep cold code simple.
+That code is written in the style this skill describes, so preserve the style when you touch the code around it. There, prefer pooled buffers, `Span<T>`, `stackalloc`, `SpanStringBuilder`, and ref structs over LINQ chains, temporary lists, `string.Format`, and string concatenation in a loop.
 
-## Guiding principles
+Connecting is cold: `Connect-SonarrInstance` builds the service provider and the JSON options. So are error formatting, argument completers, and the build scripts. Keep cold code simple and safe, and never trade correctness for speed, in hot code or cold.
 
-- **Minimize allocations on hot paths.** Prefer pooled buffers, `Span<T>`, `stackalloc`, and ref structs over LINQ chains and temporary lists.
-- **Pool rather than allocate.** When the lifetime is scoped, use `Rent.Array<T>` and `Rent.Return<T>` (`src/MG.Sonarr.Next/Buffers/Rent.cs`) instead of `new T[...]`, and `ArrayPoolMemoryStream` (`src/MG.Sonarr.Next/Services/Http/IO/`) instead of `new MemoryStream()`, as the HTTP handlers do to buffer response bodies. `Rent.Return` ignores a null or empty array, and it clears an array whose element type is or holds a reference whatever `clearArray` says, so the pool never keeps a stale object alive. In Debug builds, it fills an array that it doesn't clear with `0xDD` bytes first, so code that reads an array after returning it reads junk, such as `'\uDDDD'` characters, instead of the array's old contents. Return arrays through `Rent.Return` rather than `ArrayPool<T>.Shared.Return` to get both. `Rent.Array` asserts a positive length in Debug builds, so handle a zero length before renting, as `RentedBuffer<T>` and `PooledBuffer<T>` do.
-- **Prefer ref structs and stack allocation** (`RentedBuffer<T>`, `SpanStringBuilder`) for short-lived, synchronous work. They can't cross an `await`; use `PooledBuffer<T>` there.
-- **Unsafe code is allowed and used deliberately.** `src/Directory.Build.props` sets `AllowUnsafeBlocks` for every project and opts in to C#'s updated memory safety rules, so every unchecked access sits in an `unsafe` block that says why it's valid, as "Unsafe blocks and safety contracts" below describes. `[UnsafeAccessor]` stands in for reflection to reach a private member, as `ListMarshal` does for `List<T>`'s fields and `PooledBuffer<T>` does for `Memory<T>`'s internal constructor. That isn't a license for free-floating pointers: wrap a pointer that's passed between methods or types in a struct, as the `FnPtr` structs (`src/MG.Sonarr.Next/Buffers/FnPtr.cs`) wrap managed function pointers.
-- **Throughput-aware threading.** The HTTP client and its handlers await with `ConfigureAwait(false)`. The `Send*Request` helpers on `SonarrApiCmdletBase` block the pipeline thread on those calls with `GetAwaiter().GetResult()`, so a continuation that waited to resume on a captured context could deadlock under a host that installs one.
-- **Weigh a lock against a concurrent collection.** Before you choose between one `System.Threading.Lock` and a `System.Collections.Concurrent` collection, consider contention, how often the state is touched, and the cost of taking the lock. Finding one pattern or the other in the codebase doesn't make it the right choice for your case. Thread safety matters even in a cmdlet: PowerShell can run the module's cmdlets on several threads at once, as `ForEach-Object -Parallel` and thread jobs do, and every runspace in the process shares the module's static state, the connection's `ServiceProvider` and every static cache included.
+## References
 
-## Buffer selection ladder
+Read the reference for each area that your work touches. Each one stands alone.
 
-When you need a temporary buffer:
+- `references/buffers.md`: whether a temporary buffer is needed at all, which buffer fits synchronous, string-building, and asynchronous work, the `MAX_STACKALLOC` ternary, buffers of reference types, how a `SpanStringBuilder` owns and returns its buffer, and renting and returning arrays and streams. Read it before you allocate an array, a list, a stream, or a string in hot code, size a `stackalloc`, rent or return a buffer, create a `SpanStringBuilder` or pass one to a helper, or replace pooled or span-based code with an allocating equivalent.
+- `references/unchecked-access.md`: `SpanUnsafeExtensions` and the `*Marshal` types, which projects can call them, what their Debug asserts accept, how their refs into a read-only span differ from `MemoryMarshal`'s, migrating raw `Unsafe` and `MemoryMarshal` calls and the sites that keep them, and dropping a bounds check. Read it before you reach for unchecked element access, a `*Marshal` type, or a raw `Unsafe` or `MemoryMarshal` call, add a `*Marshal` type or a member to one, migrate raw calls to the helpers, or swap a bounds-checked slice for an unchecked one.
+- `references/memory-safety.md`: what C#'s updated memory safety rules require, which of the module's members are marked `unsafe` and what a `/// <safety>` section states, what a `// SAFETY:` comment covers and how far an `unsafe` block reaches, `[UnsafeAccessor]`, and pointers passed between methods. Read it before you write an `unsafe` block or its `// SAFETY:` comment, mark a member `unsafe` or take the mark off, write a `<safety>` section, change a check or a guard that a `// SAFETY:` comment cites, reach a private member of another type, or pass a pointer between methods or types.
+- `references/codegen.md`: checking the code that the JIT generates, the penalties that span loops hide and their fixes, when inlining helps and when `NoInlining` pays, throw helpers and guards, throw helpers in generic types, and struct locals passed by `ref`. Read it before you write or restructure a per-element loop over a span or an array, add or remove `AggressiveInlining` or `NoInlining`, move hot-path code into a helper, write a throw helper or a guard, pass a struct local by `ref` to a helper, or claim anything about the code that the JIT generates.
+- `references/threading.md`: `ConfigureAwait(false)` in the HTTP client and its handlers, and choosing between a lock and a concurrent collection for shared state. Read it before you add or change an `await` in the HTTP client or its handlers, block on a task, or add or change static or shared state.
 
-1. **Synchronous, building a string:** `SpanStringBuilder.Create(length <= MAX_STACKALLOC ? stackalloc char[length] : length)`. It takes the same `RefEither` ternary as step 2, but the builder owns the buffer itself. See the carve-out below.
-2. **Synchronous, with a length that's bounded but unknown at compile time:** `RentedBuffer.Rent<T>(length <= MAX_STACKALLOC ? stackalloc T[length] : length)`. The ternary has no natural type, so it's target-typed to `RefEither<Span<T>, int>`, and the buffer is stack-allocated when the length is small and rented from the pool when it's large. Stack-allocate the exact length, not the threshold. `Wildcard`, `CharCollections`, and `ObjectConverter` each declare a private `MAX_STACKALLOC` of 256 elements for the ternary.
-3. **Asynchronous, crossing an `await`:** `PooledBuffer<T>` (`src/MG.Sonarr.Next/Buffers/PooledBuffer.cs`). It's a regular value type and `IDisposable`, with `AsSpan()`, `AsMemory()`, and `ClearOnDispose`. Pass it by `ref` or scope it tightly with `using`: it's mutable, so disposing a copy leaves the original pointing at an array that's back in the pool.
-4. **Last resort:** `Rent.Array<T>` with `try`/`finally` and `Rent.Return`, only when neither buffer type fits, such as when an API takes ownership of the raw `T[]`, or when the lifetime spans several methods in a way that doesn't compose with `using`.
+## Changing this skill
 
-Each part of the `RefEither` ternary rests on a language rule. A `stackalloc` nested inside another expression, such as an arm of `?:`, is a `Span<T>` and needs no `unsafe` context. `Span<T>` and `int` don't convert to each other, so the conditional has no natural type. Since C# 9, a conditional without one takes its target's type, here the `RefEither<Span<T>, int>` parameter, as long as each arm converts to that type on its own. `RefEither` provides both conversions with an implicit operator from each type argument, and its `allows ref struct` anti-constraints are what let `Span<T>` be a type argument at all. Ref safety then scopes the whole expression to its narrowest arm: the stack arm can't leave the method, so neither can the union nor the buffer or builder that `RentedBuffer.Rent<T>` or `SpanStringBuilder.Create` returns, even on a run that took the `int` arm.
-
-`stackalloc` needs an unmanaged `T`, so a `T` that is or holds a reference has no stack arm. Rent its buffer with `new RentedBuffer<T>(length)` or `RentedBuffer.RentMin<T>(length)`. Both return an empty buffer for a length of zero and throw `ArgumentOutOfRangeException` for a negative one.
-
-### Carve-out: `SpanStringBuilder` owns its own buffer
-
-When a `SpanStringBuilder` is the buffer's only consumer, don't apply step 2 and hand the result's span to the builder:
-
-```csharp
-// Wrong: two owners for one logical buffer.
-using RentedBuffer<char> buffer = RentedBuffer.Rent<char>(length <= MAX_STACKALLOC ? stackalloc char[length] : length);
-SpanStringBuilder builder = new(buffer.Span);
-
-// Right: one owner.
-SpanStringBuilder builder = SpanStringBuilder.Create(length <= MAX_STACKALLOC ? stackalloc char[length] : length);
-```
-
-The `SpanStringBuilder(Span<char>)` constructor, which the implicit conversion from `Span<char>` also calls, keeps the span as the builder's buffer without renting. Once the builder outgrows it, `Grow` rents a pooled array of its own, while the outer `using` still holds the first rental until the scope ends. `Create` takes the same `RefEither<Span<char>, int>` and picks the constructor: the stack arm costs nothing, and the `int` arm lets the builder rent at its own size, a power of two of at least 128 characters.
-
-Two cases still call the constructor directly: a fixed compile-time size, as in `new SpanStringBuilder(stackalloc char[256])`, where there's nothing to decide, and a span from another frame, such as a caller's `stackalloc` passed in as a parameter.
-
-`Build()` returns the string and disposes the builder, and `Dispose` resets the builder before it returns its array, so a `using` builder that ends in `Build()` returns its rental once. A `using` local is read-only, though, so it can't be passed as `ref SpanStringBuilder` to an append helper (CS1657), while calls made on it still change the builder itself rather than a copy (measured 2026-10-28 with .NET SDK 10.0.403). Use `using` when the builder is never passed by reference, and `try`/`finally` with `builder.Dispose()` when it is.
-
-## Unchecked access
-
-A `<Type>Marshal` class in an `*.Intrinsics` namespace is that type's unchecked door, the one place that skips a check the type would otherwise make, and a `<Type>Marshal` added for another type follows the same pattern. Spans, arrays, and bare refs are the exception: their unchecked members are C# 14 extension members of `SpanUnsafeExtensions`, in `MG.Sonarr.Next.Extensions`.
-
-`SpanUnsafeExtensions`, `ListMarshal`, and `SpanStringBuilder` are `internal`. `InternalsVisibleTo` opens them to `MG.Sonarr.Next.Shell` and `MG.Sonarr.Next.Shell.Bases`, but only `MG.Sonarr.Next` has `MG.Sonarr.Next.Extensions` as a global using, so a file in either Shell project needs `using MG.Sonarr.Next.Extensions;` to call the extension members.
-
-Every `SpanUnsafeExtensions` member is `AggressiveInlining`, so the inlined code matches the raw form. What you gain is a call site that states its intent and, in Debug builds, a `Debug.Assert` on the range. What you don't gain is safety: these skip the CLR's bounds check rather than replace it, and the caller still owns the guarantee. Each member is marked `unsafe`, so the compiler makes every call site own it in writing, as the next section describes.
-
-### Unsafe blocks and safety contracts
-
-Every project compiles under C#'s updated memory safety rules, which the `updated-memory-safety-rules` feature in `src/Directory.Build.props` turns on. Under them, `unsafe` on a member means that its callers need an unsafe context, and it no longer gives the member's body one. A call to a member marked `unsafe` compiles only inside an `unsafe { }` block, and so do a call through a function pointer and a `stackalloc` without an initializer in a `[SkipLocalsInit]` method. A block emits no IL. The .NET 11 reference assemblies, which the compiler checks against, mark most of `Unsafe`, such as `Add`, `As`, `AsRef`, `InitBlockUnaligned`, and `Unbox`, every member of `MemoryMarshal` but `ToEnumerable` and `TryGetString`, and `Marshal`'s raw-memory members, such as `PtrToStringBSTR`. `CollectionsMarshal` is unmarked.
-
-The module follows the same rule as those marks: a member is marked `unsafe` only when a caller can corrupt memory through it, as with an index, a range, a pointer, or a type argument that it can't check, and not when the worst a caller can do is break an invariant. A member marked `unsafe` states what its callers must guarantee in a `/// <safety>` section, after `<remarks>` and before `<typeparam>`, and its body's block cites that contract. Any other member that makes an unchecked call keeps a safe signature and justifies the block inside it.
-
-| Marked `unsafe` | Why |
-|---|---|
-| Every `SpanUnsafeExtensions` member | The index, range, or destination length goes unchecked. |
-| `ArraySliceMarshal.Create` and the unchecked `ArraySlice<T>` constructor behind it | The slice reads its elements without bounds checks, trusting the offset and length for as long as it exists. |
-| `ListMarshal.SetCount` and both `ListMarshal.GetArray` overloads | Every span and slice over the list trusts its count, and `GetArray`'s slice keeps trusting the count it read. |
-| Private helpers whose callers meet a precondition, such as `SpanStringBuilder.AppendCore(ReadOnlySpan<char>)`, which needs the room that `EnsureCapacity` makes | The caller, not the helper, establishes the range. |
-
-`PoolMarshal`'s members, the rest of `ListMarshal`, and the `View<T>` accessors stay safe: none of them can reach past an array on its own, and the `ListMarshal` members that build a span justify it with `List<T>`'s invariant that its count lies within its backing array, which holds while no other thread changes the list.
-
-Every `unsafe` block starts with a `// SAFETY:` comment that says why each unchecked call in it is valid at that spot: which check, guard, or invariant keeps the index or range inside the memory, or which contract the caller met. A block ends the scope of the locals that it declares, so a block that binds a ref local, as a hoisted base ref, covers every use of it, and the comment covers every call in the block. Where a block would end a local's scope too early, declare the local before the block and assign it inside, as `SpanStringBuilder.AppendSpan` does. Nothing checks the comments or the `<safety>` sections, so they're the record of why each unchecked access is valid, and a change to a guard means rereading the comment that cites it.
-
-### `SpanUnsafeExtensions`
-
-| Receiver | Member | Returns |
-|---|---|---|
-| `ReadOnlySpan<T>` | `Ref(index = 0)` | `ref readonly T` |
-| `ReadOnlySpan<T>` | `UnsafeSlice(start)`, `UnsafeSlice(start, length)` | `ReadOnlySpan<T>` |
-| `ReadOnlySpan<T>` | `UnsafeCopy(destination)` | `void` |
-| `Span<T>` | `Ref(index = 0)` | `ref T` |
-| `Span<T>` | `UnsafeSlice(start)`, `UnsafeSlice(start, length)` | `Span<T>` |
-| `T[]` | `Ref(index = 0)` | `ref T` |
-| `T[]` | `AsUnsafeSpan(index)`, `AsUnsafeSpan(index, length)` | `Span<T>` |
-| `ref T` where `T : struct` | `Offset(index)` | `ref T` |
-| `ref T` where `T : struct` | `UnsafeSpan(length)` | `Span<T>` |
-
-The asserts differ in what they accept. `Ref` requires `index < Length`, so it rejects every index of an empty receiver. `UnsafeSlice` and `AsUnsafeSpan` accept a start equal to the length and return an empty span there, as `span[start..]` does. `Offset` and `UnsafeSpan` can only check that the index or length isn't negative, because a bare ref carries no length.
-
-`AsUnsafeSpan` is the one-step form of `array.Ref(index).UnsafeSpan(length)`. Prefer it to that two-step form when the receiver is an array, since it works for any `T` and accepts an index at the end of the array, and prefer it to `array.AsSpan(index, length)` when the caller already owns the range.
-
-**The one asymmetry worth knowing.** `MemoryMarshal.GetReference(ReadOnlySpan<T>)` launders away the read-only-ness and hands back a mutable `ref T`, while the `ReadOnlySpan<T>` overload of `Ref` honors it and returns `ref readonly T`. Moving a site that binds `ref T local = ref ...`, ref-reassigns, passes the ref as `ref` or `out`, or returns `ref T` is therefore a tightening rather than a rename, and it doesn't compile: binding or passing the result as a mutable ref is CS8329, and calling `Offset` on a `ref readonly` local is CS1510 (measured 2026-10-28 with .NET SDK 10.0.403). `Span<T>` and `T[]` both return `ref T`, so neither is ever narrowed.
-
-When such a site does need the mutable ref, typically to reach `Offset`, whose receiver is `ref T`, write the widening out as `Unsafe.AsRef(in span.Ref())` rather than leaving `MemoryMarshal.GetReference` to launder it silently. Both produce the same code. The explicit call acknowledges that this is the riskier spelling, and it still keeps the base ref hoisted out of the loop.
-
-**`UnsafeCopy` isn't `CopyBlockUnaligned`.** It slices the destination to the source's exact length, which leaves `CopyTo` comparing a length against itself; the JIT folds that away, so neither the comparison nor its throw path is emitted. It keeps the GC write barriers and tolerates overlap, so it's correct for every `T`. Rewriting it over `Unsafe.CopyBlockUnaligned` drops the barriers that a `T` holding references needs, and buys nothing in exchange: since .NET 9, the `cpblk` that `CopyBlockUnaligned` emits resolves through `CORINFO_HELP_MEMCPY` to the same `SpanHelpers.Memmove` that `UnsafeCopy` already calls.
-
-### The other three
-
-| Type | Members |
-|---|---|
-| `PoolMarshal` (`PooledBuffer<T>`) | `UnsafeCreate<T>(minimumSize, useEntireCapacity = false)`, `GetReference<T>(ref readonly buffer)` returning `ref T`, `Resize<T>(ref buffer, newSize)` |
-| `ArraySliceMarshal` (`ArraySlice<T>`) | `Create<T>(array, offset, length)`, an `ArraySlice<T>` built without the constructor's validation |
-| `ListMarshal` (`List<T>`) | see below |
-
-`PoolMarshal.GetReference` returns a null ref for a default or empty buffer instead of asserting, so check it with `Unsafe.IsNullRef` unless the buffer is known to hold elements. `Resize` only grows, and it leaves the buffer's `Length` covering its whole backing array. When the array can already hold the new size, only `Length` grows, to the capacity; otherwise `Resize` rents a new array, copies the old one into it, and returns the old one to the pool. The buffer keeps its `ClearOnDispose`, which also decides whether the old array goes back cleared.
-
-`ListMarshal` reaches into `List<T>`'s private fields through `[UnsafeAccessor]`:
-
-| Member | What it does |
-|---|---|
-| `AsSpan<T>(list)`, `AsReadOnlySpan<T>(list)` | a span over the list's elements that aliases the backing array |
-| `GetArray<T>(list)`, `GetArray<T>(list, out version)` | the backing array as an `ArraySlice<T>` over the populated range |
-| `GetRawArray<T>(list)` | the backing array itself, slots past `Count` included |
-| `AddRange<T>(list, params ReadOnlySpan<T>)` | a bulk append that skips the enumerable path |
-| `AddRange<T, TOther>(list, FnPtr<TOther, T>, params ReadOnlySpan<TOther>)` | the same, converting as it appends |
-| `Create<T>(params ReadOnlySpan<T>)`, `CreateWithCapacity<T>(capacity, params ReadOnlySpan<T>)` | a pre-populated list written straight into the backing array |
-| `SetCount<T>(list, size)` | writes the internal size field directly |
-| `ValidateVersion<T>(list, expectedVersion)` | throws if the list changed since that version |
-
-`SetCount` and both `GetArray` overloads are marked `unsafe`, and the other members keep safe signatures, as "Unsafe blocks and safety contracts" above describes. `AsSpan` aliases where `ToArray()` copies: anything that grows or changes the list invalidates the span, and `SetCount` publishes slots the list never initialized. Neither is a drop-in substitution; both are a decision. `AddRange` grows the list through `List<T>`'s internal `Grow` method, so a .NET release that renames that method surfaces as a `MissingMethodException` on the first call rather than as a compile error.
-
-## Migrating raw forms
-
-No analyzer reports raw forms in this codebase, so migrating one is a hand edit. The raw forms and the helpers are all marked `unsafe`, so a migration keeps the site's `unsafe` block and its `// SAFETY:` comment. These raw forms have helper equivalents that behave the same in Release builds:
-
-| Raw form | Becomes |
-|---|---|
-| `Unsafe.Add(ref MemoryMarshal.GetReference(s), i)` | `s.Ref(i)` |
-| `MemoryMarshal.GetReference(s)` | `s.Ref()` |
-| `Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(a), i)` | `a.Ref(i)` |
-| `MemoryMarshal.GetArrayDataReference(a)` | `a.Ref()` |
-| `MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(a), i), n)` | `a.AsUnsafeSpan(i, n)` |
-| `MemoryMarshal.CreateSpan(ref x, n)` | `x.UnsafeSpan(n)` |
-| `Unsafe.Add(ref r, i)` | `r.Offset(i)` |
-
-These sites keep the raw form:
-
-- The `nint` and `nuint` overloads of `Unsafe.Add`. `Ref` and `Offset` index with an `int`, and a native-width index is deliberate (see the next section), as in the `nuint` loop of `ListMarshal.AddRange<T, TOther>`.
-- An element type that's a reference type. `Offset` and `UnsafeSpan` are constrained to `struct`.
-- A `ReadOnlySpan<T>` source feeding a mutable ref. A plain rename doesn't compile, because of the asymmetry above, and when the site needs the mutable ref, the migration is the explicit `Unsafe.AsRef(in span.Ref())`.
-- A base ref taken from a receiver that can be empty, as described next.
-
-Nothing flags the last case at compile time, so a sweep walks straight into it. `Ref()` asserts `(uint)index < (uint)Length`, which makes it illegal on an empty receiver, while `ref T first = ref MemoryMarshal.GetArrayDataReference(array)` ahead of a loop that may run zero times is a legal, deliberate idiom: the ref is taken but never dereferenced. The rewrite still behaves the same in Release builds, so only a Debug build that reaches the empty case catches the break.
-
-Resolve it by restructuring the method rather than keeping the raw form. An early return ahead of the allocation earns the unchecked base ref for the rest of the method, puts the degenerate case in control flow, and skips a zero-length allocation:
-
-```csharp
-if (count == 0)
-	return [];
-
-var items = new Wildcard[count];
-ref Wildcard first = ref items.Ref();	// Earned: count > 0 is proven.
-```
-
-`SpanStringBuilder.TrimEnd` does the same by taking `_chars.Ref()` only inside `if (_position > 0)`.
-
-Swapping a bounds-checked `Slice` for `UnsafeSlice` is a different kind of change: it drops a check rather than renaming a call. Decide per site whether the range is already guaranteed. That the method already bypasses a check elsewhere doesn't make this one safe to drop.
-
-## Span hot-loop codegen
-
-Choosing the buffer is half the job. The other half is writing the loop so that RyuJIT compiles it well. The recipe below holds for any span-based per-element loop, but it describes one compiler's behavior, which changes between .NET releases, so confirm it with a dump of the method rather than taking it on faith.
-
-Three codegen penalties hide in innocent-looking span loops:
-
-1. On Windows x64, `Span<T>` and `ReadOnlySpan<T>` parameters are passed by reference, so a store through a ref derived from one can force the JIT to assume aliasing and reload the span's data pointer from the parameter on every iteration that derives the ref again.
-2. An `int` index inside `Unsafe.Add` can cost a sign extension (`movsxd`) per element when the JIT can't prove the index non-negative.
-3. Too many live values in one method make the register allocator spill loop-carried values, such as a base ref that's reloaded from the stack for every element.
-
-The fixes:
-
-- Hoist each span's reference into a `ref` local once, at the top of the method, as in `ref byte destinationBase = ref destination.Ref();`. Below that point, pass helpers a `ref T` and an explicit length, never a span.
-- Index with `nuint`, both the loop variable and any lookup-table index. That removes the per-element sign extension, and an `x * 4` byte offset folds into scaled addressing (`[base+4*rx]`). `ListMarshal.AddRange<T, TOther>` hoists both of its refs and walks them with a `nuint` index.
-- Form a segment's ref at the point of use from an `int` offset, as in `ref Unsafe.Add(ref base, (nint)(uint)offset)`, and advance the offset with `+= step`, never the ref. That's strength reduction, with no multiply per segment, and no ref ever points past the buffer. This one stays raw: `Offset` takes an `int`, which would bring back the sign extension that the `nint` cast exists to remove.
-
-In the dump, a clean loop body keeps its base refs in registers, with no stack loads of them, no `movsxd` on the index, and no call to `CORINFO_HELP_RNGCHKFAIL`. Seeing any of those means one of the three penalties is still in play.
-
-### Inlining: the counter-intuitive part
-
-Don't fight the inliner on the hot path. The JIT inlines a plain private helper into each call site and specializes its constant arguments, folding a literal `step: 8` into `add reg, 8`. Restructuring around hoisted refs and `nuint` indexes is what relieves register pressure; `NoInlining` isn't.
-
-`NoInlining` on a helper that the hot path calls trades the inlined, specialized copies for a call on every iteration, and the standalone helper can still spill its base refs around its own loop. A smaller total code size isn't a smaller hot footprint when the extra bytes are specializations that never run.
-
-`NoInlining` on a whole cold branch is a different move, and it wins: the hot method shrinks, and its common path falls through instead of jumping over code it never runs. `RentedBuffer.Rent<T>(RefEither<Span<T>, int>)` and `SpanStringBuilder.Create` keep their pool-renting arm in a `NoInlining` local function, so only the stack arm inlines into callers. `ListMarshal.CheckAndGrow` is the out-of-line growth half of `ReserveTail`, so the capacity test inlines into each caller without carrying the growth path, and `SpanStringBuilder.Grow` makes the same move.
-
-Decide which of the two you have before applying either. Extracting a helper that the hot path calls costs per-iteration overhead, while extracting a path that the hot path never takes costs nothing and shrinks the hot footprint.
-
-A local function that only throws is the exception to the cold-branch rule: don't mark it `NoInlining`. The JIT finds out that a call never returns by reading the callee's IL when it considers inlining it, which `NoInlining` stops it from doing, and it ignores `[DoesNotReturn]`, which only feeds the C# compiler's flow analysis. Without `NoInlining`, the JIT still doesn't inline a helper that only throws, but it moves the call past the method's `ret` with an `int3` after it, so the common path falls through. With it, the JIT treats the call as one that returns: the call stays on the main path, the common path jumps over it, and the JIT can reload values around it. Writing the call as `return throwX(...)` moves it off the main path even then, but the block pays for its own copy of the epilog. `CharSpanExtensions.RemoveAny`'s `throwTooShort` shows the difference: with `NoInlining`, its call sat on the main path with no `int3` after it, and without it, the call moved past the `ret` (measured 2026-10-31 on .NET 10.0.14). Keep `[DoesNotReturn]` and `[StackTraceHidden]` on the local function, since the compiler and the stack trace still use them.
-
-The rule has two limits. First, the JIT reads the helper's IL only when it fits under the inliner's size cap. A helper over the cap, which the inline trace logs as `too many il bytes`, keeps its call on the main path with or without `NoInlining`: a 155-byte helper that built an interpolated message did, while `SpanPosition`'s 106-byte `throwEx` fits. Keep a long message out of the helper: build it in a method of its own that returns the string, and leave the helper nothing but that call, the `new`, and the `throw`. `FlagEnumerator`'s `throwMismatchedSizes` gets its message from `makeNotSupportedMessage` that way, which brings it to 11 IL bytes, and the constructor of an instantiation whose sizes don't match compiles to 11 bytes, the call followed by `int3`, instead of 44 (measured 2026-11-01 on .NET 10.0.14). Second, a guard method that isn't inlined and makes no call but the throw compiles smaller with `NoInlining`. The JIT tail-jumps to a helper it treats as returning, so the guard needs no stack frame, but a call that never returns, with its `int3`, needs a frame that the fast path pays for too. Compiled on its own, `SpanPosition.ThrowIfOutOfRange` grew from 31 bytes to 40 without `NoInlining`. It's `AggressiveInlining`, though, and inlined into `SpanStringBuilder.GetSegment(SpanPosition)`, the version without `NoInlining` shrank the code up to the `ret` from 116 bytes to 80 (measured 2026-11-01 on .NET 10.0.14). Judge a guard that inlines by its caller's listing, and keep `NoInlining` only on the throw helper of a guard that runs as a call of its own.
-
-Never pass a struct local by `ref` to a `NoInlining` callee. Taking its address stops the JIT from promoting the struct's fields to registers anywhere in the method, so the struct gets a stack home, and its fields are stored and reloaded around every use, even on paths that never make the call. Hand the cold helper raw primitives, refs and ints, and let it build its own struct, and declare the hot path's struct inside the branch that uses it so that nothing takes its address. An `AggressiveInlining` callee is exempt: once it's inlined, no call needs the struct's address.
-
-### The best pooled buffer is no buffer
-
-Before working down the ladder, check whether the buffer is needed at all. Iterating the source directly, or computing values as they're consumed, removes the rent-and-return pair, the `try`/`finally` or `using` that guards it, and the bounds checks on the buffer.
-
-## When writing or modifying code
-
-- Before you add a `List<T>`, `string.Format`, string concatenation in a loop, or a LINQ chain to a hot path, consider whether a pooled buffer, a `stackalloc`, or `SpanStringBuilder` fits better.
-- Don't "simplify" pooled or span-based code into an allocating equivalent without understanding why the original pattern exists.
-- The JSON converters and naming policies under `src/MG.Sonarr.Next/Json/`, `Wildcard` and `WildcardSet`, the PowerShell property classes under `src/MG.Sonarr.Next/PSProperties/`, the query and path builders under `src/MG.Sonarr.Next/Services/Http/`, and the HTTP handlers' pooled body buffering are written in this style. Preserve it when you touch adjacent code.
-- Correctness still comes first. Don't trade safety or clarity for micro-optimizations outside hot paths, and save aggressive optimization for code that runs per object, per value, or per request.
-- Verify a codegen claim instead of reasoning it out, such as whether a call inlines, whether a bounds check is elided, or whether a restructure changed the emitted code. `pwsh -NoProfile -File src/MG.Sonarr.Tools.Asm/run-asmdump.ps1 <Class> [Method] -DontOpen` builds the solution in Release and writes the RyuJIT FullOpts disassembly of the named methods to `.temp/asm_<Class>[_<Method>].txt`, and `-Inlines` adds the JIT's inlining decisions, with its reason for each call it didn't inline.
-
-## Reference
-
-- `src/MG.Sonarr.Next/Buffers/`: `RentedBuffer<T>` and its static `RentedBuffer` factory, `PooledBuffer<T>`, `Rent`, `SpanStringBuilder`, `ArraySlice<T>`, and the `FnPtr` structs, in `MG.Sonarr.Next.Buffers`
-- `src/MG.Sonarr.Next/Buffers/Intrinsics/`: `PoolMarshal` and `ArraySliceMarshal`, in `MG.Sonarr.Next.Buffers.Intrinsics`
-- `src/MG.Sonarr.Next/Collections/Intrinsics/ListMarshal.cs`: `ListMarshal`, in `MG.Sonarr.Next.Collections.Intrinsics`
-- `src/MG.Sonarr.Next/Extensions/SpanUnsafeExtensions.cs`: the unchecked span, array, and ref members, in `MG.Sonarr.Next.Extensions`
-- `src/MG.Sonarr.Next/Services/Http/IO/ArrayPoolMemoryStream.cs`: the pooled `Stream`, in `MG.Sonarr.Next.Services.Http.IO`
-- `src/MG.Sonarr.Next/Unions/RefEither_2.cs`: `RefEither<T1, T2>`, the union behind the ladder's ternary, in `MG.Sonarr.Next.Unions`
+- Each reference stands alone, because a session reads only the references for its work, so never point one reference at another. State a fact that two references need in each of them, and put one that every reference needs in this file.
+- Keep findings out of this skill's description and its list of references, which name only areas and the changes that call for each reference. The skill listing cuts off a long description, and the triggers at its end go with it.
+- When you measure something that later work could depend on, such as how the JIT compiles some shape of code, describe the finding to the user and ask whether to add it to the reference it belongs to, and add it only once they agree. Add it with the .NET version and the date, stated as a rule for writing the code rather than as a story.

@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets;
 
-public partial class SonarrCmdletBase
+partial class SonarrCmdletBase
 {
 	/// <summary>
 	/// Writes the JSON of the specified object to the debug stream when the cmdlet's <see cref="DebugPreference"/>
@@ -186,12 +186,10 @@ public partial class SonarrCmdletBase
 	//[DebuggerStepThrough]
 	protected void WriteConditionalError(SonarrErrorRecord error)
 	{
-		if (error.IsIgnorable)
+		if (!error.IsIgnorable)
 		{
-			return;
+			this.WriteError(error);
 		}
-
-		this.WriteError(error);
 	}
 }
 

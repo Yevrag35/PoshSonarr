@@ -1,5 +1,3 @@
-using MG.Sonarr.Next.Shell.Context;
-
 namespace MG.Sonarr.Next.Shell.Cmdlets;
 
 /// <summary>
@@ -27,28 +25,22 @@ namespace MG.Sonarr.Next.Shell.Cmdlets;
 /// </remarks>
 //[DebuggerStepThrough]
 public abstract partial class SonarrCmdletBase : PSCmdlet,
-	IDisposable,
-	IIsRunning<SonarrCmdletBase>,
-	IScopeCmdlet<SonarrCmdletBase>
+	IDisposable
 {
 	private bool _disposed;
 	private bool _isInitialized;
 	private bool _isStopped;
 	private IServiceScope? _scope;
-	// Never disposed: StopProcessing cancels it on another thread, which Dispose would race, and a source whose
-	// WaitHandle nothing reads holds nothing that needs disposing.
-	//TODO: Newer PowerShell versions have a PipelineStopToken property - replace this with that.
-	private readonly CancellationTokenSource _stopping = new();
 
 	/// <summary>
-	/// Gets a value that indicates whether <see cref="BeginProcessing"/> has created the cmdlet's scope.
+	/// Gets a value that indicates whether the cmdlet holds its scope.
 	/// </summary>
 	/// <remarks>
-	/// The flag is set as soon as <see cref="BeginProcessing"/> creates the scope, before
+	/// <see cref="BeginProcessing"/> sets the flag as soon as it creates the scope, before
 	/// <see cref="OnCreatingScopeInternal(IServiceProvider)"/> and <see cref="OnCreatingScope(IServiceProvider)"/> run,
-	/// and the annotation promises that <see cref="Services"/> and <c>_scope</c> are set while it's
-	/// <see langword="true"/>, so it's meant to read <see langword="true"/> only until <see cref="Dispose(bool)"/>
-	/// disposes the scope.
+	/// and <see cref="Dispose(bool)"/> clears it before it disposes the scope. So while the flag is
+	/// <see langword="true"/>, <see cref="Services"/> and <c>_scope</c> aren't <see langword="null"/>, as the
+	/// annotation tells the compiler.
 	/// </remarks>
 	/// <value>
 	/// <see langword="true"/> while the cmdlet holds its scope; otherwise, <see langword="false"/>.
@@ -73,16 +65,6 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 	/// <see cref="End(IServiceProvider)"/> runs; otherwise, <see langword="false"/>.
 	/// </value>
 	protected bool IsStopped => _isStopped;
-
-	/// <summary>
-	/// Gets a token that is canceled when the pipeline is stopped, as Ctrl+C stops it.
-	/// </summary>
-	/// <remarks>
-	/// <see cref="StopProcessing"/> cancels it on another thread, so a request or a wait that takes it ends as soon as
-	/// the pipeline is stopped rather than when it would have finished. The <c>Send*Request</c> helpers of
-	/// <see cref="SonarrApiCmdletBase"/> send with it unless they're given a token of their own.
-	/// </remarks>
-	protected CancellationToken StoppingToken => _stopping.Token;
 
 	/// <summary>
 	/// When overridden in a derived class, gets a value that indicates whether the cmdlet captures its Debug
@@ -242,34 +224,6 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 		throw new PipelineStoppedException(message, innerException);
 	}
 
-	private static bool _hasChecked;
-	/// <summary>
-	/// Gets the flag that <see cref="IScopeCmdlet{T}.SetChecked(bool)"/> last set for every
-	/// <see cref="SonarrCmdletBase"/> cmdlet in the process.
-	/// </summary>
-	/// <remarks>
-	/// <para>The flag is static, so every runspace shares it.</para>
-	/// <para>TODO: Clarify what the flag records. Nothing in the solution calls this method or its setter.</para>
-	/// </remarks>
-	/// <returns><see langword="true"/> if the flag is set; otherwise, <see langword="false"/>.</returns>
-	static bool IScopeCmdlet<SonarrCmdletBase>.HasChecked()
-	{
-		return _hasChecked;
-	}
-	/// <summary>
-	/// Sets the flag that <see cref="IScopeCmdlet{T}.HasChecked"/> returns for every <see cref="SonarrCmdletBase"/>
-	/// cmdlet in the process.
-	/// </summary>
-	/// <remarks>
-	/// <para>The flag is static, so every runspace shares it.</para>
-	/// <para>TODO: Clarify what the flag records. Nothing in the solution calls this method or its getter.</para>
-	/// </remarks>
-	/// <param name="toggle">The flag's new value.</param>
-	static void IScopeCmdlet<SonarrCmdletBase>.SetChecked(bool toggle)
-	{
-		_hasChecked = toggle;
-	}
-
 	/// <summary>
 	/// Determines whether an exception is one that PowerShell throws to end the pipeline or to leave a script block,
 	/// which the base class lets through rather than writing it as the cmdlet's error.
@@ -321,6 +275,7 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 	{
 		if (!_disposed)
 		{
+			_isInitialized = false;
 			_scope?.Dispose();
 			_scope = null!;
 			_disposed = true;

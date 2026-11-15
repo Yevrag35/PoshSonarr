@@ -15,6 +15,7 @@ public sealed class CmdletScopeNotReadyException : PoshSonarrException
 	/// <summary>
 	/// Initializes a new instance of <see cref="CmdletScopeNotReadyException"/> with the default message.
 	/// </summary>
+	[ExcludeFromCodeCoverage]
 	public CmdletScopeNotReadyException()
 		: base(DEF_MSG)
 	{
@@ -23,6 +24,7 @@ public sealed class CmdletScopeNotReadyException : PoshSonarrException
 	/// Initializes a new instance of <see cref="CmdletScopeNotReadyException"/> with the default message and the specified cmdlet type.
 	/// </summary>
 	/// <param name="cmdletType">The type of the cmdlet that caused this exception to be thrown.</param>
+	[ExcludeFromCodeCoverage]
 	public CmdletScopeNotReadyException(Type? cmdletType)
 		: this(cmdletType, null)
 	{
@@ -32,6 +34,7 @@ public sealed class CmdletScopeNotReadyException : PoshSonarrException
 	/// </summary>
 	/// <param name="cmdletType">The type of the cmdlet that caused this exception to be thrown.</param>
 	/// <param name="innerException">The exception that is the cause of the current exception.</param>
+	[ExcludeFromCodeCoverage]
 	public CmdletScopeNotReadyException(Type? cmdletType, Exception? innerException)
 		: base(DEF_MSG, innerException)
 	{

@@ -49,6 +49,7 @@ public sealed class SonarrParameterException : PoshSonarrException
 	/// <param name="errorType">The type of error that occurred with the parameter.</param>
 	/// <param name="additionalMessage">An additional message that provides more details about the error.</param>
 	/// <param name="innerException">The exception that is the cause of the current exception.</param>
+	[ExcludeFromCodeCoverage]
 	public SonarrParameterException(string paramName, ParameterErrorType errorType, string? additionalMessage, Exception? innerException = null)
 		: base(GetMessage(paramName, errorType, additionalMessage), innerException)
 	{

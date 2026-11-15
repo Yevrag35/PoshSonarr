@@ -111,9 +111,9 @@ public sealed class GetSonarrCommandCmdlet : SonarrMetadataCmdlet
 			string url = this.Tag.GetUrlForId(id);
 			var response = this.SendGetRequest<CommandObject>(url);
 
-			if (this.TryWriteObject(response) && history.Remove(id))
+			if (this.TryWriteObject(response))
 			{
-				history.Add(response.Value);
+				_ = history.TryReplace(response.Value);
 			}
 		}
 	}

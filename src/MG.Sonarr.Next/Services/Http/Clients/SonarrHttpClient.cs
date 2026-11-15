@@ -59,7 +59,8 @@ public partial interface ISonarrClient
 	/// <param name="path">The endpoint's path, relative to the API.</param>
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>The result of the request, which holds the deserialized value on success.</returns>
-	SonarrClientResult<T> SendGet<T>(string path, CancellationToken token = default);
+	SonarrClientResult<T> SendGet<T>(string path, CancellationToken token = default)
+		where T : class;
 	/// <summary>
 	/// Sends a POST request without a body to the specified endpoint and deserializes the response's body.
 	/// </summary>
@@ -67,7 +68,8 @@ public partial interface ISonarrClient
 	/// <param name="path">The endpoint's path, relative to the API.</param>
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>The result of the request, which holds the deserialized value on success.</returns>
-	SonarrClientResult<TOutput> SendPost<TOutput>(string path, CancellationToken token = default);
+	SonarrClientResult<TOutput> SendPost<TOutput>(string path, CancellationToken token = default)
+		where TOutput : class;
 	/// <summary>
 	/// Sends a POST request with the specified body to the specified endpoint.
 	/// </summary>
@@ -87,7 +89,8 @@ public partial interface ISonarrClient
 	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>The result of the request, which holds the deserialized value on success.</returns>
-	SonarrClientResult<TOutput> SendPost<TOutput>(string path, object body, CancellationToken token = default);
+	SonarrClientResult<TOutput> SendPost<TOutput>(string path, object body, CancellationToken token = default)
+		where TOutput : class;
 	/// <summary>
 	/// Sends a PUT request with the specified body to the specified endpoint.
 	/// </summary>
@@ -98,12 +101,13 @@ public partial interface ISonarrClient
 	SonarrClientResult SendPut(string path, object body, CancellationToken token = default);
 	/// <summary>
 	/// Checks the connection's URL and API key by requesting the server's status, and stores the server's authentication
-	/// type in the connection's settings.
+	/// type and URL base in the connection's settings.
 	/// </summary>
 	/// <remarks>
 	/// On success, <see cref="IConnectionSettings.AuthType"/> takes the authentication type that the status names, or
-	/// <see cref="SonarrAuthType.None"/> when the status names none that the module knows. On failure, the settings stay
-	/// unchanged.
+	/// <see cref="SonarrAuthType.None"/> when the status names none that the module knows, and
+	/// <see cref="IConnectionSettings.ServerUrlBase"/> takes the URL base that the status reports, or
+	/// <see langword="null"/> when it reports none. On failure, the settings stay unchanged.
 	/// </remarks>
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>The result of the request.</returns>
@@ -128,7 +132,8 @@ public partial interface ISonarrClient
 	/// <typeparam name="T">The type to deserialize the status as.</typeparam>
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>The result of the request, which holds the deserialized status on success.</returns>
-	SonarrClientResult<T> SendTest<T>(CancellationToken token = default);
+	SonarrClientResult<T> SendTest<T>(CancellationToken token = default)
+		where T : class;
 }
 
 /// <summary>
@@ -178,7 +183,8 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	/// </summary>
 	private readonly IServiceScopeFactory _scopeFactory;
 	/// <summary>
-	/// The connection's settings, which <see cref="SendTest(CancellationToken)"/> stores the authentication type in.
+	/// The connection's settings, which <see cref="SendTest(CancellationToken)"/> stores the authentication type and the
+	/// server's URL base in.
 	/// </summary>
 	private readonly IConnectionSettings _settings;
 
@@ -214,6 +220,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 
 	/// <inheritdoc/>
 	public SonarrClientResult<T> SendGet<T>(string path, CancellationToken token = default)
+		where T : class
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Get, path, _scopeFactory);
 
@@ -240,6 +247,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	}
 	/// <inheritdoc/>
 	public SonarrClientResult<TOutput> SendPost<TOutput>(string path, CancellationToken token = default)
+		where TOutput : class
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
 
@@ -247,6 +255,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	}
 	/// <inheritdoc/>
 	public SonarrClientResult<TOutput> SendPost<TOutput>(string path, object body, CancellationToken token = default)
+		where TOutput : class
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
 
@@ -276,12 +285,14 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		{
 			_settings.AuthType = result.Value.TryGetAuthType(out SonarrAuthType parsedAuth)
 				? parsedAuth : SonarrAuthType.None;
+			_settings.ServerUrlBase = result.Value.UrlBase;
 		}
 
 		return result;
 	}
 	/// <inheritdoc/>
 	public SonarrClientResult<T> SendTest<T>(CancellationToken token = default)
+		where T : class
 	{
 		HttpResponseMessage? response = null;
 		using TestRequestMessage request = new(TEST_API, _scopeFactory);
@@ -372,6 +383,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	/// <param name="token">A token that cancels the request.</param>
 	/// <returns>The result of the request, which holds the deserialized value on success.</returns>
 	private SonarrClientResult<T> SendResultRequest<T>(HttpRequestMessage request, string path, CancellationToken token)
+		where T : class
 	{
 		HttpResponseMessage? response = null;
 		_cmdletAccessor.AttachTo(request);

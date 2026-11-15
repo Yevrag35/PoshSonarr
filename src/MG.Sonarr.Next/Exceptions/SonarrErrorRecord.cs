@@ -181,23 +181,6 @@ public sealed class SonarrErrorRecord : ErrorRecord, IHttpRequestUri
 	}
 
 	/// <summary>
-	/// Parses HTTP response headers into a read-only dictionary.
-	/// </summary>
-	/// <param name="response">The response that provides headers.</param>
-	/// <returns>A read-only header dictionary.</returns>
-	private static IReadOnlyDictionary<string, string> ParseResponseHeaders(HttpResponseMessage response)
-	{
-		var headers = response.Headers;
-		Dictionary<string, string> dict = new();
-		foreach (var header in headers)
-		{
-			_ = dict.TryAdd(header.Key, string.Join(Environment.NewLine, header.Value));
-		}
-
-		return dict;
-	}
-
-	/// <summary>
 	/// Builds the error message and resolves the request URI.
 	/// </summary>
 	/// <remarks>

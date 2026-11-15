@@ -18,28 +18,3 @@ internal interface IConnectContextCmdlet
 	IConnectionSettings GetConnectionSettings();
 }
 
-/// <summary>
-/// Represents a cmdlet that can remove the module's connection.
-/// </summary>
-/// <remarks>
-/// The interface has no members. It marks the cmdlets that the two <c>UnsetContext</c> overloads of
-/// <see cref="CmdletContextExtensions"/> accept: the disconnecting cmdlet, and the connecting cmdlet, which removes the
-/// connection it made when its check of the URL and key fails.
-/// </remarks>
-internal interface IDisconnectContextCmdlet
-{
-}
-
-/// <summary>
-/// Represents a cmdlet that tests connection settings on services of its own, without changing the module's
-/// connection.
-/// </summary>
-/// <remarks>
-/// The interface has no members. It marks the cmdlets that
-/// <see cref="CmdletContextExtensions.BuildTestContext{T}(T, IConnectionSettings, System.Reflection.Assembly, Action{IServiceCollection})"/>
-/// accepts.
-/// </remarks>
-internal interface ITestContextCmdlet
-{
-}
-

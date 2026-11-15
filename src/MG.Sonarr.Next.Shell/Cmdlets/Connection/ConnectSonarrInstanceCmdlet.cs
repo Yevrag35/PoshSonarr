@@ -234,7 +234,8 @@ public sealed class ConnectSonarrInstanceCmdlet : ConnectCmdlet, IApiCmdlet
 	/// specified flag asks for it.
 	/// </summary>
 	/// <remarks>
-	/// Both kinds of test store the server's authentication type in the connection's settings when they succeed:
+	/// Both kinds of test store the server's authentication type and URL base in the connection's settings when they
+	/// succeed:
 	/// <see cref="ISonarrClient.SendTest(CancellationToken)"/> itself, and with <paramref name="passThru"/>, this method, from the status
 	/// that it writes. The status comes from the same test, so a wrong key or a URL that doesn't reach Sonarr's API fails
 	/// in the same way either way.
@@ -259,6 +260,7 @@ public sealed class ConnectSonarrInstanceCmdlet : ConnectCmdlet, IApiCmdlet
 		{
 			var settings = provider.GetRequiredService<IConnectionSettings>();
 			settings.AuthType = response.Value.Authentication;
+			settings.ServerUrlBase = response.Value.UrlBase;
 
 			this.WriteObject(response.Value);
 		}

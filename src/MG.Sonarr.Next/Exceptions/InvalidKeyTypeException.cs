@@ -26,6 +26,7 @@ public class InvalidTypeException : PoshSonarrException
 	/// <param name="expectedType">The expected type.</param>
 	/// <param name="actualValue">The actual value to evaluate.</param>
 	/// <param name="innerException">The exception that caused the current exception.</param>
+	[ExcludeFromCodeCoverage]
 	protected InvalidTypeException(string msgFormat, Type expectedType, object? actualValue, Exception? innerException)
 		: base(GetMessage(msgFormat, ref expectedType, actualValue, out Type? actualType), innerException)
 	{
@@ -55,6 +56,7 @@ public class InvalidTypeException : PoshSonarrException
 /// <summary>
 /// Represents an exception thrown when a dictionary key has an unexpected type.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class InvalidKeyTypeException : InvalidTypeException
 {
 	private const string DEF_MSG = "The dictionary key was not of the correct type - expected '{0}' and got '{1}'.";
@@ -84,6 +86,7 @@ public sealed class InvalidKeyTypeException : InvalidTypeException
 /// <summary>
 /// Represents an exception thrown when a dictionary value has an unexpected type.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class InvalidValueTypeException : InvalidTypeException
 {
 	private const string DEF_MSG = "The dictionary value was not of the correct type - expected '{0}' and got '{1}'.";

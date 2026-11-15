@@ -13,11 +13,6 @@ internal sealed class ApiKeyRequestMessage : SonarrRequestMessage
 	/// </summary>
 	/// <value>Always <see langword="false"/>.</value>
 	public override bool IsTest => false;
-	/// <summary>
-	/// Gets a value that indicates whether the request can authenticate with a login cookie.
-	/// </summary>
-	/// <value>Always <see langword="false"/>; the request authenticates with the API key.</value>
-	public override bool CanUseCookieAuthentication => false;
 
 	/// <summary>
 	/// Initializes a new <see cref="ApiKeyRequestMessage"/> instance with the specified HTTP method, URL string, and

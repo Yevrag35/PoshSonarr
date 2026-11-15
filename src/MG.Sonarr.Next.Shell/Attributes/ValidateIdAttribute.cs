@@ -268,14 +268,10 @@ internal readonly struct IdValidator
 	/// <summary>
 	/// Initializes a new <see cref="IdValidator"/> instance with the specified pointer to a range check.
 	/// </summary>
-	/// <safety>
-	/// <paramref name="ptr"/> must be <see langword="null"/>, which throws, or point to a method whose signature matches
-	/// the pointer's type.
-	/// </safety>
 	/// <param name="ptr">The pointer to a static method that returns whether an ID is in its range and gives the range
 	/// as its <see langword="out"/> argument.</param>
 	/// <exception cref="ArgumentNullException">Thrown when <paramref name="ptr"/> is null.</exception>
-	internal unsafe IdValidator(delegate* managed<int, out ValidateRangeKind, bool> ptr)
+	internal IdValidator(delegate* managed<int, out ValidateRangeKind, bool> ptr)
 	{
 		ArgumentNullException.ThrowIfNull(ptr);
 		_ptr = ptr;
@@ -293,9 +289,9 @@ internal readonly struct IdValidator
 	{
 		unsafe
 		{
-			// SAFETY: The constructor turns away a null pointer, and its caller passes one to a method of this signature,
-			// as its safety contract requires. Each attribute builds its check in its constructor, so none holds the null
-			// pointer of a default instance.
+			// SAFETY: The constructor turns away a null pointer, and the pointer's type limits it to a method of this
+			// signature, which the compiler checks where the pointer is taken. Each attribute builds its check in its
+			// constructor, so none holds the null pointer of a default instance.
 			return _ptr(id, out kind);
 		}
 	}
@@ -416,18 +412,13 @@ file static class IdValidationHelper
 	/// <see cref="ValidateRangeKind.Positive"/> when <paramref name="kind"/> is undefined.</returns>
 	internal static IdValidator GetIdValidator(ValidateRangeKind kind)
 	{
-		unsafe
+		return kind switch
 		{
-			// SAFETY: Each pointer is the address of a static method of this class with the signature that the pointer's
-			// type gives.
-			return kind switch
-			{
-				ValidateRangeKind.NonNegative => new(&MustBeNonNegative),
-				ValidateRangeKind.Negative => new(&MustBeNegative),
-				ValidateRangeKind.NonPositive => new(&MustBeNonPositive),
-				ValidateRangeKind.Positive or _ => new(&MustBePositive),
-			};
-		}
+			ValidateRangeKind.NonNegative => new(&MustBeNonNegative),
+			ValidateRangeKind.Negative => new(&MustBeNegative),
+			ValidateRangeKind.NonPositive => new(&MustBeNonPositive),
+			ValidateRangeKind.Positive or _ => new(&MustBePositive),
+		};
 	}
 
 	/// <summary>

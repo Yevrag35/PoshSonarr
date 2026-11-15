@@ -3,6 +3,8 @@ namespace MG.Sonarr.Next.Extensions;
 /// <summary>
 /// Provides extension methods for performing equality checks on objects.
 /// </summary>
+[SharedCode]
+[ExcludeFromCodeCoverage]
 internal static class RefEqualityExtensions
 {
 	/// <summary>

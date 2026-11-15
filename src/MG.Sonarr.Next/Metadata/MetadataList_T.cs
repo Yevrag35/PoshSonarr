@@ -15,7 +15,9 @@ namespace MG.Sonarr.Next.Metadata;
 /// </remarks>
 /// <typeparam name="T">The type of the list's elements.</typeparam>
 [CollectionBuilder(typeof(MetadataList), nameof(MetadataList.Create)), DebuggerDisplay("Count = {Count}")]
-public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, ISortable where T : class, IComparable<T>, IJsonMetadataTaggable
+public sealed partial class MetadataList<T> : IList<T>, ICollection,
+	IJsonMetadataTaggable, ISortable
+	where T : class, IComparable<T>, IJsonMetadataTaggable
 {
 	/// <summary>
 	/// The list that holds the elements.
@@ -48,6 +50,13 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 	/// <value>Always <see langword="false"/>.</value>
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	bool ICollection<T>.IsReadOnly => false;
+
+	/// <inheritdoc/>
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+	bool ICollection.IsSynchronized => false;
+	/// <inheritdoc/>
+	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+	object ICollection.SyncRoot => this;
 
 	/// <summary>
 	/// Initializes a new, empty <see cref="MetadataList{T}"/> instance.
@@ -323,5 +332,12 @@ public sealed partial class MetadataList<T> : IList<T>, IJsonMetadataTaggable, I
 
 		result = default;
 		return false;
+	}
+
+	/// <inheritdoc/>
+	[DebuggerStepThrough]
+	void ICollection.CopyTo(Array array, int index)
+	{
+		((ICollection)_list).CopyTo(array, index);
 	}
 }

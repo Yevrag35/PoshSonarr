@@ -18,7 +18,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// <para>The handler calls <see cref="IApiCmdlet.WriteDebugPayload(string)"/> after an <see langword="await"/>, often
 /// on a thread-pool thread. It keeps no per-request state, so one instance can serve concurrent requests.</para>
 /// </remarks>
-public sealed class DebugSerializeHandler : DelegatingHandler
+internal sealed class DebugSerializeHandler : DelegatingHandler
 {
 	/// <summary>
 	/// Sends the request to the inner handler and blocks until its response arrives, writing the bodies to the sending

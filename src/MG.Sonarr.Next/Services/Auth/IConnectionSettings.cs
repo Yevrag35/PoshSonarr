@@ -27,6 +27,20 @@ public interface IConnectionSettings
 	/// </value>
 	bool NoApiInPath { get; }
 	/// <summary>
+	/// Gets or sets the URL base that the Sonarr server's status reports.
+	/// </summary>
+	/// <remarks>
+	/// The connection's test stores it. Sonarr accepts the URL base in any case, but it spells the URLs of its own pages,
+	/// such as a log file's download URL, its own way, and the cookie of a forms login goes back only with a request
+	/// whose path matches the cookie's path in case too. So downloads, and the forms login that they need, spell the URL
+	/// base as the server does when it matches the path of <see cref="ServiceUri"/> without regard to case.
+	/// </remarks>
+	/// <value>
+	/// The URL base as the server reports it, such as <c>/sonarr</c>, an empty string for a server without one, or
+	/// <see langword="null"/> when no test has stored it.
+	/// </value>
+	string? ServerUrlBase { get; set; }
+	/// <summary>
 	/// Gets the base <see cref="Uri"/> of the Sonarr server instance.
 	/// </summary>
 	/// <value>

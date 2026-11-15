@@ -51,28 +51,16 @@ public static class CmdletContextExtensions
 	/// Creates the service scope that the specified cmdlet runs in, on the module's connection.
 	/// </summary>
 	/// <remarks>
-	/// <para>
 	/// The scope holds a lease on the connection's provider, so the provider stays alive until the scope is disposed, even
 	/// when another runspace connects or disconnects in the meantime. When <paramref name="cmdlet"/> is an
 	/// <see cref="IApiCmdlet"/>, the scope's <see cref="ApiCmdletAccessor"/> holds it, so the HTTP handlers can write
 	/// its verbose and debug output.
-	/// </para>
-	/// <para>
-	/// The constraints on <typeparamref name="T"/> limit the method to the module's cmdlet base classes. Nothing in the
-	/// method calls the members of <see cref="IIsRunning{T}"/> or <see cref="IScopeCmdlet{T}"/>.
-	/// </para>
 	/// </remarks>
-	/// <typeparam name="T">The type of the cmdlet.</typeparam>
 	/// <param name="cmdlet">The cmdlet that runs in the new scope.</param>
 	/// <returns>A new scope on the module's connection, which the caller disposes when the cmdlet ends.</returns>
 	/// <exception cref="ContextNotSetException">Thrown when the module has no connection.</exception>
-	internal static IServiceScope CreateScope<T>(this T cmdlet) where T : PSCmdlet, IIsRunning<T>, IScopeCmdlet<T>
+	internal static IServiceScope CreateScope(this PSCmdlet cmdlet)
 	{
-		//if (!T.IsRunningCommand(cmdlet))
-		//{
-		//    throw new InvalidOperationException("Don't execute me weird.");
-		//}
-
 		return SonarrContext.CreateScope().WithCmdlet(cmdlet);
 	}
 
@@ -157,7 +145,7 @@ public static class CmdletContextExtensions
 	/// <para>
 	/// The returned scope holds a lease on the new connection, and its <see cref="ApiCmdletAccessor"/> holds
 	/// <paramref name="cmdlet"/> when it's an <see cref="IApiCmdlet"/>. Pass the scope to
-	/// <see cref="UnsetContext{T}(T, IServiceScope)"/> to remove this connection when its check of the URL and key
+	/// <see cref="UnsetContext(PSCmdlet, IServiceScope)"/> to remove this connection when its check of the URL and key
 	/// fails.
 	/// </para>
 	/// </remarks>
@@ -171,7 +159,7 @@ public static class CmdletContextExtensions
 	/// <exception cref="AggregateException">Thrown, in builds other than Release, when the container's validation finds a
 	/// service that it can't build.</exception>
 	internal static IServiceScope SetContext<T>(this T cmdlet, Assembly cmdletAssembly, Action<IServiceCollection> addAdditionalServices)
-		where T : PSCmdlet, IConnectContextCmdlet, IIsRunning<T>
+		where T : PSCmdlet, IConnectContextCmdlet
 	{
 		return SonarrContext.Initialize(cmdlet.GetConnectionSettings(), cmdletAssembly, cmdlet.MyInvocation.BoundParameters, addAdditionalServices)
 			.WithCmdlet(cmdlet);
@@ -183,9 +171,8 @@ public static class CmdletContextExtensions
 	/// The connection's provider is disposed once the last scope on it ends, so a cmdlet that's running in another
 	/// runspace finishes on it. Without a connection, the method does nothing.
 	/// </remarks>
-	/// <typeparam name="T">The type of the disconnecting cmdlet.</typeparam>
 	/// <param name="_">The disconnecting cmdlet. The method doesn't read it.</param>
-	internal static void UnsetContext<T>(this T _) where T : IDisconnectContextCmdlet, IScopeCmdlet<T>
+	internal static void UnsetContext(this PSCmdlet _)
 	{
 		SonarrContext.Deinitialize();
 	}
@@ -195,12 +182,11 @@ public static class CmdletContextExtensions
 	/// <remarks>
 	/// A connection that another runspace made since the scope's was made stays the module's connection.
 	/// </remarks>
-	/// <typeparam name="T">The type of the cmdlet that made the connection.</typeparam>
 	/// <param name="_">The cmdlet that made the connection. The method doesn't read it.</param>
 	/// <param name="connectScope">The scope that <see cref="SetContext{T}(T, Assembly, Action{IServiceCollection})"/>
 	/// returned for the connection. A scope that's already disposed, or that came from anywhere else, removes
 	/// nothing.</param>
-	internal static void UnsetContext<T>(this T _, IServiceScope connectScope) where T : IDisconnectContextCmdlet, IScopeCmdlet<T>
+	internal static void UnsetContext(this PSCmdlet _, IServiceScope connectScope)
 	{
 		SonarrContext.Deinitialize(connectScope);
 	}
@@ -212,7 +198,6 @@ public static class CmdletContextExtensions
 	/// The module's connection stays as it was, so a test of a URL and key leaves every runspace's cmdlets on the
 	/// connection they had.
 	/// </remarks>
-	/// <typeparam name="T">The type of the testing cmdlet.</typeparam>
 	/// <param name="_">The testing cmdlet. The method doesn't read it.</param>
 	/// <param name="settings">The settings of the connection to test.</param>
 	/// <param name="cmdletAssembly">The assembly whose cmdlets the metadata tags list as able to take piped
@@ -222,8 +207,7 @@ public static class CmdletContextExtensions
 	/// <returns>A new provider, which the caller owns and disposes when the test ends.</returns>
 	/// <exception cref="AggregateException">Thrown, in builds other than Release, when the container's validation finds a
 	/// service that it can't build.</exception>
-	internal static ServiceProvider BuildTestContext<T>(this T _, IConnectionSettings settings, Assembly cmdletAssembly, Action<IServiceCollection> addAdditionalServices)
-		where T : PSCmdlet, ITestContextCmdlet
+	internal static ServiceProvider BuildTestContext(this PSCmdlet _, IConnectionSettings settings, Assembly cmdletAssembly, Action<IServiceCollection> addAdditionalServices)
 	{
 		return SonarrContext.Build(settings, cmdletAssembly, addAdditionalServices);
 	}
@@ -320,7 +304,7 @@ file static class SonarrContext
 	/// <returns>Nothing, since the method always throws.</returns>
 	/// <exception cref="ContextNotSetException">Thrown always, with a <see cref="CmdletScopeNotReadyException"/> as its
 	/// inner exception.</exception>
-	[DoesNotReturn]
+	[DoesNotReturn, DebuggerStepThrough, StackTraceHidden]
 	private static T ThrowNotSet<T>()
 	{
 		throw new ContextNotSetException(new CmdletScopeNotReadyException());

@@ -171,6 +171,7 @@ public sealed class EditSonarrManualImportCmdlet : SonarrApiCmdletBase
 	/// <param name="tag">The metadata tag of the endpoint that the ID is looked up at.</param>
 	/// <returns>The object, or <see langword="null"/> when the request failed.</returns>
 	private T? GetObject<T>(Either<int, T> oneOf, MetadataTag tag)
+		where T : class
 	{
 		if (oneOf.TryGetT2(out T? value, out int id))
 		{

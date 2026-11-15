@@ -103,6 +103,7 @@ public sealed class EnumEqualityChecker<T> : EqualityChecker where T : unmanaged
 	/// <see langword="true"/> if <paramref name="x"/> and <paramref name="y"/> are the same number; otherwise,
 	/// <see langword="false"/>.
 	/// </returns>
+	[SuppressMessage("Style", "IDE0380", Justification = "Reinterprets the values without checking the type argument, so a TNum wider than the enum's underlying type reads bytes past each value.")]
 	private static unsafe bool AreValuesEqual<TNum>(ref T x, ref T y) where TNum : unmanaged, INumber<TNum>
 	{
 		unsafe

@@ -41,19 +41,22 @@ public sealed class AlwaysStringConverter : SpanConverter<string>
 	/// </summary>
 	/// <param name="chars">The unescaped characters of the value.</param>
 	/// <param name="propertyName">The name of the property that the value belongs to, which isn't used.</param>
-	/// <param name="isNull">A value that indicates whether the JSON value is null, which isn't used.</param>
-	/// <returns>
-	/// The value as a string, trimmed when the converter trims, or <see cref="string.Empty"/> when nothing remains.
-	/// </returns>
-	public override string? ConvertSpan(Span<char> chars, ReadOnlySpan<char> propertyName, bool isNull)
+	/// <param name="value">
+	/// When this method returns, the value as a string, trimmed when the converter trims, or <see cref="string.Empty"/>
+	/// when nothing remains.
+	/// </param>
+	/// <returns>Always <see langword="true"/>, since every value reads as a string.</returns>
+	public override bool TryConvertSpan(Span<char> chars, ReadOnlySpan<char> propertyName, out string value)
 	{
 		if (_trim)
 		{
 			chars = chars.Trim();
 		}
 
-		return chars.IsEmpty
+		value = chars.IsEmpty
 			? string.Empty
 			: new string(chars);
+
+		return true;
 	}
 }

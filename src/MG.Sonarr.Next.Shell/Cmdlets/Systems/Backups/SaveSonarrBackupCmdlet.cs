@@ -1,6 +1,7 @@
 using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Exceptions.Shell;
 using MG.Sonarr.Next.Extensions;
+using MG.Sonarr.Next.Extensions.Pwsh;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.System;
 using MG.Sonarr.Next.Services.Http;
@@ -148,17 +149,26 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 	/// Gets or sets the credentials that the download sends when the server's authentication needs them.
 	/// </summary>
 	/// <remarks>
+	/// <para>
 	/// The credentials go out only when the authentication type that the connection's test found needs them, as Basic
-	/// or forms authentication does. A read always gives <see langword="null"/>.
+	/// or forms authentication does. Without them, the download goes out as it is, which Sonarr serves when it requires
+	/// no login for the client's address.
+	/// </para>
+	/// <para>
+	/// The user name goes out as it was typed, a part such as <c>DOM\</c> or <c>@home</c> included. A credential whose
+	/// user name is white space or whose password is empty fails the binding, and <see cref="PSCredential.Empty"/> stands
+	/// for no credentials. A read always gives <see langword="null"/>.
+	/// </para>
 	/// </remarks>
 	/// <value>Always <see langword="null"/> when read.</value>
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 	[MaybeNull]
 	[Parameter(Mandatory = false)]
+	[ValidateLoginCredential]
 	public PSCredential Credential
 	{
 		get => null;
-		set => _creds = value?.GetNetworkCredential();
+		set => _creds = value.ToLoginCredential();
 	}
 	private NetworkCredential? _creds;
 

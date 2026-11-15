@@ -10,6 +10,7 @@ public class PoshSonarrException : Exception
 	/// error message.
 	/// </summary>
 	/// <param name="message">The message that describes the error.</param>
+	[ExcludeFromCodeCoverage]
 	protected PoshSonarrException(string? message)
 		: base(message)
 	{
@@ -23,6 +24,7 @@ public class PoshSonarrException : Exception
 	///     The exception that is the casue of the current exception, or a <see langword="null"/> reference
 	///     if no inner exception is specified.
 	/// </param>
+	[ExcludeFromCodeCoverage]
 	protected PoshSonarrException(string? message, Exception? innerException)
 		: base(message, innerException)
 	{

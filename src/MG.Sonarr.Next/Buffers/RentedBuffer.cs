@@ -5,7 +5,8 @@ namespace MG.Sonarr.Next.Buffers;
 /// <summary>
 /// Provides methods for creating and managing rented buffers using the shared <see cref="ArrayPool{T}"/>.
 /// </summary>
-[DebuggerStepThrough]
+[SharedCode]
+[DebuggerStepThrough, ExcludeFromCodeCoverage]
 internal static class RentedBuffer
 {
 	/// <summary>

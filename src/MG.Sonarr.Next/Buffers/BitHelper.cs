@@ -5,7 +5,8 @@ namespace MG.Sonarr.Next.Buffers;
 /// <summary>
 /// A helper class for working with bits.
 /// </summary>
-[DebuggerStepThrough]
+[SharedCode]
+[DebuggerStepThrough, ExcludeFromCodeCoverage]
 internal static class BitHelper
 {
 	/// <summary>

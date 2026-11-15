@@ -1,3 +1,4 @@
+using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models.DownloadClients;
 using MG.Sonarr.Next.Shell.Attributes;
@@ -23,6 +24,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.DownloadClients;
 /// </remarks>
 [Cmdlet(VerbsCommon.Remove, "SonarrDownloadClient", ConfirmImpact = ConfirmImpact.High, SupportsShouldProcess = true,
 	DefaultParameterSetName = PSConstants.PSetExplicitId)]
+[MetadataCanPipe(Tag = Meta.DownloadClient)]
 public sealed class RemoveSonarrDownloadClientCmdlet : SonarrMetadataCmdlet
 {
 	private SortedSet<int> _ids = null!;

@@ -1,16 +1,12 @@
-using MG.Sonarr.Next.Attributes;
 using MG.Sonarr.Next.Collections;
-using MG.Sonarr.Next.Extensions.Reflection;
 using MG.Sonarr.Next.Json.Converters;
 using MG.Sonarr.Next.Json.Converters.Spans;
 using MG.Sonarr.Next.Json.Modifiers;
 using MG.Sonarr.Next.Json.Naming;
 using MG.Sonarr.Next.Metadata;
-using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Episodes;
 using MG.Sonarr.Next.Models.Fields;
 using MG.Sonarr.Next.Models.ManualImports;
-using MG.Sonarr.Next.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization.Metadata;
 
@@ -242,51 +238,10 @@ public static class SonarrJsonDependencyInjection
 			new ImmutableArrayConverter<ManualImportObject>(),
 			new ImmutableArrayConverter<SelectOptionObject>());
 
-		List<JsonConverter> sonarrConverters = ConstructSonarrObjectConverters(objCon);
-		ThrowIfMissingConverters(sonarrConverters.Count == 0, sonarrConverters);
-
-		options.Converters.AddMany(CollectionsMarshal.AsSpan(sonarrConverters));
-	}
-
-	/// <summary>
-	/// Constructs all Sonarr object converters from discovered Sonarr object types.
-	/// </summary>
-	/// <param name="converter">The shared object converter dependency.</param>
-	/// <returns>A list of constructed Sonarr object converters.</returns>
-	private static List<JsonConverter> ConstructSonarrObjectConverters(ObjectConverter converter)
-	{
-		List<JsonConverter> output = new(10);
-		Type genericClassType = typeof(SonarrObjectConverter<>);
-		object[] ctorArgs = [converter];
-		Type[] typeParams = new Type[1];
-
-		IEnumerable<Type> types = GetSonarrObjectTypes();
-
-		foreach (Type resolvedConverterType in types)
-		{
-			typeParams[0] = resolvedConverterType;
-			JsonConverter constructed = ConstructConverter(genericClassType, typeParams, ctorArgs);
-			output.Add(constructed);
-		}
-
-		return output;
-	}
-
-	/// <summary>
-	/// Constructs a closed generic JSON converter instance.
-	/// </summary>
-	/// <param name="genericClassType">The open generic converter type.</param>
-	/// <param name="typeParams">The type arguments for the generic converter type.</param>
-	/// <param name="activatorArgs">The constructor arguments for the converter instance.</param>
-	/// <returns>The constructed converter instance.</returns>
-	/// <exception cref="System.InvalidOperationException">Thrown when the converter instance cannot be created.</exception>
-	private static JsonConverter ConstructConverter(Type genericClassType, Type[] typeParams, object[] activatorArgs)
-	{
-		Type constructedClassType = genericClassType.MakeGenericType(typeParams);
-		JsonConverter constructed = (JsonConverter?)Activator.CreateInstance(constructedClassType, activatorArgs)
-			?? throw new InvalidOperationException($"Unable to construct {constructedClassType.GetName()}.");
-
-		return constructed;
+		// SonarrObjectConverterGenerator, in MG.Sonarr.Next.Generators, lists a converter for each model class marked
+		// [SonarrObject] and fails the build for a marked class that the converter can't take. With no class to list,
+		// it generates no SonarrObjectConverters, so this line doesn't compile.
+		options.Converters.AddMany(SonarrObjectConverters.Create(objCon));
 	}
 
 	/// <summary>
@@ -335,75 +290,5 @@ public static class SonarrJsonDependencyInjection
 			Constants.MetaPropertyName,
 			Constants.Property_ShortOverview,
 		];
-	}
-
-	/// <summary>
-	/// Gets exported Sonarr object types from marked assemblies.
-	/// </summary>
-	/// <remarks>
-	/// An assembly whose attributes can't be read, such as one whose attribute types come from an assembly that isn't
-	/// there, is skipped rather than failing the connection. The marker is on the module's own assembly, whose
-	/// attributes all resolve.
-	/// </remarks>
-	/// <returns>The discovered Sonarr object types.</returns>
-	private static IEnumerable<Type> GetSonarrObjectTypes()
-	{
-		Assembly[] assemblies = AssemblyLoader.GetAppDomainAssemblies(AppDomain.CurrentDomain);
-
-		return assemblies
-			.Where(ass => !ass.IsDynamic && IsMarked(ass))
-			.SelectMany(ass => ass.GetExportedTypes()
-								  .Where(t => t.IsClass
-											  &&
-											  !t.IsAbstract
-											  &&
-											  t.IsDefined(
-												  typeof(SonarrObjectAttribute),
-												  inherit: false)
-											  &&
-											  typeof(SonarrObject).IsAssignableFrom(t)));
-	}
-
-	/// <summary>
-	/// Determines whether an assembly carries the attribute that marks its models for converters.
-	/// </summary>
-	/// <remarks>
-	/// <see cref="Assembly.IsDefined(Type, bool)"/> resolves the type of every attribute on the assembly, so an
-	/// attribute from an assembly that can't be loaded makes it throw, even when the marker isn't among them.
-	/// </remarks>
-	/// <param name="assembly">The assembly to check.</param>
-	/// <returns>
-	/// <see langword="true"/> if <paramref name="assembly"/> carries the marker; otherwise, <see langword="false"/>,
-	/// also when its attributes can't be read.
-	/// </returns>
-	private static bool IsMarked(Assembly assembly)
-	{
-		try
-		{
-			return assembly.IsDefined(typeof(SonarrObjectConverterAssemblyAttribute), inherit: false);
-		}
-		catch (Exception e) when (e is FileNotFoundException or FileLoadException or BadImageFormatException or TypeLoadException)
-		{
-			return false;
-		}
-	}
-
-	/// <summary>
-	/// Throws when no converters were constructed.
-	/// </summary>
-	/// <param name="condition"><see langword="true"/> to throw; otherwise, <see langword="false"/>.</param>
-	/// <param name="offender">The converter list used for count reporting.</param>
-	/// <param name="paramName">The argument name used for exception reporting.</param>
-	/// <exception cref="ModuleStartupException">Thrown when <paramref name="condition"/> is <see langword="true"/>.</exception>
-	private static void ThrowIfMissingConverters([DoesNotReturnIf(true)] bool condition, List<JsonConverter> offender, [CallerArgumentExpression(nameof(offender))] string? paramName = null)
-	{
-		if (condition)
-		{
-			ArgumentOutOfRangeException countEx = new(paramName, offender.Count, "Expected one or more converters in the list.");
-			throw new ModuleStartupException(
-				message: ExMessages.Startup_Exception_NoConvertersConstructed,
-				offendingType: typeof(SonarrJsonDependencyInjection),
-				innerException: countEx);
-		}
 	}
 }

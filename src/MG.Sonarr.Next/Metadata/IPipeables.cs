@@ -170,6 +170,19 @@ public interface ITagPipeable : IHasId, IJsonSonarrMetadata,
 	IPipeable<ITagPipeable>
 {
 	/// <summary>
+	/// Gets a value that indicates whether <see cref="Tags"/> holds the object's tags.
+	/// </summary>
+	/// <remarks>
+	/// A cmdlet reads or changes the object's tags through <see cref="Tags"/> only when this is <see langword="true"/>.
+	/// </remarks>
+	/// <value>
+	/// <see langword="true"/> if <see cref="Tags"/> holds the IDs of the object's tags; <see langword="false"/> if the
+	/// object's <c>Tags</c> property holds values that weren't read as tag IDs, which <see cref="Tags"/> doesn't hold,
+	/// and which a change to <see cref="Tags"/> doesn't reach.
+	/// </value>
+	bool HasReadableTags { get; }
+
+	/// <summary>
 	/// Gets a value that indicates whether a change to the object's tags must be saved with a request to Sonarr.
 	/// </summary>
 	/// <value>

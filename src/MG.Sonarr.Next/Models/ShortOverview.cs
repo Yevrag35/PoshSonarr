@@ -97,6 +97,7 @@ public readonly struct ShortOverview
 	/// The kept text, with white space trimmed from both ends, followed by three periods when some of the text was left
 	/// out.
 	/// </returns>
+	[SuppressMessage("Style", "IDE0380", Justification = "Slices the text without range checks, so a length outside 1 through the text's length reads memory outside it.")]
 	private static unsafe string Truncate(ReadOnlySpan<char> text, int shortenedLength)
 	{
 		int end = shortenedLength - 1;

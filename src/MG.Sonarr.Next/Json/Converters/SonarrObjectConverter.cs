@@ -88,7 +88,7 @@ public sealed class SonarrObjectConverter<T> : ByPolicyJsonConverter<T> where T 
 	/// <param name="writer">The writer to write the object to.</param>
 	/// <param name="value">The model to write.</param>
 	/// <param name="options">The serializer options that nested values are written with.</param>
-	public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+	public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options)
 	{
 		if (value is IJsonOnSerializing serializing)
 		{
