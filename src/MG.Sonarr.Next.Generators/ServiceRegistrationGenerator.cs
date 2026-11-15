@@ -155,7 +155,7 @@ public sealed class ServiceRegistrationGenerator : IIncrementalGenerator
 		}
 
 		Accessibility accessibility = Accessibility.Public;
-		if (!TryNarrowAccessibility(implementation, ref accessibility, out string hidden))
+		if (!SymbolAccessibility.TryNarrow(implementation, ref accessibility, out string hidden))
 		{
 			return RegistrationResult.Fatal(new DiagnosticInfo(s_notAccessibleRule, location, implementation.Name, hidden));
 		}
@@ -170,7 +170,7 @@ public sealed class ServiceRegistrationGenerator : IIncrementalGenerator
 					s_notAssignableRule, location, serviceType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), implementation.Name));
 			}
 
-			if (!TryNarrowAccessibility(serviceType, ref accessibility, out hidden))
+			if (!SymbolAccessibility.TryNarrow(serviceType, ref accessibility, out hidden))
 			{
 				return RegistrationResult.Fatal(new DiagnosticInfo(s_notAccessibleRule, location, implementation.Name, hidden));
 			}
@@ -338,77 +338,6 @@ public sealed class ServiceRegistrationGenerator : IIncrementalGenerator
 	{
 		CommonConversion conversion = compilation.ClassifyCommonConversion(implementation, serviceType);
 		return conversion.IsIdentity || (conversion.IsImplicit && conversion.IsReference && !conversion.IsUserDefined);
-	}
-
-	/// <summary>
-	/// Narrows the generated class's accessibility to what a type allows, or finds the type that the class can't name.
-	/// </summary>
-	/// <remarks>
-	/// The generated class sits at namespace scope, so it names a nested type through every type that contains it, and
-	/// a constructed type through each of its type arguments. It's public only when all of them are public, and
-	/// internal when one of them is internal or <see langword="protected"/> <see langword="internal"/>, so its public
-	/// method never registers a type that callers outside the assembly couldn't name.
-	/// </remarks>
-	/// <param name="type">The type that the generated class names.</param>
-	/// <param name="accessibility">
-	/// The accessibility so far, <see cref="Accessibility.Public"/> or <see cref="Accessibility.Internal"/>, which this
-	/// method lowers to internal when <paramref name="type"/> calls for it.
-	/// </param>
-	/// <param name="hidden">
-	/// When this method returns <see langword="false"/>, contains the phrase that names the type the class can't name,
-	/// such as <c>'Hidden' is private</c>; otherwise, an empty string.
-	/// </param>
-	/// <returns><see langword="true"/> if the generated class can name <paramref name="type"/>; otherwise, <see langword="false"/>.</returns>
-	private static bool TryNarrowAccessibility(ITypeSymbol type, ref Accessibility accessibility, out string hidden)
-	{
-		switch (type)
-		{
-			case IArrayTypeSymbol array:
-				return TryNarrowAccessibility(array.ElementType, ref accessibility, out hidden);
-
-			case INamedTypeSymbol named:
-				for (INamedTypeSymbol? current = named; current is not null; current = current.ContainingType)
-				{
-					if (current.IsFileLocal)
-					{
-						hidden = $"'{current.Name}' is file-local";
-						return false;
-					}
-
-					switch (current.DeclaredAccessibility)
-					{
-						case Accessibility.Internal:
-						case Accessibility.ProtectedOrInternal:
-							accessibility = Accessibility.Internal;
-							break;
-
-						case Accessibility.Private:
-							hidden = $"'{current.Name}' is private";
-							return false;
-
-						case Accessibility.Protected:
-							hidden = $"'{current.Name}' is protected";
-							return false;
-
-						case Accessibility.ProtectedAndInternal:
-							hidden = $"'{current.Name}' is private protected";
-							return false;
-					}
-				}
-
-				foreach (ITypeSymbol argument in named.TypeArguments)
-				{
-					if (!TryNarrowAccessibility(argument, ref accessibility, out hidden))
-						return false;
-				}
-
-				hidden = string.Empty;
-				return true;
-
-			default:
-				hidden = string.Empty;
-				return true;
-		}
 	}
 
 	/// <summary>Builds the default method name from the marked type's name.</summary>
@@ -679,63 +608,4 @@ namespace MG.Sonarr.Next.Generators
 		string AddMethodName,
 		string LifetimeWord,
 		string HintName);
-
-	/// <summary>Carries a diagnostic through the incremental pipeline without rooting a syntax tree.</summary>
-	/// <param name="Descriptor">The rule being reported.</param>
-	/// <param name="Location">The position to report it at, or <see langword="null"/> for no position.</param>
-	/// <param name="Argument0">The first message argument.</param>
-	/// <param name="Argument1">The second message argument.</param>
-	private sealed record DiagnosticInfo(
-		DiagnosticDescriptor Descriptor,
-		LocationInfo? Location,
-		string Argument0,
-		string Argument1)
-	{
-		/// <summary>Materializes the reportable diagnostic.</summary>
-		/// <returns>The diagnostic to report.</returns>
-		public Diagnostic ToDiagnostic()
-		{
-			return Diagnostic.Create(this.Descriptor, this.Location?.ToLocation(), this.Argument0, this.Argument1);
-		}
-	}
-
-	/// <summary>Records a source position as plain values, so the incremental cache holds no syntax tree.</summary>
-	/// <param name="FilePath">The path of the file the position lives in.</param>
-	/// <param name="TextSpan">The character span within that file.</param>
-	/// <param name="LineSpan">The line and column span within that file.</param>
-	private sealed record LocationInfo(string FilePath, TextSpan TextSpan, LinePositionSpan LineSpan)
-	{
-		/// <summary>Rebuilds the <see cref="Location"/> this position was taken from.</summary>
-		/// <returns>The reconstructed location.</returns>
-		public Location ToLocation()
-		{
-			return Location.Create(this.FilePath, this.TextSpan, this.LineSpan);
-		}
-
-		/// <summary>Captures the position of a syntax node.</summary>
-		/// <param name="node">The node to take the position of.</param>
-		/// <returns>The captured position, or <see langword="null"/> when the node has no source position.</returns>
-		public static LocationInfo? From(SyntaxNode? node)
-		{
-			return From(node?.GetLocation());
-		}
-
-		/// <summary>Captures the position an attribute was applied at.</summary>
-		/// <param name="reference">The attribute's syntax reference.</param>
-		/// <returns>The captured position, or <see langword="null"/> when the attribute has no source position.</returns>
-		public static LocationInfo? From(SyntaxReference? reference)
-		{
-			return reference is null ? null : From(Location.Create(reference.SyntaxTree, reference.Span));
-		}
-
-		/// <summary>Captures the position of a location that lives in source.</summary>
-		/// <param name="location">The location to take the position of.</param>
-		/// <returns>The captured position, or <see langword="null"/> when <paramref name="location"/> is not in a syntax tree.</returns>
-		private static LocationInfo? From(Location? location)
-		{
-			return location?.SourceTree is null
-				? null
-				: new LocationInfo(location.SourceTree.FilePath, location.SourceSpan, location.GetLineSpan().Span);
-		}
-	}
 }

@@ -108,17 +108,15 @@ A model whose own `Id` is the exposed ID returns `Id`, as `SeriesObject` does fo
 
 `[SonarrObject]`, in `src/MG.Sonarr.Next/Attributes/SonarrObjectAttribute.cs`, is internal and not inherited, and it gives a model class a `SonarrObjectConverter<T>` of its own:
 
-1. `src/MG.Sonarr.Next/MG.Sonarr.Next.csproj` puts the public `[assembly: SonarrObjectConverterAssembly]` on the services library through an `<AssemblyAttribute>` item.
+1. `SonarrObjectConverterGenerator`, in `src/MG.Sonarr.Next.Generators/`, finds each class in the services library that carries `[SonarrObject]` itself and generates the internal `SonarrObjectConverters.Create(ObjectConverter)`, in `MG.Sonarr.Next.Json.Converters`. It creates a `SonarrObjectConverter<T>`, where `T : SonarrObject, ISerializableNames<T>, new()`, for each of those classes, in the ordinal order of their full names, with an ordinary `new` around the shared `ObjectConverter`, so finding the models and creating their converters takes no reflection.
 2. `SonarrJsonDependencyInjection.AddSonarrJsonOptions`, in `src/MG.Sonarr.Next/Json/SonarrJsonOptions.cs`, registers `ISonarrJsonOptions` as a singleton whose factory builds the options when it's first resolved. `Connect-SonarrInstance` resolves it as soon as it builds a connection, through the `ISonarrClient` that it tests the connection with, and each connection builds its own.
-3. `GetSonarrObjectTypes` goes through the assemblies loaded in the AppDomain, skipping dynamic ones, ones without `SonarrObjectConverterAssemblyAttribute`, and ones whose attributes can't be read, such as one whose attribute types come from an assembly that isn't there, and keeps each exported type that is a class, isn't abstract, has `[SonarrObject]` itself, and derives from `SonarrObject`.
-4. `ConstructSonarrObjectConverters` closes `SonarrObjectConverter<T>`, where `T : SonarrObject, ISerializableNames<T>, new()`, over each type with `MakeGenericType`, and creates it around the shared `ObjectConverter`. The converters go into `ForDeserializing`, which `ForSerializing` and `ForDebugging` copy.
-5. `ThrowIfMissingConverters` throws a `ModuleStartupException` when no converter results.
+3. The factory's `AddAllConverters` adds the converters that `SonarrObjectConverters.Create` returns to `ForDeserializing`, which `ForSerializing` and `ForDebugging` copy.
 
 What follows from it:
 
 - Give every concrete model class its own `[SonarrObject]`, a model derived from another model and one only ever read as a nested object included. A converter claims only its exact type (`SonarrObjectConverter<SeriesObject>.CanConvert(typeof(AddSeriesObject))` is `false`, measured 2026-10-25 on .NET 10.0.14), and a request body is serialized by its runtime type, so an `AddSeriesObject` that the code holds as a `SeriesObject` still needs its own.
-- A model without a converter fails nowhere at startup. The scan skips a class without the attribute, an internal or abstract one, and one in an assembly without the assembly attribute. Reading or writing that model as its own type, as when a nested model inside a parent's request body is written, then falls to System.Text.Json's default object handling, which uses the class's public C# properties instead of its note properties.
-- A marked class that doesn't implement `ISerializableNames<itself>`, or has no public parameterless constructor, makes `MakeGenericType` throw `ArgumentException` ("violates the constraint of type 'T'"), so every `Connect-SonarrInstance` fails, not just the cmdlets that use the model.
+- A model without the attribute gets no converter, and nothing fails at build or startup. Reading or writing that model as its own type, as when a nested model inside a parent's request body is written, then falls to System.Text.Json's default object handling, which uses the class's public C# properties instead of its note properties. `ModelWiringTests`, in `src/MG.Sonarr.Next.Tests/Models/`, fails for each concrete `SonarrObject` class that isn't public and marked.
+- A marked class that the converter can't take fails the build with an error on its attribute, and the generator leaves it out of the list: `PSNR104` for a static, abstract, or generic class, a class nested in a generic type included, or one without a public parameterless constructor, `PSNR105` for one that doesn't derive from `SonarrObject`, `PSNR106` for one that doesn't implement `ISerializableNames<itself>`, such as a model derived from another model that doesn't declare the interface again, and `PSNR107` for one that the generated class can't name, such as a private nested class or a file-local one. With no class left to list, the generator emits no `SonarrObjectConverters`, so `AddAllConverters` doesn't compile.
 
 ### Nested models and arrays
 
@@ -213,7 +211,7 @@ Each entry gives the model's base and the `Meta` tag that its `GetTag` returns, 
 
 ## Adding or changing a model
 
-1. Put the class in the folder for its Sonarr resource, in `MG.Sonarr.Next.Models.<Folder>`, as `public sealed` unless another model will derive from it.
+1. Put the class in the folder for its Sonarr resource, in `MG.Sonarr.Next.Models.<Folder>`, as `public`, since PowerShell resolves a type's name in a script, as in a type literal or `-as [type]`, only for a public type (measured 2026-11-14 on PowerShell 7.7.0), and as `sealed` unless another model will derive from it.
 2. Derive from `TagUpdateObject<TSelf>` for a resource with tags, from `IdSonarrObject<TSelf>` for one with a numeric ID, and from `SonarrObject` otherwise, or when the model keeps its `Id` out of PowerShell's view.
 3. Mark the class `[SonarrObject]` and implement `ISerializableNames<TheClass>`, with the static name maps and capitalize set it needs.
 4. Give it a public parameterless constructor that passes a `CAPACITY` constant, about the number of fields that Sonarr sends, to the base. The converter adds the properties after the constructor runs, so set up anything that depends on them during deserialization.

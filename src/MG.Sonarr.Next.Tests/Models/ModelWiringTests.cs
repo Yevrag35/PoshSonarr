@@ -32,12 +32,12 @@ public sealed class ModelWiringTests
 	};
 
 	/// <summary>
-	/// Every concrete model class is public and marked <c>[SonarrObject]</c>, so the connection's JSON options read and
-	/// write it with a <see cref="SonarrObjectConverter{T}"/> of its own rather than through its C# properties. Reading
-	/// one puts its full type name first in its <see cref="PSObject.TypeNames"/>, which the format and type files select
-	/// it by, ahead of <c>SonarrObject</c>'s and without the name of a model that it derives from. Tagging it gives it a
-	/// tag that the connection registers, unless it stands for no endpoint, as a provider's field, a select field's
-	/// choice, a quality with its revision, and a server error do.
+	/// Every concrete model class is public, so a script can name its type, and marked <c>[SonarrObject]</c>, so the
+	/// connection's JSON options read and write it with a <see cref="SonarrObjectConverter{T}"/> of its own rather than
+	/// through its C# properties. Reading one puts its full type name first in its <see cref="PSObject.TypeNames"/>,
+	/// which the format and type files select it by, ahead of <c>SonarrObject</c>'s and without the name of a model that
+	/// it derives from. Tagging it gives it a tag that the connection registers, unless it stands for no endpoint, as a
+	/// provider's field, a select field's choice, a quality with its revision, and a server error do.
 	/// </summary>
 	/// <param name="model">The model's full type name.</param>
 	[Theory]
@@ -47,7 +47,7 @@ public sealed class ModelWiringTests
 		Type type = typeof(SonarrObject).Assembly.GetType(model, throwOnError: true)!;
 		Type converter = typeof(SonarrObjectConverter<>).MakeGenericType(type);
 
-		Assert.True(type.IsPublic, $"{type.Name} isn't public, so the scan for models passes over it.");
+		Assert.True(type.IsPublic, $"{type.Name} isn't public, so a script can't name its type.");
 		Assert.True(type.IsDefined(typeof(SonarrObjectAttribute), inherit: false), $"{type.Name} isn't marked [SonarrObject].");
 		Assert.IsType(converter, ModuleServices.Json.ForDeserializing.GetConverter(type));
 		Assert.IsType(converter, ModuleServices.Json.ForSerializing.GetConverter(type));
