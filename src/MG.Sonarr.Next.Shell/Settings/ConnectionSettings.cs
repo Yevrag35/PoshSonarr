@@ -18,7 +18,7 @@ namespace MG.Sonarr.Next.Shell.Settings;
 /// <see cref="ServerUrlBase"/> after it's built, while its test runs.
 /// </para>
 /// </remarks>
-public sealed class ConnectionSettings : IConnectionSettings
+internal sealed class ConnectionSettings : IConnectionSettings
 {
 	/// <summary>
 	/// Gets or sets the API key that every request sends in its <c>X-Api-Key</c> header.

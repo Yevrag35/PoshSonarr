@@ -16,7 +16,7 @@ namespace MG.Sonarr.Next.Services.Http.Queries;
 /// </para>
 /// </remarks>
 [DebuggerDisplay(@"\{Count = {Count}, MaxLength = {MaxLength}\}")]
-public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
+internal sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
 {
 	/// <summary>
 	/// The largest number of characters that formatting the collection as a string stack-allocates.
@@ -421,7 +421,7 @@ public sealed class QueryCol : IReadOnlyList<IQueryField>, ISpanFormattable
 /// <summary>
 /// Provides extension methods for <see cref="QueryCol"/>.
 /// </summary>
-public static class QueryColExtensions
+internal static class QueryColExtensions
 {
 	/// <summary>
 	/// Returns the specified URL with the collection's query string appended.
@@ -437,7 +437,7 @@ public static class QueryColExtensions
 	///     itself when <paramref name="collection"/> is <see langword="null"/> or empty.
 	/// </returns>
 	/// <exception cref="FormatException">Thrown when the fields of <paramref name="collection"/> don't fit in its <see cref="QueryCol.MaxLength"/>.</exception>
-	public static string GetUrl(this QueryCol? collection, string baseUrl)
+	internal static string GetUrl(this QueryCol? collection, string baseUrl)
 	{
 		const int max_stackalloc = 256;
 

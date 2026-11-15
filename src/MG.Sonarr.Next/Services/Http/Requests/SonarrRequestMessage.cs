@@ -14,7 +14,7 @@ namespace MG.Sonarr.Next.Services.Http.Requests;
 ///     <see cref="OriginalRequestUri"/> keeps the URL as the caller passed it.
 /// </para>
 /// </remarks>
-public abstract class SonarrRequestMessage : HttpRequestMessage, IHttpRequestDetails
+internal abstract class SonarrRequestMessage : HttpRequestMessage, IHttpRequestDetails
 {
 	private bool _disposed;
 	private readonly IServiceScope _scope;

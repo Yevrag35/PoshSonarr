@@ -20,7 +20,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// headers.</para>
 /// <para>The handler keeps no per-request state, so one instance can serve concurrent requests.</para>
 /// </remarks>
-public sealed class TestingHandler : DelegatingHandler
+internal sealed class TestingHandler : DelegatingHandler
 {
 	private const string NOT_API_MESSAGE = "The response isn't the JSON object that Sonarr's API returns, so it may be an HTML page. You sure the URL is correct?";
 

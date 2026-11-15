@@ -21,7 +21,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// <para>The handler reads the connection settings once, in its constructor, and keeps no per-request state, so one
 /// instance can serve concurrent requests.</para>
 /// </remarks>
-public sealed class PathHandler : DelegatingHandler
+internal sealed class PathHandler : DelegatingHandler
 {
 	private const string API = "/api";
 	private const string API_V3 = "api/v3";

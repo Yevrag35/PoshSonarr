@@ -12,7 +12,7 @@ namespace MG.Sonarr.Next.Services.Http;
 /// request disposes both after the reader returns.
 /// </para>
 /// </remarks>
-public sealed class HttpCall
+internal sealed class HttpCall
 {
 	/// <summary>
 	/// Gets a value that indicates whether the server returned a response.

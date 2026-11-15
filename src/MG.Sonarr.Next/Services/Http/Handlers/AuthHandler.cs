@@ -36,7 +36,7 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// <para>The handler keeps no per-request state in its fields. Concurrent requests that find no cookie can each log
 /// in.</para>
 /// </remarks>
-public sealed class AuthHandler : DelegatingHandler
+internal sealed class AuthHandler : DelegatingHandler
 {
 	/// <summary>
 	/// The message of the error that a user name or password that Sonarr didn't take gives, under Basic and forms

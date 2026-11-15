@@ -19,7 +19,7 @@ namespace MG.Sonarr.Next.Services.Http;
 /// The methods read the response's body but don't dispose the response or its request, which stay the caller's.
 /// </para>
 /// </remarks>
-public interface IResponseReader
+internal interface IResponseReader
 {
 	/// <summary>
 	/// Reads the outcome of a request that returns no value.

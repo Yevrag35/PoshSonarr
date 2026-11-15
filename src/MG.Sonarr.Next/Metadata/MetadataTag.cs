@@ -180,7 +180,7 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	/// </summary>
 	/// <param name="parameters">The query parameters to append, or <see langword="null"/> for none.</param>
 	/// <returns><see cref="UrlBase"/>, followed by the query string of <paramref name="parameters"/>, if any.</returns>
-	public string GetUrl(QueryCol? parameters)
+	internal string GetUrl(QueryCol? parameters)
 	{
 		return parameters.GetUrl(this.UrlBase);
 	}
@@ -288,7 +288,7 @@ public sealed class MetadataTag : ICloneable, IComparable<MetadataTag>, IEquatab
 	/// <paramref name="parameters"/>.
 	/// </returns>
 	/// <exception cref="InvalidOperationException">Thrown when <see cref="SupportsId"/> is false.</exception>
-	public string GetUrlForId<T>(T id, QueryCol parameters) where T : ISpanFormattable
+	internal string GetUrlForId<T>(T id, QueryCol parameters) where T : ISpanFormattable
 	{
 		this.ThrowIfNotSupportId();
 		int length = this.UrlBase.Length + 2 + parameters.MaxLength + LengthConstants.INT128_MAX;

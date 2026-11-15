@@ -5,7 +5,7 @@ using MG.Sonarr.Next.Services.Http.Requests;
 
 namespace MG.Sonarr.Next.Services.Http.Clients;
 
-public partial interface ISonarrClient
+partial interface ISonarrClient
 {
 	/// <summary>
 	/// Sends a DELETE request to the specified endpoint asynchronously.
@@ -89,7 +89,7 @@ public partial interface ISonarrClient
 	Task<SonarrClientResult> SendPutAsync(string path, object body, CancellationToken token = default);
 }
 
-internal sealed partial class SonarrHttpClient
+partial class SonarrHttpClient
 {
 	/// <inheritdoc/>
 	public async Task<SonarrClientResult> SendDeleteAsync(string path, CancellationToken token = default)
