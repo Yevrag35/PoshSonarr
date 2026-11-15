@@ -8,7 +8,6 @@ Measured 2026-10-03 on PowerShell 7.6.6, with `Add-Type` test cmdlets and script
 
 - `ThrowTerminatingError` ends only the statement. A cmdlet that catches an error from a script block it runs and calls `ThrowTerminatingError` makes even a `throw`, or a `Write-Error` under `Stop`, end only the statement, although either one ends the whole script when `ForEach-Object` runs it.
 - A statement-ending error from a cmdlet ignores the cmdlet's own `-ErrorAction`: `-ErrorAction SilentlyContinue` doesn't hide it. Redirection doesn't either: with `2>$null` or `2>&1`, the host still reports it, and nothing of it reaches the output (measured 2026-10-25 on PowerShell 7.6.8, also with the module's `ContextNotSetException`).
-- `throw 'boom'` gives the fully qualified error ID `boom`, with no cmdlet name.
 
 ## Exception types
 

@@ -23,7 +23,6 @@ Measured 2026-11-03 on PowerShell 7.6.9 with a throwaway `Add-Type` subclass of 
 
 - **Type data blocks a property of the same name.** Once an instance's type names include one whose type data defines a member, adding an instance property with that member's name through `Properties.Add` throws `ExtendedTypeSystemException` ("The member "Name" is already present from the extended type data file."). Adding the note property first and inserting the type name afterward raises no error, and the note property then hides the type data's member: `Properties["Name"]` returns the `NoteProperty`.
 - **Only a thread with a runspace checks.** On a thread-pool thread, adding the property after inserting the type name raised no error.
-- **The check costs a little.** Adding 30 note properties to each of 20,000 instances took 132.5 ms when the type name went in first and 118.8 ms when it went in last, on the pipeline thread, and about 109 ms either way on a thread-pool thread.
 
 ## Adding and setting instance properties
 
