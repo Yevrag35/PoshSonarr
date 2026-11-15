@@ -1,5 +1,3 @@
-using MG.Sonarr.Next.Shell.Context;
-
 namespace MG.Sonarr.Next.Shell.Cmdlets;
 
 /// <summary>
@@ -27,9 +25,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets;
 /// </remarks>
 //[DebuggerStepThrough]
 public abstract partial class SonarrCmdletBase : PSCmdlet,
-	IDisposable,
-	IIsRunning<SonarrCmdletBase>,
-	IScopeCmdlet<SonarrCmdletBase>
+	IDisposable
 {
 	private bool _disposed;
 	private bool _isInitialized;
@@ -226,34 +222,6 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 		}
 
 		throw new PipelineStoppedException(message, innerException);
-	}
-
-	private static bool _hasChecked;
-	/// <summary>
-	/// Gets the flag that <see cref="IScopeCmdlet{T}.SetChecked(bool)"/> last set for every
-	/// <see cref="SonarrCmdletBase"/> cmdlet in the process.
-	/// </summary>
-	/// <remarks>
-	/// <para>The flag is static, so every runspace shares it.</para>
-	/// <para>TODO: Clarify what the flag records. Nothing in the solution calls this method or its setter.</para>
-	/// </remarks>
-	/// <returns><see langword="true"/> if the flag is set; otherwise, <see langword="false"/>.</returns>
-	static bool IScopeCmdlet<SonarrCmdletBase>.HasChecked()
-	{
-		return _hasChecked;
-	}
-	/// <summary>
-	/// Sets the flag that <see cref="IScopeCmdlet{T}.HasChecked"/> returns for every <see cref="SonarrCmdletBase"/>
-	/// cmdlet in the process.
-	/// </summary>
-	/// <remarks>
-	/// <para>The flag is static, so every runspace shares it.</para>
-	/// <para>TODO: Clarify what the flag records. Nothing in the solution calls this method or its getter.</para>
-	/// </remarks>
-	/// <param name="toggle">The flag's new value.</param>
-	static void IScopeCmdlet<SonarrCmdletBase>.SetChecked(bool toggle)
-	{
-		_hasChecked = toggle;
 	}
 
 	/// <summary>

@@ -19,10 +19,7 @@ namespace MG.Sonarr.Next.Shell.Cmdlets;
 /// </para>
 /// </remarks>
 public abstract class ConnectCmdlet : PSCmdlet,
-	IConnectContextCmdlet,
-	IDisconnectContextCmdlet,
-	IIsRunning<ConnectCmdlet>,
-	IScopeCmdlet<ConnectCmdlet>
+	IConnectContextCmdlet
 {
 	/// <summary>
 	/// When implemented in a derived class, gets the settings that the connection is built with.
@@ -79,33 +76,6 @@ public abstract class ConnectCmdlet : PSCmdlet,
 	{
 		this.UnsetContext(connectScope);
 	}
-
-	private static bool _checked;
-	/// <summary>
-	/// Gets the flag that <see cref="IScopeCmdlet{T}.SetChecked(bool)"/> last set for <see cref="ConnectCmdlet"/>.
-	/// </summary>
-	/// <remarks>
-	/// <para>The flag is shared by every <see cref="ConnectCmdlet"/> in the process.</para>
-	/// <para>TODO: Nothing in the solution calls this member. Clarify what the flag records.</para>
-	/// </remarks>
-	/// <returns>The flag's value.</returns>
-	static bool IScopeCmdlet<ConnectCmdlet>.HasChecked()
-	{
-		return _checked;
-	}
-
-	/// <summary>
-	/// Sets the flag that <see cref="IScopeCmdlet{T}.HasChecked"/> returns for <see cref="ConnectCmdlet"/>.
-	/// </summary>
-	/// <remarks>
-	/// <para>The flag is shared by every <see cref="ConnectCmdlet"/> in the process.</para>
-	/// <para>TODO: Nothing in the solution calls this member. Clarify what the flag records.</para>
-	/// </remarks>
-	/// <param name="toggle">The flag's new value.</param>
-	static void IScopeCmdlet<ConnectCmdlet>.SetChecked(bool toggle)
-	{
-		_checked = toggle;
-	}
 }
 
 /// <summary>
@@ -115,10 +85,7 @@ public abstract class ConnectCmdlet : PSCmdlet,
 /// Removing the connection affects every runspace in the process. A cmdlet that is running on the connection finishes
 /// on it, and the connection's services are disposed once its last cmdlet ends.
 /// </remarks>
-public abstract class DisconnectCmdlet : PSCmdlet,
-	IDisconnectContextCmdlet,
-	IIsRunning<DisconnectCmdlet>,
-	IScopeCmdlet<DisconnectCmdlet>
+public abstract class DisconnectCmdlet : PSCmdlet
 {
 	/// <summary>
 	/// Removes the module's connection, so that cmdlets that start afterward fail until a new connection is made.
@@ -130,52 +97,13 @@ public abstract class DisconnectCmdlet : PSCmdlet,
 	{
 		this.UnsetContext();
 	}
-	/// <summary>
-	/// Returns whether <see cref="DisconnectCmdlet"/> has been checked, which is always the case.
-	/// </summary>
-	/// <remarks>
-	/// <para>TODO: Nothing in the solution calls this member. Clarify what the check is.</para>
-	/// </remarks>
-	/// <returns>Always <see langword="true"/>.</returns>
-	static bool IScopeCmdlet<DisconnectCmdlet>.HasChecked()
-	{
-		return true;
-	}
-	/// <summary>
-	/// Determines whether the specified cmdlet is running as a command, which this class always reports that it isn't.
-	/// </summary>
-	/// <remarks>
-	/// <para>
-	/// TODO: Nothing in the solution calls this member, and it returns <see langword="false"/> where the interface's
-	/// default returns <see langword="true"/>. Clarify what it's meant to report.
-	/// </para>
-	/// </remarks>
-	/// <param name="cmdlet">The cmdlet to check.</param>
-	/// <returns>Always <see langword="false"/>.</returns>
-	static bool IIsRunning<DisconnectCmdlet>.IsRunningCommand(DisconnectCmdlet cmdlet)
-	{
-		return false;
-	}
-	/// <summary>
-	/// Ignores the specified flag, since <see cref="IScopeCmdlet{T}.HasChecked"/> always returns <see langword="true"/>
-	/// for <see cref="DisconnectCmdlet"/>.
-	/// </summary>
-	/// <remarks>
-	/// <para>TODO: Nothing in the solution calls this member. Clarify what the check is.</para>
-	/// </remarks>
-	/// <param name="toggle">The flag's new value, which isn't stored.</param>
-	static void IScopeCmdlet<DisconnectCmdlet>.SetChecked(bool toggle)
-	{
-		return;
-	}
 }
 
 /// <summary>
 /// Provides the base for a cmdlet that checks a Sonarr instance's URL and API key without changing the module's
 /// connection.
 /// </summary>
-public abstract class TestConnectionCmdlet : PSCmdlet,
-	ITestContextCmdlet
+public abstract class TestConnectionCmdlet : PSCmdlet
 {
 	/// <summary>
 	/// Builds a service provider with the services that a connection with the specified settings would have.
