@@ -33,7 +33,7 @@ public interface ICommandTracker
 /// <summary>
 /// Represents the default command tracker implementation.
 /// </summary>
-file sealed class CommandTracker : ICommandTracker
+internal sealed class CommandTracker : ICommandTracker
 {
 	private readonly ISonarrClient _client;
 	private readonly ICommandHistory _history;

@@ -65,7 +65,7 @@ public interface ICommandHistory : IReadOnlyCollection<ICommand>
 /// <summary>
 /// Represents the default in-memory implementation of <see cref="ICommandHistory"/>.
 /// </summary>
-file sealed class CommandHistory : ICommandHistory
+internal sealed class CommandHistory : ICommandHistory
 {
 	private static readonly ICommand s_empty = EmptyCommand.Default;
 	private readonly Dictionary<int, ICommand> _dict = [];
