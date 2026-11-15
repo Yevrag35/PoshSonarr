@@ -21,6 +21,12 @@
 		{ "seasonNumber": 1, "images": [] },
 		{ "seasonNumber": 2, "images": [] }
 	],
+	"seasonTypes": [
+		{ "name": "Aired Order", "type": "official", "seasonNumbers": [1, 2], "episodeCount": 6 }
+	],
+	"translations": [
+		{ "language": "eng", "title": "Sandbox Continuing Show", "overview": "A made-up show that the sandbox's mock metadata service serves." }
+	],
 	"episodes": [
 		{ "tvdbId": 9100201, "seasonNumber": 1, "episodeNumber": 1, "title": "Pilot", "airDate": "2021-03-01", "airDateUtc": "2021-03-01T20:00:00Z", "runtime": 30, "overview": "" },
 		{ "tvdbId": 9100202, "seasonNumber": 1, "episodeNumber": 2, "title": "The Second Week", "airDate": "2021-03-08", "airDateUtc": "2021-03-08T20:00:00Z", "runtime": 30, "overview": "" },

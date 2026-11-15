@@ -1,6 +1,6 @@
 # Sonarr sandbox
 
-A disposable Sonarr instance in Docker for testing PoshSonarr against. It runs Sonarr 4.0.20.3014, pinned and unable to update itself, listens only on this machine's loopback address, and starts unattended with a fixed API key. Beside it runs a mock of Sonarr's metadata service that serves four made-up shows, so series and episodes work offline and come out the same every time, and that answers webhook notifications' posts. Its data lives in two Docker volumes that belong to it alone, so nothing it does reaches another Sonarr instance or real media, and a reset returns it to a known baseline.
+A disposable Sonarr instance in Docker for testing PoshSonarr against. It runs Sonarr 5.0.0.2941, a prerelease from Sonarr's `develop` branch, pinned and unable to update itself, listens only on this machine's loopback address, and starts unattended with a fixed API key. Beside it runs a mock of Sonarr's metadata service that serves four made-up shows, so series and episodes work offline and come out the same every time, and that answers webhook notifications' posts. Its data lives in two Docker volumes that belong to it alone, so nothing it does reaches another Sonarr instance or real media, and a reset returns it to a known baseline.
 
 ## Requirements
 
@@ -27,7 +27,7 @@ Beside `/tv`, Sonarr's image holds an empty folder at `/tv-temp`, owned by the u
 
 ## Seeded series
 
-Sonarr gets every series and episode from its metadata service, SkyHook, at `https://skyhook.sonarr.tv`. The Compose project's second service, `skyhook`, stands in for it: nginx serving fixed JSON for four made-up shows from the files under `skyhook/v1/tvdb/`. Docker's DNS answers `skyhook.sonarr.tv` with the mock's address for Sonarr's container, so adding, looking up, and refreshing a series all run against the fixtures, without internet access and with the same results every time. The mock publishes no port, so nothing outside the project's network reaches it.
+Sonarr gets every series and episode from its metadata service, SkyHook, at `https://skyhook.sonarr.tv`. The Compose project's second service, `skyhook`, stands in for it: nginx serving fixed JSON for four made-up shows from the files under `skyhook/v2/tvdb/`. Sonarr asks for a show at `/v2/tvdb/shows/<language>/<tvdbId>/<seasonType>`, and the mock answers only `eng` and `official`, English with the official episode numbering, which is what Sonarr asks for unless a series is set to another language or season type. A search goes to `/v2/tvdb/search/` with its language and term in the query string, which the mock ignores. Docker's DNS answers `skyhook.sonarr.tv` with the mock's address for Sonarr's container, so adding, looking up, and refreshing a series all run against the fixtures, without internet access and with the same results every time. The mock publishes no port, so nothing outside the project's network reaches it.
 
 The mock's image generates a throwaway self-signed certificate when it's built, so no key lives in the repository. Sonarr accepts it because its `certificateValidation` setting, in `config/host`, is `disabledForLocalAddresses`, which skips the check for a host whose addresses are all private, as the mock's is, and still checks hosts on the internet. The setting lives in Sonarr's database, which a reset wipes, so `start.ps1` sets it whenever it isn't.
 
@@ -40,7 +40,7 @@ The mock's image generates a throwaway self-signed certificate when it's built, 
 
 The seeded series are monitored, in `/tv`, with all their episodes monitored and no searches. Sonarr counts an episode as aired once its air time plus the show's 30-minute runtime has passed, so `wanted/missing` reports the 9 episodes that aired, and the calendar from 2099-01-01 to 2099-01-31 holds the other 3. Sandbox Wild\*Card Show's title holds a `*`, so a name such as `Sandbox Wild*Show` finds it only when a `*` is a wildcard wherever it stands, even across the title's own `*`. Sonarr turns that `*` into a `-` in the show's folder, `/tv/Sandbox Wild-Card Show`. A lookup for `tvdb:<id>` finds that one show and any other term finds all four, and adding a TVDB ID that the mock lacks gets a 400 that says "A series with this ID was not found". `logs.ps1 -Service skyhook` shows each request Sonarr made to the mock. After every refresh, Sonarr warns that the `/tv` root folder is empty, because the sandbox holds no media files.
 
-To change a show or add one, edit or add its file in `skyhook/v1/tvdb/shows/en/`, named for its TVDB ID, and make the same change in `skyhook/v1/tvdb/search/en/index.json`, which holds every show's object in one array. Then run `reset.ps1`: `start.ps1` alone rebuilds the mock, but Sonarr keeps what it fetched until it refreshes the show. A show's JSON needs its `malIds` and `aniListIds` lists, even when they're empty, because Sonarr stores them in database columns that can't be null. A new show joins the seeded ones through the `$seededShows` list in `sandbox.psm1`. `test.ps1` and PoshSonarr's Pester suite, through the `$Fixtures` table in `.tests/setup.ps1`, each expect the shows, the episode counts, and the totals that this section gives, so update both along with them.
+To change a show or add one, edit or add its file in `skyhook/v2/tvdb/shows/eng/`, named for its TVDB ID, and make the same change in `skyhook/v2/tvdb/search/index.json`, which holds every show's object in one array. Then run `reset.ps1`: `start.ps1` alone rebuilds the mock, but Sonarr keeps what it fetched until it refreshes the show. A show's JSON needs its `malIds` and `aniListIds` lists, even when they're empty, because Sonarr stores them in database columns that can't be null. Each show also has a `seasonTypes` list, with one entry for the official numbering, and a `translations` list, with its title in English, its original language. Sonarr copies the first into the series' `seasonTypes` and takes the series' `originalTitle` and `cleanOriginalTitle` from the second, so the series that the API returns hold those fields as they would for a real show. A new show joins the seeded ones through the `$seededShows` list in `sandbox.psm1`. `test.ps1` and PoshSonarr's Pester suite, through the `$Fixtures` table in `.tests/setup.ps1`, each expect the shows, the episode counts, and the totals that this section gives, so update both along with them.
 
 ## Webhooks
 
@@ -75,7 +75,7 @@ Each check prints a PASS or FAIL line that starts with its group, and a failed c
 | API prefix | `/api/v3` |
 | API key | `0123456789abcdef0123456789abcdef`, in the `X-Api-Key` header |
 
-The key is fixed and published on purpose, since only this machine can reach the container. A request with no key or a wrong one gets a 401. `compose.yaml` sets the key, along with every other setting of the sandbox: the Sonarr version and its download's digest, the instance name, and the default port. The scripts read the ones they use from it through `docker compose config`, so no script repeats a value.
+The key is fixed and published on purpose, since only this machine can reach the container. A request with no key or a wrong one gets a 401. `compose.yaml` sets the key, along with every other setting of the sandbox: the Sonarr version, its branch, and its download's digest, the instance name, and the default port. The scripts read the ones they use from it through `docker compose config`, so no script repeats a value.
 
 ```powershell
 $headers = @{ 'X-Api-Key' = '0123456789abcdef0123456789abcdef' }
@@ -108,13 +108,15 @@ pwsh -NoProfile -File sandbox/sonarr/start.ps1
 
 ## Changing the Sonarr version
 
-`compose.yaml` pins the version and the SHA-256 digest of its download in two build arguments, `SONARR_VERSION` and `SONARR_SHA256`, and the build stops at its `sha256sum -c` step when the download doesn't match. Sonarr publishes no checksum file, so the digest is the one that GitHub records for the release asset. This prints it for a version, without the `sha256:` prefix that GitHub puts in front:
+`compose.yaml` pins the version, its branch, and the SHA-256 digest of its download in three build arguments, `SONARR_VERSION`, `SONARR_BRANCH`, and `SONARR_SHA256`. The branch is part of the download's name, `Sonarr.<branch>.<version>.linux-x64.tar.gz`: `main` for a stable release and `develop` for a prerelease. The build stops at its `sha256sum -c` step when the download doesn't match. Sonarr publishes no checksum file, so the digest is the one that GitHub records for the release asset. This prints the asset's name, which holds the branch, and its digest for a version, without the `sha256:` prefix that GitHub puts in front:
 
 ```powershell
-gh api repos/Sonarr/Sonarr/releases/tags/v<version> --jq '.assets[] | select(.name | endswith("linux-x64.tar.gz")) | .digest | ltrimstr("sha256:")'
+gh api repos/Sonarr/Sonarr/releases/tags/v<version> --jq '.assets[] | select(.name | endswith("linux-x64.tar.gz")) | .name, (.digest | ltrimstr("sha256:"))'
 ```
 
-Update both arguments, then run `reset.ps1`, so that the database starts at the new version's schema instead of an older one that Sonarr would have to migrate.
+Update all three arguments, then run `reset.ps1`, so that the database starts at the new version's schema instead of an older one that Sonarr would have to migrate.
+
+The download is a self-contained .NET build, so the image needs only the native libraries that .NET relies on, which Microsoft's `runtime-deps` image holds. Its tag in the `Dockerfile` follows the .NET version in the `global.json` of Sonarr's source at the release's tag: Sonarr 5 builds on .NET 10, so the image is `runtime-deps:10.0-noble`, Ubuntu 24.04. A Sonarr version on another .NET version takes that version's tag. Ubuntu's images come with a user named `ubuntu` that holds UID 1000, which the `Dockerfile` removes so that Sonarr's own user can take it.
 
 ## Running Compose directly
 
@@ -137,7 +139,7 @@ From Git Bash, set `MSYS_NO_PATHCONV=1` first, or Git Bash rewrites container pa
 
 - **Docker isn't running.** A command that fails with "failed to connect to the docker API" needs Docker Desktop started.
 - **Sonarr doesn't become healthy.** `logs.ps1` shows what Sonarr reported. A slow machine may need a longer `-TimeoutSeconds`.
-- **Adding a seeded series fails.** `start.ps1` shows both services' logs. When the mock's log has no request from Sonarr, Sonarr didn't reach it, and a 409 that names a column of the `Series` table means a show's JSON lacks a field that Sonarr's database requires.
+- **Adding a seeded series fails.** `start.ps1` shows both services' logs. When the mock's log has no request from Sonarr, Sonarr didn't reach it, and a 409 that names a column of the `Series` table means a show's JSON lacks a field that Sonarr's database requires. A 404 in the mock's log means Sonarr asked for a path that the mock doesn't serve: a language other than `eng`, a season type other than `official`, or, after a change of Sonarr version, a new version of SkyHook's API, which `src/NzbDrone.Common/Cloud/SonarrCloudRequestBuilder.cs` in Sonarr's source names.
 - **A smoke test fails.** Its line shows what the sandbox answered. Tests of your own, or a `test.ps1` run that was interrupted, can leave the sandbox off its baseline, so run `reset.ps1` and then `test.ps1` again first. A failure that comes back from a fresh baseline is real, and `logs.ps1`, or `logs.ps1 -Service skyhook` for the mock, shows Sonarr's side of the request.
 
 ## What the sandbox can't test

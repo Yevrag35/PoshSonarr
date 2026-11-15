@@ -21,6 +21,12 @@
 		{ "seasonNumber": 1, "images": [] },
 		{ "seasonNumber": 2, "images": [] }
 	],
+	"seasonTypes": [
+		{ "name": "Aired Order", "type": "official", "seasonNumbers": [1, 2], "episodeCount": 6 }
+	],
+	"translations": [
+		{ "language": "eng", "title": "Sandbox Ended Show", "overview": "A made-up show that the sandbox's mock metadata service serves." }
+	],
 	"episodes": [
 		{ "tvdbId": 9100101, "seasonNumber": 1, "episodeNumber": 1, "title": "Pilot", "airDate": "2020-01-06", "airDateUtc": "2020-01-06T20:00:00Z", "runtime": 30, "overview": "" },
 		{ "tvdbId": 9100102, "seasonNumber": 1, "episodeNumber": 2, "title": "The Second Week", "airDate": "2020-01-13", "airDateUtc": "2020-01-13T20:00:00Z", "runtime": 30, "overview": "" },

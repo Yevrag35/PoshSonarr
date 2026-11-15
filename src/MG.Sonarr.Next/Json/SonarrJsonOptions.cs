@@ -158,6 +158,8 @@ public static class SonarrJsonDependencyInjection
 						new("CleanTitle", alwaysStringConverter),
 						new("SortTitle", alwaysStringConverter),
 						new("Title", alwaysStringConverter),
+						new("CleanOriginalTitle", alwaysStringConverter),
+						new("OriginalTitle", alwaysStringConverter),
 						new("TorrentInfoHash", alwaysStringConverter),
 						new("Label", alwaysStringConverter),
 						// Keyed by the names that EnumerateGlobalReplaceNames gives these properties.
@@ -172,6 +174,7 @@ public static class SonarrJsonDependencyInjection
 						new("SslCertPassword", exactStringConverter),
 						new("ProxyUsername", exactStringConverter),
 						new("ProxyPassword", exactStringConverter),
+						new("OidcClientSecret", exactStringConverter),
 						// A release's identifier, which a grab sends back as it came.
 						new("Guid", exactStringConverter),
 						// A resource's name, which a PUT sends back, and which Sonarr turns away as a number, such as a
@@ -212,6 +215,10 @@ public static class SonarrJsonDependencyInjection
 						new("BindAddress", exactStringConverter),
 						new("Branch", exactStringConverter),
 						new("InstanceName", exactStringConverter),
+						new("OidcAuthority", exactStringConverter),
+						new("OidcClientId", exactStringConverter),
+						new("OidcScopes", exactStringConverter),
+						new("OidcUserIdentifier", exactStringConverter),
 						new("ProxyBypassFilter", exactStringConverter),
 						new("ProxyHostname", exactStringConverter),
 						new("SslCertPath", exactStringConverter),
@@ -226,6 +233,7 @@ public static class SonarrJsonDependencyInjection
 						new("StandardEpisodeFormat", exactStringConverter),
 						new("ExtraFileExtensions", exactStringConverter),
 						new("ScriptImportPath", exactStringConverter),
+						new("UserRejectedExtensions", exactStringConverter),
 						new("RemotePath", exactStringConverter)
 				  );
 		});

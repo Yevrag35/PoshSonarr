@@ -20,6 +20,12 @@
 	"seasons": [
 		{ "seasonNumber": 1, "images": [] }
 	],
+	"seasonTypes": [
+		{ "name": "Aired Order", "type": "official", "seasonNumbers": [1], "episodeCount": 2 }
+	],
+	"translations": [
+		{ "language": "eng", "title": "Sandbox Wild*Card Show", "overview": "A made-up show that the sandbox's mock metadata service serves." }
+	],
 	"episodes": [
 		{ "tvdbId": 9100401, "seasonNumber": 1, "episodeNumber": 1, "title": "Pilot", "airDate": "2018-09-03", "airDateUtc": "2018-09-03T20:00:00Z", "runtime": 30, "overview": "" },
 		{ "tvdbId": 9100402, "seasonNumber": 1, "episodeNumber": 2, "title": "The Finale", "airDate": "2018-09-10", "airDateUtc": "2018-09-10T20:00:00Z", "runtime": 30, "overview": "" }

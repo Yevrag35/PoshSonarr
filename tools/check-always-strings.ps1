@@ -102,6 +102,7 @@ $held = [ordered]@{
 	'Field.Unit'                                         = "Sonarr's own text"
 	'HostConfigResource.ConsoleLogLevel'                 = "a log level, which Sonarr's logging reads with NLog's LogLevel.FromString, so only a level's name works"
 	'HostConfigResource.LogLevel'                        = "a log level, which Sonarr's logging reads with NLog's LogLevel.FromString, so only a level's name works"
+	'HostConfigResource.SslKeyPath'                      = 'Sonarr checks that it is rooted whenever it is set'
 	'HostConfigResource.UrlBase'                         = 'Sonarr returns it empty or starting with /'
 	'ManualImportFile.Path'                              = "a file's rooted path, from Sonarr's list of the files to import"
 	'MediaCover.RemoteUrl'                               = 'a URL from the metadata'
@@ -122,11 +123,14 @@ $held = [ordered]@{
 	'ProviderResource.ImplementationName'                = "Sonarr's own: a provider's kind"
 	'ProviderResource.InfoLink'                          = "Sonarr's own URL"
 	'RemotePathMappingResource.LocalPath'                = 'Sonarr checks that it is rooted'
+	'SeasonTypeResource.Type'                            = 'a season type from the metadata, such as official or dvd'
 	'SeriesResource.ImdbId'                              = 'an IMDb ID from the metadata, which starts with tt'
 	'SeriesResource.Path'                                = 'Sonarr checks that it is rooted'
+	'SeriesResource.PendingPath'                         = "Sonarr's own: the rooted folder that a move in progress takes the series to"
 	'SeriesResource.ProfileName'                         = 'Sonarr never sets it, so no response has it'
 	'SeriesResource.RemotePoster'                        = 'a URL from the metadata'
 	'SeriesResource.RootFolderPath'                      = "Sonarr's own: the rooted folder that holds the series"
+	'SeriesResource.SeasonType'                          = "a season type from the metadata, such as official, which Sonarr keeps as it was on an update"
 }
 
 # Sonarr's projects that hold the resource classes and every class that they nest or derive from.

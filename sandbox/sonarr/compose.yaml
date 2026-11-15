@@ -5,8 +5,9 @@ services:
     build:
       context: .
       args:
-        SONARR_VERSION: "4.0.20.3014"
-        SONARR_SHA256: "1fc48544b5a3401b2fc3df8d0642c1e6a73a28e41a351169edd9cd8f54770db5"
+        SONARR_VERSION: "5.0.0.2941"
+        SONARR_BRANCH: "develop"
+        SONARR_SHA256: "07ffb7bc6ae2f55892984785a4051bc123fa96479a01c5d96f0836bb79c3ba59"
     platform: linux/amd64
     restart: "no"
     depends_on:

@@ -23,7 +23,7 @@ $projectName = 'poshsonarr-sandbox'
 $settings = $null
 
 # The mock metadata service's show fixtures, one file per TVDB ID.
-$showFixtures = Join-Path $PSScriptRoot 'skyhook/v1/tvdb/shows/en'
+$showFixtures = Join-Path $PSScriptRoot 'skyhook/v2/tvdb/shows/eng'
 
 # The mock's shows that seeding adds, by TVDB ID, and whether each gets the sandbox-baseline tag. The
 # other two stay on the mock alone, for tests to look up, add, and delete: 9000003, and 9000004, whose

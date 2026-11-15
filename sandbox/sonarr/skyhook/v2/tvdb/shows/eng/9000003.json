@@ -20,6 +20,12 @@
 	"seasons": [
 		{ "seasonNumber": 1, "images": [] }
 	],
+	"seasonTypes": [
+		{ "name": "Aired Order", "type": "official", "seasonNumbers": [1], "episodeCount": 2 }
+	],
+	"translations": [
+		{ "language": "eng", "title": "Sandbox Lookup Show", "overview": "A made-up show that the sandbox's mock metadata service serves." }
+	],
 	"episodes": [
 		{ "tvdbId": 9100301, "seasonNumber": 1, "episodeNumber": 1, "title": "Pilot", "airDate": "2019-05-06", "airDateUtc": "2019-05-06T20:00:00Z", "runtime": 30, "overview": "" },
 		{ "tvdbId": 9100302, "seasonNumber": 1, "episodeNumber": 2, "title": "The Finale", "airDate": "2019-05-13", "airDateUtc": "2019-05-13T20:00:00Z", "runtime": 30, "overview": "" }

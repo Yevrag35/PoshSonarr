@@ -7,4 +7,4 @@ RUN apk add --no-cache openssl \
 		-keyout /etc/nginx/tls/key.pem -out /etc/nginx/tls/cert.pem
 
 COPY default.conf /etc/nginx/conf.d/default.conf
-COPY v1/ /usr/share/nginx/html/v1/
+COPY v2/ /usr/share/nginx/html/v2/
