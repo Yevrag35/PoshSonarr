@@ -11,6 +11,8 @@ Introducing a completely, redesigned, overhauled version of PoshSonarr.  In orde
 
 In addition to this, I am making the executive decision to only write the NEXT versions of the module for [PowerShell 7](https://github.com/PowerShell/PowerShell/releases/latest) and up (previously known as PowerShell Core).  Doing so will allow me to focus on making the library easier to develop and to take advantage of some key functionality that PowerShell 7's SDK brings to the table.
 
+Version 3 targets .NET 11, so it requires [PowerShell 7.7](https://github.com/PowerShell/PowerShell/releases/latest) or later, the first release that runs on .NET 11.  It won't import on PowerShell 7.6 or earlier.  Version 2.0.0 required PowerShell 7.5.
+
 ## Using
 
 To get started, connect to Sonarr with "Connect-SonarrInstance" _(Connect-Sonarr)_ cmdlet:

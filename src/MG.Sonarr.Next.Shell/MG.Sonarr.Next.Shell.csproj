@@ -32,8 +32,13 @@
 		<None Remove="PSTypes\SonarrObjects.Type.ps1xml" />
 	</ItemGroup>
 
+	<!--
+		pwsh exits with 1 when the script fails, which fails the build. -NoProfile keeps the user's profile, which could import
+		an installed release of the module and block this build's DLL from loading, out of the process, and -NonInteractive
+		fails a prompt at once instead of waiting for input.
+	-->
 	<Target Name="ReleaseModuleAfterBuild" AfterTargets="AfterBuild" Condition="'$(Configuration)' == 'Release'">
-		<Exec Command="pwsh.exe -NoExit -File &quot;$(SolutionDir)\.tasks\publish_module.ps1&quot; -OutputPath &quot;$(TargetDir)&quot;" />
+		<Exec Command="pwsh.exe -NoProfile -NonInteractive -File &quot;$(SolutionDir)\.tasks\publish_module.ps1&quot; -OutputPath &quot;$(TargetDir)&quot;" />
 	</Target>
 
 	<ItemGroup Condition="'$(Configuration)' != 'Release'">

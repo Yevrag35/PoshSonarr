@@ -1,6 +1,6 @@
 # PoshSonarr's Pester suite
 
-The Pester suite in this folder tests PoshSonarr's cmdlets against the Sonarr sandbox, the disposable Sonarr container in `sandbox/sonarr/`. Each run builds the module in Debug, imports the build by a manifest written for it in a new PowerShell process, connects to the sandbox and nothing else, and leaves the sandbox at its baseline.
+The Pester suite in this folder tests PoshSonarr's cmdlets against the Sonarr sandbox, the disposable Sonarr container in `sandbox/sonarr/`. Each run builds the module in Debug, or in Release when asked, imports the build by a manifest written for it in a new PowerShell process, connects to the sandbox and nothing else, and leaves the sandbox at its baseline.
 
 ## Requirements
 
@@ -21,12 +21,13 @@ Run these from the repository root. The runner builds every path from its own lo
 | `pwsh -NoProfile -File .tests/run.ps1` | Builds, stages, and runs every `*.Tests.ps1` file in this folder. |
 | `pwsh -NoProfile -File .tests/run.ps1 -Reset` | Resets the sandbox to its baseline first, with `sandbox/sonarr/reset.ps1`. |
 | `pwsh -NoProfile -File .tests/run.ps1 -NoBuild -Path .tests/Connection.Tests.ps1` | Runs one file, on the last build. |
+| `pwsh -NoProfile -File .tests/run.ps1 -Configuration Release` | Builds, stages, and tests the Release build, the one that's published, instead of the Debug build. |
 
 A run goes through these steps, and stops with exit code 1 at the first that fails:
 
 1. It checks for Pester 6.2.0 or a later 6.x, and names the install command when there's none.
-2. It builds the solution in Debug, unless `-NoBuild` reuses the last build. A Debug build turns on the dependency injection container's checks of its registrations and scopes, so a mistake in either fails a test instead of staying hidden.
-3. It replaces `.temp/pester/PoshSonarr/`, which git ignores, with a copy of the Shell project's Debug output, without `Debug.ps1`. When a process holds a file in the folder, such as a PowerShell session that imported the module from it, the runner names the files and stops without deleting anything. Copying the build keeps `bin/` unlocked, so the next build works while a session has the copy loaded.
+2. It builds the solution in Debug, or in Release under `-Configuration Release`, unless `-NoBuild` reuses the last build of that configuration. A Debug build turns on the dependency injection container's checks of its registrations and scopes, so a mistake in either fails a test instead of staying hidden. A Release build, the one that's published, leaves those checks and the debug assertions out and runs fully optimized, so run the suite on it before a release too.
+3. It replaces `.temp/pester/PoshSonarr/`, which git ignores, with a copy of the Shell project's output for that configuration, without `Debug.ps1`. When a process holds a file in the folder, such as a PowerShell session that imported the module from it, the runner names the files and stops without deleting anything. Copying the build keeps `bin/` unlocked, so the next build works while a session has the copy loaded.
 4. It writes the copy's manifest, `PoshSonarr.psd1`, with `.tasks/publish_module.ps1`, the script that a Release build runs, so the tests import the cmdlets, aliases, and format and type files that a user's import gets.
 5. With `-Reset`, it resets the sandbox. Otherwise it checks that the sandbox answers with its pinned version and instance name, and shows the containers and their logs when it doesn't.
 6. It runs Pester in a new `pwsh -NoProfile -NonInteractive` process, in which `POSHSONARR_TEST_MANIFEST` names the staged manifest. Pester runs the files one after another, with detailed output, and writes NUnit XML results to `.temp/pester/results.xml`.
