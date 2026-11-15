@@ -640,7 +640,7 @@ public static class SonarrClientDependencyInjection
 	/// <summary>
 	/// The user agent that every request sends.
 	/// </summary>
-	internal static readonly ProductInfoHeaderValue UserAgent = new("PoshSonarr-Next", "2.0.0");
+	internal static readonly ProductInfoHeaderValue UserAgent = new("PoshSonarr-Next", "3.0.0");
 
 	/// <summary>
 	/// Registers the services that both kinds of client share, and the typed <see cref="ISonarrClient"/>, without its
