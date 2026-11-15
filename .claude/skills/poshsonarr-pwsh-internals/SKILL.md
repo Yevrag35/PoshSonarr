@@ -8,7 +8,7 @@ description: Measured PowerShell 7 engine behavior that PoshSonarr's binary cmdl
 PoshSonarr is a binary module for PowerShell 7 alone: its manifest declares only the Core edition, and its cmdlet assemblies target `net11.0`. Its cmdlets are written in C#, and its models derive from `PSObject`, so how they receive input, report errors, stop, clean up, ship help, and load depends on details of the PowerShell engine that the documentation leaves out. This skill records those details as measured, with the PowerShell version and the date of each measurement.
 
 - Trust a measurement here over recollection. When a change depends on a fact that a newer PowerShell release could change, measure it again.
-- When you measure something that later work could depend on, add it to the reference it belongs to, with the version and the date, instead of saving it as a memory. Say what it means for PoshSonarr beside it, as a rule the code has to follow rather than a description of the code as it is today.
+- When you measure something that later work could depend on, describe the finding to the user and ask whether to add it to the reference it belongs to, and add it only once they agree. Don't save it as a memory instead. Add it with the version and the date, and say what it means for PoshSonarr beside it, as a rule the code has to follow rather than a description of the code as it is today.
 - When a measurement shows that the code breaks a rule, or exposes a bug, write down the rule that the code is meant to follow, not the bug, and report the bug.
 - Don't point to working notes, such as review or bug lists, which may not stay in the repo. State the fact, the rule, or the reason itself.
 

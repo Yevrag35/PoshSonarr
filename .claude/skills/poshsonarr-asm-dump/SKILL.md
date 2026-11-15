@@ -16,7 +16,7 @@ Run it through the script beside it, never the exe:
 - In a session, always pass `-DontOpen`. Without it, a successful run opens WinMerge or Notepad++ on the desktop. Read the file that the script's `output :` line names instead.
 - From the Bash tool, run `pwsh -NoProfile -File src/MG.Sonarr.Tools.Asm/run-asmdump.ps1 Wildcard IsMatch -DontOpen`, with single quotes around any argument that holds `<`, `>`, `|`, `?`, or a backtick.
 - The script derives the JIT pattern, the harness's arguments, and the dump's file name from the same `-Class` and `-Method`, sets `DOTNET_TieredCompilation=0` and `DOTNET_JitDisasm` for the run only, and restores the session's values afterwards. `Get-Help .\src\MG.Sonarr.Tools.Asm\run-asmdump.ps1 -Full` prints every parameter.
-- When you measure something about the harness or the JIT that later work could depend on, add it here with the .NET version and the date, stated as a rule rather than as a story.
+- When you measure something about the harness or the JIT that later work could depend on, describe the finding to the user and ask whether to add it here, and add it only once they agree. Add it with the .NET version and the date, stated as a rule rather than as a story.
 
 ## Builds
 
