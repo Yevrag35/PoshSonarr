@@ -5,7 +5,7 @@ using MG.Sonarr.Next.Shell.Extensions;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets;
 
-public partial class SonarrCmdletBase
+partial class SonarrCmdletBase
 {
 	// PRE-PROCESSING
 	/// <summary>
@@ -20,14 +20,12 @@ public partial class SonarrCmdletBase
 	[DebuggerStepThrough]
 	private void StoreDebugPreference(bool wantsCapture)
 	{
-		if (!wantsCapture)
+		if (wantsCapture)
 		{
-			return;
+			this.DebugPreference = this.GetActionPreferenceFromSwitch(
+				parameterName: PSConstants.Debug,
+				variableName: PSConstants.DebugPreference);
 		}
-
-		this.DebugPreference = this.GetActionPreferenceFromSwitch(
-			parameterName: PSConstants.Debug,
-			variableName: PSConstants.DebugPreference);
 	}
 	/// <summary>
 	/// Stores the cmdlet's Verbose preference in <see cref="VerbosePreference"/>, from its <c>-Verbose</c> switch or,
@@ -41,14 +39,12 @@ public partial class SonarrCmdletBase
 	[DebuggerStepThrough]
 	private void StoreVerbosePreference(bool wantsCapture)
 	{
-		if (!wantsCapture)
+		if (wantsCapture)
 		{
-			return;
+			this.VerbosePreference = this.GetActionPreferenceFromSwitch(
+				parameterName: PSConstants.Verbose,
+				variableName: PSConstants.VerbosePreference);
 		}
-
-		this.VerbosePreference = this.GetActionPreferenceFromSwitch(
-			parameterName: PSConstants.Verbose,
-			variableName: PSConstants.VerbosePreference);
 	}
 
 	/// <inheritdoc cref="Cmdlet.BeginProcessing" path="/*[not(self::summary) and not(self::remarks)]"/>
@@ -132,7 +128,7 @@ public partial class SonarrCmdletBase
 	/// </para>
 	/// <para>Default implementation in the base class just returns.</para>
 	/// </remarks>
-	/// <inheritdoc cref="SonarrCmdletBase" path="/provider"/>
+	/// <param name="provider">The scoped service provider for use by derived cmdlets.</param>
 	[DebuggerStepThrough]
 	protected virtual void Begin(IServiceProvider provider)
 	{
@@ -188,7 +184,7 @@ public partial class SonarrCmdletBase
 	/// </para>
 	/// <para>Default implementation in the base class just returns.</para>
 	/// </remarks>
-	/// <inheritdoc cref="SonarrCmdletBase" path="/provider"/>
+	/// <param name="provider">The scoped service provider for use by derived cmdlets.</param>
 	[DebuggerStepThrough]
 	protected virtual void Process(IServiceProvider provider)
 	{
@@ -245,7 +241,7 @@ public partial class SonarrCmdletBase
 	/// </para>
 	/// <para>Default implementation in the base class just returns.</para>
 	/// </remarks>
-	/// <inheritdoc cref="SonarrCmdletBase" path="/provider"/>
+	/// <param name="provider">The scoped service provider for use by derived cmdlets.</param>
 	[DebuggerStepThrough]
 	protected virtual void End(IServiceProvider provider)
 	{

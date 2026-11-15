@@ -37,14 +37,14 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 	private IServiceScope? _scope;
 
 	/// <summary>
-	/// Gets a value that indicates whether <see cref="BeginProcessing"/> has created the cmdlet's scope.
+	/// Gets a value that indicates whether the cmdlet holds its scope.
 	/// </summary>
 	/// <remarks>
-	/// The flag is set as soon as <see cref="BeginProcessing"/> creates the scope, before
+	/// <see cref="BeginProcessing"/> sets the flag as soon as it creates the scope, before
 	/// <see cref="OnCreatingScopeInternal(IServiceProvider)"/> and <see cref="OnCreatingScope(IServiceProvider)"/> run,
-	/// and the annotation promises that <see cref="Services"/> and <c>_scope</c> are set while it's
-	/// <see langword="true"/>, so it's meant to read <see langword="true"/> only until <see cref="Dispose(bool)"/>
-	/// disposes the scope.
+	/// and <see cref="Dispose(bool)"/> clears it before it disposes the scope. So while the flag is
+	/// <see langword="true"/>, <see cref="Services"/> and <c>_scope</c> aren't <see langword="null"/>, as the
+	/// annotation tells the compiler.
 	/// </remarks>
 	/// <value>
 	/// <see langword="true"/> while the cmdlet holds its scope; otherwise, <see langword="false"/>.
@@ -307,6 +307,7 @@ public abstract partial class SonarrCmdletBase : PSCmdlet,
 	{
 		if (!_disposed)
 		{
+			_isInitialized = false;
 			_scope?.Dispose();
 			_scope = null!;
 			_disposed = true;

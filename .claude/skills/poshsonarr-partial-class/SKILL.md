@@ -31,7 +31,7 @@ A `-State` concern file holds a nested `State` type, the type of the main file's
 ## Doc comments
 
 - The compiler merges the doc comments on all of a type's declarations into the type's one entry in the documentation file (measured 2026-10-25 with .NET SDK 10.0.402). Keep the type's `<summary>` and `<remarks>` in the main file, since a `<summary>` on a concern file's declaration gives the type a second one.
-- A doc comment on a concern file's declaration adds to the type's docs. `SonarrCmdletBase-Processing.cs` uses one to add a `<provider>` element holding the `<param>` text for the `provider` parameter of `Begin`, `Process`, and `End`, which those methods pull in with `<inheritdoc cref="SonarrCmdletBase" path="/provider"/>`. When a project generates a documentation file, the compiler reports CS1572 for that `<param>`, because the type has no parameter named `provider`.
+- A doc comment on a concern file's declaration adds to the type's docs. Don't use one to hold text for the type's members to pull in with `<inheritdoc cref="..." path="..."/>`: a `<param>` there makes the compiler report CS1572, since the type has no parameter by that name, and the compiler doesn't check an `inheritdoc` path, so if the text goes, the members lose it without a warning. Give each method its own `<param>` tags, as `Begin`, `Process`, and `End` in `SonarrCmdletBase-Processing.cs` do.
 
 ## Interfaces split with their implementation
 
