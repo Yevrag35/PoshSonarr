@@ -18,6 +18,10 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// <para>A path that already starts with <c>api/v3</c>, and a ping request, get the URL base without the prefix. The
 /// handler leaves alone a path that already starts with the URL base and <c>api/v3</c>, and a download request that
 /// carries credentials.</para>
+/// <para>The handler overrides only <see cref="Send(HttpRequestMessage, CancellationToken)"/>, since the clients send
+/// every request synchronously. A request that goes out through
+/// <see cref="DelegatingHandler.SendAsync(HttpRequestMessage, CancellationToken)"/> instead passes through it
+/// untouched.</para>
 /// <para>The handler reads the connection settings once, in its constructor, and keeps no per-request state, so one
 /// instance can serve concurrent requests.</para>
 /// </remarks>
@@ -46,7 +50,7 @@ internal sealed class PathHandler : DelegatingHandler
 	}
 
 	/// <summary>
-	/// Builds the request's URL and sends the request to the inner handler synchronously.
+	/// Builds the request's URL and sends the request to the inner handler.
 	/// </summary>
 	/// <param name="request">The HTTP request message to send.</param>
 	/// <param name="cancellationToken">A token that cancels the operation.</param>
@@ -59,22 +63,6 @@ internal sealed class PathHandler : DelegatingHandler
 		}
 
 		return base.Send(request, cancellationToken);
-	}
-
-	/// <summary>
-	/// Builds the request's URL and sends the request to the inner handler asynchronously.
-	/// </summary>
-	/// <param name="request">The HTTP request message to send.</param>
-	/// <param name="cancellationToken">A token that cancels the operation.</param>
-	/// <returns>A task that completes with the HTTP response message from the inner handler.</returns>
-	protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-	{
-		if (request is not AuthedRequestMessage)
-		{
-			this.SetPath(request);
-		}
-
-		return base.SendAsync(request, cancellationToken);
 	}
 
 	/// <summary>

@@ -4,6 +4,7 @@ using MG.Sonarr.Next.Metadata;
 using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Models.Errors;
 using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Http.Extensions;
 using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Services.Http.Requests;
 using Microsoft.PowerShell.Commands;
@@ -21,7 +22,10 @@ namespace MG.Sonarr.Next.Services.Http.Clients;
 /// <para>
 /// No method throws for a failed request. A failure, whether the server answered with an error status, the response
 /// couldn't be read, or no response arrived, comes back as a result whose <see cref="SonarrClientResult.IsError"/> is
-/// <see langword="true"/> and whose <see cref="SonarrClientResult.Error"/> describes it.
+/// <see langword="true"/> and whose <see cref="SonarrClientResult.Error"/> describes it. A
+/// <see cref="PipelineStoppedException"/> isn't a failed request, so it leaves a method as it is: the sending cmdlet's own
+/// verbose or debug output throws one under a preference of <see cref="ActionPreference.Stop"/>, or when the user halts
+/// the cmdlet at an <see cref="ActionPreference.Inquire"/> prompt, to end the cmdlet's pipeline.
 /// </para>
 /// <para>
 /// Apart from the connection test, whose failures each method's remarks describe, a request that gets no response, such
@@ -31,7 +35,12 @@ namespace MG.Sonarr.Next.Services.Http.Clients;
 /// </para>
 /// <para>
 /// A body is serialized as JSON by its runtime type, and a value is deserialized from JSON, with the connection's
-/// <see cref="ISonarrJsonOptions"/>. The synchronous methods and their <c>Async</c> twins send through the same handlers.
+/// <see cref="ISonarrJsonOptions"/>.
+/// </para>
+/// <para>
+/// Each method sends its request synchronously and returns once the response has been read, so the client's handlers
+/// run on the calling thread. A cmdlet's verbose and debug output for its requests, which PowerShell lets only the
+/// pipeline thread write, depends on that.
 /// </para>
 /// <para>
 /// An instance takes the cmdlet of the DI scope that resolves it and hands it to every request it sends, so that the
@@ -39,7 +48,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients;
 /// provider.
 /// </para>
 /// </remarks>
-public partial interface ISonarrClient
+public interface ISonarrClient
 {
 	/// <summary>
 	/// Sends a DELETE request to the specified endpoint.
@@ -61,6 +70,27 @@ public partial interface ISonarrClient
 	/// <returns>The result of the request, which holds the deserialized value on success.</returns>
 	SonarrClientResult<T> SendGet<T>(string path, CancellationToken token = default)
 		where T : class;
+	/// <summary>
+	/// Sends a HEAD request to the server's <c>/ping</c> endpoint.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// The path takes the connection's URL base but not the API prefix, since the endpoint sits outside the API.
+	/// </para>
+	/// <para>
+	/// An error status gives an error whose category follows the status: <see cref="ErrorCategory.ObjectNotFound"/> for
+	/// 404, <see cref="ErrorCategory.PermissionDenied"/> for 403, <see cref="ErrorCategory.AuthenticationError"/> for 401,
+	/// <see cref="ErrorCategory.ConnectionError"/> for a status of 500 or above, and
+	/// <see cref="ErrorCategory.InvalidResult"/> for any other.
+	/// </para>
+	/// <para>
+	/// A request that gets no response gives <see cref="ErrorCategory.ConnectionError"/>, a timeout
+	/// <see cref="ErrorCategory.OperationTimeout"/>, and any other cancellation <see cref="ErrorCategory.OperationStopped"/>.
+	/// </para>
+	/// </remarks>
+	/// <param name="token">A token that cancels the request.</param>
+	/// <returns>The result of the request.</returns>
+	SonarrClientResult SendPing(CancellationToken token = default);
 	/// <summary>
 	/// Sends a POST request without a body to the specified endpoint and deserializes the response's body.
 	/// </summary>
@@ -151,7 +181,7 @@ public partial interface ISonarrClient
 /// needs first.
 /// </para>
 /// </remarks>
-internal sealed partial class SonarrHttpClient : ISonarrClient
+internal sealed class SonarrHttpClient : ISonarrClient
 {
 	/// <summary>
 	/// The path of the endpoint that <see cref="SendTest{T}(CancellationToken)"/> requests.
@@ -238,6 +268,50 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		return response;
 	}
 	/// <inheritdoc/>
+	public SonarrClientResult SendPing(CancellationToken token = default)
+	{
+		const string pingPath = "/ping";
+		using ApiKeyRequestMessage request = new(HttpMethod.Head, pingPath, _scopeFactory);
+		request.Options.TryAdd(PathHandler.Ping, true);
+		_cmdletAccessor.AttachTo(request);
+
+		HttpResponseMessage response;
+		try
+		{
+			response = _client.Send(request, HttpCompletionOption.ResponseHeadersRead, token);
+		}
+		catch (OperationCanceledException cancelled)
+		{
+			return ReturnFromException(pingPath, response: null, GetCancelledCategory(cancelled), cancelled);
+		}
+		catch (Exception e) when (e is not PipelineStoppedException)
+		{
+			return ReturnFromException(pingPath, response: null, ErrorCategory.ConnectionError, e);
+		}
+
+		using (response)
+		{
+			try
+			{
+				response.EnsureSuccessStatusCode();
+				return new SonarrClientResult(response, pingPath);
+			}
+			catch (HttpRequestException e)
+			{
+				ErrorCategory category = response.StatusCode switch
+				{
+					HttpStatusCode.NotFound => ErrorCategory.ObjectNotFound,
+					HttpStatusCode.Forbidden => ErrorCategory.PermissionDenied,
+					HttpStatusCode.Unauthorized => ErrorCategory.AuthenticationError,
+					>= HttpStatusCode.InternalServerError => ErrorCategory.ConnectionError,
+					_ => ErrorCategory.InvalidResult,
+				};
+
+				return SonarrClientResult.FromException(e, category, response.StatusCode, response);
+			}
+		}
+	}
+	/// <inheritdoc/>
 	public SonarrClientResult SendPost(string path, object body, CancellationToken token = default)
 	{
 		using ApiKeyRequestMessage request = new(HttpMethod.Post, path, _scopeFactory);
@@ -306,8 +380,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 				return ParseMessage<T>(TEST_API, response, token);
 			}
 
-			var result = _responseReader.ReadResultAsync<T>(new(TEST_API, request, response), TEST_API, token)
-				.GetAwaiter().GetResult();
+			var result = _responseReader.ReadResult<T>(new(TEST_API, request, response), TEST_API, token);
 
 			if (result.IsDataTaggable(out IJsonMetadataTaggable? taggable))
 			{
@@ -316,7 +389,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 
 			return result;
 		}
-		catch (Exception e)
+		catch (Exception e) when (e is not PipelineStoppedException)
 		{
 			return ReturnFromException<T>(TEST_API, response, ErrorCategory.ConnectionError, e);
 		}
@@ -330,10 +403,10 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	/// Sends the specified request synchronously and reads its outcome as a request that returns no value.
 	/// </summary>
 	/// <remarks>
-	/// The method stores the scope's cmdlet in the request's options before sending it, turns any exception into a failed
-	/// result, and disposes the response before it returns. A request that gets no response gives the category
-	/// <see cref="ErrorCategory.ConnectionError"/>, a timeout <see cref="ErrorCategory.OperationTimeout"/>, and any other
-	/// cancellation <see cref="ErrorCategory.OperationStopped"/>.
+	/// The method stores the scope's cmdlet in the request's options before sending it, turns any exception but a
+	/// <see cref="PipelineStoppedException"/> into a failed result, and disposes the response before it returns. A request
+	/// that gets no response gives the category <see cref="ErrorCategory.ConnectionError"/>, a timeout
+	/// <see cref="ErrorCategory.OperationTimeout"/>, and any other cancellation <see cref="ErrorCategory.OperationStopped"/>.
 	/// </remarks>
 	/// <param name="request">The request to send.</param>
 	/// <param name="path">The endpoint's path, which the result reports when no other URL is known.</param>
@@ -347,8 +420,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		{
 			response = _client.Send(request, token);
 			HttpCall call = new(path, request, response);
-			return _responseReader.ReadNoResultAsync(call, path, token)
-				.GetAwaiter().GetResult();
+			return _responseReader.ReadNoResult(call, path, token);
 		}
 		catch (HttpRequestException httpEx)
 		{
@@ -358,7 +430,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		{
 			return ReturnFromException(path, response, GetCancelledCategory(cancelled), cancelled);
 		}
-		catch (Exception e)
+		catch (Exception e) when (e is not PipelineStoppedException)
 		{
 			return ReturnFromException(path, response, ErrorCategory.ConnectionError, e);
 		}
@@ -372,10 +444,10 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	/// Sends the specified request synchronously and reads its outcome as a request that returns a value.
 	/// </summary>
 	/// <remarks>
-	/// The method stores the scope's cmdlet in the request's options before sending it, turns any exception into a failed
-	/// result, and disposes the response before it returns. A request that gets no response gives the category
-	/// <see cref="ErrorCategory.ConnectionError"/>, a timeout <see cref="ErrorCategory.OperationTimeout"/>, and any other
-	/// cancellation <see cref="ErrorCategory.OperationStopped"/>.
+	/// The method stores the scope's cmdlet in the request's options before sending it, turns any exception but a
+	/// <see cref="PipelineStoppedException"/> into a failed result, and disposes the response before it returns. A request
+	/// that gets no response gives the category <see cref="ErrorCategory.ConnectionError"/>, a timeout
+	/// <see cref="ErrorCategory.OperationTimeout"/>, and any other cancellation <see cref="ErrorCategory.OperationStopped"/>.
 	/// </remarks>
 	/// <typeparam name="T">The type to deserialize the response's body as.</typeparam>
 	/// <param name="request">The request to send.</param>
@@ -391,8 +463,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		try
 		{
 			response = _client.Send(request, token);
-			return _responseReader.ReadResultAsync<T>(new(path, request, response), path, token)
-				.GetAwaiter().GetResult();
+			return _responseReader.ReadResult<T>(new(path, request, response), path, token);
 		}
 		catch (HttpRequestException httpEx)
 		{
@@ -402,7 +473,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 		{
 			return ReturnFromException<T>(path, response, GetCancelledCategory(cancelled), cancelled);
 		}
-		catch (Exception e)
+		catch (Exception e) when (e is not PipelineStoppedException)
 		{
 			return ReturnFromException<T>(path, response, ErrorCategory.ConnectionError, e);
 		}
@@ -616,7 +687,7 @@ internal sealed partial class SonarrHttpClient : ISonarrClient
 	{
 		try
 		{
-			result = response?.Content.ReadFromJsonAsync<T>(options, cancellationToken).GetAwaiter().GetResult();
+			result = response?.Content.ReadBodyFromJson<T>(options, cancellationToken);
 			return result is not null;
 		}
 		catch (Exception)

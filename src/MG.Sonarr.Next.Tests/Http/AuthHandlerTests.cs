@@ -37,12 +37,12 @@ public sealed class AuthHandlerTests
 	[Theory]
 	[InlineData(SonarrAuthType.Basic)]
 	[InlineData(SonarrAuthType.Forms)]
-	public async Task SendsADownloadWithoutCredentialsAsItIs(SonarrAuthType authType)
+	public void SendsADownloadWithoutCredentialsAsItIs(SonarrAuthType authType)
 	{
 		LoginSonarr server = new(authType) { RequiresLogin = false };
 		using ServiceProvider provider = server.Build();
 
-		DownloadOutcome outcome = await DownloadAsync(provider, ClientCalls.DOWNLOAD_PATH, credentials: null);
+		DownloadOutcome outcome = Download(provider, ClientCalls.DOWNLOAD_PATH, credentials: null);
 
 		Assert.False(outcome.Result.IsError, outcome.Result.Error?.Exception.ToString());
 		Assert.Equal(s_file, outcome.Saved);
@@ -58,12 +58,12 @@ public sealed class AuthHandlerTests
 	[Theory]
 	[InlineData(SonarrAuthType.Basic)]
 	[InlineData(SonarrAuthType.Forms)]
-	public async Task FailsADownloadWithoutCredentialsThatTheServerTurnsAway(SonarrAuthType authType)
+	public void FailsADownloadWithoutCredentialsThatTheServerTurnsAway(SonarrAuthType authType)
 	{
 		LoginSonarr server = new(authType);
 		using ServiceProvider provider = server.Build();
 
-		DownloadOutcome outcome = await DownloadAsync(provider, ClientCalls.DOWNLOAD_PATH, credentials: null);
+		DownloadOutcome outcome = Download(provider, ClientCalls.DOWNLOAD_PATH, credentials: null);
 
 		AssertUnauthorized(outcome);
 		Assert.Equal(["GET /backup/manual/sonarr_backup.zip"], server.Received.ToArray());
@@ -78,12 +78,12 @@ public sealed class AuthHandlerTests
 	[InlineData("pässwörd")]
 	[InlineData("p")]
 	[MemberData(nameof(LongPasswords))]
-	public async Task SendsBasicCredentialsInTheAuthorizationHeader(string password)
+	public void SendsBasicCredentialsInTheAuthorizationHeader(string password)
 	{
 		LoginSonarr server = new(SonarrAuthType.Basic) { Password = password };
 		using ServiceProvider provider = server.Build();
 
-		DownloadOutcome outcome = await DownloadAsync(provider, ClientCalls.DOWNLOAD_PATH, new NetworkCredential(LoginSonarr.USER_NAME, password));
+		DownloadOutcome outcome = Download(provider, ClientCalls.DOWNLOAD_PATH, new NetworkCredential(LoginSonarr.USER_NAME, password));
 
 		Assert.False(outcome.Result.IsError, outcome.Result.Error?.Exception.ToString());
 		Assert.Equal(s_file, outcome.Saved);
@@ -102,12 +102,12 @@ public sealed class AuthHandlerTests
 	[Theory]
 	[InlineData(SonarrAuthType.Basic)]
 	[InlineData(SonarrAuthType.Forms)]
-	public async Task FailsADownloadWhosePasswordIsWrong(SonarrAuthType authType)
+	public void FailsADownloadWhosePasswordIsWrong(SonarrAuthType authType)
 	{
 		LoginSonarr server = new(authType);
 		using ServiceProvider provider = server.Build();
 
-		DownloadOutcome outcome = await DownloadAsync(provider, ClientCalls.DOWNLOAD_PATH, new NetworkCredential(LoginSonarr.USER_NAME, "wrong"));
+		DownloadOutcome outcome = Download(provider, ClientCalls.DOWNLOAD_PATH, new NetworkCredential(LoginSonarr.USER_NAME, "wrong"));
 
 		AssertUnauthorized(outcome);
 		Assert.Equal("The username or password is incorrect.", outcome.Result.Error?.Exception.InnerException?.Message);
@@ -125,13 +125,13 @@ public sealed class AuthHandlerTests
 	[InlineData(SonarrAuthType.Basic)]
 	[InlineData(SonarrAuthType.None)]
 	[InlineData(SonarrAuthType.External)]
-	public async Task FailsADownloadOnceTheServersAuthenticationChangesToForms(SonarrAuthType storedType)
+	public void FailsADownloadOnceTheServersAuthenticationChangesToForms(SonarrAuthType storedType)
 	{
 		LoginSonarr server = new(SonarrAuthType.Forms);
 		using ServiceProvider provider = server.Build();
 		server.Settings.AuthType = storedType;
 
-		DownloadOutcome outcome = await DownloadAsync(provider, ClientCalls.DOWNLOAD_PATH, new NetworkCredential(LoginSonarr.USER_NAME, server.Password));
+		DownloadOutcome outcome = Download(provider, ClientCalls.DOWNLOAD_PATH, new NetworkCredential(LoginSonarr.USER_NAME, server.Password));
 
 		AssertUnauthorized(outcome);
 		Assert.StartsWith(
@@ -152,7 +152,7 @@ public sealed class AuthHandlerTests
 	[Theory]
 	[InlineData(LoginFault.CookieNotSet)]
 	[InlineData(LoginFault.CookieNotHonored)]
-	public async Task FailsAFormsDownloadWhoseLoginDoesNotHold(LoginFault fault)
+	public void FailsAFormsDownloadWhoseLoginDoesNotHold(LoginFault fault)
 	{
 		LoginSonarr server = new(SonarrAuthType.Forms)
 		{
@@ -162,7 +162,7 @@ public sealed class AuthHandlerTests
 
 		using ServiceProvider provider = server.Build();
 
-		DownloadOutcome outcome = await DownloadAsync(provider, ClientCalls.DOWNLOAD_PATH, new NetworkCredential(LoginSonarr.USER_NAME, server.Password));
+		DownloadOutcome outcome = Download(provider, ClientCalls.DOWNLOAD_PATH, new NetworkCredential(LoginSonarr.USER_NAME, server.Password));
 
 		AssertUnauthorized(outcome);
 	}
@@ -173,7 +173,7 @@ public sealed class AuthHandlerTests
 	/// its own spelling goes back with every download, and one login serves a backup's path and a log file's URL alike.
 	/// </summary>
 	[Fact]
-	public async Task LogsInAndDownloadsUnderTheServersSpellingOfTheUrlBase()
+	public void LogsInAndDownloadsUnderTheServersSpellingOfTheUrlBase()
 	{
 		LoginSonarr server = new(SonarrAuthType.Forms, "/sonarr");
 		using ServiceProvider provider = server.Build(new Uri("http://sonarr.test:8989/Sonarr/"), tested: false);
@@ -188,8 +188,8 @@ public sealed class AuthHandlerTests
 		Assert.Equal("/sonarr", server.Settings.ServerUrlBase);
 
 		NetworkCredential credentials = new(LoginSonarr.USER_NAME, server.Password);
-		DownloadOutcome backup = await DownloadAsync(provider, ClientCalls.DOWNLOAD_PATH, credentials);
-		DownloadOutcome log = await DownloadAsync(provider, "/sonarr/logfile/sonarr.txt", credentials);
+		DownloadOutcome backup = Download(provider, ClientCalls.DOWNLOAD_PATH, credentials);
+		DownloadOutcome log = Download(provider, "/sonarr/logfile/sonarr.txt", credentials);
 
 		Assert.False(backup.Result.IsError, backup.Result.Error?.Exception.ToString());
 		Assert.False(log.Result.IsError, log.Result.Error?.Exception.ToString());
@@ -223,7 +223,7 @@ public sealed class AuthHandlerTests
 	/// Downloads the file at the specified URL into a folder of its own, through the download client of a new scope on the
 	/// specified provider, and reads back what it saved.
 	/// </summary>
-	private static async Task<DownloadOutcome> DownloadAsync(ServiceProvider provider, string url, NetworkCredential? credentials)
+	private static DownloadOutcome Download(ServiceProvider provider, string url, NetworkCredential? credentials)
 	{
 		CancellationToken token = TestContext.Current.CancellationToken;
 		DirectoryInfo folder = Directory.CreateTempSubdirectory("PoshSonarr.Tests.");
@@ -233,8 +233,8 @@ public sealed class AuthHandlerTests
 			using IServiceScope scope = provider.CreateScope();
 			ISonarrDownloadClient client = scope.ServiceProvider.GetRequiredService<ISonarrDownloadClient>();
 
-			SonarrClientResult<string> result = await client.DownloadToPathAsync(url, path, credentials, token);
-			byte[]? saved = File.Exists(path) ? await File.ReadAllBytesAsync(path, token) : null;
+			SonarrClientResult<string> result = client.DownloadToPath(url, path, credentials, token);
+			byte[]? saved = File.Exists(path) ? File.ReadAllBytes(path) : null;
 
 			return new DownloadOutcome(result, saved);
 		}

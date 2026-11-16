@@ -1,6 +1,7 @@
 using MG.Sonarr.Next.Collections;
 using MG.Sonarr.Next.Json;
 using MG.Sonarr.Next.Models.Errors;
+using MG.Sonarr.Next.Services.Http.Extensions;
 using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Unions;
 
@@ -16,7 +17,9 @@ namespace MG.Sonarr.Next.Services.Http;
 /// be deserialized.
 /// </para>
 /// <para>
-/// The methods read the response's body but don't dispose the response or its request, which stay the caller's.
+/// The methods read the response's body synchronously but don't dispose the response or its request, which stay the
+/// caller's. The body is already in memory, since <see cref="HttpClient.Send(HttpRequestMessage, CancellationToken)"/>
+/// reads all of it before it returns the response.
 /// </para>
 /// </remarks>
 internal interface IResponseReader
@@ -27,9 +30,9 @@ internal interface IResponseReader
 	/// <param name="call">The exchange to read.</param>
 	/// <param name="targetObj">The object that the request acted on, which an error record names as its target, or <see langword="null"/>.</param>
 	/// <param name="token">A token that cancels reading the response's body.</param>
-	/// <returns>A task that completes with the result of the request.</returns>
+	/// <returns>The result of the request.</returns>
 	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled while the response's body is read.</exception>
-	Task<SonarrClientResult> ReadNoResultAsync(HttpCall call, object? targetObj = null, CancellationToken token = default);
+	SonarrClientResult ReadNoResult(HttpCall call, object? targetObj = null, CancellationToken token = default);
 	/// <summary>
 	/// Reads the outcome of a request that returns a value, and deserializes the value from a successful response's body.
 	/// </summary>
@@ -42,9 +45,9 @@ internal interface IResponseReader
 	/// <param name="call">The exchange to read.</param>
 	/// <param name="targetObj">The object that the request acted on, which an error record names as its target, or <see langword="null"/>.</param>
 	/// <param name="token">A token that cancels reading the response's body.</param>
-	/// <returns>A task that completes with the result of the request, which holds the deserialized value on success.</returns>
+	/// <returns>The result of the request, which holds the deserialized value on success.</returns>
 	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled while the response's body is read.</exception>
-	Task<SonarrClientResult<T>> ReadResultAsync<T>(HttpCall call, object? targetObj = null, CancellationToken token = default)
+	SonarrClientResult<T> ReadResult<T>(HttpCall call, object? targetObj = null, CancellationToken token = default)
 		where T : class;
 }
 
@@ -73,7 +76,7 @@ internal sealed class SonarrResponseReader : IResponseReader
 	}
 
 	/// <inheritdoc/>
-	public async Task<SonarrClientResult> ReadNoResultAsync(HttpCall call, object? targetObj = null, CancellationToken token = default)
+	public SonarrClientResult ReadNoResult(HttpCall call, object? targetObj = null, CancellationToken token = default)
 	{
 		if (TryGetInvalidResult(call, call.Response, out SonarrClientResult? result))
 		{
@@ -85,7 +88,7 @@ internal sealed class SonarrResponseReader : IResponseReader
 			return new(call.Response, call.RequestUri);
 		}
 
-		string? content = await call.Response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+		string content = call.Response.Content.ReadBodyAsString(token);
 		IErrorCollection deserializedError = GetErrorFromContent(content, _options);
 		SonarrHttpException httpEx = new(call.Request, call.Response, deserializedError, null);
 		SonarrErrorRecord record = new(httpEx, targetObj);
@@ -93,7 +96,7 @@ internal sealed class SonarrResponseReader : IResponseReader
 		return new(record);
 	}
 	/// <inheritdoc/>
-	public async Task<SonarrClientResult<T>> ReadResultAsync<T>(HttpCall call, object? targetObj = null, CancellationToken token = default)
+	public SonarrClientResult<T> ReadResult<T>(HttpCall call, object? targetObj = null, CancellationToken token = default)
 		where T : class
 	{
 		if (((IReadOnlyDictionary<string, object?>)call.Request.Options).ContainsKey(ErrorHandler.Is404))
@@ -108,14 +111,14 @@ internal sealed class SonarrResponseReader : IResponseReader
 
 		if (IsSuccessCode(call.Response.StatusCode, call.Method, out bool isIgnorable))
 		{
-			ObjEither<SonarrErrorRecord, T> oneOf = await this.ReadContentAsync<T>(call.Response, targetObj, token).ConfigureAwait(false);
+			ObjEither<SonarrErrorRecord, T> oneOf = this.ReadContent<T>(call.Response, targetObj, token);
 
 			return oneOf.TryGetT1(out SonarrErrorRecord? error, out T? value)
 				? ReadErrorFromOneOf<T>(error, call)
 				: ReadContentFromOneOf(value, call);
 		}
 
-		string? content = await call.Response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+		string content = call.Response.Content.ReadBodyAsString(token);
 		IErrorCollection deserializedError = GetErrorFromContent(content, _options);
 		SonarrHttpException httpEx = new(call.Request, call.Response, deserializedError, null);
 		SonarrErrorRecord record = new(httpEx, targetObj);
@@ -181,14 +184,14 @@ internal sealed class SonarrResponseReader : IResponseReader
 	/// <param name="response">The response whose body is read.</param>
 	/// <param name="targetObj">The object that an error record names as its target, or <see langword="null"/>.</param>
 	/// <param name="token">A token that cancels reading the body.</param>
-	/// <returns>A task that completes with the deserialized value, or with an error record when the body can't be read.</returns>
+	/// <returns>The deserialized value, or an error record when the body can't be read.</returns>
 	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled while the body is read.</exception>
-	private async Task<ObjEither<SonarrErrorRecord, T>> ReadContentAsync<T>(HttpResponseMessage response, object? targetObj, CancellationToken token)
+	private ObjEither<SonarrErrorRecord, T> ReadContent<T>(HttpResponseMessage response, object? targetObj, CancellationToken token)
 		where T : class
 	{
 		try
 		{
-			return await response.Content.ReadFromJsonAsync<T>(_options, token).ConfigureAwait(false)
+			return response.Content.ReadBodyFromJson<T>(_options, token)
 				?? throw new JsonException("Unable to deserialize the response content.");
 		}
 		catch (Exception e) when (e is not OperationCanceledException)

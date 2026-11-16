@@ -37,21 +37,19 @@ internal static class MemoryStreamExtensions
 	extension(ArrayPoolMemoryStream stream)
 	{
 		/// <summary>
-		/// Asynchronously copies the contents of the <see cref="ArrayPoolMemoryStream"/> to a new
-		/// <see cref="MemoryStream"/>.
+		/// Copies the contents of the <see cref="ArrayPoolMemoryStream"/> to a new <see cref="MemoryStream"/>.
 		/// </summary>
-		/// <param name="cancellationToken">A token that cancels the operation.</param>
-		/// <returns>A task that represents the asynchronous copy operation. The task result contains the new <see cref="MemoryStream"/>.</returns>
-		/// <exception cref="InvalidOperationException">Thrown when the stream is not seekable.</exception>
-		internal async Task<MemoryStream> ToMemoryStreamAsync(CancellationToken cancellationToken)
+		/// <remarks>
+		/// The copy holds every byte written to <paramref name="stream"/>, whatever its position, and it outlives
+		/// <paramref name="stream"/>, whose buffer goes back to the pool when it's disposed.
+		/// </remarks>
+		/// <returns>A new <see cref="MemoryStream"/> that holds the stream's contents, positioned at its start.</returns>
+		/// <exception cref="ObjectDisposedException">Thrown when <paramref name="stream"/> has been disposed.</exception>
+		internal MemoryStream ToMemoryStream()
 		{
-			if (!stream.CanSeek)
-				throw new InvalidOperationException("Stream is not seekable.");
-
-			stream.Rewind();
-			MemoryStream memStream = new(checked((int)stream.Length));
-
-			await stream.CopyToAsync(memStream, cancellationToken).ConfigureAwait(false);
+			ReadOnlySpan<byte> contents = stream.AsSpan();
+			MemoryStream memStream = new(contents.Length);
+			memStream.Write(contents);
 			memStream.Rewind();
 
 			return memStream;

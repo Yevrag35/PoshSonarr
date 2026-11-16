@@ -121,7 +121,8 @@ public sealed class TestSonarrHostCmdlet : TestConnectionCmdlet
 	/// disposes the services.
 	/// </summary>
 	/// <remarks>
-	/// The services' scope holds no cmdlet, so the test's request writes no verbose or debug lines.
+	/// The services' scope holds no cmdlet, so the test's request writes no verbose or debug lines. The request sends with
+	/// <see cref="Cmdlet.PipelineStopToken"/>, so stopping the pipeline, as Ctrl+C does, ends it.
 	/// </remarks>
 	protected override void EndProcessing()
 	{
@@ -138,7 +139,7 @@ public sealed class TestSonarrHostCmdlet : TestConnectionCmdlet
 		using ServiceProvider provider = this.CreateTestContext(settings, ModuleServiceConfigurer.AddConfiguration);
 		using IServiceScope scope = provider.CreateScope();
 
-		var result = scope.ServiceProvider.GetRequiredService<ISonarrClient>().SendTest<SystemStatusObject>();
+		var result = scope.ServiceProvider.GetRequiredService<ISonarrClient>().SendTest<SystemStatusObject>(this.PipelineStopToken);
 		if (this.Quiet)
 		{
 			if (result.IsError)

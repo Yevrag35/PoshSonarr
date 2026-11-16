@@ -16,7 +16,10 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// parsed into a server error, which goes into the request's options under <see cref="ErrorKey"/>. Whatever the body
 /// holds, one error object, the array of validation failures that Sonarr returns for a 400, or JSON that doesn't parse,
 /// the response reaches <see cref="SonarrResponseReader"/> with its body and content headers intact.</para>
-/// <para>The handler keeps no per-request state, so one instance can serve concurrent requests.</para>
+/// <para>The handler overrides only <see cref="Send(HttpRequestMessage, CancellationToken)"/>, since the clients send
+/// every request synchronously. A request that goes out through
+/// <see cref="DelegatingHandler.SendAsync(HttpRequestMessage, CancellationToken)"/> instead passes through it
+/// untouched. The handler keeps no per-request state, so one instance can serve concurrent requests.</para>
 /// </remarks>
 internal sealed class ErrorHandler : DelegatingHandler
 {
@@ -47,12 +50,11 @@ internal sealed class ErrorHandler : DelegatingHandler
 	}
 
 	/// <summary>
-	/// Sends the request to the inner handler and blocks until its response arrives, reading the server error from an
-	/// error response.
+	/// Sends the request to the inner handler, marking a 404 response and reading the server error from any other error
+	/// response.
 	/// </summary>
 	/// <remarks>
-	/// The method blocks on <see cref="SendAsync(HttpRequestMessage, CancellationToken)"/>, so the inner handlers run on
-	/// their asynchronous path.
+	/// An error response that has no request message gets <paramref name="request"/> as its own before its body is read.
 	/// </remarks>
 	/// <param name="request">The HTTP request message to send.</param>
 	/// <param name="cancellationToken">A token that cancels the operation.</param>
@@ -60,23 +62,7 @@ internal sealed class ErrorHandler : DelegatingHandler
 	/// it.</returns>
 	protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
 	{
-		return this.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
-	}
-
-	/// <summary>
-	/// Sends the request to the inner handler asynchronously, marking a 404 response and reading the server error from
-	/// any other error response.
-	/// </summary>
-	/// <remarks>
-	/// An error response that has no request message gets <paramref name="request"/> as its own before its body is read.
-	/// </remarks>
-	/// <param name="request">The HTTP request message to send.</param>
-	/// <param name="cancellationToken">A token that cancels the operation.</param>
-	/// <returns>A task that completes with the HTTP response message from the inner handler, with its body buffered when
-	/// the handler read it.</returns>
-	protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-	{
-		HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+		HttpResponseMessage response = base.Send(request, cancellationToken);
 
 		if (!response.IsSuccessStatusCode)
 		{
@@ -87,7 +73,7 @@ internal sealed class ErrorHandler : DelegatingHandler
 			}
 
 			response.RequestMessage ??= request;
-			response = await ReadErrorAsync(response, _options, cancellationToken).ConfigureAwait(false);
+			ReadError(response, _options, cancellationToken);
 		}
 
 		return response;
@@ -116,43 +102,29 @@ internal sealed class ErrorHandler : DelegatingHandler
 	/// </summary>
 	/// <remarks>
 	/// The method disposes the original content, and the new content carries a copy of its headers. A response whose
-	/// content type isn't JSON comes back untouched.
+	/// content type isn't JSON stays as it is.
 	/// </remarks>
 	/// <param name="response">The error response whose body is read.</param>
 	/// <param name="options">The JSON options that parse the server error.</param>
 	/// <param name="token">A token that cancels the read.</param>
-	/// <returns>A task that completes with <paramref name="response"/>, with its body buffered when its content type is
-	/// JSON.</returns>
-	private static async Task<HttpResponseMessage> ReadErrorAsync(HttpResponseMessage response, JsonSerializerOptions options, CancellationToken token)
+	private static void ReadError(HttpResponseMessage response, JsonSerializerOptions options, CancellationToken token)
 	{
 		if (!IsJsonType(response.Content.Headers.ContentType))
 		{
-			return response; // Not a JSON error response, return as is
+			return; // Not a JSON error response, so it stays as it is.
 		}
 
 		using HttpContent originalContent = response.Content;
-		Stream stream = await originalContent.ReadAsStreamAsync(token).ConfigureAwait(false);
-
 		using ArrayPoolMemoryStream memStream = new();
-		await stream.CopyToAsync(memStream, cancellationToken: token).ConfigureAwait(false);
+		originalContent.CopyBodyTo(memStream, token);
 
-		ValueTask disposeTask = stream.DisposeAsync();
-		try
+		if (TryReadError(memStream, options, out ServerError? error))
 		{
-			if (TryReadError(memStream, options, out ServerError? error))
-			{
-				response.AddMetadata(ErrorKey, error);
-			}
-
-			response.Content = new StreamContent(await memStream.ToMemoryStreamAsync(token).ConfigureAwait(false));
-			originalContent.Headers.CopyTo(response.Content.Headers);
-
-			return response;
+			response.AddMetadata(ErrorKey, error);
 		}
-		finally
-		{
-			await disposeTask.ConfigureAwait(false);
-		}
+
+		response.Content = new StreamContent(memStream.ToMemoryStream());
+		originalContent.Headers.CopyTo(response.Content.Headers);
 	}
 
 	/// <summary>

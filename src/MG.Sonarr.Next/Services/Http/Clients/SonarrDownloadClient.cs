@@ -24,7 +24,14 @@ namespace MG.Sonarr.Next.Services.Http.Clients;
 /// that can't be written each come back as a result whose <see cref="SonarrClientResult.IsError"/> is
 /// <see langword="true"/>, with the category <see cref="ErrorCategory.ConnectionError"/>,
 /// <see cref="ErrorCategory.OperationTimeout"/>, <see cref="ErrorCategory.OperationStopped"/>,
-/// <see cref="ErrorCategory.AuthenticationError"/>, or <see cref="ErrorCategory.WriteError"/>.
+/// <see cref="ErrorCategory.AuthenticationError"/>, or <see cref="ErrorCategory.WriteError"/>. A
+/// <see cref="PipelineStoppedException"/> isn't a failed download, so it leaves a method as it is: the sending cmdlet's
+/// own verbose or debug output throws one under a preference of <see cref="ActionPreference.Stop"/>, or when the user
+/// halts the cmdlet at an <see cref="ActionPreference.Inquire"/> prompt, to end the cmdlet's pipeline.
+/// </para>
+/// <para>
+/// Each method sends its request synchronously and returns once the file is written, so the client's handlers run on the
+/// calling thread, as a cmdlet's verbose and debug output for its download needs.
 /// </para>
 /// <para>
 /// An instance takes the cmdlet of the DI scope that resolves it, so resolve it from a scope, not from the root provider.
@@ -33,7 +40,7 @@ namespace MG.Sonarr.Next.Services.Http.Clients;
 public interface ISonarrDownloadClient
 {
 	/// <summary>
-	/// Downloads the file at the specified URL to the specified path asynchronously.
+	/// Downloads the file at the specified URL to the specified path.
 	/// </summary>
 	/// <remarks>
 	/// The overload sends no credentials, so the download fails when the server's authentication turns it away, with a 401
@@ -43,13 +50,12 @@ public interface ISonarrDownloadClient
 	/// <param name="path">The path of the file to write, which the method creates or overwrites.</param>
 	/// <param name="token">A token that cancels the download.</param>
 	/// <returns>
-	/// A task that completes with a result that holds <paramref name="path"/> once the file is written, or an error when the
-	/// download fails.
+	/// A result that holds <paramref name="path"/> once the file is written, or an error when the download fails.
 	/// </returns>
-	Task<SonarrClientResult<string>> DownloadToPathAsync(string url, string path, CancellationToken token = default);
+	SonarrClientResult<string> DownloadToPath(string url, string path, CancellationToken token = default);
 	/// <summary>
-	/// Downloads the file at the specified URL to the specified path asynchronously, with the specified credentials for a
-	/// server whose authentication needs them.
+	/// Downloads the file at the specified URL to the specified path, with the specified credentials for a server whose
+	/// authentication needs them.
 	/// </summary>
 	/// <remarks>
 	/// The credentials go out only when the server's authentication type, which the connection test stored, needs them:
@@ -63,10 +69,9 @@ public interface ISonarrDownloadClient
 	/// </param>
 	/// <param name="token">A token that cancels the download.</param>
 	/// <returns>
-	/// A task that completes with a result that holds <paramref name="path"/> once the file is written, or an error when the
-	/// download fails.
+	/// A result that holds <paramref name="path"/> once the file is written, or an error when the download fails.
 	/// </returns>
-	Task<SonarrClientResult<string>> DownloadToPathAsync(string url, string path, NetworkCredential? credential, CancellationToken token = default);
+	SonarrClientResult<string> DownloadToPath(string url, string path, NetworkCredential? credential, CancellationToken token = default);
 }
 
 /// <summary>
@@ -121,18 +126,18 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 	}
 
 	/// <inheritdoc/>
-	public async Task<SonarrClientResult<string>> DownloadToPathAsync(string url, string path, CancellationToken token = default)
+	public SonarrClientResult<string> DownloadToPath(string url, string path, CancellationToken token = default)
 	{
 		using ApiKeyRequestMessage msg = new(HttpMethod.Get, this.AddUrlBase(url), _scopeFactory);
 
-		return await this.DownloadAsync(msg, url, path, token).ConfigureAwait(false);
+		return this.Download(msg, url, path, token);
 	}
 	/// <inheritdoc/>
-	public async Task<SonarrClientResult<string>> DownloadToPathAsync(string url, string path, NetworkCredential? credential, CancellationToken token = default)
+	public SonarrClientResult<string> DownloadToPath(string url, string path, NetworkCredential? credential, CancellationToken token = default)
 	{
 		using AuthedRequestMessage msg = new(HttpMethod.Get, this.AddUrlBase(url), credential, _scopeFactory);
 
-		return await this.DownloadAsync(msg, url, path, token).ConfigureAwait(false);
+		return this.Download(msg, url, path, token);
 	}
 
 	/// <summary>
@@ -191,8 +196,9 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 	/// </summary>
 	/// <remarks>
 	/// <para>
-	/// The method returns every failure as an error result. A failure of the credentials that <see cref="AuthHandler"/>
-	/// adds gives the category <see cref="ErrorCategory.AuthenticationError"/>. A request that gets no response gives
+	/// The method returns every failure as an error result, and lets a <see cref="PipelineStoppedException"/> through. A
+	/// failure of the credentials that <see cref="AuthHandler"/> adds gives the category
+	/// <see cref="ErrorCategory.AuthenticationError"/>. A request that gets no response gives
 	/// <see cref="ErrorCategory.ConnectionError"/>, a timeout <see cref="ErrorCategory.OperationTimeout"/>, and any other
 	/// cancellation <see cref="ErrorCategory.OperationStopped"/>.
 	/// </para>
@@ -211,14 +217,14 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 	/// A result that holds <paramref name="path"/> once the file is written, or an error when the request fails, the
 	/// server answers with a status that isn't a success, the response holds no file, or the file can't be written.
 	/// </returns>
-	private async Task<SonarrClientResult<string>> DownloadAsync(SonarrRequestMessage request, string url, string path, CancellationToken token)
+	private SonarrClientResult<string> Download(SonarrRequestMessage request, string url, string path, CancellationToken token)
 	{
 		_cmdletAccessor.AttachTo(request);
 
 		HttpResponseMessage response;
 		try
 		{
-			response = await _client.SendAsync(request, token).ConfigureAwait(false);
+			response = _client.Send(request, token);
 		}
 		catch (SonarrHttpException ex)
 		{
@@ -232,7 +238,7 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 
 			return FromException(cancelled, category, ErrorHandler.NoResponseCode, response: null, url);
 		}
-		catch (Exception e)
+		catch (Exception e) when (e is not PipelineStoppedException)
 		{
 			return FromException(e, ErrorCategory.ConnectionError, ErrorHandler.NoResponseCode, response: null, url);
 		}
@@ -251,7 +257,7 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 			bool written;
 			try
 			{
-				written = await WriteFileAsync(response, path, token).ConfigureAwait(false);
+				written = WriteFile(response, path, token);
 			}
 			catch (OperationCanceledException cancelled)
 			{
@@ -308,33 +314,37 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 	/// Writes the body of the specified response to a file.
 	/// </summary>
 	/// <remarks>
+	/// <para>
 	/// A body that is known to be empty writes nothing, since it holds no file. The method creates the file, or overwrites
 	/// one that exists, and holds it open without sharing while it writes.
+	/// </para>
+	/// <para>
+	/// The body is already in memory, since <see cref="HttpClient.Send(HttpRequestMessage, CancellationToken)"/> reads all
+	/// of it before it returns the response, so the method checks the token before it creates the file, and a copy that
+	/// has started runs to its end.
+	/// </para>
 	/// </remarks>
 	/// <param name="response">The successful response whose body is the file.</param>
 	/// <param name="path">The path of the file to write.</param>
-	/// <param name="token">A token that cancels reading the body and writing the file.</param>
+	/// <param name="token">A token that cancels the write before the file is created.</param>
 	/// <returns>
-	/// A task that completes with <see langword="true"/> if the file was written; otherwise, <see langword="false"/>, when
-	/// the body is empty.
+	/// <see langword="true"/> if the file was written; otherwise, <see langword="false"/>, when the body is empty.
 	/// </returns>
-	private static async Task<bool> WriteFileAsync(HttpResponseMessage response, string path, CancellationToken token)
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled before the file is
+	/// created.</exception>
+	private static bool WriteFile(HttpResponseMessage response, string path, CancellationToken token)
 	{
-		Stream stream = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
-		await using (stream.ConfigureAwait(false))
-		{
-			if (stream.CanSeek && stream.Length <= 0)
-			{
-				return false;
-			}
+		token.ThrowIfCancellationRequested();
 
-			FileStream fs = new(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 8192, useAsync: true);
-			await using (fs.ConfigureAwait(false))
-			{
-				await stream.CopyToAsync(fs, token).ConfigureAwait(false);
-				return true;
-			}
+		using Stream stream = response.Content.ReadAsStream(token);
+		if (stream.CanSeek && stream.Length <= 0)
+		{
+			return false;
 		}
+
+		using FileStream fs = new(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 8192);
+		stream.CopyTo(fs);
+		return true;
 	}
 }
 

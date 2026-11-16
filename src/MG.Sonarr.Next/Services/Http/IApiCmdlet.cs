@@ -13,10 +13,16 @@ namespace MG.Sonarr.Next.Services.Http;
 /// call these members around sending it.
 /// </para>
 /// <para>
-/// The handlers call <see cref="WriteVerboseAfter(ISonarrResponse, IServiceProvider, JsonSerializerOptions?)"/> and
-/// <see cref="WriteDebugPayload(string)"/> after an <see langword="await"/>, often on a thread-pool thread rather than the
-/// pipeline thread, so an implementation writes through the host's UI rather than through the cmdlet's own
-/// <c>WriteVerbose</c> and <c>WriteDebug</c>, which throw off the pipeline thread.
+/// The clients send each request synchronously, so the handlers call these members on the thread that sent the request,
+/// which for a cmdlet is its pipeline thread. An implementation writes through the cmdlet's own <c>WriteVerbose</c> and
+/// <c>WriteDebug</c>, so the lines reach the verbose and debug streams, where redirection captures them and a transcript
+/// records them.
+/// </para>
+/// <para>
+/// A write can throw: the cmdlet's own output throws a <see cref="PipelineStoppedException"/> under a preference of
+/// <see cref="ActionPreference.Stop"/>, or when the user halts the cmdlet at an <see cref="ActionPreference.Inquire"/>
+/// prompt. The clients let that exception through, so it ends the cmdlet's pipeline as it would from the cmdlet's own
+/// code.
 /// </para>
 /// </remarks>
 public interface IApiCmdlet

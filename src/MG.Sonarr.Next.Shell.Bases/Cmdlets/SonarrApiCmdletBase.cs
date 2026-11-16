@@ -14,8 +14,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets;
 /// <remarks>
 /// <para>
 /// Each helper starts the cmdlet's timer, sends the request through the <see cref="ISonarrClient"/> of the cmdlet's
-/// scope, and blocks the calling thread until the result is read. The client puts the cmdlet in the request, so the
-/// cmdlet's verbose and debug output reports the request and its response.
+/// scope, and returns once the result is read. The client sends synchronously, on the thread that calls the helper, and
+/// puts the cmdlet in the request, so the cmdlet's verbose and debug streams report the request and its response.
 /// </para>
 /// <para>
 /// The helpers don't throw for a failed request. The result carries the error record instead, and the cmdlet decides
@@ -68,7 +68,7 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	{
 		this.StartTimer();
 
-		return _client.SendDeleteAsync(path, this.GetRequestToken(token)).GetAwaiter().GetResult();
+		return _client.SendDelete(path, this.GetRequestToken(token));
 	}
 
 	/// <summary>
@@ -88,7 +88,7 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 		where T : class
 	{
 		this.StartTimer();
-		return _client.SendGetAsync<T>(path, this.GetRequestToken(token)).GetAwaiter().GetResult();
+		return _client.SendGet<T>(path, this.GetRequestToken(token));
 	}
 
 	/// <summary>
@@ -103,7 +103,7 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 		where T : class
 	{
 		this.StartTimer();
-		return _client.SendPostAsync<T>(path, this.GetRequestToken(token)).GetAwaiter().GetResult();
+		return _client.SendPost<T>(path, this.GetRequestToken(token));
 	}
 	/// <summary>
 	/// Sends a POST request with the specified body to the specified Sonarr API endpoint.
@@ -115,7 +115,7 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	protected SonarrClientResult SendPostRequest(string path, object body, CancellationToken token = default)
 	{
 		this.StartTimer();
-		return _client.SendPostAsync(path, body, this.GetRequestToken(token)).GetAwaiter().GetResult();
+		return _client.SendPost(path, body, this.GetRequestToken(token));
 	}
 	/// <summary>
 	/// Sends a POST request with the specified body to the specified Sonarr API endpoint and deserializes the response's
@@ -130,7 +130,7 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 		where TOutput : class
 	{
 		this.StartTimer();
-		SonarrClientResult<TOutput> response = _client.SendPostAsync<TOutput>(path, body, this.GetRequestToken(token)).GetAwaiter().GetResult();
+		SonarrClientResult<TOutput> response = _client.SendPost<TOutput>(path, body, this.GetRequestToken(token));
 		return !response.IsError
 			? response.Value
 			: response.Error;
@@ -145,7 +145,7 @@ public abstract class SonarrApiCmdletBase : TimedCmdlet
 	protected SonarrClientResult SendPutRequest(string path, object body, CancellationToken token = default)
 	{
 		this.StartTimer();
-		return _client.SendPutAsync(path, body, this.GetRequestToken(token)).GetAwaiter().GetResult();
+		return _client.SendPut(path, body, this.GetRequestToken(token));
 	}
 
 	/// <summary>

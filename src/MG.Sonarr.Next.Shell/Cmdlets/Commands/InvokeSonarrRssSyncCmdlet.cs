@@ -73,7 +73,7 @@ public sealed class InvokeSonarrRssSyncCmdlet : TimedCmdlet
 		var tracker = provider.GetRequiredService<ICommandTracker>();
 
 		this.StartTimer();
-		var response = tracker.SendRssSync(this.Priority, this.UpdateScheduledTask.ToBool());
+		var response = tracker.SendRssSync(this.Priority, this.UpdateScheduledTask.ToBool(), this.PipelineStopToken);
 		_ = this.TryWriteObject(response);
 	}
 }

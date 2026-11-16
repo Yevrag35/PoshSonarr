@@ -9,7 +9,6 @@ using MG.Sonarr.Next.Shell.Extensions;
 using MG.Sonarr.Next.Shell.Services;
 using MG.Sonarr.Next.Shell.Settings;
 using MG.Sonarr.Resources;
-using System.Management.Automation.Host;
 using System.Text.Json;
 
 namespace MG.Sonarr.Next.Shell.Cmdlets.Connection;
@@ -31,8 +30,8 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Connection;
 /// </para>
 /// <para>
 /// The cmdlet writes nothing to the pipeline, unless <c>-PassThru</c> is present, which writes the server's status as
-/// a <see cref="SystemStatusObject"/>. The verbose and debug lines for the test's request go to the host's UI, so
-/// redirecting the verbose or debug stream doesn't capture them.
+/// a <see cref="SystemStatusObject"/>. The verbose and debug lines for the test's request go to the verbose and debug
+/// streams, and stopping the pipeline, as Ctrl+C does, ends the test's request.
 /// </para>
 /// <para>
 /// The cmdlet's alias is <c>Connect-Sonarr</c>.
@@ -238,7 +237,8 @@ public sealed class ConnectSonarrInstanceCmdlet : ConnectCmdlet, IApiCmdlet
 	/// succeed:
 	/// <see cref="ISonarrClient.SendTest(CancellationToken)"/> itself, and with <paramref name="passThru"/>, this method, from the status
 	/// that it writes. The status comes from the same test, so a wrong key or a URL that doesn't reach Sonarr's API fails
-	/// in the same way either way.
+	/// in the same way either way. The test sends with <see cref="Cmdlet.PipelineStopToken"/>, so stopping the pipeline
+	/// ends it.
 	/// </remarks>
 	/// <param name="client">The client of the new connection's scope.</param>
 	/// <param name="provider">The service provider of the new connection's scope.</param>
@@ -250,12 +250,12 @@ public sealed class ConnectSonarrInstanceCmdlet : ConnectCmdlet, IApiCmdlet
 	{
 		if (!passThru)
 		{
-			return client.SendTest();
+			return client.SendTest(this.PipelineStopToken);
 		}
 
 		// The status comes from the same test, so a wrong key or a URL that doesn't reach Sonarr's API fails as it does
 		// without -PassThru.
-		var response = client.SendTest<SystemStatusObject>();
+		var response = client.SendTest<SystemStatusObject>(this.PipelineStopToken);
 		if (!response.IsError)
 		{
 			var settings = provider.GetRequiredService<IConnectionSettings>();
@@ -340,37 +340,6 @@ public sealed class ConnectSonarrInstanceCmdlet : ConnectCmdlet, IApiCmdlet
 	}
 
 	/// <summary>
-	/// Determines whether the cmdlet writes verbose messages and its host has a UI to write them to.
-	/// </summary>
-	/// <param name="hostInterface">
-	/// When the method returns, the host's UI, or <see langword="null"/> when the host has none.
-	/// </param>
-	/// <returns>
-	/// <see langword="true"/> if <see cref="CanWriteVerbose"/> is <see langword="true"/> and the host has a UI;
-	/// otherwise, <see langword="false"/>.
-	/// </returns>
-	private bool IsVerboseNotSilentAndUICanWrite([NotNullWhen(true)] out PSHostUserInterface? hostInterface)
-	{
-		hostInterface = this.Host?.UI;
-		return this.CanWriteVerbose && hostInterface is not null;
-	}
-	/// <summary>
-	/// Determines whether the cmdlet writes debug messages and its host has a UI to write them to.
-	/// </summary>
-	/// <param name="hostInterface">
-	/// When the method returns, the host's UI, or <see langword="null"/> when the host has none.
-	/// </param>
-	/// <returns>
-	/// <see langword="true"/> if the cmdlet's debug preference is neither <see cref="ActionPreference.SilentlyContinue"/>
-	/// nor <see cref="ActionPreference.Ignore"/> and the host has a UI; otherwise, <see langword="false"/>.
-	/// </returns>
-	private bool IsDebugNotSilentAndUICanWrite([NotNullWhen(true)] out PSHostUserInterface? hostInterface)
-	{
-		hostInterface = this.Host?.UI;
-		return _debugPreference is not (ActionPreference.SilentlyContinue or ActionPreference.Ignore) && hostInterface is not null;
-	}
-
-	/// <summary>
 	/// Sets one of the connection's settings to the specified value, creating the settings first when no parameter has.
 	/// </summary>
 	/// <remarks>
@@ -402,47 +371,41 @@ public sealed class ConnectSonarrInstanceCmdlet : ConnectCmdlet, IApiCmdlet
 	/// Writes the body of a request or a response to the debug stream.
 	/// </summary>
 	/// <remarks>
-	/// The text goes to the host's UI as a debug line, so it can be written from any thread, and redirecting the debug
-	/// stream doesn't capture it. Nothing is written when the cmdlet's debug preference is
-	/// <see cref="ActionPreference.SilentlyContinue"/> or <see cref="ActionPreference.Ignore"/>, or when the host has no
-	/// UI.
+	/// The text goes to the debug stream, so the method runs on the pipeline thread, where the handlers call it. The
+	/// method doesn't check <see cref="CanDebugSerializeBefore"/> or <see cref="CanDebugSerializeAfter"/>; the caller does.
 	/// </remarks>
 	/// <param name="jsonPayload">The text to write, which describes the body and holds its JSON.</param>
+	/// <exception cref="PipelineStoppedException">Thrown when the cmdlet's debug preference is Stop, or when the user halts
+	/// the cmdlet at an Inquire prompt.</exception>
 	public void WriteDebugPayload(string jsonPayload)
 	{
-		if (this.IsDebugNotSilentAndUICanWrite(out PSHostUserInterface? hostInterface))
-		{
-			hostInterface.WriteDebugLine(jsonPayload);
-		}
+		this.WriteDebug(jsonPayload);
 	}
 	/// <summary>
 	/// Writes a verbose line about a request that is about to be sent, with its method and URL.
 	/// </summary>
 	/// <remarks>
-	/// The line goes to the host's UI, so it can be written from any thread, and redirecting the verbose stream doesn't
-	/// capture it. Nothing is written when <see cref="CanWriteVerbose"/> is <see langword="false"/> or the host has no
-	/// UI.
+	/// The line goes to the verbose stream, so the method runs on the pipeline thread, where the handlers call it. The
+	/// method doesn't check <see cref="CanWriteVerbose"/>; the caller does.
 	/// </remarks>
 	/// <param name="request">The details of the pending request.</param>
+	/// <exception cref="PipelineStoppedException">Thrown when the cmdlet's verbose preference is Stop, or when the user
+	/// halts the cmdlet at an Inquire prompt.</exception>
 	public void WriteVerboseBefore(IHttpRequestDetails request)
 	{
-		if (this.IsVerboseNotSilentAndUICanWrite(out PSHostUserInterface? hostUI))
-		{
-			string msg = string.Format(
-				provider: CultureInfo.CurrentCulture,
-				format: Messages.Verbose_SendingRequest_Format,
-				request.RequestMethod, request.RequestUrl);
+		string msg = string.Format(
+			provider: CultureInfo.CurrentCulture,
+			format: Messages.Verbose_SendingRequest_Format,
+			request.RequestMethod, request.RequestUrl);
 
-			hostUI.WriteVerboseLine(msg);
-		}
+		this.WriteVerbose(msg);
 	}
 	/// <summary>
 	/// Writes a verbose line that reports the response to a request, as the JSON of the request's outcome.
 	/// </summary>
 	/// <remarks>
-	/// The line goes to the host's UI, so it can be written from any thread, and redirecting the verbose stream doesn't
-	/// capture it. Nothing is written when <see cref="CanWriteVerbose"/> is <see langword="false"/> or the host has no
-	/// UI.
+	/// The line goes to the verbose stream, so the method runs on the pipeline thread, where the handlers call it. The
+	/// method doesn't check <see cref="CanWriteVerbose"/>; the caller does.
 	/// </remarks>
 	/// <param name="response">The outcome of the request, with the response's status code and URL.</param>
 	/// <param name="provider">
@@ -453,13 +416,11 @@ public sealed class ConnectSonarrInstanceCmdlet : ConnectCmdlet, IApiCmdlet
 	/// The JSON options to serialize the outcome with, or <see langword="null"/> to use the serializing options of
 	/// <paramref name="provider"/>.
 	/// </param>
+	/// <exception cref="PipelineStoppedException">Thrown when the cmdlet's verbose preference is Stop, or when the user
+	/// halts the cmdlet at an Inquire prompt.</exception>
 	public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
 	{
-		if (this.IsVerboseNotSilentAndUICanWrite(out PSHostUserInterface? hostUI))
-		{
-			options ??= provider.GetService<ISonarrJsonOptions>()?.ForSerializing;
-			string json = JsonSerializer.Serialize(response, options);
-			hostUI.WriteVerboseLine(json);
-		}
+		options ??= provider.GetService<ISonarrJsonOptions>()?.ForSerializing;
+		this.WriteVerbose(JsonSerializer.Serialize(response, options));
 	}
 }

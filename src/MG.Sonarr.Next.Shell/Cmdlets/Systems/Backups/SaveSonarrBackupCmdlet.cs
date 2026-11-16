@@ -244,7 +244,7 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 		}
 
 		this.WriteVerbose($"Writing response to -> {downloadPath}");
-		var response = this.Downloader.DownloadToPathAsync(this.BackupUri, downloadPath, _creds, this.PipelineStopToken).GetAwaiter().GetResult();
+		var response = this.Downloader.DownloadToPath(this.BackupUri, downloadPath, _creds, this.PipelineStopToken);
 
 		if (response.IsError)
 		{
@@ -324,39 +324,37 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 	/// Writes the body of a request or a response to the debug stream.
 	/// </summary>
 	/// <remarks>
-	/// The text goes to the host's UI as a debug line, so it can be written from any thread. When the host has no UI,
-	/// nothing is written. The method doesn't check <see cref="CanDebugSerializeBefore"/> or
-	/// <see cref="CanDebugSerializeAfter"/>; the caller does.
+	/// The text goes to the debug stream, so the method runs on the pipeline thread, where the handlers call it. The
+	/// method doesn't check <see cref="CanDebugSerializeBefore"/> or <see cref="CanDebugSerializeAfter"/>; the caller does.
 	/// </remarks>
 	/// <param name="jsonPayload">The text to write, which describes the body and holds its JSON.</param>
+	/// <exception cref="PipelineStoppedException">Thrown when the cmdlet's debug preference is Stop, or when the user halts
+	/// the cmdlet at an Inquire prompt.</exception>
 	public void WriteDebugPayload(string jsonPayload)
 	{
-		if (this.Host?.UI is not null)
-		{
-			this.Host.UI.WriteDebugLine(jsonPayload);
-		}
+		this.WriteDebug(jsonPayload);
 	}
 	/// <summary>
 	/// Writes a verbose line about a request that is about to be sent, with its method and URL.
 	/// </summary>
 	/// <remarks>
-	/// The line reads like <c>Sending GET request -&gt; http://host/backup/manual/backup.zip</c>. The method doesn't
-	/// check <see cref="CanWriteVerbose"/>; the caller does.
+	/// The line reads like <c>Sending GET request -&gt; http://host/backup/manual/backup.zip</c>, and it goes to the
+	/// verbose stream, so the method runs on the pipeline thread, where the handlers call it. The method doesn't check
+	/// <see cref="CanWriteVerbose"/>; the caller does.
 	/// </remarks>
 	/// <param name="request">The details of the pending request.</param>
+	/// <exception cref="PipelineStoppedException">Thrown when the cmdlet's verbose preference is Stop, or when the user
+	/// halts the cmdlet at an Inquire prompt.</exception>
 	public void WriteVerboseBefore(IHttpRequestDetails request)
 	{
-		if (this.VerbosePreference != ActionPreference.SilentlyContinue && this.Host?.UI is { } ui)
-		{
-			ui.WriteVerboseLine($"Sending {request.RequestMethod} request -> {request.RequestUrl}");
-		}
+		this.WriteVerbose($"Sending {request.RequestMethod} request -> {request.RequestUrl}");
 	}
 	/// <summary>
 	/// Writes a verbose line that reports the response to a request, as the JSON of the request's outcome.
 	/// </summary>
 	/// <remarks>
-	/// The line goes to the host's UI, so it can be written from any thread. When the host has no UI, nothing is
-	/// written.
+	/// The line goes to the verbose stream, so the method runs on the pipeline thread, where the handlers call it. The
+	/// method doesn't check <see cref="CanWriteVerbose"/>; the caller does.
 	/// </remarks>
 	/// <param name="response">The outcome of the request, with the response's status code and URL.</param>
 	/// <param name="provider">
@@ -367,12 +365,11 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 	/// The JSON options to serialize the outcome with, or <see langword="null"/> to use the serializing options of
 	/// <paramref name="provider"/>.
 	/// </param>
+	/// <exception cref="PipelineStoppedException">Thrown when the cmdlet's verbose preference is Stop, or when the user
+	/// halts the cmdlet at an Inquire prompt.</exception>
 	public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options = null)
 	{
-		if (this.VerbosePreference != ActionPreference.SilentlyContinue && this.Host?.UI is not null)
-		{
-			options ??= provider.GetService<ISonarrJsonOptions>()?.ForSerializing;
-			this.Host.UI.WriteVerboseLine(JsonSerializer.Serialize(response, options));
-		}
+		options ??= provider.GetService<ISonarrJsonOptions>()?.ForSerializing;
+		this.WriteVerbose(JsonSerializer.Serialize(response, options));
 	}
 }

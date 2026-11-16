@@ -4,8 +4,7 @@ using MG.Sonarr.Next.Services.Http.Clients;
 namespace MG.Sonarr.Next.Tests.Http;
 
 /// <summary>
-/// Calls each send method of <see cref="ISonarrClient"/> as a cmdlet does, blocking on an asynchronous one with
-/// <c>GetAwaiter().GetResult()</c>, which a test method mustn't do itself.
+/// Calls each send method of <see cref="ISonarrClient"/> as a cmdlet does, by its name.
 /// </summary>
 internal static class ClientCalls
 {
@@ -33,15 +32,10 @@ internal static class ClientCalls
 		new Dictionary<string, Func<ISonarrClient, CancellationToken, SonarrClientResult>>(StringComparer.Ordinal)
 		{
 			["SendDelete"] = (client, token) => client.SendDelete(PATH, token),
-			["SendDeleteAsync"] = (client, token) => client.SendDeleteAsync(PATH, token).GetAwaiter().GetResult(),
 			["SendGet"] = (client, token) => client.SendGet<object>(PATH, token),
-			["SendGetAsync"] = (client, token) => client.SendGetAsync<object>(PATH, token).GetAwaiter().GetResult(),
 			["SendPost"] = (client, token) => client.SendPost(PATH, s_body, token),
 			["SendPost<T>"] = (client, token) => client.SendPost<object>(PATH, s_body, token),
-			["SendPostAsync"] = (client, token) => client.SendPostAsync(PATH, s_body, token).GetAwaiter().GetResult(),
-			["SendPostAsync<T>"] = (client, token) => client.SendPostAsync<object>(PATH, s_body, token).GetAwaiter().GetResult(),
 			["SendPut"] = (client, token) => client.SendPut(PATH, s_body, token),
-			["SendPutAsync"] = (client, token) => client.SendPutAsync(PATH, s_body, token).GetAwaiter().GetResult(),
 		};
 
 	/// <summary>
@@ -50,7 +44,7 @@ internal static class ClientCalls
 	internal static readonly IReadOnlyDictionary<string, Func<ISonarrClient, CancellationToken, SonarrClientResult>> AllMethods =
 		new Dictionary<string, Func<ISonarrClient, CancellationToken, SonarrClientResult>>(ApiMethods, StringComparer.Ordinal)
 		{
-			["SendPingAsync"] = (client, token) => client.SendPingAsync(token).GetAwaiter().GetResult(),
+			["SendPing"] = (client, token) => client.SendPing(token),
 			["SendTest"] = (client, token) => client.SendTest(token),
 		};
 }

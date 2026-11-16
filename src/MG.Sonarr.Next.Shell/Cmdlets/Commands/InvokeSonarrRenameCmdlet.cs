@@ -135,7 +135,7 @@ public sealed class InvokeSonarrRenameCmdlet : SonarrCmdletBase
 			return;
 		}
 
-		var response = client.SendRename(rename);
+		var response = client.SendRename(rename, this.PipelineStopToken);
 		_ = this.TryWriteObject(response);
 	}
 	/// <summary>
@@ -155,7 +155,7 @@ public sealed class InvokeSonarrRenameCmdlet : SonarrCmdletBase
 		{
 			if (this.ShouldProcess(rename.ToString(), "Rename Episode Files"))
 			{
-				var response = client.SendRename(rename);
+				var response = client.SendRename(rename, this.PipelineStopToken);
 				_ = this.TryWriteObject(response);
 			}
 		}

@@ -42,20 +42,17 @@ public sealed class DiagnosticOutputTests
 		["GET of a list outside ASCII"] = new(
 			(client, token) => client.SendGet<object>("/tag", token),
 			HttpStatusCode.OK, "application/json", $"[{TAG},{{\"id\":2,\"label\":\"2024\"}}]"),
-		["asynchronous GET"] = new(
-			(client, token) => client.SendGetAsync<object>("/tag/1", token).GetAwaiter().GetResult(),
+		["GET of one object"] = new(
+			(client, token) => client.SendGet<object>("/tag/1", token),
 			HttpStatusCode.OK, "application/json", TAG),
 		["POST of a body outside ASCII"] = new(
 			(client, token) => client.SendPost<object>("/tag", s_tag, token),
 			HttpStatusCode.Created, "application/json", TAG),
-		["asynchronous POST without a result"] = new(
-			(client, token) => client.SendPostAsync("/tag", s_tag, token).GetAwaiter().GetResult(),
+		["POST without a result"] = new(
+			(client, token) => client.SendPost("/tag", s_tag, token),
 			HttpStatusCode.Created, "application/json", TAG),
 		["PUT of a body past a pooled stream's first buffer"] = new(
 			(client, token) => client.SendPut("/series/1", s_series, token),
-			HttpStatusCode.Accepted, "application/json", s_seriesJson),
-		["asynchronous PUT"] = new(
-			(client, token) => client.SendPutAsync("/series/1", s_series, token).GetAwaiter().GetResult(),
 			HttpStatusCode.Accepted, "application/json", s_seriesJson),
 		["DELETE with no body either way"] = new(
 			(client, token) => client.SendDelete("/tag/1", token),
@@ -120,7 +117,7 @@ public sealed class DiagnosticOutputTests
 	/// send, the body's size after it, and the status code and URL after the response.
 	/// </summary>
 	[Fact]
-	public async Task DownloadsTheSameFile()
+	public void DownloadsTheSameFile()
 	{
 		byte[] file = [.. Enumerable.Range(0, 20_000).Select(i => (byte)(i * 7))];
 		FakeSonarr sonarr = new("diagnostics", new ProbeLog(), (request, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
@@ -140,21 +137,21 @@ public sealed class DiagnosticOutputTests
 
 			using (IServiceScope scope = provider.CreateScope())
 			{
-				SonarrClientResult<string> result = await scope.ServiceProvider.GetRequiredService<ISonarrDownloadClient>()
-					.DownloadToPathAsync(ClientCalls.DOWNLOAD_PATH, plainPath, token);
+				SonarrClientResult<string> result = scope.ServiceProvider.GetRequiredService<ISonarrDownloadClient>()
+					.DownloadToPath(ClientCalls.DOWNLOAD_PATH, plainPath, token);
 				Assert.False(result.IsError, result.Error?.Exception.ToString());
 			}
 
 			using (IServiceScope scope = provider.CreateScope())
 			{
 				scope.ServiceProvider.GetRequiredService<ApiCmdletAccessor>().Cmdlet = cmdlet;
-				SonarrClientResult<string> result = await scope.ServiceProvider.GetRequiredService<ISonarrDownloadClient>()
-					.DownloadToPathAsync(ClientCalls.DOWNLOAD_PATH, diagnosedPath, token);
+				SonarrClientResult<string> result = scope.ServiceProvider.GetRequiredService<ISonarrDownloadClient>()
+					.DownloadToPath(ClientCalls.DOWNLOAD_PATH, diagnosedPath, token);
 				Assert.False(result.IsError, result.Error?.Exception.ToString());
 			}
 
-			Assert.Equal(file, await File.ReadAllBytesAsync(plainPath, token));
-			Assert.Equal(file, await File.ReadAllBytesAsync(diagnosedPath, token));
+			Assert.Equal(file, File.ReadAllBytes(plainPath));
+			Assert.Equal(file, File.ReadAllBytes(diagnosedPath));
 
 			string url = new Uri(FakeSonarr.BaseUri, ClientCalls.DOWNLOAD_PATH).ToString();
 			string[] lines = cmdlet.Lines;
@@ -281,7 +278,7 @@ public sealed class DiagnosticOutputTests
 
 	/// <summary>
 	/// A cmdlet that asks for every verbose and debug line about its requests, and keeps them in the order that the
-	/// handlers write them, from any thread.
+	/// handlers write them.
 	/// </summary>
 	private sealed class DiagnosedCmdlet : IApiCmdlet
 	{
