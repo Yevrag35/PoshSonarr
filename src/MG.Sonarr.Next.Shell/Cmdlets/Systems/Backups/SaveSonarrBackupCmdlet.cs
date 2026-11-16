@@ -244,7 +244,7 @@ public sealed class SaveSonarrBackupCmdlet : SonarrCmdletBase, IApiCmdlet
 		}
 
 		this.WriteVerbose($"Writing response to -> {downloadPath}");
-		var response = this.Downloader.DownloadToPathAsync(this.BackupUri, downloadPath, _creds).GetAwaiter().GetResult();
+		var response = this.Downloader.DownloadToPathAsync(this.BackupUri, downloadPath, _creds, this.PipelineStopToken).GetAwaiter().GetResult();
 
 		if (response.IsError)
 		{
