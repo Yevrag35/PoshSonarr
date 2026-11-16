@@ -48,7 +48,7 @@ The suite covers the module's code that isn't a cmdlet: `MG.Sonarr.Next`, and th
 | `ModuleServices.cs` | `ModuleServices.Build`, which builds a connection's services for a `FakeSonarr` through the module's own builder, and the JSON options and metadata resolver of a provider that every test shares. |
 | `TestCmdlets.cs` | `PowerShellHost`, which opens a runspace that holds the test cmdlets and runs commands in it, the `Connection` collection, and the test cmdlets, which run on the module's base classes. |
 | `Probes.cs` | `ProbeLog`, the probes that log when a connection's provider or a scope on it is disposed, and `ProbeGate`, which holds a cmdlet in its `Begin` step until the test releases it. |
-| `BlackHoleSynchronizationContext.cs` | A `SynchronizationContext` that never runs what's posted to it, as a GUI host's pipeline thread doesn't while a cmdlet blocks on a task. |
+| `BlackHoleSynchronizationContext.cs` | A `SynchronizationContext` that never runs what's posted to it, as a GUI host's pipeline thread doesn't while a cmdlet sends a request. |
 | `CultureScope.cs` | `CultureScope`, which sets the current culture until it's disposed, and `CultureScope.Names`: the invariant culture, en-US, and the cultures that broke the module's reading and writing of text. |
 | `ModelDescription.cs` | Describes what PowerShell shows of an object, so a test can compare a model before and after a request that sends it. |
 
@@ -66,7 +66,7 @@ A test's name says what the code does, in the present tense, such as `HoldsTheTe
 ### Awaiting and blocking
 
 - A test method awaits without `ConfigureAwait(false)`, as xUnit1030 asks, and `.editorconfig` in this folder turns off CA2007, which would ask for it. Helper code that runs under a `SynchronizationContext` of its own, such as a fake handler under `BlackHoleSynchronizationContext`, still calls `ConfigureAwait(false)` where the context matters.
-- A test that blocks on a task, as a cmdlet does, blocks in a helper, such as the ones in `Http/ClientCalls.cs`, since xUnit1031 warns about a blocking call in a test method.
+- A test that blocks on a task blocks in a helper, such as `Apply` in `Http/ArrayPoolMemoryStreamTests.cs`, which blocks on a stream's asynchronous reads and writes, since xUnit1031 warns about a blocking call in a test method.
 
 ### Fake Sonarr instances
 

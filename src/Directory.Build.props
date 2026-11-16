@@ -4,7 +4,7 @@
 	<PropertyGroup>
 		<Authors>Mike Garvey</Authors>
 		<Company>Yevrag35, LLC.</Company>
-		<Copyright>Copyright © 2018-2025 Yevrag35, LLC.</Copyright>
+		<Copyright>Copyright © 2018-2026 Yevrag35, LLC.</Copyright>
 		<PackageLicenseUrl>https://raw.githubusercontent.com/Yevrag35/PoshSonarr/master/LICENSE</PackageLicenseUrl>
 		<PackageProjectUrl>https://github.com/Yevrag35/PoshSonarr</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Yevrag35/PoshSonarr</RepositoryUrl>

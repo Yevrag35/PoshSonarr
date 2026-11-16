@@ -79,17 +79,60 @@ public sealed class SonarrHttpClientTests
 	}
 
 	/// <summary>
+	/// The connection test that <c>Connect-SonarrInstance</c> and <c>Test-SonarrHost</c> run reports a failure before a
+	/// response arrives as every other request does: no response gives <see cref="ErrorCategory.ConnectionError"/>, with
+	/// the request's absolute URL as the result's URL and at the start of the error's message, a timeout gives
+	/// <see cref="ErrorCategory.OperationTimeout"/>, and any other cancellation gives
+	/// <see cref="ErrorCategory.OperationStopped"/>, with the relative path, since neither exception carries a URL.
+	/// </summary>
+	/// <param name="failure">How the request fails.</param>
+	[Theory]
+	[InlineData(Failure.NoResponse)]
+	[InlineData(Failure.Timeout)]
+	[InlineData(Failure.Canceled)]
+	public void AConnectionTestThatGetsNoResponseGivesTheCategoryOfItsFailure(Failure failure)
+	{
+		const string testPath = "/system/status";
+		string absoluteUrl = new Uri(FakeSonarr.BaseUri, "/api/v3" + testPath).AbsoluteUri;
+		(ErrorCategory category, string url) = failure switch
+		{
+			Failure.NoResponse => (ErrorCategory.ConnectionError, absoluteUrl),
+			Failure.Timeout => (ErrorCategory.OperationTimeout, testPath),
+			_ => (ErrorCategory.OperationStopped, testPath),
+		};
+
+		using CancellationTokenSource canceled = new();
+		canceled.Cancel();
+
+		using ServiceProvider provider = ModuleServices.Build(Fail(failure, new ProbeLog()));
+		using IServiceScope scope = provider.CreateScope();
+		ISonarrClient client = scope.ServiceProvider.GetRequiredService<ISonarrClient>();
+
+		SonarrClientResult result = client.SendTest(failure == Failure.Canceled ? canceled.Token : TestContext.Current.CancellationToken);
+
+		Assert.True(result.IsError, "The connection test succeeded.");
+		Assert.True(
+			category == result.Error.CategoryInfo.Category,
+			$"The connection test gave {result.Error.CategoryInfo.Category}, where {category} was expected, for {result.Error.Exception}");
+		Assert.Equal(url, result.RequestUrl);
+		if (failure == Failure.NoResponse)
+		{
+			Assert.StartsWith(absoluteUrl, result.Error.ToString(), StringComparison.Ordinal);
+		}
+	}
+
+	/// <summary>
 	/// O27: a ping and a download give every failure as an error result, as the clients' docs say, rather than throwing.
 	/// One that gets no response gives <see cref="ErrorCategory.ConnectionError"/>, a timeout
 	/// <see cref="ErrorCategory.OperationTimeout"/>, and any other cancellation
 	/// <see cref="ErrorCategory.OperationStopped"/>, and a download whose file can't be written gives
 	/// <see cref="ErrorCategory.WriteError"/>, with the file's path as the error's target.
 	/// </summary>
-	/// <param name="call">The method that sends the request, <c>SendPingAsync</c> or <c>DownloadToPathAsync</c>.</param>
+	/// <param name="call">The method that sends the request, <c>SendPing</c> or <c>DownloadToPath</c>.</param>
 	/// <param name="failure">How the request fails.</param>
 	[Theory]
 	[MemberData(nameof(PingAndDownloadFailures))]
-	public async Task O27_APingOrADownloadGivesEveryFailureAsAnErrorResult(string call, Failure failure)
+	public void O27_APingOrADownloadGivesEveryFailureAsAnErrorResult(string call, Failure failure)
 	{
 		ErrorCategory category = failure switch
 		{
@@ -100,7 +143,7 @@ public sealed class SonarrHttpClientTests
 		};
 
 		using CancellationTokenSource canceled = new();
-		await canceled.CancelAsync();
+		canceled.Cancel();
 		CancellationToken token = failure == Failure.Canceled ? canceled.Token : TestContext.Current.CancellationToken;
 
 		ProbeLog log = new();
@@ -114,9 +157,9 @@ public sealed class SonarrHttpClientTests
 			using ServiceProvider provider = ModuleServices.Build(Fail(failure, log));
 			using IServiceScope scope = provider.CreateScope();
 
-			SonarrClientResult result = call == nameof(ISonarrClient.SendPingAsync)
-				? await scope.ServiceProvider.GetRequiredService<ISonarrClient>().SendPingAsync(token)
-				: await scope.ServiceProvider.GetRequiredService<ISonarrDownloadClient>().DownloadToPathAsync(ClientCalls.DOWNLOAD_PATH, path, token);
+			SonarrClientResult result = call == nameof(ISonarrClient.SendPing)
+				? scope.ServiceProvider.GetRequiredService<ISonarrClient>().SendPing(token)
+				: scope.ServiceProvider.GetRequiredService<ISonarrDownloadClient>().DownloadToPath(ClientCalls.DOWNLOAD_PATH, path, token);
 
 			Assert.True(result.IsError, $"{call} succeeded.");
 			Assert.True(
@@ -125,7 +168,7 @@ public sealed class SonarrHttpClientTests
 
 			// The request reached the fake, which answered it as the row says.
 			Assert.Equal(
-				[call == nameof(ISonarrClient.SendPingAsync) ? "HEAD /ping" : "GET " + ClientCalls.DOWNLOAD_PATH],
+				[call == nameof(ISonarrClient.SendPing) ? "HEAD /ping" : "GET " + ClientCalls.DOWNLOAD_PATH],
 				log.Snapshot());
 
 			if (failure == Failure.Unwritable)
@@ -141,28 +184,56 @@ public sealed class SonarrHttpClientTests
 
 	public static TheoryData<string, Failure> PingAndDownloadFailures => new()
 	{
-		{ nameof(ISonarrClient.SendPingAsync), Failure.NoResponse },
-		{ nameof(ISonarrClient.SendPingAsync), Failure.Timeout },
-		{ nameof(ISonarrClient.SendPingAsync), Failure.Canceled },
-		{ nameof(ISonarrDownloadClient.DownloadToPathAsync), Failure.NoResponse },
-		{ nameof(ISonarrDownloadClient.DownloadToPathAsync), Failure.Timeout },
-		{ nameof(ISonarrDownloadClient.DownloadToPathAsync), Failure.Canceled },
-		{ nameof(ISonarrDownloadClient.DownloadToPathAsync), Failure.Unwritable },
+		{ nameof(ISonarrClient.SendPing), Failure.NoResponse },
+		{ nameof(ISonarrClient.SendPing), Failure.Timeout },
+		{ nameof(ISonarrClient.SendPing), Failure.Canceled },
+		{ nameof(ISonarrDownloadClient.DownloadToPath), Failure.NoResponse },
+		{ nameof(ISonarrDownloadClient.DownloadToPath), Failure.Timeout },
+		{ nameof(ISonarrDownloadClient.DownloadToPath), Failure.Canceled },
+		{ nameof(ISonarrDownloadClient.DownloadToPath), Failure.Unwritable },
 	};
 
 	/// <summary>
-	/// B1: no await in the client or its handlers resumes on the caller's <see cref="SynchronizationContext"/>, since a
-	/// cmdlet blocks on the client's tasks with <c>GetAwaiter().GetResult()</c>. Under a context that runs posted work
-	/// only when its thread is free, which it never is while it blocks, every send method finishes, and nothing is posted
-	/// to the context.
+	/// A download that gets no response gives <see cref="ErrorCategory.ConnectionError"/>, with the download's absolute URL
+	/// as the result's URL and at the start of the error's message, as an API request does.
+	/// </summary>
+	[Fact]
+	public void ADownloadThatGetsNoResponseNamesItsUrl()
+	{
+		string downloadUrl = new Uri(FakeSonarr.BaseUri, ClientCalls.DOWNLOAD_PATH).AbsoluteUri;
+		DirectoryInfo folder = Directory.CreateTempSubdirectory("PoshSonarr.Tests.");
+
+		try
+		{
+			using ServiceProvider provider = ModuleServices.Build(Fail(Failure.NoResponse, new ProbeLog()));
+			using IServiceScope scope = provider.CreateScope();
+
+			SonarrClientResult result = scope.ServiceProvider.GetRequiredService<ISonarrDownloadClient>().DownloadToPath(
+				ClientCalls.DOWNLOAD_PATH, Path.Combine(folder.FullName, "backup.zip"), TestContext.Current.CancellationToken);
+
+			Assert.True(result.IsError, "The download succeeded.");
+			Assert.Equal(ErrorCategory.ConnectionError, result.Error.CategoryInfo.Category);
+			Assert.Equal(downloadUrl, result.RequestUrl);
+			Assert.StartsWith(downloadUrl, result.Error.ToString(), StringComparison.Ordinal);
+		}
+		finally
+		{
+			folder.Delete(recursive: true);
+		}
+	}
+
+	/// <summary>
+	/// B1: nothing in the client or its handlers posts work to the caller's <see cref="SynchronizationContext"/>, since a
+	/// cmdlet's pipeline thread is busy sending the request. Under a context that runs posted work only when its thread is
+	/// free, which it never is while it sends, every send method finishes, and nothing is posted to the context.
 	/// </summary>
 	/// <param name="method">The send method, by its name in <see cref="ClientCalls.AllMethods"/>.</param>
 	[Theory]
 	[MemberData(nameof(AllMethods))]
 	public void B1_ARequestFinishesUnderAContextThatNeverRunsPostedWork(string method)
 	{
-		// The response comes later, on a thread-pool thread, so every await above the fake handler is still pending when
-		// it's reached, and a continuation that captured the context would wait for it forever.
+		// The response comes later, on a thread-pool thread, so code above the fake handler that waited for it through the
+		// caller's context would wait forever.
 		FakeSonarr sonarr = new("delaying", new ProbeLog(), async (request, token) =>
 		{
 			await Task.Delay(20, token).ConfigureAwait(false);

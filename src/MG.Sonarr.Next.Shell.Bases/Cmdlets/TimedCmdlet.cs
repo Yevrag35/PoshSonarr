@@ -20,11 +20,10 @@ namespace MG.Sonarr.Next.Shell.Cmdlets.Bases;
 /// decide what to write for each request that the cmdlet sends.
 /// </para>
 /// <para>
-/// The handlers call the cmdlet's write methods after an <see langword="await"/>, often on a thread-pool thread rather
-/// than the pipeline thread, so the cmdlet writes its lines through the host's UI rather than through
-/// <see cref="Cmdlet.WriteVerbose(string)"/> and <see cref="Cmdlet.WriteDebug(string)"/>, which throw off the pipeline
-/// thread. Those lines go straight to the host, so redirecting the verbose or debug stream doesn't capture them and a
-/// transcript doesn't record them.
+/// The client sends each request synchronously, so the handlers call the cmdlet's write methods on the pipeline thread,
+/// and the cmdlet writes its lines through <see cref="Cmdlet.WriteVerbose(string)"/> and
+/// <see cref="Cmdlet.WriteDebug(string)"/>. The lines reach the verbose and debug streams, so redirection captures them,
+/// a transcript records them, and the cmdlet's preferences apply to them as to any of its output.
 /// </para>
 /// <para>
 /// The verbose line after a response reports the time since the cmdlet last called <see cref="StartTimer"/>. The
@@ -124,8 +123,8 @@ public abstract class TimedCmdlet : SonarrCmdletBase, IApiCmdlet
 	/// </summary>
 	/// <remarks>
 	/// <para>
-	/// The line reads like <c>Received response after 25ms - 404 (Not Found)</c>, and it goes to the host's UI, so it
-	/// can be written from any thread. When the host has no UI, nothing is written. The method doesn't check
+	/// The line reads like <c>Received response after 25ms - 404 (Not Found)</c>, and it goes to the verbose stream, so
+	/// the method runs on the pipeline thread, where the handlers call it. The method doesn't check
 	/// <see cref="CanWriteVerbose"/>; the caller does.
 	/// </para>
 	/// <para>
@@ -137,14 +136,12 @@ public abstract class TimedCmdlet : SonarrCmdletBase, IApiCmdlet
 	/// <param name="options">
 	/// The JSON options that deserialize the response, or <see langword="null"/> when there are none.
 	/// </param>
+	/// <exception cref="PipelineStoppedException">Thrown when the cmdlet's verbose preference is Stop, or when the user
+	/// halts the cmdlet at an Inquire prompt.</exception>
 	public void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options)
 	{
-		if (this.Host?.UI is { } ui)
-		{
-			TimeSpan elapsed = this.StopTimer();
-			string msg = GetAfterMessage(elapsed, response.StatusCode);
-			ui.WriteVerboseLine(msg);
-		}
+		TimeSpan elapsed = this.StopTimer();
+		this.WriteVerbose(GetAfterMessage(elapsed, response.StatusCode));
 	}
 
 	/// <summary>
@@ -164,34 +161,30 @@ public abstract class TimedCmdlet : SonarrCmdletBase, IApiCmdlet
 	/// Writes the body of a request or a response to the debug stream.
 	/// </summary>
 	/// <remarks>
-	/// The text goes to the host's UI as a debug line, so it can be written from any thread. When the host has no UI,
-	/// nothing is written. The method doesn't check <see cref="CanDebugSerializeBefore"/> or
-	/// <see cref="CanDebugSerializeAfter"/>; the caller does.
+	/// The text goes to the debug stream, so the method runs on the pipeline thread, where the handlers call it. The method
+	/// doesn't check <see cref="CanDebugSerializeBefore"/> or <see cref="CanDebugSerializeAfter"/>; the caller does.
 	/// </remarks>
 	/// <param name="jsonPayload">The text to write, which describes the body and holds its JSON.</param>
+	/// <exception cref="PipelineStoppedException">Thrown when the cmdlet's debug preference is Stop, or when the user halts
+	/// the cmdlet at an Inquire prompt.</exception>
 	public void WriteDebugPayload(string jsonPayload)
 	{
-		if (this.Host?.UI is { } ui)
-		{
-			ui.WriteDebugLine(jsonPayload);
-		}
+		this.WriteDebug(jsonPayload);
 	}
 	/// <summary>
 	/// Writes a verbose line about a request that is about to be sent, with its method and URL.
 	/// </summary>
 	/// <remarks>
-	/// The line reads like <c>Sending GET request -&gt; http://host/api/v3/series</c>, and it goes to the host's UI, so it
-	/// can be written from any thread. When the host has no UI, nothing is written. The method doesn't check
+	/// The line reads like <c>Sending GET request -&gt; http://host/api/v3/series</c>, and it goes to the verbose stream,
+	/// so the method runs on the pipeline thread, where the handlers call it. The method doesn't check
 	/// <see cref="CanWriteVerbose"/>; the caller does.
 	/// </remarks>
 	/// <param name="request">The details of the pending request.</param>
+	/// <exception cref="PipelineStoppedException">Thrown when the cmdlet's verbose preference is Stop, or when the user
+	/// halts the cmdlet at an Inquire prompt.</exception>
 	public void WriteVerboseBefore(IHttpRequestDetails request)
 	{
-		if (this.Host?.UI is { } ui)
-		{
-			string msg = GenerateBeforeMessage(request);
-			ui.WriteVerboseLine(msg);
-		}
+		this.WriteVerbose(GenerateBeforeMessage(request));
 	}
 	/// <summary>
 	/// Builds the verbose line that reports a request before it's sent.

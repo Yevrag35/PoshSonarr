@@ -12,21 +12,26 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// the request puts it, and passes a request without one through unchanged. It writes the request body before the send
 /// when <see cref="IApiCmdlet.CanDebugSerializeBefore"/> is <see langword="true"/>, and the response body after it when
 /// <see cref="IApiCmdlet.CanDebugSerializeAfter"/> is <see langword="true"/>, each preceded by its size in bytes.</para>
-/// <para>It buffers a request body before reading it, so the inner handlers send the body from that buffer. It reads a
-/// response body into memory and puts a buffered copy back as the response's content, with the original content
-/// headers, so the handlers outside it and the response reader can read the body again.</para>
-/// <para>The handler calls <see cref="IApiCmdlet.WriteDebugPayload(string)"/> after an <see langword="await"/>, often
-/// on a thread-pool thread. It keeps no per-request state, so one instance can serve concurrent requests.</para>
+/// <para>It reads a request body from a buffered copy that it puts in place of the request's content, so the content
+/// serializes its body once and the inner handlers send the body from that buffer. It reads a response body into memory
+/// and puts a buffered copy back as the response's content, with the original content headers, so the handlers outside
+/// it and the response reader can read the body again.</para>
+/// <para>The handler overrides only <see cref="Send(HttpRequestMessage, CancellationToken)"/>, since the clients send
+/// every request synchronously, so it calls <see cref="IApiCmdlet.WriteDebugPayload(string)"/> on the thread that sent
+/// the request, which for a cmdlet is its pipeline thread. A request that reaches it through
+/// <see cref="SynchronousHandler.SendAsync(HttpRequestMessage, CancellationToken)"/> instead fails with a
+/// <see cref="NotSupportedException"/>. The handler keeps no per-request state, so one instance can serve concurrent
+/// requests.</para>
 /// </remarks>
-internal sealed class DebugSerializeHandler : DelegatingHandler
+internal sealed class DebugSerializeHandler : SynchronousHandler
 {
 	/// <summary>
-	/// Sends the request to the inner handler and blocks until its response arrives, writing the bodies to the sending
-	/// cmdlet's debug output.
+	/// Sends the request to the inner handler, writing its body and the response's body to the sending cmdlet's debug
+	/// output when that cmdlet asks for them.
 	/// </summary>
 	/// <remarks>
-	/// The method blocks on <see cref="SendAsync(HttpRequestMessage, CancellationToken)"/>, so the inner handlers run on
-	/// their asynchronous path.
+	/// When reading or writing the response's body throws, as a cmdlet's own debug output does under a preference of
+	/// <see cref="ActionPreference.Stop"/>, the method disposes the response before the exception leaves it.
 	/// </remarks>
 	/// <param name="request">The HTTP request message to send.</param>
 	/// <param name="cancellationToken">A token that cancels the operation.</param>
@@ -34,66 +39,58 @@ internal sealed class DebugSerializeHandler : DelegatingHandler
 	/// it.</returns>
 	protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
 	{
-		return this.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
-	}
-
-	/// <summary>
-	/// Sends the request to the inner handler asynchronously, writing its body and the response's body to the sending
-	/// cmdlet's debug output when that cmdlet asks for them.
-	/// </summary>
-	/// <param name="request">The HTTP request message to send.</param>
-	/// <param name="cancellationToken">A token that cancels the operation.</param>
-	/// <returns>A task that completes with the HTTP response message from the inner handler, with its body buffered when
-	/// the handler read it.</returns>
-	protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-	{
 		if (!ApiCmdletAccessor.TryGetCmdlet(request, out IApiCmdlet? cmdlet))
 		{
-			return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+			return base.Send(request, cancellationToken);
 		}
 
 		if (cmdlet.CanDebugSerializeBefore && request.Content is not null)
 		{
-			string requestString = await SerializeRequestAsync(request.Content, cancellationToken).ConfigureAwait(false);
-			cmdlet.WriteDebugPayload(requestString);
+			cmdlet.WriteDebugPayload(SerializeRequest(request, cancellationToken));
 		}
 
-		HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+		HttpResponseMessage response = base.Send(request, cancellationToken);
 		if (cmdlet.CanDebugSerializeAfter && response.Content is not null)
 		{
-			StringResponse parsed = await SerializeResponseAsync(response, cancellationToken).ConfigureAwait(false);
-			string jsonString = string.Format(
-				provider: CultureInfo.CurrentCulture,
-				format: Messages.Debug_JSONResponse_Preamble,
-				parsed.ContentLength, parsed.JsonString);
+			try
+			{
+				StringResponse parsed = SerializeResponse(response, cancellationToken);
+				string jsonString = string.Format(
+					provider: CultureInfo.CurrentCulture,
+					format: Messages.Debug_JSONResponse_Preamble,
+					parsed.ContentLength, parsed.JsonString);
 
-			cmdlet.WriteDebugPayload(jsonString);
+				cmdlet.WriteDebugPayload(jsonString);
+			}
+			catch
+			{
+				response.Dispose();
+				throw;
+			}
 		}
 
 		return response;
 	}
 
 	/// <summary>
-	/// Buffers a request body and formats it, preceded by its size, for the debug output.
+	/// Puts a buffered copy of a request's body in place of its content, and formats the body, preceded by its size, for
+	/// the debug output.
 	/// </summary>
 	/// <remarks>
-	/// The size is the content's <c>Content-Length</c> header, or the body's UTF-8 byte count when the content has no such
-	/// header. Since the body is buffered, reading it here leaves it in place for the send.
+	/// The inner handlers send the body from the copy, so the content serializes its body once, here. The body is decoded
+	/// as UTF-8, the encoding of the JSON bodies that the clients send.
 	/// </remarks>
-	/// <param name="content">The request's content.</param>
-	/// <param name="token">A token that cancels the read.</param>
-	/// <returns>A task that completes with the request body, preceded by its size in bytes, formatted with the current
-	/// culture.</returns>
-	private static async Task<string> SerializeRequestAsync(HttpContent content, CancellationToken token)
+	/// <param name="request">The request whose body is read, which has content.</param>
+	/// <param name="token">A token that cancels the copy.</param>
+	/// <returns>The request body, preceded by its size in bytes, formatted with the current culture.</returns>
+	private static string SerializeRequest(HttpRequestMessage request, CancellationToken token)
 	{
-		// A buffered body is sent from its buffer, so reading it here leaves it in place for the send.
-		await content.LoadIntoBufferAsync(token).ConfigureAwait(false);
-		string jsonString = await content.ReadAsStringAsync(token).ConfigureAwait(false);
+		ArrayPoolMemoryStream buffer = request.BufferContent(token);
 
 		return string.Format(
 			provider: CultureInfo.CurrentCulture,
 			format: Messages.Debug_JSONRequest_Preamble,
-			content.Headers.ContentLength ?? Encoding.UTF8.GetByteCount(jsonString), jsonString);
+			buffer.Length, buffer.ReadString(Encoding.UTF8));
 	}
 
 	/// <summary>
@@ -104,21 +101,18 @@ internal sealed class DebugSerializeHandler : DelegatingHandler
 	/// </remarks>
 	/// <param name="response">The HTTP response message whose body is read.</param>
 	/// <param name="token">A token that cancels the read.</param>
-	/// <returns>A task that completes with the body's length in bytes and its text, decoded as UTF-8.</returns>
-	private static async Task<StringResponse> SerializeResponseAsync(HttpResponseMessage response, CancellationToken token)
+	/// <returns>The body's length in bytes and its text, decoded as UTF-8.</returns>
+	private static StringResponse SerializeResponse(HttpResponseMessage response, CancellationToken token)
 	{
 		using HttpContent content = response.Content;
 		using ArrayPoolMemoryStream memStream = new();
 
-		Stream stream = await content.ReadAsStreamAsync(token).ConfigureAwait(false);
-
-		await stream.CopyToAsync(memStream, token).ConfigureAwait(false);
+		content.CopyBodyTo(memStream, token);
 
 		long length = memStream.Length;
 		string jsonString = memStream.ReadString(Encoding.UTF8);
 
-		memStream.Rewind();
-		response.Content = new StreamContent(await memStream.ToMemoryStreamAsync(token).ConfigureAwait(false));
+		response.Content = new StreamContent(memStream.ToMemoryStream());
 		content.Headers.CopyTo(response.Content.Headers);
 
 		return new(length, jsonString);

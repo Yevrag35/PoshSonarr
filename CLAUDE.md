@@ -16,7 +16,7 @@ Run these from the repository root. Building needs a .NET 11 SDK.
 
 - Build from the Bash tool with exactly `dotnet build PoshSonarr.slnx -c Debug --nologo -v q --no-incremental 2>&1 | tail -30`, not from PowerShell, and never with an absolute path, which Bash's backslash escaping mangles. `--no-incremental` makes every project recompile and report its warnings, while an incremental build skips compiling up-to-date projects and reports nothing for them, so don't run a plain build first.
 - A build of the whole solution with that command averages 12.919 seconds in its slowest case, with the build server cold, and 3.055 seconds with the build server warm from an earlier build. When the output reports `Build succeeded.`, a `Time Elapsed` that short on its last line still means that every project recompiled, so don't rerun the build or look for other proof that it ran.
-- To package the module, run the same command with `-c Release`. A post-build step runs `.tasks/publish_module.ps1` with `pwsh.exe`, which writes the manifest into the output folder. The script imports the built DLL, so the `pwsh.exe` on the `PATH` must be PowerShell 7.7 or later.
+- To package the module, run the same command with `-c Release`. A post-build step runs `.tasks/publish_module.ps1` with `pwsh.exe`, which writes the manifest into the output folder. When the script fails, so does the build, and the folder holds no manifest. The script imports the built DLL, so the `pwsh.exe` on the `PATH` must be PowerShell 7.7 or later.
 - Every build, Debug or Release, copies the runtime assemblies of the module's NuGet dependencies into the Shell project's output folder, where PowerShell looks for them. The folder lacks PowerShell's own assemblies and the Microsoft.Extensions abstractions that .NET 11's shared framework holds, such as `Microsoft.Extensions.Options`, because PowerShell and its runtime supply them. The `poshsonarr-pwsh-internals` skill covers which assembly loads from where.
 - Build the solution, never a single project file. The Release post-build step finds its script through `$(SolutionDir)`, which a project-file build leaves undefined.
 - There is no lint step. No style analyzer package is referenced and `EnforceCodeStyleInBuild` is off, so `dotnet build` accepts code that breaks the `.editorconfig` style rules, even the ones set to `error`.
@@ -41,7 +41,7 @@ Run these from the repository root. Building needs a .NET 11 SDK.
 ### Pester tests
 
 - `.tests/README.md` documents the Pester suite: what the runner does and takes, what `setup.ps1` gives each test file, and how to write a test against the sandbox, from finding its fixtures to cleaning up and testing a failure. Read it before writing or changing a test, the runner, or `setup.ps1`, and update it along with any change to how the suite works.
-- `pwsh -NoProfile -File .tests/run.ps1` builds the solution in Debug and runs the suite against the sandbox. `-NoBuild` reuses the last build, `-Reset` resets the sandbox first, `-Path` runs only the files it names, and `-Tag` runs only the tests with those tags.
+- `pwsh -NoProfile -File .tests/run.ps1` builds the solution in Debug and runs the suite against the sandbox. `-Configuration Release` builds and tests the Release build, the one that's published, instead. `-NoBuild` reuses the last build, `-Reset` resets the sandbox first, `-Path` runs only the files it names, and `-Tag` runs only the tests with those tags.
 - Any session may run the suite, but only through the runner.
 - Never write a test that connects to an instance other than the Docker sandbox, reads `.env`, or references `Debug.ps1`.
 
@@ -103,7 +103,7 @@ The base classes in `src/MG.Sonarr.Next.Shell.Bases/Cmdlets/` form one chain: `S
 
 ### HTTP pipeline
 
-`ISonarrClient` (`SonarrHttpClient`, registered by `SonarrClientDependencyInjection.AddSonarrClient`) is a typed `HttpClient` that sends the API key in the `X-Api-Key` header. A request passes through `PathHandler`, `VerboseHandler`, `DebugSerializeHandler`, `TestingHandler`, and `ErrorHandler`, in that order, before reaching `SonarrClientHandler`. The endpoint paths in `Constants` are relative; `PathHandler` puts the URL base from `-Url`, if any, and the `/api/v3` prefix, or `/v3` under `-NoApiInPath`, in front of them. Calls return a `SonarrClientResult` or `SonarrClientResult<T>`, which carries an error record instead of throwing.
+`ISonarrClient` (`SonarrHttpClient`, registered by `SonarrClientDependencyInjection.AddSonarrClient`) is a typed `HttpClient` that sends the API key in the `X-Api-Key` header. A request passes through `PathHandler`, `VerboseHandler`, `DebugSerializeHandler`, `TestingHandler`, and `ErrorHandler`, in that order, before reaching the primary handler, a `SocketsHttpHandler` that `SonarrClientHandler` configures. The endpoint paths in `Constants` are relative; `PathHandler` puts the URL base from `-Url`, if any, and the `/api/v3` prefix, or `/v3` under `-NoApiInPath`, in front of them. Calls return a `SonarrClientResult` or `SonarrClientResult<T>`, which carries an error record instead of throwing.
 
 ### Objects and metadata tags
 

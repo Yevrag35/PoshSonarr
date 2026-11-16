@@ -93,7 +93,7 @@ public sealed class GetSonarrCommandHistory : SonarrCmdletBase
 
 		foreach (ICommand command in history.Where(IsUnfinished).ToArray())
 		{
-			SonarrClientResult<CommandObject> response = client.SendGet<CommandObject>(tag.GetUrlForId(command.Id));
+			SonarrClientResult<CommandObject> response = client.SendGet<CommandObject>(tag.GetUrlForId(command.Id), this.PipelineStopToken);
 			if (response.IsError)
 			{
 				this.WriteConditionalError(response.Error);

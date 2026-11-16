@@ -33,10 +33,14 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// <para>The login page's URL spells the URL base as <see cref="IConnectionSettings.ServerUrlBase"/> does when the two
 /// match without regard to case, as the download client spells its URLs, so the login's cookie, whose path is the URL
 /// base, goes back with the downloads.</para>
+/// <para>The handler overrides only <see cref="Send(HttpRequestMessage, CancellationToken)"/>, since the download client
+/// sends every request synchronously. A request that reaches it through
+/// <see cref="SynchronousHandler.SendAsync(HttpRequestMessage, CancellationToken)"/> instead fails with a
+/// <see cref="NotSupportedException"/>.</para>
 /// <para>The handler keeps no per-request state in its fields. Concurrent requests that find no cookie can each log
 /// in.</para>
 /// </remarks>
-internal sealed class AuthHandler : DelegatingHandler
+internal sealed class AuthHandler : SynchronousHandler
 {
 	/// <summary>
 	/// The message of the error that a user name or password that Sonarr didn't take gives, under Basic and forms
@@ -69,13 +73,8 @@ internal sealed class AuthHandler : DelegatingHandler
 	}
 
 	/// <summary>
-	/// Adds the credentials that the server needs to the request, sends it to the inner handler, and blocks until its
-	/// response arrives.
+	/// Adds the credentials that the server needs to the request and sends it to the inner handler.
 	/// </summary>
-	/// <remarks>
-	/// The method blocks on <see cref="SendAsync(HttpRequestMessage, CancellationToken)"/>, so the inner handlers run on
-	/// their asynchronous path.
-	/// </remarks>
 	/// <param name="request">The HTTP request message to send.</param>
 	/// <param name="cancellationToken">A token that cancels the operation.</param>
 	/// <returns>The HTTP response message from the inner handler.</returns>
@@ -85,38 +84,20 @@ internal sealed class AuthHandler : DelegatingHandler
 	/// after a new login.</exception>
 	protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
 	{
-		return this.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
-	}
-
-	/// <summary>
-	/// Adds the credentials that the server needs to the request and sends it to the inner handler asynchronously.
-	/// </summary>
-	/// <remarks>
-	/// Every failure faults the returned task, and none throws before the method returns.
-	/// </remarks>
-	/// <param name="request">The HTTP request message to send.</param>
-	/// <param name="cancellationToken">A token that cancels the operation.</param>
-	/// <returns>A task that completes with the HTTP response message from the inner handler.</returns>
-	/// <exception cref="SonarrHttpException">Thrown when Sonarr answers a request without credentials under Basic or forms
-	/// authentication, or one with Basic credentials, with a 401 or its login page, when it sends a request to its login
-	/// page under None or External authentication, when a forms login fails, or when Sonarr turns a request away again
-	/// after a new login.</exception>
-	protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-	{
 		if (_authType is not (SonarrAuthType.Basic or SonarrAuthType.Forms))
 		{
-			return this.SendWithoutLoginAsync(request, cancellationToken);
+			return this.SendWithoutLogin(request, cancellationToken);
 		}
 
 		NetworkCredential? credentials = (request as AuthedRequestMessage)?.Credentials;
 		if (credentials is null)
 		{
-			return this.SendWithoutCredentialsAsync(request, cancellationToken);
+			return this.SendWithoutCredentials(request, cancellationToken);
 		}
 
 		return _authType == SonarrAuthType.Basic
-			? this.SendWithBasicAsync(request, credentials, cancellationToken)
-			: this.SendWithFormsLoginAsync(request, credentials, cancellationToken);
+			? this.SendWithBasic(request, credentials, cancellationToken)
+			: this.SendWithFormsLogin(request, credentials, cancellationToken);
 	}
 
 	/// <summary>
@@ -130,12 +111,12 @@ internal sealed class AuthHandler : DelegatingHandler
 	/// </remarks>
 	/// <param name="request">The HTTP request message to send.</param>
 	/// <param name="token">A token that cancels the operation.</param>
-	/// <returns>A task that completes with the HTTP response message from the inner handler.</returns>
+	/// <returns>The HTTP response message from the inner handler.</returns>
 	/// <exception cref="SonarrHttpException">Thrown when Sonarr answers the request with a 401 or its login
 	/// page.</exception>
-	private async Task<HttpResponseMessage> SendWithoutCredentialsAsync(HttpRequestMessage request, CancellationToken token)
+	private HttpResponseMessage SendWithoutCredentials(HttpRequestMessage request, CancellationToken token)
 	{
-		HttpResponseMessage response = await base.SendAsync(request, token).ConfigureAwait(false);
+		HttpResponseMessage response = base.Send(request, token);
 		if (!this.IsTurnedAway(response))
 		{
 			return response;
@@ -164,11 +145,11 @@ internal sealed class AuthHandler : DelegatingHandler
 	/// </remarks>
 	/// <param name="request">The HTTP request message to send.</param>
 	/// <param name="token">A token that cancels the operation.</param>
-	/// <returns>A task that completes with the HTTP response message from the inner handler.</returns>
+	/// <returns>The HTTP response message from the inner handler.</returns>
 	/// <exception cref="SonarrHttpException">Thrown when Sonarr sends the request to its login page.</exception>
-	private async Task<HttpResponseMessage> SendWithoutLoginAsync(HttpRequestMessage request, CancellationToken token)
+	private HttpResponseMessage SendWithoutLogin(HttpRequestMessage request, CancellationToken token)
 	{
-		HttpResponseMessage response = await base.SendAsync(request, token).ConfigureAwait(false);
+		HttpResponseMessage response = base.Send(request, token);
 		if (!this.IsLoginPage(response))
 		{
 			return response;
@@ -245,14 +226,14 @@ internal sealed class AuthHandler : DelegatingHandler
 	/// <param name="request">The HTTP request message to send.</param>
 	/// <param name="credentials">The credentials to send.</param>
 	/// <param name="token">A token that cancels the operation.</param>
-	/// <returns>A task that completes with the HTTP response message from the inner handler.</returns>
+	/// <returns>The HTTP response message from the inner handler.</returns>
 	/// <exception cref="SonarrHttpException">Thrown when Sonarr answers the request with a 401 or its login
 	/// page.</exception>
-	private async Task<HttpResponseMessage> SendWithBasicAsync(HttpRequestMessage request, NetworkCredential credentials, CancellationToken token)
+	private HttpResponseMessage SendWithBasic(HttpRequestMessage request, NetworkCredential credentials, CancellationToken token)
 	{
 		SetBasicHeader(request, credentials);
 
-		HttpResponseMessage response = await base.SendAsync(request, token).ConfigureAwait(false);
+		HttpResponseMessage response = base.Send(request, token);
 		if (!this.IsTurnedAway(response))
 		{
 			return response;
@@ -328,19 +309,19 @@ internal sealed class AuthHandler : DelegatingHandler
 	/// <param name="request">The HTTP request message to send.</param>
 	/// <param name="credentials">The credentials to log in with.</param>
 	/// <param name="token">A token that cancels the operation.</param>
-	/// <returns>A task that completes with the HTTP response message from the inner handler.</returns>
+	/// <returns>The HTTP response message from the inner handler.</returns>
 	/// <exception cref="SonarrHttpException">Thrown when a login fails, or when Sonarr sends the resent request to its
 	/// login page again.</exception>
-	private async Task<HttpResponseMessage> SendWithFormsLoginAsync(HttpRequestMessage request, NetworkCredential credentials, CancellationToken token)
+	private HttpResponseMessage SendWithFormsLogin(HttpRequestMessage request, NetworkCredential credentials, CancellationToken token)
 	{
 		// The primary handler keeps the login's cookie in the shared container and adds it to every later request.
 		Uri requestUri = request.RequestUri!;
 		if (_cookies.GetCookies(requestUri).Count == 0)
 		{
-			await this.LoginAsync(credentials, token).ConfigureAwait(false);
+			this.Login(credentials, token);
 		}
 
-		HttpResponseMessage response = await base.SendAsync(request, token).ConfigureAwait(false);
+		HttpResponseMessage response = base.Send(request, token);
 		if (!this.IsTurnedAway(response))
 		{
 			return response;
@@ -349,10 +330,10 @@ internal sealed class AuthHandler : DelegatingHandler
 		// The session ended, so Sonarr sent the request to its login page. Log in again, and resend the request to the URL
 		// that the redirect replaced.
 		response.Dispose();
-		await this.LoginAsync(credentials, token).ConfigureAwait(false);
+		this.Login(credentials, token);
 		request.RequestUri = requestUri;
 
-		response = await base.SendAsync(request, token).ConfigureAwait(false);
+		response = base.Send(request, token);
 		if (this.IsTurnedAway(response))
 		{
 			SonarrHttpException ex = CreateUnauthorized(request, response,
@@ -384,11 +365,10 @@ internal sealed class AuthHandler : DelegatingHandler
 	/// </remarks>
 	/// <param name="credentials">The credentials to log in with.</param>
 	/// <param name="token">A token that cancels the operation.</param>
-	/// <returns>A task that completes when the login has succeeded.</returns>
 	/// <exception cref="SonarrHttpException">Thrown, with the status 401, when the login's redirect lands on a URL that
 	/// reports a failed login or on the login page, and with the login's own status when it ends with an error
 	/// status.</exception>
-	private async Task LoginAsync(NetworkCredential credentials, CancellationToken token)
+	private void Login(NetworkCredential credentials, CancellationToken token)
 	{
 		using HttpRequestMessage request = new(HttpMethod.Post, _loginUrl);
 		request.Content = new FormUrlEncodedContent(
@@ -397,7 +377,7 @@ internal sealed class AuthHandler : DelegatingHandler
 			new KeyValuePair<string, string>(PASSWORD, credentials.Password),
 		]);
 
-		using HttpResponseMessage response = await base.SendAsync(request, token).ConfigureAwait(false);
+		using HttpResponseMessage response = base.Send(request, token);
 
 		if (response.RequestMessage?.RequestUri?.Query.Contains(LOGIN_FAILED, StringComparison.OrdinalIgnoreCase) ?? false)
 		{

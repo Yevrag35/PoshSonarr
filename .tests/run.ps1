@@ -5,14 +5,15 @@
 	Build PoshSonarr, stage it, and run its Pester suite against the Sonarr sandbox.
 
 .DESCRIPTION
-	Runs the Pester suite in .tests/ against a Debug build of the module, imported by a manifest written for it, in a new
-	PowerShell process that connects to the Docker sandbox and nothing else. In order, it:
+	Runs the Pester suite in .tests/ against a Debug build of the module, or a Release build under -Configuration Release,
+	imported by a manifest written for it, in a new PowerShell process that connects to the Docker sandbox and nothing
+	else. In order, it:
 
 	1. Checks that Pester 6.2.0 or a later 6.x is installed, and stops with the command that installs it when it isn't.
-	2. Builds the solution in Debug, unless -NoBuild reuses the last build.
-	3. Replaces .temp/pester/PoshSonarr/ with a copy of the Shell project's Debug output, without Debug.ps1. When a
-	   process holds a file in the folder, such as a PowerShell session that imported the module from it, it stops
-	   without deleting anything.
+	2. Builds the solution in the configuration that -Configuration names, unless -NoBuild reuses the last build of it.
+	3. Replaces .temp/pester/PoshSonarr/ with a copy of the Shell project's output for that configuration, without
+	   Debug.ps1. When a process holds a file in the folder, such as a PowerShell session that imported the module from
+	   it, it stops without deleting anything.
 	4. Writes the copy's manifest, PoshSonarr.psd1, with .tasks/publish_module.ps1, the script that a Release build runs.
 	5. Resets the sandbox with sandbox/sonarr/reset.ps1 when -Reset asks, and otherwise checks that the sandbox answers
 	   with its pinned version and instance name.
@@ -30,6 +31,9 @@
 .EXAMPLE
 	pwsh -NoProfile -File .tests/run.ps1 -NoBuild -Path .tests/Connection.Tests.ps1
 	# one file, on the last build
+.EXAMPLE
+	pwsh -NoProfile -File .tests/run.ps1 -Configuration Release
+	# the Release build, the one that's published
 #>
 [CmdletBinding()]
 param (
@@ -42,7 +46,13 @@ param (
 	[Parameter(Mandatory = $false)]
 	[string[]] $Tag,
 
-	# Tests the last Debug build instead of building the solution first.
+	# The build to test: Debug, whose dependency injection container checks its registrations and scopes, or Release, the
+	# build that's published, which runs without those checks and the debug assertions, fully optimized.
+	[Parameter(Mandatory = $false)]
+	[ValidateSet('Debug', 'Release')]
+	[string] $Configuration = 'Debug',
+
+	# Tests the last build of the configuration instead of building the solution first.
 	[Parameter(Mandatory = $false)]
 	[switch] $NoBuild,
 
@@ -54,7 +64,7 @@ param (
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$buildOutput = Join-Path $repoRoot 'src/MG.Sonarr.Next.Shell/bin/Debug/net11.0'
+$buildOutput = Join-Path $repoRoot "src/MG.Sonarr.Next.Shell/bin/$Configuration/net11.0"
 $stage = Join-Path $repoRoot '.temp/pester/PoshSonarr'
 $manifest = Join-Path $stage 'PoshSonarr.psd1'
 $results = Join-Path $repoRoot '.temp/pester/results.xml'
@@ -84,14 +94,14 @@ try {
 
 		# An incremental build compiles a project only when one of its files is newer than its output, so it would miss
 		# a file put back with its old timestamp, as a copy keeps it, and the tests would run on stale code.
-		Write-Host 'Building the solution in Debug.' -ForegroundColor Cyan
-		dotnet build (Join-Path $repoRoot 'PoshSonarr.slnx') -c Debug --nologo -v q --no-incremental
+		Write-Host "Building the solution in $Configuration." -ForegroundColor Cyan
+		dotnet build (Join-Path $repoRoot 'PoshSonarr.slnx') -c $Configuration --nologo -v q --no-incremental
 		if ($LASTEXITCODE -ne 0) {
 			throw "The build failed with exit code $LASTEXITCODE."
 		}
 	}
 	if (-not (Test-Path -LiteralPath (Join-Path $buildOutput 'MG.Sonarr.Next.Shell.dll') -PathType Leaf)) {
-		throw "There's no Debug build in $buildOutput to stage. Run the suite without -NoBuild."
+		throw "There's no $Configuration build in $buildOutput to stage. Run the suite without -NoBuild."
 	}
 
 	Write-Host "Staging the module in $stage." -ForegroundColor Cyan

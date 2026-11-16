@@ -49,10 +49,10 @@ public sealed class RequestUrlTests
 	/// <summary>
 	/// An API request goes to the scheme and server of the connection's URL, then its URL base without a trailing slash,
 	/// then <c>/api/v3/</c>, or <c>/v3/</c> under <c>-NoApiInPath</c>, then the endpoint's path and query with the
-	/// escaping that the caller gave them, and the result reports that URL, from the synchronous send and the
-	/// asynchronous one alike. A path that starts with <c>api/v3</c> already gets the URL base without the prefix, one
-	/// that starts with the URL base and <c>api/v3</c> already, in any case, goes out as it is, and a URL longer than the
-	/// 256 characters that it's built in on the stack goes out as a shorter one does.
+	/// escaping that the caller gave them, and the result reports that URL. A path that starts with <c>api/v3</c> already
+	/// gets the URL base without the prefix, one that starts with the URL base and <c>api/v3</c> already, in any case, goes
+	/// out as it is, and a URL longer than the 256 characters that it's built in on the stack goes out as a shorter one
+	/// does.
 	/// </summary>
 	/// <param name="serviceUri">The URL that the connection names.</param>
 	/// <param name="noApiInPath"><see langword="true"/> to connect as <c>-NoApiInPath</c> does.</param>
@@ -67,14 +67,11 @@ public sealed class RequestUrlTests
 		using IServiceScope scope = provider.CreateScope();
 		ISonarrClient client = scope.ServiceProvider.GetRequiredService<ISonarrClient>();
 
-		SonarrClientResult[] results = SendGetBothWays(client, path, TestContext.Current.CancellationToken);
+		SonarrClientResult result = client.SendGet<object>(path, TestContext.Current.CancellationToken);
 
-		Assert.Equal([expected, expected], received.ToArray());
-		foreach (SonarrClientResult result in results)
-		{
-			Assert.False(result.IsError, result.Error?.Exception.ToString());
-			Assert.Equal(new Uri(expected).ToString(), result.RequestUrl);
-		}
+		Assert.Equal([expected], received.ToArray());
+		Assert.False(result.IsError, result.Error?.Exception.ToString());
+		Assert.Equal(new Uri(expected).ToString(), result.RequestUrl);
 	}
 
 	public static TheoryData<string, bool, string, string> ApiUrls => new()
@@ -122,14 +119,14 @@ public sealed class RequestUrlTests
 	[InlineData("http://sonarr.test:8989/", true, "http://sonarr.test:8989/ping")]
 	[InlineData("http://sonarr.test:8989/sonarr/", false, "http://sonarr.test:8989/sonarr/ping")]
 	[InlineData("http://sonarr.test:8989/sonarr/", true, "http://sonarr.test:8989/sonarr/ping")]
-	public async Task SendsAPingToItsUrlBaseWithoutThePrefix(string serviceUri, bool noApiInPath, string expected)
+	public void SendsAPingToItsUrlBaseWithoutThePrefix(string serviceUri, bool noApiInPath, string expected)
 	{
 		ConcurrentQueue<string> received = new();
 		using ServiceProvider provider = ModuleServices.Build(RecordUrls(received, serviceUri, noApiInPath));
 		using IServiceScope scope = provider.CreateScope();
 		ISonarrClient client = scope.ServiceProvider.GetRequiredService<ISonarrClient>();
 
-		SonarrClientResult result = await client.SendPingAsync(TestContext.Current.CancellationToken);
+		SonarrClientResult result = client.SendPing(TestContext.Current.CancellationToken);
 
 		Assert.False(result.IsError, result.Error?.Exception.ToString());
 		Assert.Equal([expected], received.ToArray());
@@ -149,7 +146,7 @@ public sealed class RequestUrlTests
 	/// <param name="expected">The URL that the download goes to.</param>
 	[Theory]
 	[MemberData(nameof(DownloadUrls))]
-	public async Task DownloadsAFileFromItsUrlBaseAndDownloadUrl(string serviceUri, string? serverUrlBase, string url, string expected)
+	public void DownloadsAFileFromItsUrlBaseAndDownloadUrl(string serviceUri, string? serverUrlBase, string url, string expected)
 	{
 		ConcurrentQueue<string> received = new();
 		FakeSonarr sonarr = new("downloads", new ProbeLog(), (request, _) =>
@@ -172,11 +169,11 @@ public sealed class RequestUrlTests
 			using IServiceScope scope = provider.CreateScope();
 			ISonarrDownloadClient client = scope.ServiceProvider.GetRequiredService<ISonarrDownloadClient>();
 
-			SonarrClientResult<string> result = await client.DownloadToPathAsync(url, path, token);
+			SonarrClientResult<string> result = client.DownloadToPath(url, path, token);
 
 			Assert.False(result.IsError, result.Error?.Exception.ToString());
 			Assert.Equal([expected], received.ToArray());
-			Assert.Equal((byte[])[1, 2, 3], await File.ReadAllBytesAsync(path, token));
+			Assert.Equal((byte[])[1, 2, 3], File.ReadAllBytes(path));
 		}
 		finally
 		{
@@ -352,19 +349,6 @@ public sealed class RequestUrlTests
 		{
 			Assert.False(query.TryFormat(new char[expected.Length - 1], out _), "TryFormat wrote the query into a span that's too short.");
 		}
-	}
-
-	/// <summary>
-	/// Sends a GET request for the specified path through the synchronous send and then through the asynchronous one,
-	/// blocking on it as a cmdlet does.
-	/// </summary>
-	private static SonarrClientResult[] SendGetBothWays(ISonarrClient client, string path, CancellationToken token)
-	{
-		return
-		[
-			client.SendGet<object>(path, token),
-			client.SendGetAsync<object>(path, token).GetAwaiter().GetResult(),
-		];
 	}
 
 	/// <summary>

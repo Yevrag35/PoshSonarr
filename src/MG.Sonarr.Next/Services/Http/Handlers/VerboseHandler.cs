@@ -11,12 +11,14 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// <para>The handler finds the sending <see cref="IApiCmdlet"/> in the request's options, where the client that sends
 /// the request puts it. When there's no cmdlet, or its <see cref="IApiCmdlet.CanWriteVerbose"/> is
 /// <see langword="false"/>, the request passes through unchanged.</para>
-/// <para>The handler calls <see cref="IApiCmdlet.WriteVerboseAfter(ISonarrResponse, IServiceProvider, JsonSerializerOptions?)"/>
-/// after an <see langword="await"/>, often on a thread-pool thread, so the cmdlet has to write its output in a way
-/// that works off the pipeline thread.</para>
+/// <para>The handler overrides only <see cref="Send(HttpRequestMessage, CancellationToken)"/>, since the clients send
+/// every request synchronously, so it calls the cmdlet's write methods on the thread that sent the request, which for a
+/// cmdlet is its pipeline thread. A request that reaches it through
+/// <see cref="SynchronousHandler.SendAsync(HttpRequestMessage, CancellationToken)"/> instead fails with a
+/// <see cref="NotSupportedException"/>.</para>
 /// <para>The handler keeps no per-request state, so one instance can serve concurrent requests.</para>
 /// </remarks>
-internal sealed class VerboseHandler : DelegatingHandler
+internal sealed class VerboseHandler : SynchronousHandler
 {
 	private readonly JsonSerializerOptions _options;
 	private readonly IServiceScopeFactory _scopeFactory;
@@ -35,60 +37,44 @@ internal sealed class VerboseHandler : DelegatingHandler
 	}
 
 	/// <summary>
-	/// Sends the request to the inner handler and blocks until its response arrives, writing both to the sending cmdlet's
-	/// verbose output.
+	/// Sends the request to the inner handler, writing it and its response to the sending cmdlet's verbose output when
+	/// that output is enabled.
 	/// </summary>
 	/// <remarks>
-	/// The method blocks on <see cref="SendAsync(HttpRequestMessage, CancellationToken)"/>, so the inner handlers run on
-	/// their asynchronous path.
+	/// Only a request that implements <see cref="IHttpRequestDetails"/>, as every <see cref="SonarrRequestMessage"/>
+	/// does, is written before the send. When the inner handler throws, nothing is written after it. When the write
+	/// after it throws, as a cmdlet's own verbose output does under a preference of
+	/// <see cref="ActionPreference.Stop"/>, the method disposes the response before the exception leaves it.
 	/// </remarks>
 	/// <param name="request">The HTTP request message to send.</param>
 	/// <param name="cancellationToken">A token that cancels the operation.</param>
 	/// <returns>The HTTP response message from the inner handler.</returns>
 	protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
 	{
-		return this.SendAsync(request, cancellationToken).GetAwaiter().GetResult();
-	}
-	/// <summary>
-	/// Sends the request to the inner handler asynchronously, writing it and its response to the sending cmdlet's verbose
-	/// output when that output is enabled.
-	/// </summary>
-	/// <param name="request">The HTTP request message to send.</param>
-	/// <param name="cancellationToken">A token that cancels the operation.</param>
-	/// <returns>A task that completes with the HTTP response message from the inner handler.</returns>
-	protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-	{
-		return ApiCmdletAccessor.TryGetCmdlet(request, out IApiCmdlet? cmdlet) && cmdlet.CanWriteVerbose
-			? this.SendForCmdletAsync(request, cmdlet, cancellationToken)
-			: base.SendAsync(request, cancellationToken);
-	}
+		if (!ApiCmdletAccessor.TryGetCmdlet(request, out IApiCmdlet? cmdlet) || !cmdlet.CanWriteVerbose)
+		{
+			return base.Send(request, cancellationToken);
+		}
 
-	/// <summary>
-	/// Writes the request to the cmdlet's verbose output, sends it to the inner handler, and writes the response's status
-	/// code and URL afterward.
-	/// </summary>
-	/// <remarks>
-	/// Only a <see cref="SonarrRequestMessage"/> is written before the send. When the inner handler throws, nothing is
-	/// written after it.
-	/// </remarks>
-	/// <param name="request">The HTTP request message to send.</param>
-	/// <param name="cmdlet">The cmdlet that sent the request, whose verbose output is enabled.</param>
-	/// <param name="cancellationToken">A token that cancels the operation.</param>
-	/// <returns>A task that completes with the HTTP response message from the inner handler.</returns>
-	private async Task<HttpResponseMessage> SendForCmdletAsync(HttpRequestMessage request, IApiCmdlet cmdlet, CancellationToken cancellationToken)
-	{
-		if (request is SonarrRequestMessage sr)
+		if (request is IHttpRequestDetails sr)
 		{
 			cmdlet.WriteVerboseBefore(sr);
 		}
 
-		var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-
-		using var scope = _scopeFactory.CreateScope();
-		cmdlet.WriteVerboseAfter(
-			response: new SonarrClientResult(response, request.RequestUri?.ToString()),
-			provider: scope.ServiceProvider,
-			options: _options);
+		HttpResponseMessage response = base.Send(request, cancellationToken);
+		try
+		{
+			using IServiceScope scope = _scopeFactory.CreateScope();
+			cmdlet.WriteVerboseAfter(
+				response: new SonarrClientResult(response, request.RequestUri?.ToString()),
+				provider: scope.ServiceProvider,
+				options: _options);
+		}
+		catch
+		{
+			response.Dispose();
+			throw;
+		}
 
 		return response;
 	}
