@@ -18,11 +18,12 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// it and the response reader can read the body again.</para>
 /// <para>The handler overrides only <see cref="Send(HttpRequestMessage, CancellationToken)"/>, since the clients send
 /// every request synchronously, so it calls <see cref="IApiCmdlet.WriteDebugPayload(string)"/> on the thread that sent
-/// the request, which for a cmdlet is its pipeline thread. A request that goes out through
-/// <see cref="DelegatingHandler.SendAsync(HttpRequestMessage, CancellationToken)"/> instead passes through it without
-/// its output. The handler keeps no per-request state, so one instance can serve concurrent requests.</para>
+/// the request, which for a cmdlet is its pipeline thread. A request that reaches it through
+/// <see cref="SynchronousHandler.SendAsync(HttpRequestMessage, CancellationToken)"/> instead fails with a
+/// <see cref="NotSupportedException"/>. The handler keeps no per-request state, so one instance can serve concurrent
+/// requests.</para>
 /// </remarks>
-internal sealed class DebugSerializeHandler : DelegatingHandler
+internal sealed class DebugSerializeHandler : SynchronousHandler
 {
 	/// <summary>
 	/// Sends the request to the inner handler, writing its body and the response's body to the sending cmdlet's debug

@@ -13,12 +13,12 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// <see langword="false"/>, the request passes through unchanged.</para>
 /// <para>The handler overrides only <see cref="Send(HttpRequestMessage, CancellationToken)"/>, since the clients send
 /// every request synchronously, so it calls the cmdlet's write methods on the thread that sent the request, which for a
-/// cmdlet is its pipeline thread. A request that goes out through
-/// <see cref="DelegatingHandler.SendAsync(HttpRequestMessage, CancellationToken)"/> instead passes through it without
-/// its output.</para>
+/// cmdlet is its pipeline thread. A request that reaches it through
+/// <see cref="SynchronousHandler.SendAsync(HttpRequestMessage, CancellationToken)"/> instead fails with a
+/// <see cref="NotSupportedException"/>.</para>
 /// <para>The handler keeps no per-request state, so one instance can serve concurrent requests.</para>
 /// </remarks>
-internal sealed class VerboseHandler : DelegatingHandler
+internal sealed class VerboseHandler : SynchronousHandler
 {
 	private readonly JsonSerializerOptions _options;
 	private readonly IServiceScopeFactory _scopeFactory;
@@ -41,8 +41,9 @@ internal sealed class VerboseHandler : DelegatingHandler
 	/// that output is enabled.
 	/// </summary>
 	/// <remarks>
-	/// Only a <see cref="SonarrRequestMessage"/> is written before the send. When the inner handler throws, nothing is
-	/// written after it. When the write after it throws, as a cmdlet's own verbose output does under a preference of
+	/// Only a request that implements <see cref="IHttpRequestDetails"/>, as every <see cref="SonarrRequestMessage"/>
+	/// does, is written before the send. When the inner handler throws, nothing is written after it. When the write
+	/// after it throws, as a cmdlet's own verbose output does under a preference of
 	/// <see cref="ActionPreference.Stop"/>, the method disposes the response before the exception leaves it.
 	/// </remarks>
 	/// <param name="request">The HTTP request message to send.</param>
@@ -55,7 +56,7 @@ internal sealed class VerboseHandler : DelegatingHandler
 			return base.Send(request, cancellationToken);
 		}
 
-		if (request is SonarrRequestMessage sr)
+		if (request is IHttpRequestDetails sr)
 		{
 			cmdlet.WriteVerboseBefore(sr);
 		}

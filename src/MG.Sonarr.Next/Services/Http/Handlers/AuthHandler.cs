@@ -34,13 +34,13 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// match without regard to case, as the download client spells its URLs, so the login's cookie, whose path is the URL
 /// base, goes back with the downloads.</para>
 /// <para>The handler overrides only <see cref="Send(HttpRequestMessage, CancellationToken)"/>, since the download client
-/// sends every request synchronously. A request that goes out through
-/// <see cref="DelegatingHandler.SendAsync(HttpRequestMessage, CancellationToken)"/> instead passes through it without
-/// credentials.</para>
+/// sends every request synchronously. A request that reaches it through
+/// <see cref="SynchronousHandler.SendAsync(HttpRequestMessage, CancellationToken)"/> instead fails with a
+/// <see cref="NotSupportedException"/>.</para>
 /// <para>The handler keeps no per-request state in its fields. Concurrent requests that find no cookie can each log
 /// in.</para>
 /// </remarks>
-internal sealed class AuthHandler : DelegatingHandler
+internal sealed class AuthHandler : SynchronousHandler
 {
 	/// <summary>
 	/// The message of the error that a user name or password that Sonarr didn't take gives, under Basic and forms

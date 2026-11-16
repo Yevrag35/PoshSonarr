@@ -19,11 +19,12 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// whose JSON body's <c>message</c> says so. Otherwise it puts the buffered body back, with the original content
 /// headers.</para>
 /// <para>The handler overrides only <see cref="Send(HttpRequestMessage, CancellationToken)"/>, since the clients send
-/// every request synchronously. A request that goes out through
-/// <see cref="DelegatingHandler.SendAsync(HttpRequestMessage, CancellationToken)"/> instead passes through it
-/// untouched. The handler keeps no per-request state, so one instance can serve concurrent requests.</para>
+/// every request synchronously. A request that reaches it through
+/// <see cref="SynchronousHandler.SendAsync(HttpRequestMessage, CancellationToken)"/> instead fails with a
+/// <see cref="NotSupportedException"/>. The handler keeps no per-request state, so one instance can serve concurrent
+/// requests.</para>
 /// </remarks>
-internal sealed class TestingHandler : DelegatingHandler
+internal sealed class TestingHandler : SynchronousHandler
 {
 	private const string NOT_API_MESSAGE = "The response isn't the JSON object that Sonarr's API returns, so it may be an HTML page. You sure the URL is correct?";
 

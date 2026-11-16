@@ -17,11 +17,12 @@ namespace MG.Sonarr.Next.Services.Http.Handlers;
 /// holds, one error object, the array of validation failures that Sonarr returns for a 400, or JSON that doesn't parse,
 /// the response reaches <see cref="SonarrResponseReader"/> with its body and content headers intact.</para>
 /// <para>The handler overrides only <see cref="Send(HttpRequestMessage, CancellationToken)"/>, since the clients send
-/// every request synchronously. A request that goes out through
-/// <see cref="DelegatingHandler.SendAsync(HttpRequestMessage, CancellationToken)"/> instead passes through it
-/// untouched. The handler keeps no per-request state, so one instance can serve concurrent requests.</para>
+/// every request synchronously. A request that reaches it through
+/// <see cref="SynchronousHandler.SendAsync(HttpRequestMessage, CancellationToken)"/> instead fails with a
+/// <see cref="NotSupportedException"/>. The handler keeps no per-request state, so one instance can serve concurrent
+/// requests.</para>
 /// </remarks>
-internal sealed class ErrorHandler : DelegatingHandler
+internal sealed class ErrorHandler : SynchronousHandler
 {
 	/// <summary>
 	/// The key of the request option that marks a response whose status is 404 Not Found.
