@@ -75,7 +75,7 @@ Connecting
 Requests and errors
 - The characters &, #, and + in search terms and paths reach Sonarr as typed. In 2.0.0, Search-SonarrSeries 'Law & Order' searched for "Law ".
 - Sonarr's validation errors show Sonarr's messages, where 2.0.0 showed a JSON error or no detail.
-- An unreachable server gives the error category ConnectionError, and a timeout OperationTimeout, for every request, with the URL in the message.
+- A request that can't reach the server gives the error category ConnectionError, with the URL in the message, and one that times out gives OperationTimeout, whichever cmdlet sends it. In 2.0.0, the category depended on the request.
 - Stopping a pipeline, such as with Ctrl+C, ends a request in flight. 2.0.0 waited until the request finished or timed out.
 - A preference variable that a script or function sets to a string, such as $ErrorActionPreference = 'Stop', applies to the module's cmdlets.
 - -Debug shows the body of every request that has one.

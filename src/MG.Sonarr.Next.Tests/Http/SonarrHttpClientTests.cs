@@ -79,6 +79,49 @@ public sealed class SonarrHttpClientTests
 	}
 
 	/// <summary>
+	/// The connection test that <c>Connect-SonarrInstance</c> and <c>Test-SonarrHost</c> run reports a failure before a
+	/// response arrives as every other request does: no response gives <see cref="ErrorCategory.ConnectionError"/>, with
+	/// the request's absolute URL as the result's URL and at the start of the error's message, a timeout gives
+	/// <see cref="ErrorCategory.OperationTimeout"/>, and any other cancellation gives
+	/// <see cref="ErrorCategory.OperationStopped"/>, with the relative path, since neither exception carries a URL.
+	/// </summary>
+	/// <param name="failure">How the request fails.</param>
+	[Theory]
+	[InlineData(Failure.NoResponse)]
+	[InlineData(Failure.Timeout)]
+	[InlineData(Failure.Canceled)]
+	public void AConnectionTestThatGetsNoResponseGivesTheCategoryOfItsFailure(Failure failure)
+	{
+		const string testPath = "/system/status";
+		string absoluteUrl = new Uri(FakeSonarr.BaseUri, "/api/v3" + testPath).AbsoluteUri;
+		(ErrorCategory category, string url) = failure switch
+		{
+			Failure.NoResponse => (ErrorCategory.ConnectionError, absoluteUrl),
+			Failure.Timeout => (ErrorCategory.OperationTimeout, testPath),
+			_ => (ErrorCategory.OperationStopped, testPath),
+		};
+
+		using CancellationTokenSource canceled = new();
+		canceled.Cancel();
+
+		using ServiceProvider provider = ModuleServices.Build(Fail(failure, new ProbeLog()));
+		using IServiceScope scope = provider.CreateScope();
+		ISonarrClient client = scope.ServiceProvider.GetRequiredService<ISonarrClient>();
+
+		SonarrClientResult result = client.SendTest(failure == Failure.Canceled ? canceled.Token : TestContext.Current.CancellationToken);
+
+		Assert.True(result.IsError, "The connection test succeeded.");
+		Assert.True(
+			category == result.Error.CategoryInfo.Category,
+			$"The connection test gave {result.Error.CategoryInfo.Category}, where {category} was expected, for {result.Error.Exception}");
+		Assert.Equal(url, result.RequestUrl);
+		if (failure == Failure.NoResponse)
+		{
+			Assert.StartsWith(absoluteUrl, result.Error.ToString(), StringComparison.Ordinal);
+		}
+	}
+
+	/// <summary>
 	/// O27: a ping and a download give every failure as an error result, as the clients' docs say, rather than throwing.
 	/// One that gets no response gives <see cref="ErrorCategory.ConnectionError"/>, a timeout
 	/// <see cref="ErrorCategory.OperationTimeout"/>, and any other cancellation
@@ -149,6 +192,35 @@ public sealed class SonarrHttpClientTests
 		{ nameof(ISonarrDownloadClient.DownloadToPath), Failure.Canceled },
 		{ nameof(ISonarrDownloadClient.DownloadToPath), Failure.Unwritable },
 	};
+
+	/// <summary>
+	/// A download that gets no response gives <see cref="ErrorCategory.ConnectionError"/>, with the download's absolute URL
+	/// as the result's URL and at the start of the error's message, as an API request does.
+	/// </summary>
+	[Fact]
+	public void ADownloadThatGetsNoResponseNamesItsUrl()
+	{
+		string downloadUrl = new Uri(FakeSonarr.BaseUri, ClientCalls.DOWNLOAD_PATH).AbsoluteUri;
+		DirectoryInfo folder = Directory.CreateTempSubdirectory("PoshSonarr.Tests.");
+
+		try
+		{
+			using ServiceProvider provider = ModuleServices.Build(Fail(Failure.NoResponse, new ProbeLog()));
+			using IServiceScope scope = provider.CreateScope();
+
+			SonarrClientResult result = scope.ServiceProvider.GetRequiredService<ISonarrDownloadClient>().DownloadToPath(
+				ClientCalls.DOWNLOAD_PATH, Path.Combine(folder.FullName, "backup.zip"), TestContext.Current.CancellationToken);
+
+			Assert.True(result.IsError, "The download succeeded.");
+			Assert.Equal(ErrorCategory.ConnectionError, result.Error.CategoryInfo.Category);
+			Assert.Equal(downloadUrl, result.RequestUrl);
+			Assert.StartsWith(downloadUrl, result.Error.ToString(), StringComparison.Ordinal);
+		}
+		finally
+		{
+			folder.Delete(recursive: true);
+		}
+	}
 
 	/// <summary>
 	/// B1: nothing in the client or its handlers posts work to the caller's <see cref="SynchronizationContext"/>, since a

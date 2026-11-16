@@ -24,10 +24,11 @@ namespace MG.Sonarr.Next.Services.Http.Clients;
 /// that can't be written each come back as a result whose <see cref="SonarrClientResult.IsError"/> is
 /// <see langword="true"/>, with the category <see cref="ErrorCategory.ConnectionError"/>,
 /// <see cref="ErrorCategory.OperationTimeout"/>, <see cref="ErrorCategory.OperationStopped"/>,
-/// <see cref="ErrorCategory.AuthenticationError"/>, or <see cref="ErrorCategory.WriteError"/>. A
-/// <see cref="PipelineStoppedException"/> isn't a failed download, so it leaves a method as it is: the sending cmdlet's
-/// own verbose or debug output throws one under a preference of <see cref="ActionPreference.Stop"/>, or when the user
-/// halts the cmdlet at an <see cref="ActionPreference.Inquire"/> prompt, to end the cmdlet's pipeline.
+/// <see cref="ErrorCategory.AuthenticationError"/>, or <see cref="ErrorCategory.WriteError"/>, and the message of a
+/// refused connection's error starts with the download's URL. A <see cref="PipelineStoppedException"/> isn't a failed
+/// download, so it leaves a method as it is: the sending cmdlet's own verbose or debug output throws one under a
+/// preference of <see cref="ActionPreference.Stop"/>, or when the user halts the cmdlet at an
+/// <see cref="ActionPreference.Inquire"/> prompt, to end the cmdlet's pipeline.
 /// </para>
 /// <para>
 /// Each method sends its request synchronously and returns once the file is written, so the client's handlers run on the
@@ -199,8 +200,9 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 	/// The method returns every failure as an error result, and lets a <see cref="PipelineStoppedException"/> through. A
 	/// failure of the credentials that <see cref="AuthHandler"/> adds gives the category
 	/// <see cref="ErrorCategory.AuthenticationError"/>. A request that gets no response gives
-	/// <see cref="ErrorCategory.ConnectionError"/>, a timeout <see cref="ErrorCategory.OperationTimeout"/>, and any other
-	/// cancellation <see cref="ErrorCategory.OperationStopped"/>.
+	/// <see cref="ErrorCategory.ConnectionError"/>, through a <see cref="SonarrHttpException"/> whose error record's message
+	/// starts with the request's URL, a timeout <see cref="ErrorCategory.OperationTimeout"/>, and any other cancellation
+	/// <see cref="ErrorCategory.OperationStopped"/>.
 	/// </para>
 	/// <para>
 	/// A status that isn't a success gives the category that the status calls for, such as
@@ -229,6 +231,14 @@ internal sealed class SonarrDownloadClient : ISonarrDownloadClient
 		catch (SonarrHttpException ex)
 		{
 			return FromException(ex, ErrorCategory.AuthenticationError, ex.StatusCode ?? ErrorHandler.NoResponseCode, response: null, url);
+		}
+		catch (HttpRequestException httpEx)
+		{
+			// No response arrived, as for a refused or dropped connection. The wrapper gives the error the request's URL, as
+			// an API request's error has.
+			SonarrHttpException noResponse = new(request, response: null, ErrorCollection.Empty, httpEx);
+
+			return FromException(noResponse, ErrorCategory.ConnectionError, ErrorHandler.NoResponseCode, response: null, url);
 		}
 		catch (OperationCanceledException cancelled)
 		{

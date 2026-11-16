@@ -28,10 +28,10 @@ namespace MG.Sonarr.Next.Services.Http.Clients;
 /// the cmdlet at an <see cref="ActionPreference.Inquire"/> prompt, to end the cmdlet's pipeline.
 /// </para>
 /// <para>
-/// Apart from the connection test, whose failures each method's remarks describe, a request that gets no response, such
-/// as one whose connection is refused or dropped, gives the category <see cref="ErrorCategory.ConnectionError"/>, a
-/// timeout gives <see cref="ErrorCategory.OperationTimeout"/>, and any other cancellation gives
-/// <see cref="ErrorCategory.OperationStopped"/>, whether or not the request returns a value.
+/// A request that gets no response, such as one whose connection is refused or dropped, gives the category
+/// <see cref="ErrorCategory.ConnectionError"/>, a timeout gives <see cref="ErrorCategory.OperationTimeout"/>, and any
+/// other cancellation gives <see cref="ErrorCategory.OperationStopped"/>, whichever method sends the request and whether
+/// or not it returns a value.
 /// </para>
 /// <para>
 /// A body is serialized as JSON by its runtime type, and a value is deserialized from JSON, with the connection's
@@ -152,8 +152,10 @@ public interface ISonarrClient
 	/// </para>
 	/// <para>
 	/// An error status gives an error with the category <see cref="ErrorCategory.ResourceUnavailable"/>, whose message is
-	/// the <c>message</c> field of the response's JSON body, or else the status code and its name. A request that fails
-	/// without an answer gives an error with the category <see cref="ErrorCategory.ConnectionError"/>.
+	/// the <c>message</c> field of the response's JSON body, or else the status code and its name. A request that gets no
+	/// response gives an error with the category <see cref="ErrorCategory.ConnectionError"/>, whose message starts with the
+	/// request's URL, a timeout gives <see cref="ErrorCategory.OperationTimeout"/>, and any other cancellation gives
+	/// <see cref="ErrorCategory.OperationStopped"/>.
 	/// </para>
 	/// <para>
 	/// A value that is an <see cref="IJsonMetadataTaggable"/> gets its metadata tag.
@@ -388,6 +390,14 @@ internal sealed class SonarrHttpClient : ISonarrClient
 			}
 
 			return result;
+		}
+		catch (HttpRequestException httpEx)
+		{
+			return this.ReturnFromHttpException<T>(TEST_API, request, response, httpEx, token);
+		}
+		catch (OperationCanceledException cancelled)
+		{
+			return ReturnFromException<T>(TEST_API, response, GetCancelledCategory(cancelled), cancelled);
 		}
 		catch (Exception e) when (e is not PipelineStoppedException)
 		{
