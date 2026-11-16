@@ -5,7 +5,7 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/607129c30165413e816aa0cdad1845d0)](https://app.codacy.com/gh/Yevrag35/PoshSonarr/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![DeepWiki](https://img.shields.io/badge/DeepWiki-Yevrag35%2FPoshSonarr-blue.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAyCAYAAAAnWDnqAAAAAXNSR0IArs4c6QAAA05JREFUaEPtmUtyEzEQhtWTQyQLHNak2AB7ZnyXZMEjXMGeK/AIi+QuHrMnbChYY7MIh8g01fJoopFb0uhhEqqcbWTp06/uv1saEDv4O3n3dV60RfP947Mm9/SQc0ICFQgzfc4CYZoTPAswgSJCCUJUnAAoRHOAUOcATwbmVLWdGoH//PB8mnKqScAhsD0kYP3j/Yt5LPQe2KvcXmGvRHcDnpxfL2zOYJ1mFwrryWTz0advv1Ut4CJgf5uhDuDj5eUcAUoahrdY/56ebRWeraTjMt/00Sh3UDtjgHtQNHwcRGOC98BJEAEymycmYcWwOprTgcB6VZ5JK5TAJ+fXGLBm3FDAmn6oPPjR4rKCAoJCal2eAiQp2x0vxTPB3ALO2CRkwmDy5WohzBDwSEFKRwPbknEggCPB/imwrycgxX2NzoMCHhPkDwqYMr9tRcP5qNrMZHkVnOjRMWwLCcr8ohBVb1OMjxLwGCvjTikrsBOiA6fNyCrm8V1rP93iVPpwaE+gO0SsWmPiXB+jikdf6SizrT5qKasx5j8ABbHpFTx+vFXp9EnYQmLx02h1QTTrl6eDqxLnGjporxl3NL3agEvXdT0WmEost648sQOYAeJS9Q7bfUVoMGnjo4AZdUMQku50McDcMWcBPvr0SzbTAFDfvJqwLzgxwATnCgnp4wDl6Aa+Ax283gghmj+vj7feE2KBBRMW3FzOpLOADl0Isb5587h/U4gGvkt5v60Z1VLG8BhYjbzRwyQZemwAd6cCR5/XFWLYZRIMpX39AR0tjaGGiGzLVyhse5C9RKC6ai42ppWPKiBagOvaYk8lO7DajerabOZP46Lby5wKjw1HCRx7p9sVMOWGzb/vA1hwiWc6jm3MvQDTogQkiqIhJV0nBQBTU+3okKCFDy9WwferkHjtxib7t3xIUQtHxnIwtx4mpg26/HfwVNVDb4oI9RHmx5WGelRVlrtiw43zboCLaxv46AZeB3IlTkwouebTr1y2NjSpHz68WNFjHvupy3q8TFn3Hos2IAk4Ju5dCo8B3wP7VPr/FGaKiG+T+v+TQqIrOqMTL1VdWV1DdmcbO8KXBz6esmYWYKPwDL5b5FA1a0hwapHiom0r/cKaoqr+27/XcrS5UwSMbQAAAABJRU5ErkJggg==)](https://deepwiki.com/Yevrag35/PoshSonarr)
 
-Introducing a completely, redesigned, overhauled version of PoshSonarr.  In order to become the flexible module that I envisioned, I had to take a completely new approach.  Gone are the static types and the needlessly complex, rigid architecture of the previous cmdlets.  The NEXT cmdlets are lighter, more error-resistant, and more flexible in accounting for the changes the [Sonarr PVR API](https://sonarr.tv/docs/api) brings in every update.
+Introducing a completely redesigned, overhauled version of PoshSonarr.  In order to become the flexible module that I envisioned, I had to take a completely new approach.  Gone are the static types and the needlessly complex, rigid architecture of the previous cmdlets.  The NEXT cmdlets are lighter, more error-resistant, and more flexible in accounting for the changes the [Sonarr PVR API](https://sonarr.tv/docs/api) brings in every update.
 
 ## COMPATIBILITY
 
@@ -13,9 +13,21 @@ In addition to this, I am making the executive decision to only write the NEXT v
 
 Version 3 targets .NET 11, so it requires [PowerShell 7.7](https://github.com/PowerShell/PowerShell/releases/latest) or later, the first release that runs on .NET 11.  It won't import on PowerShell 7.6 or earlier.  Version 2.0.0 required PowerShell 7.5.
 
+## Installing
+
+Install PoshSonarr from the [PowerShell Gallery](https://www.powershellgallery.com/packages/PoshSonarr):
+
+```powershell
+# With PSResourceGet
+Install-PSResource -Name PoshSonarr
+
+# Or with PowerShellGet
+Install-Module -Name PoshSonarr
+```
+
 ## Using
 
-To get started, connect to Sonarr with "Connect-SonarrInstance" _(Connect-Sonarr)_ cmdlet:
+To get started, connect to Sonarr with the "Connect-SonarrInstance" _(Connect-Sonarr)_ cmdlet:
 
 ```powershell
 # By URL -- (Sonarr's default port is 8989)
@@ -35,7 +47,7 @@ An example of some commands in action:
 ```powershell
 # Set Season 3 of a series to 'Not Monitored'
 $series = Get-SonarrSeries -Name 24
-$series.Seasons[2].Monitored = $false
+($series.Seasons | Where-Object SeasonNumber -eq 3).IsMonitored = $false
 $series | Update-SonarrSeries
 
 # Search for a particular series and add the best match to Sonarr
@@ -55,10 +67,10 @@ The following is the list of the working cmdlets:
 1. Add-SonarrSeries
 1. Add-SonarrTag
 1. Clear-SonarrTag
-1. [Connect-SonarrInstance](https://github.com/Yevrag35/PoshSonarr/wiki/Connect-SonarrInstance) - _(Connect-Sonarr)_
+1. Connect-SonarrInstance - _(Connect-Sonarr)_
 1. Disconnect-SonarrInstance - _(Disconnect-Sonarr)_
 1. Edit-SonarrManualImport
-1. [Get-SonarrBackup](https://github.com/Yevrag35/PoshSonarr/wiki/Get-SonarrBackup)
+1. Get-SonarrBackup
 1. Get-SonarrCalendar
 1. Get-SonarrCommand
 1. Get-SonarrCommandHistory
