@@ -360,13 +360,14 @@ internal static class SonarrDownloadClientDependencyInjection
 	/// <remarks>
 	/// <para>
 	/// A request passes through <see cref="VerboseHandler"/>, <see cref="DebugSerializeHandler"/>, and
-	/// <see cref="AuthHandler"/>, in that order, before <see cref="SonarrClientHandler"/> sends it. The typed client takes
-	/// the connection's service URI as its base address and its timeout as its timeout, and sends the API key and the
-	/// module's user agent on every request.
+	/// <see cref="AuthHandler"/>, in that order, before the primary handler, a <see cref="SocketsHttpHandler"/> that
+	/// <see cref="SonarrClientHandler.Configure(SocketsHttpHandler, IServiceProvider)"/> sets up, sends it. The typed client
+	/// takes the connection's service URI as its base address and its timeout as its timeout, and sends the API key and
+	/// the module's user agent on every request.
 	/// </para>
 	/// <para>
-	/// The method registers neither <see cref="VerboseHandler"/>, <see cref="DebugSerializeHandler"/>, nor
-	/// <see cref="SonarrClientHandler"/>, so the caller registers them.
+	/// The method registers neither <see cref="VerboseHandler"/> nor <see cref="DebugSerializeHandler"/>, so the caller
+	/// registers them.
 	/// </para>
 	/// </remarks>
 	/// <param name="services">The service collection to add the registration to.</param>
@@ -386,7 +387,7 @@ internal static class SonarrDownloadClientDependencyInjection
 				client.DefaultRequestHeaders.UserAgent
 					.Add(SonarrClientDependencyInjection.UserAgent);
 			})
-			.ConfigurePrimaryHttpMessageHandler<SonarrClientHandler>()
+			.UseSocketsHttpHandler(SonarrClientHandler.Configure)
 			.AddHttpMessageHandler<VerboseHandler>()
 			.AddHttpMessageHandler<DebugSerializeHandler>()
 			.AddHttpMessageHandler<AuthHandler>();

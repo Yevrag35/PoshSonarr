@@ -721,7 +721,9 @@ public static class SonarrClientDependencyInjection
 	/// The registration adds the metadata tags, the response reader, the connection's settings, the cookie container that
 	/// every primary handler of the connection shares, the scoped accessor of a scope's cmdlet, the download client, and
 	/// the JSON options. The typed client takes the settings' service URI as its base address and their timeout as its
-	/// timeout, and sends the API key and the module's user agent on every request.
+	/// timeout, sends the API key and the module's user agent on every request, and sends through a
+	/// <see cref="SocketsHttpHandler"/> that <see cref="SonarrClientHandler.Configure(SocketsHttpHandler, IServiceProvider)"/>
+	/// sets up.
 	/// </remarks>
 	/// <param name="services">The service collection to add the registrations to.</param>
 	/// <param name="cmdletAssembly">The assembly whose cmdlets the metadata tags list as able to take piped objects.</param>
@@ -743,7 +745,6 @@ public static class SonarrClientDependencyInjection
 				//.AddSignalRClient()
 				.AddSonarrDownloadClient()
 				.AddSonarrJsonOptions(configureJson)
-				.AddTransient<SonarrClientHandler>()
 				.AddHttpClient<ISonarrClient, SonarrHttpClient>((provider, client) =>
 				{
 					var settings = provider.GetRequiredService<IConnectionSettings>();
@@ -755,7 +756,7 @@ public static class SonarrClientDependencyInjection
 					client.DefaultRequestHeaders.UserAgent.Add(UserAgent);
 
 				})
-				.ConfigurePrimaryHttpMessageHandler<SonarrClientHandler>();
+				.UseSocketsHttpHandler(SonarrClientHandler.Configure);
 	}
 	/// <summary>
 	/// Registers an <see cref="ISonarrClient"/> for a host outside PowerShell, with the services that it depends on.

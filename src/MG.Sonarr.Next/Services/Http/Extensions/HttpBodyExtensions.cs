@@ -14,9 +14,9 @@ namespace MG.Sonarr.Next.Services.Http.Extensions;
 /// a timeout when its own timeout canceled the token.
 /// </para>
 /// <para>
-/// When the content of a response whose body isn't fully read is disposed, the primary handler drains the rest of the body
-/// before it closes the connection, for up to two seconds by default, so a canceled read can end that much after the
-/// token is canceled.
+/// A canceled read of a response's body ends when the response's connection closes. The module's primary handler drains
+/// no body, so it closes the connection as soon as the content is disposed. A primary handler that drains the rest of a
+/// body first, as one does by default for up to two seconds, puts off the end of the read by as long as the drain takes.
 /// </para>
 /// </remarks>
 internal static class HttpBodyExtensions
