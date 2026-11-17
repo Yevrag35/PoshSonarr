@@ -1,21 +1,8 @@
-﻿namespace MG.Sonarr.Next.Strings;
+namespace MG.Sonarr.Next.Strings;
 
 public readonly partial struct Wildcard
 {
-	#region EQUALITY
-	/// <summary>
-	/// Determines whether the current <see cref="Wildcard"/> instance is equal to the specified span of characters,
-	/// using a case-insensitive comparison.
-	/// </summary>
-	/// <param name="other">The span of characters to compare with the current instance.</param>
-	/// <returns>
-	/// <see langword="true"/> if the specified span of characters is equal to the current instance; otherwise, <see langword="false"/>.
-	/// </returns>
-	[DebuggerStepThrough]
-	public bool Equals(ReadOnlySpan<char> other)
-	{
-		return this.Equals(other, DEFAULT_COMPARISON);
-	}
+	// EQUALITY
 	/// <summary>
 	/// Determines whether the current <see cref="Wildcard"/> instance is equal to the specified span of characters,
 	/// using the specified string comparison option.
@@ -31,19 +18,6 @@ public readonly partial struct Wildcard
 	}
 	/// <summary>
 	/// Determines whether the current <see cref="Wildcard"/> instance is equal to the specified string,
-	/// using a case-insensitive comparison.
-	/// </summary>
-	/// <param name="other">The string to compare with the current instance.</param>
-	/// <returns>
-	/// <see langword="true"/> if the specified string is equal to the current instance, ignoring case; otherwise, <see langword="false"/>.
-	/// </returns>
-	[DebuggerStepThrough]
-	public bool Equals(string? other)
-	{
-		return this.Equals(other, DEFAULT_COMPARISON);
-	}
-	/// <summary>
-	/// Determines whether the current <see cref="Wildcard"/> instance is equal to the specified string,
 	/// using the specified string comparison option.
 	/// </summary>
 	/// <param name="other">The string to compare with the current instance.</param>
@@ -56,12 +30,10 @@ public readonly partial struct Wildcard
 		return ReferenceEquals(_pattern, other) || this.Equals(other.AsSpan(), comparisonType);
 	}
 	/// <summary>
-	/// Determines whether the current <see cref="Wildcard"/> instance is equal to another <see cref="Wildcard"/> instance.
+	/// Determines whether the current <see cref="Wildcard"/> instance is equal to another <see cref="Wildcard"/> instance,
+	/// using a case-insensitive comparison.
 	/// </summary>
 	/// <param name="other">The other <see cref="Wildcard"/> instance to compare with.</param>
-	/// <param name="comparisonType">
-	/// The string comparison rules to use when comparing the two <see cref="Wildcard"/> instances.
-	/// </param>
 	/// <returns>
 	/// <see langword="true"/> if the two <see cref="Wildcard"/> instances are equal; otherwise, <see langword="false"/>.
 	/// </returns>
@@ -73,6 +45,13 @@ public readonly partial struct Wildcard
 	/// <summary>
 	/// Determines whether the current <see cref="Wildcard"/> instance is equal to another <see cref="Wildcard"/> instance.
 	/// </summary>
+	/// <remarks>
+	/// Two instances are equal when both are empty, or when they have the same <see cref="MatchType"/> and their
+	/// patterns are equal under <paramref name="comparisonType"/>, as
+	/// <see cref="Equals(ReadOnlySpan{char}, StringComparison)"/> compares a pattern with text. A culture-sensitive
+	/// comparison can find patterns of different lengths equal, such as <c>e</c> followed by U+0301, the combining
+	/// acute accent, and U+00E9, the same letter precomposed.
+	/// </remarks>
 	/// <param name="other">The other <see cref="Wildcard"/> instance to compare with.</param>
 	/// <param name="comparisonType">
 	/// The string comparison rules to use when comparing the two <see cref="Wildcard"/> instances.
@@ -87,7 +66,7 @@ public readonly partial struct Wildcard
 			return other.IsEmpty;
 		}
 
-		return _state.Equals(other._state)
+		return _state.Type == other._state.Type
 			&& _pattern.AsSpan().Equals(other._pattern, comparisonType);
 	}
 	/// <summary>
@@ -125,9 +104,7 @@ public readonly partial struct Wildcard
 		return HashCode.Combine(value1: false, StringComparer.OrdinalIgnoreCase.GetHashCode(_pattern), _state.Type, _state.Length);
 	}
 
-	#endregion
-
-	#region OPERATORS
+	// OPERATORS
 
 	/// <summary>
 	/// Implicitly converts a <see cref="string"/> to a <see cref="Wildcard"/> instance.
@@ -149,56 +126,4 @@ public readonly partial struct Wildcard
 	{
 		return pattern.ToString();
 	}
-	/// <summary>
-	/// Implicitly converts a <see cref="Wildcard"/> instance to a <see cref="ReadOnlySpan{char}"/>.
-	/// </summary>
-	/// <param name="pattern">The <see cref="Wildcard"/> instance to convert.</param>
-	/// <returns>A <see cref="ReadOnlySpan{char}"/> that represents the specified <see cref="Wildcard"/> instance.</returns>
-	[DebuggerStepThrough]
-	public static implicit operator ReadOnlySpan<char>(Wildcard pattern)
-	{
-		return pattern.AsSpan();
-	}
-
-	/// <summary>
-	/// Determines whether two <see cref="Wildcard"/> instances are equal.
-	/// </summary>
-	/// <param name="x">The first <see cref="Wildcard"/> instance to compare.</param>
-	/// <param name="y">The second <see cref="Wildcard"/> instance to compare.</param>
-	/// <returns><see langword="true"/> if the two <see cref="Wildcard"/> instances are equal; otherwise, <see langword="false"/>.</returns>
-	[DebuggerStepThrough]
-	public static bool operator ==(Wildcard x, Wildcard y)
-	{
-		return x.Equals(y);
-	}
-	/// <summary>
-	/// Determines whether two <see cref="Wildcard"/> instances are not equal.
-	/// </summary>
-	/// <param name="x">The first <see cref="Wildcard"/> instance to compare.</param>
-	/// <param name="y">The second <see cref="Wildcard"/> instance to compare.</param>
-	/// <returns><see langword="true"/> if the two <see cref="Wildcard"/> instances are not equal; otherwise, <see langword="false"/>.</returns>
-	[DebuggerStepThrough]
-	public static bool operator !=(Wildcard x, Wildcard y)
-	{
-		return !(x == y);
-	}
-
-	public static bool operator ==(Wildcard x, string? y)
-	{
-		return x.Equals(y);
-	}
-	public static bool operator !=(Wildcard x, string? y)
-	{
-		return !(x == y);
-	}
-	public static bool operator ==(string? x, Wildcard y)
-	{
-		return y.Equals(x);
-	}
-	public static bool operator !=(string? x, Wildcard y)
-	{
-		return !(x == y);
-	}
-
-	#endregion
 }

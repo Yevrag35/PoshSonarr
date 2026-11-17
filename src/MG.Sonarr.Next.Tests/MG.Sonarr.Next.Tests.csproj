@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!--
+		xUnit.net v3 builds a test project as an executable that runs its own tests on Microsoft.Testing.Platform, and the
+		global.json at the repository's root puts dotnet test into that platform's mode.
+	-->
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+		<RootNamespace>MG.Sonarr.Next.Tests</RootNamespace>
+	</PropertyGroup>
+
+	<!--
+		MG.Sonarr.Next.Shell.Bases references MG.Sonarr.Next, so this reference reaches both. Both name this assembly in
+		their InternalsVisibleTo, and neither reference loads the generators, which would make CS0436 warn on the types
+		that they inject into MG.Sonarr.Next.
+	-->
+	<ItemGroup>
+		<ProjectReference Include="..\MG.Sonarr.Next.Shell.Bases\MG.Sonarr.Next.Shell.Bases.csproj" />
+	</ItemGroup>
+
+	<!--
+		The models are PSObjects and the cmdlet tests open runspaces, so the tests need PowerShell's assemblies beside them,
+		and MG.Sonarr.Next keeps their runtime assets out of every project that references it. Referencing the packages here
+		brings them back, along with everything they depend on.
+	-->
+	<ItemGroup>
+		<PackageReference Include="Microsoft.PowerShell.Commands.Utility" />
+		<PackageReference Include="System.Management.Automation" />
+		<PackageReference Include="CsCheck" />
+		<PackageReference Include="xunit.v3" />
+	</ItemGroup>
+
+	<!--
+		The responses that the sandbox's Sonarr gave for the models that a request sends back, which the tests read from
+		beside the test assembly.
+	-->
+	<ItemGroup>
+		<None Update="Fixtures\*.json" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="CsCheck" />
+		<Using Include="MG.Sonarr.Next.Tests.Infrastructure" />
+		<Using Include="Microsoft.Extensions.DependencyInjection" />
+		<Using Include="Microsoft.PowerShell.Commands" />
+		<Using Include="System.Buffers" />
+		<Using Include="System.Collections" />
+		<Using Include="System.Collections.ObjectModel" />
+		<Using Include="System.Diagnostics" />
+		<Using Include="System.Diagnostics.CodeAnalysis" />
+		<Using Include="System.Management.Automation" />
+		<Using Include="System.Management.Automation.Runspaces" />
+		<Using Include="System.Net" />
+		<Using Include="System.Net.Http" />
+		<Using Include="System.Runtime.CompilerServices" />
+		<Using Include="System.Text" />
+		<Using Include="System.Text.Json" />
+		<Using Include="System.Text.Encodings.Web" />
+		<Using Include="Xunit" />
+	</ItemGroup>
+
+</Project>

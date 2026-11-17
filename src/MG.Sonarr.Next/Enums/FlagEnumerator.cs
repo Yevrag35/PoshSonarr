@@ -1,67 +1,134 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
 namespace MG.Sonarr.Next.Enums;
 
 /// <summary>
-/// A ref struct that enumerates the mask of <typeparamref name="T"/> enumeration values.
+/// Enumerate the individual set flags of an enum value.
 /// </summary>
-/// <typeparam name="T">The type of enumeration values to enumerate - must be decorated with the <see cref="FlagsAttribute"/>.</typeparam>
-[DebuggerStepThrough]
-[StructLayout(LayoutKind.Auto)]
-[DebuggerDisplay(@"\{Current = {Current}, Count = {Count}\}")]
-internal ref struct FlagEnumerator<T> where T : unmanaged, Enum
+/// <remarks>
+/// <para>This enumerator iterates over the set bits of a flags value by repeatedly isolating and clearing the lowest set bit.</para>
+/// <para>Because this type is a <c>ref struct</c>, it is stack-only and cannot be boxed, captured by lambdas, or stored on the managed heap.</para>
+/// <para>Type constraints: <typeparamref name="TEnum"/> is an unmanaged <see cref="Enum"/>, and <typeparamref name="TUnderlying"/> is an unmanaged integer type that supports binary operations.</para>
+/// <para><b>Performance:</b> Uses bit-twiddling and does not allocate or use reflection.</para>
+/// </remarks>
+/// <typeparam name="TEnum">The enum type to enumerate flags for.</typeparam>
+/// <typeparam name="TUnderlying">The underlying integer type used for bit operations.</typeparam>
+[SharedCode]
+[StructLayout(LayoutKind.Auto), DebuggerStepThrough ,ExcludeFromCodeCoverage]
+public ref struct FlagEnumerator<TEnum, TUnderlying>
+	where TEnum : unmanaged, Enum
+	where TUnderlying : unmanaged, IBinaryInteger<TUnderlying>
 {
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private int _count;
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private T _current;
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private T _original;
-    private int _flags;
+	private readonly TUnderlying _original;
+	private TUnderlying _flags;
+	private TEnum _current;
 
-    public readonly T Current => _current;
-    internal readonly int Count => _count;
-    internal readonly T Original => _original;
+	/// <summary>
+	/// Get the current flag value.
+	/// </summary>
+	/// <remarks>
+	/// <para>This value is undefined before the first successful call to <see cref="MoveNext()"/>.</para>
+	/// </remarks>
+	/// <value>The current flag value.</value>
+	public readonly TEnum Current => _current;
 
-    internal FlagEnumerator(T flags)
-    {
-        _original = flags;
-        ref int intFlag = ref Unsafe.As<T, int>(ref flags);
-        _flags = intFlag;
+	/// <summary>
+	/// Initializes a new <see cref="FlagEnumerator{TEnum, TUnderlying}"/> instance for the specified flags value.
+	/// </summary>
+	/// <param name="flags">The flags value to enumerate.</param>
+	/// <inheritdoc cref="ValidateSizesMatch" path="/exception"/>
+	internal FlagEnumerator(TEnum flags)
+	{
+		ValidateSizesMatch();
+		TUnderlying flagNum;
+		unsafe
+		{
+			// SAFETY: ValidateSizesMatch throws unless TEnum and TUnderlying are the same size, and both are unmanaged, so
+			// the reinterpretation reads exactly the bytes of flags and none of them is a reference.
+			flagNum = Unsafe.As<TEnum, TUnderlying>(ref flags);
+		}
 
-        _count = 0;
-        _current = default;
-    }
+		_original = flagNum;
+		_flags = flagNum;
 
-    public readonly FlagEnumerator<T> GetEnumerator() => this;
+		_current = default;
+	}
 
-    public bool MoveNext()
-    {
-        return this.MoveNextCore(stopEarly: 0 == _flags);
-    }
-    internal bool MoveNext(in bool flag)
-    {
-        return this.MoveNextCore(stopEarly: flag || 0 == _flags);
-    }
-    private bool MoveNextCore(bool stopEarly)
-    {
-        if (stopEarly)
-        {
-            return false;
-        }
+	/// <exception cref="NotSupportedException">Thrown if the enumeration type does not have the same size as the underlying type.</exception>
+	[DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static void ValidateSizesMatch()
+	{
+		if (Unsafe.SizeOf<TEnum>() != Unsafe.SizeOf<TUnderlying>())
+		{
+			throwMismatchedSizes();
+		}
 
-        int flagNum = _flags;
-        int currentBit = flagNum & -flagNum; // isolate the rightmost bit
-        _current = Unsafe.As<int, T>(ref currentBit);
-        _count++;
-        _flags &= ~currentBit;  // clear the rightmost bit
-        return true;
-    }
+		debugValidateIsEnumerable();
 
-    internal void Reset()
-    {
-        int intFlags = Unsafe.As<T, int>(ref _original);  // Deliberately copying.
-        _flags = intFlags;
-    }
+		[Conditional("DEBUG"), MethodImpl(MethodImplOptions.NoInlining)]
+		static void debugValidateIsEnumerable()
+		{
+			if (!typeof(TEnum).IsDefined(typeof(FlagsAttribute), inherit: false))
+			{
+				throw new NotSupportedException($"The enumeration type '{typeof(TEnum).FullName}' does not support flag enumeration.");
+			}
+
+			if (!Enum.GetUnderlyingType(typeof(TEnum)).Equals(typeof(TUnderlying)))
+			{
+				throw new NotSupportedException($"The enumeration type '{typeof(TEnum).FullName}' does not have '{typeof(TUnderlying).FullName}' as its underlying type.");
+			}
+		};
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		static string makeNotSupportedMessage()
+		{
+			int enumSize = Unsafe.SizeOf<TEnum>();
+			int underlyingSize = Unsafe.SizeOf<TUnderlying>();
+
+			return $"The enumeration type '{typeof(TEnum).FullName}' does not have the same size as the underlying type '{typeof(TUnderlying).FullName}' (Expected: '{enumSize}', Got: '{underlyingSize}')";
+		};
+		[DoesNotReturn, StackTraceHidden]
+		static void throwMismatchedSizes()
+		{
+			throw new NotSupportedException(
+				message: makeNotSupportedMessage());
+		};
+	}
+
+	/// <summary>
+	/// Return an enumerator instance for use in a <c>foreach</c> statement.
+	/// </summary>
+	/// <returns>This enumerator instance.</returns>
+	public readonly FlagEnumerator<TEnum, TUnderlying> GetEnumerator() => this;
+
+	/// <summary>
+	/// Advance the enumerator to the next set flag.
+	/// </summary>
+	/// <returns><see langword="true"/> if another flag was found; otherwise, <see langword="false"/>.</returns>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public bool MoveNext()
+	{
+		if (TUnderlying.IsZero(_flags))
+		{
+			return false;
+		}
+
+		TUnderlying flagNum = _flags;
+		TUnderlying currentBit = flagNum & -flagNum; // isolate the rightmost bit
+		unsafe
+		{
+			// SAFETY: Only the constructor leaves flags to enumerate, and its ValidateSizesMatch call throws unless TEnum
+			// and TUnderlying are the same size. Both are unmanaged, so the reinterpretation reads exactly the bytes of
+			// currentBit and none of them is a reference.
+			_current = Unsafe.As<TUnderlying, TEnum>(ref currentBit);
+		}
+		_flags &= ~currentBit;  // clear the rightmost bit
+		return true;
+	}
+
+	/// <summary>
+	/// Reset the enumerator to its initial state.
+	/// </summary>
+	public void Reset()
+	{
+		_flags = _original;
+		_current = default;
+	}
 }

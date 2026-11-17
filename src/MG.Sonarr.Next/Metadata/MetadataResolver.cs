@@ -1,79 +1,287 @@
-using System.Collections;
-using System.Collections.Immutable;
+namespace MG.Sonarr.Next.Metadata;
 
-namespace MG.Sonarr.Next.Metadata
+/// <summary>
+/// Represents the read-only set of metadata tags that a connection registers, one for each Sonarr API endpoint,
+/// looked up by name.
+/// </summary>
+public interface IMetadataResolver : IReadOnlyCollection<MetadataTag>
 {
-    /// <summary>
-    /// A dictionary interface of <see cref="MetadataTag"/> instances that describe the various
-    /// types of deserialized API response objects.
-    /// </summary>
-    public interface IMetadataResolver : IReadOnlyCollection<MetadataTag>
-    {
-        MetadataTag this[string key] { get; }
+	/// <summary>
+	/// Gets the tag with the specified name.
+	/// </summary>
+	/// <param name="key">The tag's name, such as <c>#series</c>, compared ordinally, so its case must match.</param>
+	/// <returns>The tag with the name, or <see cref="MetadataTag.Empty"/> when there's none.</returns>
+	MetadataTag this[string key] { get; }
 
-        bool ContainsKey([NotNullWhen(true)] string? key);
-    }
+	/// <summary>
+	/// Determines whether a tag with the specified name is registered.
+	/// </summary>
+	/// <param name="key">The tag's name, compared ordinally, so its case must match.</param>
+	/// <returns>
+	/// <see langword="true"/> if a tag named <paramref name="key"/> is registered; otherwise, <see langword="false"/>.
+	/// </returns>
+	bool ContainsKey([NotNullWhen(true)] string? key);
+}
 
-    /// <summary>
-    /// A dictionary implementation of <see cref="MetadataTag"/> instances that describe the various
-    /// types of deserialized API response objects.
-    /// </summary>
-    [DebuggerDisplay("Count = {Count}")]
-    internal sealed class MetadataResolver : IMetadataResolver
-    {
-        public static readonly string META_PROPERTY_NAME = "MetadataTag";
-        public const char META_PREFIX = '#';
-        readonly Dictionary<string, MetadataTag> _dict;
-        readonly Dictionary<string, ImmutableArray<string>> _pipesTo;
+/// <summary>
+/// Provides the frozen dictionary of metadata tags that a connection registers, keyed by name with an ordinal comparer.
+/// </summary>
+/// <remarks>
+/// <para>A <see cref="Builder"/> gathers the tags, and its <see cref="Builder.Freeze"/> method creates the resolver,
+/// which can't change afterward. <see cref="MetadataResolverDI.AddMetadata"/> creates one for each cmdlet assembly and
+/// registers that same instance for every connection, so every runspace in the process can read it at once without a
+/// lock.</para>
+/// <para>The tags sit in a <see cref="FrozenDictionary{TKey, TValue}"/>, which costs more to create than a
+/// <see cref="Dictionary{TKey, TValue}"/> and less to read. The resolver is created once, while the indexer runs for
+/// each object that the module reads from a response.</para>
+/// <para>Names compare ordinally, as <see cref="MetadataTag"/> compares its own <see cref="MetadataTag.Value"/>. Every
+/// name that registers or looks up a tag is a <see cref="Meta"/> constant, so none needs to match in another
+/// case.</para>
+/// </remarks>
+[DebuggerDisplay("Count = {Count}")]
+internal sealed class MetadataResolver : IMetadataResolver
+{
+	/// <summary>
+	/// The name of the note property that holds an object's tag.
+	/// </summary>
+	internal const string MetaPropertyName = "MetadataTag";
+	/// <summary>
+	/// The character that starts every tag's name.
+	/// </summary>
+	internal const char MetaPrefix = '#';
+	/// <summary>
+	/// The tags, keyed by name with an ordinal comparer.
+	/// </summary>
+	private readonly FrozenDictionary<string, MetadataTag> _dict;
 
-        /// <summary>
-        /// Gets the <see cref="MetadataTag"/> associated with the specified key.
-        /// </summary>
-        /// <param name="key">The key of the <see cref="MetadataTag"/> to get; equal to 
-        /// <see cref="MetadataTag.Value"/></param>
-        /// <returns>
-        ///     The <see cref="MetadataTag"/> associated with the specified key. If the specified key is not
-        ///     found, <see cref="MetadataTag.Empty"/> is returned.
-        /// </returns>
-        public MetadataTag this[string key] => _dict.TryGetValue(key ?? string.Empty, out MetadataTag? tag)
-            ? tag
-            : MetadataTag.Empty;
+	/// <summary>
+	/// Gets the tag with the specified name.
+	/// </summary>
+	/// <param name="key">The tag's name, compared ordinally, so its case must match.</param>
+	/// <returns>The tag with the name, or <see cref="MetadataTag.Empty"/> when there's none or
+	/// <paramref name="key"/> is null.</returns>
+	public MetadataTag this[string key] => key is not null && _dict.TryGetValue(key, out MetadataTag? tag)
+		? tag
+		: MetadataTag.Empty;
 
-        public int Count => _dict.Count;
+	/// <summary>
+	/// Gets the number of registered tags.
+	/// </summary>
+	/// <value>The number of tags.</value>
+	public int Count => _dict.Count;
 
-        public MetadataResolver(int capacity, Dictionary<string, ImmutableArray<string>> pipesTo)
-        {
-            _dict = new(capacity, StringComparer.OrdinalIgnoreCase);
-            _pipesTo = pipesTo;
-        }
+	/// <summary>
+	/// Initializes a new <see cref="MetadataResolver"/> instance that looks tags up in the specified frozen dictionary.
+	/// </summary>
+	/// <param name="dict">The tags, keyed by name with an ordinal comparer.</param>
+	private MetadataResolver(FrozenDictionary<string, MetadataTag> dict)
+	{
+		_dict = dict;
+	}
 
-        internal bool Add(string tag, string baseUrl, bool supportsId)
-        {
-            ArgumentException.ThrowIfNullOrEmpty(tag);
-            ArgumentException.ThrowIfNullOrEmpty(baseUrl);
+	/// <inheritdoc/>
+	public bool ContainsKey([NotNullWhen(true)] string? key)
+	{
+		return key is not null && _dict.ContainsKey(key);
+	}
+	/// <summary>
+	/// Returns an enumerator over the registered tags.
+	/// </summary>
+	/// <returns>An enumerator over the tags, in no particular order.</returns>
+	public Enumerator GetEnumerator()
+	{
+		return new(this);
+	}
 
-            MetadataTag metadataTag = new(baseUrl, tag, supportsId, this.GetPipesTo(tag));
+	/// <inheritdoc/>
+	[DebuggerStepThrough]
+	IEnumerator<MetadataTag> IEnumerable<MetadataTag>.GetEnumerator()
+	{
+		return this.GetEnumerator();
+	}
+	/// <inheritdoc/>
+	[DebuggerStepThrough]
+	IEnumerator IEnumerable.GetEnumerator()
+	{
+		return this.GetEnumerator();
+	}
 
-            return _dict.TryAdd(tag, metadataTag);
-        }
-        public bool ContainsKey([NotNullWhen(true)] string? key)
-        {
-            return !string.IsNullOrWhiteSpace(key) && _dict.ContainsKey(key);
-        }
-        public IEnumerator<MetadataTag> GetEnumerator()
-        {
-            return _dict.Values.GetEnumerator();
-        }
-        private ImmutableArray<string> GetPipesTo(string key)
-        {
-            return _pipesTo.TryGetValue(key, out ImmutableArray<string> pipesTo)
-                ? pipesTo
-                : [];
-        }
+	/// <summary>
+	/// Provides the mutable collection that gathers the metadata tags until <see cref="Freeze"/> creates a
+	/// <see cref="MetadataResolver"/> from them.
+	/// </summary>
+	/// <remarks>
+	/// The builder is enumerable and has an <see cref="Add(string, string, bool)"/> method, so a collection initializer
+	/// can register its tags. It isn't thread-safe.
+	/// </remarks>
+	[DebuggerDisplay("Count = {Count}")]
+	internal sealed class Builder : IEnumerable<MetadataTag>
+	{
+		/// <summary>
+		/// The tags registered so far, keyed by name with an ordinal comparer.
+		/// </summary>
+		private readonly Dictionary<string, MetadataTag> _dict;
+		/// <summary>
+		/// The names of the cmdlets that each tag's objects can be piped to, keyed by tag name.
+		/// </summary>
+		private readonly Dictionary<string, ImmutableArray<string>> _pipesTo;
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
-    }
+		/// <summary>
+		/// Gets the number of tags registered so far.
+		/// </summary>
+		/// <value>The number of tags.</value>
+		public int Count => _dict.Count;
+
+		/// <summary>
+		/// Initializes a new <see cref="Builder"/> instance with the specified capacity and cmdlet names.
+		/// </summary>
+		/// <param name="capacity">The number of tags that the builder holds before it grows.</param>
+		/// <param name="pipesTo">The names of the cmdlets that each tag's objects can be piped to, keyed by tag name.</param>
+		public Builder(int capacity, Dictionary<string, ImmutableArray<string>> pipesTo)
+		{
+			_dict = new(capacity, StringComparer.Ordinal);
+			_pipesTo = pipesTo;
+		}
+
+		/// <summary>
+		/// Registers a tag for an endpoint.
+		/// </summary>
+		/// <remarks>
+		/// Each name is registered once, compared ordinally. A collection initializer discards what
+		/// <c>Add</c> returns, so a second tag with a name that's registered already fails an assertion in a Debug
+		/// build, and a Release build keeps the first tag.
+		/// </remarks>
+		/// <param name="tag">The tag's name.</param>
+		/// <param name="baseUrl">The endpoint's path.</param>
+		/// <param name="supportsId">Whether the endpoint takes an ID in its path.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="tag"/> or <paramref name="baseUrl"/> is null.</exception>
+		/// <exception cref="ArgumentException">Thrown when <paramref name="tag"/> or <paramref name="baseUrl"/> is empty.</exception>
+		internal void Add(string tag, string baseUrl, bool supportsId)
+		{
+			ArgumentException.ThrowIfNullOrEmpty(tag);
+			ArgumentException.ThrowIfNullOrEmpty(baseUrl);
+
+			MetadataTag metadataTag = new(baseUrl, tag, supportsId, this.GetPipesTo(tag));
+
+			bool added = _dict.TryAdd(tag, metadataTag);
+			Debug.Assert(added, $"The metadata tag '{tag}' is registered more than once.");
+		}
+		/// <summary>
+		/// Creates a resolver that holds the tags registered so far.
+		/// </summary>
+		/// <remarks>
+		/// The resolver copies the tags into a frozen dictionary, so a tag that the builder registers afterward doesn't
+		/// reach it, and each call creates a new resolver.
+		/// </remarks>
+		/// <returns>A <see cref="MetadataResolver"/> that holds the builder's tags.</returns>
+		internal MetadataResolver Freeze()
+		{
+			// The comparer must be passed: ToFrozenDictionary uses the default comparer otherwise, not the source's.
+			// Passing the source's own comparer lets it read _dict as it is, without copying it into a new Dictionary
+			// first. _dict.Comparer returns StringComparer.Ordinal itself, not the wrapper that Dictionary keeps inside,
+			// so the frozen dictionary still recognizes it and picks one of its implementations for string keys.
+			return new(_dict.ToFrozenDictionary(_dict.Comparer));
+		}
+		/// <summary>
+		/// Returns an enumerator over the tags registered so far.
+		/// </summary>
+		/// <returns>An enumerator over the tags, in no particular order.</returns>
+		public IEnumerator<MetadataTag> GetEnumerator()
+		{
+			return _dict.Values.GetEnumerator();
+		}
+		/// <summary>
+		/// Gets the names of the cmdlets that a tag's objects can be piped to.
+		/// </summary>
+		/// <param name="key">The tag's name.</param>
+		/// <returns>The cmdlet names, or an empty array when no cmdlet takes the tag.</returns>
+		private ImmutableArray<string> GetPipesTo(string key)
+		{
+			return _pipesTo.TryGetValue(key, out ImmutableArray<string> pipesTo)
+				? pipesTo
+				: [];
+		}
+
+		/// <summary>
+		/// Returns an enumerator over the tags registered so far.
+		/// </summary>
+		/// <returns>An enumerator over the tags, in no particular order.</returns>
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return this.GetEnumerator();
+		}
+	}
+
+	/// <summary>
+	/// Enumerates the tags in a <see cref="MetadataResolver"/>.
+	/// </summary>
+	public struct Enumerator : IEnumerator<MetadataTag>
+	{
+		private readonly MetadataTag[] _array;
+		private MetadataTag _current;
+		private readonly int _count;
+		private int _index;
+
+		/// <summary>
+		/// Gets the tag at the enumerator's current position.
+		/// </summary>
+		public readonly MetadataTag Current => _current;
+
+		/// <inheritdoc/>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		readonly object IEnumerator.Current
+		{
+			[DebuggerStepThrough]
+			get => this.Current;
+		}
+
+		/// <summary>
+		/// Initializes a new <see cref="Enumerator"/> instance that enumerates the tags in the specified resolver.
+		/// </summary>
+		/// <param name="resolver">The resolver whose tags to enumerate.</param>
+		internal Enumerator(MetadataResolver resolver)
+		{
+			_array = ImmutableCollectionsMarshal.AsArray(resolver._dict.Values)!;
+			_current = MetadataTag.Empty;
+			_index = -1;
+			_count = resolver._dict.Count;
+		}
+
+		/// <summary>
+		/// Advances the enumerator to the next tag in the resolver.
+		/// </summary>
+		/// <returns><see langword="true"/> if the enumerator was successfully advanced to the next tag; <see langword="false"/> if the enumerator has passed the end of the collection.</returns>
+		public bool MoveNext()
+		{
+			int next = _index + 1;
+			if ((uint)next < (uint)_count)
+			{
+				unsafe
+				{
+					// SAFETY: The values of a frozen dictionary fill an array of exactly its count, which _count holds, so the
+					// check keeps next within _array, and the tag is only read.
+					_current = _array.Ref(next);
+				}
+
+				_index = next;
+				return true;
+			}
+
+			_current = default!;
+			_index = _count;
+			return false;
+		}
+
+		/// <inheritdoc/>
+		[DebuggerStepThrough]
+		readonly void IDisposable.Dispose()
+		{
+		}
+		/// <inheritdoc/>
+		[DebuggerStepThrough]
+		readonly void IEnumerator.Reset()
+		{
+			throw new NotSupportedException();
+		}
+	}
 }

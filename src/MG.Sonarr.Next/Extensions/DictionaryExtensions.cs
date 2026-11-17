@@ -1,102 +1,59 @@
 using System.Collections.ObjectModel;
 
-namespace MG.Sonarr.Next.Extensions
+namespace MG.Sonarr.Next.Extensions;
+
+/// <summary>
+/// Provides extension methods for <see cref="Dictionary{TKey, TValue}"/>.
+/// </summary>
+internal static class DictionaryExtensions
 {
-    /// <summary>
-    /// Custom extension methods for specific types of <see cref="Dictionary{TKey, TValue}"/>.
-    /// </summary>
-    public static class DictionaryExtensions
-    {
-        [SuppressMessage("Style", "IDE0008:Use explicit type", Justification = "<Pending>")]
-        public static bool ContainsKey<T>(this Dictionary<string, T> dictionary, ReadOnlySpan<char> key)
-        {
-            var lookup =
-#if NET9_0_OR_GREATER
-                dictionary.GetAlternateLookup<ReadOnlySpan<char>>();
-#else
-                dictionary;
-#endif
+	/// <summary>
+	/// Provides extension methods that look up a key in a <see cref="Dictionary{TKey, TValue}"/> given as a span of characters.
+	/// </summary>
+	/// <typeparam name="T">The type of the dictionary's values.</typeparam>
+	/// <param name="dictionary">The dictionary to extend.</param>
+	extension<T>(Dictionary<string, T> dictionary)
+	{
+		/// <summary>
+		/// Determines whether the dictionary contains the specified key, given as a span of characters.
+		/// </summary>
+		/// <remarks>
+		/// A dictionary whose comparer can compare a span with a <see cref="string"/>, as the default and ordinal comparers
+		/// can, looks the span up without allocating. Any other comparer gets the key as a new <see cref="string"/>.
+		/// </remarks>
+		/// <param name="key">The key to look for.</param>
+		/// <returns><see langword="true"/> if <paramref name="dictionary"/> contains <paramref name="key"/>; otherwise,
+		/// <see langword="false"/>.</returns>
+		internal bool ContainsKey(ReadOnlySpan<char> key)
+		{
+			return dictionary.TryGetAlternateLookup(out Dictionary<string, T>.AlternateLookup<ReadOnlySpan<char>> lookup)
+				? lookup.ContainsKey(key)
+				: dictionary.ContainsKey(key.ToString());
+		}
+	}
 
-            var lookupKey =
-#if NET9_0_OR_GREATER
-                key;
-#else
-                key.ToString();
-#endif
-            return lookup.ContainsKey(lookupKey);
-        }
-
-        public static string GetValue<T>(this IReadOnlyDictionary<T, string>? dictionary, T key) where T : notnull
-        {
-            return dictionary is not null && dictionary.TryGetValue(key, out string? value)
-                ? value
-                : string.Empty;
-        }
-
-        [return: NotNullIfNotNull(nameof(dictionary))]
-        public static ReadOnlyDictionary<TKey, TValue>? ToReadOnly<TKey, TValue>(this Dictionary<TKey, TValue>? dictionary) where TKey : notnull
-        {
-            if (dictionary is null)
-            {
-                return null;
-            }
-
-            return new ReadOnlyDictionary<TKey, TValue>(dictionary);
-        }
-
-        /// <summary>
-        /// Extends <see cref="Dictionary{TKey, TValue}.TryGetValue(TKey, out TValue)"/> and 
-        /// additionally attempts to cast the found object instance to 
-        /// <typeparamref name="TOutput"/>.
-        /// </summary>
-        /// <typeparam name="TKey">The type of keys in the read-only dictionary</typeparam>
-        /// <typeparam name="TOutput">The type of values in the read-only dictionary</typeparam>
-        /// <param name="dictionary">The dictionary to find the value from.</param>
-        /// <param name="key">The key to locate</param>
-        /// <param name="value">
-        ///     When this method returns, the value of type <typeparamref name="TOutput"/>
-        ///     associated with the specified key if <paramref name="key"/> is found; otherwise, 
-        ///     the default value for <typeparamref name="TOutput"/>.
-        ///     <para>This parameter is passed uninitialized.</para>
-        /// </param>
-        /// <returns>
-        ///     <see langword="true"/> if the base 
-        ///     <see cref="Dictionary{TKey, TValue}.TryGetValue(TKey, out TValue)"/> returns 
-        ///     <see langword="true"/> and the object instance is not <see langword="null"/>
-        ///     of the type <typeparamref name="TOutput"/>.
-        /// </returns>
-        public static bool TryGetValueAs<TKey, TOutput>(this IReadOnlyDictionary<TKey, object?> dictionary, TKey key, [NotNullWhen(true)] out TOutput? value) where TKey : notnull
-        {
-            ArgumentNullException.ThrowIfNull(dictionary);
-            ArgumentNullException.ThrowIfNull(key);
-
-            value = default;
-            if (dictionary.TryGetValue(key, out object? dictVal) && dictVal is TOutput tOut)
-            {
-                value = tOut;
-                return value is not null;
-            }
-
-            return false;
-        }
-
-        [SuppressMessage("Style", "IDE0008:Use explicit type", Justification = "<Pending>")]
-        public static bool TryGetValue<T>(this Dictionary<string, T> dictionary, ReadOnlySpan<char> key, [MaybeNullWhen(false)] out T value)
-        {
-            var lookup =
-#if NET9_0_OR_GREATER
-                dictionary.GetAlternateLookup<ReadOnlySpan<char>>();
-#else
-                dictionary;
-#endif
-
-            var lookupKey =
-#if NET9_0_OR_GREATER
-                key;
-#else
-                key.ToString();
-#endif
-            return lookup.TryGetValue(lookupKey, out value);
-        }
-    }
+	/// <summary>
+	/// Provides extension methods that wrap a <see cref="Dictionary{TKey, TValue}"/> in a read-only view.
+	/// </summary>
+	/// <typeparam name="TKey">The type of the dictionary's keys.</typeparam>
+	/// <typeparam name="TValue">The type of the dictionary's values.</typeparam>
+	/// <param name="dictionary">The dictionary to extend.</param>
+	extension<TKey, TValue>(Dictionary<TKey, TValue>? dictionary) where TKey : notnull
+	{
+		/// <summary>
+		/// Wraps a dictionary in a read-only view.
+		/// </summary>
+		/// <remarks>
+		/// The view doesn't copy the dictionary, so a later change to <paramref name="dictionary"/> shows through it.
+		/// </remarks>
+		/// <returns>
+		/// A new <see cref="ReadOnlyDictionary{TKey, TValue}"/> over <paramref name="dictionary"/>, or
+		/// <see langword="null"/> when <paramref name="dictionary"/> is <see langword="null"/>.
+		/// </returns>
+		[return: NotNullIfNotNull(nameof(dictionary))]
+		internal ReadOnlyDictionary<TKey, TValue>? ToReadOnly()
+		{
+			return dictionary is not null ? new ReadOnlyDictionary<TKey, TValue>(dictionary) : null;
+		}
+	}
 }

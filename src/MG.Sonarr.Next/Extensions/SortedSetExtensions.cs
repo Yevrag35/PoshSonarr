@@ -1,45 +1,36 @@
-﻿using MG.Sonarr.Next.Metadata;
-using MG.Sonarr.Next.Models;
+using MG.Sonarr.Next.Metadata;
 
-namespace MG.Sonarr.Next.Extensions
+namespace MG.Sonarr.Next.Extensions;
+
+/// <summary>
+/// Provides extension methods for sets of IDs.
+/// </summary>
+internal static class SortedSetExtensions
 {
-    public static class SortedSetExtensions
-    {
-        public static void AddRange(this SortedSet<int> ids, ISeriesPipeable[] collection)
-        {
-            foreach (ISeriesPipeable piped in collection.AsSpan())
-            {
-                _ = ids.Add(piped.SeriesId);
-            }
-        }
-        public static void AddRange(this SortedSet<int> ids, IHasId[] collection)
-        {
-            foreach (IHasId piped in collection.AsSpan())
-            {
-                _ = ids.Add(piped.Id);
-            }
-        }
-       
-        public static void AddRange(this SortedSet<int> ids, ILanguageProfilePipeable[] collection)
-        {
-            foreach (ILanguageProfilePipeable piped in collection.AsSpan())
-            {
-                _ = ids.Add(piped.LanguageProfileId);
-            }
-        }
-        public static void AddRange(this SortedSet<int> ids, IReleasePipeableBySeries[] collection)
-        {
-            foreach (IReleasePipeableBySeries piped in collection.AsSpan())
-            {
-                _ = ids.Add(piped.SeriesId);
-            }
-        }
-        public static void AddRange(this SortedSet<int> ids, IReleasePipeableByEpisode[] collection)
-        {
-            foreach (IReleasePipeableByEpisode piped in collection.AsSpan())
-            {
-                _ = ids.Add(piped.EpisodeId);
-            }
-        }
-    }
+	/// <summary>
+	/// Provides extension methods that add to a <see cref="SortedSet{T}"/> of IDs.
+	/// </summary>
+	/// <param name="ids">The set to add the IDs to.</param>
+	extension(SortedSet<int> ids)
+	{
+		/// <summary>
+		/// Adds the IDs of piped objects to a set of IDs.
+		/// </summary>
+		/// <remarks>
+		/// An object whose <see cref="IPipeable{T}.GetId"/> returns <see langword="null"/> adds nothing, and an ID
+		/// that's already in <paramref name="ids"/> is skipped.
+		/// </remarks>
+		/// <typeparam name="T">The pipeable interface that the objects give their IDs for.</typeparam>
+		/// <param name="values">The objects whose IDs are added.</param>
+		internal void AddRange<T>(params ReadOnlySpan<T> values) where T : IPipeable<T>
+		{
+			foreach (T piped in values)
+			{
+				if (piped.GetId() is int id)
+				{
+					_ = ids.Add(id);
+				}
+			}
+		}
+	}
 }

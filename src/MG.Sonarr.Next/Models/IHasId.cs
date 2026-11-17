@@ -1,13 +1,13 @@
-﻿namespace MG.Sonarr.Next.Models
+namespace MG.Sonarr.Next.Models;
+
+/// <summary>
+/// Represents an object that has a Sonarr ID.
+/// </summary>
+public interface IHasId
 {
-    /// <summary>
-    /// An interface exposing the Id property of an implementing object.
-    /// </summary>
-    public interface IHasId
-    {
-        /// <summary>
-        /// The Sonarr database ID of the implementing object.
-        /// </summary>
-        int Id { get; }
-    }
+	/// <summary>
+	/// Gets the object's ID.
+	/// </summary>
+	/// <value>The Sonarr database ID of the object.</value>
+	int Id { get; }
 }

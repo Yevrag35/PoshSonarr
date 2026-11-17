@@ -1,74 +1,179 @@
-using MG.Sonarr.Next.Services.Auth;
-using MG.Sonarr.Next.Services.Http.Requests;
 using MG.Sonarr.Next.Extensions.Strings;
+using MG.Sonarr.Next.Services.Auth;
+using MG.Sonarr.Next.Services.Http.Extensions;
+using MG.Sonarr.Next.Services.Http.Requests;
 
-namespace MG.Sonarr.Next.Services.Http.Handlers
+namespace MG.Sonarr.Next.Services.Http.Handlers;
+
+/// <summary>
+/// Provides a delegating handler that builds each request's URL from the connection's URL base, the API prefix, and the
+/// endpoint path.
+/// </summary>
+/// <remarks>
+/// <para>Callers pass endpoint paths that are relative to the API and rooted, such as <c>/series</c>, so the URL that
+/// reaches the handler keeps only the scheme and server of the base address. The handler puts the URL base from
+/// <see cref="IConnectionSettings.ServiceUri"/> after them, then the <c>/api/v3/</c> prefix, or <c>/v3/</c> when
+/// <see cref="IConnectionSettings.NoApiInPath"/> is <see langword="true"/>, and then the path. The path and query keep
+/// the escaping that the caller gave them.</para>
+/// <para>A path that already starts with <c>api/v3</c>, and a ping request, get the URL base without the prefix. The
+/// handler leaves alone a path that already starts with the URL base and <c>api/v3</c>, and a download request that
+/// carries credentials.</para>
+/// <para>The handler overrides only <see cref="Send(HttpRequestMessage, CancellationToken)"/>, since the clients send
+/// every request synchronously. A request that reaches it through
+/// <see cref="SynchronousHandler.SendAsync(HttpRequestMessage, CancellationToken)"/> instead fails with a
+/// <see cref="NotSupportedException"/>.</para>
+/// <para>The handler reads the connection settings once, in its constructor, and keeps no per-request state, so one
+/// instance can serve concurrent requests.</para>
+/// </remarks>
+internal sealed class PathHandler : SynchronousHandler
 {
-    public sealed class PathHandler : DelegatingHandler
-    {
-        const string API = "/api";
-        const string V3 = "/v3/";
-        readonly bool _noApiInPath;
+	private const string API = "/api";
+	private const string API_V3 = "api/v3";
+	private const string V3 = "/v3/";
+	/// <summary>
+	/// The key of the request option that marks a ping request, whose path gets the URL base but no API prefix.
+	/// </summary>
+	internal const string Ping = "IsPing";
+	private readonly string _basePath;
+	private readonly bool _noApiInPath;
 
-        public PathHandler(IConnectionSettings settings)
-        {
-            _noApiInPath = settings.NoApiInPath;
-        }
+	/// <summary>
+	/// Initializes a new <see cref="PathHandler"/> instance with the URL base and the API prefix setting of the specified
+	/// connection settings.
+	/// </summary>
+	/// <param name="settings">The connection settings that supply the URL base and whether the path leaves out
+	/// <c>/api</c>.</param>
+	public PathHandler(IConnectionSettings settings)
+	{
+		_basePath = settings.ServiceUri.AbsolutePath.TrimEnd('/');
+		_noApiInPath = settings.NoApiInPath;
+	}
 
-        protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            if (request is not AuthedRequestMessage)
-            {
-                this.SetPath(request);
-            }
+	/// <summary>
+	/// Builds the request's URL and sends the request to the inner handler.
+	/// </summary>
+	/// <param name="request">The HTTP request message to send.</param>
+	/// <param name="cancellationToken">A token that cancels the operation.</param>
+	/// <returns>The HTTP response message from the inner handler.</returns>
+	protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
+	{
+		if (request is not AuthedRequestMessage)
+		{
+			this.SetPath(request);
+		}
 
-            return base.Send(request, cancellationToken);
-        }
+		return base.Send(request, cancellationToken);
+	}
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            if (request is not AuthedRequestMessage)
-            {
-                this.SetPath(request);
-            }
+	/// <summary>
+	/// Builds an absolute URL from the specified scheme and server, URL base, and path and query, with the API prefix
+	/// before the path when <paramref name="addApi"/> is <see langword="true"/>.
+	/// </summary>
+	/// <remarks>
+	/// <para>The API prefix is <c>/api/v3/</c>, or <c>/v3/</c> when the connection's
+	/// <see cref="IConnectionSettings.NoApiInPath"/> is <see langword="true"/>. Without it, a slash separates the URL
+	/// base from the path.</para>
+	/// <para><b>Performance:</b> The URL is built in a stack buffer when its parts and the longest prefix fit in 256
+	/// characters, and in a pooled buffer otherwise, which goes back to the pool before the method returns, so the
+	/// only allocation is the returned string.</para>
+	/// </remarks>
+	/// <param name="path">The request's path and query, without their leading slash.</param>
+	/// <param name="basePath">The URL base, which starts with a slash and doesn't end with one, or an empty span
+	/// when the connection's URL has no path.</param>
+	/// <param name="authority">The scheme and server of the request's URL.</param>
+	/// <param name="addApi"><see langword="true"/> to put the API prefix before the path; otherwise,
+	/// <see langword="false"/>.</param>
+	/// <returns>The absolute URL, as a string.</returns>
+	private string ConstructUriString(ReadOnlySpan<char> path, ReadOnlySpan<char> basePath, ReadOnlySpan<char> authority, bool addApi)
+	{
+		const int max_stackalloc = 256;
 
-            return base.SendAsync(request, cancellationToken);
-        }
+		int length = path.Length + API.Length + V3.Length + authority.Length + basePath.Length;
+		using var builder = SpanStringBuilder.Create(
+					length <= max_stackalloc
+						? stackalloc char[length]
+						: length);
 
-        private void SetPath(HttpRequestMessage request)
-        {
-            ReadOnlySpan<char> path = request.RequestUri?.GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
-            if (path.StartsWith('/'))
-            {
-                path = path.TrimStart('/');
-            }
+		builder.Append(authority);
+		builder.Append(basePath);
 
-            if (path.StartsWith("api/v3", StringComparison.InvariantCultureIgnoreCase))
-            {
-                return;
-            }
+		if (!addApi)
+		{
+			builder.Append('/');
+		}
+		else
+		{
+			if (!_noApiInPath)
+			{
+				builder.Append(API);
+			}
 
-            ReadOnlySpan<char> authority = request.RequestUri?.GetComponents(UriComponents.SchemeAndServer, UriFormat.Unescaped);
+			builder.Append(V3);
+		}
 
+		builder.Append(path);
+		return builder.ToString();
+	}
 
-            Span<char> span = stackalloc char[path.Length + API.Length + V3.Length + authority.Length];
-            int position = 0;
-            authority.CopyToSlice(span, ref position);
+	/// <summary>
+	/// Replaces the request's URL with its scheme and server, the URL base, the API prefix when the path needs one, and
+	/// its path and query.
+	/// </summary>
+	/// <remarks>
+	/// <para>The URL stays as it is when the path already starts with the URL base and <c>api/v3</c>, and when there's
+	/// no URL base and the path either starts with <c>api/v3</c> or belongs to a request marked with
+	/// <see cref="Ping"/>.</para>
+	/// <para><b>Performance:</b> The new URL is built in a stack buffer when it's at most 256 characters long, and in a
+	/// pooled buffer otherwise, so the only allocations are the URL's string and its <see cref="Uri"/>.</para>
+	/// </remarks>
+	/// <param name="request">The HTTP request message whose URL is replaced.</param>
+	private void SetPath(HttpRequestMessage request)
+	{
+		// The endpoint paths are rooted, so combining one with the base address keeps only the address's scheme and
+		// server, and the URL base comes from the settings instead.
+		ReadOnlySpan<char> path = request.RequestUri?.GetComponents(UriComponents.PathAndQuery, UriFormat.UriEscaped);
+		if (path.StartsWith('/'))
+		{
+			path = path.TrimStart('/');
+		}
 
-            if (!_noApiInPath)
-            {
-                API.CopyToSlice(span, ref position);
-            }
+		ReadOnlySpan<char> basePath = _basePath;
+		if (!basePath.IsEmpty && IsApiPathUnderBase(path, basePath))
+		{
+			return;
+		}
 
-            V3.CopyToSlice(span, ref position);
-            if (path.StartsWith('/', StringComparison.InvariantCulture))
-            {
-                position--;
-            }
+		bool addApi = !path.StartsWith(API_V3, StringComparison.OrdinalIgnoreCase)
+				   && !request.Options.ContainsMetadata(Ping);
 
-            path.CopyToSlice(span, ref position);
+		if (!addApi && basePath.IsEmpty)
+		{
+			return;
+		}
 
-            request.RequestUri = new Uri(new string(span.Slice(0, position)), UriKind.Absolute);
-        }
-    }
+		ReadOnlySpan<char> authority = request.RequestUri?.GetComponents(UriComponents.SchemeAndServer, UriFormat.Unescaped);
+
+		string uriString = this.ConstructUriString(path, basePath, authority, addApi);
+
+		request.RequestUri = new Uri(uriString, UriKind.Absolute);
+	}
+
+	/// <summary>
+	/// Determines whether a path already starts with the URL base followed by <c>/api/v3</c>, as a path that Sonarr hands
+	/// out can.
+	/// </summary>
+	/// <remarks>
+	/// The comparison is ordinal and ignores case.
+	/// </remarks>
+	/// <param name="path">The request's path and query, without their leading slash.</param>
+	/// <param name="basePath">The URL base, which starts with a slash and isn't empty.</param>
+	/// <returns><see langword="true"/> if <paramref name="path"/> starts with the URL base and <c>/api/v3</c>;
+	/// otherwise, <see langword="false"/>.</returns>
+	private static bool IsApiPathUnderBase(ReadOnlySpan<char> path, ReadOnlySpan<char> basePath)
+	{
+		// A path that Sonarr hands out can hold the URL base already. The base starts with the slash that the path lost.
+		ReadOnlySpan<char> baseSegments = basePath[1..];
+		return path.StartsWith(baseSegments, StringComparison.OrdinalIgnoreCase)
+			&& path[baseSegments.Length..].StartsWith("/api/v3", StringComparison.OrdinalIgnoreCase);
+	}
 }

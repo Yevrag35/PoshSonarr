@@ -1,47 +1,74 @@
-﻿using MG.Sonarr.Next.Services.Http.Clients;
+using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Services.Http.Handlers;
 
-namespace MG.Sonarr.Next.Services.Http
+namespace MG.Sonarr.Next.Services.Http;
+
+/// <summary>
+/// Provides the verbose and debug output that a cmdlet writes for each request that an <see cref="ISonarrClient"/> sends
+/// on its behalf.
+/// </summary>
+/// <remarks>
+/// <para>
+/// <see cref="VerboseHandler"/> and <see cref="DebugSerializeHandler"/> read the cmdlet from each request's options and
+/// call these members around sending it.
+/// </para>
+/// <para>
+/// The clients send each request synchronously, so the handlers call these members on the thread that sent the request,
+/// which for a cmdlet is its pipeline thread. An implementation writes through the cmdlet's own <c>WriteVerbose</c> and
+/// <c>WriteDebug</c>, so the lines reach the verbose and debug streams, where redirection captures them and a transcript
+/// records them.
+/// </para>
+/// <para>
+/// A write can throw: the cmdlet's own output throws a <see cref="PipelineStoppedException"/> under a preference of
+/// <see cref="ActionPreference.Stop"/>, or when the user halts the cmdlet at an <see cref="ActionPreference.Inquire"/>
+/// prompt. The clients let that exception through, so it ends the cmdlet's pipeline as it would from the cmdlet's own
+/// code.
+/// </para>
+/// </remarks>
+public interface IApiCmdlet
 {
-    /// <summary>
-    /// An interface that allows for the <see cref="VerboseHandler"/> to write custom messages before and after
-    /// any API request is sent with a <see cref="ISonarrClient"/> instance.
-    /// </summary>
-    public interface IApiCmdlet
-    {
-        /// <summary>
-        /// Indicates whether the cmdlet should serialize the JSON payloads to the PowerShell's debug stream before sending HTTP requests.
-        /// </summary>
-        bool CanDebugSerializeBefore { get; }
-        /// <summary>
-        /// Indicates whether the cmdlet should serialize the JSON payloads to the PowerShell's debug stream after receiving HTTP responses.
-        /// </summary>
-        bool CanDebugSerializeAfter { get; }
+	/// <summary>
+	/// Gets a value that indicates whether the request's JSON body is written to the debug stream before the request is sent.
+	/// </summary>
+	/// <value>
+	/// <see langword="true"/> if the request body is written to the debug stream; otherwise, <see langword="false"/>.
+	/// </value>
+	bool CanDebugSerializeBefore { get; }
+	/// <summary>
+	/// Gets a value that indicates whether the response's JSON body is written to the debug stream after the response is
+	/// received.
+	/// </summary>
+	/// <value>
+	/// <see langword="true"/> if the response body is written to the debug stream; otherwise, <see langword="false"/>.
+	/// </value>
+	bool CanDebugSerializeAfter { get; }
 
-        /// <summary>
-        /// Gets a value indicating whether verbose logging is enabled.
-        /// </summary>
-        bool CanWriteVerbose { get; }
+	/// <summary>
+	/// Gets a value that indicates whether the cmdlet writes verbose messages about its requests.
+	/// </summary>
+	/// <value>
+	/// <see langword="true"/> if verbose messages are written; otherwise, <see langword="false"/>.
+	/// </value>
+	bool CanWriteVerbose { get; }
 
-        /// <summary>
-        /// Writes a JSON payload to the PowerShell's debug stream. The payload can either be the request or response serialized.
-        /// </summary>
-        /// <param name="jsonPayload">The JSON serialized payload to write to the debug stream.</param>
-        void WriteDebugPayload(string jsonPayload);
+	/// <summary>
+	/// Writes the body of a request or a response to the debug stream.
+	/// </summary>
+	/// <param name="jsonPayload">The text to write, which describes the body and holds its JSON.</param>
+	void WriteDebugPayload(string jsonPayload);
 
-        /// <summary>
-        /// Writes a message to the PowerShell's verbose stream before the provided request message is sent.
-        /// </summary>
-        /// <param name="request">The details of the pending request.</param>
-        void WriteVerboseBefore(IHttpRequestDetails request);
-        /// <summary>
-        /// Writes a message to the PowerShell's verbose stream after the a response is received from 
-        /// an API request.
-        /// </summary>
-        /// <param name="response">The returning response details of the message.</param>
-        /// <param name="provider">A scoped service provider to construct/retrieve any services.</param>
-        /// <param name="options">The JSON serialization options being used by the deserialization
-        /// process.</param>
-        void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options);
-    }
+	/// <summary>
+	/// Writes a verbose message about a request that is about to be sent.
+	/// </summary>
+	/// <param name="request">The details of the pending request.</param>
+	void WriteVerboseBefore(IHttpRequestDetails request);
+	/// <summary>
+	/// Writes a verbose message about the response to a request.
+	/// </summary>
+	/// <param name="response">The outcome of the request, with the response's status code and URL.</param>
+	/// <param name="provider">A scoped service provider that the cmdlet can resolve services from.</param>
+	/// <param name="options">
+	/// The JSON options that deserialize the response, or <see langword="null"/> when there are none.
+	/// </param>
+	void WriteVerboseAfter(ISonarrResponse response, IServiceProvider provider, JsonSerializerOptions? options);
 }

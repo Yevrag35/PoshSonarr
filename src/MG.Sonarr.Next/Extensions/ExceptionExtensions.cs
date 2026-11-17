@@ -1,86 +1,96 @@
-﻿using MG.Sonarr.Next.Extensions.Reflection;
-using System.Management.Automation;
+using MG.Sonarr.Next.Extensions.Reflection;
 
-namespace MG.Sonarr.Next.Extensions
+namespace MG.Sonarr.Next.Extensions;
+
+/// <summary>
+/// Provides extension methods for <see cref="Exception"/>.
+/// </summary>
+internal static class ExceptionExtensions
 {
-    /// <summary>
-    /// Custom extension methods for <see cref="Exception"/> classes.
-    /// </summary>
-    public static class ExceptionExtensions
-    {
-        /// <summary>
-        /// Returns the <see cref="Exception"/> class's type name.
-        /// </summary>
-        /// <param name="exception">The exception to check.</param>
-        /// <inheritdoc cref="TypeNameExtensions.GetName(Type?)"/>
-        [return: NotNullIfNotNull(nameof(exception))]
-        public static string? GetTypeName(this Exception? exception)
-        {
-            Type? type = exception?.GetType();
-            return type.GetNameOrNull();
-        }
+	/// <summary>
+	/// Provides extension methods that name an <see cref="Exception"/> that may be <see langword="null"/>, or
+	/// create a PowerShell <see cref="ErrorRecord"/> for it.
+	/// </summary>
+	/// <param name="exception">The exception that describes the error, or <see langword="null"/>.</param>
+	extension(Exception? exception)
+	{
+		/// <summary>
+		/// Gets the name of an exception's type, for display or logging.
+		/// </summary>
+		/// <returns>
+		/// The type's <see cref="Type.FullName"/>, or its <see cref="MemberInfo.Name"/> when it has no full name, as
+		/// <see cref="MG.Sonarr.Next.Extensions.Reflection.TypeExtensions.extension(Type).GetName()"/> returns it; or
+		/// <see langword="null"/> when <paramref name="exception"/> is <see langword="null"/>.
+		/// </returns>
+		[return: NotNullIfNotNull(nameof(exception))]
+		internal string? GetTypeName()
+		{
+			return exception?.GetType() is Type eType ? eType.GetName() : null;
+		}
 
-        /// <summary>
-        /// Projects the <see cref="Exception"/> to a PowerShell <see cref="ErrorRecord"/>.
-        /// </summary>
-        /// <remarks>
-        ///     Only if <paramref name="exception"/> is <see langword="null"/>, will the resulting
-        ///     <see cref="ErrorRecord"/> will <see langword="null"/>.
-        /// </remarks>
-        /// <param name="exception">The exception which describes the error.</param>
-        /// <returns>
-        ///     A new <see cref="ErrorRecord"/> instance constructed from
-        ///     <paramref name="exception"/> with the default <see cref="ErrorCategory"/>.
-        /// </returns>
-        [return: NotNullIfNotNull(nameof(exception))]
-        public static ErrorRecord? ToRecord(this Exception? exception)
-        {
-            return ToRecord(exception, ErrorCategory.NotSpecified, null);
-        }
+		/// <summary>
+		/// Creates a PowerShell <see cref="ErrorRecord"/> for an exception, with the category
+		/// <see cref="ErrorCategory.NotSpecified"/> and no target object.
+		/// </summary>
+		/// <remarks>
+		/// The record's error ID is the exception's type name, as <see cref="extension(Exception?).GetTypeName()"/>
+		/// returns it.
+		/// </remarks>
+		/// <returns>
+		/// A new <see cref="ErrorRecord"/> for <paramref name="exception"/>, or <see langword="null"/> when
+		/// <paramref name="exception"/> is <see langword="null"/>.
+		/// </returns>
+		[return: NotNullIfNotNull(nameof(exception))]
+		internal ErrorRecord? ToRecord()
+		{
+			return exception.ToRecord(ErrorCategory.NotSpecified, targetObj: null);
+		}
 
-        /// <summary>
-        /// Projects the <see cref="Exception"/> to a PowerShell <see cref="ErrorRecord"/>.
-        /// </summary>
-        /// <param name="exception">The exception which describes the error.</param>
-        /// <param name="category">
-        ///     The <see cref="ErrorCategory"/> which best describes the error.
-        /// </param>
-        /// <returns>
-        ///     A new <see cref="ErrorRecord"/> instance constructed from
-        ///     <paramref name="exception"/> with the specified <see cref="ErrorCategory"/>.
-        /// </returns>
-        [return: NotNullIfNotNull(nameof(exception))]
-        public static ErrorRecord? ToRecord(this Exception? exception, ErrorCategory category)
-        {
-            return ToRecord(exception, category, null);
-        }
+		/// <summary>
+		/// Creates a PowerShell <see cref="ErrorRecord"/> for an exception, with the specified category and no target
+		/// object.
+		/// </summary>
+		/// <remarks>
+		/// The record's error ID is the exception's type name, as <see cref="extension(Exception?).GetTypeName()"/>
+		/// returns it.
+		/// </remarks>
+		/// <param name="category">The category that best describes the error.</param>
+		/// <returns>
+		/// A new <see cref="ErrorRecord"/> for <paramref name="exception"/>, or <see langword="null"/> when
+		/// <paramref name="exception"/> is <see langword="null"/>.
+		/// </returns>
+		[return: NotNullIfNotNull(nameof(exception))]
+		internal ErrorRecord? ToRecord(ErrorCategory category)
+		{
+			return exception.ToRecord(category, targetObj: null);
+		}
 
-        /// <summary>
-        /// Projects the <see cref="Exception"/> to a PowerShell <see cref="ErrorRecord"/>.
-        /// </summary>
-        /// <param name="exception">The exception which describes the error.</param>
-        /// <param name="category">
-        ///     The <see cref="ErrorCategory"/> which best describes the error.
-        /// </param>
-        /// <param name="targetObj">
-        ///     This is the object against which the cmdlet or provider was operating when the
-        ///     error occurred. This is optional.
-        /// </param>
-        /// <returns>
-        ///     A new <see cref="ErrorRecord"/> instance constructed from
-        ///     <paramref name="exception"/> with the specified <see cref="ErrorCategory"/>
-        ///     and target object.
-        /// </returns>
-        [return: NotNullIfNotNull(nameof(exception))]
-        public static ErrorRecord? ToRecord(this Exception? exception, ErrorCategory category, object? targetObj)
-        {
-            if (exception is null)
-            {
-                return null;
-            }
-
-            Type type = exception.GetType();
-            return new ErrorRecord(exception, type.FullName ?? type.Name, category, targetObj);
-        }
-    }
+		/// <summary>
+		/// Creates a PowerShell <see cref="ErrorRecord"/> for an exception, with the specified category and target
+		/// object.
+		/// </summary>
+		/// <remarks>
+		/// The record's error ID is the exception's type name, as <see cref="extension(Exception?).GetTypeName()"/>
+		/// returns it.
+		/// </remarks>
+		/// <param name="category">The category that best describes the error.</param>
+		/// <param name="targetObj">
+		/// The object that the cmdlet was acting on when the error occurred, or <see langword="null"/> for none.
+		/// </param>
+		/// <returns>
+		/// A new <see cref="ErrorRecord"/> for <paramref name="exception"/>, or <see langword="null"/> when
+		/// <paramref name="exception"/> is <see langword="null"/>.
+		/// </returns>
+		[return: NotNullIfNotNull(nameof(exception))]
+		internal ErrorRecord? ToRecord(ErrorCategory category, object? targetObj)
+		{
+			return exception is null
+				? null
+				: new ErrorRecord(
+					exception: exception,
+					errorId: exception.GetTypeName(),
+					errorCategory: category,
+					targetObject: targetObj);
+		}
+	}
 }

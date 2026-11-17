@@ -1,0 +1,72 @@
+{
+	"seriesId": 1,
+	"tvdbId": 9100101,
+	"episodeFileId": 0,
+	"seasonNumber": 1,
+	"episodeNumber": 1,
+	"title": "Pilot",
+	"airDate": "2020-01-06",
+	"airDateUtc": "2020-01-06T20:00:00Z",
+	"runtime": 30,
+	"overview": "",
+	"hasFile": false,
+	"monitored": true,
+	"unverifiedSceneNumbering": false,
+	"series": {
+		"title": "Sandbox Ended Show",
+		"sortTitle": "sandbox ended show",
+		"status": "ended",
+		"ended": true,
+		"overview": "A made-up show that the sandbox's mock metadata service serves.",
+		"network": "Sandbox Network",
+		"airTime": "20:00",
+		"images": [],
+		"originalLanguage": {
+			"id": 1,
+			"name": "English"
+		},
+		"seasons": [
+			{
+				"seasonNumber": 1,
+				"monitored": true
+			},
+			{
+				"seasonNumber": 2,
+				"monitored": true
+			}
+		],
+		"year": 2020,
+		"path": "/tv/Sandbox Ended Show",
+		"qualityProfileId": 1,
+		"seasonFolder": true,
+		"monitored": true,
+		"monitorNewItems": "all",
+		"useSceneNumbering": false,
+		"runtime": 30,
+		"tvdbId": 9000001,
+		"tvRageId": 0,
+		"tvMazeId": 0,
+		"tmdbId": 0,
+		"firstAired": "2020-01-06T00:00:00Z",
+		"lastAired": "2020-02-10T00:00:00Z",
+		"seriesType": "standard",
+		"cleanTitle": "sandboxendedshow",
+		"titleSlug": "sandbox-ended-show",
+		"certification": "TV-PG",
+		"genres": [
+			"Drama"
+		],
+		"tags": [
+			1
+		],
+		"added": "2026-11-05T13:09:09Z",
+		"ratings": {
+			"votes": 0,
+			"value": 0
+		},
+		"languageProfileId": 1,
+		"id": 1
+	},
+	"images": [],
+	"id": 1
+}

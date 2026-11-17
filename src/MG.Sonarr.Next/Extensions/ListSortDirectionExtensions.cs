@@ -1,31 +1,47 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
-namespace MG.Sonarr.Next.Extensions
+namespace MG.Sonarr.Next.Extensions;
+
+/// <summary>
+/// Provides extension blocks for <see cref="ListSortDirection"/>.
+/// </summary>
+internal static class ListSortDirectionExtensions
 {
-    /// <summary>
-    /// Custom extension methods for <see cref="ListSortDirection"/>.
-    /// </summary>
-    public static class ListSortDirectionExtensions
-    {
-        static readonly int ASCENDING_LENGTH = nameof(ListSortDirection.Ascending).Length;
-        static readonly int DESCENDING_LENGTH = nameof(ListSortDirection.Descending).Length;
+	private const int ASCENDING_LENGTH = 9;     // Number of characters in "Ascending"
+	private const int DESCENDING_LENGTH = 10;   // Number of characters in "Descending"
 
-        /// <summary>
-        /// Gets the number of characters the current <see cref="ListSortDirection"/> value consists of
-        /// if converted to a <see cref="string"/> instance.
-        /// </summary>
-        /// <param name="direction">The direction whose length is returned.</param>
-        /// <returns>
-        ///     The number of characters in the <see cref="ListSortDirection"/> value's length.
-        /// </returns>
-        public static int GetLength(this ListSortDirection direction)
-        {
-            return direction switch
-            {
-                ListSortDirection.Ascending => ASCENDING_LENGTH,
-                ListSortDirection.Descending => DESCENDING_LENGTH,
-                _ => ((int)direction).GetLength(),
-            };
-        }
-    }
+#if DEBUG
+	static ListSortDirectionExtensions()
+	{
+		Debug.Assert(ASCENDING_LENGTH == nameof(ListSortDirection.Ascending).Length, $"{nameof(ASCENDING_LENGTH)} ({ASCENDING_LENGTH}) does not match the length of {nameof(ListSortDirection)}.{nameof(ListSortDirection.Ascending)}");
+		Debug.Assert(DESCENDING_LENGTH == nameof(ListSortDirection.Descending).Length, $"{nameof(DESCENDING_LENGTH)} ({DESCENDING_LENGTH}) does not match the length of {nameof(ListSortDirection)}.{nameof(ListSortDirection.Descending)}");
+	}
+#endif
+
+	/// <summary>
+	/// Extensions for <see cref="ListSortDirection"/> values.
+	/// </summary>
+	/// <param name="direction">The direction to extend.</param>
+	extension(ListSortDirection direction)
+	{
+		/// <summary>
+		/// Gets the number of characters in the text of a sort direction, without formatting it.
+		/// </summary>
+		/// <returns>
+		/// The length of the direction's name, or, for a value that <see cref="ListSortDirection"/> doesn't name, the
+		/// length of its number in decimal, which is what <see cref="Enum.ToString()"/> writes for it.
+		/// </returns>
+		internal int Length
+		{
+			get
+			{
+				return direction switch
+				{
+					ListSortDirection.Ascending => ASCENDING_LENGTH,
+					ListSortDirection.Descending => DESCENDING_LENGTH,
+					_ => ((int)direction).GetLength(),
+				};
+			}
+		}
+	}
 }

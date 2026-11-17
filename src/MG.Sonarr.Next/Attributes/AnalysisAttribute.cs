@@ -1,13 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+namespace MG.Sonarr.Next.Attributes;
 
-namespace MG.Sonarr.Next.Attributes
-{
-    public abstract class AnalysisAttribute : Attribute
-    {
-    }
-}
-
+/// <summary>
+/// Base class for attributes that are used for code analysis purposes.
+/// </summary>
+[ExcludeFromCodeCoverage]
+public abstract class AnalysisAttribute : Attribute;

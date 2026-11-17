@@ -1,165 +1,187 @@
 using MG.Sonarr.Next.Exceptions;
+using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Services.Http;
 using MG.Sonarr.Next.Services.Http.Clients;
 using MG.Sonarr.Next.Shell.Cmdlets.Bases;
-using MG.Sonarr.Next.Models;
-using MG.Sonarr.Next.Services.Jobs;
 using MG.Sonarr.Next.Unions;
 
-namespace MG.Sonarr.Next.Shell.Cmdlets
+namespace MG.Sonarr.Next.Shell.Cmdlets;
+
+/// <summary>
+/// Provides the synchronous <c>Send*Request</c> helpers that Sonarr cmdlets send their HTTP requests to Sonarr API
+/// endpoints through.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Each helper starts the cmdlet's timer, sends the request through the <see cref="ISonarrClient"/> of the cmdlet's
+/// scope, and returns once the result is read. The client sends synchronously, on the thread that calls the helper, and
+/// puts the cmdlet in the request, so the cmdlet's verbose and debug streams report the request and its response.
+/// </para>
+/// <para>
+/// The helpers don't throw for a failed request. The result carries the error record instead, and the cmdlet decides
+/// whether to write it. Unless a caller passes a token that can be canceled, a helper sends with
+/// <see cref="Cmdlet.PipelineStopToken"/>, so stopping the pipeline, as Ctrl+C does, ends a request in flight,
+/// and its result reports the error with the category <see cref="ErrorCategory.OperationStopped"/>.
+/// </para>
+/// </remarks>
+[DebuggerStepThrough]
+public abstract class SonarrApiCmdletBase : TimedCmdlet
 {
-    /// <summary>
-    /// An <see langword="abstract"/>, base class for Sonarr cmdlets that issue HTTP requests to Sonarr API
-    /// endpoints.
-    /// </summary>
-    [DebuggerStepThrough]
-    public abstract class SonarrApiCmdletBase : TimedCmdlet
-    {
-        private ISonarrClient _client = null!;
-        private ApiCmdletQueue _queue = null!;
+	private ISonarrClient _client = null!;
 
-        private protected override void OnCreatingScopeInternal(IServiceProvider provider)
-        {
-            base.OnCreatingScopeInternal(provider);
-            _client = provider.GetRequiredService<ISonarrClient>();
-            _queue = provider.GetRequiredService<ApiCmdletQueue>();
-        }
+	/// <summary>
+	/// Runs the base class's setup for a new scope and then resolves the scope's <see cref="ISonarrClient"/>, which the
+	/// <c>Send*Request</c> helpers send through.
+	/// </summary>
+	/// <remarks>
+	/// It runs before <see cref="SonarrCmdletBase.OnCreatingScope(IServiceProvider)"/>, so a derived cmdlet can send
+	/// requests from there.
+	/// </remarks>
+	/// <param name="provider">The scoped service provider of the cmdlet.</param>
+	/// <exception cref="InvalidOperationException">Thrown when the scope has no <see cref="ISonarrClient"/>.</exception>
+	private protected override void OnCreatingScopeInternal(IServiceProvider provider)
+	{
+		base.OnCreatingScopeInternal(provider);
+		_client = provider.GetRequiredService<ISonarrClient>();
+	}
 
-        /// <summary>
-        /// Sends a DELETE Http request to the specified Sonarr API endpoint.
-        /// </summary>
-        /// <param name="path">The relative URL path of the API endpoint.</param>
-        /// <param name="token"></param>
-        /// <returns>
-        ///     A response object indicating the status code and any errors that may have occurred.
-        /// </returns>
-        protected SonarrClientResult SendDeleteRequest(string path, CancellationToken token = default)
-        {
-            this.StartTimer();
-            _queue.Enqueue(this);
+	/// <summary>
+	/// Gets the token that a request sends with: the specified one when it can be canceled, and
+	/// <see cref="Cmdlet.PipelineStopToken"/> otherwise, so that stopping the pipeline ends the request.
+	/// </summary>
+	/// <param name="token">The token that the caller passed, or <see langword="default"/>.</param>
+	/// <returns>The token to send the request with.</returns>
+	private CancellationToken GetRequestToken(CancellationToken token)
+	{
+		return token.CanBeCanceled ? token : this.PipelineStopToken;
+	}
 
-            return _client.SendDeleteAsync(path, token).GetAwaiter().GetResult();
-        }
+	/// <summary>
+	/// Sends a DELETE HTTP request to the specified Sonarr API endpoint.
+	/// </summary>
+	/// <param name="path">The relative URL path of the API endpoint.</param>
+	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
+	/// <returns>
+	///     A response object indicating the status code and any errors that may have occurred.
+	/// </returns>
+	protected SonarrClientResult SendDeleteRequest(string path, CancellationToken token = default)
+	{
+		this.StartTimer();
 
-        /// <summary>
-        /// Sends a GET Http request to the specified Sonarr API endpoint.
-        /// </summary>
-        /// <typeparam name="T">The type of object the response's content will be deserialized as.</typeparam>
-        /// <param name="path">The relative URL path of the API endpoint.</param>
-        /// <param name="token"></param>
-        /// <returns>
-        ///     A response object indicating the status code and any errors that may have occurred.
-        /// </returns>
-        protected SonarrClientResult<T> SendGetRequest<T>(string path, CancellationToken token = default)
-        {
-            this.StartTimer();
-            _queue.Enqueue(this);
-            return _client.SendGetAsync<T>(path, token).GetAwaiter().GetResult();
-        }
+		return _client.SendDelete(path, this.GetRequestToken(token));
+	}
 
-        /// <summary>
-        /// Sends a POST Http request to the specified Sonarr API endpoint with no body in the request but deserializes 
-        /// the response as the specified type <typeparamref name="T"/>.
-        /// </summary>
-        /// <typeparam name="T">The type of object to deserialize the response's content to.</typeparam>
-        /// <param name="path"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        protected SonarrClientResult<T> SendPostRequest<T>(string path, CancellationToken token = default)
-        {
-            this.StartTimer();
-            _queue.Enqueue(this);
-            return _client.SendPostAsync<T>(path, token).GetAwaiter().GetResult();
-        }
-        /// <summary>
-        /// Sends a POST Http request to the specified Sonarr API endpoint with the specified object 
-        /// of type <typeparamref name="T"/> JSON-serialized into the request's body.
-        /// </summary>
-        /// <typeparam name="T">The type of object the request body will serialized from.</typeparam>
-        /// <param name="path">The relative URL path of the API endpoint.</param>
-        /// <param name="body">The body to serialize into the request's body.</param>
-        /// <param name="token"></param>
-        /// <returns>
-        ///     A response object indicating the status code and any errors that may have occurred.
-        /// </returns>
-        protected SonarrClientResult SendPostRequest<T>(string path, T body, CancellationToken token = default) where T : notnull
-        {
-            this.StartTimer();
-            _queue.Enqueue(this);
-            return _client.SendPostAsync(path, body, token).GetAwaiter().GetResult();
-        }
-        /// <summary>
-        /// Sends a POST Http request to the specified Sonarr API endpoint with the specified object 
-        /// of type <typeparamref name="T"/> JSON-serialized into the request's body.
-        /// </summary>
-        /// <typeparam name="TBody">The type of object the request body will serialized from.</typeparam>
-        /// <typeparam name="TOutput">The type of object the response's content will be deserialized as.</typeparam>
-        /// <param name="path">The relative URL path of the API endpoint.</param>
-        /// <param name="body">The body to serialize into the request's body.</param>
-        /// <param name="token"></param>
-        /// <returns>
-        ///     A <see cref="OneOf{T0, T1}"/> object that can either be the deserialized HTTP response or
-        ///     an <see cref="SonarrErrorRecord"/>.
-        /// </returns>
-        protected Either<TOutput, SonarrErrorRecord> SendPostRequest<TBody, TOutput>(string path, TBody body, CancellationToken token = default) where TBody : notnull
-        {
-            this.StartTimer();
-            _queue.Enqueue(this);
-            SonarrClientResult<TOutput> response = _client.SendPostAsync<TBody, TOutput>(path, body, token).GetAwaiter().GetResult();
-            return !response.IsError
-                ? response.Value
-                : response.Error;
-        }
-        /// <summary>
-        /// Sends a PUT Http request to the specified Sonarr API endpoint with the specified object 
-        /// of type <typeparamref name="T"/> JSON-serialized into the request's body.
-        /// </summary>
-        /// <typeparam name="T">The type of object the request body will serialized from.</typeparam>
-        /// <param name="path">The relative URL path of the API endpoint.</param>
-        /// <param name="body">The body to serialize into the request's body.</param>
-        /// <param name="token"></param>
-        /// <returns>
-        ///     A response object indicating the status code and any errors that may have occurred.
-        /// </returns>
-        protected SonarrClientResult SendPutRequest<T>(string path, T body , CancellationToken token = default)
-            where T : notnull
-        {
-            this.StartTimer();
-            _queue.Enqueue(this);
-            return _client.SendPutAsync(path, body, token).GetAwaiter().GetResult();
-        }
+	/// <summary>
+	/// Sends a GET HTTP request to the specified Sonarr API endpoint and deserializes the response's body.
+	/// </summary>
+	/// <remarks>
+	/// A value that is an <see cref="MG.Sonarr.Next.Json.IJsonMetadataTaggable"/> gets its metadata tag, and a list of more than one item
+	/// that can be sorted is sorted.
+	/// </remarks>
+	/// <typeparam name="T">The type of object the response's content will be deserialized as.</typeparam>
+	/// <param name="path">The relative URL path of the API endpoint.</param>
+	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
+	/// <returns>
+	///     A response object indicating the status code and any errors that may have occurred.
+	/// </returns>
+	protected SonarrClientResult<T> SendGetRequest<T>(string path, CancellationToken token = default)
+		where T : class
+	{
+		this.StartTimer();
+		return _client.SendGet<T>(path, this.GetRequestToken(token));
+	}
 
-        /// <summary>
-        /// Attempts to commit or reset properties of the <typeparamref name="T"/> object depending on if
-        /// the accompanying <see cref="SonarrClientResult"/> indicates an error occurred.
-        /// </summary>
-        /// <typeparam name="T">The type of <see cref="SonarrObject"/> to process.</typeparam>
-        /// <param name="sonarrObj">
-        /// The <see cref="SonarrObject"/> whose properties can be
-        /// either committed or reset.
-        /// </param>
-        /// <param name="response">
-        /// The response from the Sonarr API call and whose
-        /// <see cref="SonarrClientResult.IsError"/> property determines the action taken on 
-        /// the properties of <paramref name="sonarrObj"/>.
-        /// </param>
-        /// <returns>
-        /// <see langword="true"/> if <paramref name="sonarrObj"/> had it properties committed, indicating
-        /// a successful operation; otherwise, <see langword="false"/> indicating an error occurred.
-        /// </returns>
-        protected bool TryCommitFromResponse<T>(T sonarrObj, SonarrClientResult response) where T : SonarrObject
-        {
-            if (response.IsError)
-            {
-                sonarrObj.Reset();
-                this.WriteError(response.Error);
-                return false;
-            }
-            else
-            {
-                sonarrObj.Commit();
-                return true;
-            }
-        }
-    }
+	/// <summary>
+	/// Sends a POST HTTP request without a body to the specified Sonarr API endpoint and deserializes the response's
+	/// body as <typeparamref name="T"/>.
+	/// </summary>
+	/// <typeparam name="T">The type of object to deserialize the response's content to.</typeparam>
+	/// <param name="path">The endpoint's path, relative to the API.</param>
+	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
+	/// <returns>The result of the request, which holds the deserialized value on success.</returns>
+	protected SonarrClientResult<T> SendPostRequest<T>(string path, CancellationToken token = default)
+		where T : class
+	{
+		this.StartTimer();
+		return _client.SendPost<T>(path, this.GetRequestToken(token));
+	}
+	/// <summary>
+	/// Sends a POST request with the specified body to the specified Sonarr API endpoint.
+	/// </summary>
+	/// <param name="path">The endpoint's path, relative to the API.</param>
+	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
+	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
+	/// <returns>The result of the request.</returns>
+	protected SonarrClientResult SendPostRequest(string path, object body, CancellationToken token = default)
+	{
+		this.StartTimer();
+		return _client.SendPost(path, body, this.GetRequestToken(token));
+	}
+	/// <summary>
+	/// Sends a POST request with the specified body to the specified Sonarr API endpoint and deserializes the response's
+	/// body.
+	/// </summary>
+	/// <typeparam name="TOutput">The type to deserialize the response's body as.</typeparam>
+	/// <param name="path">The endpoint's path, relative to the API.</param>
+	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
+	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
+	/// <returns>The deserialized value on success; otherwise, the error record that describes the failure.</returns>
+	protected ObjEither<TOutput, SonarrErrorRecord> SendPostRequest<TOutput>(string path, object body, CancellationToken token = default)
+		where TOutput : class
+	{
+		this.StartTimer();
+		SonarrClientResult<TOutput> response = _client.SendPost<TOutput>(path, body, this.GetRequestToken(token));
+		return !response.IsError
+			? response.Value
+			: response.Error;
+	}
+	/// <summary>
+	/// Sends a PUT request with the specified body to the specified Sonarr API endpoint.
+	/// </summary>
+	/// <param name="path">The endpoint's path, relative to the API.</param>
+	/// <param name="body">The object to send as the request's JSON body, which is serialized by its runtime type.</param>
+	/// <param name="token">A token that cancels the request, or <see langword="default"/> to cancel it when the pipeline is stopped.</param>
+	/// <returns>The result of the request.</returns>
+	protected SonarrClientResult SendPutRequest(string path, object body, CancellationToken token = default)
+	{
+		this.StartTimer();
+		return _client.SendPut(path, body, this.GetRequestToken(token));
+	}
+
+	/// <summary>
+	/// Commits the properties of the specified object when the response reports success, or resets them and writes the
+	/// response's error when it reports a failure.
+	/// </summary>
+	/// <remarks>
+	/// Serializing a model for a request body can change its properties, and committing or resetting it brings it back
+	/// in step afterward. The error is written whether or not it's ignorable, and <c>-ErrorAction</c> decides what
+	/// happens to it.
+	/// </remarks>
+	/// <param name="sonarrObj">
+	/// The <see cref="SonarrObject"/> whose properties can be
+	/// either committed or reset.
+	/// </param>
+	/// <param name="response">
+	/// The response from the Sonarr API call and whose
+	/// <see cref="SonarrClientResult.IsError"/> property determines the action taken on 
+	/// the properties of <paramref name="sonarrObj"/>.
+	/// </param>
+	/// <returns>
+	/// <see langword="true"/> if <paramref name="sonarrObj"/> had its properties committed, indicating
+	/// a successful operation; otherwise, <see langword="false"/> indicating an error occurred.
+	/// </returns>
+	protected bool TryCommitFromResponse(SonarrObject sonarrObj, SonarrClientResult response)
+	{
+		if (response.IsError)
+		{
+			sonarrObj.Reset();
+			this.WriteError(response.Error);
+			return false;
+		}
+		else
+		{
+			sonarrObj.Commit();
+			return true;
+		}
+	}
 }

@@ -1,73 +1,119 @@
-using System.Buffers;
+namespace MG.Sonarr.Next.Models;
 
-namespace MG.Sonarr.Next.Models
+/// <summary>
+/// Represents text that's cut short after a word and ended with three periods that mark what's left out, such as a
+/// series' short overview.
+/// </summary>
+public readonly struct ShortOverview
 {
-    public readonly struct ShortOverview
-    {
-        const int MAX_SPAN_LENGTH = 1_000;
-        readonly bool _isNotEmpty;
-        readonly string? _text;
+	/// <summary>
+	/// The three periods that end the shortened text.
+	/// </summary>
+	//const string ELLIPSIS = "...";
+	private static ReadOnlySpan<char> _ellipsis => ['.', '.', '.'];
 
-        public bool IsEmpty => !_isNotEmpty;
-        public string Text => _text ?? string.Empty;
+	/// <summary>
+	/// The shortened text, or <see langword="null"/> for a default instance.
+	/// </summary>
+	private readonly string? _text;
 
-        private ShortOverview(string text)
-        {
-            _text = text;
-            _isNotEmpty = !string.IsNullOrWhiteSpace(text);
-        }
+	/// <summary>
+	/// Gets a value that indicates whether the shortened text is empty.
+	/// </summary>
+	/// <value>
+	/// <see langword="true"/> if the text is empty or consists only of white space, or the instance is the default
+	/// one; otherwise, <see langword="false"/>.
+	/// </value>
+	[MemberNotNullWhen(false, nameof(_text))]
+	public bool IsEmpty => string.IsNullOrEmpty(_text);
+	/// <summary>
+	/// Gets the shortened text.
+	/// </summary>
+	/// <value>The shortened text, or <see cref="string.Empty"/> for a default instance.</value>
+	public string Text => _text ?? string.Empty;
 
-        public static ShortOverview FromValue(ReadOnlySpan<char> text, int howLong)
-        {
-            string shorted = Truncate(text, howLong);
-            return new ShortOverview(shorted);
-        }
+	/// <summary>
+	/// Initializes a new <see cref="ShortOverview"/> instance that holds the specified shortened text.
+	/// </summary>
+	/// <param name="text">The text, already shortened.</param>
+	private ShortOverview(string? text)
+	{
+		_text = text ?? string.Empty;
+	}
 
-        private static string Truncate(ReadOnlySpan<char> text, int shortenedLength)
-        {
-            bool isRented = false;
-            char[]? array = null;
-            Span<char> threeDots = stackalloc char[3];
-            threeDots.Fill('.');
+	/// <summary>
+	/// Creates a <see cref="ShortOverview"/> from text, cut after the word that the specified length ends in.
+	/// </summary>
+	/// <remarks>
+	/// The text keeps its first <paramref name="howLong"/> characters and the rest of the word that they end in, with
+	/// white space trimmed from both ends. It ends with three periods when that leaves some of the text out, and the
+	/// periods mark what's left out, so text whose last word the cut lands in, and text that only white space follows,
+	/// comes back whole and without them.
+	/// </remarks>
+	/// <param name="text">The text to shorten.</param>
+	/// <param name="howLong">
+	/// The number of characters to keep before looking for the end of a word, from 1 through the length of
+	/// <paramref name="text"/>.
+	/// </param>
+	/// <returns>The shortened text.</returns>
+	/// <exception cref="ArgumentOutOfRangeException">
+	/// Thrown when <paramref name="howLong"/> is less than 1 or greater than the length of <paramref name="text"/>.
+	/// </exception>
+	public static ShortOverview FromValue(ReadOnlySpan<char> text, int howLong)
+	{
+		ArgumentOutOfRangeException.ThrowIfNegativeOrZero(howLong);
+		ArgumentOutOfRangeException.ThrowIfGreaterThan(howLong, text.Length);
 
-            int useLength = text.Length + threeDots.Length;
+		string shorted;
+		unsafe
+		{
+			// SAFETY: The checks above keep howLong from 1 to text.Length.
+			shorted = Truncate(text, howLong);
+		}
 
-            Span<char> span = useLength <= MAX_SPAN_LENGTH
-                ? stackalloc char[useLength]
-                : RentArray(useLength, ref isRented, ref array);
+		return new ShortOverview(shorted);
+	}
 
-            text.Slice(0, shortenedLength).CopyTo(span);
-            int position = shortenedLength;
+	/// <summary>
+	/// Cuts text after the word that the specified length ends in, and ends it with three periods when the cut leaves
+	/// some of the text out.
+	/// </summary>
+	/// <remarks>
+	/// <para>The word runs to the first white space at or after the last kept character, and the periods take that white
+	/// space's place. When no white space follows, the text is kept to its end, and when only white space follows, the
+	/// cut leaves nothing out, so in both cases no periods are added.</para>
+	/// <para>The kept text is trimmed of white space at both ends, so the periods never follow white space.</para>
+	/// <para>The kept text is copied once, straight into the new string, with no buffer in between.</para>
+	/// </remarks>
+	/// <safety>
+	/// <paramref name="shortenedLength"/> must be from 1 to the length of <paramref name="text"/>.
+	/// </safety>
+	/// <param name="text">The text to shorten.</param>
+	/// <param name="shortenedLength">
+	/// The number of characters to keep before looking for the end of a word, from 1 through the length of
+	/// <paramref name="text"/>.
+	/// </param>
+	/// <returns>
+	/// The kept text, with white space trimmed from both ends, followed by three periods when some of the text was left
+	/// out.
+	/// </returns>
+	[SuppressMessage("Style", "IDE0380", Justification = "Slices the text without range checks, so a length outside 1 through the text's length reads memory outside it.")]
+	private static unsafe string Truncate(ReadOnlySpan<char> text, int shortenedLength)
+	{
+		int end = shortenedLength - 1;
+		while ((uint)end < (uint)text.Length && !char.IsWhiteSpace(text[end]))
+		{
+			end++;
+		}
 
-            while (!char.IsWhiteSpace(span[position - 1]) && position < text.Length)
-            {
-                int current = position;
-                span[current] = text[current];
-                position++;
-            }
-
-            if (!char.IsWhiteSpace(span[position - 1]))
-            {
-                position++;
-            }
-
-            threeDots.CopyTo(span.Slice(position - 1));
-            position += threeDots.Length - 1;
-
-            string s = new string(span.Slice(0, position).Trim());
-            if (isRented)
-            {
-                ArrayPool<char>.Shared.Return(array!);
-            }
-
-            return s;
-        }
-        private static Span<char> RentArray(int length, ref bool isRented, ref char[]? array)
-        {
-            array = ArrayPool<char>.Shared.Rent(length);
-            isRented = true;
-            return array.AsSpan(0, length);
-        }
-    }
+		unsafe
+		{
+			// SAFETY: The caller keeps shortenedLength from 1 to text.Length, as the safety contract requires, so end
+			// starts within text, and the loop stops it at text.Length at most.
+			ReadOnlySpan<char> kept = text.UnsafeSlice(0, end).Trim();
+			return text.UnsafeSlice(end).IsWhiteSpace()
+				? new string(kept)
+				: string.Concat(kept, _ellipsis);
+		}
+	}
 }
-

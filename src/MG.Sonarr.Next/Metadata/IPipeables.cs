@@ -1,181 +1,230 @@
-﻿using MG.Sonarr.Next.Models;
 using MG.Sonarr.Next.Json;
+using MG.Sonarr.Next.Models;
 
-namespace MG.Sonarr.Next.Metadata
+namespace MG.Sonarr.Next.Metadata;
+
+/// <summary>
+/// Represents an object that can be piped to a cmdlet, which acts on the ID that the object gives.
+/// </summary>
+/// <remarks>
+/// A cmdlet parameter typed as one of the <c>I...Pipeable</c> interfaces has its input checked through
+/// <see cref="GetId"/> before the cmdlet sees it, so the ID that <see cref="GetId"/> returns is the one that the
+/// interface's own property exposes.
+/// </remarks>
+/// <typeparam name="T">The pipeable interface that the ID is for, which lets a model give a different ID to each
+/// interface that it implements.</typeparam>
+public interface IPipeable<T> : IJsonSonarrMetadata
 {
-    public interface IPipeable<TSelf> : IJsonSonarrMetadata
-    {
-        int? GetId();
-    }
+	/// <summary>
+	/// Gets the ID that a cmdlet taking the object through <typeparamref name="T"/> acts on.
+	/// </summary>
+	/// <returns>
+	/// The ID, or <see langword="null"/> when the object has none for <typeparamref name="T"/>.
+	/// </returns>
+	int? GetId();
+}
 
-    public interface IValidatableId<TPipeable> where TPipeable : IPipeable<TPipeable>
-    {
-        static virtual int? GetValidatableId(TPipeable pipeable)
-        {
-            return pipeable.GetId();
-        }
-    }
+/// <summary>
+/// Represents a series that can be piped to a cmdlet that gets the series' episodes from the <c>/episode</c>
+/// endpoint.
+/// </summary>
+public interface IEpisodeBySeriesPipeable : IJsonSonarrMetadata,
+	IPipeable<IEpisodeBySeriesPipeable>
+{
+	/// <summary>
+	/// Gets the ID of the series.
+	/// </summary>
+	/// <value>The series' ID.</value>
+	int SeriesId { get; }
+	/// <summary>
+	/// Gets the title of the series.
+	/// </summary>
+	/// <value>The series' display title.</value>
+	string Title { get; }
+}
+/// <summary>
+/// Represents an object that can be piped to a cmdlet that gets an episode from the <c>/episode</c> endpoint.
+/// </summary>
+public interface IEpisodePipeable : IJsonSonarrMetadata,
+	IPipeable<IEpisodePipeable>
+{
+	/// <summary>
+	/// Gets the ID of the episode.
+	/// </summary>
+	/// <value>The episode's ID.</value>
+	int EpisodeId { get; }
+}
+/// <summary>
+/// Represents an object that can be piped to a cmdlet that acts on an episode file through the <c>/episodefile</c>
+/// endpoint.
+/// </summary>
+public interface IEpisodeFilePipeable : IJsonSonarrMetadata,
+	IPipeable<IEpisodeFilePipeable>
+{
+	/// <summary>
+	/// Gets the ID of the episode file.
+	/// </summary>
+	/// <value>The episode file's ID.</value>
+	int EpisodeFileId { get; }
+}
+/// <summary>
+/// Represents a series that can be piped to a cmdlet that gets the series' episode files from the
+/// <c>/episodefile</c> endpoint.
+/// </summary>
+public interface IEpisodeFileBySeriesPipeable : IJsonSonarrMetadata,
+	IPipeable<IEpisodeFileBySeriesPipeable>
+{
+	/// <summary>
+	/// Gets the ID of the series.
+	/// </summary>
+	/// <value>The series' ID.</value>
+	int SeriesId { get; }
+}
+/// <summary>
+/// Represents an object that can be piped to a cmdlet that gets a language profile from the
+/// <c>/languageprofile</c> endpoint.
+/// </summary>
+public interface ILanguageProfilePipeable : IJsonMetadataTaggable,
+	IPipeable<ILanguageProfilePipeable>
+{
+	/// <summary>
+	/// Gets the ID of the language profile.
+	/// </summary>
+	/// <value>The language profile's ID.</value>
+	int LanguageProfileId { get; }
+}
+/// <summary>
+/// Represents an object that can be piped to a cmdlet that gets a quality profile from the <c>/qualityprofile</c>
+/// endpoint.
+/// </summary>
+public interface IQualityProfilePipeable : IJsonMetadataTaggable,
+	IPipeable<IQualityProfilePipeable>
+{
+	/// <summary>
+	/// Gets the ID of the quality profile.
+	/// </summary>
+	/// <value>The quality profile's ID.</value>
+	int QualityProfileId { get; }
+}
+/// <summary>
+/// Represents an episode that can be piped to a cmdlet that searches the <c>/release</c> endpoint for its releases.
+/// </summary>
+public interface IReleasePipeableByEpisode : IJsonMetadataTaggable,
+	IPipeable<IReleasePipeableByEpisode>
+{
+	/// <summary>
+	/// Gets the ID of the episode.
+	/// </summary>
+	/// <value>The episode's ID.</value>
+	int EpisodeId { get; }
+}
+/// <summary>
+/// Represents a series that can be piped to a cmdlet that searches the <c>/release</c> endpoint for its releases.
+/// </summary>
+public interface IReleasePipeableBySeries : IJsonMetadataTaggable,
+	IPipeable<IReleasePipeableBySeries>
+{
+	/// <summary>
+	/// Gets the ID of the series.
+	/// </summary>
+	/// <value>The series' ID.</value>
+	int SeriesId { get; }
+}
+/// <summary>
+/// Represents an episode file that can be piped to a cmdlet that renames it.
+/// </summary>
+/// <remarks>
+/// <see cref="IPipeable{T}.GetId"/> returns <see cref="EpisodeFileId"/>. <see cref="SeriesId"/> names the series
+/// that the file's rename is sent for.
+/// </remarks>
+public interface IRenameFilePipeable : IJsonMetadataTaggable,
+	IPipeable<IRenameFilePipeable>
+{
+	/// <summary>
+	/// Gets the ID of the episode file.
+	/// </summary>
+	/// <value>The episode file's ID.</value>
+	int EpisodeFileId { get; }
+	/// <summary>
+	/// Gets the ID of the series that the episode file belongs to.
+	/// </summary>
+	/// <value>The series' ID.</value>
+	int SeriesId { get; }
+}
+/// <summary>
+/// Represents an object that can be piped to a cmdlet that acts on a series through the <c>/series</c> endpoint.
+/// </summary>
+public interface ISeriesPipeable : IJsonSonarrMetadata,
+	IPipeable<ISeriesPipeable>
+{
+	/// <summary>
+	/// Gets the ID of the series.
+	/// </summary>
+	/// <value>The series' ID.</value>
+	int SeriesId { get; }
+}
+/// <summary>
+/// Represents an object with tags that can be piped to the cmdlets that read and change its tags.
+/// </summary>
+public interface ITagPipeable : IHasId, IJsonSonarrMetadata,
+	IPipeable<ITagPipeable>
+{
+	/// <summary>
+	/// Gets a value that indicates whether <see cref="Tags"/> holds the object's tags.
+	/// </summary>
+	/// <remarks>
+	/// A cmdlet reads or changes the object's tags through <see cref="Tags"/> only when this is <see langword="true"/>.
+	/// </remarks>
+	/// <value>
+	/// <see langword="true"/> if <see cref="Tags"/> holds the IDs of the object's tags; <see langword="false"/> if the
+	/// object's <c>Tags</c> property holds values that weren't read as tag IDs, which <see cref="Tags"/> doesn't hold,
+	/// and which a change to <see cref="Tags"/> doesn't reach.
+	/// </value>
+	bool HasReadableTags { get; }
 
-    /// <summary>
-    /// An interface exposing the SeriesId property for piping to the /episode endpoint.
-    /// </summary>
-    public interface IEpisodeBySeriesPipeable : IJsonSonarrMetadata,
-        IPipeable<IEpisodeBySeriesPipeable>,
-        IValidatableId<IEpisodeBySeriesPipeable>
-    {
-        /// <summary>
-        /// The series ID of the implementation.
-        /// </summary>
-        int SeriesId { get; }
+	/// <summary>
+	/// Gets a value that indicates whether a change to the object's tags must be saved with a request to Sonarr.
+	/// </summary>
+	/// <value>
+	/// <see langword="true"/> if the object exists on the server; <see langword="false"/> if it doesn't exist there
+	/// yet, such as a lookup result or a schema, whose tags are sent with the request that creates it.
+	/// </value>
+	bool MustUpdateViaApi { get; }
 
-        string Title { get; }
-    }
-    /// <summary>
-    /// An interface exposing the EpisodeId property for piping to the /episode endpoint.
-    /// </summary>
-    public interface IEpisodePipeable : IJsonSonarrMetadata,
-        IPipeable<IEpisodePipeable>,
-        IValidatableId<IEpisodePipeable>
-    {
-        /// <summary>
-        /// The episode ID of the implementation.
-        /// </summary>
-        int EpisodeId { get; }
-    }
-    /// <summary>
-    /// An interface exposing the EpisodeFileId property for piping to the /episodefile endpoint.
-    /// </summary>
-    public interface IEpisodeFilePipeable : IJsonSonarrMetadata,
-        IPipeable<IEpisodeFilePipeable>,
-        IValidatableId<IEpisodeFilePipeable>
-    {
-        /// <summary>
-        /// The episode file ID of the implementation.
-        /// </summary>
-        int EpisodeFileId { get; }
-    }
-    /// <summary>
-    /// An interface exposing the SeriesId property for piping to the /episodefile endpoint.
-    /// </summary>
-    public interface IEpisodeFileBySeriesPipeable : IJsonSonarrMetadata,
-        IPipeable<IEpisodeFileBySeriesPipeable>,
-        IValidatableId<IEpisodeFileBySeriesPipeable>
-    {
-        /// <summary>
-        /// The series ID of the implementation.
-        /// </summary>
-        int SeriesId { get; }
-    }
-    /// <summary>
-    /// An interface exposing the LanguageProfileId property for piping to the /languageprofile endpoint.
-    /// </summary>
-    public interface ILanguageProfilePipeable : IJsonMetadataTaggable,
-        IPipeable<ILanguageProfilePipeable>,
-        IValidatableId<ILanguageProfilePipeable>
-    {
-        /// <summary>
-        /// The language profile ID of the implementation.
-        /// </summary>
-        int LanguageProfileId { get; }
-    }
-    /// <summary>
-    /// An interface exposing the QualityProfileId property for piping to the /qualityprofile endpoint.
-    /// </summary>
-    public interface IQualityProfilePipeable : IJsonMetadataTaggable,
-        IPipeable<IQualityProfilePipeable>,
-        IValidatableId<IQualityProfilePipeable>
-    {
-        /// <summary>
-        /// The quality profile ID of the implementation.
-        /// </summary>
-        int QualityProfileId { get; }
-    }
-    /// <summary>
-    /// An interface exposing the EpisodeId property for piping to the /release endpoint.
-    /// </summary>
-    public interface IReleasePipeableByEpisode : IJsonMetadataTaggable,
-        IPipeable<IReleasePipeableByEpisode>,
-        IValidatableId<IReleasePipeableByEpisode>
-    {
-        /// <summary>
-        /// The episode ID of the implementation.
-        /// </summary>
-        int EpisodeId { get; }
-    }
-    /// <summary>
-    /// An inteface exposing the SeriesId property for piping to the /release endpoint.
-    /// </summary>
-    public interface IReleasePipeableBySeries : IJsonMetadataTaggable,
-        IPipeable<IReleasePipeableBySeries>,
-        IValidatableId<IReleasePipeableBySeries>
-    {
-        /// <summary>
-        /// The series ID of the implementation.
-        /// </summary>
-        int SeriesId { get; }
-    }
-    public interface IRenameFilePipeable : IJsonMetadataTaggable,
-        IPipeable<IRenameFilePipeable>,
-        IValidatableId<IRenameFilePipeable>
-    {
-        int EpisodeFileId { get; }
-        int SeriesId { get; }
-    }
-    /// <summary>
-    /// An interface exposing the SeriesId property for piping to the /series endpoint.
-    /// </summary>
-    public interface ISeriesPipeable : IJsonSonarrMetadata,
-        IPipeable<ISeriesPipeable>,
-        IValidatableId<ISeriesPipeable>
-    {
-        /// <summary>
-        /// The series ID of the implementation.
-        /// </summary>
-        int SeriesId { get; }
-    }
-    /// <summary>
-    /// An interface exposing properties and methods for piping to the /tag endpoint.
-    /// </summary>
-    public interface ITagPipeable : IHasId, IJsonSonarrMetadata,
-        IPipeable<ITagPipeable>,
-        IValidatableId<ITagPipeable>
-    {
-        /// <summary>
-        /// Indicates that tag changes must be saved via a Sonarr API request.
-        /// </summary>
-        /// <remarks>
-        ///     This will be <see langword="false"/> for objects that have not been created yet on the Sonarr server side 
-        ///     or are simply scaffolding (schema) objects.
-        /// </remarks>
-        bool MustUpdateViaApi { get; }
+	/// <summary>
+	/// Gets the IDs of the object's tags.
+	/// </summary>
+	/// <value>The set of tag IDs, which a change to the object's tags edits in place.</value>
+	ISet<int> Tags { get; }
 
-        /// <summary>
-        /// Gets the unique set of tag IDs of the implementation.
-        /// </summary>
-        ISet<int> Tags { get; }
-
-        /// <summary>
-        /// Instructs the implementation to commit any changes that may have occurred.
-        /// </summary>
-        /// <remarks>
-        ///     For instance, if a tag was successfully added to an object and an API request was successfully sent,
-        ///     the implementation should commit that pending change.
-        /// </remarks>
-        void CommitTags();
-        /// <summary>
-        /// Instructs the implementation to revert any changes that may have occurred.
-        /// </summary>
-        /// <remarks>
-        ///     For instance, if a tag was "unsuccessfully" removed during an API call, the implementation should
-        ///     re-add the tag ID back before any changes were made.
-        /// </remarks>
-        void Reset();
-    }
-
-    public interface ITestPipeable : IJsonSonarrMetadata,
-        IPipeable<ITestPipeable>,
-        IValidatableId<ITestPipeable>
-    {
-        int Id { get; }
-    }
+	/// <summary>
+	/// Makes the object's current tags the ones that <see cref="Reset"/> restores, and brings the rest of the object
+	/// back in step after a request that sends it succeeds.
+	/// </summary>
+	/// <remarks>
+	/// A cmdlet calls this after a request that saves the object's changed tags succeeds. Serializing the object for
+	/// the request can add properties to it, which this takes out again.
+	/// </remarks>
+	void Commit();
+	/// <summary>
+	/// Restores the tags that the object had when its tags were last committed, and brings the rest of the object back
+	/// to its state before a request that sends it failed.
+	/// </summary>
+	/// <remarks>
+	/// A cmdlet calls this after a request that saves the object's changed tags fails.
+	/// </remarks>
+	void Reset();
+}
+/// <summary>
+/// Represents a provider, such as a download client, an indexer, or a notification, that can be piped to the cmdlet
+/// that tests it.
+/// </summary>
+public interface ITestPipeable : IJsonSonarrMetadata,
+	IPipeable<ITestPipeable>
+{
+	/// <summary>
+	/// Gets the ID of the provider.
+	/// </summary>
+	/// <value>The provider's ID.</value>
+	int Id { get; }
 }

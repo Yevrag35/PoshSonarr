@@ -1,0 +1,8 @@
+# The test projects inherit every setting from the repository's root .editorconfig except these.
+
+[*.cs]
+
+# CA2007: xUnit.net runs each test without a SynchronizationContext and warns about ConfigureAwait(false) in a test
+# method (xUnit1030), so a test awaits plainly. Helper code that runs under a context of its own, such as a fake
+# handler under BlackHoleSynchronizationContext, still calls ConfigureAwait(false) where the context matters.
+dotnet_diagnostic.CA2007.severity = none

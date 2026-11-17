@@ -1,133 +1,407 @@
-﻿using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Collections;
+using MG.Sonarr.Next.Services.Auth;
 using MG.Sonarr.Next.Services.Http.Handlers;
 using MG.Sonarr.Next.Services.Http.Requests;
-using Microsoft.Extensions.DependencyInjection;
-using System.Management.Automation;
-using System.Net;
 
-namespace MG.Sonarr.Next.Services.Http.Clients
+namespace MG.Sonarr.Next.Services.Http.Clients;
+
+/// <summary>
+/// Provides methods that save a file that Sonarr serves, such as a backup or a log file, to a path.
+/// </summary>
+/// <remarks>
+/// <para>
+/// A relative download URL gets the connection's URL base in front of it, and one that starts with the base already, in
+/// any case, gets the base in place of its own spelling. The base is spelled as the server's status reported it, when the
+/// two match without regard to case, so the cookie of a forms login, which Sonarr scopes to the base, goes back with
+/// every download. An absolute URL goes out unchanged.
+/// </para>
+/// <para>
+/// A response whose status isn't a success gives an error result, and nothing is written, since the body of such a
+/// response isn't the file.
+/// </para>
+/// <para>
+/// No method throws for a failed download. A refused connection, a timeout, a cancellation, a failed login, and a file
+/// that can't be written each come back as a result whose <see cref="SonarrClientResult.IsError"/> is
+/// <see langword="true"/>, with the category <see cref="ErrorCategory.ConnectionError"/>,
+/// <see cref="ErrorCategory.OperationTimeout"/>, <see cref="ErrorCategory.OperationStopped"/>,
+/// <see cref="ErrorCategory.AuthenticationError"/>, or <see cref="ErrorCategory.WriteError"/>, and the message of a
+/// refused connection's error starts with the download's URL. A <see cref="PipelineStoppedException"/> isn't a failed
+/// download, so it leaves a method as it is: the sending cmdlet's own verbose or debug output throws one under a
+/// preference of <see cref="ActionPreference.Stop"/>, or when the user halts the cmdlet at an
+/// <see cref="ActionPreference.Inquire"/> prompt, to end the cmdlet's pipeline.
+/// </para>
+/// <para>
+/// Each method sends its request synchronously and returns once the file is written, so the client's handlers run on the
+/// calling thread, as a cmdlet's verbose and debug output for its download needs.
+/// </para>
+/// <para>
+/// An instance takes the cmdlet of the DI scope that resolves it, so resolve it from a scope, not from the root provider.
+/// </para>
+/// </remarks>
+public interface ISonarrDownloadClient
 {
-    public interface ISonarrDownloadClient
-    {
-        Task<SonarrClientResult<string>> DownloadToPathAsync(string url, string path, CancellationToken token = default);
-        Task<SonarrClientResult<string>> DownloadToPathAsync(string url, string path, NetworkCredential? credential, CancellationToken token = default);
-    }
+	/// <summary>
+	/// Downloads the file at the specified URL to the specified path.
+	/// </summary>
+	/// <remarks>
+	/// The overload sends no credentials, so the download fails when the server's authentication turns it away, with a 401
+	/// or with its login page, and succeeds when the server serves the client without a login.
+	/// </remarks>
+	/// <param name="url">The download URL that Sonarr gave, relative to the server or absolute.</param>
+	/// <param name="path">The path of the file to write, which the method creates or overwrites.</param>
+	/// <param name="token">A token that cancels the download.</param>
+	/// <returns>
+	/// A result that holds <paramref name="path"/> once the file is written, or an error when the download fails.
+	/// </returns>
+	SonarrClientResult<string> DownloadToPath(string url, string path, CancellationToken token = default);
+	/// <summary>
+	/// Downloads the file at the specified URL to the specified path, with the specified credentials for a server whose
+	/// authentication needs them.
+	/// </summary>
+	/// <remarks>
+	/// The credentials go out only when the server's authentication type, which the connection test stored, needs them:
+	/// in an <c>Authorization: Basic</c> header for Basic authentication, or in a login to the server's login page for
+	/// forms authentication. Without them, the download goes out as the other overload's does.
+	/// </remarks>
+	/// <param name="url">The download URL that Sonarr gave, relative to the server or absolute.</param>
+	/// <param name="path">The path of the file to write, which the method creates or overwrites.</param>
+	/// <param name="credential">
+	/// The credentials to authenticate with, whose user name goes out as it is, or <see langword="null"/> to send none.
+	/// </param>
+	/// <param name="token">A token that cancels the download.</param>
+	/// <returns>
+	/// A result that holds <paramref name="path"/> once the file is written, or an error when the download fails.
+	/// </returns>
+	SonarrClientResult<string> DownloadToPath(string url, string path, NetworkCredential? credential, CancellationToken token = default);
+}
 
-    internal sealed class SonarrDownloadClient : ISonarrDownloadClient
-    {
-        readonly HttpClient _client;
-        readonly IServiceScopeFactory _scopeFactory;
+/// <summary>
+/// Provides the <see cref="ISonarrDownloadClient"/> that downloads a connection's files through its typed
+/// <see cref="HttpClient"/>.
+/// </summary>
+/// <remarks>
+/// The client's handler chain has no <see cref="PathHandler"/>, so the client puts the URL base in front of a relative
+/// URL itself.
+/// </remarks>
+internal sealed class SonarrDownloadClient : ISonarrDownloadClient
+{
+	/// <summary>
+	/// The message of the exception that an error response, or a successful one with an empty body, gives.
+	/// </summary>
+	private const string NO_FILE_MESSAGE = "The Sonarr server didn't return the file.";
 
-        public SonarrDownloadClient(HttpClient client, IServiceScopeFactory scopeFactory)
-        {
-            _client = client;
-            _scopeFactory = scopeFactory;
-        }
+	/// <summary>
+	/// The connection's URL base, spelled as the server spells it when the two match without regard to case, with its
+	/// leading slash and without its trailing one, or an empty string when the connection has none.
+	/// </summary>
+	private readonly string _basePath;
+	/// <summary>
+	/// The typed client that sends the download requests.
+	/// </summary>
+	private readonly HttpClient _client;
+	/// <summary>
+	/// The accessor that holds the cmdlet of the scope that resolved the client.
+	/// </summary>
+	private readonly ApiCmdletAccessor _cmdletAccessor;
+	/// <summary>
+	/// The factory that each request message opens its scope from.
+	/// </summary>
+	private readonly IServiceScopeFactory _scopeFactory;
 
-        public async Task<SonarrClientResult<string>> DownloadToPathAsync(string url, string path, CancellationToken token = default)
-        {
-            using ApiKeyRequestMessage msg = new(HttpMethod.Get, url, _scopeFactory);
+	/// <summary>
+	/// Initializes a new <see cref="SonarrDownloadClient"/> instance with the specified typed client and the connection's
+	/// services.
+	/// </summary>
+	/// <param name="client">The typed client that sends the download requests.</param>
+	/// <param name="settings">
+	/// The connection's settings, whose service URI gives the URL base, and whose server URL base gives its spelling.
+	/// </param>
+	/// <param name="cmdletAccessor">The accessor of the resolving scope, which holds the scope's cmdlet.</param>
+	/// <param name="scopeFactory">The factory that each request message opens its scope from.</param>
+	public SonarrDownloadClient(HttpClient client, IConnectionSettings settings, ApiCmdletAccessor cmdletAccessor, IServiceScopeFactory scopeFactory)
+	{
+		_basePath = settings.GetUrlBase();
+		_client = client;
+		_cmdletAccessor = cmdletAccessor;
+		_scopeFactory = scopeFactory;
+	}
 
-            HttpResponseMessage response = null!;
-            try
-            {
-                try
-                {
-                    response = await _client.SendAsync(msg, token).ConfigureAwait(false);
-                }
-                catch (SonarrHttpException ex)
-                {
-                    var result = SonarrClientResult.FromException<string>(ex, ErrorCategory.InvalidResult, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
-                    if (string.IsNullOrEmpty(result.RequestUrl))
-                    {
-                        result.RequestUrl = url;
-                    }
+	/// <inheritdoc/>
+	public SonarrClientResult<string> DownloadToPath(string url, string path, CancellationToken token = default)
+	{
+		using ApiKeyRequestMessage msg = new(HttpMethod.Get, this.AddUrlBase(url), _scopeFactory);
 
-                    return result;
-                }
+		return this.Download(msg, url, path, token);
+	}
+	/// <inheritdoc/>
+	public SonarrClientResult<string> DownloadToPath(string url, string path, NetworkCredential? credential, CancellationToken token = default)
+	{
+		using AuthedRequestMessage msg = new(HttpMethod.Get, this.AddUrlBase(url), credential, _scopeFactory);
 
-                bool written = await WriteFileAsync(response, path, token).ConfigureAwait(false);
+		return this.Download(msg, url, path, token);
+	}
 
-                return written
-                    ? SonarrClientResult.Create(path, response, url)
-                    : SonarrClientResult.FromException<string>(new SonarrHttpException(msg, response, ErrorCollection.Empty, null), ErrorCategory.WriteError, response.StatusCode, response);
-            }
-            finally
-            {
-                response?.Dispose();
-            }
-        }
-        public async Task<SonarrClientResult<string>> DownloadToPathAsync(string url, string path, NetworkCredential? credential, CancellationToken token = default)
-        {
-            using AuthedRequestMessage msg = new(HttpMethod.Get, url, credential, _scopeFactory);
+	/// <summary>
+	/// Puts the URL base in front of the specified download URL, or in place of the URL's own spelling of it when the URL
+	/// starts with it already.
+	/// </summary>
+	/// <remarks>
+	/// Sonarr gives a backup's path without the URL base, and a log file's download URL with it, spelled its own way. The
+	/// URL that this method returns spells the base as <see cref="_basePath"/> does, as the login that a forms server
+	/// needs does too, so the login's cookie, whose path is the base, goes back with the download. The URL is rooted, so
+	/// combining it with the base address keeps only the address's scheme and server. An absolute URL comes back
+	/// unchanged.
+	/// </remarks>
+	/// <param name="url">The download URL that Sonarr or the user gave.</param>
+	/// <returns>The URL to request.</returns>
+	private string AddUrlBase(string url)
+	{
+		if (!Uri.TryCreate(url, UriKind.Relative, out _))
+		{
+			return url;
+		}
 
-            HttpResponseMessage response = null!;
-            try
-            {
-                response = await _client.SendAsync(msg, token).ConfigureAwait(false);
-            }
-            catch (SonarrHttpException ex)
-            {
-                var result = SonarrClientResult.FromException<string>(ex, ErrorCategory.InvalidResult, response?.StatusCode ?? ErrorHandler.NoResponseCode, response);
-                if (string.IsNullOrEmpty(result.RequestUrl))
-                {
-                    result.RequestUrl = url;
-                }
+		ReadOnlySpan<char> path = url.AsSpan().TrimStart('/');
 
-                return result;
-            }
+		// The segments of the base are its length less its leading slash, and what follows them starts with a slash or is
+		// empty.
+		return IsUnderBase(path, _basePath)
+			? string.Concat(_basePath, path[(_basePath.Length - 1)..])
+			: string.Concat(_basePath, "/", path);
+	}
 
-            bool written = await WriteFileAsync(response, path, token).ConfigureAwait(false);
+	/// <summary>
+	/// Determines whether the specified path starts with the segments of the URL base.
+	/// </summary>
+	/// <param name="path">The download path, without its leading slash.</param>
+	/// <param name="basePath">The URL base, with its leading slash, or an empty span when the connection has none.</param>
+	/// <returns>
+	/// <see langword="true"/> if <paramref name="basePath"/> isn't empty and <paramref name="path"/> starts with its
+	/// segments; otherwise, <see langword="false"/>.
+	/// </returns>
+	private static bool IsUnderBase(ReadOnlySpan<char> path, ReadOnlySpan<char> basePath)
+	{
+		if (basePath.IsEmpty)
+		{
+			return false;
+		}
 
-            return written
-                ? SonarrClientResult.Create(path, response, url)
-                : SonarrClientResult.FromException<string>(new SonarrHttpException(msg, response, ErrorCollection.Empty, null), ErrorCategory.WriteError, response.StatusCode, response);
-        }
+		// Sonarr v3 lowercases the URL base in the URLs that it gives, and a URL that a user typed has the case they typed.
+		ReadOnlySpan<char> baseSegments = basePath[1..];
+		return path.StartsWith(baseSegments, StringComparison.OrdinalIgnoreCase)
+			&& (path.Length == baseSegments.Length || path[baseSegments.Length] == '/');
+	}
 
-        private static async Task<bool> WriteFileAsync(HttpResponseMessage response, string path, CancellationToken token)
-        {
-            Stream stream = response.Content.ReadAsStream(token);
-            await using (stream.ConfigureAwait(false))
-            {
-                if (stream.CanSeek && stream.Length <= 0)
-                {
-                    return false;
-                }
+	/// <summary>
+	/// Sends the specified download request and writes the file that the response holds to a path.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// The method returns every failure as an error result, and lets a <see cref="PipelineStoppedException"/> through. A
+	/// failure of the credentials that <see cref="AuthHandler"/> adds gives the category
+	/// <see cref="ErrorCategory.AuthenticationError"/>. A request that gets no response gives
+	/// <see cref="ErrorCategory.ConnectionError"/>, through a <see cref="SonarrHttpException"/> whose error record's message
+	/// starts with the request's URL, a timeout <see cref="ErrorCategory.OperationTimeout"/>, and any other cancellation
+	/// <see cref="ErrorCategory.OperationStopped"/>.
+	/// </para>
+	/// <para>
+	/// A status that isn't a success gives the category that the status calls for, such as
+	/// <see cref="ErrorCategory.ObjectNotFound"/> for 404. A body that's empty, and a file that can't be written, such as
+	/// one in a folder that doesn't exist, give <see cref="ErrorCategory.WriteError"/>, and the error record of a file that
+	/// can't be written names <paramref name="path"/> as its target.
+	/// </para>
+	/// </remarks>
+	/// <param name="request">The request for the file.</param>
+	/// <param name="url">The download URL that the caller gave, which an error reports when it has no other URL.</param>
+	/// <param name="path">The path of the file to write.</param>
+	/// <param name="token">The token that cancels the download.</param>
+	/// <returns>
+	/// A result that holds <paramref name="path"/> once the file is written, or an error when the request fails, the
+	/// server answers with a status that isn't a success, the response holds no file, or the file can't be written.
+	/// </returns>
+	private SonarrClientResult<string> Download(SonarrRequestMessage request, string url, string path, CancellationToken token)
+	{
+		_cmdletAccessor.AttachTo(request);
 
-                FileStream fs = new(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 8192, useAsync: true);
-                await using (fs.ConfigureAwait(false))
-                {
-                    await stream.CopyToAsync(fs, token).ConfigureAwait(false);
-                    return true;
-                }
-            }
-        }
-    }
+		HttpResponseMessage response;
+		try
+		{
+			response = _client.Send(request, token);
+		}
+		catch (SonarrHttpException ex)
+		{
+			return FromException(ex, ErrorCategory.AuthenticationError, ex.StatusCode ?? ErrorHandler.NoResponseCode, response: null, url);
+		}
+		catch (HttpRequestException httpEx)
+		{
+			// No response arrived, as for a refused or dropped connection. The wrapper gives the error the request's URL, as
+			// an API request's error has.
+			SonarrHttpException noResponse = new(request, response: null, ErrorCollection.Empty, httpEx);
 
-    internal static class SonarrDownloadClientDependencyInjection
-    {
-        internal static IServiceCollection AddSonarrDownloadClient(this IServiceCollection services)
-        {
-            services
-                .AddTransient<AuthHandler>()
-                .AddHttpClient<ISonarrDownloadClient, SonarrDownloadClient>((provider, client) =>
-                {
-                    var settings = provider.GetRequiredService<IConnectionSettings>();
-                    client.BaseAddress = settings.ServiceUri;
-                    client.Timeout = settings.Timeout;
-                    client.DefaultRequestHeaders
-                        .Add(SonarrClientDependencyInjection.API_HEADER_KEY, settings.ApiKey.GetValue());
+			return FromException(noResponse, ErrorCategory.ConnectionError, ErrorHandler.NoResponseCode, response: null, url);
+		}
+		catch (OperationCanceledException cancelled)
+		{
+			ErrorCategory category = cancelled.InnerException is TimeoutException
+				? ErrorCategory.OperationTimeout
+				: ErrorCategory.OperationStopped;
 
-                    client.DefaultRequestHeaders.UserAgent
-                        .Add(SonarrClientDependencyInjection.UserAgent);
-                })
-                .ConfigurePrimaryHttpMessageHandler<SonarrClientHandler>()
-                .AddHttpMessageHandler<VerboseHandler>()
-                .AddHttpMessageHandler<DebugSerializeHandler>()
-                .AddHttpMessageHandler<AuthHandler>();
+			return FromException(cancelled, category, ErrorHandler.NoResponseCode, response: null, url);
+		}
+		catch (Exception e) when (e is not PipelineStoppedException)
+		{
+			return FromException(e, ErrorCategory.ConnectionError, ErrorHandler.NoResponseCode, response: null, url);
+		}
 
-            return services;
-        }
-    }
+		using (response)
+		{
+			if (!response.IsSuccessStatusCode)
+			{
+				// A download URL serves a file, so the body of an error response, often an HTML page, isn't the file.
+				SonarrHttpException statusEx = new(request, response, ErrorCollection.Empty,
+					new HttpRequestException(NO_FILE_MESSAGE, null, response.StatusCode));
+
+				return new SonarrClientResult<string>(new SonarrErrorRecord(statusEx, url));
+			}
+
+			bool written;
+			try
+			{
+				written = WriteFile(response, path, token);
+			}
+			catch (OperationCanceledException cancelled)
+			{
+				return FromException(cancelled, ErrorCategory.OperationStopped, response.StatusCode, response, url);
+			}
+			catch (Exception e)
+			{
+				SonarrErrorRecord record = new(e, e.GetTypeName(), ErrorCategory.WriteError, path)
+				{
+					RequestUri = response.RequestMessage?.RequestUri?.ToString() ?? url,
+				};
+
+				return new SonarrClientResult<string>(record)
+				{
+					StatusCode = response.StatusCode,
+				};
+			}
+
+			if (written)
+			{
+				return SonarrClientResult.Create(path, response, url);
+			}
+
+			SonarrHttpException emptyEx = new(request, response, ErrorCollection.Empty,
+				new HttpRequestException(NO_FILE_MESSAGE, null, response.StatusCode));
+
+			return FromException(emptyEx, ErrorCategory.WriteError, response.StatusCode, response, url);
+		}
+	}
+
+	/// <summary>
+	/// Creates the error result of a download that failed with the specified exception.
+	/// </summary>
+	/// <param name="exception">The exception that describes the failure.</param>
+	/// <param name="category">The category of the error.</param>
+	/// <param name="statusCode">
+	/// The status code of the response, or <see cref="ErrorHandler.NoResponseCode"/> when there's none.
+	/// </param>
+	/// <param name="response">The response to the download request, or <see langword="null"/> when there's none.</param>
+	/// <param name="url">The download URL that the result reports when the exception gives no URL.</param>
+	/// <returns>An error result for the download.</returns>
+	private static SonarrClientResult<string> FromException(Exception exception, ErrorCategory category, HttpStatusCode statusCode, HttpResponseMessage? response, string url)
+	{
+		var result = SonarrClientResult.FromException<string>(exception, category, statusCode, response);
+		if (string.IsNullOrEmpty(result.RequestUrl))
+		{
+			result.RequestUrl = url;
+		}
+
+		return result;
+	}
+
+	/// <summary>
+	/// Writes the body of the specified response to a file.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// A body that is known to be empty writes nothing, since it holds no file. The method creates the file, or overwrites
+	/// one that exists, and holds it open without sharing while it writes.
+	/// </para>
+	/// <para>
+	/// The body is already in memory, since <see cref="HttpClient.Send(HttpRequestMessage, CancellationToken)"/> reads all
+	/// of it before it returns the response, so the method checks the token before it creates the file, and a copy that
+	/// has started runs to its end.
+	/// </para>
+	/// </remarks>
+	/// <param name="response">The successful response whose body is the file.</param>
+	/// <param name="path">The path of the file to write.</param>
+	/// <param name="token">A token that cancels the write before the file is created.</param>
+	/// <returns>
+	/// <see langword="true"/> if the file was written; otherwise, <see langword="false"/>, when the body is empty.
+	/// </returns>
+	/// <exception cref="OperationCanceledException">Thrown when <paramref name="token"/> is canceled before the file is
+	/// created.</exception>
+	private static bool WriteFile(HttpResponseMessage response, string path, CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+
+		using Stream stream = response.Content.ReadAsStream(token);
+		if (stream.CanSeek && stream.Length <= 0)
+		{
+			return false;
+		}
+
+		using FileStream fs = new(path, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 8192);
+		stream.CopyTo(fs);
+		return true;
+	}
+}
+
+/// <summary>
+/// Provides the registration of the module's <see cref="ISonarrDownloadClient"/>.
+/// </summary>
+internal static class SonarrDownloadClientDependencyInjection
+{
+	/// <summary>
+	/// Registers <see cref="SonarrDownloadClient"/> as the typed <see cref="ISonarrDownloadClient"/>, with
+	/// <see cref="AuthHandler"/>.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// A request passes through <see cref="VerboseHandler"/>, <see cref="DebugSerializeHandler"/>, and
+	/// <see cref="AuthHandler"/>, in that order, before the primary handler, a <see cref="SocketsHttpHandler"/> that
+	/// <see cref="SonarrClientHandler.Configure(SocketsHttpHandler, IServiceProvider)"/> sets up, sends it. The typed client
+	/// takes the connection's service URI as its base address and its timeout as its timeout, and sends the API key and
+	/// the module's user agent on every request.
+	/// </para>
+	/// <para>
+	/// The method registers neither <see cref="VerboseHandler"/> nor <see cref="DebugSerializeHandler"/>, so the caller
+	/// registers them.
+	/// </para>
+	/// </remarks>
+	/// <param name="services">The service collection to add the registration to.</param>
+	/// <returns><paramref name="services"/>, so that calls can be chained.</returns>
+	internal static IServiceCollection AddSonarrDownloadClient(this IServiceCollection services)
+	{
+		services
+			.AddTransient<AuthHandler>()
+			.AddHttpClient<ISonarrDownloadClient, SonarrDownloadClient>((provider, client) =>
+			{
+				var settings = provider.GetRequiredService<IConnectionSettings>();
+				client.BaseAddress = settings.ServiceUri;
+				client.Timeout = settings.Timeout;
+				client.DefaultRequestHeaders
+					.Add(SonarrClientDependencyInjection.API_HEADER_KEY, settings.ApiKey.GetValue());
+
+				client.DefaultRequestHeaders.UserAgent
+					.Add(SonarrClientDependencyInjection.UserAgent);
+			})
+			.UseSocketsHttpHandler(SonarrClientHandler.Configure)
+			.AddHttpMessageHandler<VerboseHandler>()
+			.AddHttpMessageHandler<DebugSerializeHandler>()
+			.AddHttpMessageHandler<AuthHandler>();
+
+		return services;
+	}
 }

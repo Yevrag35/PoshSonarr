@@ -1,0 +1,28 @@
+<Solution>
+	<Folder Name="/Analyzers/">
+		<Project Path="src/MG.Sonarr.Next.Analyzers/MG.Sonarr.Next.Analyzers.csproj" />
+		<Project Path="src/MG.Sonarr.Next.Generators/MG.Sonarr.Next.Generators.csproj" />
+	</Folder>
+	<Folder Name="/Resources/">
+		<Project Path="src/MG.Sonarr.Resources/MG.Sonarr.Resources.csproj" />
+	</Folder>
+	<Folder Name="/Solution Items/">
+		<File Path=".editorconfig" />
+		<File Path="global.json" />
+		<File Path="src/Directory.Build.props" />
+		<File Path="src/Directory.Packages.props" />
+	</Folder>
+	<Folder Name="/Tasks/">
+		<File Path=".tasks/clean_project.ps1" />
+		<File Path=".tasks/publish_module.ps1" />
+	</Folder>
+	<Folder Name="/Tests/">
+		<Project Path="src/MG.Sonarr.Next.Tests/MG.Sonarr.Next.Tests.csproj" />
+	</Folder>
+	<Folder Name="/Tools/">
+		<Project Path="src/MG.Sonarr.Tools.Asm/MG.Sonarr.Tools.Asm.csproj" />
+	</Folder>
+	<Project Path="src/MG.Sonarr.Next.Shell.Bases/MG.Sonarr.Next.Shell.Bases.csproj" />
+	<Project Path="src/MG.Sonarr.Next.Shell/MG.Sonarr.Next.Shell.csproj" />
+	<Project Path="src/MG.Sonarr.Next/MG.Sonarr.Next.csproj" />
+</Solution>

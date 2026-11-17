@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!--
+		The compiler loads analyzers into its own process, which runs on .NET Framework inside Visual Studio and on .NET in
+		the SDK, so this project targets netstandard2.0, replacing the net11.0 that src/Directory.Build.props sets.
+	-->
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<IsPackable>false</IsPackable>
+		<IsRoslynComponent>true</IsRoslynComponent>
+		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+	</ItemGroup>
+
+</Project>
